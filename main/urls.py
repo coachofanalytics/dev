@@ -1,6 +1,6 @@
 from django.urls import path
 from main.views import AboutView
-from main.views import volunteer_update,volunteer_delete,volunteer_detail ,registration_update,membershirp_registration_delete,membershipplan_update,delete_membershipplan
+from main.views import volunteer_update,volunteer_delete,volunteer_detail ,registration_update,membershirp_registration_delete,membershipplan_update,delete_membershipplan,membershipplan_detail
 
 
 from . import views
@@ -24,6 +24,7 @@ urlpatterns = [
     path('membershipplan_create',views.membershipplan_create, name ='membershipplan_create'),
     path('membershipplan/<int:pk>/update/', membershipplan_update, name='membershipplan_update'),
     path('membershipplan_delete/<int:pk>/delete/', delete_membershipplan, name='delete_membershipplan'),
+    path('membershipplan_detail/<int:pk>/detail/', membershipplan_detail, name='membershipplan_detail'),
 
     
    #==============ERRORS==============================================

@@ -368,3 +368,15 @@ def delete_membershipplan(request, pk):
         return redirect('main:MembershipPlan_list')  # Ensure this URL exists
     return render(request, 'mainsnippets_templates/table/plan_delet.html', {'info': info})
 
+
+
+
+
+from django.shortcuts import get_object_or_404, render
+
+from django.shortcuts import get_object_or_404, render
+from .models import MembershipPlan
+
+def membershipplan_detail(request, pk):
+    info = get_object_or_404(MembershipPlan, pk=pk)
+    return render(request, 'main/snippets_templates/table/plan_detal .html', {'info': info})
