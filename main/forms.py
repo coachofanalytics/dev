@@ -32,12 +32,9 @@ class ContactForm(forms.ModelForm):
         # self.fields['sub_category'].required=False
 
 
-from .models import Volunteers ,membershirp_registration,MembershipPlan
+from .models import membershirp_registration,MembershipPlan
 
-class Volunteersform(forms.ModelForm):
-    class Meta:
-        model = Volunteers
-        fields = '__all__'        
+ 
 
 
 

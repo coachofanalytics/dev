@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description,Page,MembershipPlan
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm,Volunteersform,registrationform
+from main.forms import ContactForm,registrationform
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -159,93 +159,6 @@ from django.views.generic import TemplateView
 
 class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
-
-
-
-
-
-
-from django.shortcuts import render
-from .models import GallerysImage
-
-def gallery_image_list(request):
-    # Fetch all gallery images
-    gallery_images = GallerysImage.objects.all()
-    print('info========================', gallery_images)  # Debugging statement
-    
-    return render(request, 'main/snippets_templates/table/Gallery.html', {'gallery_images': gallery_images})
-
-
-
-
-
-
-from .models import Volunteers
-
-def Volunteers_list(request):
-    # Fetch all gallery images
-    Volunteerss = Volunteers.objects.all()
-    print('info========================', Volunteerss)  # Debugging statement
-    
-    return render(request, 'main/snippets_templates/table/voluntear.html', {'Volunteerss': Volunteerss})
-
-
-def volunteer_create(request):
-    if request.method == 'POST':
-        form = Volunteersform(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('main:Volunteers_list')
-    else:
-        form = Volunteersform()
-    return render(request, 'main/snippets_templates/table/voluntear_creat.html', {'form': form})
-
-
-
-
-from django.shortcuts import get_object_or_404, render, redirect
-from .models import Volunteers
-from .forms import Volunteersform
-
-def volunteer_update(request, pk):
-    volunteer = get_object_or_404(Volunteers, pk=pk)
-    if request.method == 'POST':
-        form = Volunteersform(request.POST, instance=volunteer)
-        if form.is_valid():
-            form.save()
-            return redirect('main:Volunteers_list')  # Redirect to the volunteers list view
-    else:
-        form = Volunteersform(instance=volunteer)
-    return render(request, 'main/snippets_templates/table/voluntear_update.html', {'form': form})
-
-
-
-
-
-from django.shortcuts import get_object_or_404, redirect, render
-from .models import Volunteers
-
-def volunteer_delete(request, pk):
-    volunteer = get_object_or_404(Volunteers, pk=pk)
-    if request.method == 'POST':
-        volunteer.delete()
-        return redirect('main:Volunteers_list')  # Redirect to the volunteers list page
-    return render(request, 'main/snippets_templates/table/volunter_delet.html', {'volunteer': volunteer})
-
-
-
-
-
-from django.shortcuts import get_object_or_404, render
-from .models import Volunteers
-
-def volunteer_detail(request, pk):
-    volunteer = get_object_or_404(Volunteers, pk=pk)
-    return render(request, 'main/snippets_templates/table/volunter_detail.html', {'volunteer': volunteer})
-
-
-
-
 
 
 

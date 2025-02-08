@@ -1,0 +1,21 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4">
+        <h2 class="mb-4">Membership Plan Details</h2>
+        <table class="table table-bordered">
+            <tr>
+                <th>Name:</th>
+                <td>{{ info.name }}</td>
+            </tr>
+            <tr>
+                <th>Price:</th>
+                <td>{{ info.price }}</td>
+            </tr>
+        </table>
+
+        <a href="{% url 'main:MembershipPlan_list' %}" class="btn btn-secondary">Back to Membership Plans</a>
+    </div>
+</div>
+{% endblock %}

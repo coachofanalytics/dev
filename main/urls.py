@@ -1,6 +1,6 @@
 from django.urls import path
 from main.views import AboutView
-from main.views import volunteer_update,volunteer_delete,volunteer_detail ,registration_update,membershirp_registration_delete,membershipplan_update,delete_membershipplan,membershipplan_detail
+from main.views import registration_update,membershirp_registration_delete,membershipplan_update,delete_membershipplan,membershipplan_detail
 
 
 from . import views
@@ -9,13 +9,7 @@ from . import views
 app_name = 'main'
 urlpatterns = [
     path('', views.layout, name='layout'),
-    path('history',views.History, name ='history'),
-    path('gallary',views.gallery_image_list, name ='gallery_image_list'),
-    path('Volunteer',views.Volunteers_list, name ='Volunteers_list'),
-    path('volunteer_create',views.volunteer_create, name ='volunteer_create'),
-    path('volunteers/<int:pk>/update/', volunteer_update, name='volunteer_update'),
-    path('volunteers/<int:pk>/delete/', volunteer_delete, name='volunteer_delete'),
-    path('volunteers/<int:pk>/', volunteer_detail, name='volunteer_detail'),
+    path('history',views.History, name ='history'),    
     path('registration',views.registration_list, name ='registration_list'),
     path('registration_create',views.registration_create, name ='registration_create'),
     path('registration/<int:pk>/update/', registration_update, name='registration_update'), 

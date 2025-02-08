@@ -78,49 +78,6 @@ class Feedback(models.Model):
         return self.title
     
 
-from django.db import models
-
-class GallerysImage(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='gallery/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    event_date = models.DateField()
-
-    def __str__(self):
-        return self.title
-
-
-class Volunteers(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    motivation = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-
-from django.db import models
-
-class Donationmain(models.Model):
-    donor_name = models.CharField(max_length=100)
-    email = models.EmailField()
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    message = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.donor_name} - {self.amount}"
-
-
-class News(models.Model):
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-    published_date = models.DateField()
-    is_event = models.BooleanField(default=False)
-    image = models.ImageField(upload_to='news_images/', blank=True, null=True)
-
-    def __str__(self):
-        return self.title
         
 class membershirp_registration(models.Model):
     email = models.EmailField(null=False, blank=False)
