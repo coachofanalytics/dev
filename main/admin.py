@@ -10,6 +10,6 @@ admin.site.register(Page)
 admin.site.register(membershirp_registration)
 admin.site.register(MembershipPlan)
 admin.site.register(Newsspage)
-
+admin.site.register(volunteer)
 
 
