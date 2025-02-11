@@ -293,3 +293,15 @@ from .models import MembershipPlan
 def membershipplan_detail(request, pk):
     info = get_object_or_404(MembershipPlan, pk=pk)
     return render(request, 'main/snippets_templates/table/plan_detal .html', {'info': info})
+
+
+
+
+
+
+
+
+
+
+
+
