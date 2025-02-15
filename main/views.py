@@ -170,7 +170,7 @@ def registration_list(request):
     info = membershirp_registration.objects.all()
     print('info========================', info)  # Debugging statement (remove in production)
     
-    return render(request, 'main/snippets_templates/table/regestration.html', {'info': info})
+    return render(request, 'main/snippets_templates/table/voluntear.html', {'info': info})
 
 
 
