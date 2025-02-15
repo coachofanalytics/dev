@@ -320,3 +320,27 @@ def NEWS_create(request):
     else:
         form = Newsform()
     return render(request, 'main/snippets_templates/table/news_create.html', {'form': form})    
+
+
+
+
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+
+
+def news_update(request, pk):
+    info = get_object_or_404(News_papers, pk=pk)  # Fetch the news item
+
+    if request.method == 'POST':
+        form = Newsform(request.POST, instance=info)  # Bind form with POST data
+        if form.is_valid():
+            form.save()
+            return redirect('news_list')  # Redirect to the updated news list
+    else:
+        form = Newsform(instance=info)  # Correctly use `info`
+
+    return render(request, 'main/snippets_templates/table/update_news.html', {'form': form})
+
