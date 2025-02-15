@@ -1,0 +1,50 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">Latest News & Events</h1>
+    
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Summary</th>
+                <th>Publish Date</th>
+                <th>Event</th>
+                <th>Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for news in info %}
+                <tr>
+                    <td>{{ news.title }}</td>
+                    <td>{{ news.content|truncatechars:100 }}</td>  {# Show only first 100 chars #}
+                    <td>{{ news.publish_date|date:"F d, Y" }}</td>
+                    <td>{% if news.is_event %} ✅ Yes {% else %} ❌ No {% endif %}</td>
+                    <td>
+                        {% if news.image %}
+                            <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-thumbnail">
+                        {% else %}
+                            <span class="no-image">No Image</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                       
+                        
+                       
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="no-data">No news available at the moment.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

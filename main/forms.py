@@ -32,7 +32,7 @@ class ContactForm(forms.ModelForm):
         # self.fields['sub_category'].required=False
 
 
-from .models import membershirp_registration,MembershipPlan
+from .models import membershirp_registration,MembershipPlan,News_papers
 
  
 
@@ -53,6 +53,10 @@ class MembershipPlanform(forms.ModelForm):
         fields = '__all__'        
         
 
+class Newsform(forms.ModelForm):
+    class Meta:
+        model = News_papers
+        fields = '__all__'     
 
 
 
