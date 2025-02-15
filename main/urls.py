@@ -19,6 +19,7 @@ urlpatterns = [
     path('membershipplan/<int:pk>/update/', membershipplan_update, name='membershipplan_update'),
     path('membershipplan_delete/<int:pk>/delete/', delete_membershipplan, name='delete_membershipplan'),
     path('membershipplan_detail/<int:pk>/detail/', membershipplan_detail, name='membershipplan_detail'),
+    path('news',views.News_list, name ='News_list'),    
 
     
    #==============ERRORS==============================================

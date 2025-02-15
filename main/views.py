@@ -288,7 +288,7 @@ def delete_membershipplan(request, pk):
 from django.shortcuts import get_object_or_404, render
 
 from django.shortcuts import get_object_or_404, render
-from .models import MembershipPlan
+from .models import MembershipPlan,News_papers
 
 def membershipplan_detail(request, pk):
     info = get_object_or_404(MembershipPlan, pk=pk)
@@ -298,7 +298,12 @@ def membershipplan_detail(request, pk):
 
 
 
-
+def News_list(request):
+    # Fetch all membershipplan
+    info = News_papers.objects.all()
+    print('info========================', info)  # Debugging statement (remove in production)
+    
+    return render(request, 'main/snippets_templates/table/news_papers.html', {'info': info})
 
 
 
