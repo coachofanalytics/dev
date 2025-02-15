@@ -11,5 +11,6 @@ admin.site.register(membershirp_registration)
 admin.site.register(MembershipPlan)
 
 admin.site.register(Gallerys)
+admin.site.register(News_papers)
 
 

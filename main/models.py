@@ -125,6 +125,23 @@ class Gallerys(models.Model):
 
 
 
+from django.db import models
+
+class News_papers(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    publish_date = models.DateField()  # Changed from TextField to DateField
+    is_event = models.BooleanField(default=False)  # Corrected "defficult" to "default"
+    image = models.ImageField(upload_to='news_image/', blank=True, null=True)  # Fixed syntax error
+
+    def __str__(self):
+        return self.title
+
+
+
+
+
+
 
 
 
