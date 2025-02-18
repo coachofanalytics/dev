@@ -158,3 +158,23 @@ class NewsPapers(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+class Job_Listing(models.Model):
+    job_id = models.IntegerField(primary_key=True)
+    title =  models.CharField(max_length=100)
+    Description = models.TextField()
+    industry = models.CharField(max_length=20)
+    job_type = models.CharField(max_length=20)
+    location = models.CharField(max_length=50)
+    salary_range = models.CharField(max_length=50)
+    experience_level = models.CharField(max_length=20)
+    employer = models.CharField(max_length=100)
+    posted_at = models.DateField()
+    expires_at_at = models.DateField()
+
+    def __str__(self):
+        return self.title
+
+
+
