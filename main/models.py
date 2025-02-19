@@ -178,3 +178,17 @@ class Job_Listing(models.Model):
 
 
 
+
+
+from django.db import models
+
+class Volunteer(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)  # Ensures unique email addresses
+    motivation = models.TextField(blank=True, null=True)  # Make motivation optional
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)  # Adds indexing for better performance on queries
+
+    def __str__(self):
+        return self.name
+
+

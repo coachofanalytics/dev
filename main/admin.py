@@ -15,4 +15,4 @@ admin.site.register(membershirp_registration)
 admin.site.register(MembershipPlan)
 admin.site.register(NewsPapers)
 admin.site.register(Job_Listing)
-
+admin.site.register(Volunteer)
