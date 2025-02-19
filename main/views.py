@@ -186,7 +186,6 @@ def Volunteers_list(request):
     # Fetch all gallery images
     Volunteerss = Volunteers.objects.all()
     print('info========================', Volunteerss)  # Debugging statement
-    
     return render(request, 'main/snippets_templates/table/voluntear.html', {'Volunteerss': Volunteerss})
 
 
@@ -323,12 +322,8 @@ def membershirp_registration_delete(request, pk):
 def MembershipPlan_list(request):
     # Fetch all membershipplan
     info = MembershipPlan.objects.all()
-    print('info========================', info)  # Debugging statement (remove in production)
-    
-    return render(request, 'main/snippets_templates/table/plan.html', {'info': info})
-
-
-
+    return ren   print('info========================', info)  # Debugging statement (remove in production)
+     der(request, 'main/snippets_templates/table/plan.html', {'info': info})
 
 
 
@@ -380,3 +375,13 @@ from .models import MembershipPlan
 def membershipplan_detail(request, pk):
     info = get_object_or_404(MembershipPlan, pk=pk)
     return render(request, 'main/snippets_templates/table/plan_detal .html', {'info': info})
+
+
+
+
+
+def Volunteers_list(request):
+    # Fetch all gallery images
+    Volunteerss = Volunteers.objects.all()
+    print('info========================', Volunteerss)  # Debugging statement
+    return render(request, 'main/snippets_templates/table/voluntear.html', {'Volunteerss': Volunteerss})  

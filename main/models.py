@@ -182,7 +182,7 @@ class Job_Listing(models.Model):
 
 from django.db import models
 
-class Volunteer(models.Model):
+class VolunteersS(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)  # Ensures unique email addresses
     motivation = models.TextField(blank=True, null=True)  # Make motivation optional
