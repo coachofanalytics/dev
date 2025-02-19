@@ -158,3 +158,14 @@ class NewsPapers(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+class Testimonials(models.Model):
+    name = models.CharField(max_length=100, null=False)
+    position = models.CharField(max_length=100)
+    organization = models.CharField(max_length=100)
+    testimonial = models.TextField(null=False)
+    image = models.ImageField()
+    date = models.DateField(null=False)
+    
+
