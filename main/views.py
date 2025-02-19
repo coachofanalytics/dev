@@ -385,3 +385,17 @@ def Volunteers_list(request):
     Volunteerss = Volunteers.objects.all()
     print('info========================', Volunteerss)  # Debugging statement
     return render(request, 'main/snippets_templates/table/voluntear.html', {'Volunteerss': Volunteerss})  
+
+
+
+
+    
+def Volunteers_create(request):
+    if request.method == 'POST':
+        form = Volunteersform(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:Volunteers_list')
+    else:
+        form = Volunteersform()
+    return render(request, 'main/snippets_templates/table/Volunteers_create.html', {'form': form})
