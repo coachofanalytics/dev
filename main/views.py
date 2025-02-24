@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description,Page,MembershipPlan, JobListing
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm,Volunteersform,registrationform
+from main.forms import ContactForm,Volunteersform,registrationform, JoblistingForm
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -388,4 +388,15 @@ def jobs_list(request):
     jobs = JobListing.objects.all()
 
     return render(request, 'main/snippets_templates/table/jobs_listing.html', {'jobs': jobs})
+
+
+def job_listing_create(request):
+    if request.method == 'POST':
+        form = JoblistingForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:jobs_listing')
+    else:
+        form = JoblistingForm()
+    return render(request, 'main/snippets_templates/table/jobs_listing_create.html', {'form': form})
 
