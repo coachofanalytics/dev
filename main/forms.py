@@ -62,7 +62,6 @@ class JoblistingForm(forms.ModelForm):
         model = JobListing
         #fields = '__all__' 
         fields = [
-            'job_id',
             'title', 
             'Description', 
             'industry', 

@@ -26,7 +26,7 @@ urlpatterns = [
     path('membershipplan_delete/<int:pk>/delete/', delete_membershipplan, name='delete_membershipplan'),
     path('membershipplan_detail/<int:pk>/detail/', membershipplan_detail, name='membershipplan_detail'),
     path('jobs_listing',views.jobs_list, name ='jobs_listing'),
-    path('job_listing_create',views.job_listing_create, name ='job_listing_create'),
+    path('jobs_listing_create',views.job_listing_create, name ='job_listing_create'),
 
     
    #==============ERRORS==============================================
