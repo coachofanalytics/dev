@@ -162,7 +162,6 @@ class NewsPapers(models.Model):
 
 
 class JobListing (models.Model):
-    job_id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)
     Description = models.TextField()
     industry = models.CharField(max_length=100)
