@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description,Page,MembershipPlan
+from .models import Assets,Description,Page,MembershipPlan, JobListing
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm,Volunteersform,registrationform
@@ -380,3 +380,12 @@ from .models import MembershipPlan
 def membershipplan_detail(request, pk):
     info = get_object_or_404(MembershipPlan, pk=pk)
     return render(request, 'main/snippets_templates/table/plan_detal .html', {'info': info})
+
+
+
+def jobs_list(request):
+
+    jobs = JobListing.objects.all()
+
+    return render(request, 'main/snippets_templates/table/jobs_listing.html', {'jobs': jobs})
+

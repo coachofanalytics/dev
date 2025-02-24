@@ -25,6 +25,7 @@ urlpatterns = [
     path('membershipplan/<int:pk>/update/', membershipplan_update, name='membershipplan_update'),
     path('membershipplan_delete/<int:pk>/delete/', delete_membershipplan, name='delete_membershipplan'),
     path('membershipplan_detail/<int:pk>/detail/', membershipplan_detail, name='membershipplan_detail'),
+    path('jobs_listing',views.jobs_list, name ='jobs_listing'),
 
     
    #==============ERRORS==============================================
