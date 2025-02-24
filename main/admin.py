@@ -14,4 +14,5 @@ admin.site.register(News)
 admin.site.register(membershirp_registration)
 admin.site.register(MembershipPlan)
 admin.site.register(NewsPapers)
+admin.site.register(JobListing)
 
