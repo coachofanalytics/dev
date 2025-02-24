@@ -27,6 +27,7 @@ urlpatterns = [
     path('membershipplan_detail/<int:pk>/detail/', membershipplan_detail, name='membershipplan_detail'),
     path('jobs_listing',views.jobs_list, name ='jobs_listing'),
     path('jobs_listing_create',views.job_listing_create, name ='job_listing_create'),
+    path('jobs_listing/<int:pk>/update/', views.jobs_listing_update, name='jobs_listing_update'),
 
     
    #==============ERRORS==============================================

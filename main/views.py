@@ -299,13 +299,6 @@ def registration_update(request, pk):
 
 
 
-
-
-
-
-
-
-
 from .models import membershirp_registration
 
 def membershirp_registration_delete(request, pk):
@@ -399,4 +392,17 @@ def job_listing_create(request):
     else:
         form = JoblistingForm()
     return render(request, 'main/snippets_templates/table/jobs_listing_create.html', {'form': form})
+
+
+
+def jobs_listing_update(request, pk):
+    jobs = get_object_or_404(JobListing, pk=pk)
+    if request.method == 'POST':
+        form = JoblistingForm(request.POST, instance=jobs)
+        if form.is_valid():
+            form.save()
+            return redirect('main:jobs_listing')  
+    else:
+        form = JoblistingForm(instance=jobs)
+    return render(request, 'main/snippets_templates/table/joblisting_update.html', {'form': form})
 
