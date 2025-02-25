@@ -335,6 +335,15 @@ def joblist_detail(request, pk):
 
 
 
+def joblist_delete(request, pk):
+    job = get_object_or_404(JobListing, pk=pk)
+    if request.method == 'POST':
+        job.delete()
+        return redirect('main:jobs_list')  # Redirect to the jobs list page
+    return render(request, 'main/snippets_templates/table/joblist_delete.html', {'job': job})
+
+
+
 
 
 
