@@ -306,7 +306,7 @@ def joblist_list(request):
 
 def joblisting_create(request):
     if request.method == 'POST':
-        form = JobListing(request.POST)
+        form = JoblistingForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('main:jobs_list')
