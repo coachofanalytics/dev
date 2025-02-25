@@ -120,6 +120,22 @@ class Gallerys(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+class JobListing(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    industry = models.CharField(max_length=200)
+    job_type = models.CharField(max_length=100)
+    location = models.CharField(max_length=200)
+    salary_range = models.CharField(max_length=100)
+    experience_level = models.CharField(max_length=50)
+    employer = models.CharField(max_length=200)
+    posted_at = models.DateField()
+    expires_at = models.DateField()
+
+    def __str__(self):
+        return self.title
 
 
 
