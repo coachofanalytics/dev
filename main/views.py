@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description,Page,MembershipPlan, JobListing
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm,registrationform
+from main.forms import ContactForm,registrationform, JoblistingForm
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -299,9 +299,20 @@ def membershipplan_detail(request, pk):
 def joblist_list(request):
     # Fetch all membershipplan
     jobs = JobListing.objects.all()
-    print('info========================', jobs)  # Debugging statement (remove in production)
     
     return render(request, 'main/snippets_templates/table/joblist_list.html', {'jobs': jobs})
+
+
+
+def joblisting_create(request):
+    if request.method == 'POST':
+        form = JobListing(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:jobs_list')
+    else:
+        form = JoblistingForm()
+    return render(request, 'main/snippets_templates/table/joblist_create.html', {'form': form})   
 
 
 

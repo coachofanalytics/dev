@@ -20,6 +20,7 @@ urlpatterns = [
     path('membershipplan_delete/<int:pk>/delete/', delete_membershipplan, name='delete_membershipplan'),
     path('membershipplan_detail/<int:pk>/detail/', membershipplan_detail, name='membershipplan_detail'),
     path('jobs_list',views.joblist_list, name ='jobs_list'),
+    path('joblist_create',views.joblisting_create, name ='joblist_create'),
     
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
