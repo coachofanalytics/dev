@@ -406,3 +406,10 @@ def jobs_listing_update(request, pk):
         form = JoblistingForm(instance=jobs)
     return render(request, 'main/snippets_templates/table/joblisting_update.html', {'form': form})
 
+
+
+def jobs_listing_detail(request, pk):
+    jobs= get_object_or_404(JobListing, pk=pk)
+    return render(request, 'main/snippets_templates/table/jobs_listing_detail.html', {'jobs': jobs})
+
+
