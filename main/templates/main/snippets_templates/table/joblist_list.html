@@ -1,0 +1,68 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listed Jobs</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+    <h1 style="text-align: center;">List of Available Jobs</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Industry</th>
+                <th>Job Type</th>
+                <th>Location</th>
+                <th>Salary Range</th>
+                <th>Experience Level</th>
+                <th>Employer</th>
+                <th>Posting Date</th>
+                <th>Expiration Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if jobs %}
+                {% for job in jobs %}
+                    <tr>
+                        <td>{{ job.title }}</td>  {# Ensure correct field name #}
+                        <td>{{ job.description }}</td>
+                        <td>{{ job.industry }}</td>
+                        <td>{{ job.job_type }}</td>
+                        <td>{{ job.location }}</td>
+                        <td>{{ job.salary_range }}</td>
+                        <td>{{ job.experience_level}}</td>
+                        <td>{{ job.employer }}</td>
+                        <td>{{ job.posted_at }}</td>
+                        <td>{{ job.expires_at }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="2" style="text-align: center;">No Jobs Found!</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+{% endblock %}
