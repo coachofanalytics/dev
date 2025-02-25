@@ -316,6 +316,19 @@ def joblisting_create(request):
 
 
 
+def joblisting_update(request, pk):
+    job = get_object_or_404(JobListing, pk=pk)
+    if request.method == 'POST':
+        form = JoblistingForm(request.POST, instance=job)  # Correct form name
+        if form.is_valid():
+            form.save()
+            return redirect('main:jobs_list')  # Ensure this URL name exists
+    else:
+        form = JoblistingForm(instance=job)
+    return render(request, 'main/snippets_templates/table/joblist_update.html', {'form': form})
+
+
+
 
 
 
