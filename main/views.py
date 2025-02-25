@@ -329,6 +329,12 @@ def joblisting_update(request, pk):
 
 
 
+def joblist_detail(request, pk):
+    job = get_object_or_404(JobListing, pk=pk)
+    return render(request, 'main/snippets_templates/table/joblist_detail .html', {'job': job})
+
+
+
 
 
 
