@@ -13,4 +13,4 @@ admin.site.register(MembershipPlan)
 admin.site.register(Gallerys)
 admin.site.register(News_papers)
 admin.site.register(News)
-
+admin.site.register(Testimonial)

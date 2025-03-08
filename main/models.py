@@ -155,6 +155,21 @@ class News(models.Model):
 
 
 
+class Testimonial(models.Model):
+    name = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    position = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    organisation = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    testimonial = models.TextField(null=False)  # Corrected 'Testminals' and fixed 'null=False'
+    image = models.ImageField(null=True, blank=True)  # 'null=True' and 'blank=True' for optional image field
+    date = models.DateField(null=False)  # Fixed 'null=False' here
+
+    def __str__(self):
+        return self.name
+
+
+
+
+
 
 
 
