@@ -18,3 +18,8 @@ class SubCategoryChoices(models.IntegerChoices):
     Short_Term = 4
     Long_Term = 5
     Other = 6
+
+
+class GenderChoices(models.IntegerChoices):
+    Male = 1
+    Female = 2

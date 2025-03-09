@@ -96,15 +96,15 @@ def dba_values():
         password = os.environ.get('HEROKU_PROD_PASS')
     elif os.environ.get('ENVIRONMENT') == 'testing':
         # In Heroku/Postgres it is Heroku_UAT
-        host = os.environ.get('HEROKU_DEV_HOST')
-        dbname = os.environ.get('HEROKU_DEV_NAME')
-        user = os.environ.get('HEROKU_DEV_USER')
-        password = os.environ.get('HEROKU_DEV_PASS')
+        host = os.environ.get('DB_HOST')
+        dbname = os.environ.get('DB_NAME')
+        user = os.environ.get('DB_USER')
+        password = os.environ.get('DB_PASSWORD')
     else:
         host = "localhost"
         dbname = "CODA_PRAC"
         user = "postgres"
-        password = "*******"
+        password = "postgres" #"*******"
         
         # host = os.environ.get('POSTGRES_DB_NAME')
         # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 

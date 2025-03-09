@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
-from accounts.choices import CategoryChoices,SubCategoryChoices
+from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
 
 # Create your models here.
 class CustomerUser(AbstractUser):
@@ -17,15 +17,17 @@ class CustomerUser(AbstractUser):
     def get_subcategory_display_name(self):
         return dict(SubCategoryChoices.choices).get(self.subcategory, 'Unknown')    
 
-    class Score(models.IntegerChoices):
-        Male = 1
-        Female = 2
-    id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    date_joined = models.DateTimeField(default=timezone.now)
-    email = models.CharField(max_length=255)
-    gender = models.IntegerField(choices=Score.choices, blank=True, null=True)
+    # class Score(models.IntegerChoices):
+    #     Male = 1
+    #     Female = 2
+
+    #id = models.AutoField(primary_key=True)
+    #first_name = models.CharField(max_length=255)
+    #last_name = models.CharField(max_length=255)
+    #date_joined = models.DateTimeField(default=timezone.now)
+    #email = models.CharField(max_length=255)
+
+    gender = models.IntegerField(choices=GenderChoices.choices, blank=True, null=True)
     phone = models.CharField(default="90001",max_length=255)
     address = models.CharField(blank=True, null=True, max_length=255)
     city = models.CharField(blank=True, null=True, max_length=255)
@@ -47,8 +49,8 @@ class CustomerUser(AbstractUser):
 
     # is_active = models.BooleanField('Is applicant', default=True)
     class Meta:
-        # ordering = ["-date_joined"]
-        ordering = ["username"]
+        ordering = ["-date_joined"]
+        #ordering = ["username"]
         verbose_name_plural = "Users"
 
     @property
