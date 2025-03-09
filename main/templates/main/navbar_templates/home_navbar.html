@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-sm bg-light navbar-light sticky-top">
+{% comment %} <nav class="navbar navbar-expand-sm bg-light navbar-light sticky-top">
     <div class="container-fluid">
         <a class="navbar-brand logo-text" href="{% url 'main:layout'%}">CODA</a>
         <button class="navbar-toggler nav-btn" type="button" data-bs-toggle="coll apse"
@@ -56,7 +56,7 @@
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropDown">
 
-            {% for service in services %}
+            {% for service in main_services %}
               {% if service.slug == "investing" %}
               <a class="dropdown-item" href="#">{{service.title}}</a>
               <div class="dropdown-divider"></div>
@@ -145,4 +145,4 @@
       </div>
         </div>
     </div>
-</nav>
+</nav> {% endcomment %}

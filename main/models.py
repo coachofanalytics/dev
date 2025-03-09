@@ -93,8 +93,3 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
 
-
-
-class main_services(models.Model):
-    pass
-
