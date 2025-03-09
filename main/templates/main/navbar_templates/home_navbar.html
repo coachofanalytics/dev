@@ -56,7 +56,7 @@
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropDown">
 
-            {% comment %} {% for service in main_services %}
+            {% for service in services %}
               {% if service.slug == "investing" %}
               <a class="dropdown-item" href="#">{{service.title}}</a>
               <div class="dropdown-divider"></div>
@@ -64,7 +64,7 @@
                 <a class="dropdown-item"  href="#">{{service.title}}</a>
                 <div class="dropdown-divider"></div>
               {% endif %}
-            {% endfor %} {% endcomment %}
+            {% endfor %}
           </div>
          
         </li>
