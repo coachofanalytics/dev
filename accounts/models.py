@@ -1,14 +1,24 @@
 from datetime import datetime,timedelta
 from decimal import *
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
-from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
+from accounts.choices import CategoryChoices,SubCategoryChoices
+
 
 # Create your models here.
+
+class UserGroups(Group):
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=True)
+    users = models.ManyToManyField('CustomerUser', related_name='user_groups')
+
+    class Meta:
+        verbose_name_plural = "User Groups"
+
 class CustomerUser(AbstractUser):
     def get_category_display_name(self):
         return dict(CategoryChoices.choices).get(self.category, 'Unknown')    
@@ -17,17 +27,16 @@ class CustomerUser(AbstractUser):
     def get_subcategory_display_name(self):
         return dict(SubCategoryChoices.choices).get(self.subcategory, 'Unknown')    
 
-    # class Score(models.IntegerChoices):
-    #     Male = 1
-    #     Female = 2
+    class Score(models.IntegerChoices):
+        Male = 1
+        Female = 2
 
-    #id = models.AutoField(primary_key=True)
-    #first_name = models.CharField(max_length=255)
-    #last_name = models.CharField(max_length=255)
-    #date_joined = models.DateTimeField(default=timezone.now)
-    #email = models.CharField(max_length=255)
-
-    gender = models.IntegerField(choices=GenderChoices.choices, blank=True, null=True)
+    id = models.AutoField(primary_key=True)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    date_joined = models.DateTimeField(default=timezone.now)
+    email = models.CharField(max_length=255)
+    gender = models.IntegerField(choices=Score.choices, blank=True, null=True)
     phone = models.CharField(default="90001",max_length=255)
     address = models.CharField(blank=True, null=True, max_length=255)
     city = models.CharField(blank=True, null=True, max_length=255)
@@ -66,3 +75,4 @@ class CustomerUser(AbstractUser):
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
     
+

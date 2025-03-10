@@ -20,6 +20,6 @@ class SubCategoryChoices(models.IntegerChoices):
     Other = 6
 
 
-class GenderChoices(models.IntegerChoices):
-    Male = 1
-    Female = 2
+# class GenderChoices(models.IntegerChoices):
+#     Male = 1
+#     Female = 2
