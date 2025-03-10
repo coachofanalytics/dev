@@ -76,3 +76,18 @@ class CustomerUser(AbstractUser):
         return (timezone.now().date() - self.date_joined.date()).days
     
 
+
+class LoginHistory (models.Model):
+    user = models.ForeignKey('CustomerUser', on_delete=models.CASCADE)
+    login_time = models.DateTimeField(null=True, blank=True)
+    logout_time = models.DateTimeField(null=True, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Login History"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.login_time} to {self.logout_time}"
+    
+

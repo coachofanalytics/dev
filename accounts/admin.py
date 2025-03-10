@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser
+from .models import CustomerUser, LoginHistory
 
 
 # admin.site.register(CustomerUser)
@@ -59,8 +59,16 @@ class CustomerAdmin(UserAdmin):
     filter_horizontal = ()
 
 
+class LoginHistoryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'login_time', 'logout_time')
+    list_filter = ('user', 'login_time', 'logout_time')
+    search_fields = ('user__username',)
+
+
+
 # Now register the new UserAdmin...
 admin.site.register(CustomerUser, CustomerAdmin)
 # admin.site.register(CustomerUser)
 
 # Register your models here.
+admin.site.register(LoginHistory, LoginHistoryAdmin)

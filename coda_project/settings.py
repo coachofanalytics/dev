@@ -102,7 +102,7 @@ def dba_values():
         password = os.environ.get('DB_PASSWORD')
     else:
         host = "localhost"
-        dbname = "CODA_PRAC"
+        dbname = "postgres"
         user = "postgres"
         password = "postgres" #"*******"
         
