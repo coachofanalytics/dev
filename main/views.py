@@ -360,8 +360,7 @@ def Gallerys_list(request):
 
 
 
-
-def Gallerys_create(request):
+def Gallerys_createdef (request):
     if request.method == 'POST':
         form = Gallerysform(request.POST)
         if form.is_valid():
@@ -369,11 +368,21 @@ def Gallerys_create(request):
             return redirect('main:Gallerys_list')
     else:
         form = Gallerysform()
-    return render(request, 'main/snippets_templates/table/plan_creat.html', {'form': form})  
+    return render(request, 'main/snippets_templates/table/plan_creat.html', {'form': form})
 
 
+def Gallerys_update(request, pk):
+    info = get_object_or_404(Gallerys_papers, pk=pk)  # Fetch the news item
 
+    if request.method == 'POST':
+        form = Gallerysform(request.POST, instance=info)  # Bind form with POST data
+        if form.is_valid():
+            form.save()
+            return redirect('news_list')  # Redirect to the updated news list
+    else:
+        form = Gallerysform(instance=info)  # Correctly use `info`
 
+    return render(request, 'main/snippets_templates/table/update_Gallerys.html', {'form': form})
 
 
 
