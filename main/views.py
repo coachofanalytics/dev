@@ -344,3 +344,36 @@ def news_update(request, pk):
 
     return render(request, 'main/snippets_templates/table/update_news.html', {'form': form})
 
+
+
+
+
+
+
+def Gallerys_list(request):
+    # Fetch all Gallerys
+    info = News_papers.objects.all()
+    print('info========================', info)  # Debugging statement (remove in production)
+    
+    return render(request, 'main/snippets_templates/table/news_papers.html', {'info': info})
+
+
+
+
+
+def Gallerys_create(request):
+    if request.method == 'POST':
+        form = Gallerysform(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:Gallerys_list')
+    else:
+        form = Gallerysform()
+    return render(request, 'main/snippets_templates/table/plan_creat.html', {'form': form})  
+
+
+
+
+
+
+
