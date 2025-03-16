@@ -83,7 +83,7 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-    page_instance = Page.objects.get(page_name='Home')
+    page_instance = Page.objects.get(page_name='Home') # Ensure you have data in the Page Model
     description = Description.objects.filter(page = page_instance)
     service = Service.objects.all()
     subservice = SubService.objects.all()
@@ -106,7 +106,7 @@ def layout(request):
             instance.trained_by=request.user
             instance.save()
             # return redirect("management:assessment")
-            return render(request, "main/errors/generalerrors.html",context)
+            return render(request, "main/errors/generalerrors.html",context) 
     else:
         form = ContactForm()
     context={
@@ -117,7 +117,8 @@ def layout(request):
             'news':news,
             'subservice':subservice
         }
-    return render(request, "main/home_templates/home.html",context)
+    return render(request, "main/home_templates/home.html",context) #main/templates/main/home_templates/home.html  
+    # /Users/Manu/DC48K/dev/main/templates/main/home_templates/home.html
 
 def History(request):
     page_instance = Page.objects.get(page_name='About')

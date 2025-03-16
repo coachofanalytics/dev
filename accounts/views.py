@@ -220,6 +220,7 @@ def login_view(request):
 
     # Render the login page with the form and any messages
     return render(request, "accounts/registration/DC48K/login_page.html", {"form": form, "msg": msg})
+#"accounts/registration/DC48K/login_page.html"
 
 
 

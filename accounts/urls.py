@@ -10,7 +10,7 @@ urlpatterns = [
     path('join/',views.join, name ='joins'),
      path('login/', views.login_view, name='account-login'),
   
-    path('register/', register, name='register'),
+    path('register/', views.register, name='register'),
 
     path('verify-email/<uuid:token>/', views.verify_email, name='verify-email'),
     path('email-verification-notice/<int:user_id>/', views.email_verification_notice, name='email-verification-notice'),

@@ -132,14 +132,14 @@ def dba_values():
         user = os.environ.get('HEROKU_DYCDEV_USER')
         password = os.environ.get('HEROKU_DYCDEV_PASS')
     else:
-        host = os.environ.get('HEROKU_DEV_HOST')
-        dbname = os.environ.get('HEROKU_DEV_NAME')
-        user = os.environ.get('HEROKU_DEV_USER')
-        password = os.environ.get('HEROKU_DEV_PASS')
-        # host = os.environ.get('POSTGRES_DB_NAME')
-        # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
-        # user = os.environ.get('POSTGRESDB_USER')
-        # password = os.environ.get('POSTGRESSPASS') 
+        # host = os.environ.get('HEROKU_DEV_HOST')
+        # dbname = os.environ.get('HEROKU_DEV_NAME')
+        # user = os.environ.get('HEROKU_DEV_USER')
+        # password = os.environ.get('HEROKU_DEV_PASS')
+        host = 'localhost'
+        dbname = 'DC48K_PRAC'
+        user = 'postgres'
+        password = 'postgres'
     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
@@ -149,24 +149,24 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": dbname,
-#         "USER":user,
-#         "PASSWORD":password,
-#         "HOST": host
-#     }
-# }
 DATABASES = {
-    'default': {
-        "ENGINE": 'django.db.backends.postgresql',
-        "NAME": 'dfcda9qs3oqmjs',
-        "USER": 'u71kn9j3d0t653',
-        "PASSWORD": 'p6f1fb28430129f031a0cbadb153c422de22a06cb843a132ec8f5ba82e9b18d7b',
-        "HOST": 'cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": dbname,
+        "USER":user,
+        "PASSWORD":password,
+        "HOST": host
     }
 }
+# DATABASES = {
+#     'default': {
+#         "ENGINE": 'django.db.backends.postgresql',
+#         "NAME": 'dfcda9qs3oqmjs',
+#         "USER": 'u71kn9j3d0t653',
+#         "PASSWORD": 'p6f1fb28430129f031a0cbadb153c422de22a06cb843a132ec8f5ba82e9b18d7b',
+#         "HOST": 'cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  
+#     }
+# }
 
 # Local DB
 # DATABASES = {
