@@ -2,7 +2,7 @@ import secrets
 import uuid
 import string, random
 from django.core.paginator import Paginator
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login as auth_login, get_user_model
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.contrib import messages
@@ -27,8 +27,8 @@ from django.views.generic import (
 from .models import CustomerUser, Membership
 from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
 from finance.utils import DYCDefaultPayments
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, get_user_model
+
+from django.conf import settings
 # Create your views here..
 
 
@@ -160,11 +160,8 @@ def verify_email(request, token):
         # If the user doesn't exist, render the failure message
         return render(request, "accounts/registration/email_verification_notice.html", {"verification_status": "failed"})
 
-from django.contrib.auth import authenticate, login, get_user_model
-from django.shortcuts import render, redirect, get_object_or_404
-from django.conf import settings
-from .forms import LoginForm
-from .models import Membership  # Replace with the actual import path for Membership
+
+
 
 def login_view(request):
     form = LoginForm(request.POST or None)
@@ -203,14 +200,15 @@ def login_view(request):
             
             if user:
                 print('User authenticated successfully')
-                login(request, user)
+                auth_login(request, user)
 
                 # Membership check
-                membership = get_object_or_404(Membership, member=user)
-                if membership.status == 'NOT_PAID':
-                    return redirect('finance:pay')
-                else:
-                    return redirect('https://dc48k.org/')
+                # membership = get_object_or_404(Membership, member=user)
+                # if membership.status == 'NOT_PAID':
+                #     return redirect('finance:pay')
+                # else:
+                #     return redirect('main:layout')
+                return redirect('main:layout')
             else:
                 print('Authentication failed')
                 msg = 'Invalid credentials'
