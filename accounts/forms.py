@@ -12,6 +12,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.CharField(label="Username or E-mail")
     remember_me = forms.BooleanField(required=False, label="Keep me signed in")
+    
 class UserForm(forms.ModelForm):
     class Meta:
         model = CustomerUser

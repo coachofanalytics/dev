@@ -92,13 +92,13 @@
     </div>
     <div class="list" id="navList">
         <ul class="navList">
-            <li><a href="https://dc48k.org/" class="navLin">HOME</a></li>
+            <li><a href="{% url 'main:layout' %}" class="navLin">HOME</a></li>
             <li class="dropdown">
-                <a href="#" class="navLin">ABOUT US</a>
+                <a href="{% url 'main:about' %}" class="navLin">ABOUT US</a>
                 <div class="dropdown-content">
-                    <a href="https://dc48k.org/about-us/">Our History</a>
+                    <a href="#">Our History</a>
                     <div class="sub-dropdown">
-                        <a href="https://dc48k.org/about-us/">Our Team</a>
+                        <a href="">Our Team</a>
                         <div class="sub-dropdown-content">                      
                             <a href="#">Local Leadership</a>
                             <a href="#">Global Leadership</a> 
@@ -107,9 +107,9 @@
                     <div class="sub-dropdown">
                         <a href="#">Structure</a>
                         <div class="sub-dropdown-content">                      
-                            <a href="https://dc48k.org/governance/">Our Governance</a>
-                            <a href="https://dc48k.org/governance/">Global Administration</a> 
-                            <a href="https://dc48k.org/governance/">Ward Administration</a>
+                            <a href="#">Our Governance</a>
+                            <a href="#">Global Administration</a> 
+                            <a href="#">Ward Administration</a>
 
                         </div>
                     </div>
@@ -117,7 +117,7 @@
             </li>
             <li class="dropdown">
                 <li class="dropdown">
-                    <a href="https://dc48k.org/" class="navLin">SERVICES</a>
+                    <a href="#" class="navLin">SERVICES</a>
                     <div class="dropdown-content">
                         <!-- Consular Assistance -->
                         <div class="sub-dropdown">
@@ -130,7 +130,7 @@
                 
                         <!-- Document Services -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Document Services</a>
+                            <a href="#">Document Services</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Issuance of Certificates</a>
                                 <a href="#">Document Legalization and Authentication</a>
@@ -139,7 +139,7 @@
                 
                         <!-- Community Support -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Community Support</a>
+                            <a href="#">Community Support</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Forums and Networking</a>
                                 <a href="#">Community Events</a>
@@ -148,7 +148,7 @@
                 
                         <!-- Healthcare Information -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Healthcare Information</a>
+                            <a href="#">Healthcare Information</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Healthcare Services</a>
                                 <a href="#">Health Insurance Options</a>
@@ -157,7 +157,7 @@
                 
                         <!-- Financial Services -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Financial Services</a>
+                            <a href="#">Financial Services</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Banking and Investment</a>
                                 <a href="#">Remittances and Investments</a>
@@ -166,7 +166,7 @@
                 
                         <!-- Crisis Management -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Crisis Management</a>
+                            <a href="#">Crisis Management</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Emergency Response</a>
                                 <a href="#">Advisories</a>
@@ -175,9 +175,9 @@
                 
                         <!-- Education and Training -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Education and Training</a>
+                            <a href="#">Education and Training</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Scholarships</a>
+                                <a href="https://diaspora.go.ke/scholarships">Scholarships</a>
                                 <a href="#">Training Sessions</a>
                             </div>
                         </div>
@@ -185,22 +185,22 @@
                 </li>
                 
             
-            <li><a href="https://dc48k.org/membership/" class="navLin">MEMBERSHIP</a></li>
+            <li><a href="#" class="navLin">MEMBERSHIP</a></li>
            
-            <li><a href="https://dc48k.org/news/" class="navLin">NEWS</a></li>
-            <li><a href="https://dc48k.org/contact/" class="navLin">CONTACT US</a></li>
+            <li><a href="https://diaspora.go.ke/news" class="navLin">NEWS</a></li>
+            <li><a href="#" class="navLin">CONTACT US</a></li>
             <li class="dropdown">
-                <a href="https://dc48k.org/support/" class="navLin">SUPPORT</a>
+                <a href="#" class="navLin">SUPPORT</a>
                 <div class="dropdown-content">
-                    <a href="https://dc48k.org/support/">Donate</a>
-                    <a href="https://dc48k.org/support/">Become Volunteer</a>
-                    <a href="https://dc48k.org/support/">Get Help</a>
+                    <a href="#">Donate</a>
+                    <a href="#">Become Volunteer</a>
+                    <a href="#">Get Help</a>
                     
                 </div>
             </li>
             {% if user.is_authenticated %}
-            <li><a href="https://dc48k.org/gallery/" class="navLin">GALLERY</a></li>
-            <li><a href="{% url 'accounts:account-login' %}" class="navLin">LOGOUT</a></li>
+            <li><a href="#" class="navLin">GALLERY</a></li>
+            <li><a href="{% url 'account-logout' %}" class="navLin">LOGOUT</a></li>
             {% else %}
             <li><a href="{% url 'accounts:account-login' %}" class="navLin">LOGIN</a></li>
             <li><a href="{% url 'accounts:joins' %}" class="navLin">REGISTER</a></li>

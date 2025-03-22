@@ -82,13 +82,16 @@ def checkout(request):
 from django.shortcuts import get_object_or_404
 
 
+
 def layout(request):
+    print("In layout")
+    print("news table")
     page_instance = Page.objects.get(page_name='Home')
     description = Description.objects.filter(page = page_instance)
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
-    print(news)
+  
    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
@@ -118,6 +121,46 @@ def layout(request):
             'subservice':subservice
         }
     return render(request, "main/home_templates/home.html",context)
+
+
+
+
+# def layout(request):
+#     page_instance = Page.objects.get(page_name='Home')
+#     description = Description.objects.filter(page = page_instance)
+#     service = Service.objects.all()
+#     subservice = SubService.objects.all()
+#     news = News.objects.all().order_by('-published_date')[:3] 
+#     print(news)
+   
+#     if request.method == "POST":
+#         form = ContactForm(request.POST, request.FILES)
+#         message=f'Thank You, we will get back to you within 48 hours.'
+#         context={
+#             "message":message,
+#             # "link":SITEURL+'/management/companyagenda'
+#         }
+#         if form.is_valid():
+#             # form.save()
+#             instance=form.save(commit=False)
+#             # instance.client_name='admin',
+#             instance.task='NA',
+#             instance.plan='NA',
+#             instance.trained_by=request.user
+#             instance.save()
+#             # return redirect("management:assessment")
+#             return render(request, "main/errors/generalerrors.html",context)
+#     else:
+#         form = ContactForm()
+#     context={
+#             # "posts":posts,
+#             "form": form,
+#             'description': description,
+#             'service': service,
+#             'news':news,
+#             'subservice':subservice
+#         }
+#     return render(request, "main/home_templates/home.html",context)
 
 def History(request):
     page_instance = Page.objects.get(page_name='About')

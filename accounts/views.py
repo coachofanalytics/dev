@@ -192,11 +192,12 @@ def login_view(request):
                 print('User authenticated')
                 login(request, user)
                 
-                membership = get_object_or_404(Membership, member=user)
-                if membership.status == 'NOT_PAID':
-                    return redirect('finance:pay')
-                else:
-                    return redirect('https://dc48k.org/')
+                # membership = get_object_or_404(Membership, member=user)
+                # if membership.status == 'NOT_PAID':
+                #     return redirect('finance:pay')
+                # else:
+                #    return redirect('main:layout')
+                return redirect('main:layout')
             else:
                 print('Authentication failed')
                 msg = 'Invalid credentials'
