@@ -2,7 +2,7 @@ import secrets
 import uuid
 import string, random
 from django.core.paginator import Paginator
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login,logout
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.contrib import messages
@@ -68,6 +68,8 @@ def generate_random_password(length=12):
     password = ''.join(secrets.choice(characters) for _ in range(length))
     return password
 
+from django.contrib.auth import login
+
 def join(request):
     form = UserForm()  # Define form variable with initial value
     if request.method == "POST":
@@ -94,41 +96,84 @@ def join(request):
                 elif category == CategoryChoices.ROYAL_ORGANIZATION:
                     form.instance.is_royal_organization = True
 
-                # Generate a random password
-                password = generate_random_password()
-                print(password)
-
-                # Save the password and username
-                token = str(uuid.uuid4())
-
-                user = form.save(commit=False)
-                user.verification_token = token
-                user.set_password(password) 
-                user.is_active = False  # Set the generated password
-                user.save()
-                print(category)
-                fee_kes = CATEGORY_FEES.get(category, 0.0)
+                user = form.save()
                 
-                fee_usd = fee_kes / get_exchange_rate('USD', 'KES')  # Convert to USD
-                membership = Membership.objects.create(
-                    member=user,
-                    fee=fee_usd,
-                    currency="USD",  # Store in USD
-                    status='NOT_PAID',
-                )
-                print(f"Membership created for user {user.username} with fee {fee_usd} USD")
+                # Provide the backend parameter when logging in the user
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-                print(f"User {user.username} created and saved. Account is inactive until verification.")
-
-                send_verification_email(user, password=password)
-
-                
-                return redirect('accounts:email-verification-notice', user.id)
+                return redirect('main:layout')
             else:
                 msg = "Error validating form"
                 print(msg)
 
     return render(request, "accounts/registration/DC48K/joins.html", {"form": form})
+
+
+
+# def join(request):
+#     form = UserForm()  # Define form variable with initial value
+#     if request.method == "POST":
+#         previous_user = CustomerUser.objects.filter(email=request.POST.get("email"))
+#         if previous_user.exists():
+#             messages.success(request, "User already exists with this email")
+#             return redirect("/password-reset")
+#         else:
+#             form = UserForm(request.POST)  # Assign form with request.POST data
+#             if form.is_valid():
+#                 # Check the selected category and update the form instance accordingly
+#                 category = form.cleaned_data.get("category")
+                
+#                 if category == CategoryChoices.ORDINARY_MEMBER:
+#                     form.instance.is_ordinary_member = True
+#                 elif category == CategoryChoices.ACTIVE_MEMBER:
+#                     form.instance.is_active_member = True
+#                 elif category == CategoryChoices.EXECUTIVE_MEMBER:
+#                     form.instance.is_executive_member = True
+#                 elif category == CategoryChoices.FBO_ORDINARY:
+#                     form.instance.is_fbo_ordinary = True
+#                 elif category == CategoryChoices.ACTIVE_ORGANIZATION:
+#                     form.instance.is_active_organization = True
+#                 elif category == CategoryChoices.ROYAL_ORGANIZATION:
+#                     form.instance.is_royal_organization = True
+
+#                 # Generate a random password
+#                 password = generate_random_password()
+#                 print(password)
+
+#                 # Save the password and username
+#                 token = str(uuid.uuid4())
+
+#                 user = form.save(commit=False)
+#                 user.verification_token = token
+#                 user.set_password(password) 
+#                 user.is_active = False  # Set the generated password
+#                 user.save()
+#                 print(category)
+#                 fee_kes = CATEGORY_FEES.get(category, 0.0)
+                
+#                 fee_usd = fee_kes / get_exchange_rate('USD', 'KES')  # Convert to USD
+#                 membership = Membership.objects.create(
+#                     member=user,
+#                     fee=fee_usd,
+#                     currency="USD",  # Store in USD
+#                     status='NOT_PAID',
+#                 )
+#                 print(f"Membership created for user {user.username} with fee {fee_usd} USD")
+
+#                 print(f"User {user.username} created and saved. Account is inactive until verification.")
+
+#                 send_verification_email(user, password=password)
+
+                
+#                 return redirect('accounts:email-verification-notice', user.id)
+#             else:
+#                 msg = "Error validating form"
+#                 print(msg)
+
+#     return render(request, "accounts/registration/DC48K/joins.html", {"form": form})
+
+
+
 
 def email_verification_notice(request, user_id):
     user = get_object_or_404(CustomerUser, id=user_id)
@@ -209,6 +254,9 @@ def login_view(request):
     return render(request, "accounts/registration/DC48K/login_page.html", {"form": form, "msg": msg}  )
 
 
+def custom_logout(request):
+    logout(request)  # Log out the user
+    return redirect('accounts:account-login')  # Redirect to the login page
 
 @login_required
 def userlist(request):

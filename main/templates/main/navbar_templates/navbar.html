@@ -200,7 +200,7 @@
             </li>
             {% if user.is_authenticated %}
             <li><a href="#" class="navLin">GALLERY</a></li>
-            <li><a href="{% url 'account-logout' %}" class="navLin">LOGOUT</a></li>
+            <li><a href="{% url 'accounts:account-logout' %}" class="navLin">LOGOUT</a></li>
             {% else %}
             <li><a href="{% url 'accounts:account-login' %}" class="navLin">LOGIN</a></li>
             <li><a href="{% url 'accounts:joins' %}" class="navLin">REGISTER</a></li>
