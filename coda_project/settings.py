@@ -5,7 +5,7 @@ Django settings for coda_project project.
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = 'django-insecure-o0nex4pd=)4xw07ww5w5a_gwz1pvavrs=vmd8!5^xg1f5ol*$!'#os.environ.get('SECRET_KEY')
 ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "accounts.CustomerUser"
 AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend"), ("django.contrib.auth.backends.ModelBackend"), ("allauth.account.auth_backends.AuthenticationBackend"))
@@ -88,34 +88,34 @@ TEMPLATES = [
 ]
 
 #  ==============DBFUNCTIONS=====================================
-def dba_values():
-    if os.environ.get('ENVIRONMENT') == 'production':
-        host = os.environ.get('HEROKU_PROD_HOST')
-        dbname = os.environ.get('HEROKU_PROD_NAME')
-        user = os.environ.get('HEROKU_PROD_USER')
-        password = os.environ.get('HEROKU_PROD_PASS')
-    elif os.environ.get('ENVIRONMENT') == 'testing':
-        # In Heroku/Postgres it is Heroku_UAT
-        host = os.environ.get('DB_HOST')
-        dbname = os.environ.get('DB_NAME')
-        user = os.environ.get('DB_USER')
-        password = os.environ.get('DB_PASSWORD')
-    else:
-        host = "localhost"
-        dbname = "CODA_PRAC"
-        user = "postgres"
-        password = "postgres" #"*******"
+# def dba_values():
+#     if os.environ.get('ENVIRONMENT') == 'production':
+#         host = os.environ.get('HEROKU_PROD_HOST')
+#         dbname = os.environ.get('HEROKU_PROD_NAME')
+#         user = os.environ.get('HEROKU_PROD_USER')
+#         password = os.environ.get('HEROKU_PROD_PASS')
+#     elif os.environ.get('ENVIRONMENT') == 'testing':
+#         # In Heroku/Postgres it is Heroku_UAT
+#         host = os.environ.get('DB_HOST')
+#         dbname = os.environ.get('DB_NAME')
+#         user = os.environ.get('DB_USER')
+#         password = os.environ.get('DB_PASSWORD')
+#     else:
+#         host = "localhost"
+#         dbname = "CODA_PRAC"
+#         user = "postgres"
+#         password = "postgres" #"*******"
         
-        # host = os.environ.get('POSTGRES_DB_NAME')
-        # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
-        # user = os.environ.get('POSTGRESDB_USER')
-        # password = os.environ.get('POSTGRESSPASS') 
-    return host,dbname,user,password  
+#         # host = os.environ.get('POSTGRES_DB_NAME')
+#         # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
+#         # user = os.environ.get('POSTGRESDB_USER')
+#         # password = os.environ.get('POSTGRESSPASS') 
+#     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
 import dj_database_url
 
-host,dbname,user,password=dba_values()
+#host,dbname,user,password=dba_values()
 
 
 
@@ -125,10 +125,10 @@ host,dbname,user,password=dba_values()
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": dbname,
-        "USER":user,
-        "PASSWORD":password,
-        "HOST": host
+        "NAME": 'CODA_PRAC',
+        "USER":'postgres',
+        "PASSWORD":'Y71922:g',
+        "HOST": 'localhost'
     }
 }
 '''=========== Heroku DB ================'''

@@ -8,7 +8,8 @@ from django.utils.text import slugify
 from django import template
 from django.apps import apps
 from django.db.models import Q
-from langchain.agents import create_sql_agent
+#from langchain.agents import create_sql_agent
+from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain.agents.agent_types import AgentType
 from langchain_openai import ChatOpenAI, OpenAI
