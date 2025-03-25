@@ -210,3 +210,17 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+
+
+from django.views.generic import ListView
+from .models import Gallery_image
+
+class GalleryImageListView(ListView):
+    model = Gallery_image
+    template_name = 'gallery/gallery_image_list.html'  # Specify the template to render
+    context_object_name = 'images'  # This will be the name of the context variable in the template
+    paginate_by = 10  # Optional: Paginate the results (10 items per page)
+
+
+
+
