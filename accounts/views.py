@@ -2,14 +2,14 @@ import secrets
 import uuid
 import string, random
 from django.core.paginator import Paginator
-from django.contrib.auth import authenticate, login,logout
+from django.contrib.auth import authenticate, login,logout, get_backends
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from accounts.choices import CategoryChoices
-from accounts.utils import CATEGORY_FEES, convert_kes_to_usd, get_exchange_rate, send_verification_email
+from accounts.utils import CATEGORY_FEES, convert_kes_to_usd, get_exchange_rate, send_verification_email, generate_random_password
 from coda_project import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -37,7 +37,9 @@ from django.contrib.auth import authenticate, login, get_user_model
 
 # @allowed_users(allowed_roles=['admin'])
 def home(request):
-    return render(request, "main/home_templates/layout.html")
+    password = generate_random_password()
+    print(password)
+    return render(request, "main/home_templates/home.html")
 
 
 # @allowed_users(allowed_roles=['admin'])
@@ -46,7 +48,24 @@ def thank(request):
 
 
 # ---------------ACCOUNTS VIEWS----------------------
+#@login_required
+def security_verification(request):
+    subject = "One time verification code to view passwords"
+    # otp = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+    password,otp=generate_random_password(8)
+    print("This is Registration")
+    print(password, otp)
+    request.session["security_otp"] = otp
+    request.session["siteurl"] = settings.SITEURL
+    
+    # Pass the OTP directly to the template
+    context = {'otp': otp, 'subject': subject}
+    return render(request, "accounts/admin/email_verification.html", context)
+
+
+
 def register(request):
+
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -61,14 +80,6 @@ class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
     template_name = 'accounts/registration/DC48K/logins.html'
 
-
-# Function to generate a random password
-def generate_random_password(length=12):
-    characters = string.ascii_letters + string.digits + "!@#$%&"
-    password = ''.join(secrets.choice(characters) for _ in range(length))
-    return password
-
-from django.contrib.auth import login
 
 def join(request):
     form = UserForm()  # Define form variable with initial value
@@ -204,8 +215,12 @@ def verify_email(request, token):
     except CustomerUser.DoesNotExist:
         # If the user doesn't exist, render the failure message
         return render(request, "accounts/registration/email_verification_notice.html", {"verification_status": "failed"})
+    
+
+    
 
 def login_view(request):
+    print("This is login updated")
     form = LoginForm(request.POST or None)
     msg = None
 
@@ -215,43 +230,133 @@ def login_view(request):
             msg = 'Error with social login. Check your credentials or try to sign up manually.'
 
     if request.method == "POST":
-        if form.is_valid():
-            print('Form is valid')
-            request.session["siteurl"] = settings.SITEURL
-            username_or_email = form.cleaned_data.get("enter_your_username_or_email")
-            enter_your_password = form.cleaned_data.get("enter_your_password")
-            print(f'Username or Email: {username_or_email}')
 
-            # Try to get the user by username
-            user = authenticate(request, username=username_or_email, password=enter_your_password)
-            if user is None:
-                # If authentication with username failed, try email
-                UserModel = get_user_model()
-                try:
-                    user_obj = UserModel.objects.get(email__iexact=username_or_email)
-                    user = authenticate(request, username=user_obj.username, password=enter_your_password)
-                except UserModel.DoesNotExist:
-                    pass
+        try:
 
-            if user:
-                print('User authenticated')
-                login(request, user)
-                
-                # membership = get_object_or_404(Membership, member=user)
-                # if membership.status == 'NOT_PAID':
-                #     return redirect('finance:pay')
-                # else:
-                #    return redirect('main:layout')
-                return redirect('main:layout')
-            else:
-                print('Authentication failed')
-                msg = 'Invalid credentials'
+            user = None  # Initialize user variable
+
+            # Handle One-Time Code (OTP) Login
+            otp_entered = request.POST.get('otp')
+            print("User entered", otp_entered)
+            stored_otp = request.session.get("security_otp")  # Get OTP stored in session
+            username_or_email = request.POST.get("email")
+            print("User entered", username_or_email)
+
+            if otp_entered == stored_otp and username_or_email:
+                print("otp started")
+                user = CustomerUser.objects.filter(email=username_or_email).first()
+                print(user)
+                if user:
+                    print("check user")
+                    backend = get_backends()[0]
+                    print(backend)
+                    user.backend = f"{backend.__module__}.{backend.__class__.__name__}"
+                    print("check user_1")
+                    login(request, user)
+                    print("check user_2")
+
+                    # Redirect based on user category
+                    #return redirect(get_redirect_url(user))
+                    return redirect("main:layout")
+
+            elif form.is_valid():
+                print('Form is valid')
+                request.session["siteurl"] = settings.SITEURL
+                username_or_email = form.cleaned_data.get("enter_your_username_or_email")
+                enter_your_password = form.cleaned_data.get("enter_your_password")
+                print(f'Username or Email: {username_or_email}')
+
+                # Try to get the user by username
+                user = authenticate(request, username=username_or_email, password=enter_your_password)
+                if user is None:
+                    # If authentication with username failed, try email
+                    UserModel = get_user_model()
+                    try:
+                        user_obj = UserModel.objects.get(email__iexact=username_or_email)
+                        user = authenticate(request, username=user_obj.username, password=enter_your_password)
+                    except UserModel.DoesNotExist:
+                        pass
+
+                if user:
+                    print('User authenticated')
+                    login(request, user)
+                    
+                    # membership = get_object_or_404(Membership, member=user)
+                    # if membership.status == 'NOT_PAID':
+                    #     return redirect('finance:pay')
+                    # else:
+                    #    return redirect('main:layout')
+                    return redirect('main:layout')
+                else:
+                    print('Authentication failed')
+                    msg = 'Invalid credentials'
+
+        except CustomerUser.DoesNotExist:
+            msg = "User does not exist. Please check your email or sign up."
+            logger.warning(f"Login failed: User {username_or_email} does not exist.")
+        
+        except Exception as e:
+            msg = "An unexpected error occurred. Please try again later."
+            logger.error(f"Unexpected login error: {str(e)}")
+
         else:
             print('Form is invalid')
             msg = 'Error validating the form'
 
+    
+
             
     return render(request, "accounts/registration/DC48K/login_page.html", {"form": form, "msg": msg}  )
+
+
+# def login_view(request):
+#     print("This is login")
+#     form = LoginForm(request.POST or None)
+#     msg = None
+
+#     if request.method == 'GET':
+#         sociallogin = request.session.pop("socialaccount_sociallogin", None)
+#         if sociallogin is not None:
+#             msg = 'Error with social login. Check your credentials or try to sign up manually.'
+
+#     if request.method == "POST":
+#         if form.is_valid():
+#             print('Form is valid')
+#             request.session["siteurl"] = settings.SITEURL
+#             username_or_email = form.cleaned_data.get("enter_your_username_or_email")
+#             enter_your_password = form.cleaned_data.get("enter_your_password")
+#             print(f'Username or Email: {username_or_email}')
+
+#             # Try to get the user by username
+#             user = authenticate(request, username=username_or_email, password=enter_your_password)
+#             if user is None:
+#                 # If authentication with username failed, try email
+#                 UserModel = get_user_model()
+#                 try:
+#                     user_obj = UserModel.objects.get(email__iexact=username_or_email)
+#                     user = authenticate(request, username=user_obj.username, password=enter_your_password)
+#                 except UserModel.DoesNotExist:
+#                     pass
+
+#             if user:
+#                 print('User authenticated')
+#                 login(request, user)
+                
+#                 # membership = get_object_or_404(Membership, member=user)
+#                 # if membership.status == 'NOT_PAID':
+#                 #     return redirect('finance:pay')
+#                 # else:
+#                 #    return redirect('main:layout')
+#                 return redirect('main:layout')
+#             else:
+#                 print('Authentication failed')
+#                 msg = 'Invalid credentials'
+#         else:
+#             print('Form is invalid')
+#             msg = 'Error validating the form'
+
+            
+#     return render(request, "accounts/registration/DC48K/login_page.html", {"form": form, "msg": msg}  )
 
 
 def custom_logout(request):

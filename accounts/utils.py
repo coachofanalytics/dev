@@ -1,6 +1,5 @@
 import os
 from django.urls import reverse, reverse_lazy
-from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from datetime import date
@@ -10,12 +9,30 @@ from accounts.choices import CategoryChoices
 from coda_project import settings
 from finance.utils import DYCDefaultPayments
 
+import logging
+import string, random,secrets,time
+from django.db.models import Sum, F,Q, ExpressionWrapper, fields
+from decimal import Decimal
+from django.core.mail.backends.smtp import EmailBackend
+#from accounts.choices import CategoryChoices,SubCategoryChoices
 
-from django.contrib.auth.decorators import login_required
 
 # def get_default_sender():
 #     # Custom logic to determine the default sender
 #     return User.objects.get(username="default_sender")
+
+
+
+
+
+logger = logging.getLogger(__name__)
+
+def generate_random_password(length=12):
+    otp = "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
+    characters = string.ascii_letters + string.digits + "!@#$%&"
+    password = ''.join(secrets.choice(characters) for _ in range(length))
+    return password,otp
+
 
 @login_required
 def user_categories(user,UserCategory):
