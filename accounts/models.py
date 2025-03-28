@@ -140,3 +140,15 @@ class Department(models.Model):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
         return self.name    
+    
+
+
+
+    class MeetingAttendace(models.Model):
+        meeting_id = models.AutoField(primary_key=True)
+        meeting_date = models.DateField(null=False, blank=False) 
+        member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='attendance')
+        is_attendee = models.BooleanField(default=False)
+
+        def __str__(self):
+            return f" Meeting of {self.meeting_date}"
