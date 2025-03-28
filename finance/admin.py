@@ -20,12 +20,12 @@ class Payment_HistoryAdmin(admin.ModelAdmin):
         "contract_submitted_date",
     )
 
-admin.site.register(Transaction)
-admin.site.register(Payment_History, Payment_HistoryAdmin)
+# admin.site.register(Transaction)
+# admin.site.register(Payment_History, Payment_HistoryAdmin)
 
-admin.site.register(Payment_Information)
-admin.site.register(Default_Payment_Fees)
-admin.site.register(CodaBudget)
-admin.site.register(Budget)
-admin.site.register(BudgetCategory)
-admin.site.register(BudgetSubCategory)
+# admin.site.register(Payment_Information)
+# admin.site.register(Default_Payment_Fees)
+# admin.site.register(CodaBudget)
+# admin.site.register(Budget)
+# admin.site.register(BudgetCategory)
+# admin.site.register(BudgetSubCategory)
