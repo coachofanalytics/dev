@@ -132,7 +132,7 @@ oauthlib==3.2.2
 packaging==23.2
 # pandas==1.5.3
 pdfkit==1.0.0
-# Pillow==9.4.0
+Pillow==9.4.0
 prompt-toolkit==3.0.37
 proto-plus==1.22.3
 protobuf==4.22.0
