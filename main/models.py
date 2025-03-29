@@ -167,7 +167,11 @@ class Testimonial(models.Model):
         return self.name
 
 
-
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+    email = models.EmailField(null=False, blank=False)
+    message = models.TextField(null=False, blank=False)
+    submitted_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when created
 
 
 
