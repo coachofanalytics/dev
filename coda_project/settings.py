@@ -5,8 +5,8 @@ Django settings for coda_project project.
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SECRET_KEY = 'django-insecure-o0nex4pd=)4xw07ww5w5a_gwz1pvavrs=vmd8!5^xg1f5ol*$!'#os.environ.get('SECRET_KEY')
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = os.environ.get('SECRET_KEY')
+LLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "accounts.CustomerUser"
 AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend"), ("django.contrib.auth.backends.ModelBackend"), ("allauth.account.auth_backends.AuthenticationBackend"))
 
