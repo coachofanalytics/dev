@@ -5,8 +5,8 @@
         <h2>Email Verification</h2>
 
         <!-- <p> Check your Email and Otp here in order to view passwords.</p> -->
-        <h1>{{ subject }}</h1>
-        <p>Your one-time verification code is: <strong>{{ otp }}</strong></p>
+        {% comment %} <h1>{{ subject }}</h1> {% endcomment %}
+        <p>{{ subject }}<strong>{{ otp }}</strong></p>
         <p>Please use this code to complete your verification.</p>
         
         <p style="color:red">

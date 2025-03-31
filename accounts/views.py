@@ -2,7 +2,7 @@ import secrets
 import uuid
 import string, random
 from django.core.paginator import Paginator
-from django.contrib.auth import authenticate, login,logout, get_backends
+from django.contrib.auth import authenticate, login,logout, get_user_model, get_backends
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.contrib import messages
@@ -28,7 +28,8 @@ from .models import CustomerUser, Membership
 from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, get_user_model
+import logging
+logger = logging.getLogger(__name__)
 # Create your views here..
 
 
@@ -50,7 +51,7 @@ def thank(request):
 # ---------------ACCOUNTS VIEWS----------------------
 #@login_required
 def security_verification(request):
-    subject = "One time verification code to view passwords"
+    subject = "Your one-time verification code is: "
     # otp = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
     password,otp=generate_random_password(8)
     print("This is Registration")
@@ -220,7 +221,6 @@ def verify_email(request, token):
     
 
 def login_view(request):
-    print("This is login updated")
     form = LoginForm(request.POST or None)
     msg = None
 
@@ -237,34 +237,32 @@ def login_view(request):
 
             # Handle One-Time Code (OTP) Login
             otp_entered = request.POST.get('otp')
-            print("User entered", otp_entered)
             stored_otp = request.session.get("security_otp")  # Get OTP stored in session
             username_or_email = request.POST.get("email")
-            print("User entered", username_or_email)
 
             if otp_entered == stored_otp and username_or_email:
-                print("otp started")
                 user = CustomerUser.objects.filter(email=username_or_email).first()
-                print(user)
-                if user:
-                    print("check user")
-                    backend = get_backends()[0]
-                    print(backend)
-                    user.backend = f"{backend.__module__}.{backend.__class__.__name__}"
-                    print("check user_1")
-                    login(request, user)
-                    print("check user_2")
+                if user is None:
+                    print("The provided email is Invalid")
+                else:
+                    if user.is_active:
+                        backend = get_backends()[0]
+                        user.backend = f"{backend.__module__}.{backend.__class__.__name__}"
+                        login(request, user)
+                        if user.is_authenticated:
 
-                    # Redirect based on user category
-                    #return redirect(get_redirect_url(user))
-                    return redirect("main:layout")
+                        # Redirect based on user category
+                        #return redirect(get_redirect_url(user))
+                            return redirect("main:layout")
+                    else:
+                        msg = "Authentication failed"                  
+                        print(msg)
+                        return render(request, "main/home_templates/home.html",{'msg': msg})
 
             elif form.is_valid():
-                print('Form is valid')
                 request.session["siteurl"] = settings.SITEURL
                 username_or_email = form.cleaned_data.get("enter_your_username_or_email")
                 enter_your_password = form.cleaned_data.get("enter_your_password")
-                print(f'Username or Email: {username_or_email}')
 
                 # Try to get the user by username
                 user = authenticate(request, username=username_or_email, password=enter_your_password)
@@ -302,61 +300,10 @@ def login_view(request):
         else:
             print('Form is invalid')
             msg = 'Error validating the form'
-
-    
-
-            
+   
     return render(request, "accounts/registration/DC48K/login_page.html", {"form": form, "msg": msg}  )
 
 
-# def login_view(request):
-#     print("This is login")
-#     form = LoginForm(request.POST or None)
-#     msg = None
-
-#     if request.method == 'GET':
-#         sociallogin = request.session.pop("socialaccount_sociallogin", None)
-#         if sociallogin is not None:
-#             msg = 'Error with social login. Check your credentials or try to sign up manually.'
-
-#     if request.method == "POST":
-#         if form.is_valid():
-#             print('Form is valid')
-#             request.session["siteurl"] = settings.SITEURL
-#             username_or_email = form.cleaned_data.get("enter_your_username_or_email")
-#             enter_your_password = form.cleaned_data.get("enter_your_password")
-#             print(f'Username or Email: {username_or_email}')
-
-#             # Try to get the user by username
-#             user = authenticate(request, username=username_or_email, password=enter_your_password)
-#             if user is None:
-#                 # If authentication with username failed, try email
-#                 UserModel = get_user_model()
-#                 try:
-#                     user_obj = UserModel.objects.get(email__iexact=username_or_email)
-#                     user = authenticate(request, username=user_obj.username, password=enter_your_password)
-#                 except UserModel.DoesNotExist:
-#                     pass
-
-#             if user:
-#                 print('User authenticated')
-#                 login(request, user)
-                
-#                 # membership = get_object_or_404(Membership, member=user)
-#                 # if membership.status == 'NOT_PAID':
-#                 #     return redirect('finance:pay')
-#                 # else:
-#                 #    return redirect('main:layout')
-#                 return redirect('main:layout')
-#             else:
-#                 print('Authentication failed')
-#                 msg = 'Invalid credentials'
-#         else:
-#             print('Form is invalid')
-#             msg = 'Error validating the form'
-
-            
-#     return render(request, "accounts/registration/DC48K/login_page.html", {"form": form, "msg": msg}  )
 
 
 def custom_logout(request):

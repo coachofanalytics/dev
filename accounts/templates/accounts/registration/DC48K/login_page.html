@@ -143,9 +143,9 @@
             <div class="button-row">
               <button type="submit" class="btn btn-primary" style="color: black; background-color: #03b1af;border: NONE;">LOG IN</button>
               <p class="p-or" style="color: white;margin-left: 20px;margin-right: 20px;margin-top: 14px;">or</p>
-              <a id="google-signin-link" href="" style="color: black;" type='button' class="loginBtn loginBtn--google">
+              {% comment %} <a id="google-signin-link" href="" style="color: black;" type='button' class="loginBtn loginBtn--google">
 								Login with Google
-							</a>
+							</a> {% endcomment %}
               <p class="p-or" style="color: white;margin-left: 20px;margin-right: 20px;margin-top: 14px;">or</p>
               <a id="otp" href="{% url 'accounts:security' %}" >
 								Login with One Time Code
