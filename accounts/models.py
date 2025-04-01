@@ -32,6 +32,7 @@ class CustomerUser(AbstractUser):
     # added this column here
     is_admin = models.BooleanField("Is admin", default=False)
     is_member = models.BooleanField("Is Member", default=False)
+    # is_active = models.BooleanField('Is Active', default=True)
     email_verified = models.BooleanField(default=False)
     verification_token = models.UUIDField( unique=True, null=True, blank=True)
     class Meta:
@@ -144,11 +145,12 @@ class Department(models.Model):
 
 
 
-    class MeetingAttendace(models.Model):
-        meeting_id = models.AutoField(primary_key=True)
-        meeting_date = models.DateField(null=False, blank=False) 
-        member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='attendance')
-        is_attendee = models.BooleanField(default=False)
+class MeetingAttendace(models.Model):
+    meeting_id = models.AutoField(primary_key=True)
+    meeting_date = models.DateField(null=False, blank=False) 
+    member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='attendance')
+    is_attendee = models.BooleanField(default=False)
 
-        def __str__(self):
-            return f" Meeting of {self.meeting_date}"
+    def __str__(self):
+        return f" Meeting of {self.meeting_date}"
+        

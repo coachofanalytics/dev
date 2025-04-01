@@ -95,25 +95,45 @@ def join(request):
                 # Check the selected category and update the form instance accordingly
                 category = form.cleaned_data.get("category")
                 
-                if category == CategoryChoices.ORDINARY_MEMBER:
-                    form.instance.is_ordinary_member = True
-                elif category == CategoryChoices.ACTIVE_MEMBER:
-                    form.instance.is_active_member = True
-                elif category == CategoryChoices.EXECUTIVE_MEMBER:
-                    form.instance.is_executive_member = True
-                elif category == CategoryChoices.FBO_ORDINARY:
-                    form.instance.is_fbo_ordinary = True
-                elif category == CategoryChoices.ACTIVE_ORGANIZATION:
-                    form.instance.is_active_organization = True
-                elif category == CategoryChoices.ROYAL_ORGANIZATION:
-                    form.instance.is_royal_organization = True
+                print(category)
+
+              
+
+
+                # if category == CategoryChoices.ORDINARY_MEMBERSHIP:
+                #     form.instance.is_ORDINARY_MEMBERSHIP = True
+                # elif category == CategoryChoices.LEADERS_MEMBERSHIP:
+                #     form.instance.is_active_member = True
+                # elif category == CategoryChoices.ORGANIZATIONAL_MEMBERSHIP:
+                #     form.instance.is_executive_member = True
+                # elif category == CategoryChoices.FBO_ORDINARY:
+                #     form.instance.is_fbo_ordinary = True
+                # elif category == CategoryChoices.ACTIVE_ORGANIZATION:
+                #     form.instance.is_active_organization = True
+                # elif category == CategoryChoices.ROYAL_ORGANIZATION:
+                #     form.instance.is_royal_organization = True                
+
+
+                user = form.save(commit=False)  # Don't save yet
+                user.is_active = True  # Set is_active explicitly
 
                 user = form.save()
                 
                 # Provide the backend parameter when logging in the user
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-                return redirect('main:layout')
+                if category == CategoryChoices.ORDINARY_MEMBERSHIP:
+                    return redirect('main:layout')
+                
+                elif category == CategoryChoices.LEADERS_MEMBERSHIP:
+                    #return redirect('finance:pay')
+                    return redirect('main:layout')
+                   
+                elif category == CategoryChoices.ORGANIZATIONAL_MEMBERSHIP:
+                    return redirect('main:layout')
+                    
+
+                
             else:
                 msg = "Error validating form"
                 print(msg)
@@ -469,8 +489,8 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             print(selected_category)
 
             # Assign category based on your CategoryChoices
-            if selected_category == CategoryChoices.ORDINARY_MEMBER:
-                new_user.is_ordinary_member = True
+            if selected_category == CategoryChoices.ORDINARY_MEMBERSHIP:
+                new_user.is_ORDINARY_MEMBERSHIPSHIPSHIPSHIPSHIPSHIPSHIPSHIP = True
             elif selected_category == CategoryChoices.ACTIVE_MEMBER:
                 new_user.is_active_member = True
             elif selected_category == CategoryChoices.EXECUTIVE_MEMBER:

@@ -117,13 +117,13 @@ def dyc_compute_default_fee(category,subcategory,dyc_default_amounts, Default_Pa
     return default_fee
 
 CATEGORY_FEES = {
-    CategoryChoices.ORDINARY_MEMBER: 0.0,
-    CategoryChoices.ACTIVE_MEMBER: 1000.0,
-    CategoryChoices.EXECUTIVE_MEMBER: 10000.0,
-    CategoryChoices.FBO_ORDINARY: 0.0,
-    CategoryChoices.ACTIVE_ORGANIZATION: 10000.0,
-    CategoryChoices.ROYAL_ORGANIZATION: 20000.0,
-}
+    CategoryChoices.ORDINARY_MEMBERSHIP: 0.0,
+    CategoryChoices.LEADERS_MEMBERSHIP: 1000.0,
+    CategoryChoices.ORGANIZATIONAL_MEMBERSHIP: 10000.0,
+#     CategoryChoices.FBO_ORDINARY: 0.0,
+#     CategoryChoices.ACTIVE_ORGANIZATION: 10000.0,
+#     CategoryChoices.ROYAL_ORGANIZATION: 20000.0,
+ }
 
 def convert_kes_to_usd(amount_kes):
     """

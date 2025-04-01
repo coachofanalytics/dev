@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from accounts.models import CustomerUser
 
-# from tableauhyperapi import DatabaseName
+#from tableauhyperapi import DatabaseName
 
 User = get_user_model()
 # Create your models here.
@@ -92,7 +92,7 @@ class SubService(models.Model):
     def __str__(self):
         return f"{self.title} - {self.service}"
     
-    
+
 class News(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
