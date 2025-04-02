@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     "django_celery_results",
     #'dbbackup',
     # "django_extensions",
-    "django_crontab",
+    # "django_crontab",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -125,9 +125,9 @@ def dba_values():
         password = os.environ.get('HEROKU_DYCDEV_PASS')
     else:
         host = 'localhost'
-        dbname = "DYC_DEV" #os.environ.get('POSTGRES_DB_NAME') 
+        dbname = "CODA_PRAC" #os.environ.get('POSTGRES_DB_NAME') 
         user = "postgres" #os.environ.get('POSTGRESDB_USER')
-        password ="MANAGER2030" #os.environ.get('POSTGRESSPASS') 
+        password ="Ajtgm258*" #os.environ.get('POSTGRESSPASS') 
     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
@@ -137,22 +137,22 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": dbname,
-#         "USER":user,
-#         "PASSWORD":password,
-#         "HOST": host
-#     }
-# }
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": dbname,
+        "USER":user,
+        "PASSWORD":password,
+        "HOST": host
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+#     }
+# }
 
 # db_from_env = dj_database_url.config(conn_max_age=600)
 # DATABASES["default"].update(db_from_env)
@@ -298,3 +298,31 @@ elif os.environ.get('ENVIRONMENT') == 'testing':
    SITEURL = "https://codamakutano.herokuapp.com"
 else:
     SITEURL = "http://localhost:8000"
+
+
+SITE_ID = 1
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = 'accounts.views.CustomSocialAccountAdapter'
+SOCIALACCOUNT_PROVIDERS = {
+"google": {
+"SCOPE": [
+"profile",
+"email"
+],
+"AUTH_PARAMS": {"access_type": "online"}
+},
+"facebook": {
+"SCOPE": [
+"public_profile",
+"email"
+],
+"AUTH_PARAMS": {"access_type": "online"}
+},
+}
+
+ACCOUNT_EMAIL_VERIFICATION = 'optional' # or 'mandatory', depending on your setup
+ACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_QUERY_EMAIL = True
+
+LOGIN_REDIRECT_URL = "main:layout"
+LOGIN_URL = "main:main-layout"
