@@ -124,17 +124,19 @@ def dba_values():
         dbname = os.environ.get('HEROKU_DYCPROD_NAME')
         user = os.environ.get('HEROKU_DYCPROD_USER')
         password = os.environ.get('HEROKU_DYCPROD_PASS')
+
     elif os.environ.get('ENVIRONMENT') == 'staging':
         # In Heroku/Postgres it is Heroku_UAT
-        host = os.environ.get('HEROKU_DYCDEV_HOST')
-        dbname = os.environ.get('HEROKU_DYCDEV_NAME')
-        user = os.environ.get('HEROKU_DYCDEV_USER')
-        password = os.environ.get('HEROKU_DYCDEV_PASS')
+        host = os.environ.get('DB_NAME')
+        dbname = os.environ.get('DB_NAME')
+        user = os.environ.get('DB_USER')
+        password = os.environ.get('DB_PASSWORD')
     else:
         host = 'localhost'
         dbname = "DC48K_HK" #os.environ.get('POSTGRES_DB_NAME') 
         user = "postgres" #os.environ.get('POSTGRESDB_USER')
         password ="postgres" #os.environ.get('POSTGRESSPASS') 
+
     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
