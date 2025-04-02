@@ -3,6 +3,8 @@ from django.apps import apps
 
 
 # Create your models here.
+class Loans(models.Model):
+    pass
 
 class Loan(models.Model):
     Status_Choices = [

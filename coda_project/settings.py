@@ -123,15 +123,25 @@ import dj_database_url
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# # DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": 'CODA_PRAC',
+#         "USER":'postgres',
+#         "PASSWORD":'Y71922:g',
+#         "HOST": 'localhost'
+#     }
+# }
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": 'CODA_PRAC',
-        "USER":'postgres',
-        "PASSWORD":'Y71922:g',
-        "HOST": 'localhost'
+        "NAME": 'd2l066ajig78uh',
+        "USER":'uf4o5nponalopo',
+        "PASSWORD":'p2f315d6b9430b965799ae1813941756fa47e03c99328df5d063d7049455884a1',
+        "HOST": 'ce0lkuo944ch99.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com'
     }
 }
+
 '''=========== Heroku DB ================'''
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES["default"].update(db_from_env)

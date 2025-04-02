@@ -21,7 +21,7 @@ class CustomerUser(AbstractUser):
         ('applicant','applicant'),
         ('other','other')
     ]
-    user_id =  models.AutoField(primary_key=True) 
+    id =  models.AutoField(primary_key=True) 
     first_name = models.CharField(max_length=100, null=False)
     last_name =models.CharField(max_length=100, null=False)
     date_joined =models.DateTimeField(auto_now_add=True)
