@@ -98,3 +98,23 @@ class GalleryImage(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+
+class MembershipPlan (models. Model):
+    name = models.CharField(max_length=100)
+    price = models.CharField(max_length=50)
+
+    def _str_(self):
+        return self.name
+
+
+class Contact_Message1(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+    email = models.EmailField(null=False, blank=False)
+    message = models.TextField(null=False, blank=False)
+    submitted_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when created
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.email}"
