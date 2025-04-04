@@ -5,11 +5,13 @@ app_name = 'main'
 urlpatterns = [
     
     #==============ERRORS==============================================
+    path('', views.home_view, name='home'),
     path('Gallery_list/', views.Gallery_list, name='Gallery_list'),
     path('gallery_create/', views.gallery_create, name='gallery_create'),
-    path('Gallery_update/<int:pk>/', views.Gallery_update, name='Gallery'),
+    path('Gallery_update/<int:pk>/', views.Gallery_update, name='Gallery_update'),
     path('gallery_delete/<int:pk>/', views.gallery_delete, name='gallery_delete'),
     path('gallery_detail/<int:pk>/', views.gallery_detail, name='gallery_detail'), 
+    path('contact_message_list/', views.contact_message_list, name='contact_message_list'),
     path('team/', views.about, name='team'),
 
     #=======================SERVICES=====================================

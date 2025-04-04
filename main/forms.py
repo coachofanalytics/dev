@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm, Textarea
-from django.contrib.auth.forms import UserCreationForm
 from accounts.models import User,UserCategory
 from .models import Feedback
 from django.utils.translation import gettext_lazy as _

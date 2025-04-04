@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, Page,GalleryImage
+from .models import Assets,Description, Page,ContactMessage
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
 from main.forms import ContactForm,FeedbackForm,GalleryImageForm
@@ -32,11 +32,10 @@ def error500(request):
 #Other Error pages or no results error
 
 def template_errors(request):
-    url = request.path
+    error_code = request.META.get('HTTP_X_ERROR', 500)  # This can be a custom header
     contact = 'Please contact admin at info@codanalytics.net'
     title = ['Bad Request', 'Permission Denied', 'Page Not Found', 'System Issue']
 
-    # Map each error code to its corresponding context
     context_dict = {
         400: {'title': title[0], 'error_message': 'Kindly check your URL/link provided', 'contact_message': contact},
         403: {'title': title[1], 'error_message': 'You are not allowed to visit this page', 'contact_message': contact},
@@ -44,12 +43,10 @@ def template_errors(request):
         500: {'title': title[3], 'error_message': 'There is an issue on our end. Please try again later.', 'contact_message': contact},
     }
 
-    # Get the context based on the error code, or use a default context
-    error_code = getattr(url, 'response', None)
     context = context_dict.get(error_code, {'title': 'Error', 'error_message': 'An error has occurred', 'contact_message': contact})
-
     print(error_code)
     return render(request, 'main/errors/template_error.html', context)
+
 
 
 def general_errors(request):
@@ -67,8 +64,6 @@ def hendler403(request,exception):
 def hendler404(request,exception):
     return render(request, "main/errors/404.html")
 
-def hendler404(request,exception):
-    return render(request, "main/errors/404.html")
 
 def hendler500(request):
     return render(request, "main/errors/500.html")
@@ -292,7 +287,10 @@ def gallery_detail(request, pk):
 
 
 
-
+def contact_message_list(request):
+    info=ContactMessage.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Contactmessage_list.html",{"info":info})
 
 
 
