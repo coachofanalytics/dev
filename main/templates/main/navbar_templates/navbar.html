@@ -224,7 +224,8 @@
       </li>
       {% else %}
       <li>
-        <a href="{% url 'accounts:account-login' %}" class="navLin">LOGIN</a>
+        <a href="{% url 'accounts:security' %}" class="navLin">LOGIN</a>
+        {% comment %} <a href="{% url 'accounts:account-login' %}" class="navLin">LOGIN</a> {% endcomment %}
       </li>
       <li><a href="{% url 'accounts:joins' %}" class="navLin">REGISTER</a></li>
       {% endif %}

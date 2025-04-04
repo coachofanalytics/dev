@@ -77,6 +77,13 @@ class UserForm(forms.ModelForm):
         return username
 
 
+class OTPForm(forms.Form):
+    # username = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "form-control"}))
+    # security_code = forms.CharField(
+    #     widget=forms.OTPInput(attrs={"class": "form-control"})
+    # )
+    security_code = forms.CharField(label="OTP code")
 
 class LoginForms(forms.Form):
     # username = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))

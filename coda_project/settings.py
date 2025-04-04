@@ -131,11 +131,17 @@ def dba_values():
         dbname = os.environ.get('DB_NAME')
         user = os.environ.get('DB_USER')
         password = os.environ.get('DB_PASSWORD')
+
     else:
+        # host = os.environ.get('LOCAL_HEROKU_HOST')
+        # dbname = os.environ.get('LOCAL_HEROKU_DB_NAME') 
+        # user = os.environ.get('LOCAL_HEROKU_USER')
+        # password = os.environ.get('LOCAL_HEROKU_PASSWORD') 
+
         host = 'localhost'
-        dbname = "DC48K_HK" #os.environ.get('POSTGRES_DB_NAME') 
-        user = "postgres" #os.environ.get('POSTGRESDB_USER')
-        password ="postgres" #os.environ.get('POSTGRESSPASS') 
+        dbname = "DC48K_HK" 
+        user = "postgres" 
+        password ="postgres" 
 
     return host,dbname,user,password  
 

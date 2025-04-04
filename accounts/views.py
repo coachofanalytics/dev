@@ -25,7 +25,7 @@ from django.views.generic import (
     UpdateView,
 )
 from .models import CustomerUser, Membership
-from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
+from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm, OTPForm
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
 import logging
@@ -51,6 +51,7 @@ def thank(request):
 # ---------------ACCOUNTS VIEWS----------------------
 #@login_required
 def security_verification(request):
+    form = OTPForm(request.POST or None)
     subject = "Your one-time verification code is: "
     # otp = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
     password,otp=generate_random_password(8)
@@ -60,8 +61,12 @@ def security_verification(request):
     request.session["siteurl"] = settings.SITEURL
     
     # Pass the OTP directly to the template
-    context = {'otp': otp, 'subject': subject}
-    return render(request, "accounts/admin/email_verification.html", context)
+    context = {'otp': otp, 
+               'subject': subject,
+               "form": form
+               }
+    #return render(request, "accounts/admin/email_verification.html", context)
+    return render(request, "accounts/registration/DC48K/sign_in.html", context )
 
 
 
@@ -256,6 +261,7 @@ def login_view(request):
             user = None  # Initialize user variable
 
             # Handle One-Time Code (OTP) Login
+            # otp_entered = request.POST.get('otp')
             otp_entered = request.POST.get('otp')
             stored_otp = request.session.get("security_otp")  # Get OTP stored in session
             username_or_email = request.POST.get("email")
@@ -322,13 +328,15 @@ def login_view(request):
             msg = 'Error validating the form'
    
     return render(request, "accounts/registration/DC48K/login_page.html", {"form": form, "msg": msg}  )
+    
 
 
 
 
 def custom_logout(request):
     logout(request)  # Log out the user
-    return redirect('accounts:account-login')  # Redirect to the login page
+    return redirect('accounts:security')  # Redirect to the login page
+
 
 @login_required
 def userlist(request):
