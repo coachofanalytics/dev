@@ -16,11 +16,20 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 #print(BASE_DIR)
 
-SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
-# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = True
+
 # DEBUG = os.environ.get("DEBUG_VALUE") == "True"
+
+if os.environ.get('ENVIRONMENT') == 'production':
+    DEBUG = False
+
+elif os.environ.get('ENVIRONMENT') == 'staging':
+    DEBUG = False
+
+else:
+    DEBUG = True
+
 
 SECURE_SSL_REDIRECT = False
 
