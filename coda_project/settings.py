@@ -3,10 +3,11 @@
 Django settings for coda_project project.
 """
 import os
+from django.conf import settings
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = os.environ.get('SECRET_KEY')
-LLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "accounts.CustomerUser"
 AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend"), ("django.contrib.auth.backends.ModelBackend"), ("allauth.account.auth_backends.AuthenticationBackend"))
 
@@ -132,11 +133,22 @@ import dj_database_url
 #         "HOST": 'localhost'
 #     }
 # }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.environ.get ('DB_NAME'),
+#         "USER": os.environ.get('DB_USER'),
+#         "PASSWORD":os.environ.get('DB_PASSWORD'),
+#         "HOST": os.environ.get ('DB_HOST')
+#     }
+# }
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": 'd2l066ajig78uh',
-        "USER":'uf4o5nponalopo',
+        "USER": 'uf4o5nponalopo',
         "PASSWORD":'p2f315d6b9430b965799ae1813941756fa47e03c99328df5d063d7049455884a1',
         "HOST": 'ce0lkuo944ch99.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com'
     }
