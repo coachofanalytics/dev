@@ -20,15 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 # DEBUG = os.environ.get("DEBUG_VALUE") == "True"
-
-if os.environ.get('ENVIRONMENT') == 'production':
-    DEBUG = False
-
-elif os.environ.get('ENVIRONMENT') == 'staging':
-    DEBUG = False
-
-else:
-    DEBUG = True
+DEBUG = True
 
 
 SECURE_SSL_REDIRECT = False
