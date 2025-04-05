@@ -328,3 +328,12 @@ def ContactMessage_delete(request, pk):
         return redirect('main:contact_message_list')
     
     return render(request, 'main/snippets_templates/table/ContactMessage_delete.html', {'object': ContactMessage_instance})
+
+
+from django.shortcuts import render, get_object_or_404
+
+
+
+def ContactMessage_detail(request, pk):
+    contact_message = get_object_or_404(ContactMessage, pk=pk)
+    return render(request, 'main/snippets_templates/table/ContactMessage_detail.html', {'contact_message': contact_message})
