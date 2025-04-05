@@ -19,8 +19,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 # SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = True
-# DEBUG = os.environ.get("DEBUG_VALUE") == "True"
+
+# DEBUG Settings
+def debug_values():
+    if os.environ.get('ENVIRONMENT') == 'production':
+        debug = False
+
+    if os.environ.get('ENVIRONMENT') == 'staging':
+        debug = False
+
+    else:
+        debug = True
+
+    return debug
+
+DEBUG = debug_values()
 
 SECURE_SSL_REDIRECT = False
 
@@ -133,15 +146,18 @@ def dba_values():
         password = os.environ.get('DB_PASSWORD')
 
     else:
-        # host = os.environ.get('LOCAL_HEROKU_HOST')
-        # dbname = os.environ.get('LOCAL_HEROKU_DB_NAME') 
-        # user = os.environ.get('LOCAL_HEROKU_USER')
-        # password = os.environ.get('LOCAL_HEROKU_PASSWORD') 
+        #Test in staging database before staging deployment
+        host = os.environ.get('STG_DB_HOST')
+        dbname = os.environ.get('STG_DB_NAME') 
+        user = os.environ.get('STG_DB_USER')
+        password = os.environ.get('STG_DB_PASSWORD')
 
-        host = 'localhost'
-        dbname = "DC48K_HK" 
-        user = "postgres" 
-        password ="postgres" 
+        # #Test locally 
+        # host = os.environ.get('LOCAL_DB_HOST')
+        # dbname = os.environ.get('LOCAL_DB_NAME') 
+        # user = os.environ.get('LOCAL_DB_USER')
+        # password = os.environ.get('LOCAL_DB_PASSWORD') 
+
 
     return host,dbname,user,password  
 
