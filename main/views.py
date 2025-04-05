@@ -320,3 +320,11 @@ def Contact_Message_update(request, pk):
     return render(request, 'main/snippets_templates/table/Contact_Message_update.html', {'form': form})
 
 
+
+def ContactMessage_delete(request, pk):
+    ContactMessage_instance = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == 'POST':
+        ContactMessage_instance.delete()
+        return redirect('main:contact_message_list')
+    
+    return render(request, 'main/snippets_templates/table/ContactMessage_delete.html', {'object': ContactMessage_instance})
