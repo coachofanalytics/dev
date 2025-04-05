@@ -307,6 +307,16 @@ def contact_message_create(request):
 
 
 
-
+def Contact_Message_update(request, pk):
+    ContactMessage_instance = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == 'POST':
+        form = ContactMessage_form(request.POST, request.FILES, instance=ContactMessage_instance)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('main:contact_message_list'))
+    else:
+        form = ContactMessage_form(instance=ContactMessage_instance)
+    
+    return render(request, 'main/snippets_templates/table/Contact_Message_update.html', {'form': form})
 
 
