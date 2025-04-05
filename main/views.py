@@ -387,3 +387,7 @@ def Description_delete(request, pk):
         return redirect('main:Description_list')
     
     return render(request, 'main/snippets_templates/table/Description_delete.html', {'object': Description_instance})
+
+def Description_detail(request, pk):
+    description_ = get_object_or_404(Description_coda, pk=pk)
+    return render(request, 'main/snippets_templates/table/Description_detail.html', {'description_': description_})
