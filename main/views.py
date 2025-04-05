@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description, Page,ContactMessage, Description_coda
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
-from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form
+from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -347,7 +347,22 @@ def ContactMessage_detail(request, pk):
 
 
 
+
+
 def Description_list(request):
     info=Description_coda.objects.all()
     print("info===============================",info)
     return render(request,"main/snippets_templates/table/Description_list.html",{"info":info})
+
+
+def Description_create(request):
+    if request.method == "POST":
+        form = Description_form(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirect to a new URL after POST
+            return HttpResponseRedirect(reverse('main:Description_list')) 
+    else:
+        form = Description_form()
+
+    return render(request, 'main/snippets_templates/table/Description_create.html', {'form': form})
