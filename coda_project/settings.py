@@ -19,11 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
-<<<<<<< HEAD
-# DEBUG = os.environ.get("DEBUG_VALUE") == "True"
-DEBUG = True
-
-=======
 
 # DEBUG Settings
 def debug_values():
@@ -39,7 +34,6 @@ def debug_values():
     return debug
 
 DEBUG = debug_values()
->>>>>>> 25.04_DC48K_DEV_EM
 
 SECURE_SSL_REDIRECT = False
 
