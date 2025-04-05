@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, Page,ContactMessage
+from .models import Assets,Description, Page,ContactMessage, Description_coda
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
 from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form
@@ -344,3 +344,10 @@ from django.shortcuts import render, get_object_or_404
 def ContactMessage_detail(request, pk):
     contact_message = get_object_or_404(ContactMessage, pk=pk)
     return render(request, 'main/snippets_templates/table/ContactMessage_detail.html', {'contact_message': contact_message})
+
+
+
+def Description_list(request):
+    info=Description_coda.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Description_list.html",{"info":info})
