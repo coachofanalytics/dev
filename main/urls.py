@@ -13,6 +13,7 @@ urlpatterns = [
     path('gallery_detail/<int:pk>/', views.gallery_detail, name='gallery_detail'), 
     path('contact_message_list/', views.contact_message_list, name='contact_message_list'),
     path('team/', views.about, name='team'),
+    path('contact_message_create/', views.contact_message_create, name='contact_message_create'),
 
     #=======================SERVICES=====================================
     # path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),

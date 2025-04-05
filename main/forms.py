@@ -59,9 +59,15 @@ class FeedbackForm(forms.ModelForm):
 
 
 from django import forms
-from .models import GalleryImage  # Adjust the import according to your app structure
+from .models import GalleryImage, ContactMessage  # Adjust the import according to your app structure
 
 class GalleryImageForm(forms.ModelForm):
     class Meta:
         model = GalleryImage
+        fields = '__all__'
+
+
+class ContactMessage_form(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
         fields = '__all__'
