@@ -287,6 +287,13 @@ def gallery_detail(request, pk):
 
 
 
+
+
+
+
+
+
+
 def contact_message_list(request):
     info=ContactMessage.objects.all()
     print("info===============================",info)
