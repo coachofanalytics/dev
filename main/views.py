@@ -366,3 +366,16 @@ def Description_create(request):
         form = Description_form()
 
     return render(request, 'main/snippets_templates/table/Description_create.html', {'form': form})
+
+
+def Description_update(request, pk):
+    Description_instance = get_object_or_404(Description_coda, pk=pk)
+    if request.method == 'POST':
+        form = Description_form(request.POST, request.FILES, instance=Description_instance)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('main:Description_list'))
+    else:
+        form = Description_form(instance=Description_instance)
+    
+    return render(request, 'main/snippets_templates/table/Description_update.html', {'form': form})

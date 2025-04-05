@@ -19,6 +19,7 @@ urlpatterns = [
     path('ContactMessage_detail/<int:pk>/', views.ContactMessage_detail, name='ContactMessage_detail'),
     path('Description_list/', views.Description_list, name='Description_list'),
     path('Description_create/', views.Description_create, name='Description_create'),
+    path('Description_update/<int:pk>/', views.Description_update, name='Description_update'),
 
     #=======================SERVICES=====================================
     # path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
