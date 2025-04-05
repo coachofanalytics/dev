@@ -11,6 +11,6 @@ admin.site.register(Team)
 admin.site.register(Content)
 admin.site.register(GalleryImage)
 admin.site.register(ContactMessage)
-
+admin.site.register(Description_coda)
 
 
