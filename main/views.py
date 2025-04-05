@@ -379,3 +379,11 @@ def Description_update(request, pk):
         form = Description_form(instance=Description_instance)
     
     return render(request, 'main/snippets_templates/table/Description_update.html', {'form': form})
+
+def Description_delete(request, pk):
+    Description_instance = get_object_or_404(Description_coda, pk=pk)
+    if request.method == 'POST':
+        Description_instance.delete()
+        return redirect('main:Description_list')
+    
+    return render(request, 'main/snippets_templates/table/Description_delete.html', {'object': Description_instance})
