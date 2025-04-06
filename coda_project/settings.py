@@ -20,26 +20,59 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 
-# DEBUG Settings
-def debug_values():
+def environment_values():
     if os.environ.get('ENVIRONMENT') == 'production':
+        site_url = "https://www.diasporacounty48.org/"
+        secure_ssl_redirect = True
         debug = False
+        allowed_hosts = ["https://codadev.herokuapp.com/", "https://www.diasporacounty48.org/"] 
 
-    if os.environ.get('ENVIRONMENT') == 'staging':
+    elif os.environ.get('ENVIRONMENT') == 'staging':
+        site_url = "https://codadev.herokuapp.com/"
+        secure_ssl_redirect = True
         debug = False
+        allowed_hosts = ["https://codadev.herokuapp.com/", "https://www.diasporacounty48.org/"] 
 
     else:
+        site_url = "http://127.0.0.1:8000"
+        secure_ssl_redirect = False
+        allowed_hosts = ["*"] 
         debug = True
 
-    return debug
+    return site_url, secure_ssl_redirect, debug, allowed_hosts
 
-DEBUG = debug_values()
+site_url, secure_ssl_redirect, debug, allowed_hosts = environment_values()
 
-SECURE_SSL_REDIRECT = False
 
-ALLOWED_HOSTS = ["*"]
-# ALLOWED_HOSTS = ['127.0.0.1','localhost','codatrainingapp.herokuapp.com','www.codanalytics.net','codanalytics.net']
-# ALLOWED_HOSTS = []
+SECURE_SSL_REDIRECT = secure_ssl_redirect
+
+ALLOWED_HOSTS = allowed_hosts
+
+DEBUG = debug
+
+SITEURL = site_url
+
+
+
+# DEBUG Settings
+# def debug_values():
+#     if os.environ.get('ENVIRONMENT') == 'production':
+#         debug = False
+
+#     if os.environ.get('ENVIRONMENT') == 'staging':
+#         debug = False
+
+#     else:
+#         debug = True
+
+#     return debug
+
+# DEBUG = debug_values()
+
+
+# ALLOWED_HOSTS = ["*"]
+# # ALLOWED_HOSTS = ['127.0.0.1','localhost','codatrainingapp.herokuapp.com','www.codanalytics.net','codanalytics.net']
+# # ALLOWED_HOSTS = []
 
 # AUTH_USER_MODEL = "accounts.User"
 AUTH_USER_MODEL = "accounts.CustomerUser"
@@ -327,12 +360,12 @@ def payment_details(request):
     return (phone_number,email_info,cashapp,venmo,account_no)
 
 
-if os.environ.get('ENVIRONMENT') == 'production':
-    SITEURL = "https://www.codanalytics.net"
-elif os.environ.get('ENVIRONMENT') == 'testing':
-   SITEURL = "https://codamakutano.herokuapp.com"
-else:
-    SITEURL = "http://localhost:8000"
+# if os.environ.get('ENVIRONMENT') == 'production':
+#     SITEURL = "https://www.codanalytics.net"
+# elif os.environ.get('ENVIRONMENT') == 'testing':
+#    SITEURL = "https://codamakutano.herokuapp.com"
+# else:
+#     SITEURL = "http://localhost:8000"
 
 SITE_ID = 1    
 SOCIALACCOUNT_LOGIN_ON_GET = True
