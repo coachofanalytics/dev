@@ -143,7 +143,7 @@ def join(request):
                 msg = "Error validating form"
                 print(msg)
 
-    return render(request, "accounts/registration/DC48K/joins.html", {"form": form})
+    return render(request, "accounts/registration/DC48K/join.html", {"form": form})
 
 
 

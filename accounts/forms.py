@@ -23,6 +23,10 @@ class UserForm(forms.ModelForm):
             "last_name",
             "email",
             "is_staff",
+            # "country",
+            # "phone",
+            # "password1",
+            # "password2"
         ]
         labels = {
             

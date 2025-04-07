@@ -63,6 +63,8 @@ class CustomerUser(AbstractUser):
         number_days=(timezone.now().date() - self.date_joined.date()).days
         months=number_days/30
         return months
+    
+    
 class Membership(models.Model):
     PAYMENT_STATUS = [
         ('PAID', 'Paid'),
