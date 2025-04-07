@@ -14,7 +14,6 @@ import os
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
-#print(BASE_DIR)
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
@@ -28,30 +27,6 @@ SECURE_SSL_REDIRECT = False
 ALLOWED_HOSTS = ["*"]
 
 
-
-
-
-# DEBUG Settings
-# def debug_values():
-#     if os.environ.get('ENVIRONMENT') == 'production':
-#         debug = False
-
-#     if os.environ.get('ENVIRONMENT') == 'staging':
-#         debug = False
-
-#     else:
-#         debug = True
-
-#     return debug
-
-# DEBUG = debug_values()
-
-
-# ALLOWED_HOSTS = ["*"]
-# # ALLOWED_HOSTS = ['127.0.0.1','localhost','codatrainingapp.herokuapp.com','www.codanalytics.net','codanalytics.net']
-# # ALLOWED_HOSTS = []
-
-# AUTH_USER_MODEL = "accounts.User"
 AUTH_USER_MODEL = "accounts.CustomerUser"
 
 AUTHENTICATION_BACKENDS = (

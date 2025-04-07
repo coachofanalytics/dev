@@ -50,6 +50,17 @@ class UserForm(forms.ModelForm):
             "password2": "",
         }
 
+    # Check that password and password2 are the same.
+    def clean_password2(self):
+        """Ensure passwords match."""
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords don't match")
+        return password2
+
+
     def clean(self):
         cleaned_data = super().clean()
         email = cleaned_data.get("email")
@@ -68,6 +79,7 @@ class UserForm(forms.ModelForm):
             if value in disallowed_names:
                 self.add_error(field, f"This {field.replace('_', ' ')} is not allowed.")
 
+
     def save(self, commit=True):
         user = super().save(commit=False)
 
@@ -77,10 +89,15 @@ class UserForm(forms.ModelForm):
 
         # Make sure the username is unique
         user.username = self.generate_unique_username(user.username)
+        
+        # Hash password
+        if self.cleaned_data.get("password2"):
+            user.set_password(self.cleaned_data["password2"])
 
         if commit:
             user.save()
         return user
+    
 
     def generate_unique_username(self, base_username):
         """
