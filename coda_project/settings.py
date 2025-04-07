@@ -19,38 +19,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
-
-def environment_values():
-    if os.environ.get('ENVIRONMENT') == 'production':
-        site_url = "https://www.diasporacounty48.org/"
-        secure_ssl_redirect = True
-        debug = False
-        allowed_hosts = ["https://codadev.herokuapp.com/", "https://www.diasporacounty48.org/"] 
-
-    elif os.environ.get('ENVIRONMENT') == 'staging':
-        site_url = "https://codadev.herokuapp.com/"
-        secure_ssl_redirect = True
-        debug = False
-        allowed_hosts = ["https://codadev.herokuapp.com/", "https://www.diasporacounty48.org/"] 
-
-    else:
-        site_url = "http://127.0.0.1:8000"
-        secure_ssl_redirect = False
-        allowed_hosts = ["*"] 
-        debug = True
-
-    return site_url, secure_ssl_redirect, debug, allowed_hosts
-
-site_url, secure_ssl_redirect, debug, allowed_hosts = environment_values()
+DEBUG = DEBUG = os.environ.get("DEBUG_VALUE")
 
 
-SECURE_SSL_REDIRECT = secure_ssl_redirect
+SECURE_SSL_REDIRECT = False
 
-ALLOWED_HOSTS = allowed_hosts
 
-DEBUG = debug
+ALLOWED_HOSTS = ["*"]
 
-SITEURL = site_url
+
 
 
 
@@ -360,12 +337,12 @@ def payment_details(request):
     return (phone_number,email_info,cashapp,venmo,account_no)
 
 
-# if os.environ.get('ENVIRONMENT') == 'production':
-#     SITEURL = "https://www.codanalytics.net"
-# elif os.environ.get('ENVIRONMENT') == 'testing':
-#    SITEURL = "https://codamakutano.herokuapp.com"
-# else:
-#     SITEURL = "http://localhost:8000"
+if os.environ.get('ENVIRONMENT') == 'production':
+    SITEURL = "https://www.codanalytics.net"
+elif os.environ.get('ENVIRONMENT') == 'testing':
+   SITEURL = "https://codamakutano.herokuapp.com"
+else:
+    SITEURL = "http://localhost:8000"
 
 SITE_ID = 1    
 SOCIALACCOUNT_LOGIN_ON_GET = True
