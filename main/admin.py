@@ -1,11 +1,32 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
 from .models import *
+
+class DescriptionAdmin(UserAdmin):
+    list_display = ("name", "content")
+
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (
+            None,
+            {
+                "fields": (
+                    "page",
+                    "name",
+                    "content",
+                )
+            },
+        ),
+    )
+    search_fields = ("page", "name")
+    list_filter = ("name",)
+    ordering = ("name",)
+    filter_horizontal = ()
 
 # Register your models here.
 # admin.site.register(Assets)
 #admin.site.register(Feedback)
-admin.site.register(Description)
+admin.site.register(Description, DescriptionAdmin)
 # admin.site.register(Page)
 #admin.site.register(Team)
 #admin.site.register(Content)
