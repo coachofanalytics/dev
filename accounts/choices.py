@@ -1,9 +1,10 @@
 from django.db import models
 
+
 class CategoryChoices(models.IntegerChoices):
-    ORDINARY_MEMBERSHIP = 1, 'Ordinary Membership'
-    LEADERS_MEMBERSHIP = 2, 'Leaders Membership'
-    ORGANIZATIONAL_MEMBERSHIP = 3, 'Organizational Membership'
+    ORDINARY_MEMBERSHIP = 1, "Ordinary Membership"
+    LEADERS_MEMBERSHIP = 2, "Leaders Membership"
+    ORGANIZATIONAL_MEMBERSHIP = 3, "Organizational Membership"
 
 
 # class CategoryChoices(models.IntegerChoices):
@@ -15,14 +16,13 @@ class CategoryChoices(models.IntegerChoices):
 #     ROYAL_ORGANIZATION = 6, 'Royal Organization'
 
 
-
 class SubCategoryChoices(models.IntegerChoices):
-    NO_SELECTION = 0, 'No selection'
-    FULL_TIME = 1, 'Full Time'
-    CONTRACTUAL = 2, 'Contractual'
-    AGENT = 3, 'Agent'
-    SHORT_TERM = 4, 'Short Term'
-    LONG_TERM = 5, 'Long Term'
-    CURRENT = 6, 'Current'
-    PROSPECTIVE = 7, 'Prospective'
-    OTHER = 8, 'Other'
+    NO_SELECTION = 0, "No selection"
+    FULL_TIME = 1, "Full Time"
+    CONTRACTUAL = 2, "Contractual"
+    AGENT = 3, "Agent"
+    SHORT_TERM = 4, "Short Term"
+    LONG_TERM = 5, "Long Term"
+    CURRENT = 6, "Current"
+    PROSPECTIVE = 7, "Prospective"
+    OTHER = 8, "Other"

@@ -1,5 +1,5 @@
 from django.utils import timezone
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from django.db import models
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
@@ -8,21 +8,23 @@ from accounts.modelmanager import DepartmentManager
 from django_countries.fields import CountryField
 
 
-
 class CustomerUser(AbstractUser):
-    
-    groups = models.ManyToManyField(Group, related_name='custom_user_set')
-    user_permissions = models.ManyToManyField(Permission, related_name='custom_user_set')
+    groups = models.ManyToManyField(Group, related_name="custom_user_set")
+    user_permissions = models.ManyToManyField(
+        Permission, related_name="custom_user_set"
+    )
+
     def get_category_display_name(self):
-        return dict(CategoryChoices.choices).get(self.category, 'Unknown')    
+        return dict(CategoryChoices.choices).get(self.category, "Unknown")
 
     # added this column here
     def get_subcategory_display_name(self):
-        return dict(SubCategoryChoices.choices).get(self.subcategory, 'Unknown')    
+        return dict(SubCategoryChoices.choices).get(self.subcategory, "Unknown")
 
     class Score(models.IntegerChoices):
         Male = 1
         Female = 2
+
     id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
@@ -34,7 +36,11 @@ class CustomerUser(AbstractUser):
     is_member = models.BooleanField("Is Member", default=False)
     # is_active = models.BooleanField('Is Active', default=True)
     email_verified = models.BooleanField(default=False)
-    verification_token = models.UUIDField( unique=True, null=True, blank=True)
+    verification_token = models.UUIDField(unique=True, null=True, blank=True)
+    phone = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    country = CountryField(blank=True, null=True)
+
+
     class Meta:
         # ordering = ["-date_joined"]
         ordering = ["username"]
@@ -42,47 +48,50 @@ class CustomerUser(AbstractUser):
 
     @property
     def full_name(self):
-        fullname = f'{self.first_name},{self.last_name}'
+        fullname = f"{self.first_name},{self.last_name}"
         return fullname
-    
+
     @property
     def user_details(self):
         user_details = (
             f"Username: {self.username}\n"
-           
             # f"Country: {self.country.name if self.country else 'N/A'}"
         )
         return user_details
-    
+
     @property
     def is_recent(self):
         return self.date_joined >= timezone.now() - timedelta(days=365)
-    
+
     @property
     def tenure(self):
-        number_days=(timezone.now().date() - self.date_joined.date()).days
-        months=number_days/30
+        number_days = (timezone.now().date() - self.date_joined.date()).days
+        months = number_days / 30
         return months
-    
-    
+
+
 class Membership(models.Model):
     PAYMENT_STATUS = [
-        ('PAID', 'Paid'),
-        ('NOT_PAID', 'Not Paid'),
+        ("PAID", "Paid"),
+        ("NOT_PAID", "Not Paid"),
     ]
 
-    member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='memberships')
+    member = models.ForeignKey(
+        CustomerUser, on_delete=models.CASCADE, related_name="memberships"
+    )
     fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     currency = models.CharField(max_length=10, default="KES")
-    status = models.CharField(max_length=10, choices=PAYMENT_STATUS, default='NOT_PAID')
-    paid_date = models.DateTimeField(null=True, blank=True)  # Tracks the date when payment is made
+    status = models.CharField(max_length=10, choices=PAYMENT_STATUS, default="NOT_PAID")
+    paid_date = models.DateTimeField(
+        null=True, blank=True
+    )  # Tracks the date when payment is made
 
     def __str__(self):
         return f"{self.member.full_name} - {self.status}"
 
     @property
     def is_paid(self):
-        return self.status == 'PAID' and self.paid_date is not None
+        return self.status == "PAID" and self.paid_date is not None
 
 
 class Department(models.Model):
@@ -126,7 +135,7 @@ class Department(models.Model):
     is_featured = models.BooleanField("Is featured", default=True)
     is_active = models.BooleanField(default=True)
 
-    objects=DepartmentManager()
+    objects = DepartmentManager()
 
     @classmethod
     def get_default_pk(cls):
@@ -136,23 +145,22 @@ class Department(models.Model):
         return cat.pk
 
     class Meta:
-        verbose_name = ("Department")
-        verbose_name_plural = ("Departments")
+        verbose_name = "Department"
+        verbose_name_plural = "Departments"
 
     # def get_absolute_url(self):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
-        return self.name    
-    
-
+        return self.name
 
 
 class MeetingAttendace(models.Model):
     meeting_id = models.AutoField(primary_key=True)
-    meeting_date = models.DateField(null=False, blank=False) 
-    member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='attendance')
+    meeting_date = models.DateField(null=False, blank=False)
+    member = models.ForeignKey(
+        CustomerUser, on_delete=models.CASCADE, related_name="attendance"
+    )
     is_attendee = models.BooleanField(default=False)
 
     def __str__(self):
         return f" Meeting of {self.meeting_date}"
-        

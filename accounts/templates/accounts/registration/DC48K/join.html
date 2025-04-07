@@ -197,7 +197,34 @@
                             {{ form.email|as_crispy_field }}
                         </div>
                     </div>
-
+                    <!-- Phone Number -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_phone_number">Phone Number</label>
+                            {{ form.phone|as_crispy_field }}
+                        </div>
+                    </div>
+                    <!-- Country -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_country">Country*</label>
+                            {{ form.country|as_crispy_field }}
+                        </div>
+                    </div>
+                     <!-- Password1 -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_password">Password*</label>
+                            {{ form.password1|as_crispy_field }}
+                        </div>       
+                    </div>
+                     <!-- Password2 -->
+                     <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_confirm_password">Confirm Password*</label>
+                            {{ form.password2|as_crispy_field }}
+                        </div>
+                    </div>
                     
                     <!-- Sign Up Button -->
                     <div class="form-group">
