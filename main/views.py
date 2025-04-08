@@ -193,7 +193,7 @@ def registration_create(request):
 
 
 
-from .models import membershirp_registration
+from .models import membershirp_registration, ContactMessage
 from .forms import registrationform,MembershipPlanform
 
 def registration_update(request, pk):
@@ -344,3 +344,11 @@ def news_update(request, pk):
 
     return render(request, 'main/snippets_templates/table/update_news.html', {'form': form})
 
+
+
+def ContactMessage_list(request):
+    # Fetch all membershipplan
+    info = ContactMessage.objects.all()
+    print('info========================', info)  # Debugging statement (remove in production)
+    
+    return render(request, 'main/snippets_templates/table/ContactMessage_list.html', {'info': info})

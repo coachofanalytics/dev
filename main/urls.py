@@ -22,6 +22,7 @@ urlpatterns = [
     path('news',views.News_list, name ='News_list'),    
     path('news_create',views.NEWS_create, name ='NEWS_create'), 
     path('news/<int:pk>/update/', news_update, name='news_update'), 
+    path('ContactMessage_list',views.ContactMessage_list, name ='ContactMessage_list'),
 
     
    #==============ERRORS==============================================
