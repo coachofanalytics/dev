@@ -363,3 +363,22 @@ def ContactMessage_create(request):
     else:
         form = ContactMessageform()
     return render(request, 'main/snippets_templates/table/ContactMessageCreate.html', {'form': form}) 
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import ContactMessage
+from .forms import ContactMessageform
+
+
+def ContactMessage_update(request, pk):
+    ContactMessage_instance = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == 'POST':
+        form = ContactMessageform(request.POST, instance=ContactMessage_instance)
+        if form.is_valid():
+            form.save()
+            return redirect('main:ContactMessage_list')  
+    else:
+        form = ContactMessageform(instance=ContactMessage_instance)
+    return render(request, 'main/snippets_templates/table/ContactMessage_update.html', {'form': form})
