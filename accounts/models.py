@@ -43,7 +43,8 @@ class CustomerUser(AbstractUser):
 
     class Meta:
         # ordering = ["-date_joined"]
-        ordering = ["username"]
+        # ordering = ["username"]
+        ordering = ["-id"]
         verbose_name_plural = "Users"
 
     @property
@@ -63,11 +64,20 @@ class CustomerUser(AbstractUser):
     def is_recent(self):
         return self.date_joined >= timezone.now() - timedelta(days=365)
 
+    # @property
+    # def tenure(self):
+    #     number_days = (timezone.now().date() - self.date_joined.date()).days
+    #     months = number_days / 30
+    #     return months
+    
     @property
-    def tenure(self):
-        number_days = (timezone.now().date() - self.date_joined.date()).days
-        months = number_days / 30
-        return months
+    def member_number(self):
+        #user_id = str(1000000 + self.id)
+        user_id = str(self.id)
+        member_number = f"DC48-000-000{user_id}"
+        print(user_id, member_number)
+        return member_number
+
 
 
 class Membership(models.Model):

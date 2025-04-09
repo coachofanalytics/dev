@@ -371,7 +371,8 @@ def login_view(request):
 
 def custom_logout(request):
     logout(request)  # Log out the user
-    return redirect("accounts:security")  # Redirect to the login page
+    # return redirect("accounts:security")  # Redirect to the login page
+    return redirect('accounts:account-login') 
 
 
 @login_required
@@ -382,10 +383,11 @@ def userlist(request):
     context = {
         "users": users,
     }
-    if request.user.is_superuser:
-        return render(request, template_name, context)
-    else:
-        return redirect("main:layout")
+    # if request.user.is_superuser:
+    #     return render(request, template_name, context)
+    # else:
+    #     return redirect("main:layout")
+    return render(request, template_name, context)
 
 
 @login_required
@@ -396,10 +398,11 @@ def users(request):
         "users": users,
     }
 
-    if request.user.is_superuser:
-        return render(request, template_name, context)
-    else:
-        return redirect("main:layout")
+    # if request.user.is_superuser:
+    #     return render(request, template_name, context)
+    # else:
+    #     return redirect("main:layout")
+    return render(request, template_name, context)
 
 
 class SuperuserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
