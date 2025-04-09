@@ -382,3 +382,10 @@ def ContactMessage_update(request, pk):
     else:
         form = ContactMessageform(instance=ContactMessage_instance)
     return render(request, 'main/snippets_templates/table/ContactMessage_update.html', {'form': form})
+
+def ContactMessage_delete(request, pk):
+    info = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == 'POST':
+        info.delete()
+        return redirect('main:ContactMessage_list')  # Ensure this URL exists
+    return render(request, 'main/snippets_templates/table/ContactMessage_delete.html', {'info': info})
