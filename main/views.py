@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description,Page,MembershipPlan
+from .models import Assets,Description,Page,MembershipPlan,ContactMessage
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm,registrationform,Newsform
@@ -344,3 +344,11 @@ def news_update(request, pk):
 
     return render(request, 'main/snippets_templates/table/update_news.html', {'form': form})
 
+
+
+def ContactMessage_list(request):
+    # Fetch all membershipplan
+    info = ContactMessage.objects.all()
+    print('info========================', info)  # Debugging statement (remove in production)
+    
+    return render(request, 'main/snippets_templates/table/ContactMessage_list.html', {'info': info})
