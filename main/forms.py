@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm, Textarea
 from django.contrib.auth.forms import UserCreationForm
 from accounts.models import CustomerUser
-from .models import Feedback
+from .models import Feedback, ContactMessage
 from django.utils.translation import gettext_lazy as _
 
 class ContactForm(forms.ModelForm):
@@ -58,5 +58,12 @@ class Newsform(forms.ModelForm):
         model = News_papers
         fields = '__all__'     
 
+
+
+
+class ContactMessageform(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = '__all__'     
 
 

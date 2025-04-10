@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description,Page,MembershipPlan,ContactMessage
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm,registrationform,Newsform
+from main.forms import ContactForm,registrationform,Newsform,ContactMessageform
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -352,3 +352,15 @@ def ContactMessage_list(request):
     print('info========================', info)  # Debugging statement (remove in production)
     
     return render(request, 'main/snippets_templates/table/ContactMessage_list.html', {'info': info})
+
+
+
+def ContactMessage_create(request):
+    if request.method == 'POST':
+        form = ContactMessageform(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:ContactMessage_list')
+    else:
+        form = ContactMessageform()
+    return render(request, 'main/snippets_templates/table/ContactMessage_create.html', {'form': form}) 
