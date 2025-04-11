@@ -120,3 +120,12 @@ class Description_coda(models.Model):
 
     def __str__(self):
         return self.name
+
+class Description_coda2(models.Model):
+    page_name = models.CharField(max_length=255, null=True, blank=False)
+    page = models.CharField(max_length=255, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    content = models.TextField(null=False, blank=False)
+
+    def __str__(self):
+        return self.name
