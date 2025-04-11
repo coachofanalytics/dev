@@ -501,3 +501,16 @@ def Testimonial2_create(request):
         form = Testimonial2_form()
 
     return render(request, 'main/snippets_templates/table/Testimonial2_create.html', {'form': form})
+
+
+def Testimonial2_update(request, pk):
+    Testimonial2_instance = get_object_or_404(Testimonial2, pk=pk)
+    if request.method == 'POST':
+        form = Testimonial2_form(request.POST, request.FILES, instance=Testimonial2_instance)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('main:Testimonial2_list'))
+    else:
+        form = Testimonial2_form(instance=Testimonial2_instance)
+    
+    return render(request, 'main/snippets_templates/table/Testimonial2_update.html', {'form': form})

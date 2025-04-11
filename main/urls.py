@@ -34,6 +34,7 @@ urlpatterns = [
     path('Testimonial_detail/<int:pk>/', views.Testimonial_detail, name='Testimonial_detail'),
     path('Testimonial2_list/', views.Testimonial2_list, name='Testimonial2_list'),
     path('Testimonial2_create/', views.Testimonial2_create, name='Testimonial2_create'),
+    path('Testimonial2_update/<int:pk>/', views.Testimonial2_update, name='Testimonial2_update'),
 
 
     #=======================SERVICES=====================================
