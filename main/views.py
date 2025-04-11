@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, Page,ContactMessage, Description_coda
+from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
 from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form
@@ -391,3 +391,9 @@ def Description_delete(request, pk):
 def Description_detail(request, pk):
     description_ = get_object_or_404(Description_coda, pk=pk)
     return render(request, 'main/snippets_templates/table/Description_detail.html', {'description_': description_})
+
+
+def Description2_list(request):
+    info=Description_coda2.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Description2_list.html",{"info":info})
