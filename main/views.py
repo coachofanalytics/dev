@@ -522,3 +522,8 @@ def Testimonial2_delete(request, pk):
         return redirect('main:Testimonial2_list')
     
     return render(request, 'main/snippets_templates/table/Testimonial2_delete.html', {'object': Testimonial2_instance})
+
+
+def Testimonial2_detail(request, pk):
+    test = get_object_or_404(Testimonial2, pk=pk)
+    return render(request, 'main/snippets_templates/table/Testimonial2_detail.html', {'test': test})
