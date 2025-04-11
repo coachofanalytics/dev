@@ -514,3 +514,11 @@ def Testimonial2_update(request, pk):
         form = Testimonial2_form(instance=Testimonial2_instance)
     
     return render(request, 'main/snippets_templates/table/Testimonial2_update.html', {'form': form})
+
+def Testimonial2_delete(request, pk):
+    Testimonial2_instance = get_object_or_404(Testimonial2, pk=pk)
+    if request.method == 'POST':
+        Testimonial2_instance.delete()
+        return redirect('main:Testimonial2_list')
+    
+    return render(request, 'main/snippets_templates/table/Testimonial2_delete.html', {'object': Testimonial2_instance})
