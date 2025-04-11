@@ -410,3 +410,16 @@ def Description2_create(request):
         form = Description2_form()
 
     return render(request, 'main/snippets_templates/table/Description2_create.html', {'form': form})
+
+
+def Description2_update(request, pk):
+    Description2_instance = get_object_or_404(Description_coda2, pk=pk)
+    if request.method == 'POST':
+        form = Description2_form(request.POST, request.FILES, instance=Description2_instance)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('main:Description2_list'))
+    else:
+        form = Description2_form(instance=Description2_instance)
+    
+    return render(request, 'main/snippets_templates/table/Description2_update.html', {'form': form})

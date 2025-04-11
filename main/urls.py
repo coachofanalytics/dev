@@ -24,6 +24,7 @@ urlpatterns = [
     path('Description_detail/<int:pk>/', views.Description_detail, name='Description_detail'),
     path('Description2_list/', views.Description2_list, name='Description2_list'),
     path('Description2_create/', views.Description2_create, name='Description2_create'),
+    path('Description2_update/<int:pk>/', views.Description2_update, name='Description2_update'),
 
     #=======================SERVICES=====================================
     # path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
