@@ -59,7 +59,7 @@ class FeedbackForm(forms.ModelForm):
 
 
 from django import forms
-from .models import GalleryImage, ContactMessage, Description_coda  # Adjust the import according to your app structure
+from .models import GalleryImage, ContactMessage, Description_coda, Description_coda2 # Adjust the import according to your app structure
 
 class GalleryImageForm(forms.ModelForm):
     class Meta:
@@ -76,4 +76,10 @@ class ContactMessage_form(forms.ModelForm):
 class Description_form(forms.ModelForm):
     class Meta:
         model = Description_coda
+        fields = '__all__'
+
+
+class Description2_form(forms.ModelForm):
+    class Meta:
+        model = Description_coda2
         fields = '__all__'
