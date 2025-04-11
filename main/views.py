@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2, Testimonial
+from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2, Testimonial, Testimonial2
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
 from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form, Description2_form, Testimonial_form
@@ -481,3 +481,10 @@ def Testimonial_delete(request, pk):
 def Testimonial_detail(request, pk):
     test = get_object_or_404(Testimonial, pk=pk)
     return render(request, 'main/snippets_templates/table/Testimonial_detail.html', {'test': test})
+
+
+
+def Testimonial2_list(request):
+    info=Testimonial2.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Testimonial2_list.html",{"info":info})

@@ -32,6 +32,7 @@ urlpatterns = [
     path('Testimonial_update/<int:pk>/', views.Testimonial_update, name='Testimonial_update'),
     path('Testimonial_delete/<int:pk>/', views.Testimonial_delete, name='Testimonial_delete'),
     path('Testimonial_detail/<int:pk>/', views.Testimonial_detail, name='Testimonial_detail'),
+    path('Testimonial2_list/', views.Testimonial2_list, name='Testimonial2_list'),
 
     #=======================SERVICES=====================================
     # path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
