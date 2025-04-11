@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2, Testimonial, Testimonial2
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
-from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form, Description2_form, Testimonial_form
+from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form, Description2_form, Testimonial_form, Testimonial2_form
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -488,3 +488,16 @@ def Testimonial2_list(request):
     info=Testimonial2.objects.all()
     print("info===============================",info)
     return render(request,"main/snippets_templates/table/Testimonial2_list.html",{"info":info})
+
+
+def Testimonial2_create(request):
+    if request.method == "POST":
+        form = Testimonial2_form(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirect to a new URL after POST
+            return HttpResponseRedirect(reverse('main:Testimonial2_list')) 
+    else:
+        form = Testimonial2_form()
+
+    return render(request, 'main/snippets_templates/table/Testimonial2_create.html', {'form': form})
