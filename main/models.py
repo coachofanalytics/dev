@@ -153,4 +153,31 @@ class Testimonial2(models.Model):
     date = models.DateField(null=False)  # Fixed 'null=False' here
 
     def __str__(self):
+     return self.name
+
+
+
+class Volunteer(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    motivation = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
         return self.name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

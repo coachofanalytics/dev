@@ -14,4 +14,5 @@ admin.site.register(ContactMessage)
 admin.site.register(Description_coda)
 admin.site.register(Description_coda2)
 admin.site.register(Testimonial)
-admin.site.register(Testimonial2)
+admin.site.register(Volunteer)
+
