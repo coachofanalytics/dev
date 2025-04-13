@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2
+from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2, ContactMessage2
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
 from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form, Description2_form, Testimonial_form, Testimonial2_form
@@ -423,3 +423,10 @@ def Description2_update(request, pk):
         form = Description2_form(instance=Description2_instance)
     
     return render(request, 'main/snippets_templates/table/Description2_update.html', {'form': form})
+
+
+
+def contact_message2_list(request):
+    info=ContactMessage2.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Contact_message2_list.html",{"info":info})
