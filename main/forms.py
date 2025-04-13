@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm, Textarea
 from accounts.models import User,UserCategory
-from .models import Feedback
+from .models import Feedback, ContactMessage2
 from django.utils.translation import gettext_lazy as _
 
 class ContactForm(forms.ModelForm):
@@ -93,4 +93,10 @@ class Testimonial_form(forms.ModelForm):
 class Testimonial2_form(forms.ModelForm):
     class Meta:
         model = Testimonial2
+        fields = '__all__'
+
+
+class ContactMessage2_form(forms.ModelForm):
+    class Meta:
+        model = ContactMessage2
         fields = '__all__'
