@@ -443,3 +443,16 @@ def contact_message2_create(request):
         form = ContactMessage2_form()
 
     return render(request, 'main/snippets_templates/table/Contact_message2_create.html', {'form': form})
+
+
+def Contact_Message2_update(request, pk):
+    ContactMessage2_instance = get_object_or_404(ContactMessage2, pk=pk)
+    if request.method == 'POST':
+        form = ContactMessage2_form(request.POST, request.FILES, instance=ContactMessage2_instance)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('main:contact_message2_list'))
+    else:
+        form = ContactMessage2_form(instance=ContactMessage2_instance)
+    
+    return render(request, 'main/snippets_templates/table/Contact_message2_update.html', {'form': form})
