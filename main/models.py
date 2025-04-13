@@ -16,6 +16,8 @@ User = get_user_model()
 
 class Page(models.Model):
     page_name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, null=True, blank=True)  # <-- Add this
+
 
     def __str__(self):
         return self.page_name
@@ -24,7 +26,7 @@ class Description(models.Model):
     page = models.ForeignKey(Page, related_name='descriptions', on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False) 
     content = models.TextField(null=False, blank=False)
-
+    
     def __str__(self):
         return f"{self.name} for {self.page.page_name}"
 
@@ -129,3 +131,40 @@ class Description_coda2(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+class Testimonial(models.Model):
+    name = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    position = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    organisation = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    testimonial = models.TextField(null=False)  # Corrected 'Testminals' and fixed 'null=False'
+    image = models.ImageField(null=True, blank=True)  # 'null=True' and 'blank=True' for optional image field
+    date = models.DateField(null=False)  # Fixed 'null=False' here
+
+    def __str__(self):
+        return self.name
+
+
+
+class Testimonial2(models.Model):
+    name = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    position = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    organisation = models.CharField(max_length=100)  # Corrected 'charfield' to 'CharField'
+    testimonial = models.TextField(null=False)  # Corrected 'Testminals' and fixed 'null=False'
+    image = models.ImageField(null=True, blank=True)  # 'null=True' and 'blank=True' for optional image field
+    date = models.DateField(null=False)  # Fixed 'null=False' here
+
+    def __str__(self):
+        return self.name
+   
+
+
+class ContactMessage2(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+    email = models.EmailField(null=False, blank=False)
+    message = models.TextField(null=False, blank=False)
+    submitted_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when created
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.email}"

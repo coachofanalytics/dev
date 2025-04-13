@@ -8,10 +8,10 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2
+from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2, Testimonial, Testimonial2, Team, GalleryImage
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
-from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form, Description2_form
+from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form, Description2_form, Testimonial_form, Testimonial2_form
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -78,7 +78,7 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-    page_instance = Page.objects.get(page_name='Home')
+    page_instance = Page.objects.get(slug='Home')
     description = Description.objects.filter(page = page_instance)
     
     if request.method == "POST":
@@ -228,7 +228,7 @@ from django.shortcuts import get_object_or_404
 from .models import Page
 
 def home_view(request):
-    page = get_object_or_404(Page, slug='home')
+    page = get_object_or_404(Page, slug ='home')
     return render(request, 'home.html', {'page': page})
 
 
@@ -423,3 +423,80 @@ def Description2_update(request, pk):
         form = Description2_form(instance=Description2_instance)
     
     return render(request, 'main/snippets_templates/table/Description2_update.html', {'form': form})
+
+
+def Description2_delete(request, pk):
+    Description2_instance = get_object_or_404(Description_coda2, pk=pk)
+    if request.method == 'POST':
+        Description2_instance.delete()
+        return redirect('main:Description2_list')
+    
+    return render(request, 'main/snippets_templates/table/Description2_delete.html', {'object': Description2_instance})
+
+
+
+def Description2_detail(request, pk):
+    description2_ = get_object_or_404(Description_coda2, pk=pk)
+    return render(request, 'main/snippets_templates/table/Description2_detail.html', {'description2_': description2_})
+
+
+
+def Testimonial_list(request):
+    info=Testimonial.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Testimonial_list.html",{"info":info})
+
+def Testimonial_create(request):
+    if request.method == "POST":
+        form = Testimonial_form(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirect to a new URL after POST
+            return HttpResponseRedirect(reverse('main:Testimonial_list')) 
+    else:
+        form = Testimonial_form()
+
+    return render(request, 'main/snippets_templates/table/Testimonial_create.html', {'form': form})
+
+def Testimonial_update(request, pk):
+    Testimonial_instance = get_object_or_404(Testimonial, pk=pk)
+    if request.method == 'POST':
+        form = Testimonial_form(request.POST, request.FILES, instance=Testimonial_instance)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('main:Testimonial_list'))
+    else:
+        form = Testimonial_form(instance=Testimonial_instance)
+    
+    return render(request, 'main/snippets_templates/table/Testimonial_update.html', {'form': form})
+
+def Testimonial_delete(request, pk):
+    Testimonial_instance = get_object_or_404(Testimonial, pk=pk)
+    if request.method == 'POST':
+        Testimonial_instance.delete()
+        return redirect('main:Testimonial_list')
+    
+    return render(request, 'main/snippets_templates/table/Testimonial_delete.html', {'object': Testimonial_instance})
+
+def Testimonial_detail(request, pk):
+    test = get_object_or_404(Testimonial, pk=pk)
+    return render(request, 'main/snippets_templates/table/Testimonial_detail.html', {'test': test})
+
+
+def Testimonial2_list(request):
+    info=Testimonial2.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Testimonial2_list.html",{"info":info})
+
+
+def Testimonial2_create(request):
+    if request.method == "POST":
+        form = Testimonial2_form(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirect to a new URL after POST
+            return HttpResponseRedirect(reverse('main:Testimonial2_list')) 
+    else:
+        form = Testimonial2_form()
+
+    return render(request, 'main/snippets_templates/table/Testimonial2_create.html', {'form': form})

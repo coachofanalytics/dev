@@ -1,37 +1,57 @@
-{%extends "main/base_templates/base.html"%} {% block content %}
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
 <section id="career">
-  <div class="career text-center">
-    <h2>USER PROFILES</h2>
-    <table class="table table-borderless" style="width: 100%">
-      <thead class="border-bottom font-weight-bold">
-        <tr>
-          <th>title</th>
-          <th>description</th>
-          <!-- <th>Description</th> -->
-          <th>uploaded_at</th>
-          <th>event_date</th>
-          <!---
-          <th>CustomerId</th>
-          <th>Registering For:</th>
-        -->
-        </tr>
-      </thead>
-      <tbody>
-        {% for GalleryImage in GalleryImage %}
-            <tr>
-              <td>{{GalleryImage.title}}</td>
-              <td>{{GalleryImage.description}}</td>
-              <td>{{GalleryImage.image}}</td>
-              <td>{{GalleryImage.uploaded_at}}</td>
-              <td>{{GalleryImage.event_date}}</td>
-              
-              <!-- <td>{{user.description}}</td> -->
-              <td> <a class="article-title" href="#">Edit</a></td>
-              
+  <div class="career text-center container mt-5">
+    <h2>Gallery 📸📸</h2>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Image</th>
+            <th>Uploaded At</th>
+            <th>Date</th>
+          
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for GalleryImage in GalleryImage %}
+            <tr>
+              <td>{{ GalleryImage.title }}</td>
+              <td>{{ GalleryImage.description }}</td>
+              <td>
+                <img src="{{ GalleryImage.image.url }}"
+                     alt="{{ GalleryImage.title }}"
+                     width="120"
+                     style="cursor: pointer; border-radius: 8px;"
+                     data-toggle="modal"
+                     data-target="#imageModal{{ forloop.counter }}">
+              </td>
+              <td>{{ GalleryImage.uploaded_at }}</td>
+              <td>{{ GalleryImage.event_date }}</td>
+              
+            </tr>
+
+            <!-- Modal for image preview -->
+            <div class="modal fade" id="imageModal{{ forloop.counter }}" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-body text-center">
+                    <img src="{{ GalleryImage.image.url }}" alt="{{ GalleryImage.title }}" class="img-fluid rounded">
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
+
+<!-- Include Bootstrap JS and jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock content %}

@@ -25,6 +25,15 @@ urlpatterns = [
     path('Description2_list/', views.Description2_list, name='Description2_list'),
     path('Description2_create/', views.Description2_create, name='Description2_create'),
     path('Description2_update/<int:pk>/', views.Description2_update, name='Description2_update'),
+    path('Description2_delete/<int:pk>/', views.Description2_delete, name='Description2_delete'),
+    path('Description2_detail/<int:pk>/', views.Description2_detail, name='Description2_detail'),
+    path('Testimonial_list/', views.Testimonial_list, name='Testimonial_list'),
+    path('Testimonial_create/', views.Testimonial_create, name='Testimonial_create'),
+    path('Testimonial_update/<int:pk>/', views.Testimonial_update, name='Testimonial_update'),
+    path('Testimonial_delete/<int:pk>/', views.Testimonial_delete, name='Testimonial_delete'),
+    path('Testimonial_detail/<int:pk>/', views.Testimonial_detail, name='Testimonial_detail'),
+    path('Testimonial2_list/', views.Testimonial2_list, name='Testimonial2_list'),
+    path('Testimonial2_create/', views.Testimonial2_create, name='Testimonial2_create'),
 
     #=======================SERVICES=====================================
     # path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
