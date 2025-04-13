@@ -456,3 +456,12 @@ def Contact_Message2_update(request, pk):
         form = ContactMessage2_form(instance=ContactMessage2_instance)
     
     return render(request, 'main/snippets_templates/table/Contact_message2_update.html', {'form': form})
+
+
+def ContactMessage2_delete(request, pk):
+    ContactMessage2_instance = get_object_or_404(ContactMessage2, pk=pk)
+    if request.method == 'POST':
+        ContactMessage2_instance.delete()
+        return redirect('main:contact_message2_list')
+    
+    return render(request, 'main/snippets_templates/table/Contact_message2_delete.html', {'object': ContactMessage2_instance})
