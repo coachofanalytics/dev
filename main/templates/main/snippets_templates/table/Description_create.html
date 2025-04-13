@@ -1,0 +1,41 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Create Description</title>
+        <style>
+            body {
+                margin-left: 0px;  /* Indent the entire body from the left */
+            }
+    
+            h1 {
+                margin-left: 20px;  /* Indent the heading from the left */
+            }
+    
+            form {
+                margin-left: 80px;  /* Indent the form from the left */
+            }
+    
+            label {
+                font-weight: bold;  /* Make labels bold */
+            }
+    
+            button {
+                margin-top: 20px;  /* Add space above the button */
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+<body>
+    <h1>Create New Description</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+{% endblock %}

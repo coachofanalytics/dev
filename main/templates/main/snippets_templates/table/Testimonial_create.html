@@ -1,0 +1,49 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<section id="contact-messages" class="py-5">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="display-5">📬 Testimonials</h2>
+      <p class="text-muted">Review all the testimonials.</p>
+    </div>
+
+
+    <!-- Form for submitting testimonial -->
+    <div class="text-center mt-5">
+      <h2 class="display-5">Submit a Testimonial</h2>
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="name">Your Name:</label>
+          <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="position">Your Position:</label>
+          <input type="text" id="position" name="position" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="organisation">Your Organisation:</label>
+          <input type="text" id="organisation" name="organisation" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="testimonial">Your Testimonial:</label>
+          <textarea id="testimonial" name="testimonial" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="image">Choose an Image (Only JPG, PNG, JPEG allowed):</label>
+          <input type="file" id="image" name="image" class="form-control" accept="image/jpeg, image/png, image/jpg">
+        </div>
+        <div class="form-group">
+          <label for="date">Date:</label>
+          <input type="date" id="date" name="date" value="{{ current_date }}" class="form-control" required>
+        </div>
+        <div class="form-group mt-3">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock content %}

@@ -1,0 +1,45 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<section id="career" class="container my-5">
+  <div class="career text-center">
+    <h2 class="mb-4">Page Descriptions</h2>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Page Name</th>
+            <th scope="col">Page</th>
+            <th scope="col">Name</th>
+            <th scope="col">Content</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in info %}
+          <tr>
+            <td>{{ item.page_name }}</td>
+            <td>{{ item.page }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.content|truncatechars:100 }}</td>
+            <td>
+         <a class="article-title" href="{% url 'main:Description_update' item.id %}">Edit</a>
+         <a class="article-title" href="{% url 'main:Description_delete' item.id %}">Delete</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-muted">No records found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<a class="article-title" href="{% url 'main:Description_create' %}" style="text-align: center; display: block;">
+    <p><strong>Add Description:</strong></p>
+</a>
+
+{% endblock content %}

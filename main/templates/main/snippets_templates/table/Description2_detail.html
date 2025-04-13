@@ -1,0 +1,26 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<section id="Description-detail" class="py-5">
+<div class="container">
+<div class="card shadow-sm">
+<div class="card-header bg-primary text-white">
+<h4 class="mb-0">📄 Description Details</h4>
+</div>
+<div class="card-body">
+<p><strong>Page Name:</strong> {{ description2_.page_name }}</p>
+<p><strong>Page:</strong> {{ description2_.page }}</p>
+<p><strong>Name:</strong> {{ description2_.name }}</p>
+<p><strong>Content:</strong></p>
+<div class="border p-3 rounded bg-light">
+{{ description2_.content }}
+</div>
+</div>
+<div class="card-footer text-end">
+<a href="{% url 'main:Description2_delete' description2_.pk %}" class="btn btn-danger">Delete</a>
+<a href="{% url 'main:Description2_list' %}" class="btn btn-secondary">Back</a>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

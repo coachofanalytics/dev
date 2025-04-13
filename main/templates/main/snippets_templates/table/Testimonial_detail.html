@@ -1,0 +1,36 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<section id="test-detail" class="py-5">
+  <div class="container">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">📄 Testimonial Details</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>Name:</strong> {{ test.name }}</p>
+        <p><strong>Position:</strong> {{ test.position }}</p>
+        <p><strong>Organisation:</strong> {{ test.organisation }}</p>
+        <p><strong>Testimonial:</strong></p>
+        <div class="border p-3 rounded bg-light">
+          {{ test.testimonial }}
+        </div>
+        <p><strong>Image:</strong></p>
+        <div class="border p-3 rounded bg-light">
+            {% if test.image %}
+                <strong>Uploaded Image:</strong><br>
+                <img src="{% static 'uploads/' + test.image %}" alt="Image" class="img-fluid" style="max-height: 100px;">
+            {% else %}
+                <p class="mt-3 text-muted">No image uploaded.</p>
+            {% endif %}
+        </div>  
+      </div>
+      <div class="card-footer text-end">
+        <a href="{% url 'main:Testimonial_delete' test.pk %}" class="btn btn-danger">Delete</a>
+        <a href="{% url 'main:Testimonial_list' %}" class="btn btn-secondary">Back</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
