@@ -465,3 +465,8 @@ def ContactMessage2_delete(request, pk):
         return redirect('main:contact_message2_list')
     
     return render(request, 'main/snippets_templates/table/Contact_message2_delete.html', {'object': ContactMessage2_instance})
+
+    
+def ContactMessage2_detail(request, pk):
+    contact2_message = get_object_or_404(ContactMessage2, pk=pk)
+    return render(request, 'main/snippets_templates/table/Contact_message2_detail.html', {'contact2_message': contact2_message})
