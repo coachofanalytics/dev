@@ -387,3 +387,9 @@ def ContactMessage_delete(request, pk):
         ContactMessage_instance.delete()
         return redirect('main:ContactMessage_list')  # Redirect to the volunteers list page
     return render(request, 'main/snippets_templates/table/ContactMessage_delete.html', {'object': ContactMessage_instance})
+
+
+
+def ContactMessage_detail(request, pk):
+    ContactMessage_instance2 = get_object_or_404(ContactMessage, pk=pk)
+    return render(request, 'main/snippets_templates/table/ContactMessage_detail.html', {'ContactMessage_instance2': ContactMessage_instance2})
