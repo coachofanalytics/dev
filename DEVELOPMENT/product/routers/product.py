@@ -29,7 +29,7 @@ def add(request: schemas.Product, db: Session = Depends(get_db),  current_user:s
 
 # Fetch all items from the products database table --> just like a list view
 @router.get('/', response_model=List[schemas.DisplayProduct])
-def get_all_products(db: Session = Depends(get_db), current_user:schemas.User = Depends(get_current_user)):
+def get_all_products(db: Session = Depends(get_db)):
     products = db.query(models.Product).all()
     return products
 
