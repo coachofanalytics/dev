@@ -24,6 +24,7 @@ urlpatterns = [
     path('news/<int:pk>/update/', news_update, name='news_update'), 
     path('ContactMessage_list',views.ContactMessage_list, name ='ContactMessage_list'),
     path('ContactMessage_create',views.ContactMessage_create, name ='ContactMessage_create'),
+    path('ContactMessage_update/<int:pk>/',views.ContactMessage_update, name='ContactMessage_update'),
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),
