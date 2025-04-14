@@ -378,3 +378,12 @@ def ContactMessage_update(request, pk):
         form = ContactMessageform(instance=ContactMessage_instance)
     
     return render(request, 'main/snippets_templates/table/ContactMessage_update.html', {'form': form})
+
+
+
+def ContactMessage_delete(request, pk):
+    ContactMessage_instance = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == 'POST':
+        ContactMessage_instance.delete()
+        return redirect('main:ContactMessage_list')  # Redirect to the volunteers list page
+    return render(request, 'main/snippets_templates/table/ContactMessage_delete.html', {'object': ContactMessage_instance})
