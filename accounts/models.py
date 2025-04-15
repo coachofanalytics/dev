@@ -140,3 +140,22 @@ class Department(models.Model):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
         return self.name    
+
+
+class Faq(models.Model):
+    CategoryChoices = [
+        ('general', 'General'),
+        ('technical', 'Technical'),
+        ('billing', 'Billing'),
+        ('account', 'Account'),
+        ('other', 'Other'),
+    ]
+
+    question = models.CharField(max_length=255) #add questions 
+    answer = models.TextField() #add answers
+    category = models.CharField(max_length=255, choices=CategoryChoices, default=999)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.question
