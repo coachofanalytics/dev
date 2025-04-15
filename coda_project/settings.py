@@ -52,14 +52,14 @@ INSTALLED_APPS = [
     "mathfilters",
     "mptt",
     "django_filters",
-    "django_celery_beat",
-    "django_celery_results",
+    # "django_celery_beat",
+    # "django_celery_results",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
-    "django_crontab",
+    # "django_crontab",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -131,7 +131,7 @@ def dba_values():
         password = os.environ.get('DB_PASSWORD')
 
     else:
-        #Test in staging database before staging deployment
+        # Test in staging database before staging deployment
         host = os.environ.get('STG_DB_HOST')
         dbname = os.environ.get('STG_DB_NAME') 
         user = os.environ.get('STG_DB_USER')
@@ -277,28 +277,28 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
 
-from celery.schedules import crontab
+# from celery.schedules import crontab
 
-CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_IMPORTS = "coda_project.task"
+# CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+# CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+# CELERY_ACCEPT_CONTENT = ["application/json"]
+# CELERY_TASK_SERIALIZER = "json"
+# CELERY_RESULT_SERIALIZER = "json"
+# CELERY_IMPORTS = "coda_project.task"
 
-CELERYBEAT_SCHEDULE = {
-    "run_on_every_1st": {
-        "task": "task_history",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
+# CELERYBEAT_SCHEDULE = {
+#     "run_on_every_1st": {
+#         "task": "task_history",
+#         "schedule": crontab(0, 0, day_of_month="1"),
+#         #'schedule': crontab(),
+#     },
 
-    "run_on_every_1st": {
-        "task": "advertisement",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
-}
+#     "run_on_every_1st": {
+#         "task": "advertisement",
+#         "schedule": crontab(0, 0, day_of_month="1"),
+#         #'schedule': crontab(),
+#     },
+# }
 
 #==================PAYMENT SETTINGS=================
 # Testing Payment methods

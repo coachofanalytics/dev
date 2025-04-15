@@ -35,6 +35,7 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(News)
 #admin.site.register(Gallery)
 #admin.site.register(ContactUs)
+admin.site.register(Faq)
 
 
 

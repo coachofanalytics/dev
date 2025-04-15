@@ -8,6 +8,21 @@ from accounts.modelmanager import DepartmentManager
 from django_countries.fields import CountryField
 
 
+# class Region(models.Model):
+#     name = models.CharField(max_length=100)
+
+#     def __str__(self):
+#         return self.name
+    
+
+# class Chapter(models.Model):
+#     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='subregions')
+#     name = models.CharField(max_length=100)
+
+#     def __str__(self):
+#         return self.name
+
+
 class CustomerUser(AbstractUser):
     groups = models.ManyToManyField(Group, related_name="custom_user_set")
     user_permissions = models.ManyToManyField(
@@ -39,6 +54,8 @@ class CustomerUser(AbstractUser):
     verification_token = models.UUIDField(unique=True, null=True, blank=True)
     phone = models.CharField(max_length=50, unique=True, null=True, blank=True)
     country = CountryField(blank=True, null=True)
+    # region_id = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='member_region', default=9)
+    # chapter_id = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='member_chapter', default=23)
 
 
     class Meta:
@@ -174,3 +191,4 @@ class MeetingAttendace(models.Model):
 
     def __str__(self):
         return f" Meeting of {self.meeting_date}"
+    
