@@ -54,6 +54,8 @@ class CustomerUser(AbstractUser):
     verification_token = models.UUIDField(unique=True, null=True, blank=True)
     phone = models.CharField(max_length=50, unique=True, null=True, blank=True)
     country = CountryField(blank=True, null=True)
+    state = models.CharField(blank=True, null=True, max_length=255)
+    city = models.CharField(blank=True, null=True, max_length=255)
     # region_id = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='member_region', default=9)
     # chapter_id = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='member_chapter', default=23)
 

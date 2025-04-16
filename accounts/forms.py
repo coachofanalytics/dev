@@ -36,6 +36,8 @@ class UserForm(forms.ModelForm):
             "email",
             "is_staff",
             "country",
+            "state",
+            "city",
             "phone",
             "password1",
             "password2"
@@ -46,6 +48,8 @@ class UserForm(forms.ModelForm):
             "email": "",
             "phone": "",
             "country": "",
+            "state": "",
+            "city": "",
             "password1": "",
             "password2": "",
         }
