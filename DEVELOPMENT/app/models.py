@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 from sqlalchemy.orm import relationship
 from . database import Base
 
@@ -30,3 +32,19 @@ class Project(Base):
     name = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
     # user = relationship("User", back_populates="project")
+
+
+#=============================================================================
+
+class Industry(Base):
+    __tablename__ = "industry"
+    __table_args__ = {'schema': 'v1'}
+    level1 = Column(String)
+    level2 = Column(String)
+    level3 = Column(String)
+    level4 = Column(String)
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    created_by = Column(UUID(as_uuid=True), default=uuid.uuid4)
+    created_date = Column(DateTime(timezone=True))
+    updated_by = Column(UUID(as_uuid=True), default=uuid.uuid4)
+    updated_date = Column(DateTime(timezone=True))

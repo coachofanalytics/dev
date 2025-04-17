@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from . import models
 from  .database import engine
 from .routers import product, user, project, login
+from app.v1.industry import industry_get
 
 
 # Initialize fastAPI
@@ -18,3 +19,4 @@ app.include_router(product.router)
 app.include_router(user.router)
 app.include_router(project.router)
 app.include_router(login.router)
+app.include_router(industry_get.router)

@@ -4,3 +4,4 @@ fastapi_venv
 venv
 *venv
 __pycache__/
+__init__.py
