@@ -13,7 +13,7 @@ class CustomerAdmin(UserAdmin):
     list_display = ("email", "first_name", "last_name", "date_joined")
 
   
-    add_fieldsets = (
+    add_fieldsets = UserAdmin.add_fieldsets + (
         (
             None,
             {
@@ -25,8 +25,6 @@ class CustomerAdmin(UserAdmin):
                     "country",
                     "state",
                     "city",
-                    "password1",
-                    "password2",
                     "date_joined",
                     "category",
                     "is_active",
