@@ -1,23 +1,9 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-
 from .models import *
 
-class DescriptionAdmin(UserAdmin):
-    list_display = ("name", "content")
+class DescriptionAdmin(admin.ModelAdmin):
+    list_display = ("page", "name", "content")
 
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (
-            None,
-            {
-                "fields": (
-                    "page",
-                    "name",
-                    "content",
-                )
-            },
-        ),
-    )
     search_fields = ("page", "name")
     list_filter = ("name",)
     ordering = ("name",)
@@ -35,7 +21,7 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(News)
 #admin.site.register(Gallery)
 #admin.site.register(ContactUs)
-admin.site.register(Faq)
+#admin.site.register(Faq)
 
 
 

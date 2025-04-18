@@ -7,27 +7,38 @@ from .models import CustomerUser, Membership #Region, Chapter
 
 #
 class CustomerAdmin(UserAdmin):
-    list_display = ("id", "email", "first_name", "last_name")
 
-    add_fieldsets = UserAdmin.add_fieldsets + (
+    model = CustomerUser
+
+    list_display = ("email", "first_name", "last_name", "date_joined")
+
+  
+    add_fieldsets = (
         (
             None,
             {
                 "fields": (
-                    "id",
                     "email",
                     "first_name",
                     "last_name",
+                    "phone",
+                    "country",
+                    "state",
+                    "city",
+                    "password1",
+                    "password2",
                     "date_joined",
                     "category",
+                    "is_active",
                     "is_admin",
                     "is_member",
                     "email_verified",
-                    "verification_token",
+                    # "verification_token",
                 )
             },
         ),
     )
+
     search_fields = ("last_name", "email")
     list_filter = ("is_member", "last_name", "email")
 
