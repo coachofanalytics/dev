@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
-DEBUG = DEBUG = os.environ.get("DEBUG_VALUE")
+DEBUG = os.environ.get("DEBUG_VALUE")
 
 
 SECURE_SSL_REDIRECT = False
