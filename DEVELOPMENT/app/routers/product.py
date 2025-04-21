@@ -1,6 +1,6 @@
 from fastapi import status, Response, HTTPException, APIRouter
 from fastapi.params import Depends
-from  app.database import get_db
+from app.core.db.database import get_db
 from sqlalchemy.orm import Session
 from app import schemas, models
 from typing import List
@@ -63,3 +63,4 @@ def delete_product(id, db: Session = Depends(get_db),  current_user:schemas.User
     db.commit()
     return {'Product Deleted'}
 
+    
