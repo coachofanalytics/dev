@@ -17,6 +17,7 @@ router = APIRouter(
 @router.post('/location', status_code=status.HTTP_201_CREATED)
 def add_location(request:LocationSchema, db: Session = Depends(get_db)):
     new_location = Locations(
+        name = request.name,
         ESRI_response = request.ESRI_response,
         latitude = request.latitude,
         longitude = request.longitude,

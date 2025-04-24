@@ -9,10 +9,12 @@ class Orgs(Base):
     __table_args__ = {'schema': 'v1'}
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    project_id = Column(UUID)
-    industry_id = Column(UUID)
+    # project_id = Column(UUID)
+    # industry_id = Column(UUID)
+    project_id = Column(UUID, ForeignKey('v1.projects.id'))
+    industry_id = Column(UUID, ForeignKey('v1.industry.id'))
     name = Column(String)
-    descriptione = Column(String)
+    description = Column(String)
     is_sub_org = Column(Boolean)
     sub_org_desc = Column(String)
     preceding_org_id = Column(UUID)
@@ -23,7 +25,7 @@ class Orgs(Base):
     published = Column(Boolean)
     published_searchable = Column(Boolean)
     published_date = Column(DateTime)
-    publication_venuee = Column(String)
+    publication_venue = Column(String)
     published_state = Column(String)
     total_conversations = Column(Float)
     low_span_threshold = Column(Integer)
@@ -33,3 +35,6 @@ class Orgs(Base):
     created_date = Column(DateTime(timezone=True))
     updated_by = Column(UUID(as_uuid=True), default=uuid.uuid4)
     updated_date = Column(DateTime(timezone=True))
+
+    project = relationship('Projects', back_populates='orgs')
+    industry = relationship('Industry', back_populates='orgs')

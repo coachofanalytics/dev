@@ -9,6 +9,7 @@ class Locations(Base):
     __table_args__ = {'schema': 'v1'}
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    name = Column(String)
     ESRI_response = Column(String)
     latitude = Column(String)
     longitude = Column(String)

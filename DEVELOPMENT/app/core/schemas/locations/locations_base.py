@@ -6,6 +6,7 @@ from datetime import datetime
 
 class LocationSchema(BaseModel):
     id: UUID
+    name: str
     ESRI_response: str
     latitude: str
     longitude: str
@@ -16,6 +17,7 @@ class LocationSchema(BaseModel):
 
 class LocationResponseSchema(BaseModel):
     id: UUID
+    name: str
     ESRI_response: str
     latitude: str
     longitude: str

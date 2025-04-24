@@ -14,5 +14,6 @@ router = APIRouter(
 
 @router.get('/industry', response_model=List[DisplayIndustrySchema])
 def get_industrys(db: Session = Depends(get_db)):
+    
     industry = db.query(Industry).all()
     return industry

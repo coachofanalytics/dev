@@ -44,6 +44,8 @@ class Projects(Base):
     updated_by = Column(UUID(as_uuid=True), default=uuid.uuid4)
     updated_date = Column(DateTime(timezone=True))
 
+    orgs = relationship('Orgs', back_populates='project')
+
     # @hybrid_property
     # def total_projects(self):
     #     """Calculates total number of projects in the table"""

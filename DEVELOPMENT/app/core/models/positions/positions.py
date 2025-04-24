@@ -24,4 +24,4 @@ class Positions(Base):
     updated_by = Column(UUID(as_uuid=True), default=uuid.uuid4)
     updated_date = Column(DateTime(timezone=True))
 
-# Need to define relationships
+# Need to define relationships (foreign keys title, department and location)

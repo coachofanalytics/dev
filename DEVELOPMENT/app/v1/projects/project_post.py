@@ -10,7 +10,7 @@ from app.core.db.database import get_db
 # from app.core.models import Projects, Access
 from app.core.models.projects.projects import Projects
 # from app.core.schemas.projects import ProjectsCreate, ProjectResponse
-from app.core.schemas.projects.project_create import ProjectsCreate
+from app.core.schemas.projects.project_create import ProjectSchema
 
 # Router is required
 router = APIRouter(
@@ -65,7 +65,7 @@ router = APIRouter(
 
 
 @router.post('/project', status_code=status.HTTP_201_CREATED)
-def create_project(request:ProjectsCreate, db:Session=Depends(get_db)):
+def create_project(request:ProjectSchema, db:Session=Depends(get_db)):
     new_project = Projects(
         name = request.name,
         description = request.description,

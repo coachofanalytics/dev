@@ -29,7 +29,7 @@ from datetime import datetime
 #     class Config:
 #         orm_mode = True
 
-class ProjectsCreate(BaseModel):
+class ProjectSchema(BaseModel):
 
     id: UUID  # <- Make it Optional with a default
     name: str
