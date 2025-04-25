@@ -47,6 +47,8 @@ from .forms import (
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
 import logging
+from main.views import send_notification, send_welcome_email
+
 
 logger = logging.getLogger(__name__)
 # Create your views here..
@@ -135,6 +137,12 @@ def join(request):
                 user.is_active = True  # Set is_active explicitly
 
                 user = form.save()
+
+                # Send a welcoming email
+                # new_user = CustomerUser.objects.all().order_by('-id').first()
+                # print(new_user)
+                # print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
+                send_notification(request)
 
                 # Provide the backend parameter when logging in the user
                 login(
