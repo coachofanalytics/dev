@@ -251,15 +251,15 @@ LOGIN_URL = "accounts:account-login"
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_USE_SSL = False
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST = "smtp.privateemail.com"
-EMAIL_HOST_USER = os.environ.get("EMAIL_HR_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HR_PASS")
+EMAIL_HR_USE_SSL = False
+EMAIL_HR_USE_TLS = True
+EMAIL_HR_PORT = 587
+EMAIL_HR_HOST = "smtp.privateemail.com"
+EMAIL_HR_USER = os.environ.get("EMAIL_HR_USER")
+EMAIL_HR_PASS = os.environ.get("EMAIL_HR_PASS")
 # EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HR_USER
 
 
 EMAIL_INFO = {

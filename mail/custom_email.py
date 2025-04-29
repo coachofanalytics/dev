@@ -108,10 +108,10 @@ def send_email(category, to_email, subject, html_template, context):
     #     __smtp_user = EMAIL_INFO
 
     # from_email = __smtp_user.get("USER")
-    hr_user = settings.EMAIL_HOST_USER 
-    hr_port = settings.EMAIL_PORT
-    hr_host = settings.EMAIL_HOST
-    hr_password = settings.EMAIL_HOST_PASSWORD
+    hr_user = settings.EMAIL_HR_USER 
+    hr_port = settings.EMAIL_HR_PORT
+    hr_host = settings.EMAIL_HR_HOST
+    hr_password = settings.EMAIL_HR_PASS
 
 
 
