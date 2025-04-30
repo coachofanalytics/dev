@@ -1,6 +1,6 @@
 from django.urls import path
 from main.views import AboutView
-from main.views import registration_update,membershirp_registration_delete,membershipplan_update,delete_membershipplan,membershipplan_detail,news_update
+from main.views import registration_update,membershirp_registration_delete,membershipplan_update,delete_membershipplan,membershipplan_detail,news_update, ContactMessage_list
 
 
 from . import views
@@ -22,7 +22,7 @@ urlpatterns = [
     path('news',views.News_list, name ='News_list'),    
     path('news_create',views.NEWS_create, name ='NEWS_create'), 
     path('news/<int:pk>/update/', news_update, name='news_update'), 
-
+    path('ContactMessage_list',views.ContactMessage_list, name ='Me mbershipPlan_list'), 
     
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
