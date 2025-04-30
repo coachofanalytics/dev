@@ -305,7 +305,7 @@ def send_notification(request):
         error_message = (
             f'Hi {request.user.first_name}, Your message to '
             f'{request.user.email} was unsuccessful. '
-            f'Please try again or contact finance@codanalytics.net. Thank You. '
+            f'Please try again or contact info@diasporacounty48.org. Thank You. '
             f'Error: {e}'
         )
         return render(request, 'main/messages/message.html', {"message": error_message})

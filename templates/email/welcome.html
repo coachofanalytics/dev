@@ -1,127 +1,95 @@
 <!DOCTYPE html>
 <html>
-    {% load static %}
-<head>
-    <title>
-    </title>
+  {% load static %}
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link
-        rel="stylesheet"
-        type="text/css"
-        href="{% static 'main/css/payment.css' %}"
-      />
-</head>
+    <title>Welcome Email</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-<body>
-    <div class="container-fluid">
-         <!--
-        <div class="row">
-            <div class="col-md-8 top-coloumn">
-                <p class="title-sub-head">
-                    DIASPORA COUNTY 48 KENYA (DC48K)
+    <!-- Mobile responsiveness styling -->
+    <style>
+      /* Set background color for the whole email */
+      {% comment %} body {
+        background-color: rgb(35, 199, 57);
+        color: #333;
+      } {% endcomment %}
+      
+      /* Container styles */
+      .email-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        {% comment %} background-color: white; {% endcomment %}
+        background-color:#35bdbd;
+        {% comment %} padding: 20px; {% endcomment %}
+        padding-top: 10px;
+        border-radius: 8px;
+      }
 
-                <p class="title-para">
-                   <i>Learn The Basics Of Business Intelligence To Skyrocket
-                    Your Career Even If You Don’t Have Any Experience.</i> 
-                </p>
-            </div>
-            <div class="col-md-4 top-coloumn text-white">
-                <div style="padding:2rem">
-                    <center>
-                        <a href="{% url 'accounts:account-login'%}" class="btn btn-md btn-bc">Sign In</a>
-                    </center>
-                </div>
-            </div>
-        </div>
-        -->
+      /* Title styles */
+      .title-sub-pay {
+        font-size: 22px;
+        color: #333;
+        text-align: center;
+        font-weight: bold;
+      }
 
-        <div class="row bottom-coloumn">
-            <div class="col-md-12 top-coloumn bottom-coloumn">
-                <p class="title-sub-pay text-center">
-                    <strong>REGISTRATION DETAILS:</strong>
-                </p>
-                <div class="row">
-                    <div style="background-color:#f8f8f8; border:1px solid #ccc; padding:20px;">
-                        <h5 style="margin-top:0;">Greetings {{ first_name }} {{ last_name }},</h5>
-                        <p>
-                            Congratulations and welcome to Diaspora County 48 Kenya.
-                        </p>
+      /* Responsive images */
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
 
-                        <p>Your Membership Number is {{user_id}} please keep it safe.</p>
-                        <p>Thank you,</p>
-                        <p>The DC48K Team</p>
-                    </div>
-                    <div class="col-md-5">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!--
-        <div class="row">
-            <div class="col-md-12 top-coloumn bg-white">
-            </div>
-            <div class="col-md-5">
-            </div>
-        </div>
+      /* Add padding and margin for better readability */
+      .content-box {
+        padding: 20px;
+        {% comment %} border: 1px solid #ccc; {% endcomment %}
+        border: 1px solid #35bdbd;
+        background-color: #f8f8f8;
+        margin-top: 10px;
+        border-radius: 8px;
+        font-family: sans-serif;
+        font-size: 18px;
+      }
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <p class="font-weight-bold text-uppercase follow-text">
-                            say hello :
-                        </p>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="d-flex" style="align-items: center;
-                        margin-top: 1%;">
-                            <i class="fa fa-linkedin" aria-hidden="true" style="font-size: 22px;
-                            color: #C5702F;"></i>
-                            <span class="ml-2" style="margin-left: 6px;
-                            font-size: 15px;
-                            margin-top: 2%;">LinkedIn</span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="d-flex" style="align-items: center;
-                        margin-top: 1%;">
-                            <div class="fb-circle">
-                                <i class="fa fa-facebook-f" aria-hidden="true" style="font-size: 19px;
-                                color: #ffffff;"></i>
-                            </div>
-                            <span class="ml-2" style="margin-left: 6px;
-                            font-size: 15px;
-                            margin-top: 2%;">facebook</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-5 bottom-left-coloumn">
-                <div style="padding-top: 2.2rem;">
-                     <img src="{% static 'data/img/coda_CEO.png' %}" /> 
-                     <img src=".\media\profile_pics\Chris3.jpg" /> 
-                    <img src="{% static 'media\profile_pics\Chris3.jpg' %}" />
-                </div>
-            </div>
-        </div>
-        -->
+      /* Ensure proper spacing and alignment for mobile */
+      @media (max-width: 600px) {
+        .email-container {
+          padding: 15px;
+        }
+        .title-sub-pay {
+          font-size: 17px;
+        }
+      }
+    </style>
+  </head>
 
+  <body>
+    <div class="email-container">
+      <!-- Logo Section -->
+      <div style="text-align: center;">
+        {% comment %} <img src="{% static 'main/img/dc48k_logo.png' %}" alt="DC48K Logo" style="width: 200px; height: auto;"> {% endcomment %}
+        <img src="https://dc48k.b-cdn.net/dc48k_logo.png" alt="DC48K Logo" style="width: 200px; height: auto;">
+      </div>
+
+      <!-- Greeting and Content -->
+      <div class="content-box">
+        {% comment %} <p class="title-sub-pay">
+          <strong>REGISTRATION DETAILS:</strong>
+        </p> {% endcomment %}
+        <p>Greetings {{ first_name }} {{ last_name }},</p>
+        
+        <p>Congratulations and welcome to Diaspora County 48 Kenya.</p>
+        
+        <p>Your Membership Number is <strong>{{ user_id }}</strong>. Please keep it safe.</p>
+    
+        <p>Thank you,</p>
+        <p>The DC48K Team</p>
+      </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
-        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
-        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
-        crossorigin="anonymous"></script>
-    <script>
-        $(".nav-btn").click(function(){
-            $("#collapsibleNavbar").toggleClass('show')
-        })
-    </script>
-</body>
-
+  </body>
 </html>
