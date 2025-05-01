@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2, ContactMessage2
+from .models import Assets,Description, Page,ContactMessage, Description_coda, Description_coda2, ContactMessage2, Donation
 from accounts.models import User,UserProfile
 from .utils import Meetings,image_view,path_values
 from main.forms import ContactForm,FeedbackForm,GalleryImageForm, ContactMessage_form, Description_form, Description2_form, Testimonial_form, Testimonial2_form, ContactMessage2_form
@@ -470,3 +470,12 @@ def ContactMessage2_delete(request, pk):
 def ContactMessage2_detail(request, pk):
     contact2_message = get_object_or_404(ContactMessage2, pk=pk)
     return render(request, 'main/snippets_templates/table/Contact_message2_detail.html', {'contact2_message': contact2_message})
+
+
+
+
+
+def Donation_list(request):
+    info=Donation.objects.all()
+    print("info===============================",info)
+    return render(request,"main/snippets_templates/table/Donation_list.html",{"info":info})
