@@ -13,7 +13,6 @@ from email.mime.multipart import MIMEMultipart
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from base64 import urlsafe_b64decode
-from coda_project.settings import EMAIL_INFO, EMAIL_HR
 from email.utils import COMMASPACE, formatdate
 from coda_project import settings
 # from getdata.models import ReplyMail
@@ -108,10 +107,10 @@ def send_email(category, to_email, subject, html_template, context):
     #     __smtp_user = EMAIL_INFO
 
     # from_email = __smtp_user.get("USER")
-    hr_user = settings.EMAIL_HR_USER 
-    hr_port = settings.EMAIL_HR_PORT
-    hr_host = settings.EMAIL_HR_HOST
-    hr_password = settings.EMAIL_HR_PASS
+    hr_user = settings.EMAIL_INFO_USER 
+    hr_port = settings.EMAIL_INFO_PORT
+    hr_host = settings.EMAIL_INFO_HOST
+    hr_password = settings.EMAIL_INFO_PASS
 
 
 
