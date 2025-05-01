@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from app.core.db.database import Base
 
 # class Projects(Base):
@@ -46,10 +47,10 @@ class Projects(Base):
 
     orgs = relationship('Orgs', back_populates='project')
 
-    # @hybrid_property
-    # def total_projects(self):
-    #     """Calculates total number of projects in the table"""
-    #     return len(self)
+    @hybrid_property
+    def total_projects(self):
+        """Calculates total number of projects in the table"""
+        return len(self)
 
 
 

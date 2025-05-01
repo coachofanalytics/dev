@@ -30,3 +30,4 @@ def add_position(request:PositionSchema, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_position)
     return request
+

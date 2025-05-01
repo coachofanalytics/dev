@@ -9,55 +9,78 @@ from app.core.models.orgs.org_id.orgs import Orgs
 from app.core.models.industry.industry import Industry
 from app.core.models.projects.projects import Projects
 from app.core.schemas.orgs.org_id.orgs_base import OrgSchema
+from app.core.authenticator.auth import get_user
 
 # Router is required
 router = APIRouter(
     tags = ['orgs']
 )
 
-
 @router.post('/org', status_code=status.HTTP_201_CREATED)
 def add_orgs(request:OrgSchema, db: Session = Depends(get_db)):
+    print("Am working ")
 
-    # Fetch the project and industry from the database using their IDs
-    project = db.query(Projects).filter(Projects.id == request.project_id).first()
-    industry = db.query(Industry).filter(Industry.id == request.industry_id).first()
+    # # Fetch and validate user
+    user_data = get_user(request, metadata=True)
+    print(user_data)
+    # print(user_data.access_level,user_data.email,user_data.id,user_data.name)
+    # validate_user_access(
+    #     expected_access_level=["Admin", "User", "Viewer"],
+    #     actual_access_level=user_data["access_level"],
+    # )
 
-    # Check if the project and industry exist
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    if not industry:
-        raise HTTPException(status_code=404, detail="Industry not found")
-    print(type(request.industry_id))
-    new_org = Orgs(
-        id = request.id,
-        project_id = request.project_id,
-        industry_id = request.industry_id,
-        name = request.name,
-        description = request.description,
-        is_sub_org = request.is_sub_org,
-        sub_org_desc = request.sub_org_desc,
-        preceding_org_id = request.preceding_org_id,
-        is_benchmarkable = request.is_benchmarkable,
-        is_benchmark = request.is_benchmark,
-        is_internal = request.is_internal,
-        is_global_external = request.is_global_external,
-        published = request.published,
-        published_searchable = request.published_searchable,
-        published_date = request.published_date,
-        publication_venue = request.publication_venue,
-        published_state = request.published_state,
-        total_conversations =request.total_conversations,
-        low_span_threshold = request.low_span_threshold,
-        is_low_span_threshold_changed = request.is_low_span_threshold_changed,
-        is_accessed = request.is_accessed,
-        created_by =request.created_by,
-        created_date = request.created_date,
-        updated_by = request.updated_by,
-        updated_date = request.updated_date
-    )
-    db.add(new_org)
-    db.commit()
-    db.refresh(new_org)
-    return request
+    # # Enforce access control for Users and Viewers
+    # if "User" in user_data["access_level"] or "Viewer" in user_data["access_level"]:
+    #     print("running ")
+    #     check_user_access(
+    #         db=db, project_id=project_id, user_data=user_data, single_project=False
+    #     )
+
+
+
+
+# @router.post('/org', status_code=status.HTTP_201_CREATED)
+# def add_orgs(request:OrgSchema, db: Session = Depends(get_db)):
+
+#     # Fetch the project and industry from the database using their IDs
+#     project = db.query(Projects).filter(Projects.id == request.project_id).first()
+#     industry = db.query(Industry).filter(Industry.id == request.industry_id).first()
+
+#     # Check if the project and industry exist
+#     if not project:
+#         raise HTTPException(status_code=404, detail="Project not found")
+#     if not industry:
+#         raise HTTPException(status_code=404, detail="Industry not found")
+#     print(type(request.industry_id))
+#     new_org = Orgs(
+#         id = request.id,
+#         project_id = request.project_id,
+#         industry_id = request.industry_id,
+#         name = request.name,
+#         description = request.description,
+#         is_sub_org = request.is_sub_org,
+#         sub_org_desc = request.sub_org_desc,
+#         preceding_org_id = request.preceding_org_id,
+#         is_benchmarkable = request.is_benchmarkable,
+#         is_benchmark = request.is_benchmark,
+#         is_internal = request.is_internal,
+#         is_global_external = request.is_global_external,
+#         published = request.published,
+#         published_searchable = request.published_searchable,
+#         published_date = request.published_date,
+#         publication_venue = request.publication_venue,
+#         published_state = request.published_state,
+#         total_conversations =request.total_conversations,
+#         low_span_threshold = request.low_span_threshold,
+#         is_low_span_threshold_changed = request.is_low_span_threshold_changed,
+#         is_accessed = request.is_accessed,
+#         created_by =request.created_by,
+#         created_date = request.created_date,
+#         updated_by = request.updated_by,
+#         updated_date = request.updated_date
+#     )
+#     db.add(new_org)
+#     db.commit()
+#     db.refresh(new_org)
+#     return request
 
