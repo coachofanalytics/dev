@@ -76,6 +76,9 @@ def security_verification(request):
     form = OTPForm(request.POST or None)
     subject = "Your one-time verification code is: "
     # otp = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+
+
+                
     password, otp = generate_random_password(8)
     print("This is Registration")
     print(password, otp)
@@ -85,6 +88,65 @@ def security_verification(request):
     # Pass the OTP directly to the template
     context = {"otp": otp, "subject": subject, "form": form}
     # return render(request, "accounts/admin/email_verification.html", context)
+
+
+    if request.method == "POST":
+        try:
+            user = None  # Initialize user variable
+
+            username_or_email = request.POST.get("email")
+            user = CustomerUser.objects.filter(email=username_or_email).first()
+        except:
+            pass
+
+        
+    url = 'email/welcome.html'
+    new_user = CustomerUser.objects.all().order_by('-id').first()
+    print(new_user)
+    
+    print(new_user)
+    print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
+
+
+    user_category = "Ordinary"
+    first_name = new_user.first_name
+    last_name = new_user.last_name
+    user_id = new_user.member_number
+    user_email = new_user.email
+    subject = "Welcome To DC48K"
+
+    print(new_user.id)
+
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id,
+        'subject': subject
+    }
+    try:
+        send_email(
+            category=user_category,
+            to_email=[user_email],
+            subject=subject,
+            html_template=url,
+            context=context
+        )
+
+        print("EMAIL SENT")
+        # return render(request,url, context)
+        # return render(request, 'main/messages/message.html', context)
+    except Exception as e:
+        error_message = (
+            f'Hi {request.user.first_name}, Your message to '
+            f'{request.user.email} was unsuccessful. '
+            f'Please try again or contact info@diasporacounty48.org. Thank You. '
+            f'Error: {e}'
+        )
+        return render(request, 'main/messages/message.html', {"message": error_message})
+
+
     return render(request, "accounts/registration/DC48K/sign_in.html", context)
 
 
