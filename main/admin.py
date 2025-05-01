@@ -23,6 +23,6 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(ContactUs)
 #admin.site.register(Faq)
 #admin.site.register(Volunteer)
-
+#admin.site.register(Donation)
 
 
