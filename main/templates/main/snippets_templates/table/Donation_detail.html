@@ -1,0 +1,26 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<section id="Donation-detail" class="py-5">
+<div class="container">
+<div class="card shadow-sm">
+<div class="card-header bg-primary text-white">
+<h4 class="mb-0">📄 Donation Details</h4>
+</div>
+<div class="card-body">
+<p><strong>donor_name:</strong> {{ Donation2_instance.donor_name }}</p>
+<p><strong>email:</strong> {{ Donation2_instance.email }}</p>
+<p><strong>amount:</strong> {{ Donation2_instance.amount }}</p>
+<p><strong>message:</strong></p>
+<div class="border p-3 rounded bg-light">
+{{ Donation2_instance.message }}
+</div>
+</div>
+<div class="card-footer text-end">
+<a href="{% url 'main:Donation_delete' Donation2_instance.pk %}" class="btn btn-danger">Delete</a>
+<a href="{% url 'main:Donation_list' %}" class="btn btn-secondary">Back</a>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

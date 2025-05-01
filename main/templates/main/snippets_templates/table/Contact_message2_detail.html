@@ -1,0 +1,25 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<section id="contact-message-detail" class="py-5">
+<div class="container">
+<div class="card shadow-sm">
+<div class="card-header bg-primary text-white">
+<h4 class="mb-0">📄 Contact Message Details</h4>
+</div>
+<div class="card-body">
+<p><strong>Name:</strong> {{ contact2_message.name }}</p>
+<p><strong>Email:</strong> {{ contact2_message.email }}</p>
+<p><strong>Message:</strong></p>
+<div class="border p-3 rounded bg-light">
+{{ contact2_message.message }}
+</div>
+</div>
+<div class="card-footer text-end">
+<a href="{% url 'main:ContactMessage2_delete' contact2_message.pk %}" class="btn btn-danger">Delete</a>
+<a href="{% url 'main:contact_message2_list' %}" class="btn btn-secondary">Back</a>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

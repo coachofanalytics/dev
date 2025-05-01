@@ -1,0 +1,14 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+<h2>Confirm Deletion</h2>
+<p>Are you sure you want to delete this Donation?</p>
+
+<form method="post">
+{% csrf_token %}
+<button type="submit" class="btn btn-danger">Yes, Delete</button>
+<a href="{% url 'main:Donation_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+</div>
+{% endblock %}
