@@ -91,13 +91,17 @@ class CustomerUser(AbstractUser):
     
     @property
     def member_number(self):
-        #user_id = str(1000000 + self.id)
-        user_id = str(self.id)
-        member_number = f"DC48-000-000{user_id}"
-        print(user_id, member_number)
+        # #user_id = str(1000000 + self.id)
+        # user_id = str(self.id)
+        # member_number = f"DC48-000-000{user_id}"
+        # print(user_id, member_number)
+        # return member_number
+
+        num = 10000000 + self.id
+        num_str = str(num)
+        user_id = num_str[1:]
+        member_number = f"DC48-{user_id}"
         return member_number
-
-
 
 class Membership(models.Model):
     PAYMENT_STATUS = [
