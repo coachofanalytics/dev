@@ -1,6 +1,7 @@
 from datetime import date
 import string
 import secrets
+from accounts.models import CustomerUser
 
 def generate_random_password(length=12):
     characters = string.ascii_letters + string.digits + "!@#$%&"
@@ -45,3 +46,24 @@ JOB_SUPPORT_CATEGORIES = [
     "Job_Support", "job_support", "jobsupport", "Jobsupport", 
     "JobSupport", "Job Support", "Job support", "job support"
 ]
+
+
+# ================================USERS========================================
+def employees():
+    active_employees = CustomerUser.objects.filter(
+                                             Q(is_staff=True),Q(is_active=True)
+                                          ).order_by("-date_joined")
+    
+    # former_employees = CustomerUser.objects.filter(
+    #                                          Q(is_staff=True),Q(is_active=True),Q(sub_category=5)
+    #                                       ).order_by("-date_joined")
+    
+    employees_categories_list = CustomerUser.objects.values_list(
+                    'sub_category', flat=True).distinct()
+    
+    
+    # employees_categories = [subcat for subcat in employees_categories_list if subcat in (1,2,3)]
+    # employees_categories = [subcat for subcat in employees_categories_list]
+    employees_categories = [subcat for subcat in employees_categories_list if subcat in (0,1,2,3,4,5,6)]
+    employee_subcategories=list(set(employees_categories))
+    return (employee_subcategories,active_employees)

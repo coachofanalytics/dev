@@ -7,6 +7,8 @@ from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
 from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
+from accounts.modelmanager import DepartmentManager
+from django.db.models.signals import pre_save
 
 # Create your models here.
 class CustomerUser(AbstractUser):
@@ -66,3 +68,151 @@ class CustomerUser(AbstractUser):
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
     
+
+
+class Department(models.Model):
+    """Department Table will provide a list of the different departments in CODA"""
+
+    # Department
+    # BASIC = "Basic"
+    HR = "HR Department"
+    IT = "IT Department"
+    MKT = "Marketing Department"
+    FIN = "Finance Department"
+    SECURITY = "Security Department"
+    MANAGEMENT = "Management Department"
+    # Project = "Project"
+    HEALTH = "Health Department"
+    Other = "Other"
+    DEPARTMENT_CHOICES = [
+        # (BASIC, "BASIC Department"),
+        (HR, "HR Department"),
+        (IT, "IT Department"),
+        (MKT, "Marketing Department"),
+        (FIN, "Finance Department"),
+        # (Project, "Project"),
+        (SECURITY, "Security Department"),
+        (MANAGEMENT, "Management Department"),
+        (HEALTH, "Health Department"),
+        (Other, "Other"),
+    ]
+
+    name = models.CharField(
+        max_length=100,
+        choices=DEPARTMENT_CHOICES,
+        default=Other,
+    )
+
+    description = models.TextField(max_length=500, null=True, blank=True)
+    slug = models.SlugField(
+        verbose_name=_("Department safe URL"), max_length=255, unique=True
+    )
+    # created_date = models.DateTimeField(_('entered on'),default=timezone.now, editable=True)
+    is_featured = models.BooleanField("Is featured", default=True)
+    is_active = models.BooleanField(default=True)
+
+    objects=DepartmentManager()
+
+    @classmethod
+    def get_default_pk(cls):
+        cat, created = cls.objects.get_or_create(
+            name="Other", defaults=dict(description="this is not an cat")
+        )
+        return cat.pk
+
+    class Meta:
+        verbose_name = _("Department")
+        verbose_name_plural = _("Departments")
+
+    def get_absolute_url(self):
+            return reverse('main:department_reports', args=[self.slug])    
+
+    def __str__(self):
+        return self.name
+ 
+ 
+# =========================CREDENTIALS TABLE======================================
+
+
+class CredentialCategory(models.Model):
+    department = models.ForeignKey(
+        to=Department, on_delete=models.CASCADE, default=Department.get_default_pk
+    )
+    # created_by= models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.CharField(
+        verbose_name=_("Category Name"),
+        help_text=_("Required"),
+        max_length=255,
+        unique=True,
+    )
+    slug = models.SlugField(
+        verbose_name=_("category safe URL"), max_length=255, unique=True
+    )
+    description = models.TextField(max_length=1000, default=None)
+    entry_date = models.DateTimeField(_("entered on"), auto_now_add=True, editable=True)
+    is_active = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=True)
+
+    def get_absolute_url(self):
+        return reverse("management:credentialcategorylist", args=[self.slug])
+
+    class Meta:
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
+
+    def __str__(self):
+        # return f"{self.category} Categories"
+        return f"{self.category}"
+
+# ========================================SLUGS GENERATOR====================================================
+def credentialcategory_pre_save_receiver(sender, instance, *args, **kwargs):
+    if not instance.slug:
+        instance.slug = unique_slug_generator(instance)
+
+
+pre_save.connect(credentialcategory_pre_save_receiver, sender=CredentialCategory)
+
+
+class Credential(models.Model):
+    USER_CHOICES = [
+        ("Superuser", "Superuser"),
+        ("Admin", "Admin"),
+        ("Employee", "Employee"),
+        ("Other", "Other"),
+    ]
+    category = models.ManyToManyField(
+        CredentialCategory, blank=True, related_name="credentialcategory"
+    )
+    added_by = models.ForeignKey(CustomerUser, on_delete=models.RESTRICT)
+    name = models.CharField(
+        verbose_name=_("credential Name"),
+        help_text=_("Required"),
+        max_length=255,
+    )
+    slug = models.SlugField(
+        verbose_name=_("credential safe URL"), max_length=255, unique=True
+    )
+    description = models.TextField(max_length=1000, default=None)
+    link_name = models.CharField(max_length=255, default="General")
+    link = models.CharField(max_length=100, blank=True, null=True)
+    password = models.CharField(
+        max_length=255, blank=True, null=True, default="No Password Needed"
+    )
+    entry_date = models.DateTimeField(_("entered on"), auto_now_add=True, editable=True)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=True)
+    user_types = models.CharField(
+        max_length=25,
+        choices=USER_CHOICES,
+        default="Other",
+    )
+
+    class Meta:
+        verbose_name_plural = "credentials"
+
+    def get_absolute_url(self):
+        return reverse("management:credential")
+
+    def __str__(self):
+        return self.name
+

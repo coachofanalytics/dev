@@ -1,0 +1,46 @@
+{%extends "main/base_templates/new_base.html"%} {% block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>ALL CLIENTS</h2>
+    <hr>
+    <div class="col-md-12">
+      <p><a href="#" class="btn btn-primary btn-sm"
+        >JOB SUPPORT
+      </a></p>
+    </div>
+    <hr>
+    <table class="table table-borderless">
+      {% include 'main/snippets_templates/table/empheaders.html' with instance=client %}
+      {% for client in jobsupport %}
+        {% include 'main/snippets_templates/table/emptable.html' with instance=client %}
+      {% endfor %}
+  </table>
+
+    <div class="col-md-12">
+      <p><a href="#" class="btn btn-primary btn-sm"
+        >Students
+      </a></p>
+    </div>
+    <hr>
+    <table class="table table-borderless">
+      {% include 'main/snippets_templates/table/empheaders.html' with instance=client %}
+      {% for client in students %}
+        {% include 'main/snippets_templates/table/emptable.html' with instance=client %}
+      {% endfor %}
+  </table>
+
+    <div class="col-md-12">
+      <p><a href="#" class="btn btn-primary btn-sm"
+        >Past Clients
+      </a></p>
+    </div>
+    <hr>
+    <table class="table table-borderless">
+      {% include 'main/snippets_templates/table/empheaders.html' with instance=client %}
+      {% for client in past %}
+        {% include 'main/snippets_templates/table/emptable.html' with instance=client %}
+      {% endfor %}
+  </table>
+  </div>
+</section>
+{% endblock content %}

@@ -3,13 +3,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm
+from .forms import UserForm, LoginForm,CredentialCategoryForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser
+from .models import CustomerUser, Credential, CredentialCategory, Department
 from .utils import agreement_data
 from application.models import UserProfile,Assets
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .utils import generate_random_password
 
 from django.urls import reverse
@@ -18,6 +19,12 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
+from main.filters import CredentialFilter
+from django.views.generic import (
+    DetailView,
+    UpdateView,
+    DeleteView
+)
 # Create your views here..
 
 # @allowed_users(allowed_roles=['admin'])
@@ -257,3 +264,173 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
+
+
+
+
+
+@login_required
+def credential_view(request):
+    if not request.user.is_superuser and not request.user.is_admin and not request.user.is_staff:
+        message = 'You are not allowed to access this page. Contact admin: info@codanalytics.net'
+        return render(request, "main/errors/generalerrors.html", {"message": message})
+    else:
+        message = 'Please Contact Admin, if you fail to find access'
+        categories = CredentialCategory.objects.all().order_by("-entry_date")
+        departments = Department.objects.all()  # Fixed: get all departments
+        
+        if request.user.is_superuser:
+            credentials = Credential.objects.all().order_by("-entry_date")
+        elif request.user.is_admin:
+            credentials = Credential.objects.filter(Q(user_types='Admin') | Q(user_types='Employee')).order_by("-entry_date")
+        elif request.user.is_staff:
+            credentials = Credential.objects.filter(user_types='Employee').order_by("-entry_date")
+        else:
+            credentials = Credential.objects.none()
+        
+        credential_filters = CredentialFilter(request.GET, queryset=credentials)
+
+        # Step 1: Create a list of credentials
+        credentials_list = list(credentials)
+
+        # Step 2: Determine specific records to be moved to the center
+        specific_records = ['boa', 'experian', 'betterment', 'robin', 'citi']  # Replace with the actual specific records you want to move
+
+        # Step 3: Remove specific records from the credentials list
+        for record in specific_records:
+            if record in credentials_list:
+                credentials_list.remove(record)
+
+        # Step 4: Sort the credentials list
+        credentials_list.sort(key=lambda cred: cred.entry_date, reverse=True)
+
+        # Step 5: Calculate the index for inserting the specific records
+        center_index = math.ceil(len(credentials_list) / 2)
+
+        # Step 6: Insert the specific records at the center index
+        for record in specific_records:
+            credentials_list.insert(center_index, record)
+
+        context = {
+            "departments": departments,
+            "categories": categories,
+            "credentials": credentials_list,
+            "show_password": False,
+            "credential_filters": credential_filters,
+            "message": message,
+        }
+
+        try:
+            request.session["siteurl"] = settings.SITEURL
+            otp = request.POST.get("otp")
+            if otp == request.session.get("security_otp"):
+                del request.session["security_otp"]
+                context["show_password"] = True
+                return render(request, "accounts/admin/credentials.html", context)
+            else:
+                error_context = {"message": "Invalid OTP"}
+                return render(request, "accounts/admin/email_verification.html", error_context)
+
+        except Exception as e:
+            print(f"Error: {e}")
+            return render(request, "accounts/admin/credentials.html", context)
+
+def newcredentialCategory(request):
+    if request.method == "POST":
+        form = CredentialCategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:account-crendentials")
+    else:
+        form = CredentialCategoryForm()
+    return render(
+        request, "accounts/admin/forms/credentialCategory_form.html", {"form": form}
+    )
+
+@login_required
+def newcredential(request):
+    if request.method == "POST":
+        form = CredentialForm(request.POST, request.FILES)
+        if form.is_valid():
+            # form.save()
+            instance=form.save(commit=False)
+            instance.added_by=request.user
+            instance.save()
+            return redirect("accounts:account-crendentials")
+    else:
+        form = CredentialForm()
+    return render(request, "accounts/admin/forms/credential_form.html", {"form": form})
+
+
+
+def clientlist(request):
+    clients = {
+        'students': CustomerUser.objects.filter(Q(category=4), Q(is_client=True), Q(is_active=True)).order_by('-date_joined'),
+        'jobsupport': CustomerUser.objects.filter(Q(category=3), Q(is_client=True), Q(is_active=True)).order_by('-date_joined'),
+        'interview': CustomerUser.objects.filter(Q(category=4),  Q(is_client=True), Q(is_active=True)).order_by('-date_joined'),
+        # 'dck_users': CustomerUser.objects.filter(Q(category=4), Q(sub_category=6), Q(is_applicant=True), Q(is_active=True)).order_by('-date_joined'),
+        # 'dyc_users': CustomerUser.objects.filter(Q(category=4), Q(sub_category=7), Q(is_applicant=True), Q(is_active=True)).order_by('-date_joined'),
+        'past': CustomerUser.objects.filter(Q(is_client=True), Q(is_active=False)).order_by('-date_joined'),
+    }
+    template_name = "accounts/clients/clientlist.html"
+    return render(request, template_name, clients)
+
+
+@method_decorator(login_required, name="dispatch")
+class ClientDetailView(DetailView):
+    template_name = "accounts/clients/client_detail.html"
+    model = CustomerUser
+    ordering = ["-date_joined "]
+
+
+class ClientUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = CustomerUser
+    success_url = "/accounts/clients"
+    fields = ["category", "address", "city", "state", "country"]
+    form = UserForm
+
+    def form_valid(self, form):
+        # form.instance.username=self.request.user
+        if (
+            self.request.user.is_superuser
+            or self.request.user.is_admin
+            # or self.request.user.is_staff
+        ):
+            return super().form_valid(form)
+        else:
+            return False
+
+    def test_func(self):
+        # client = self.get_object()
+        if (
+            self.request.user.is_superuser
+            or self.request.user.is_admin
+            # or self.request.user.is_staff
+        ):
+            return True
+        else:
+            return False
+
+
+@method_decorator(login_required, name="dispatch")
+class ClientDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = CustomerUser
+    success_url = "/accounts/clients"
+
+    def test_func(self):
+        client = self.get_object()
+        # if self.request.user == client.username:
+        if self.request.user.is_superuser:
+            return True
+        return False
+
+
+
+# ================================EMPLOYEE SECTION================================
+def Employeelist(request):
+    employee_subcategories,active_employees=employees()
+    context={
+        "employee_subcategories":employee_subcategories,
+        "active_employees":active_employees
+    }
+    return render(request, 'accounts/employees/employeelist.html', context)
