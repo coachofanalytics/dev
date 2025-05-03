@@ -3,11 +3,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm
+from .forms import UserForm, LoginForm, CredentialCategoryForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser
+from .models import CustomerUser, Credential
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -18,6 +19,9 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
+from django.views.generic import (
+        UpdateView
+)
 # Create your views here..
 
 # @allowed_users(allowed_roles=['admin'])
@@ -257,3 +261,140 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
+
+
+
+def newcredentialCategory(request):
+    if request.method == "POST":
+        form = CredentialCategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:account-crendentials")
+    else:
+        form = CredentialCategoryForm()
+    return render(
+        request, "accounts/admin/forms/credentialCategory_form.html", {"form": form}
+    )
+
+@login_required
+def newcredential(request):
+    if request.method == "POST":
+        form = CredentialForm(request.POST, request.FILES)
+        if form.is_valid():
+            # form.save()
+            instance=form.save(commit=False)
+            instance.added_by=request.user
+            instance.save()
+            return redirect("accounts:account-crendentials")
+    else:
+        form = CredentialForm()
+    return render(request, "accounts/admin/forms/credential_form.html", {"form": form})
+
+
+def credential_view(request):
+    if not request.user.is_superuser and not request.user.is_admin and not request.user.is_staff:
+        message = 'You are not allowed to access this page. Contact admin: info@codanalytics.net'
+        return render(request, "main/errors/generalerrors.html", {"message": message})
+    else:
+        message = 'Please Contact Admin, if you fail to find access'
+        categories = CredentialCategory.objects.all().order_by("-entry_date")
+        departments = Department.objects.all()  # Fixed: get all departments
+        
+        if request.user.is_superuser:
+            credentials = Credential.objects.all().order_by("-entry_date")
+        elif request.user.is_admin:
+            credentials = Credential.objects.filter(Q(user_types='Admin') | Q(user_types='Employee')).order_by("-entry_date")
+        elif request.user.is_staff:
+            credentials = Credential.objects.filter(user_types='Employee').order_by("-entry_date")
+        else:
+            credentials = Credential.objects.none()
+        
+        credential_filters = CredentialFilter(request.GET, queryset=credentials)
+
+        # Step 1: Create a list of credentials
+        credentials_list = list(credentials)
+
+        # Step 2: Determine specific records to be moved to the center
+        specific_records = ['boa', 'experian', 'betterment', 'robin', 'citi']  # Replace with the actual specific records you want to move
+
+        # Step 3: Remove specific records from the credentials list
+        for record in specific_records:
+            if record in credentials_list:
+                credentials_list.remove(record)
+
+        # Step 4: Sort the credentials list
+        credentials_list.sort(key=lambda cred: cred.entry_date, reverse=True)
+
+        # Step 5: Calculate the index for inserting the specific records
+        center_index = math.ceil(len(credentials_list) / 2)
+
+        # Step 6: Insert the specific records at the center index
+        for record in specific_records:
+            credentials_list.insert(center_index, record)
+
+        context = {
+            "departments": departments,
+            "categories": categories,
+            "credentials": credentials_list,
+            "show_password": False,
+            "credential_filters": credential_filters,
+            "message": message,
+        }
+
+        try:
+            request.session["siteurl"] = settings.SITEURL
+            otp = request.POST.get("otp")
+            if otp == request.session.get("security_otp"):
+                del request.session["security_otp"]
+                context["show_password"] = True
+                return render(request, "accounts/admin/credentials.html", context)
+            else:
+                error_context = {"message": "Invalid OTP"}
+                return render(request, "accounts/admin/email_verification.html", error_context)
+
+        except Exception as e:
+            print(f"Error: {e}")
+            return render(request, "accounts/admin/credentials.html", context)
+        
+@login_required
+def security_verification(request):
+    subject = "One time verification code to view passwords"
+    # otp = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+    password,otp=generate_random_password(8)
+    print(password,otp)
+    request.session["security_otp"] = otp
+    request.session["siteurl"] = settings.SITEURL
+    
+    # Pass the OTP directly to the template
+    context = {'otp': otp, 'subject': subject}
+    return render(request, "accounts/admin/email_verification.html", context)
+
+
+@method_decorator(login_required, name="dispatch")
+class CredentialUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Credential
+    success_url = "/accounts/credentials"
+    fields = ['category','name', 'added_by','slug',
+                'user_types','description','password',
+                'link_name','link','is_active','is_featured']
+
+    def form_valid(self, form):
+        # if form.instance.added_by==self.request.user:
+        if (
+            self.request.user.is_superuser
+            or self.request.user.is_admin
+        ):
+            return super().form_valid(form)
+        else:
+            return False
+
+    def test_func(self):
+        credential = self.get_object()
+        # if self.request.user ==credential.added_by:
+        if (
+            self.request.user.is_superuser
+            or self.request.user.is_admin
+        ):
+            return True
+        else:
+            return False
