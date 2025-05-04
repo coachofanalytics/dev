@@ -17,11 +17,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
+<<<<<<< HEAD
 #DEBUG Configurations
 DEBUG = True
 DEBUG_VAL = int(os.environ.get('DEBUG'))
 if DEBUG_VAL == 0:
     DEBUG = False
+=======
+
+DEBUG = os.environ.get("DEBUG")
+>>>>>>> 25.04_DC48K_UAT_EM
 
 
 SECURE_SSL_REDIRECT = False
@@ -242,9 +247,13 @@ EMAIL_INFO_PORT = 587
 EMAIL_INFO_HOST = "smtp.privateemail.com"
 EMAIL_INFO_USER = os.environ.get("DC48K_EMAIL_INFO_USER")
 EMAIL_INFO_PASS = os.environ.get("DC48K_EMAIL_INFO_PASS")
+<<<<<<< HEAD
 
 DEFAULT_FROM_EMAIL = EMAIL_INFO_USER
+=======
+>>>>>>> 25.04_DC48K_UAT_EM
 
+DEFAULT_FROM_EMAIL = EMAIL_INFO_USER
 
 
 AWS_S3_REGION_NAME = "us-east-2"  # change to your region
