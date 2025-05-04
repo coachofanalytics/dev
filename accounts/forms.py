@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import  Textarea
-from .models import CustomerUser, CredentialCategory, Credential
+from .models import CustomerUser, CredentialCategory, Credential, LoginHistory
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import  RegexValidator,validate_email
 from django.core.exceptions import ValidationError
@@ -171,3 +171,13 @@ class CredentialForm(forms.ModelForm):
             "category":forms.SelectMultiple(attrs={'class':'form-control', 'id':'category'}),
             "description": Textarea(attrs={"cols": 40, "rows": 2})
             }
+
+
+class LoginHistoryForm(forms.ModelForm):
+   login_time = forms.DateTimeField(input_formats=["%Y-%m-%d %I:%M %p"]) 
+   logout_time = forms.DateTimeField(input_formats=["%Y-%m-%d %I:%M %p"]) 
+
+
+   class Meta:
+       model = LoginHistory
+       fields = ['login_time', 'logout_time']        

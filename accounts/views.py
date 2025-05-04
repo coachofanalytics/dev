@@ -455,3 +455,22 @@ def user_login_history(request,username="eunice"):
     }
 
     return render(request, 'accounts/login_history.html', context)
+
+
+
+@login_required
+def edit_login_logout_time(request, pk):
+    login_history = get_object_or_404(LoginHistory, pk=pk)
+    username = login_history.user.username
+
+    if request.method == 'POST':
+        form = LoginHistoryForm(request.POST, instance=login_history)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:account-profile', username=username)
+        else:
+            print(form.errors)  # Debugging: check for errors if invalid
+    else:
+        form = LoginHistoryForm(instance=login_history)
+
+    return render(request, 'main/snippets_templates/table/logging.html', {'form': form, 'login_history': login_history})

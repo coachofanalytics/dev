@@ -14,6 +14,7 @@ urlpatterns = [
     path('login/', views.login_view, name='account-login'),
     path('profile/', views.profile, name='account-profile'),
     path('login_history/<str:username>', views.user_login_history, name='login_history'),
+    path('time/<int:pk>/update/', views.edit_login_logout_time, name='time-update'),
     #=============================CREDENTIALS VIEWS=====================================
     path('credentials/', views.credential_view, name='account-crendentials'),
     path('newcredentialcategory/', views.newcredentialCategory, name='account-newcredentialcategory'),
