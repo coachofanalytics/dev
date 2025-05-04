@@ -242,13 +242,10 @@ EMAIL_INFO_PORT = 587
 EMAIL_INFO_HOST = "smtp.privateemail.com"
 EMAIL_INFO_USER = os.environ.get("DC48K_EMAIL_INFO_USER")
 EMAIL_INFO_PASS = os.environ.get("DC48K_EMAIL_INFO_PASS")
-<<<<<<< HEAD
+
 
 DEFAULT_FROM_EMAIL = EMAIL_INFO_USER
-=======
->>>>>>> 25.04_DC48K_UAT_EM
 
-DEFAULT_FROM_EMAIL = EMAIL_INFO_USER
 
 
 AWS_S3_REGION_NAME = "us-east-2"  # change to your region
