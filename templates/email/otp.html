@@ -81,12 +81,19 @@
         {% comment %} <p class="title-sub-pay">
           <strong>REGISTRATION DETAILS:</strong>
         </p> {% endcomment %}
-        <p>Greetings {{ first_name }} {{ last_name }},</p>
+        <p>Greetings,</p>
         
-        <p>Congratulations and welcome to Diaspora County 48 Kenya.</p>
+        <p>You have made a request to login with One Time Passcode(OTP).</p>
         
-        <p>Your Membership Number is <strong>{{ otp }}</strong>. Please keep it safe.</p>
-    
+        <p>Please copy this code: <strong>{{ otp }}</strong> and enter it in the resulting page on the Website</p>
+
+        <!--
+        <p>
+          {% comment %} <a id="otp" href="{% url 'accounts:security' %}" >Login with One Time Code</a> {% endcomment %}
+          <a id="otp" href="http://{{ request.get_host }}{% url 'accounts:security' %}" >Login with One Time Code</a>
+        </p>
+        -->
+        
         <p>Thank you,</p>
         <p>The DC48K Team</p>
       </div>

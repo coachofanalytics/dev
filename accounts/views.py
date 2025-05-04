@@ -48,6 +48,7 @@ from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
 import logging
 from main.views import send_notification, send_welcome_email
+from mail.custom_email import send_email
 
 
 logger = logging.getLogger(__name__)
@@ -92,59 +93,60 @@ def security_verification(request):
 
     if request.method == "POST":
         try:
-            user = None  # Initialize user variable
+            #user = None  # Initialize user variable
 
-            username_or_email = request.POST.get("email")
-            user = CustomerUser.objects.filter(email=username_or_email).first()
+            user_email = request.POST.get("email")
+            user = CustomerUser.objects.filter(email=user_email).first()
         except:
             pass
 
         
-    url = 'email/welcome.html'
-    new_user = CustomerUser.objects.all().order_by('-id').first()
-    print(new_user)
-    
-    print(new_user)
-    print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
+        url = 'email/otp.html'
+        # new_user = CustomerUser.objects.all().order_by('-id').first()
+        print(user)
+        
+        print(user)
+        print(user.id, user.first_name, user.category, user.member_number, user.email)
 
 
-    user_category = "Ordinary"
-    first_name = new_user.first_name
-    last_name = new_user.last_name
-    user_id = new_user.member_number
-    user_email = new_user.email
-    subject = "Welcome To DC48K"
+        user_category = "Ordinary"
+        # first_name = user.first_name
+        # last_name = user.last_name
+        # user_id = user.member_number
+        user_email = user.email
+        subject = "One Time Password(OTP)"
 
-    print(new_user.id)
+        print(user.id)
 
 
-    context = {
-        'user_category': user_category,
-        'first_name': first_name,
-        'last_name': last_name,
-        'user_id': user_id,
-        'subject': subject
-    }
-    try:
-        send_email(
-            category=user_category,
-            to_email=[user_email],
-            subject=subject,
-            html_template=url,
-            context=context
-        )
+        context = {
+            # 'user_category': user_category,
+            # 'first_name': first_name,
+            # 'last_name': last_name,
+            'otp': otp,
+            'subject': subject,
+            'request': request
+        }
+        try:
+            send_email(
+                category=user_category,
+                to_email=[user_email],
+                subject=subject,
+                html_template=url,
+                context=context
+            )
 
-        print("EMAIL SENT")
-        # return render(request,url, context)
-        # return render(request, 'main/messages/message.html', context)
-    except Exception as e:
-        error_message = (
-            f'Hi {request.user.first_name}, Your message to '
-            f'{request.user.email} was unsuccessful. '
-            f'Please try again or contact info@diasporacounty48.org. Thank You. '
-            f'Error: {e}'
-        )
-        return render(request, 'main/messages/message.html', {"message": error_message})
+            print("EMAIL SENT")
+            # return render(request,url, context)
+            # return render(request, 'main/messages/message.html', context)
+        except Exception as e:
+            error_message = (
+                f'Hi {request.user.first_name}, Your message to '
+                f'{request.user.email} was unsuccessful. '
+                f'Please try again or contact info@diasporacounty48.org. Thank You. '
+                f'Error: {e}'
+            )
+            return render(request, 'main/messages/message.html', {"message": error_message})
 
 
     return render(request, "accounts/registration/DC48K/sign_in.html", context)

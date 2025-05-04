@@ -123,11 +123,11 @@
     <div class="row">
       <div class="col-md-6 form-div">
         <div class="container">
-          <h2 style="color: #03b1af;">Login</h2>
+          <h2 style="color: #03b1af;">OTP Login</h2>
           <form action="{% url 'accounts:account-login' %}" method="POST">
             {% csrf_token %}
             <div class="form-group">
-                <label for="">Enter Your Username/Email</label><br>
+                <label for="">Enter Your Email</label><br>
                 {% comment %} {{ form.email.errors }}
                 {{ form.email }} {% endcomment %}
                 <input type="email" name="email" class="email" placeholder="Enter email here" style="margin:20px 0; width: 100%; padding: 10px;" />
@@ -135,7 +135,8 @@
 
 
             <div class="form-group">
-              <label for="">Enter This Security Code Below:  <strong>{{ otp }}</strong></label><br>
+              {% comment %} <label for="">Enter This Security Code Below:  <strong>{{ otp }}</strong></label><br> {% endcomment %}
+              <label for="">Enter The Security Code Sent To Your Email:</strong></label><br>
               {% comment %} {{ form.security_code.errors }}
               {{ form.security_code }} {% endcomment %}
               {% comment %} <input type="text" name="otp" class="otp" placeholder="Enter otp here" style="margin:20px 0" /> {% endcomment %}
