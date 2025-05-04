@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm,CredentialCategoryForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser, Credential, CredentialCategory, Department
+from .models import CustomerUser, Credential, CredentialCategory, Department, LoginHistory
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -434,3 +434,24 @@ def Employeelist(request):
         "active_employees":active_employees
     }
     return render(request, 'accounts/employees/employeelist.html', context)
+
+
+
+@login_required
+def user_login_history(request,username="eunice"):
+    login_history = LoginHistory.objects.filter(user__username=username).order_by('-login_time')
+    for entry in login_history:
+        print(entry.id)
+    # user = request.user
+    # login_dates = user.get_login_days()
+    # login_count = user.get_login_count()
+    # has_logged_in_last_7_days = user.has_logged_in_last_days(7)
+
+    context = {
+        # 'login_dates': login_dates,
+        # 'login_count': login_count,
+        # 'has_logged_in_last_7_days': has_logged_in_last_7_days,
+        'login_history': login_history
+    }
+
+    return render(request, 'accounts/login_history.html', context)

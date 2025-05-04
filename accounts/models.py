@@ -216,3 +216,19 @@ class Credential(models.Model):
     def __str__(self):
         return self.name
 
+
+class LoginHistory(models.Model):
+    user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE)
+    login_time = models.DateTimeField(null=True, blank=True)
+    logout_time = models.DateTimeField(null=True, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+    # You can add more fields as needed
+
+    def __str__(self):
+        return f'{self.user.username} - {self.login_time} to {self.logout_time}'
+
+    @property
+    def login_duration(self):
+        number_hours=(self.logout_time-self.login_time ).hours
+        return number_hours

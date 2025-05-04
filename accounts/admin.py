@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser, Credential, CredentialCategory, Department
+from .models import CustomerUser, Credential, CredentialCategory, Department, LoginHistory
 
 
 # admin.site.register(CustomerUser)
@@ -64,8 +64,15 @@ class DepartmentAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class LoginHistoryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'login_time', 'logout_time')
+    list_filter = ('user', 'login_time', 'logout_time')
+    search_fields = ('user__username',)
+
+
 # Now register the new UserAdmin...
 admin.site.register(CustomerUser, CustomerAdmin)
+admin.site.register(LoginHistory, LoginHistoryAdmin)
 admin.site.register(CredentialCategory)
 admin.site.register(Credential)
 # admin.site.register(CustomerUser)
