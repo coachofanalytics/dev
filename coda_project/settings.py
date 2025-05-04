@@ -17,17 +17,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-<<<<<<< HEAD
+
 #DEBUG Configurations
 DEBUG = True
 DEBUG_VAL = int(os.environ.get('DEBUG'))
 if DEBUG_VAL == 0:
     DEBUG = False
-=======
-
-DEBUG = os.environ.get("DEBUG")
->>>>>>> 25.04_DC48K_UAT_EM
-
 
 SECURE_SSL_REDIRECT = False
 
