@@ -16,4 +16,7 @@ urlpatterns = [
     path('newcredentialcategory/', views.newcredentialCategory, name='account-newcredentialcategory'),
     path('newcredential/', views.newcredential, name='account-newcredentials'),
     path('credential/update/<int:pk>/', CredentialUpdateView.as_view(template_name="accounts/admin/forms/credential_form.html"), name='credential-update'),
+    
+    #=============================EMPLOYEES VIEWS=====================================
+    path('employees/', views.Employeelist, name='employees'),
 ]
