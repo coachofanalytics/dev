@@ -24,7 +24,7 @@ urlpatterns = [
     path('joblist/<int:pk>/update/', views.joblisting_update, name='joblist_update'),
     path('joblist/<int:pk>/detail/', views.joblist_detail, name='joblist_detail'),
     path('joblist/<int:pk>/delete/', views.joblist_delete, name='joblist_delete'),
-    
+    path('faq_list/',views.faq_list, name ='faqs'), 
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),

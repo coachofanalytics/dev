@@ -24,7 +24,7 @@ from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm
 from .models import (
     Budget, CodaBudget, Payment_Information, Payment_History,
-    Default_Payment_Fees, Transaction
+    Default_Payment_Fees, Transaction, Faq
 )
 from .utils import (
     check_default_fee, get_exchange_rate, compute_amt, category_subcategory
@@ -499,6 +499,15 @@ def budget_projection(request,subtitle='summary',duration=2024):
         return render(request, "finance/budgets/summary_budget.html", context)
     
 
+def faq_list(request):
+    faqs = Faq.objects.all()
+    print (faqs)
+    template_name = 'finance/faq.html'
+    context = {
+        'faqs': faqs 
+    }
+
+    return render(request, template_name, context)
 
 
    

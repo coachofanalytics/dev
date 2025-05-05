@@ -12,6 +12,7 @@ admin.site.register(MembershipPlan)
 
 admin.site.register(Gallerys)
 admin.site.register(JobListing)
+admin.site.register(Faq)
 
 
 

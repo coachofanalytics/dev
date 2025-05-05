@@ -8,11 +8,12 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description,Page,MembershipPlan, JobListing
+from .models import Assets,Description,Page,MembershipPlan, JobListing, Faq
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm,registrationform, JoblistingForm
 from django.contrib.auth import get_user_model
+
 
 User=get_user_model()
 
@@ -342,6 +343,16 @@ def joblist_delete(request, pk):
         return redirect('main:jobs_list')  # Redirect to the jobs list page
     return render(request, 'main/snippets_templates/table/joblist_delete.html', {'job': job})
 
+
+def faq_list(request):
+    faqs = Faq.objects.all()
+    print (faqs)
+    template_name = 'main/faq.html'
+    context = {
+        'faqs': faqs 
+    }
+
+    return render(request, template_name, context)
 
 
 

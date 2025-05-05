@@ -1,0 +1,24 @@
+<!--{%extends "main/base_templates/base.html"%} {% block content %} -->
+<section id="career">
+    <div class="career text-center">
+        <h2>FAQs</h2>
+        <table class="table table-borderless" style="width: 100%">
+            <thead class="border-bottom font-weight-bold">
+                <tr>
+                    <th>Question</th>
+                    <th>Answer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for faq in faqs %}
+                <tr>
+                    <td>{{faq.question}}</td>
+                    <td>{{faq.answer}}</td>
+                    <!-- <td> <a class="article-title" href="{% url 'accounts:user-update' user.id %}">Edit</a></td> -->
+                </tr>
+                 {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock content %}

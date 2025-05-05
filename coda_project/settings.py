@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 # SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = False
+DEBUG = True
 # DEBUG = os.environ.get("DEBUG_VALUE") == "False"
 
 SECURE_SSL_REDIRECT = False
@@ -54,14 +54,14 @@ INSTALLED_APPS = [
     "mathfilters",
     "mptt",
     "django_filters",
-    "django_celery_beat",
-    "django_celery_results",
+    # "django_celery_beat",
+    # "django_celery_results",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
-    "django_crontab",
+    # "django_crontab",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -119,29 +119,29 @@ TEMPLATES = [
 ]
 
 #  ==============DBFUNCTIONS=====================================
-def dba_values():
-    if os.environ.get('ENVIRONMENT') == 'production':
-        host = os.environ.get('HEROKU_DYCPROD_HOST')
-        dbname = os.environ.get('HEROKU_DYCPROD_NAME')
-        user = os.environ.get('HEROKU_DYCPROD_USER')
-        password = os.environ.get('HEROKU_DYCPROD_PASS')
-    elif os.environ.get('ENVIRONMENT') == 'staging':
-        # In Heroku/Postgres it is Heroku_UAT
-        host = os.environ.get('HEROKU_DYCDEV_HOST')
-        dbname = os.environ.get('HEROKU_DYCDEV_NAME')
-        user = os.environ.get('HEROKU_DYCDEV_USER')
-        password = os.environ.get('HEROKU_DYCDEV_PASS')
-    else:
-        host = 'localhost'
-        dbname = "DYC_DEV" #os.environ.get('POSTGRES_DB_NAME') 
-        user = "postgres" #os.environ.get('POSTGRESDB_USER')
-        password ="MANAGER2030" #os.environ.get('POSTGRESSPASS') 
-    return host,dbname,user,password  
+# def dba_values():
+#     if os.environ.get('ENVIRONMENT') == 'production':
+#         host = os.environ.get('HEROKU_DYCPROD_HOST')
+#         dbname = os.environ.get('HEROKU_DYCPROD_NAME')
+#         user = os.environ.get('HEROKU_DYCPROD_USER')
+#         password = os.environ.get('HEROKU_DYCPROD_PASS')
+#     elif os.environ.get('ENVIRONMENT') == 'staging':
+#         # In Heroku/Postgres it is Heroku_UAT
+#         host = os.environ.get('HEROKU_DYCDEV_HOST')
+#         dbname = os.environ.get('HEROKU_DYCDEV_NAME')
+#         user = os.environ.get('HEROKU_DYCDEV_USER')
+#         password = os.environ.get('HEROKU_DYCDEV_PASS')
+#     else:
+#         host = 'localhost'
+#         dbname = "DYC_DEV" #os.environ.get('POSTGRES_DB_NAME') 
+#         user = "postgres" #os.environ.get('POSTGRESDB_USER')
+#         password ="MANAGER2030" #os.environ.get('POSTGRESSPASS') 
+#     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
 import dj_database_url
 
-host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #herokudev(),
+# host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #herokudev(),
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -160,10 +160,10 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 DATABASES = {
     'default': {
         "ENGINE": 'django.db.backends.postgresql',
-        "NAME": 'CODA_PRAC',
-        "USER": 'postgres',
-        "PASSWORD": 'Y71922:g',
-        "HOST": 'localhost',  
+        "NAME": 'd2l066ajig78uh',
+        "USER": 'uf4o5nponalopo',
+        "PASSWORD": 'p2f315d6b9430b965799ae1813941756fa47e03c99328df5d063d7049455884a1',
+        "HOST": 'ce0lkuo944ch99.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com'  
     }
 }
 # DATABASES = {
@@ -282,28 +282,28 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
 
-from celery.schedules import crontab
+# from celery.schedules import crontab
 
-CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_IMPORTS = "coda_project.task"
+# CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+# CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+# CELERY_ACCEPT_CONTENT = ["application/json"]
+# CELERY_TASK_SERIALIZER = "json"
+# CELERY_RESULT_SERIALIZER = "json"
+# CELERY_IMPORTS = "coda_project.task"
 
-CELERYBEAT_SCHEDULE = {
-    "run_on_every_1st": {
-        "task": "task_history",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
+# CELERYBEAT_SCHEDULE = {
+#     "run_on_every_1st": {
+#         "task": "task_history",
+#         "schedule": crontab(0, 0, day_of_month="1"),
+#         #'schedule': crontab(),
+#     },
 
-    "run_on_every_1st": {
-        "task": "advertisement",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
-}
+#     "run_on_every_1st": {
+#         "task": "advertisement",
+#         "schedule": crontab(0, 0, day_of_month="1"),
+#         #'schedule': crontab(),
+#     },
+# }
 
 #==================PAYMENT SETTINGS=================
 # Testing Payment methods
