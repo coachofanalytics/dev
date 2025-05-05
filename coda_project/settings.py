@@ -5,7 +5,7 @@ Django settings for coda_project project.
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = 'django-insecure-o0nex4pd=)4xw07ww5w5a_gwz1pvavrs=vmd8!5^xg1f5ol*$!'# os.environ.get('SECRET_KEY')
 ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "accounts.CustomerUser"
 AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend"), ("django.contrib.auth.backends.ModelBackend"), ("allauth.account.auth_backends.AuthenticationBackend"))
@@ -27,9 +27,9 @@ INSTALLED_APPS = [
     "mathfilters",
     "mptt",
     "django_filters",
-    "django_celery_beat",
-    "django_celery_results",
-    "django_crontab",
+    # "django_celery_beat",
+    # "django_celery_results",
+    # "django_crontab",
     "django.contrib.sites",
     "allauth",
     # "allauth.account",
@@ -102,7 +102,7 @@ def dba_values():
         password = os.environ.get('DB_PASSWORD')
     else:
         host = "localhost"
-        dbname = "CODA_PRAC"
+        dbname = "CODA_TRAIN"
         user = "postgres"
         password = "postgres" #"*******"
         
@@ -229,28 +229,28 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
 
-from celery.schedules import crontab
+# from celery.schedules import crontab
 
-CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_IMPORTS = "coda_project.task"
+# CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+# CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+# CELERY_ACCEPT_CONTENT = ["application/json"]
+# CELERY_TASK_SERIALIZER = "json"
+# CELERY_RESULT_SERIALIZER = "json"
+# CELERY_IMPORTS = "coda_project.task"
 
-CELERYBEAT_SCHEDULE = {
-    "run_on_every_1st": {
-        "task": "task_history",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
+# CELERYBEAT_SCHEDULE = {
+#     "run_on_every_1st": {
+#         "task": "task_history",
+#         "schedule": crontab(0, 0, day_of_month="1"),
+#         #'schedule': crontab(),
+#     },
 
-    "run_on_every_1st": {
-        "task": "advertisement",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
-}
+#     "run_on_every_1st": {
+#         "task": "advertisement",
+#         "schedule": crontab(0, 0, day_of_month="1"),
+#         #'schedule': crontab(),
+#     },
+# }
 
 #==================PAYMENT SETTINGS=================
 # Testing Payment methods

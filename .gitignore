@@ -82,6 +82,7 @@ cover/
 
 # Django stuff:
 migrations/
+*/migrations/*
 
 # Flask stuff:
 instance/
