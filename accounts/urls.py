@@ -3,7 +3,10 @@ from . import views
 from .views import (
                     ClientDetailView,
                     ClientUpdateView,
-                    ClientDeleteView
+                    ClientDeleteView,
+                    UserUpdateView,
+                    SuperuserUpdateView,
+                    UserDeleteView
                     )
 
 app_name = 'application'
@@ -15,6 +18,10 @@ urlpatterns = [
     path('profile/', views.profile, name='account-profile'),
     path('login_history/<str:username>', views.user_login_history, name='login_history'),
     path('time/<int:pk>/update/', views.edit_login_logout_time, name='time-update'),
+    path('users/', views.users, name='accounts-users'),
+    path('user/<int:pk>/update/', UserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='user-update'),
+    path('superuser/<int:pk>/update/', SuperuserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='superuser-update'),
+    path('user/<int:pk>/delete/', UserDeleteView.as_view(template_name='accounts/admin/user_delete.html'), name='user-delete'),
     #=============================CREDENTIALS VIEWS=====================================
     path('credentials/', views.credential_view, name='account-crendentials'),
     path('newcredentialcategory/', views.newcredentialCategory, name='account-newcredentialcategory'),

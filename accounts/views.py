@@ -474,3 +474,137 @@ def edit_login_logout_time(request, pk):
         form = LoginHistoryForm(instance=login_history)
 
     return render(request, 'main/snippets_templates/table/logging.html', {'form': form, 'login_history': login_history})
+
+
+
+def users(request):
+    # Filter active staff users and order by date joined
+    active_users = CustomerUser.objects.filter(is_active=True).order_by("-date_joined")
+    active_staff_users = CustomerUser.objects.filter(is_active=True, is_staff=True).order_by("-date_joined")
+
+    total_users = CustomerUser.objects.all().order_by("-date_joined").count()
+    total_active_users = CustomerUser.objects.filter(is_active=True).order_by("-date_joined").count()
+    
+    # Automatically set is_active to False for staff users who haven't logged in for more than 3 months
+    three_months_ago = timezone.now() - timezone.timedelta(days=90)
+    inactive_staff_users = active_staff_users.filter(last_login__lt=three_months_ago)
+    inactive_staff_users.update(is_active=False)
+    
+    # Apply filters
+    userfilters = UserFilter(request.GET, queryset=active_users)
+    
+    # Use the Paginator to paginate the queryset
+    paginator = Paginator(userfilters.qs, 10)  # Show 10 objects per page
+    page = request.GET.get('page')
+    objects = paginator.get_page(page)
+    
+    context = {
+        "userfilters": userfilters,
+        "objects": objects,
+        "total_users": total_users,
+        "total_active_users": total_active_users,
+    }
+    
+    if request.user.is_superuser:
+        return render(request, "accounts/admin/users.html", context)
+    else:
+        return redirect("main:layout")
+
+
+class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = CustomerUser
+    success_url = "/accounts/users"
+    # fields=['category','address','city','state','country']
+    fields = [
+        "category",
+        "sub_category",
+        "first_name",
+        "last_name",
+        "date_joined",
+        "email",
+        "gender",
+        "phone",
+        "address",
+        "city",
+        "state",
+        "country",
+        "is_admin",
+        "is_staff",
+        "is_client",
+        "is_applicant",
+    ]
+
+    def form_valid(self, form):
+        # form.instance.username=self.request.user
+        # if request.user.is_authenticated:
+        if self.request.user.is_superuser or self.request.user.is_admin:
+            return super().form_valid(form)
+        #  elif self.request.user.is_admin:
+        #       return super().form_valid(form)
+        return False
+
+    def test_func(self):
+        user = self.get_object()
+        # if self.request.user == client.username:
+        #     return True
+        if self.request.user.is_superuser or self.request.user.is_admin:
+            return True
+        return False
+
+
+@method_decorator(login_required, name="dispatch")
+class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = CustomerUser
+    success_url = "/accounts/users"
+
+    def test_func(self):
+        user = self.get_object()
+        # if self.request.user == user.username:
+        if self.request.user.is_superuser:
+            return True
+        return False
+
+
+class SuperuserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = CustomerUser
+    success_url = "/accounts/users"
+    # fields=['category','address','city','state','country']
+    fields = [
+        "category",
+        "sub_category",
+        "first_name",
+        "last_name",
+        "username",
+        "date_joined",
+        "email",
+        "gender",
+        "phone",
+        "address",
+        "city",
+        "state",
+        "country",
+        "zipcode",
+        "is_superuser",
+        "is_admin",
+        "is_client",
+        "is_applicant",
+        "is_active",
+        "is_staff",
+    ]
+
+    def form_valid(self, form):
+        # form.instance.username=self.request.user
+        # if request.user.is_authenticated:
+        if self.request.user.is_superuser or self.request.user.is_admin :
+            return super().form_valid(form)
+        #  elif self.request.user.is_authenticated:
+        #      return super().form_valid(form)
+        return False
+
+    def test_func(self):
+        user = self.get_object()
+        # if self.request.user == client.username:
+        #     return True
+        if self.request.user.is_superuser or self.request.user.is_admin :  # or self.request.user == user.username:
+            return True
+        return False
