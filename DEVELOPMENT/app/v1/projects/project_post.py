@@ -10,7 +10,7 @@ from app.core.db.database import get_db
 # from app.core.models import Projects, Access
 from app.core.models.projects.projects import Projects
 # from app.core.schemas.projects import ProjectsCreate, ProjectResponse
-from app.core.schemas.projects.project_create import ProjectSchema
+from app.core.schemas.projects.project_create import ProjectsCreate #ProjectSchema
 
 # Router is required
 router = APIRouter(
@@ -64,24 +64,24 @@ router = APIRouter(
 #         return new_project
 
 
-@router.post('/project', status_code=status.HTTP_201_CREATED)
-def create_project(request:ProjectSchema, db:Session=Depends(get_db)):
-    new_project = Projects(
-        name = request.name,
-        description = request.description,
-        engagement_code = request.engagement_code,
-        engagement_type = request.engagement_type,
-        partner = request.partner,
-        is_active = request.is_active,
-        creator_name = request.creator_name,
-        id = request.id,
-        created_by = request.created_by,
-        created_date = request.created_date,
-        updated_by = request.updated_by,
-        updated_date = request.updated_date,
+# @router.post('/project', status_code=status.HTTP_201_CREATED)
+# def create_project(request:ProjectSchema, db:Session=Depends(get_db)):
+#     new_project = Projects(
+#         name = request.name,
+#         description = request.description,
+#         engagement_code = request.engagement_code,
+#         engagement_type = request.engagement_type,
+#         partner = request.partner,
+#         is_active = request.is_active,
+#         creator_name = request.creator_name,
+#         id = request.id,
+#         created_by = request.created_by,
+#         created_date = request.created_date,
+#         updated_by = request.updated_by,
+#         updated_date = request.updated_date,
 
-    )
-    db.add(new_project)
-    db.commit()
-    return request
+#     )
+#     db.add(new_project)
+#     db.commit()
+#     return request
 

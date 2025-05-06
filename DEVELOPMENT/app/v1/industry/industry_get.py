@@ -30,8 +30,8 @@ def get_industrys(
     # print('here')
 
     # Fetch and validate user
-    user_data = get_user(request, metadata=True)
-    print(user_data) 
+    # user_data = get_user(request, metadata=True)
+    # print(user_data) 
     # print(user_data["access_level"],user_data["email"])
     # validate_user_access(
     #     expected_access_level=["Admin", "User", "Viewer"],
@@ -39,11 +39,11 @@ def get_industrys(
     # )
 
     # # Enforce access control for Users and Viewers
-    if "User" in user_data["access_level"] or "Viewer" in user_data["access_level"]:
-        print("Type of User :",user_data["access_level"])
-        check_user_access(
-            db=db,user_data=user_data, single_project=False
-        )
+    # if "User" in user_data["access_level"] or "Viewer" in user_data["access_level"]:
+    #     print("Type of User :",user_data["access_level"])
+    #     check_user_access(
+    #         db=db,user_data=user_data, single_project=False
+    #     )
 
         # check_user_access(
         #     db=db, project_id=project_id, user_data=user_data, single_project=False

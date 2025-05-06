@@ -46,6 +46,9 @@ class Projects(Base):
     updated_date = Column(DateTime(timezone=True))
 
     orgs = relationship('Orgs', back_populates='project')
+    access = relationship("Access", back_populates="user_projects")
+
+    
 
     @hybrid_property
     def total_projects(self):

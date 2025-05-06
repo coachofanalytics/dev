@@ -14,9 +14,7 @@ class Access(Base):
     __tablename__ = "access"
 
     user_id = Column(UUID, primary_key=True, nullable=False)
-    project_id = Column(
-        UUID, ForeignKey("projects.id"), primary_key=True, nullable=False
-    )
+    project_id = Column(UUID, ForeignKey("v1.projects.id"), primary_key=True, nullable=False)
     access_level = Column(String, nullable=False)
 
     user_projects = relationship("Projects", back_populates="access")

@@ -18,6 +18,8 @@ from app.v1.positions import positions_batch_post
 from app.v1.ext_positions import ext_positions_batch_post
 from app.v1.orgs_hierarchy import orgs_hierarchy_batch_post
 from app.v1.orgs.org_id import orgs_batch_post, orgs_post, orgs_edit, orgs_delete
+from app.v1.azure_csv import get_azure_csv
+
 
 
 
@@ -56,3 +58,4 @@ app.include_router(orgs_hierarchy_batch_post.router)
 app.include_router(orgs_post.router)
 app.include_router(orgs_edit.router)
 app.include_router(orgs_delete.router)
+app.include_router(get_azure_csv.router)
