@@ -12,7 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import QueryDict, Http404, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
@@ -20,6 +20,7 @@ from django.utils.decorators import method_decorator
 
 
 from accounts.forms import UserForm
+from finance.forms import FaqForm 
 from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm
 from .models import (
@@ -508,6 +509,19 @@ def faq_list(request):
     }
 
     return render(request, template_name, context)
+
+
+def faq_update (request, pk): 
+    faq = get_object_or_404(Faq, pk=pk)
+    if request.method == 'POST':
+        form = FaqForm(request.POST, instance=faq)
+        if form.is_valid ():
+            form.save()
+            return redirect('finance:faqs')
+    else: 
+        form = FaqForm(instance=faq)
+    return render(request, 'finance/faq_update.html', {'form': form})
+
 
 
    

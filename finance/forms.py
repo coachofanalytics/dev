@@ -7,7 +7,7 @@ from accounts.models import Department
 from .models import (
     Budget,
     Transaction,
-   
+    Faq, 
 )
 
 
@@ -89,3 +89,9 @@ class DepartmentFilterForm(forms.Form):
         queryset=Department.objects.all(),
         label='Select a Deparment'
     ) 
+
+class FaqForm(forms.ModelForm):
+    class Meta:
+        model = Faq
+        fields = ['question', 'answer']
+        
