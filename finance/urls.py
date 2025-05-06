@@ -44,4 +44,5 @@ urlpatterns = [
     path("budget/<str:subtitle>/<str:duration>/", views.budget_projection, name="budget_projection"),
     path('faq_list/',views.faq_list, name ='faqs'),
     path('faq/update/<int:pk>',views.faq_update, name ='faq_update'),
+    path('faq/create',views.faq_create, name ='faq_create'),
 ]

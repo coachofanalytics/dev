@@ -523,5 +523,14 @@ def faq_update (request, pk):
     return render(request, 'finance/faq_update.html', {'form': form})
 
 
+def faq_create (request): 
+    if request.method == 'POST':
+        form = FaqForm(request.POST)
+        if form.is_valid ():
+            form.save()
+            return redirect('finance:faqs')
+    else: 
+        form = FaqForm()
+    return render(request, 'finance/faq_create.html', {'form': form})
 
    
