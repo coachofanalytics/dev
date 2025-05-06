@@ -17,5 +17,3 @@ class Industry(Base):
     created_date = Column(DateTime(timezone=True))
     updated_by = Column(UUID(as_uuid=True), default=uuid.uuid4)
     updated_date = Column(DateTime(timezone=True))
-
-    orgs = relationship('Orgs', back_populates='industry')
