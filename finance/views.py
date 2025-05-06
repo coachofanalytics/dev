@@ -533,4 +533,11 @@ def faq_create (request):
         form = FaqForm()
     return render(request, 'finance/faq_create.html', {'form': form})
 
-   
+def faq_delete (request, pk): 
+    faq = get_object_or_404(Faq, pk=pk)
+    if request.method == 'POST':
+        faq.delete()  
+        return redirect('finance:faqs')
+
+    return render(request, 'finance/faq_confirm_delete.html', {'faq': faq})
+
