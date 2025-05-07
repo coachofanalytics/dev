@@ -45,10 +45,14 @@ from .forms import (
     OTPForm,
 )
 from finance.utils import DYCDefaultPayments
-from django.shortcuts import render, redirect
 import logging
 from main.views import send_notification, send_welcome_email
 from mail.custom_email import send_email
+
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.http import Http404
+
 
 
 logger = logging.getLogger(__name__)
@@ -702,3 +706,59 @@ def custom_social_login(request):
 
     except:
         return render(request, "accounts/registration/join.html", {"form": UserForm()})
+
+
+
+
+
+def password_reset_request(request):
+
+    if request.method == "POST":
+
+        user_email = request.POST.get("email")
+        print('user_email: ', user_email)
+        user = CustomerUser.objects.filter(email=user_email).first()
+        print('user: ', user)
+
+        if user == None:
+            raise Http404('The Provided Email Does Not Exist')
+       
+
+        # Generate UID (base64-encoded user ID) and token
+        uid = urlsafe_base64_encode(str(user.pk).encode())
+        token = default_token_generator.make_token(user)
+
+        print(uid)
+        print(token)
+        # Generate the password reset link and send the emai
+        subject = "Password Reset Request"
+        email_template_name = "accounts/registration/password_reset_email.html"
+        category = user.category
+
+        context = {
+            'protocol': request.scheme,
+            'domain': request.get_host(),
+            'uid': uid,  
+            'token': token,  
+            'request': request,
+        }
+
+        try:
+            send_email(
+                category=category,
+                to_email=[user_email],
+                subject=subject,
+                html_template= email_template_name,
+                context=context,
+            )
+
+            print("EMAIL SENT")
+
+        except Exception as e:
+            error_message = (
+                f'Please try again or contact info@diasporacounty48.org. Thank You. '
+            )
+            return render(request, 'main/messages/message.html', {"message": error_message})
+
+
+    return redirect("main:layout")
