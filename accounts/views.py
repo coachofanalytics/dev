@@ -52,6 +52,7 @@ from mail.custom_email import send_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.http import Http404
+from django.contrib import messages
 
 
 
@@ -753,6 +754,9 @@ def password_reset_request(request):
             )
 
             print("EMAIL SENT")
+
+            return render(request, 'accounts/registration/password_reset_done.html', {'email': user_email})
+
 
         except Exception as e:
             error_message = (
