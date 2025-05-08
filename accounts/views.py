@@ -24,7 +24,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership
+from .models import CustomerUser, Membership, Faq
 from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
@@ -486,3 +486,14 @@ class CustomLoginView(LoginView):
 
     def get_success_url(self):
         return reverse_lazy('home')
+
+
+
+def faq_list(request):
+    faqs = Faq.objects.all()
+    template_name = 'accounts/faq.html'
+    context = {
+        'faqs': faqs 
+    }
+
+    return render(request, template_name, context)

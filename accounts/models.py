@@ -142,3 +142,21 @@ class Department(models.Model):
         return self.name    
 
 
+class Faq(models.Model):
+    CATEGORY_CHOICES = (
+        ('General', 'General'),
+        ('Technical', 'Technical'),
+        ('Billing', 'Billing'),
+        ('Account', 'Account'),
+        ('Other', 'Other'),
+    )
+    question = models.CharField(max_length=255, null=True, blank=True)
+    answer = models.TextField(null=True, blank=True)
+    category = models.CharField(max_length=100, choices =CATEGORY_CHOICES, default='General')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+
+    def __str__(self):
+        return self.question
+    
