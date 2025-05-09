@@ -15,14 +15,14 @@ import os
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = "Gd7TgVmYA9b0rSIrEezTtHxLohp95g"
 
 
 #DEBUG Configurations
 DEBUG = True
-DEBUG_VAL = int(os.environ.get('DEBUG'))
-if DEBUG_VAL == 0:
-    DEBUG = False
+# DEBUG_VAL = int(os.environ.get('DEBUG'))
+# if DEBUG_VAL == 0:
+#     DEBUG = False
 
 SECURE_SSL_REDIRECT = False
 
@@ -166,6 +166,16 @@ DATABASES = {
     }
 }
 
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "DC48_PRAC",
+#         "USER":"postgres",
+#         "PASSWORD":"December23.",
+#         "HOST": "localhost"
+#     }
+# }
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.sqlite3",

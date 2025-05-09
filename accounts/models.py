@@ -1,7 +1,6 @@
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db import models
-
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from accounts.choices import CategoryChoices, SubCategoryChoices
 from accounts.modelmanager import DepartmentManager
@@ -198,3 +197,9 @@ class MeetingAttendace(models.Model):
     def __str__(self):
         return f" Meeting of {self.meeting_date}"
     
+
+class Region(models.Model):
+    name = models.CharField(max_length = 100)
+
+    def __str__(self):
+        return self.name
