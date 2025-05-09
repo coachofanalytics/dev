@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 
-from .models import CustomerUser, Membership ,Region 
+from .models import CustomerUser, Membership, Region, Chapter
 
 
 #
@@ -86,4 +86,4 @@ class ChapterAdmin(UserAdmin):
 admin.site.register(CustomerUser, CustomerAdmin)
 admin.site.register(Membership)
 admin.site.register(Region)
-# admin.site.register(Chapter, ChapterAdmin)
+admin.site.register(Chapter)
