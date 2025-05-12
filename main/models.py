@@ -41,6 +41,8 @@ class Content(models.Model):
 
     def __str__(self):
         return f"{self.section} - {self.title if self.title else 'Content'}"
+    
+    
 class Assets(models.Model):
     name = models.CharField(max_length=200)
     category = models.CharField(default='background',max_length=200,null=True, blank=True)
@@ -116,7 +118,6 @@ class Team(models.Model):
         ('Local', 'Local'),
         ('Global', 'Global'),
     ]
-
     name = models.CharField(max_length=255)
     leadership = models.CharField(max_length=50, choices=LEADERSHIP_CHOICES, default='Local')  # or another default value
     facebook_link = models.URLField(blank=True, null=True)
@@ -129,9 +130,6 @@ class Team(models.Model):
         return self.name
 
 
-
-from django.db import models
-
 class Gallery(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -141,9 +139,6 @@ class Gallery(models.Model):
 
     def __str__(self):
         return self.title
-
-
-
 
 
 
@@ -172,7 +167,6 @@ class Faq(models.Model):
         ('account', 'Account'),
         ('other', 'Other'),
     ]
-
     question = models.CharField(max_length=255) #add questions 
     answer = models.TextField() #add answers
     category = models.CharField(max_length=255, choices=CategoryChoices, default=999)
@@ -183,6 +177,4 @@ class Faq(models.Model):
         return self.question
 
 
-# class Test(models.Model):
-#     pass
     
