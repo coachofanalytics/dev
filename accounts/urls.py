@@ -36,6 +36,7 @@ urlpatterns = [
     path("thank/", views.thank, name="thank-you"),
     path("security/", views.security_verification, name="security"),
     path("list_regions/", views.list_regions, name="list_regions"),
-    path( "region/<int:pk>/update/", views.update_regions, name="user-update"),
+    path( "region/<int:pk>/update/", views.update_regions, name="region_update"),
     path("create_region/", views.create_region, name="create_region"),
+    path( "region/<int:pk>/delete/", views.delete_region, name="region_delete"),
 ]

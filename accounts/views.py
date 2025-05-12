@@ -736,3 +736,12 @@ def create_region(request):
         form = RegionForm()
 
     return render(request, "accounts/create_region.html",{"form": form})
+
+def delete_region(request, pk):
+    region = get_object_or_404(Region, pk = pk)
+
+    if request.method == "POST":
+        region.delete()
+        return redirect("accounts:list_regions")
+    
+    return render(request, "accounts/region_confirm_delete.html",{"region":region})
