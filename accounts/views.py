@@ -43,6 +43,7 @@ from .forms import (
     UserForm,
     LoginForm,
     OTPForm,
+    RegionForm,
 )
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
@@ -710,3 +711,28 @@ def list_regions(request):
     }
 
     return render(request, "accounts/regions.html", context)
+
+def update_regions(request, pk):
+    regions = get_object_or_404(Region, pk=pk)
+    print(regions)
+    if request.method == "POST":
+        form = RegionForm(request.POST, instance = regions)
+        if form.is_valid():
+            form.save()
+            # return redirect("list_regions")
+    
+    else:
+        form = RegionForm(instance = regions)
+
+    return render(request, "accounts/region_update.html", {"form": form})
+
+def create_region(request):
+    if request.method == "POST":
+        form = RegionForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+    else:
+        form = RegionForm()
+
+    return render(request, "accounts/create_region.html",{"form": form})
