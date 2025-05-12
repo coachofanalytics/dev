@@ -36,7 +36,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership
+from .models import CustomerUser, Membership, Region
 from .forms import (
     CustomAuthenticationForm,
     CustomUserCreationForm,
@@ -702,3 +702,11 @@ def custom_social_login(request):
 
     except:
         return render(request, "accounts/registration/join.html", {"form": UserForm()})
+
+def list_regions(request):
+    regions = Region.objects.all()
+    context = {
+        "regions": regions
+    }
+
+    return render(request, "accounts/regions.html", context)

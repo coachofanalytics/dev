@@ -35,4 +35,5 @@ urlpatterns = [
     ),
     path("thank/", views.thank, name="thank-you"),
     path("security/", views.security_verification, name="security"),
+    path("list_regions/", views.list_regions, name="list_regions"),
 ]
