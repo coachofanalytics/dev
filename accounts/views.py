@@ -780,3 +780,12 @@ def create_chapter(request):
         form = ChapterForm()
 
     return render(request, "accounts/create_chapter.html",{"form": form})
+
+def delete_chapter(request, pk):
+    chapter = get_object_or_404(Chapter, pk = pk)
+
+    if request.method == "POST":
+        chapter.delete()
+        return redirect("accounts:list_chapters")
+    
+    return render(request, "accounts/chapter_confirm_delete.html",{"chapter":chapter})
