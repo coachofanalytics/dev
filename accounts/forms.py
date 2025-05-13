@@ -179,4 +179,9 @@ class RegionForm(forms.ModelForm):
     class Meta:
         model = Region
         fields = ['name']
-        
+
+
+class ChapterForm(forms.ModelForm):
+    class Meta:
+        model = Chapter
+        fields = ['name', 'region']

@@ -36,7 +36,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership, Region
+from .models import CustomerUser, Membership, Region, Chapter
 from .forms import (
     CustomAuthenticationForm,
     CustomUserCreationForm,
@@ -44,6 +44,7 @@ from .forms import (
     LoginForm,
     OTPForm,
     RegionForm,
+    ChapterForm,
 )
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
@@ -704,6 +705,7 @@ def custom_social_login(request):
     except:
         return render(request, "accounts/registration/join.html", {"form": UserForm()})
 
+# Regions sections
 def list_regions(request):
     regions = Region.objects.all()
     context = {
@@ -745,3 +747,10 @@ def delete_region(request, pk):
         return redirect("accounts:list_regions")
     
     return render(request, "accounts/region_confirm_delete.html",{"region":region})
+
+def list_chapters(request):
+    chapters = Chapter.objects.select_related('region').all()
+    context = {
+        'chapters': chapters
+    }
+    return render(request, 'accounts/chapters.html', context)
