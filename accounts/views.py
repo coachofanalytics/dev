@@ -754,3 +754,29 @@ def list_chapters(request):
         'chapters': chapters
     }
     return render(request, 'accounts/chapters.html', context)
+
+def update_chapters(request, pk):
+    chapters = get_object_or_404(Chapter, pk=pk)
+    print(chapters)
+    if request.method == "POST":
+        form = ChapterForm(request.POST, instance = chapters)
+        if form.is_valid():
+            form.save()
+            # return redirect("list_chapters")
+    
+    else:
+        form = ChapterForm(instance = chapters)
+
+    return render(request, "accounts/chapter_update.html", {"form": form})
+
+
+def create_chapter(request):
+    if request.method == "POST":
+        form = ChapterForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+    else:
+        form = ChapterForm()
+
+    return render(request, "accounts/create_chapter.html",{"form": form})
