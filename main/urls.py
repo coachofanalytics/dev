@@ -15,6 +15,7 @@ urlpatterns = [
     path('news/', views.news_list, name='news_list'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
+    path('send_email/', views.send_notification, name='send_email'),
     
   
     

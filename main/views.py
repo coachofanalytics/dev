@@ -13,6 +13,12 @@ from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm
 from django.contrib.auth import get_user_model
+from django.contrib.sites.models import Site
+
+from mail.custom_email import send_email
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from coda_project import settings
 
 User=get_user_model()
 
@@ -230,9 +236,6 @@ def gallery_list(request):
 
 
 
-
-
-
 def news_list(request):
     news_list = News.objects.all()
     print('info=============',news_list)
@@ -254,5 +257,94 @@ from django.views.generic import TemplateView
 
 class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
+
+
+
+
+
+# Send a welcome email to a new user
+
+def send_notification(request):
+    url = 'email/welcome.html'
+    new_user = CustomerUser.objects.all().order_by('-id').first()
+    print(new_user)
+    
+    print(new_user)
+    print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
+
+
+    user_category = "Ordinary"
+    first_name = new_user.first_name
+    last_name = new_user.last_name
+    user_id = new_user.member_number
+    user_email = new_user.email
+    subject = "Welcome To DC48K"
+
+    print(new_user.id)
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id,
+        'subject': subject
+    }
+    try:
+        send_email(
+            category=user_category,
+            to_email=[user_email],
+            subject=subject,
+            html_template=url,
+            context=context
+        )
+
+        print("EMAIL SENT")
+        # return render(request,url, context)
+        # return render(request, 'main/messages/message.html', context)
+    except Exception as e:
+        error_message = (
+            f'Hi {request.user.first_name}, Your message to '
+            f'{request.user.email} was unsuccessful. '
+            f'Please try again or contact info@diasporacounty48.org. Thank You. '
+            f'Error: {e}'
+        )
+        return render(request, 'main/messages/message.html', {"message": error_message})
+
+    # return render(request, url, context)
+
+
+
+
+
+
+def send_welcome_email(user_id=None): 
+    url = 'email/welcome.html'
+    user_information = CustomerUser.objects.get(id=user_id)
+    user_category = user_information.category
+    first_name = user_information.first_name
+    last_name = user_information.last_name
+    user_id = user_information.id
+    user_email = user_information.email
+    subject = "Welcome To DC48K"
+
+   
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id
+    }
+    html_message = render_to_string(url, context)
+
+    email = EmailMessage(
+        subject=subject,
+        body = html_message,
+        from_email = settings.EMAIL_HOST_USER,
+        to = [user_email]
+    )
+    email.content_subtype = 'html'
+    email.send()
+    print('Email Sent Successfully')
+
 
 
