@@ -2,24 +2,11 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-import logging
-logger = logging.getLogger(__name__)
-
-from dotenv import load_dotenv
 
 
 def main():
-    # Load environment variables
-    load_dotenv()
-
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coda_project.settings')
-    logging.basicConfig(
-        filename='logs.log',
-        filemode='a',
-        format='%(asctime)s - %(pathname)s - \n\t %(levelname)s - %(message)s',
-        level=logging.DEBUG
-    )
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'eventgallery.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -29,9 +16,6 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-
-    # Log logo usage
-    logger.info(f"Logo loaded from path: Asset/dgark-logo.svg")
 
 
 if __name__ == '__main__':
