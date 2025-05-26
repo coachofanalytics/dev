@@ -177,4 +177,13 @@ class Faq(models.Model):
         return self.question
 
 
-    
+class GetHelp(models.Model):
+    title = models.CharField(max_length=255,null=False,blank=False)    
+    content = models.TextField(null=False,blank=False)
+    link = models.URLField(null=True,blank=False,max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(null=False,blank=False,auto_now_add=True)
+    updated_at = models.DateTimeField(null=False,blank=False,auto_now=True)
+
+    def __str__(self):
+        return self.title 

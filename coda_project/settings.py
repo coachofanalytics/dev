@@ -20,9 +20,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 #DEBUG Configurations
 DEBUG = True
-DEBUG_VAL = int(os.environ.get('DEBUG'))
-if DEBUG_VAL == 0:
-    DEBUG = False
+# DEBUG_VAL = int(os.environ.get('DEBUG'))
+# if DEBUG_VAL == 0:
+#     DEBUG = False
 
 SECURE_SSL_REDIRECT = False
 
@@ -153,6 +153,8 @@ WSGI_APPLICATION = "coda_project.wsgi.application"
 import dj_database_url
 
 host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #herokudev(),
+
+# print (host,dbname,user,password)
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -165,6 +167,7 @@ DATABASES = {
         "HOST": host
     }
 }
+
 
 # DATABASES = {
 #     "default": {
