@@ -61,3 +61,21 @@ class UserProfile(models.Model):
     def img_category(self):
         img_cat=self.image2.category
         return img_cat
+
+
+
+
+from django.db import models
+
+class Reporting(models.Model):
+    internal = models.AutoField(primary_key=True)
+    first_interview = models.CharField(max_length=255)
+    second_interview = models.CharField(max_length=255)
+    third_interview = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    gender = models.CharField(max_length=10)
+    interview_type = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - {self.interview_type}"
