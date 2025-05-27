@@ -18,7 +18,8 @@ from django.contrib.sites.models import Site
 from mail.custom_email import send_email
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from coda_project import settings
+from coda_project import settings 
+from . models import GetHelp
 
 User=get_user_model()
 
@@ -347,4 +348,11 @@ def send_welcome_email(user_id=None):
     print('Email Sent Successfully')
 
 
+def gethelp_list(request):
+    helps = GetHelp.objects.all()
+    context = {
+        'helps': helps
+    }
+
+    return render(request, 'main/gethelp.html', context)
 

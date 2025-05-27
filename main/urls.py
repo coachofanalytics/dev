@@ -16,7 +16,8 @@ urlpatterns = [
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
     path('send_email/', views.send_notification, name='send_email'),
-    
+    path('gethelp/', views.gethelp_list, name='gethelp'),
+
   
     
     
@@ -33,3 +34,5 @@ urlpatterns = [
     path('500/', views.hendler500, name='500-error'),
 
 ]
+
+
