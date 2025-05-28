@@ -373,3 +373,18 @@ def gethelp_update(request, pk):
         form = GetHelpForm(instance=gethelp)
 
     return render(request, 'main/gethelp_update.html', {'form':form})
+
+
+
+
+def gethelp_create(request):
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm() 
+
+    return render(request, 'main/gethelp_create.html',{'form':form})

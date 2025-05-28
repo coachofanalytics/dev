@@ -18,6 +18,7 @@ urlpatterns = [
     path('send_email/', views.send_notification, name='send_email'),
     path('gethelp/', views.gethelp_list, name='gethelp'),
     path('gethelp/<int:pk>/update/', views.gethelp_update, name='gethelp_update'),
+    path('create_gethelp/', views.gethelp_create, name='create_gethelp'),
 
   
     
