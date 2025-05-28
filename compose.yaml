@@ -1,0 +1,32 @@
+services:
+  postgres:
+    container_name: postgres-sql
+    image: postgres  # Remove the extra single quote
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=MANAGER2030
+      - POSTGRES_DB=CODA_DEV  #postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgres/data  # Correct the directory path for PostgreSQL data
+    networks:
+      - fastapi_network
+    restart: always
+    
+  app-server:
+    container_name: fastapi
+    image: fastapi-app
+    ports:
+      - "8080:8000"
+    networks:
+      - fastapi_network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres:
+
+networks:
+  fastapi_network:
+    driver: bridge  # Add a space between "driver:" and "bridge"
