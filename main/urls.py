@@ -17,6 +17,7 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
     path('send_email/', views.send_notification, name='send_email'),
     path('gethelp/', views.gethelp_list, name='gethelp'),
+    path('gethelp/<int:pk>/update/', views.gethelp_update, name='gethelp_update'),
 
   
     

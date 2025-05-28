@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm
+from main.forms import ContactForm, GetHelpForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -356,3 +356,20 @@ def gethelp_list(request):
 
     return render(request, 'main/gethelp.html', context)
 
+
+
+def gethelp_update(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+   
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST, instance=gethelp)
+        if form.is_valid():
+            form.save() 
+            return redirect('main:gethelp')  
+
+    else:
+        form = GetHelpForm(instance=gethelp)
+
+    return render(request, 'main/gethelp_update.html', {'form':form})

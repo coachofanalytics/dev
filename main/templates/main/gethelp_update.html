@@ -1,0 +1,16 @@
+{%extends "main/base_templates/base.html"%} 
+{% load static %}
+{% block content %} 
+<section id="career">
+    <h1>Update Get Help</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}  
+        <button type="submit">Update</button>
+    </form>
+
+    <br>
+    <a href="{% url 'main:gethelp' %}">Back to gethelp List</a> 
+</section>
+{% endblock %}
