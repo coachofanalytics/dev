@@ -388,3 +388,16 @@ def gethelp_create(request):
         form = GetHelpForm() 
 
     return render(request, 'main/gethelp_create.html',{'form':form})
+
+
+
+def gethelp_delete(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+    if request.method == 'POST':
+
+        gethelp.delete()
+        return redirect('main:gethelp')
+
+    return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
