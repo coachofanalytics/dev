@@ -1,24 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
 
 # Import Core Sub-Modules
-from app.core.db.database import get_db
-from app.core.config.decorators._custom_error_handler import custom_exception_handler
-from app.core.custom_exceptions import RecordNotFoundError, DatabaseError
+from core.db.database import get_db
+from core.config.decorators._custom_error_handler import custom_exception_handler
+from core.custom_exceptions import RecordNotFoundError, DatabaseError
 
 # Import models and schemas
-from app.models.accounts.users import CustomerUser
-from app.schemas.accounts.users import CustomerUserFetchSchema
+from models.accounts.users import CustomerUser
+from schemas.accounts.users import CustomerUserFetchSchema
 
 # Router is required
 router = APIRouter(tags=["Users"])
 
+
 @router.put("/{user_id}", tags=["Users"])
 @custom_exception_handler
 async def update_user(
-    user_id: str,
-    user_data: CustomerUserFetchSchema,
-    db: Session = Depends(get_db)
+    user_id: str, user_data: CustomerUserFetchSchema, db: Session = Depends(get_db)
 ):
     """Updates a user's information
 
@@ -58,7 +57,7 @@ async def update_user(
             first_name=user.first_name,
             last_name=user.last_name,
             email=user.email,
-            phone=user.phone
+            phone=user.phone,
         )
 
     except Exception as e:

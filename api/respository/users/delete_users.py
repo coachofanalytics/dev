@@ -12,12 +12,10 @@ from models.accounts.users import CustomerUser
 # Router is required
 router = APIRouter(tags=["Users"])
 
+
 @router.delete("/{user_id}", tags=["Users"])
 @custom_exception_handler
-async def delete_user(
-    user_id: str,
-    db: Session = Depends(get_db)
-):
+async def delete_user(user_id: str, db: Session = Depends(get_db)):
     """Deletes a user from the database
 
     Args:

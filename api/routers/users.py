@@ -17,14 +17,18 @@ async def fetch_users(db: Session = Depends(get_db)):
     except Exception:
         raise
 
+
 @router.put("/{user_id}")
-async def update_user_endpoint(user_id: str, user_data: dict, db: Session = Depends(get_db)):
+async def update_user_endpoint(
+    user_id: str, user_data: dict, db: Session = Depends(get_db)
+):
     """Update a user's information"""
     try:
         result = await update_user(user_id=user_id, user_data=user_data, db=db)
         return result
     except Exception:
         raise
+
 
 @router.delete("/{user_id}")
 async def delete_user_endpoint(user_id: str, db: Session = Depends(get_db)):

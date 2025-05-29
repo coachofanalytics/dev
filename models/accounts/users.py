@@ -32,4 +32,4 @@ class CustomerUser(DjangoBase):
     verification_token = Column(UUID(as_uuid=True))
 
     class Config:
-        orm_mode = True  # To make it compatible with SQLAlchemy models
+        from_attributes = True  # Updated for Pydantic v2 compatibility

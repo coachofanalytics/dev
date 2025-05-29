@@ -1,7 +1,6 @@
 import os
-from fastapi import HTTPException, status, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
+from fastapi.security import HTTPBearer
+from jose import jwt
 from core.config.settings import Settings
 
 settings = Settings()
@@ -25,18 +24,18 @@ security = HTTPBearer()
 def get_user(request, metadata=False):
     """Retrieves the user details if available, raises exception otherwise"""
     auth_header_value = request.headers.get("Authorization")
-    
+
     # Add debug logs (new)
     print("=== Debug Logs Start ===")
     print("All Headers:", dict(request.headers))
     print("Auth Header:", auth_header_value)
     print("=== Debug Logs End ===")
-    
+
     if not auth_header_value:
         raise ValueError("Auth token not provided.")
-    
+
     jwt_token = auth_header_value[7:]  # Strip "Bearer "
-    
+
     # Add more debug logs (new)
     print("=== Token Debug ===")
     print("JWT Token:", jwt_token)
@@ -56,7 +55,7 @@ def get_user(request, metadata=False):
         # Add debug log (new)
         print("JWT Decode Error:", str(e))
         raise ValueError(f"Token decoding failed: {str(e)}")
-    
+
     if len(parsed_jwt) == 0:
         raise ValueError("User Token could not be decoded")
 
@@ -68,10 +67,9 @@ def get_user(request, metadata=False):
         return {
             "id": parsed_jwt.get("id", ""),
             "name": parsed_jwt.get("sub", ""),
-            "access_level": parsed_jwt.get("roles", [])
+            "access_level": parsed_jwt.get("roles", []),
         }
     return parsed_jwt
-
 
 
 def validate_user_access(
@@ -93,7 +91,7 @@ def validate_user_access(
         Authorised in case one expected access level was found in extracted
         access level.
     """
-        
+
     counter = 0
     for item in expected_access_level:
         if item in actual_access_level:
@@ -107,8 +105,6 @@ def validate_user_access(
         )
 
     return "Authorised"
-
-
 
 
 # from dataclasses import dataclass

@@ -2,8 +2,6 @@ import requests
 from typing import Dict, List, Any
 import sys
 from pathlib import Path
-import json
-import os
 
 # Add the parent directory to sys.path to allow imports
 sys.path.append(str(Path(__file__).parent.parent.parent))

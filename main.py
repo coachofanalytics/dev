@@ -1,8 +1,5 @@
 from fastapi import FastAPI
 from api.routers import users
-from core.domain.authenticator.jwt_token import create_access_token
-
-print(create_access_token())
 
 app = FastAPI(
     title="FastAPI App",

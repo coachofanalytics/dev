@@ -1,3 +1,13 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
@@ -20,10 +30,14 @@ wheels/
 .installed.cfg
 *.egg
 .ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
 # Virtual Environment
 venv/
 env/
-.venv311/
 ENV/
 
 # IDE
@@ -32,26 +46,28 @@ ENV/
 *.swp
 *.swo
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
 # Logs
 *.log
 logs/
 
-# Testing
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
-
 # Docker
 .docker/
-docker-compose.*.yml
-!docker-compose.yml
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Local development
+docker-compose*.yml
+Dockerfile*
+.dockerignore 

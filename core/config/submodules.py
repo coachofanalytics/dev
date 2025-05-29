@@ -11,7 +11,6 @@ class SQLSubModule(BaseSettings):
     server: str = Field(..., alias="SQL_SERVER")
     database: str = Field(..., alias="APP_DATABASE")
 
-
     class Config:
         case_sensitive = True
 
