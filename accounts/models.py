@@ -66,3 +66,29 @@ class CustomerUser(AbstractUser):
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
     
+
+
+
+
+from django.conf import settings
+from django.db import models
+
+class Tracker(models.Model):
+    category = models.CharField(max_length=25)
+    sub_category = models.CharField(max_length=25)
+    task = models.CharField(max_length=25)
+    plan = models.CharField(max_length=255)
+    
+    empname = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='employee_name')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tracker_author')
+
+    employee = models.CharField(max_length=255)
+
+    login_date = models.DateTimeField()
+    start_time = models.TimeField(null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)
+
+    time = models.PositiveIntegerField(default=200)
+
+    def __str__(self):
+        return f"{self.category} - {self.task}"
