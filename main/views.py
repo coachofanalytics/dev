@@ -401,3 +401,7 @@ def gethelp_delete(request, pk):
         return redirect('main:gethelp')
 
     return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
+
+
+    def __str__(self):
+        return self.structure_category
