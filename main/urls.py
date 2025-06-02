@@ -3,6 +3,9 @@ from main.views import AboutView
 
 from . import views
 
+from .views import update_volunteer  # ✅ if you want to import the view directly
+
+
 # from .utils import convert_html_to_pdf
 
 app_name = 'main'
@@ -16,9 +19,14 @@ urlpatterns = [
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
     path('send_email/', views.send_notification, name='send_email'),
-    
-  
-    
+    path('volunteer/', views.volunteer_list, name='volunteer_list'),
+    path('create_volunteer/', views.create_volunteer, name='create_volunteer'),
+    path('volunteers/update/<int:pk>/', update_volunteer, name='volunteer_update'),
+
+
+
+
+
     
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),

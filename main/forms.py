@@ -32,6 +32,15 @@ class ContactForm(forms.ModelForm):
         # self.fields['sub_category'].required=False
 
 
+  
+
+from django import forms
+from .models import Volunteer
+
+class VolunteerForm(forms.ModelForm):
+    class Meta:
+        model = Volunteer
+        fields = ['name', 'email', 'motivation']
 
 
         

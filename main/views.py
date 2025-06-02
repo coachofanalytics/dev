@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm
+from main.forms import ContactForm,VolunteerForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -345,6 +345,90 @@ def send_welcome_email(user_id=None):
     email.content_subtype = 'html'
     email.send()
     print('Email Sent Successfully')
+
+
+
+
+
+from django.shortcuts import render
+from .models import Volunteer
+
+def volunteer_list(request):
+    volunteers = Volunteer.objects.all()
+    return render(request, 'main/snippets_templates/table/volunteer.html', {'volunteers': volunteers})
+
+
+# views.py
+
+from django.shortcuts import render, redirect
+from .models import Volunteer
+from .forms import VolunteerForm
+
+def create_volunteer(request):
+    if request.method == 'POST':
+        form = VolunteerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('volunteer_list')  # ✅ Redirect after successful save
+    else:
+        form = VolunteerForm()
+
+    return render(request, 'main/snippets_templates/table/volunteer_create.html', {'form': form})  # ✅ Always return a response here
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Volunteer
+from .forms import VolunteerForm  # Make sure this exists
+
+def update_volunteer(request, pk):
+    volunteer = get_object_or_404(Volunteer, pk=pk)
+
+    if request.method == 'POST':
+        form = VolunteerForm(request.POST, instance=volunteer)
+        if form.is_valid():
+            form.save()
+            return redirect('volunteer_list')  # Make sure this name is defined in your URLs
+    else:
+        form = VolunteerForm(instance=volunteer)
+
+    return render(request, 'main/snippets_templates/table/update_volunteer.html', {'form': form})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
