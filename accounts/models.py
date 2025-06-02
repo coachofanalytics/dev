@@ -198,3 +198,19 @@ class MeetingAttendace(models.Model):
     def __str__(self):
         return f" Meeting of {self.meeting_date}"
     
+
+
+
+   from django.db import models
+
+class CredentialCategory(models.Model):
+    department = models.IntegerField()
+    category = models.CharField(max_length=255)
+    verbose_name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(max_length=100)
+    entry_date = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField()
+    is_featured = models.BooleanField(null=True, blank=True)
+
+    def __str__(self):
+        return self.category

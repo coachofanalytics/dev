@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 
-from .models import CustomerUser, Membership #Region, Chapter
+from .models import CustomerUser, Membership #Region, Chapter,CredentialCategoryAdmin
 
 
 #
@@ -87,3 +87,12 @@ admin.site.register(CustomerUser, CustomerAdmin)
 admin.site.register(Membership)
 # admin.site.register(Region, RegionAdmin)
 # admin.site.register(Chapter, ChapterAdmin)
+
+from django.contrib import admin
+from .models import CredentialCategory
+
+@admin.register(CredentialCategory)
+class CredentialCategoryAdmin(admin.ModelAdmin):
+    list_display = ('category', 'department', 'is_active', 'is_featured', 'entry_date')
+    search_fields = ('category', 'verbose_name', 'description')
+    list_filter = ('is_active', 'is_featured')
