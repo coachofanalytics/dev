@@ -177,4 +177,71 @@ class Faq(models.Model):
         return self.question
 
 
-    
+
+# models.py
+
+from django.db import models
+
+class Volunteer(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    motivation = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
