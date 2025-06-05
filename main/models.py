@@ -203,4 +203,4 @@ class Governance(models.Model):
     updated_at = models.DateTimeField(auto_now=True) 
 
     def __str__(self):
-        return self.structure_category
+        return self.governance_category
