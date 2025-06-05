@@ -346,5 +346,13 @@ def send_welcome_email(user_id=None):
     email.send()
     print('Email Sent Successfully')
 
+def governance_list(request):
+    govern = Governance_pm.objects.all()
+    context = {
+        'govern': govern 
+    }
+
+    return render(request, 'main/govern_list.html', context)
+
 
 
