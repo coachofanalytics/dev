@@ -19,7 +19,6 @@ from mail.custom_email import send_email
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from coda_project import settings 
-from . models import GetHelp
 
 User=get_user_model()
 
@@ -405,3 +404,12 @@ def gethelp_delete(request, pk):
 
     def __str__(self):
         return self.structure_category
+
+def governance_list(request):
+    govern = Governance.objects.all()
+    context = {
+        'govern': govern 
+    }
+
+    return render(request, 'main/govern_list.html',context)
+    
