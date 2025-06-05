@@ -22,6 +22,6 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(Gallery)
 #admin.site.register(ContactUs)
 #admin.site.register(Faq)
-
+admin.site.register(Governance_pm)
 
 

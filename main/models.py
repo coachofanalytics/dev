@@ -183,6 +183,22 @@ class Faq(models.Model):
         return self.question
 
 
-# class Test(models.Model):
-#     pass
-    
+class Governance_pm(models.Model):
+ 
+    GovernanceCategoryChoices = [
+        ('Governance', 'Governance'),
+        ('Global Administration', 'Global Administration'),
+        ('Ward Administration', 'Ward Administration')
+    ]
+    id = models.AutoField(primary_key=True) 
+    governance_category = models.CharField(
+        max_length=255,
+        choices=GovernanceCategoryChoices
+    )
+    description = models.TextField()
+    members = models.ForeignKey(CustomerUser,on_delete= models.CASCADE, related_name='governance')
+    created_at = models.DateTimeField(auto_now_add=True)  
+    updated_at = models.DateTimeField(auto_now=True) 
+
+    def __str__(self):
+        return self.governance_category
