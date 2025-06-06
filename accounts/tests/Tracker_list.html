@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tracker List</title>
+</head>
+<body>
+    <h1>Tracker Entries</h1>
+    <table border="1">
+        <tr>
+            <th>Category</th>
+            <th>Sub-category</th>
+            <th>Task</th>
+            <th>Plan</th>
+            <th>Employee</th>
+            <th>Author</th>
+            <th>Login Date</th>
+        </tr>
+        {% for tracker in trackers %}
+        <tr>
+            <td>{{ tracker.category }}</td>
+            <td>{{ tracker.sub_category }}</td>
+            <td>{{ tracker.task }}</td>
+            <td>{{ tracker.plan }}</td>
+            <td>{{ tracker.empname }}</td>
+            <td>{{ tracker.author }}</td>
+            <td>{{ tracker.login_date }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No tracker entries found.</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
