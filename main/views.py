@@ -442,3 +442,14 @@ def governance_create(request):
         form = GovernanceForm() 
 
     return render(request, 'main/governance_create.html',{'form':form})
+
+def governance_delete(request, pk):
+   
+    govern = get_object_or_404(Governance, pk=pk)
+
+    if request.method == 'POST':
+
+        govern.delete()
+        return redirect('main:governance_list')
+
+    return render(request, 'main/governance_confirm_delete.html', {'govern':govern})
