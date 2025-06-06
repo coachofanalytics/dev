@@ -3,8 +3,9 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm, Textarea
 from django.contrib.auth.forms import UserCreationForm
 from accounts.models import CustomerUser
-from .models import Feedback, GetHelp
+from .models import Feedback, GetHelp, Governance
 from django.utils.translation import gettext_lazy as _
+from django.db import models
 
 class ContactForm(forms.ModelForm):
     class Meta:
@@ -37,7 +38,12 @@ class GetHelpForm(forms.ModelForm):
         model = GetHelp
         fields = ['title', 'content','link']
 
-        
+
+
+class GovernanceForm(forms.ModelForm):
+    class Meta:
+        model = Governance
+        fields = ['governance_category', 'description','members']       
         
 
 

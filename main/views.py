@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm, GetHelpForm
+from main.forms import ContactForm, GetHelpForm, GovernanceForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -413,3 +413,20 @@ def governance_list(request):
 
     return render(request, 'main/govern_list.html',context)
     
+
+
+def governance_update(request, pk):
+
+    govern = get_object_or_404(Governance, pk=pk)
+
+   
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST, instance=govern)
+        if form.is_valid():
+            form.save() 
+            return redirect('main:governance_list')  
+
+    else:
+        form = GovernanceForm(instance=govern)
+
+    return render(request, 'main/governance_update.html',{'form':form})
