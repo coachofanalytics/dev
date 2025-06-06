@@ -198,3 +198,23 @@ class MeetingAttendace(models.Model):
     def __str__(self):
         return f" Meeting of {self.meeting_date}"
     
+
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.db import models
+from django.conf import settings
+
+class Tracker(models.Model):
+    category = models.CharField(max_length=25)
+    sub_category = models.CharField(max_length=25)
+    task = models.CharField(max_length=25)
+    plan = models.CharField(max_length=255)
+    empname = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='empname_trackers')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='author_trackers')
+    employee = models.CharField(max_length=255)
+    login_date = models.DateTimeField()
+    start_time = models.TimeField(blank=True, null=True)
+    duration = models.IntegerField(blank=True, null=True)
+    time = models.PositiveIntegerField(blank=True, null=True)
+
