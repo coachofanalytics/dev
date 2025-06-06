@@ -430,3 +430,15 @@ def governance_update(request, pk):
         form = GovernanceForm(instance=govern)
 
     return render(request, 'main/governance_update.html',{'form':form})
+
+def governance_create(request):
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:governance_list')
+
+    else:
+        form = GovernanceForm() 
+
+    return render(request, 'main/governance_create.html',{'form':form})
