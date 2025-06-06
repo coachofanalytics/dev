@@ -36,3 +36,10 @@ urlpatterns = [
     path("thank/", views.thank, name="thank-you"),
     path("security/", views.security_verification, name="security"),
 ]
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('trackers/', views.tracker_list, name='tracker_list'),
+]
+path('trackers/<int:pk>/delete/', views.tracker_delete, name='tracker_delete'),

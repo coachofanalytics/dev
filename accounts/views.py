@@ -766,3 +766,23 @@ def password_reset_request(request):
 
 
     return redirect("main:layout")
+
+
+from django.shortcuts import render
+from .models import Tracker
+
+def tracker_list(request):
+    trackers = Tracker.objects.all().order_by('-login_date')  # you can order by any field
+    return render(request, 'accounts/tracker_list.html', {'trackers': trackers})
+
+
+
+from django.shortcuts import get_object_or_404, redirect, render
+from .models import Tracker
+
+def tracker_delete(request, pk):
+    tracker = get_object_or_404(Tracker, pk=pk)
+    if request.method == 'POST':
+        tracker.delete()
+        return redirect('tracker_list')  # This should match your list view's URL name
+    return render(request, 'accounts/tracker_confirm_delete.html', {'tracker': tracker})
