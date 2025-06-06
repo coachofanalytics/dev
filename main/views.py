@@ -397,18 +397,51 @@ def update_volunteer(request, pk):
 
 
 
+# views.py
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Volunteer
+
+def delete_volunteer(request, pk):
+    volunteer = get_object_or_404(Volunteer, pk=pk)
+
+    if request.method == 'POST':
+        volunteer.delete()
+        return redirect('volunteer_list')  # Make sure this URL name exists
+
+    return render(request, 'main/snippets_templates/table/delete_volunteer.html', {'volunteer': volunteer})
+
+
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Volunteer
+
+def volunteer_detail(request, pk):
+    volunteer = get_object_or_404(Volunteer, pk=pk)
+
+    if request.method == 'POST':
+        volunteer.delete()
+        return redirect('volunteer_list')  # Make sure this URL name exists
+
+    return render(request, 'main/snippets_templates/table/detail_volunter.html', {'volunteer': volunteer})
+
+from django.shortcuts import render
+from .models import Donation
 
 
 
 
 
-
-
-
-
-
-
-
+def donation_list(request):
+    # Fetch all donations, most recent first
+    donations = Donation.objects.all().order_by('-created_at')
+    
+    # Render the list in the corresponding template
+    return render(request, 'donations/donation_list.html', {
+        'donations': donations
+    })
+    return render(request, 'main/snippets_templates/table/delete_volunteer.html', {'volunteer': volunteer})
 
 
 
