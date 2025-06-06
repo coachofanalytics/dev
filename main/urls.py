@@ -17,6 +17,7 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
     path('send_email/', views.send_notification, name='send_email'),
     path('governance_list/', views.governance_list, name='governance_list'),
+    path( "governance/<int:pk>/update/", views.governance_update, name="governance_update"),
     
   
     
