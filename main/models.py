@@ -191,7 +191,7 @@ class GetHelp(models.Model):
 
     
 
-class Governance(models.Model):
+class Governance_pm(models.Model):
  
     GovernanceCategoryChoices = [
         ('Governance', 'Governance'),
@@ -202,6 +202,9 @@ class Governance(models.Model):
     governance_category = models.CharField(max_length=255,choices=GovernanceCategoryChoices)
     description = models.TextField()
     members = models.ForeignKey(CustomerUser,on_delete= models.CASCADE, related_name='governance')
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='regions', default ="")
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='chapters', default ="")
+    image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
     created_at = models.DateTimeField(auto_now_add=True)  
     updated_at = models.DateTimeField(auto_now=True) 
 

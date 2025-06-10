@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm, GetHelpForm, GovernanceForm
+from main.forms import ContactForm, GetHelpForm , GovernanceForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -405,7 +405,7 @@ def gethelp_delete(request, pk):
         return self.structure_category
 
 def governance_list(request):
-    govern = Governance.objects.all()
+    govern = Governance_pm.objects.all()
     context = {
         'govern': govern
     }
@@ -416,7 +416,7 @@ def governance_list(request):
 
 def governance_update(request, pk):
 
-    govern = get_object_or_404(Governance, pk=pk)
+    govern = get_object_or_404(Governance_pm, pk=pk)
 
    
     if request.method == 'POST':
@@ -448,7 +448,7 @@ def governance_create(request):
 
 def governance_delete(request, pk):
    
-    govern = get_object_or_404(Governance, pk=pk)
+    govern = get_object_or_404(Governance_pm, pk=pk)
 
     if request.method == 'POST':
 

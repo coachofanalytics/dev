@@ -23,7 +23,7 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(ContactUs)
 #admin.site.register(Faq)
 admin.site.register(GetHelp)
-admin.site.register(Governance)
+admin.site.register(Governance_pm)
 
 
 
