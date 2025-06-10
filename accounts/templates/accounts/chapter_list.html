@@ -1,0 +1,25 @@
+{%extends "main/base_templates/base.html"%} 
+{% load static %}
+{% block content %} 
+<section id="career">
+    <div class="career text-center">
+        <h2>CHAPTERS</h2>
+        <table class="table table-borderless" style="width: 100%">
+            <thead class="border-bottom font-weight-bold">
+                <tr>
+                    <th>Chapter</th>
+                    <th>Region</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chap in chapters %}
+                <tr>
+                    <td>{{ chap.name }}</td>
+                    <td>{{ chap.region.name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

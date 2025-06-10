@@ -1,0 +1,27 @@
+{%extends "main/base_templates/base.html"%} 
+{% load static %}
+{% block content %} 
+<section id="career">
+    <div class="career text-center">
+        <h2>Governance</h2>
+        <table class="table table-borderless" style="width: 100%">
+            <thead class="border-bottom font-weight-bold">
+                <tr>
+                    <th>Governance Category</th>
+                    <th>Description</th>
+                    <th>Member</th>
+                    </tr>
+            </thead>
+            <tbody>
+                {% for gov in govern %}
+                <tr>
+                    <td>{{gov.governance_category}}</td>
+                    <td>{{gov.description}}</td>
+                    <td>{{gov.members}}</td>
+                </tr>
+                 {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

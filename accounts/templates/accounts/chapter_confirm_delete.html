@@ -1,0 +1,16 @@
+{%extends "main/base_templates/base.html"%} 
+{% load static %}
+{% block content %} 
+<section>
+        <h1>Are you sure you want to delete this chapter?</h1>
+
+        <p>Chapter: {{ chapter.name }}</p>
+    
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit">Yes, Delete</button>
+        </form>
+    <br>
+    <a href="{% url 'accounts:list_chapters' %}">Cancel</a>
+</section>
+{% endblock %}

@@ -16,6 +16,14 @@ urlpatterns = [
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
     path('send_email/', views.send_notification, name='send_email'),
+    path('gethelp/', views.gethelp_list, name='gethelp'),
+    path('gethelp/<int:pk>/update/', views.gethelp_update, name='gethelp_update'),
+    path('create_gethelp/', views.gethelp_create, name='create_gethelp'),
+    path('gethelp/<int:pk>/delete/', views.gethelp_delete, name='gethelp_delete'),
+    path('governance_list/', views.governance_list, name='governance_list'),
+    path('governance/<int:pk>/update/',views.governance_update , name='governance_update'),
+    path('create_governance/', views.governance_create, name='create_governance'),
+    path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),
     
   
     

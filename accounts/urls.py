@@ -35,4 +35,14 @@ urlpatterns = [
     ),
     path("thank/", views.thank, name="thank-you"),
     path("security/", views.security_verification, name="security"),
+    # Regions urls
+    path("list_regions/", views.list_regions, name="list_regions"),
+    path( "region/<int:pk>/update/", views.update_regions, name="region_update"),
+    path("create_region/", views.create_region, name="create_region"),
+    path( "region/<int:pk>/delete/", views.delete_region, name="region_delete"),
+    # Chapter urls
+    path("list_chapters/", views.list_chapters, name="list_chapters"),
+    path( "chapter/<int:pk>/update/", views.update_chapters, name="chapters_update"),
+    path("create_chapter/", views.create_chapter, name="create_chapter"),
+    path( "chapter/<int:pk>/delete/", views.delete_chapter, name="chapter_delete"),
 ]

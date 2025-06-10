@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from accounts.models import CustomerUser
+from accounts.models import CustomerUser, Region, Chapter
 
 #from tableauhyperapi import DatabaseName
 
@@ -175,6 +175,35 @@ class Faq(models.Model):
 
     def __str__(self):
         return self.question
+    
 
+
+class GetHelp(models.Model):
+    title = models.CharField(max_length=255,null=False,blank=False)    
+    content = models.TextField(null=False,blank=False)
+    link = models.URLField(null=True,blank=False,max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(null=False,blank=False,auto_now_add=True)
+    updated_at = models.DateTimeField(null=False,blank=False,auto_now=True)
+
+    def __str__(self):
+        return self.title 
 
     
+
+class Governance(models.Model):
+ 
+    GovernanceCategoryChoices = [
+        ('Governance', 'Governance'),
+        ('Global Administration', 'Global Administration'),
+        ('Ward Administration', 'Ward Administration')
+    ]
+    id = models.AutoField(primary_key=True) 
+    governance_category = models.CharField(max_length=255,choices=GovernanceCategoryChoices)
+    description = models.TextField()
+    members = models.ForeignKey(CustomerUser,on_delete= models.CASCADE, related_name='governance')
+    created_at = models.DateTimeField(auto_now_add=True)  
+    updated_at = models.DateTimeField(auto_now=True) 
+
+    def __str__(self):
+        return self.governance_category

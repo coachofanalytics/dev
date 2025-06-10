@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm
+from main.forms import ContactForm, GetHelpForm, GovernanceForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -315,8 +315,6 @@ def send_notification(request):
 
 
 
-
-
 def send_welcome_email(user_id=None): 
     url = 'email/welcome.html'
     user_information = CustomerUser.objects.get(id=user_id)
@@ -345,6 +343,119 @@ def send_welcome_email(user_id=None):
     email.content_subtype = 'html'
     email.send()
     print('Email Sent Successfully')
+
+
+
+def gethelp_list(request):
+    helps = GetHelp.objects.all()
+    context = {
+        'helps': helps
+    }
+
+    return render(request, 'main/gethelp_list.html', context)
+
+
+
+def gethelp_update(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+   
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST, instance=gethelp)
+        if form.is_valid():
+            form.save() 
+            return redirect('main:gethelp')  
+
+    else:
+        form = GetHelpForm(instance=gethelp)
+
+    return render(request, 'main/gethelp_update.html', {'form':form})
+
+
+
+
+def gethelp_create(request):
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm() 
+
+    return render(request, 'main/gethelp_create.html',{'form':form})
+
+
+
+def gethelp_delete(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+    if request.method == 'POST':
+
+        gethelp.delete()
+        return redirect('main:gethelp')
+
+    return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
+
+
+    def __str__(self):
+        return self.structure_category
+
+def governance_list(request):
+    govern = Governance.objects.all()
+    context = {
+        'govern': govern
+    }
+
+    return render(request, 'main/governance_list.html',context)
+    
+
+
+def governance_update(request, pk):
+
+    govern = get_object_or_404(Governance, pk=pk)
+
+   
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST, instance=govern)
+        if form.is_valid():
+            form.save() 
+            return redirect('main:governance_list')  
+
+    else:
+        form = GovernanceForm(instance=govern)
+
+    return render(request, 'main/governance_update.html',{'form':form})
+
+
+
+def governance_create(request):
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:governance_list')
+
+    else:
+        form = GovernanceForm() 
+
+    return render(request, 'main/governance_create.html',{'form':form})
+
+
+
+def governance_delete(request, pk):
+   
+    govern = get_object_or_404(Governance, pk=pk)
+
+    if request.method == 'POST':
+
+        govern.delete()
+        return redirect('main:governance_list')
+
+    return render(request, 'main/governance_confirm_delete.html', {'govern':govern})
 
 
 

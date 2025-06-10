@@ -1,0 +1,23 @@
+{%extends "main/base_templates/base.html"%} 
+{% load static %}
+{% block content %} 
+<section id="career">       
+    <div class="career text-center">
+        <h2>REGIONS</h2>
+        <table class="table table-borderless" style="width: 100%">
+            <thead class="border-bottom font-weight-bold">
+                <tr>
+                    <th>Regions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in regions %}
+                <tr>
+                    <td>{{reg.name}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

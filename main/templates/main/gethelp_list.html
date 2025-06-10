@@ -1,0 +1,28 @@
+{%extends "main/base_templates/base.html"%}
+{% load static %}
+{% block content %}
+<section id="career">
+    <div class="career text-center">
+        <h2>Get Help</h2>
+        <table class="table table-borderless" style="width: 100%">
+            <thead class="border-bottom font-weight-bold">
+                <tr>
+                    <th>Title</th>
+                    <th>Content</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ghelp in helps %}
+                <tr>
+                    <td>{{ghelp.title}}</td>
+                    <td>{{ghelp.content}}</td>
+                    <td>{{ghelp.link}}</td>
+                   
+                </tr>
+                 {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

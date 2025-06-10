@@ -36,13 +36,15 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership
+from .models import CustomerUser, Membership, Region, Chapter
 from .forms import (
     CustomAuthenticationForm,
-    CustomUserCreationForm,
+    CustomUserCreationForm, 
     UserForm,
     LoginForm,
     OTPForm,
+    RegionForm,
+    ChapterForm
 )
 from finance.utils import DYCDefaultPayments
 import logging
@@ -766,3 +768,96 @@ def password_reset_request(request):
 
 
     return redirect("main:layout")
+
+
+
+# Regions sections
+def list_regions(request):
+    regions = Region.objects.all()
+    context = {
+        "regions": regions
+    }
+
+    return render(request, "accounts/region_list.html", context)
+
+
+def update_regions(request, pk):
+    regions = get_object_or_404(Region, pk=pk)
+    print(regions)
+    if request.method == "POST":
+        form = RegionForm(request.POST, instance = regions)
+        if form.is_valid():
+            form.save()
+            # return redirect("list_regions")
+    
+    else:
+        form = RegionForm(instance = regions)
+
+    return render(request, "accounts/update_region.html", {"form": form})
+
+
+def create_region(request):
+    if request.method == "POST":
+        form = RegionForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+    else:
+        form = RegionForm()
+
+    return render(request, "accounts/create_region.html",{"form": form})
+
+
+def delete_region(request, pk):
+    region = get_object_or_404(Region, pk = pk)
+
+    if request.method == "POST":
+        region.delete()
+        return redirect("accounts:list_regions")
+    
+    return render(request, "accounts/region_confirm_delete.html",{"region":region})
+
+
+def list_chapters(request):
+    chapters = Chapter.objects.select_related('region').all()
+    context = {
+        'chapters': chapters
+    }
+    return render(request, 'accounts/chapter_list.html', context)
+
+
+def update_chapters(request, pk):
+    chapters = get_object_or_404(Chapter, pk=pk)
+    print(chapters)
+    if request.method == "POST":
+        form = ChapterForm(request.POST, instance = chapters)
+        if form.is_valid():
+            form.save()
+            # return redirect("list_chapters")
+    
+    else:
+        form = ChapterForm(instance = chapters)
+
+    return render(request, "accounts/update_chapter.html", {"form": form})
+
+
+def create_chapter(request):
+    if request.method == "POST":
+        form = ChapterForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+    else:
+        form = ChapterForm()
+
+    return render(request, "accounts/create_chapter.html",{"form": form})
+
+
+def delete_chapter(request, pk):
+    chapter = get_object_or_404(Chapter, pk = pk)
+
+    if request.method == "POST":
+        chapter.delete()
+        return redirect("accounts:list_chapters")
+    
+    return render(request, "accounts/chapter_confirm_delete.html",{"chapter":chapter})
