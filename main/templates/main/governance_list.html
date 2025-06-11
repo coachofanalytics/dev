@@ -10,7 +10,7 @@
       {% for member in govern %}
       <div class="card">
         <img src="{{ member.image.url }}" alt="{{ member.members.first_name}}">
-        <h3>{{ member.members.first_name}} {{member.members.last_name }}</h3>
+        <h3>{{ member.members.first_name}} {{member.members.last_name }}</h3>   
         <p>{{ member.description }}</p>
       </div>
       {% endfor %}

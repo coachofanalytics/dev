@@ -44,12 +44,6 @@ class GovernanceForm(forms.ModelForm):
     class Meta:
         model = Governance_pm
         fields = ['governance_category', 'description','members']       
-
-
-
         
-        
-
-
 
 

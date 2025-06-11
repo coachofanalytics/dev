@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
-from .utils import image_view,path_values
+from .utils import image_view,path_values, generate_chatbot_response
 from main.forms import ContactForm, GetHelpForm , GovernanceForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
