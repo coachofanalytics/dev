@@ -199,11 +199,18 @@ class Governance(models.Model):
         ('Ward Administration', 'Ward Administration')
     ]
     id = models.AutoField(primary_key=True) 
-    governance_category = models.CharField(max_length=255,choices=GovernanceCategoryChoices)
+    governance_category = models.CharField(
+        max_length=255,
+        choices=GovernanceCategoryChoices
+    )
     description = models.TextField()
     members = models.ForeignKey(CustomerUser,on_delete= models.CASCADE, related_name='governance')
-    created_at = models.DateTimeField(auto_now_add=True)  
-    updated_at = models.DateTimeField(auto_now=True) 
+    region = models.ForeignKey(Region, on_delete= models.CASCADE, related_name='region', default="")
+    chapter = models.ForeignKey(Chapter, on_delete= models.CASCADE, related_name='chapter', default="")
+    image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
+    created_at = models.DateTimeField(auto_now_add=True) 
+    updated_at = models.DateTimeField(auto_now=True)
+
 
     def __str__(self):
         return self.governance_category

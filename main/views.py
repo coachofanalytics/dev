@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
-from .utils import image_view,path_values
+from .utils import image_view,path_values, generate_chatbot_response
 from main.forms import ContactForm, GetHelpForm, GovernanceForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
@@ -436,6 +436,9 @@ def governance_create(request):
     if request.method == 'POST':
         form = GovernanceForm(request.POST)
         if form.is_valid():
+            # impliment API call to populate description field automatically
+            # api_description = generate_chatbot_response()
+            # form.description = api_description
             form.save()
             return redirect('main:governance_list')
 
