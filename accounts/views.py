@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser
+from .models import CustomerUser,Department
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -18,6 +18,12 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
+
+from django.http import HttpResponse
+
+def index(request):
+    return HttpResponse("Hello from Accounts!")
+
 # Create your views here..
 
 # @allowed_users(allowed_roles=['admin'])
@@ -155,9 +161,10 @@ def profile(request):
 
 
 #custom adaptor for updating user object for category and subcategory field  
-class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
-    def pre_social_login(self, request, sociallogin):
+
+def pre_social_login(self, request, sociallogin):
         
         print('inside pre social login')
         # Check if the user with the given email already exists in your custom User model
@@ -257,3 +264,61 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
+    
+
+
+
+
+from django.shortcuts import render
+from .models import Tracker  # Ensure the model is correctly imported
+
+def tracker_list(request):
+    trackers = Tracker.objects.all()
+    return render(request, 'accounts/admin/Tracker.html', {'trackers': trackers})
+
+
+
+
+
+
+from django.views.generic import ListView
+from .models import Department
+
+class DepartmentListView(ListView):
+    model = Department
+    template_name = 'templates/accounts/Department_list.html'
+    context_object_name = 'departments'
+
+
+
+
+
+
+from django.views.generic import ListView
+from .models import Credential
+
+class CredentialListView(ListView):
+    model = Credential
+    template_name = "credentials/credential_list.html"  # you can change this
+    context_object_name = "credentials"
+    paginate_by = 10  # optional: shows 10 credentials per page
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

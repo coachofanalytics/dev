@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
 from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
+from django.apps import AppConfig
 
 # Create your models here.
 class CustomerUser(AbstractUser):
@@ -92,3 +93,154 @@ class Tracker(models.Model):
 
     def __str__(self):
         return f"{self.category} - {self.task}"
+
+
+
+
+
+
+  
+    
+class Department(models.Model):
+    """Department Table will provide a list of the different departments in CODA"""
+
+    # Department
+    # BASIC = "Basic"
+    HR = "HR Department"
+    IT = "IT Department"
+    MKT = "Marketing Department"
+    FIN = "Finance Department"
+    SECURITY = "Security Department"
+    MANAGEMENT = "Management Department"
+    # Project = "Project"
+    HEALTH = "Health Department"
+    Other = "Other"
+    DEPARTMENT_CHOICES = [
+        # (BASIC, "BASIC Department"),
+        (HR, "HR Department"),
+        (IT, "IT Department"),
+        (MKT, "Marketing Department"),
+        (FIN, "Finance Department"),
+        # (Project, "Project"),
+        (SECURITY, "Security Department"),
+        (MANAGEMENT, "Management Department"),
+        (HEALTH, "Health Department"),
+        (Other, "Other"),
+    ]
+
+    name = models.CharField(
+        max_length=100,
+        choices=DEPARTMENT_CHOICES,
+        default=Other,
+    )
+
+    description = models.TextField(max_length=500, null=True, blank=True)
+    slug = models.SlugField(
+        verbose_name=_("Department safe URL"), max_length=255, unique=True
+    )
+    # created_date = models.DateTimeField(_('entered on'),default=timezone.now, editable=True)
+    is_featured = models.BooleanField("Is featured", default=True)
+    is_active = models.BooleanField(default=True)
+
+
+
+
+
+
+
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+class Credential(models.Model):
+    USER_CHOICES = [
+        ("Superuser", "Superuser"),
+        ("Admin", "Admin"),
+        ("Employee", "Employee"),
+        ("Other", "Other"),
+    ]
+
+    added_by = models.ForeignKey(CustomerUser, on_delete=models.RESTRICT)
+    name = models.CharField(
+        verbose_name=_("Credential Name"),
+        help_text=_("Required"),
+        max_length=255,
+    )
+    slug = models.SlugField(
+        verbose_name=_("Credential safe URL"), max_length=255, unique=True
+    )
+    description = models.TextField(max_length=1000, default=None)
+    link_name = models.CharField(max_length=255, default="General")
+    link = models.CharField(max_length=100, blank=True, null=True)
+    password = models.CharField(
+        max_length=255, blank=True, null=True, default="No Password Needed"
+    )
+    user_type = models.CharField(
+        max_length=50, choices=USER_CHOICES, default="Other"
+    )
+
+    def __str__(self):
+        return self.name
+
+
+
+
+
+class Assets(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    image_url = models.URLField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
