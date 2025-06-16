@@ -410,7 +410,7 @@ def governance_list(request):
     deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
 
     # Get all members for the selected category except the Governor
-    govern = Governance.objects.filter(governance_category=category).exclude(title__iexact=["Governor", "Deputy Governor"])
+    govern = Governance.objects.filter(governance_category=category).exclude(title__in=["Governor", "Deputy Governor"])
 
     categories = [
         'Global Executive Committee',
