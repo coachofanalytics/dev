@@ -22,8 +22,17 @@
     {% if governor %}
     <div class="card governor-card">
       <img src="{{ governor.image.url }}" alt="{{ governor.members.first_name }}">
-      <h3>{{ governor.members.first_name }} {{ governor.members.last_name }}</h3>
-      <h4>{{ governor.title }}</h4>
+      <h4>{{ governor.members.first_name }} {{ governor.members.last_name }}</h4>
+      <h8>{{ governor.title }}</h8>
+    </div>
+    {% endif %}
+
+        <!-- Governor Card -->
+    {% if deputy_governor %}
+    <div class="card governor-card">
+      <img src="{{ deputy_governor.image.url }}" alt="{{ deputy_governor.members.first_name }}">
+      <h4>{{ deputy_governor.members.first_name }} {{ deputy_governor.members.last_name }}</h4>
+      <h8>{{ deputy_governor.title }}</h8>
     </div>
     {% endif %}
 
@@ -32,8 +41,8 @@
       {% for member in govern %}
       <div class="card">
         <img src="{{ member.image.url }}" alt="{{ member.members.first_name }}">
-        <h3>{{ member.members.first_name }} {{ member.members.last_name }}</h3>
-        <h4>{{ member.title }}</h4>
+        <h4>{{ member.members.first_name }} {{ member.members.last_name }}</h4>
+        <h8>{{ member.title }}</h8>
       </div>
       {% endfor %}
     </div>

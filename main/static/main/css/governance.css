@@ -56,9 +56,9 @@
 
 .card {
   background: #fff;
-  padding: 30px;
+  padding: 10px;
   width: 100%;
-  max-width: 375px;
+  max-width: 250px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -66,8 +66,8 @@
 }
 
 .card img {
-  width: 250px;
-  height: 250px;
+  width: 150px;
+  height: 150px;
   object-fit: cover;
   border-radius: 50%;
   margin: 0 auto 20px;
@@ -102,7 +102,7 @@
   background: #fff;
   /* border: 2px solid #a39f9f; */
   margin: 30px auto 50px auto;
-  max-width: 400px;
+  max-width: 250px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

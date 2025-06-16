@@ -407,6 +407,7 @@ def governance_list(request):
 
     # Always get the Governor regardless of selected category
     governor = Governance.objects.filter(title__iexact="Governor").first()
+    deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
 
     # Get all members for the selected category except the Governor
     govern = Governance.objects.filter(governance_category=category).exclude(title__iexact="Governor")
@@ -420,6 +421,7 @@ def governance_list(request):
     return render(request, 'main/governance_list.html', {
         'govern': govern,
         'governor': governor,
+        'deputy_governor': deputy_governor,
         'selected_category': category,
         'categories': categories
     })
