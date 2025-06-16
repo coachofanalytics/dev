@@ -1,20 +1,43 @@
-{%extends "main/base_templates/base.html"%} 
+{% extends "main/base_templates/base.html" %}
 {% load static %}
-{% block content %} 
+
+{% block content %}
 <section class="team-section">
   <div class="container">
-    <h2>The Governing Team</h2>
-    <br>
 
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      {% for cat in categories %}
+      <a href="{% url 'main:governance_list' %}?category={{ cat|urlencode }}"
+         class="filter-btn {% if selected_category == cat %}active{% endif %}">
+         {{ cat }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Show Selected Category -->
+    {% comment %} <h3 class="selected-category">{{ selected_category }}</h3> {% endcomment %}
+
+    <!-- Governor Card -->
+    {% if governor %}
+    <div class="card governor-card">
+      <img src="{{ governor.image.url }}" alt="{{ governor.members.first_name }}">
+      <h3>{{ governor.members.first_name }} {{ governor.members.last_name }}</h3>
+      <h4>{{ governor.title }}</h4>
+    </div>
+    {% endif %}
+
+    <!-- Other Members -->
     <div class="team-cards">
       {% for member in govern %}
       <div class="card">
-        <img src="{{ member.image.url }}" alt="{{ member.members.first_name}}">
-        <h3>{{ member.members.first_name}} {{member.members.last_name }}</h3>
-        <p>{{ member.description }}</p>
+        <img src="{{ member.image.url }}" alt="{{ member.members.first_name }}">
+        <h3>{{ member.members.first_name }} {{ member.members.last_name }}</h3>
+        <h4>{{ member.title }}</h4>
       </div>
       {% endfor %}
     </div>
   </div>
 </section>
 {% endblock %}
+

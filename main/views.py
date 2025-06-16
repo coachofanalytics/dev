@@ -401,16 +401,29 @@ def gethelp_delete(request, pk):
     return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
 
 
-    def __str__(self):
-        return self.structure_category
 
 def governance_list(request):
-    govern = Governance.objects.all()
-    context = {
-        'govern': govern
-    }
+    category = request.GET.get('category', 'Global Executive Committee')
 
-    return render(request, 'main/governance_list.html',context)
+    # Always get the Governor regardless of selected category
+    governor = Governance.objects.filter(title__iexact="Governor").first()
+
+    # Get all members for the selected category except the Governor
+    govern = Governance.objects.filter(governance_category=category).exclude(title__iexact="Governor")
+
+    categories = [
+        'Global Executive Committee',
+        'Regional Administration',
+        'County Assembly Administration'
+    ]
+
+    return render(request, 'main/governance_list.html', {
+        'govern': govern,
+        'governor': governor,
+        'selected_category': category,
+        'categories': categories
+    })
+
     
 
 

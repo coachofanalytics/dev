@@ -6,6 +6,9 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from accounts.models import CustomerUser, Region, Chapter
+from django.utils.text import slugify
+
+
 
 #from tableauhyperapi import DatabaseName
 
@@ -194,23 +197,33 @@ class GetHelp(models.Model):
 
 class Governance(models.Model):
     GovernanceCategoryChoices = [
-        ('Governance', 'Governance'),
-        ('Global Administration', 'Global Administration'),
-        ('Ward Administration', 'Ward Administration')
+        ('Global Executive Committee', 'Global Executive Committee'),
+        ('Regional Administration', 'Regional Administration'),
+        ('County Assembly Administration', 'County Assembly Administration')
     ]
-    id = models.AutoField(primary_key=True) 
-    governance_category = models.CharField(
-        max_length=255,
-        choices=GovernanceCategoryChoices
-    )
-    description = models.TextField()
-    members = models.ForeignKey(CustomerUser,on_delete= models.CASCADE, related_name='governance')
-    region = models.ForeignKey(Region, on_delete= models.CASCADE, related_name='region', default="")
-    chapter = models.ForeignKey(Chapter, on_delete= models.CASCADE, related_name='chapter', default="")
+    governance_category = models.CharField(max_length=255, choices=GovernanceCategoryChoices)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    members = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='governance')
+    # user_profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='governance')
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='regions', default="")
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='chapter', default="")
     image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
-    created_at = models.DateTimeField(auto_now_add=True) 
+    slug = models.SlugField(unique=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.governance_category)
+            slug = base_slug
+            num = 1
+            while Governance.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{num}"
+                num += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.governance_category
+        return f"{self.governance_category}, {self.title}, {self.members}"
+
