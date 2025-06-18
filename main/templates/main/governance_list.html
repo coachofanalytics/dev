@@ -19,7 +19,7 @@
     {% comment %} <h3 class="selected-category">{{ selected_category }}</h3> {% endcomment %}
 
     <!-- Governor Card -->
-    {% if governor %}
+    {% if governor and selected_category == "Global Executive Committee" %}
     <div class="card governor-card">
       <img src="{{ governor.image.url }}" alt="{{ governor.members.first_name }}">
       <h4>{{ governor.members.first_name }} {{ governor.members.last_name }}</h4>
@@ -28,7 +28,7 @@
     {% endif %}
 
         <!-- Governor Card -->
-    {% if deputy_governor %}
+    {% if deputy_governor and selected_category == "Global Executive Committee" %}
     <div class="card governor-card">
       <img src="{{ deputy_governor.image.url }}" alt="{{ deputy_governor.members.first_name }}">
       <h4>{{ deputy_governor.members.first_name }} {{ deputy_governor.members.last_name }}</h4>
