@@ -201,7 +201,7 @@ class MeetingAttendace(models.Model):
 
 
 
-   from django.db import models
+from django.db import models
 
 class CredentialCategory(models.Model):
     department = models.IntegerField()
