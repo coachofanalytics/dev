@@ -85,48 +85,63 @@ def test(request):
 def checkout(request):
     return render(request, "main/checkout.html", {"title": "checkout"})
 
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
+from .models import Page, Description, Service, SubService, News
+
+# def layout(request):
+#     page_instance = get_object_or_404(Page, page_name='Home')
+#     return render(request, 'main/home_templates/home.html', {'page': page_instance})
 
 
+
+
+
+
+
+
+from django.shortcuts import get_object_or_404, render
+from .models import Page, Description, Service, SubService, News
+from .forms import ContactForm
 
 def layout(request):
     print("In layout")
-    print("news table")
-    page_instance = Page.objects.get(page_name='Home')
-    description = Description.objects.filter(page = page_instance)
+    page_instance = Page.objects.filter(page_name='Home').first()
+    description = Description.objects.filter(page=page_instance)
     service = Service.objects.all()
     subservice = SubService.objects.all()
-    news = News.objects.all().order_by('-published_date')[:3] 
-  
-   
+    news = News.objects.all().order_by('-published_date')[:3]
+
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
-        context={
-            "message":message,
-            # "link":SITEURL+'/management/companyagenda'
-        }
         if form.is_valid():
-            # form.save()
-            instance=form.save(commit=False)
-            # instance.client_name='admin',
-            instance.task='NA',
-            instance.plan='NA',
-            instance.trained_by=request.user
+            instance = form.save(commit=False)
+            instance.task = 'NA'
+            instance.plan = 'NA'
+            instance.trained_by = request.user
             instance.save()
-            # return redirect("management:assessment")
-            return render(request, "main/errors/generalerrors.html",context)
+            return render(
+                request,
+                "main/errors/generalerrors.html",
+                {"message": "Thank you, we will get back to you within 48 hours."}
+            )
     else:
         form = ContactForm()
-    context={
-            # "posts":posts,
-            "form": form,
-            'description': description,
-            'service': service,
-            'news':news,
-            'subservice':subservice
-        }
-    return render(request, "main/home_templates/home.html",context)
+
+    context = {
+        "form": form,
+        "description": description,
+        "service": service,
+        "news": news,
+        "subservice": subservice
+    }
+
+    return render(
+        request,
+        "main/home_templates/home.html",
+        context
+    )
+
+
 
 
 
