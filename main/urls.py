@@ -29,7 +29,7 @@ urlpatterns = [
     
     path('create/', views.payment_create, name='payment_create'),
     path('history/', views.payment_history, name='payment_history'),
-    # path('report/', views.payment_report, name='payment_report'),
+     path("<int:pk>/update/", views.payment_update, name="payment_update"),
     # path('webhook/stripe/', views.stripe_webhook, name='stripe_webhook'),
     # path('success/', views.payment_success, name='payment_success'),
     # path('cancel/', views.payment_cancel, name='payment_cancel'),

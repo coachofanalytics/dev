@@ -519,3 +519,18 @@ def payment_create(request):
     else:
         form = PaymentForm()
     return render(request, "main/snippets_templates/table/payment_create.html", {"form": form})
+
+
+
+
+def payment_update(request, pk):
+    payment = get_object_or_404(Payment, pk=pk, user=request.user)
+    if request.method == "POST":
+        form = PaymentForm(request.POST, instance=payment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Payment updated successfully!")
+            return redirect("main:payment_history")
+    else:
+        form = PaymentForm(instance=payment)
+    return render(request, "main/snippets_templates/table/payments_update.html", {"form": form, "payment": payment})
