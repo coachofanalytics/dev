@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import (
@@ -11,7 +12,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values,generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm, GovernanceForm
+from main.forms import ContactForm, GetHelpForm, GovernanceForm,PaymentForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -491,4 +492,30 @@ def governance_delete(request, pk):
     return render(request, 'main/governance_confirm_delete.html', {'govern':govern})
 
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Payment
 
+
+def payment_history(request):
+    payments = Payment.objects.filter(user=request.user)
+    print('info ============', payments)
+    return render(request, "main/snippets_templates/table/peyments.html", {"info": payments} )
+         
+        
+      
+    
+
+@login_required
+def payment_create(request):
+    if request.method == "POST":
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.user = request.user
+            payment.save()
+            messages.success(request, "Payment successfully created!")
+            return redirect("main:payment_history")
+    else:
+        form = PaymentForm()
+    return render(request, "main/snippets_templates/table/payment_create.html", {"form": form})

@@ -24,8 +24,15 @@ urlpatterns = [
     path('governance/<int:pk>/update/',views.governance_update , name='governance_update'),
     path('create_governance/', views.governance_create, name='create_governance'),
     path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),
-    
   
+   
+    
+    path('create/', views.payment_create, name='payment_create'),
+    path('history/', views.payment_history, name='payment_history'),
+    # path('report/', views.payment_report, name='payment_report'),
+    # path('webhook/stripe/', views.stripe_webhook, name='stripe_webhook'),
+    # path('success/', views.payment_success, name='payment_success'),
+    # path('cancel/', views.payment_cancel, name='payment_cancel'),
     
     
    #==============ERRORS==============================================

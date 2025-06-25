@@ -248,5 +248,7 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.payment_type} - {self.amount} ({self.status})"
+    
+    
 
 
