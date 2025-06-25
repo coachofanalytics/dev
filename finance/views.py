@@ -1,35 +1,32 @@
-import base64
-from datetime import datetime, date
-from decimal import Decimal
 import json
-import requests
 import logging
-
+import os
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
-from django.http import QueryDict, Http404, JsonResponse
+from django.http import QueryDict, Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
+from mail.custom_email import send_email
 
 
 
 from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
-from .forms import BudgetForm, DepartmentFilterForm, InflowForm
+from .forms import BudgetForm, DepartmentFilterForm, InflowForm, PaymentForm
 from .models import (
     Budget, CodaBudget, Payment_Information, Payment_History,
     Default_Payment_Fees, Transaction
 )
 from .utils import (
-    check_default_fee, get_exchange_rate, compute_amt, category_subcategory
+    get_exchange_rate
 )
-from main.utils import path_values, countdown_in_month
+from main.utils import path_values
 
 # Initialize Logger
 logger = logging.getLogger(__name__)
@@ -144,8 +141,6 @@ def pay(request, service=None):
         "message": f"Hi {request.user}, you are yet to sign the contract with us. Kindly contact us at info@codanalytics.net.",
     }
     return render(request, "finance/payments/pay.html", context)
-from django.views.generic import CreateView
-from .models import Payment_Information
 
 class PaymentCreateView(CreateView):
     model = Payment_Information
@@ -154,9 +149,7 @@ class PaymentCreateView(CreateView):
     success_url = '/finance/pay/'
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 @login_required
 def mycontract(request, username):
@@ -173,7 +166,6 @@ def mycontract(request, username):
     return render(request, "finance/contracts/mycontract.html", context)
 
 
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -186,7 +178,6 @@ def another_view(request, method):
 
 
 
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import Payment_Information
 
@@ -500,5 +491,116 @@ def budget_projection(request,subtitle='summary',duration=2024):
     
 
 
+def send_notification(request, email, first_name, last_name, amount):
+    url = 'email/payment_confirm.html'
+    # new_user = CustomerUser.objects.all().order_by('-id').first()
+    # print(new_user)
+    
+    # print(new_user)
+    # print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
 
-   
+    print ('email started 01')
+    user_category = "Ordinary"
+    first_name = first_name
+    last_name = last_name
+    # user_id = new_user.member_number
+    user_email = email
+    amount = amount
+    subject = "payment recived"
+
+    # print(new_user.id)
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_email': user_email,
+        'amount': amount,
+        'subject': subject
+    }
+    try:
+        print ('sending email 02')
+
+        send_email(
+            category=user_category,
+            to_email=[user_email],
+            subject=subject,
+            html_template=url,
+            context=context
+        )
+        print (user_email, first_name)
+        print("EMAIL SENT")
+        # return render(request,url, context)
+        # return render(request, 'main/messages/message.html', context)
+    except Exception as e:
+        error_message = (
+            f'Hi {first_name}, Your message to '
+            f'{email} was unsuccessful. '
+            f'Please try again or contact info@diasporacounty48.org. Thank You. '
+            f'Error: {e}'
+        )
+        return render(request, 'main/messages/message.html', {"message": error_message})
+
+
+
+def payment_processing(request):
+
+    subject = "payment recived"
+    url = 'email/payment_confirm.html'
+    user_category = "Ordinary"
+
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            #save in a JSON
+            #we call the exchange rate API
+            #we will also need to call send notification function to send an email
+            # form.save()
+            amount = form.cleaned_data['amount']
+            currency = form.cleaned_data['currency']
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            email = form.cleaned_data['email']
+            
+            print(amount, currency, first_name, last_name, email)
+            #we call the exchange rate API converting to USD
+            exchange_rate = get_exchange_rate(currency, 'USD')
+            converted_amount_USD = amount / exchange_rate
+            print(amount, exchange_rate, converted_amount_USD)
+            context = {
+                'user_category': user_category,
+                'first_name': first_name,
+                'last_name': last_name,
+                'user_email': user_email,
+                'amount': amount,
+                'subject': subject
+            }
+            send_email(
+                category=user_category,
+                to_email=[email],
+                subject=subject,
+                html_template=url,
+                context=context
+            )
+            data = {
+                'amount':str(amount),
+                'currency':currency,
+                'first_name':first_name,
+                'last_name':last_name,
+                'email':email,
+                'exchange_rate':str(exchange_rate),
+                'converted_amount_USD':str(converted_amount_USD)
+            }
+            file_path = os.path.join(settings.BASE_DIR, 'payment_data.json')
+            with open(file_path, 'w') as f:
+                json.dump(data, f, indent=4)
+
+
+
+            # return HttpResponse("JSON file saved.")
+            return redirect('main:layout')  
+
+    else:
+        form = PaymentForm()
+
+    return render(request, 'finance/online_payments.html',{'form':form})
