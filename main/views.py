@@ -534,3 +534,14 @@ def payment_update(request, pk):
     else:
         form = PaymentForm(instance=payment)
     return render(request, "main/snippets_templates/table/payments_update.html", {"form": form, "payment": payment})
+
+
+
+
+def payment_delete(request, pk):
+    payment = get_object_or_404(Payment, pk=pk, user=request.user)
+    if request.method == "POST":
+        payment.delete()
+        messages.success(request, "Payment deleted successfully!")
+        return redirect("main:payment_history")
+    return render(request, "main/snippets_templates/table/delet payments.html", {"payment": payment})

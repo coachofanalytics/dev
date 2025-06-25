@@ -29,7 +29,8 @@ urlpatterns = [
     
     path('create/', views.payment_create, name='payment_create'),
     path('history/', views.payment_history, name='payment_history'),
-     path("<int:pk>/update/", views.payment_update, name="payment_update"),
+    path("<int:pk>/update/", views.payment_update, name="payment_update"),
+    path("<int:pk>/delete/", views.payment_delete, name="payment_delete"),
     # path('webhook/stripe/', views.stripe_webhook, name='stripe_webhook'),
     # path('success/', views.payment_success, name='payment_success'),
     # path('cancel/', views.payment_cancel, name='payment_cancel'),
