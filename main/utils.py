@@ -1,4 +1,4 @@
-import os,openai
+import os, openai
 import requests
 from coda_project.settings import SITEURL
 from .models import Assets

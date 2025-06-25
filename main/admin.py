@@ -24,6 +24,7 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(Faq)
 admin.site.register(GetHelp)
 admin.site.register(Governance_pm)
+admin.site.register(Profile)
 
 
 

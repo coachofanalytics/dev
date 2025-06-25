@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values, generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm , GovernanceForm
+from main.forms import ContactForm, GetHelpForm, GovernanceForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -435,7 +435,11 @@ def governance_update(request, pk):
 def governance_create(request):
     if request.method == 'POST':
         form = GovernanceForm(request.POST)
+        # message = f"Provide a brief description of around 50 words for the DC48K {form.title}"
         if form.is_valid():
+            # message = f"Provide a brief description of around 50 words for the DC48K{form.governance_category}"
+            # api_description = generate_chatbot_response(message)
+            # form.description = api_description
             form.save()
             return redirect('main:governance_list')
 

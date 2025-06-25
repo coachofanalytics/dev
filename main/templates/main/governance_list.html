@@ -9,9 +9,9 @@
     <div class="team-cards">
       {% for member in govern %}
       <div class="card">
-        <img src="{{ member.image.url }}" alt="{{ member.members.first_name}}">
+        <img src="{{ member.image.url }}" alt="{{ member.members.first_name}}" title="{{member.description}}">
         <h3>{{ member.members.first_name}} {{member.members.last_name }}</h3>   
-        <p>{{ member.description }}</p>
+        <p>{{ member.title }}</p>
       </div>
       {% endfor %}
     </div>
