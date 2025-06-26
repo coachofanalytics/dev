@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values, generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm, GovernanceForm
+from main.forms import ContactForm, GetHelpForm ,GovernanceForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -404,8 +404,18 @@ def gethelp_delete(request, pk):
     def __str__(self):
         return self.structure_category
 
+# def governance_list(request,leadership=None):
+#     # govern = Governance.objects.all()
+#     govern = Governance.objects.filter(governance_category__icontains=leadership) if leadership else govern
+#     print("Governance List:", govern)
+#     context = {
+#         'govern': govern
+#     }
+
+#     return render(request, 'main/governance_list.html',context)
+
 def governance_list(request):
-    govern = Governance_pm.objects.all()
+    govern = Governance.objects.all()
     context = {
         'govern': govern
     }
@@ -416,7 +426,7 @@ def governance_list(request):
 
 def governance_update(request, pk):
 
-    govern = get_object_or_404(Governance_pm, pk=pk)
+    govern = get_object_or_404(Governance, pk=pk)
 
    
     if request.method == 'POST':
@@ -430,29 +440,82 @@ def governance_update(request, pk):
 
     return render(request, 'main/governance_update.html',{'form':form})
 
-
-
 def governance_create(request):
+    print("Entered governance_create view")
+
     if request.method == 'POST':
+        print("Request method is POST")
         form = GovernanceForm(request.POST)
-        # message = f"Provide a brief description of around 50 words for the DC48K {form.title}"
+        print("Form data received:")
+        for field_name, field_value in request.POST.items():
+            print(f"{field_name}: {field_value}")
+
         if form.is_valid():
-            # message = f"Provide a brief description of around 50 words for the DC48K{form.governance_category}"
-            # api_description = generate_chatbot_response(message)
-            # form.description = api_description
-            form.save()
-            return redirect('main:governance_list')
+            print("Form is valid")
+            try:
+                title = form.cleaned_data.get('title')
+                if not title:
+                    print("Title is missing in cleaned_data")
+                    raise ValueError("Title is missing for generating the description.")
+                
+                message = f"Provide a brief description of around 50 words for the DC48K {title}"
+                print(f"Generated message for AI: {message}")
+
+                try:
+                    api_description = generate_chatbot_response(message)
+                    print(f"API description generated: {api_description}")
+                except Exception as api_exception:
+                    print(f"Error while calling generate_chatbot_response: {api_exception}")
+                    # api_description = "Please provide a manual description."
+                    api_description = f"This is the {form.instance.title} under the {form.instance.governance_category}"
+                    
+
+                # Set description and save form instance
+                instance = form.save(commit=False)
+                instance.description = api_description
+                instance.save()
+                print("Form instance saved successfully")
+
+                return redirect('main:governance_list')
+
+            except Exception as e:
+                print(f"Error while processing form submission: {e}")
+        else:
+            print("Form is invalid")
+            print(f"Form errors: {form.errors}")
 
     else:
-        form = GovernanceForm() 
+        print("Request method is not POST, initializing empty form")
+        form = GovernanceForm()
 
+    # Optional: for debugging GET requests or invalid POSTs
     return render(request, 'main/governance_create.html',{'form':form})
+
+########################################################################################################################
+# def governance_create(request):
+#     if request.method == 'POST':
+#         form = GovernanceForm(request.POST)
+#         message = f"Provide a brief description of around 50 words for the DC48K {form.title}"
+#         if form.is_valid():
+#             # message = f"Provide a brief description of around 50 words for the DC48K{form.title}"
+#             try:
+#                 api_description = generate_chatbot_response(message)
+#             except Exception as e:
+#                 api_description = "Please provide a manual description."
+#             form.description = api_description
+#             form.save()
+#             return redirect('main:governance_list')
+
+#     else:
+#         form = GovernanceForm() 
+
+#     return render(request, 'main/governance_create.html',{'form':form})
 
 
 
 def governance_delete(request, pk):
    
-    govern = get_object_or_404(Governance_pm, pk=pk)
+    govern = get_object_or_404(Governance, pk=pk)
 
     if request.method == 'POST':
 

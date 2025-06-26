@@ -21,6 +21,7 @@ urlpatterns = [
     path('create_gethelp/', views.gethelp_create, name='create_gethelp'),
     path('gethelp/<int:pk>/delete/', views.gethelp_delete, name='gethelp_delete'),
     path('governance_list/', views.governance_list, name='governance_list'),
+    path('governance/<str:leadership>/', views.governance_list, name='governance_list'),
     path('governance/<int:pk>/update/',views.governance_update , name='governance_update'),
     path('create_governance/', views.governance_create, name='create_governance'),
     path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),

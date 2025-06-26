@@ -36,7 +36,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership, Region, Chapter
+from .models import CustomerUser, Membership, Region, Chapter, Profile
 from .forms import (
     CustomAuthenticationForm,
     CustomUserCreationForm, 
@@ -44,7 +44,8 @@ from .forms import (
     LoginForm,
     OTPForm,
     RegionForm,
-    ChapterForm
+    ChapterForm,
+    # ProfileForm,
 )
 from finance.utils import DYCDefaultPayments
 import logging
@@ -861,3 +862,80 @@ def delete_chapter(request, pk):
         return redirect("accounts:list_chapters")
     
     return render(request, "accounts/chapter_confirm_delete.html",{"chapter":chapter})
+######Profile Section
+def profile_list(request):
+    profile = Profile.objects.all()
+    context = {
+        'profile': profile
+    }
+
+    return render(request, 'main/profile_list.html',context)
+    
+
+
+def profile_update(request, pk):
+
+    profile = get_object_or_404(Profile, pk=pk)
+
+   
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=govern)
+        if form.is_valid():
+            form.save() 
+            return redirect('main:governance_list')  
+
+    else:
+        form = GovernanceForm(instance=govern)
+
+    return render(request, 'main/governance_update.html',{'form':form})
+
+def governance_create(request):
+    print("Entered governance_create view")
+
+    if request.method == 'POST':
+        print("Request method is POST")
+        form = GovernanceForm(request.POST)
+        print("Form data received:")
+        for field_name, field_value in request.POST.items():
+            print(f"{field_name}: {field_value}")
+
+        if form.is_valid():
+            print("Form is valid")
+            try:
+                title = form.cleaned_data.get('title')
+                if not title:
+                    print("Title is missing in cleaned_data")
+                    raise ValueError("Title is missing for generating the description.")
+                
+                message = f"Provide a brief description of around 50 words for the DC48K {title}"
+                print(f"Generated message for AI: {message}")
+
+                try:
+                    api_description = generate_chatbot_response(message)
+                    print(f"API description generated: {api_description}")
+                except Exception as api_exception:
+                    print(f"Error while calling generate_chatbot_response: {api_exception}")
+                    # api_description = "Please provide a manual description."
+                    api_description = f"This is the {form.instance.title} under the {form.instance.governance_category}"
+                    
+
+                # Set description and save form instance
+                instance = form.save(commit=False)
+                instance.description = api_description
+                instance.save()
+                print("Form instance saved successfully")
+
+                return redirect('main:governance_list')
+
+            except Exception as e:
+                print(f"Error while processing form submission: {e}")
+        else:
+            print("Form is invalid")
+            print(f"Form errors: {form.errors}")
+
+    else:
+        print("Request method is not POST, initializing empty form")
+        form = GovernanceForm()
+
+    # Optional: for debugging GET requests or invalid POSTs
+    return render(request, 'main/governance_create.html',{'form':form})

@@ -1,16 +1,27 @@
-{%extends "main/base_templates/base.html"%} 
+{% extends "main/base_templates/base.html" %} 
 {% load static %}
 {% block content %} 
+
 <section class="team-section">
   <div class="container">
     <h2>The Governing Team</h2>
     <br>
 
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      <!-- <a href="{% url 'main:governance_list' %}" class="btn btn-primary">All</a> -->
+      <a href="{% url 'main:governance_list' 'Global Executive Committee' %}" class="btn btn-primary">Global Executive Committee</a>
+      <a href="{% url 'main:governance_list' 'County Assembly' %}" class="btn btn-primary">County Assembly</a>
+      <a href="{% url 'main:governance_list' 'Regional Administrators' %}" class="btn btn-primary">Regional Administrators</a>
+    </div>
+
+    <br>
+
     <div class="team-cards">
       {% for member in govern %}
       <div class="card">
-        <img src="{{ member.image.url }}" alt="{{ member.members.first_name}}" title="{{member.description}}">
-        <h3>{{ member.members.first_name}} {{member.members.last_name }}</h3>   
+        <img src="{{ member.image.url }}" alt="{{ member.members.first_name }}" title="{{ member.description }}">
+        <h3>{{ member.members.first_name }} {{ member.members.last_name }}</h3>   
         <p>{{ member.title }}</p>
       </div>
       {% endfor %}

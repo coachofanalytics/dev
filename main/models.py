@@ -192,27 +192,9 @@ class GetHelp(models.Model):
 
     
 
-# class Governance_pm(models.Model):
- 
-#     GovernanceCategoryChoices = [
-#         ('Governance', 'Governance'),
-#         ('Global Administration', 'Global Administration'), #Slight changes here
-#         ('Ward Administration', 'Ward Administration')
-#     ]
-#     id = models.AutoField(primary_key=True) 
-#     governance_category = models.CharField(max_length=255,choices=GovernanceCategoryChoices)
-#     description = models.TextField()
-#     members = models.ForeignKey(CustomerUser,on_delete= models.CASCADE, related_name='governance')
-#     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='regions', default ="")
-#     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='chapters', default ="")
-#     image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
-#     created_at = models.DateTimeField(auto_now_add=True)  
-#     updated_at = models.DateTimeField(auto_now=True) 
 
-#     def __str__(self):
-#         return self.governance_category
 
-class Governance_pm(models.Model):
+class Governance(models.Model):
     GovernanceCategoryChoices = [
         ('Global Executive Committee', 'Global Executive Committee'),
         ('Regional Administration', 'Regional Administration'),
@@ -224,6 +206,7 @@ class Governance_pm(models.Model):
     title = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     members = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='governance')
+    # user_profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='governance')
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='regions', default="")
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='chapter', default="")
     image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
@@ -236,7 +219,7 @@ class Governance_pm(models.Model):
             base_slug = slugify(self.governance_category)
             slug = base_slug
             num = 1
-            while Governance_pm.objects.filter(slug=slug).exists():
+            while Governance.objects.filter(slug=slug).exists():
                 slug = f"{base_slug}-{num}"
                 num += 1
             self.slug = slug
@@ -244,17 +227,3 @@ class Governance_pm(models.Model):
 
     def _str_(self):
         return self.governance_category, self.title, self.members
-    
-
-class Profile(models.Model):
-    user = models.OneToOneField(CustomerUser, on_delete=models.CASCADE, related_name='profile')
-    title = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(upload_to='img/profiles', blank=True, null=True)
-    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
-    chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    
-    
