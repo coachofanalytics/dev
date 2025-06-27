@@ -9,6 +9,15 @@ class DescriptionAdmin(admin.ModelAdmin):
     ordering = ("name",)
     filter_horizontal = ()
 
+
+class DescriptionGovernance(admin.ModelAdmin):
+    list_display = ("governance_category", "members", "title", "ui_order")
+
+    # search_fields = ("page", "name")
+    list_filter = ("governance_category",)
+    # ordering = ("name",)
+    # filter_horizontal = ()
+
 # Register your models here.
 # admin.site.register(Assets)
 #admin.site.register(Feedback)
@@ -23,7 +32,7 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(ContactUs)
 #admin.site.register(Faq)
 admin.site.register(GetHelp)
-admin.site.register(Governance)
+admin.site.register(Governance, DescriptionGovernance)
 
 
 

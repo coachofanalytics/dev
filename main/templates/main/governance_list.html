@@ -5,6 +5,12 @@
 <section class="team-section">
   <div class="container">
 
+      <!-- Show Selected Category -->
+     <div style="background-color:black; padding-top:50px">
+        <h1 style="color:white">THE DIASPORA COUNTY 48 KENYA</h1>
+        <h2 class="selected-category" style='padding-bottom:30px; color:#35bddb'>{{ selected_category }}</h2>
+     </div>
+
     <!-- Filter Buttons -->
     <div class="filter-buttons">
       {% for cat in categories %}
@@ -14,9 +20,6 @@
       </a>
       {% endfor %}
     </div>
-
-    <!-- Show Selected Category -->
-    {% comment %} <h3 class="selected-category">{{ selected_category }}</h3> {% endcomment %}
 
     <!-- Governor Card -->
     {% if governor and selected_category == "Global Executive Committee" %}
@@ -38,12 +41,14 @@
 
     <!-- Other Members -->
     <div class="team-cards">
-      {% for member in govern %}
-      <div class="card">
-        <img src="{{ member.image.url }}" alt="{{ member.members.first_name }}">
-        <h4>{{ member.members.first_name }} {{ member.members.last_name }}</h4>
-        <h8>{{ member.title }}</h8>
-      </div>
+      {% for member in govern_order %}
+        {% if member.ui_order > 0 %}
+          <div class="card">
+            <img src="{{ member.image.url }}" alt="{{ member.members.first_name }}">
+            <h4>{{ member.members.first_name }} {{ member.members.last_name }}</h4>
+            <h8>{{ member.title }}</h8>
+          </div>
+        {% endif %}
       {% endfor %}
     </div>
   </div>

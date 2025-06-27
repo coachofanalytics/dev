@@ -407,10 +407,12 @@ def governance_list(request):
 
     # Always get the Governor regardless of selected category
     governor = Governance.objects.filter(title__iexact="Governor").first()
-    deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
+    # deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
 
     # Get all members for the selected category except the Governor
-    govern = Governance.objects.filter(governance_category=category).exclude(title__in=["Governor", "Deputy Governor"])
+    govern = Governance.objects.filter(governance_category=category).exclude(title__iexact="Governor")
+
+    govern_order = sorted(govern, key=lambda member:member.ui_order)
 
     categories = [
         'Global Executive Committee',
@@ -418,10 +420,12 @@ def governance_list(request):
         'County Assembly Administration'
     ]
 
+
     return render(request, 'main/governance_list.html', {
-        'govern': govern,
+        # 'govern': govern,
+        "govern_order": govern_order,
         'governor': governor,
-        'deputy_governor': deputy_governor,
+        # 'deputy_governor': deputy_governor,
         'selected_category': category,
         'categories': categories
     })

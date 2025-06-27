@@ -212,6 +212,7 @@ class Governance(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    ui_order = models.IntegerField(unique=False, default=0) # used organize leadership/photos on ui.
 
     def save(self, *args, **kwargs):
         if not self.slug:
