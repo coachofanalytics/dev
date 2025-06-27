@@ -13,23 +13,27 @@ from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
 from mail.custom_email import send_email
-
+from django.views.decorators.csrf import csrf_exempt
+import paypalrestsdk
 
 
 from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm, PaymentForm
 from .models import (
-    Budget, CodaBudget, Payment_Information, Payment_History,
-    Default_Payment_Fees, Transaction
+    Budget,
+    CodaBudget,
+    Payment_Information,
+    Payment_History,
+    Default_Payment_Fees,
+    Transaction,
 )
-from .utils import (
-    get_exchange_rate
-)
+from .utils import get_exchange_rate
 from main.utils import path_values
 
 # Initialize Logger
 logger = logging.getLogger(__name__)
+
 
 # Payment and time details
 def payment_details():
@@ -50,22 +54,24 @@ def finance_report(request):
 def contract_form_submission(request):
     try:
         if request.method == "POST":
-            user_student_data = request.POST.get('usr_data')
+            user_student_data = request.POST.get("usr_data")
             if not user_student_data:
                 raise ValueError("Missing form data")
 
             student_dict_data = QueryDict(user_student_data)
-            username = student_dict_data.get('username')
+            username = student_dict_data.get("username")
 
             # Retrieve customer and payment info
             customer = CustomerUser.objects.filter(username=username).first()
-            payment = Payment_Information.objects.filter(customer_id=request.user.id).first()
+            payment = Payment_Information.objects.filter(
+                customer_id=request.user.id
+            ).first()
 
             # Handle new user form
             if not payment:
                 form = UserForm(student_dict_data)
                 if form.is_valid():
-                    category = form.cleaned_data.get('category')
+                    category = form.cleaned_data.get("category")
                     form.instance.is_applicant = category == 1
                     form.instance.is_staff = category == 2
                     form.instance.is_client = category == 3
@@ -73,37 +79,41 @@ def contract_form_submission(request):
                     form.save()
 
             # Payment details
-            payment_fees = int(request.POST.get('duration', 0)) * 1000
-            down_payment = int(request.POST.get('down_payment', 0))
-            student_bonus_amount = int(request.POST.get('bonus', 0))
+            payment_fees = int(request.POST.get("duration", 0)) * 1000
+            down_payment = int(request.POST.get("down_payment", 0))
+            student_bonus_amount = int(request.POST.get("bonus", 0))
             fee_balance = payment_fees - down_payment
-            if request.POST.get('student_contract'):
+            if request.POST.get("student_contract"):
                 fee_balance -= student_bonus_amount
 
             # Save payment info
             payment_data = {
-                'payment_fees': payment_fees,
-                'down_payment': down_payment,
-                'student_bonus': student_bonus_amount,
-                'fee_balance': fee_balance,
-                'plan': request.POST.get('duration'),
-                'payment_method': request.POST.get('payment_type'),
-                'client_signature': request.POST.get('client_sign'),
-                'company_rep': request.POST.get('rep_name'),
-                'client_date': request.POST.get('client_date'),
-                'rep_date': request.POST.get('rep_date'),
+                "payment_fees": payment_fees,
+                "down_payment": down_payment,
+                "student_bonus": student_bonus_amount,
+                "fee_balance": fee_balance,
+                "plan": request.POST.get("duration"),
+                "payment_method": request.POST.get("payment_type"),
+                "client_signature": request.POST.get("client_sign"),
+                "company_rep": request.POST.get("rep_name"),
+                "client_date": request.POST.get("client_date"),
+                "rep_date": request.POST.get("rep_date"),
             }
 
             if payment:
-                Payment_Information.objects.filter(customer_id=customer.id).update(**payment_data)
+                Payment_Information.objects.filter(customer_id=customer.id).update(
+                    **payment_data
+                )
             else:
-                Payment_Information.objects.create(customer_id=customer.id, **payment_data)
+                Payment_Information.objects.create(
+                    customer_id=customer.id, **payment_data
+                )
 
             # Save payment history
             Payment_History.objects.create(customer=customer, **payment_data)
 
-            messages.success(request, f'Added New Contract for {username}!')
-            return redirect('finance:pay')
+            messages.success(request, f"Added New Contract for {username}!")
+            return redirect("finance:pay")
 
         # Render GET request
         return render(request, "finance/contract_form.html")
@@ -111,10 +121,10 @@ def contract_form_submission(request):
     except ValueError as ve:
         logger.error(f"Validation error in contract_form_submission: {ve}")
         messages.error(request, str(ve))
-        return redirect('finance:contract_form')
+        return redirect("finance:contract_form")
     except Exception as e:
         logger.exception(f"Unexpected error in contract_form_submission: {e}")
-        message = f'Hi {request.user}, there is an issue on our end. Kindly contact us directly at info@codanalytics.net.'
+        message = f"Hi {request.user}, there is an issue on our end. Kindly contact us directly at info@codanalytics.net."
         context = {"title": "CONTRACT", "message": message, "error_details": str(e)}
         return render(request, "main/errors/generalerrors.html", context)
 
@@ -122,7 +132,7 @@ def contract_form_submission(request):
 # ===================== PAYMENTS =====================
 def pay(request, service=None):
     if not request.user.is_authenticated:
-        return redirect(reverse('accounts:account-login'))
+        return redirect(reverse("accounts:account-login"))
 
     payment_info = Payment_Information.objects.filter(customer_id=request.user).last()
     user = request.user
@@ -130,26 +140,28 @@ def pay(request, service=None):
     membership = get_object_or_404(Membership, member=user)
     fee_usd = membership.fee
 
-    fee_kes = fee_usd * get_exchange_rate('USD', 'KES')
+    fee_kes = fee_usd * get_exchange_rate("USD", "KES")
     print(fee_kes)
 
     context = {
         "title": "PAYMENT",
         "membership": membership,
-        "fee_kes":fee_kes,
+        "fee_kes": fee_kes,
         "user": request.user,
         "message": f"Hi {request.user}, you are yet to sign the contract with us. Kindly contact us at info@codanalytics.net.",
     }
     return render(request, "finance/payments/pay.html", context)
 
+
 class PaymentCreateView(CreateView):
     model = Payment_Information
-    fields = ['customer_id', 'down_payment', 'payment_method']
-    template_name = 'finance/payments/payment_form.html'
-    success_url = '/finance/pay/'
+    fields = ["customer_id", "down_payment", "payment_method"]
+    template_name = "finance/payments/payment_form.html"
+    success_url = "/finance/pay/"
 
 
 from django.shortcuts import get_object_or_404
+
 
 @login_required
 def mycontract(request, username):
@@ -158,7 +170,7 @@ def mycontract(request, username):
 
     # Fetch contract details for the user
     contract = Payment_Information.objects.filter(customer_id=user.id).first()
-    
+
     context = {
         "title": f"Contract for {user.username}",
         "contract": contract,
@@ -167,6 +179,7 @@ def mycontract(request, username):
 
 
 from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def another_view(request, method):
@@ -177,14 +190,16 @@ def another_view(request, method):
     return render(request, "finance/payments/another_view.html", context)
 
 
-
 from django.contrib.auth.decorators import login_required
 from .models import Payment_Information
+
 
 @login_required
 def payments(request):
     # Fetch payment information for the logged-in user
-    payment_info = Payment_Information.objects.filter(customer_id=request.user.id).last()
+    payment_info = Payment_Information.objects.filter(
+        customer_id=request.user.id
+    ).last()
 
     context = {
         "title": "Payments",
@@ -192,23 +207,25 @@ def payments(request):
     }
     return render(request, "finance/payments/payments.html", context)
 
+
 # def pay(request, service=None):
 #     if not request.user.is_authenticated:
 #         return redirect(reverse('accounts:account-login'))
 #     payment_info = Payment_Information.objects.filter(customer_id=request.user).last()
 
- 
+
 #     context = {
 #             "title": "PAYMENT",
 #             "payments": payment_info,
 #             "rate": rate,
 #             'user': request.user,
-            
+
 #             "message": f"Hi {request.user}, you are yet to sign the contract with us. Kindly contact us at info@codanalytics.net.",
-            
+
 #             # "service": True,
 #         }
 #     return render(request, "finance/payments/pay.html", context)
+
 
 def paymentComplete(request):
     if request.method == "POST":
@@ -226,9 +243,13 @@ def paymentComplete(request):
                 return redirect("finance:payment_complete")
             except ValueError:
                 # Handle invalid input
-                return redirect("finance:payment_page")  # Redirect back to payment page with error
+                return redirect(
+                    "finance:payment_page"
+                )  # Redirect back to payment page with error
 
     return redirect("payment_page")
+
+
 def process_payment(request):
     if request.method == "POST":
         user = request.user
@@ -240,33 +261,40 @@ def process_payment(request):
             try:
                 # Update the membership fee with the new amount
                 membership.fee = float(entered_amount)
-                membership.status = 'PAID'  # Update the payment status if applicable
+                membership.status = "PAID"  # Update the payment status if applicable
                 membership.save()
                 return redirect("finance:payment_success")  # Redirect to success page
             except ValueError:
                 # Handle invalid input
-                return redirect("finance:payment_page")  # Redirect back to payment page with error
+                return redirect(
+                    "finance:payment_page"
+                )  # Redirect back to payment page with error
 
     return redirect("finance/payments/payment_page")
 
+
 def payment_success(request):
     return render(request, "finance/payments/payment_success.html")
+
+
 class DefaultPaymentListView(ListView):
     model = Default_Payment_Fees
     template_name = "finance/payments/defaultpayments.html"
     context_object_name = "defaultpayments"
 
+
 class DefaultPaymentUpdateView(UpdateView):
     model = Default_Payment_Fees
     success_url = "/finance/payments"
-    
+
     fields = [
-                "job_down_payment_per_month",
-                "job_plan_hours_per_month",
-                "student_down_payment_per_month",
-                "student_bonus_payment_per_month",
-                "loan_amount",
+        "job_down_payment_per_month",
+        "job_plan_hours_per_month",
+        "student_down_payment_per_month",
+        "student_bonus_payment_per_month",
+        "loan_amount",
     ]
+
     # fields=['user','activity_name','description','point']
     def form_valid(self, form):
         # form.instance.author=self.request.user
@@ -274,7 +302,7 @@ class DefaultPaymentUpdateView(UpdateView):
             return super().form_valid(form)
         else:
             # return redirect("management:tasks")
-            return render(request,"management/contracts/supportcontract_form.html")
+            return render(request, "management/contracts/supportcontract_form.html")
 
     def test_func(self):
         task = self.get_object()
@@ -285,15 +313,15 @@ class DefaultPaymentUpdateView(UpdateView):
         return False
 
 
-
 # For payment purposes
 class PaymentInformationUpdateView(UpdateView):
     model = Payment_Information
     success_url = "/finance/pay/"
-    template_name="main/snippets_templates/generalform.html"
-    
+    template_name = "main/snippets_templates/generalform.html"
+
     # fields ="__all__"
-    fields=['customer_id','down_payment']
+    fields = ["customer_id", "down_payment"]
+
     def form_valid(self, form):
         # form.instance.author=self.request.user
         # if self.request.user.is_superuser or self.request.user:
@@ -301,7 +329,7 @@ class PaymentInformationUpdateView(UpdateView):
             return super().form_valid(form)
         else:
             # return redirect("management:tasks")
-            return render(request,"main/snippets_templates/generalform.html")
+            return render(request, "main/snippets_templates/generalform.html")
 
     def test_func(self):
         task = self.get_object()
@@ -319,8 +347,8 @@ def transact(request):
         form = InflowForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            instance=form.save(commit=False)
-            instance.sender=request.user
+            instance = form.save(commit=False)
+            instance.sender = request.user
             instance.save()
             return redirect("/finance/transaction/")
     else:
@@ -375,44 +403,47 @@ class TransactionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
         elif self.request.user.is_admin or self.request.user.is_superuser:
             return True
         return False
+
+
 @login_required
 def add_budget_item(request):
     if request.method == "POST":
         form = BudgetForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            instance=form.save(commit=False)
+            instance = form.save(commit=False)
             print(request.user)
-            instance.budget_lead=request.user
+            instance.budget_lead = request.user
             instance.save()
             return redirect("finance:budget", company_slug="coda")
     else:
         form = BudgetForm()
     return render(request, "finance/budgets/newbudget.html", {"form": form})
 
-def budget(request, company_slug='coda'):
-   
+
+def budget(request, company_slug="coda"):
+
     # Fetch budgets for the company
     company_budgets = Budget.objects.all()
-  
+
     # Calculate total budgets
     total_budget = sum(site.amount for site in company_budgets)
-   
+
     # Construct link URL
-    #link_url = reverse('finance:site_budget_with_subcategory', kwargs={'company_slug': company_slug, 'category': 'Web', 'subcategory': 'all'})
+    # link_url = reverse('finance:site_budget_with_subcategory', kwargs={'company_slug': company_slug, 'category': 'Web', 'subcategory': 'all'})
 
     # Prepare summary data
     summary = [
-        {"title": "Total Budget", "value": total_budget, "link": ''},
+        {"title": "Total Budget", "value": total_budget, "link": ""},
     ]
-
 
     context = {
         "budget_obj": company_budgets,
         "data": summary,
-       
     }
     return render(request, "finance/budgets/budget.html", context)
+
+
 def filter_transactions_by_duration_and_department(duration, department_name=None):
     """
     Filters transactions based on the given duration and optionally by department name.
@@ -420,21 +451,32 @@ def filter_transactions_by_duration_and_department(duration, department_name=Non
     if duration > 12:
         year = duration - 1
         if department_name:
-            return CodaBudget.objects.filter(department__name=department_name, created_at__year=str(year)).order_by('category')
+            return CodaBudget.objects.filter(
+                department__name=department_name, created_at__year=str(year)
+            ).order_by("category")
         else:
-            return CodaBudget.objects.filter(created_at__year=str(year)).order_by('category')
+            return CodaBudget.objects.filter(created_at__year=str(year)).order_by(
+                "category"
+            )
     else:
-        month = duration-1
-        year=2024
+        month = duration - 1
+        year = 2024
         if department_name:
             # return CodaBudget.objects.filter(department__name=department_name, created_at__month=str(month)).order_by('category')
-            return CodaBudget.objects.filter(department__name=department_name, created_at__year=str(year), created_at__month=str(month)).order_by('category')
+            return CodaBudget.objects.filter(
+                department__name=department_name,
+                created_at__year=str(year),
+                created_at__month=str(month),
+            ).order_by("category")
         else:
-            return CodaBudget.objects.filter( created_at__year=str(year),created_at__month=str(month)).order_by('category')
+            return CodaBudget.objects.filter(
+                created_at__year=str(year), created_at__month=str(month)
+            ).order_by("category")
 
-def budget_projection(request,subtitle='summary',duration=2024):
+
+def budget_projection(request, subtitle="summary", duration=2024):
     path_list, sub_title, pre_sub_title = path_values(request)
-    subtitle=path_list[2]
+    subtitle = path_list[2]
     # departments = Department.objects.all()
     # categories = BudgetCategory.objects.all()
 
@@ -446,13 +488,15 @@ def budget_projection(request,subtitle='summary',duration=2024):
 
     total = 0
     budget_items = []
-    
+
     if request.method == "POST":
         form = DepartmentFilterForm(request.POST)
         if form.is_valid():
-            department_name = form.cleaned_data.get('name')
+            department_name = form.cleaned_data.get("name")
             if department_name:
-                budget_items = filter_transactions_by_duration_and_department(duration, department_name)
+                budget_items = filter_transactions_by_duration_and_department(
+                    duration, department_name
+                )
             else:
                 budget_items = filter_transactions_by_duration_and_department(duration)
             total = sum(item.amount * item.qty for item in budget_items)
@@ -461,17 +505,14 @@ def budget_projection(request,subtitle='summary',duration=2024):
         budget_items = filter_transactions_by_duration_and_department(duration)
         total = sum(item.amount * item.qty for item in budget_items)
 
-
-
-
     # Aggregate data by month and category
-    budget_summary = budget_items.values('category__name','subcategory__name').annotate(
-        total_qty=Sum('qty'),
-        total_amount=Sum('unit_price')
-
-    )
+    budget_summary = budget_items.values(
+        "category__name", "subcategory__name"
+    ).annotate(total_qty=Sum("qty"), total_amount=Sum("unit_price"))
     # Create a list of unique categories
-    available_categories = budget_summary.values_list('category__name', flat=True).distinct()
+    available_categories = budget_summary.values_list(
+        "category__name", flat=True
+    ).distinct()
 
     context = {
         # "departments": departments,
@@ -482,24 +523,22 @@ def budget_projection(request,subtitle='summary',duration=2024):
         "budget_years": budget_years,
         "total_amt_ksh": total,
         "total_amt": total / rate if total else 0,
-        
     }
-    if subtitle=='detailed':
+    if subtitle == "detailed":
         return render(request, "finance/budgets/detailed_budget.html", context)
     else:
         return render(request, "finance/budgets/summary_budget.html", context)
-    
 
 
 def send_notification(request, email, first_name, last_name, amount):
-    url = 'email/payment_confirm.html'
+    url = "email/payment_confirm.html"
     # new_user = CustomerUser.objects.all().order_by('-id').first()
     # print(new_user)
-    
+
     # print(new_user)
     # print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
 
-    print ('email started 01')
+    print("email started 01")
     user_category = "Ordinary"
     first_name = first_name
     last_name = last_name
@@ -511,96 +550,140 @@ def send_notification(request, email, first_name, last_name, amount):
     # print(new_user.id)
 
     context = {
-        'user_category': user_category,
-        'first_name': first_name,
-        'last_name': last_name,
-        'user_email': user_email,
-        'amount': amount,
-        'subject': subject
+        "user_category": user_category,
+        "first_name": first_name,
+        "last_name": last_name,
+        "user_email": user_email,
+        "amount": amount,
+        "subject": subject,
     }
     try:
-        print ('sending email 02')
+        print("sending email 02")
 
         send_email(
             category=user_category,
             to_email=[user_email],
             subject=subject,
             html_template=url,
-            context=context
+            context=context,
         )
-        print (user_email, first_name)
+        print(user_email, first_name)
         print("EMAIL SENT")
         # return render(request,url, context)
         # return render(request, 'main/messages/message.html', context)
     except Exception as e:
         error_message = (
-            f'Hi {first_name}, Your message to '
-            f'{email} was unsuccessful. '
-            f'Please try again or contact info@diasporacounty48.org. Thank You. '
-            f'Error: {e}'
+            f"Hi {first_name}, Your message to "
+            f"{email} was unsuccessful. "
+            f"Please try again or contact info@diasporacounty48.org. Thank You. "
+            f"Error: {e}"
         )
-        return render(request, 'main/messages/message.html', {"message": error_message})
-
+        return render(request, "main/messages/message.html", {"message": error_message})
 
 
 def payment_processing(request):
 
     subject = "payment recived"
-    url = 'email/payment_confirm.html'
+    url = "email/payment_confirm.html"
     user_category = "Ordinary"
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = PaymentForm(request.POST)
         if form.is_valid():
-            #save in a JSON
-            #we call the exchange rate API
-            #we will also need to call send notification function to send an email
+            # save in a JSON
+            # we call the exchange rate API
+            # we will also need to call send notification function to send an email
             # form.save()
-            amount = form.cleaned_data['amount']
-            currency = form.cleaned_data['currency']
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            email = form.cleaned_data['email']
-            
+            amount = form.cleaned_data["amount"]
+            currency = form.cleaned_data["currency"]
+            first_name = form.cleaned_data["first_name"]
+            last_name = form.cleaned_data["last_name"]
+            email = form.cleaned_data["email"]
+
             print(amount, currency, first_name, last_name, email)
-            #we call the exchange rate API converting to USD
-            exchange_rate = get_exchange_rate(currency, 'USD')
+            # we call the exchange rate API converting to USD
+            exchange_rate = get_exchange_rate(currency, "USD")
             converted_amount_USD = amount / exchange_rate
             print(amount, exchange_rate, converted_amount_USD)
             context = {
-                'user_category': user_category,
-                'first_name': first_name,
-                'last_name': last_name,
-                'user_email': user_email,
-                'amount': amount,
-                'subject': subject
+                "user_category": user_category,
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "amount": amount,
+                "subject": subject,
             }
             send_email(
                 category=user_category,
                 to_email=[email],
                 subject=subject,
                 html_template=url,
-                context=context
+                context=context,
             )
             data = {
-                'amount':str(amount),
-                'currency':currency,
-                'first_name':first_name,
-                'last_name':last_name,
-                'email':email,
-                'exchange_rate':str(exchange_rate),
-                'converted_amount_USD':str(converted_amount_USD)
+                "amount": str(amount),
+                "currency": currency,
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "exchange_rate": str(exchange_rate),
+                "converted_amount_USD": str(converted_amount_USD),
             }
-            file_path = os.path.join(settings.BASE_DIR, 'payment_data.json')
-            with open(file_path, 'w') as f:
+            file_path = os.path.join(settings.BASE_DIR, "payment_data.json")
+            with open(file_path, "w") as f:
                 json.dump(data, f, indent=4)
 
-
-
             # return HttpResponse("JSON file saved.")
-            return redirect('main:layout')  
+            return redirect("main:layout")
 
     else:
         form = PaymentForm()
 
-    return render(request, 'finance/online_payments.html',{'form':form})
+    return render(request, "finance/online_payments.html", {"form": form})
+
+
+@csrf_exempt
+def paypal_checkout(request):
+    print("PAYPAL STARTED")
+    if request.method == "POST":
+        amount = request.POST.get("amount")
+        purpose = request.POST.get("purpose")
+        # amount = 200
+        # purpose = "billing"
+
+        payment = paypalrestsdk.Payment(
+            {
+                "intent": "sale",
+                "payer": {"payment_method": "paypal"},
+                "redirect_urls": {
+                    "return_url": request.build_absolute_uri("/finance/paypal/return/"),
+                    "cancel_url": request.build_absolute_uri("/finance/paypal/cancel/"),
+                },
+                "transactions": [
+                    {
+                        "item_list": {
+                            "items": [
+                                {
+                                    "name": purpose,
+                                    "sku": "DC48K",
+                                    "price": amount,
+                                    "currency": "USD",
+                                    "quantity": 1,
+                                }
+                            ]
+                        },
+                        "amount": {"total": amount, "currency": "USD"},
+                        "description": f"{purpose} payment for DC48K",
+                    }
+                ],
+            }
+        )
+
+        if payment.create():
+            for link in payment.links:
+                if link.method == "REDIRECT":
+                    return redirect(link.href)
+        else:
+            return render(
+                request, "finance/payment_failed.html", {"error": payment.error}
+            )

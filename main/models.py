@@ -200,10 +200,29 @@ class Governance(models.Model):
     ]
     id = models.AutoField(primary_key=True) 
     governance_category = models.CharField(max_length=255,choices=GovernanceCategoryChoices)
-    description = models.TextField()
+    description = models.TextField(default="")
     members = models.ForeignKey(CustomerUser, on_delete = models.CASCADE, related_name='governance')
     region = models.ForeignKey(Region, on_delete = models.CASCADE, related_name='regions',default = "")
     chapter = models.ForeignKey(Chapter, on_delete = models.CASCADE, related_name='chapter',default = "")
     image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
     created_at = models.DateTimeField(auto_now_add=True)  
     updated_at = models.DateTimeField(auto_now=True) 
+
+
+class Payment(models.Model):
+    PAYMENT_TYPE_CHOICES = [
+        ('dues', 'Membership Dues'),
+        ('donation', 'Donation'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_id = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=30, default="Pending")  # Pending, Completed, Failed
+    receipt_url = models.URLField(max_length=500, blank=True, null=True)  # link to Stripe/PayPal receipt
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.payment_type} - {self.amount} ({self.status})"
+    
