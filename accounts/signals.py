@@ -16,30 +16,18 @@ from .models import Profile, CustomerUser
 #     instance.profile.save()
 
 @receiver(post_save, sender=CustomerUser)
-def update_or_create_profile_from_customer_user(sender, instance, **kwargs):
-    user = instance.members  
-
-
-    profile, created = Profile.objects.get_or_create(user=user)
-
-  
-    if instance.title:
-        profile.title = instance.title
-
-    # if instance.region:
-    #     profile.region = instance.region
-
-    # if instance.chapter:
-    #     profile.chapter = instance.chapter
-
-    # if instance.image:
-    #     profile.image = instance.image
-
-  
-    # if user.phone:
-    #     profile.phone = user.phone
-
-    # if user.email:
-    #     profile.email = user.email
-
-    profile.save()
+def create_or_update_profile(sender, instance, created, **kwargs):
+    if created:
+        # Create a blank profile, populate what we can
+        Profile.objects.create(
+            user=instance,
+            email=instance.email,
+            phone=instance.phone,
+        )
+    else:
+        profile = instance.profile
+        if not profile.email:
+            profile.email = instance.email
+        if not profile.phone:
+            profile.phone = instance.phone
+        profile.save()

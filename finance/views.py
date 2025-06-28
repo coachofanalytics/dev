@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+import paypalrestsdk
 
 from django.conf import settings
 from django.contrib import messages
@@ -14,9 +15,10 @@ from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
 
+from django.views.decorators.csrf import csrf_exempt
 from mail.custom_email import send_email
 
-
+from .models import Payment
 from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm, PaymentForm
@@ -642,3 +644,73 @@ def payment_processing(request):
         form = PaymentForm()
 
     return render(request, "finance/online_payments.html", {"form": form})
+    # return render(request, "finance/online_payments_2.html", {"form": form})
+
+
+@csrf_exempt
+def paypal_checkout(request):
+    if request.method == "POST":
+        amount = request.POST.get("amount")
+        purpose = request.POST.get("purpose")
+
+        payment = paypalrestsdk.Payment(
+            {
+                "intent": "sale",
+                "payer": {"payment_method": "paypal"},
+                "redirect_urls": {
+                    "return_url": request.build_absolute_uri("/finance/paypal/return/"),
+                    "cancel_url": request.build_absolute_uri("/finance/paypal/cancel/"),
+                },
+                "transactions": [
+                    {
+                        "item_list": {
+                            "items": [
+                                {
+                                    "name": purpose,
+                                    "sku": "DC48K",
+                                    "price": amount,
+                                    "currency": "USD",
+                                    "quantity": 1,
+                                }
+                            ]
+                        },
+                        "amount": {"total": amount, "currency": "USD"},
+                        "description": f"{purpose} payment for DC48K",
+                    }
+                ],
+            }
+        )
+
+        if payment.create():
+            for link in payment.links:
+                if link.method == "REDIRECT":
+                    return redirect(link.href)
+        else:
+            return render(
+                request, "finance/payment_failed.html", {"error": payment.error}
+            )
+
+
+# Save Paypal payment to DB
+def paypal_return(request):
+    payment_id = request.GET.get("paymentId")
+    payer_id = request.GET.get("PayerID")
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        # Save to DB
+        Payment.objects.create(
+            # stripe_session_id=payment.id,
+            amount=float(payment.transactions[0].amount.total),  # * 100,
+            transaction_id=payment.id,
+            # currency=payment.transactions[0].amount.currency,
+            status=payment.state,
+            # customer_email=payment.payer.payer_info.email,
+            # customer_name=payment.payer.payer_info.first_name + " " + payment.payer.payer_info.last_name,
+            # purpose=payment.transactions[0].item_list.items[0].name,
+            # payment_method="paypal"
+        )
+        return render(request, "finance/payment_success.html")
+    else:
+        return render(request, "finance/payment_failed.html", {"error": payment.error})

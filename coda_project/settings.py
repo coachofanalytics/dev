@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "finance.apps.FinanceConfig",
     "crispy_forms",
+    "crispy_bootstrap4",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -230,6 +231,7 @@ STATICFILES_DIRS = [
     # Add other directories if necessary
 ]
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
@@ -326,3 +328,9 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
+
+# Paypal
+PAYPAL_MODE = os.environ.get('PAYPAL_MODE')
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
+PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
+

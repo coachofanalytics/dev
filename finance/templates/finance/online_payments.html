@@ -4,7 +4,7 @@
 <section id="career">
     <h1>Online Payment</h1>
 
-    <form method="POST">
+    <form action="{% url 'finance:paypal_checkout' %}" method="POST">
         {% csrf_token %}
         {{ form.as_p }}  
         <button type="submit">Submit</button>

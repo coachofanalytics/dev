@@ -89,42 +89,42 @@ class DepartmentFilterForm(forms.Form):
 class PaymentForm(forms.Form):
     # model = Payment
     amount = forms.DecimalField(
-        label="Amount",
+        # label="Amount",
         max_digits=10,
         decimal_places=2,
         required=True
     )
     currency = forms.ChoiceField(
         choices=[("USD", "USD"), ("EUR", "EUR"), ("KES", "KES")],
-        label="Currency",
+        # label="Currency",
         required=True
         
     )
     email = forms.EmailField(
-        label="Email",
+        # label="Email",
         required=True
         
     )
     first_name = forms.CharField(
-        label="First Name",
+        # label="First Name",
         max_length=30,
         required=True
         
     )
     last_name = forms.CharField(
-        label="Last Name",
+        # label="Last Name",
         max_length=30,
         required=True
         
     )
     payment_purpose = forms.CharField(
-        label="Payment Purpose",
+        # label="Payment Purpose",
         max_length=100,
         required=True
         
     )
     phone = forms.CharField(
-        label="Phone Number",
+        # label="Phone Number",
         max_length=15,
         required=False
         
