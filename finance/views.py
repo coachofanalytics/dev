@@ -27,6 +27,7 @@ from .models import (
     Payment_History,
     Default_Payment_Fees,
     Transaction,
+    Payment,
 )
 from .utils import get_exchange_rate
 from main.utils import path_values
@@ -639,7 +640,8 @@ def payment_processing(request):
     else:
         form = PaymentForm()
 
-    return render(request, "finance/online_payments.html", {"form": form})
+    # return render(request, "finance/online_payments.html", {"form": form})
+    return render(request, "finance/online_payments_2.html", {"form": form})
 
 
 @csrf_exempt
@@ -687,3 +689,28 @@ def paypal_checkout(request):
             return render(
                 request, "finance/payment_failed.html", {"error": payment.error}
             )
+
+
+# Save Paypal payment to DB
+def paypal_return(request):
+    print("PAYPAL RETURN STARTED")
+    payment_id = request.GET.get("paymentId")
+    payer_id = request.GET.get("PayerID")
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        # Save to DB
+        Payment.objects.create(
+            amount=float(payment.transactions[0].amount.total),  # * 100,
+            transaction_id=payment.id,
+            # currency=payment.transactions[0].amount.currency,
+            status=payment.state,
+            # customer_email=payment.payer.payer_info.email,
+            # customer_name=payment.payer.payer_info.first_name + " " + payment.payer.payer_info.last_name,
+            # payment_type=payment.transactions[0].item_list.items[0].name,
+            # payment_method="paypal"
+        )
+        return render(request, "finance/payment_success.html")
+    else:
+        return render(request, "finance/payment_failed.html", {"error": payment.error})
