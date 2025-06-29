@@ -8,6 +8,8 @@ from django.contrib.auth import get_user_model
 from accounts.models import CustomerUser, Region, Chapter
 from django.utils.text import slugify
 
+
+
 #from tableauhyperapi import DatabaseName
 
 User = get_user_model()
@@ -193,15 +195,12 @@ class GetHelp(models.Model):
     
 
 
-
 class Governance(models.Model):
     GovernanceCategoryChoices = [
         ('Global Executive Committee', 'Global Executive Committee'),
         ('Regional Administration', 'Regional Administration'),
         ('County Assembly Administration', 'County Assembly Administration')
     ]
-
-    id = models.AutoField(primary_key=True) 
     governance_category = models.CharField(max_length=255, choices=GovernanceCategoryChoices)
     title = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -211,8 +210,9 @@ class Governance(models.Model):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='chapter', default="")
     image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
     slug = models.SlugField(unique=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)  
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    ui_order = models.IntegerField(unique=False, default=0) # used organize leadership/photos on ui.
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -225,5 +225,6 @@ class Governance(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
-    def _str_(self):
-        return self.governance_category, self.title, self.members
+    def __str__(self):
+        return f"{self.governance_category}, {self.title}, {self.members}"
+

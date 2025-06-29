@@ -401,8 +401,6 @@ def gethelp_delete(request, pk):
     return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
 
 
-    def __str__(self):
-        return self.structure_category
 
 # def governance_list(request,leadership=None):
 #     # govern = Governance.objects.all()
@@ -415,12 +413,33 @@ def gethelp_delete(request, pk):
 #     return render(request, 'main/governance_list.html',context)
 
 def governance_list(request):
-    govern = Governance.objects.all()
-    context = {
-        'govern': govern
-    }
+    category = request.GET.get('category', 'Global Executive Committee')
 
-    return render(request, 'main/governance_list.html',context)
+    # Always get the Governor regardless of selected category
+    governor = Governance.objects.filter(title__iexact="Governor").first()
+    # deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
+
+    # Get all members for the selected category except the Governor
+    govern = Governance.objects.filter(governance_category=category).exclude(title__iexact="Governor")
+
+    govern_order = sorted(govern, key=lambda member:member.ui_order)
+
+    categories = [
+        'Global Executive Committee',
+        'Regional Administration',
+        'County Assembly Administration'
+    ]
+
+
+    return render(request, 'main/governance_list.html', {
+        # 'govern': govern,
+        "govern_order": govern_order,
+        'governor': governor,
+        # 'deputy_governor': deputy_governor,
+        'selected_category': category,
+        'categories': categories
+    })
+
     
 
 
