@@ -1,4 +1,5 @@
 import base64
+import os
 from datetime import datetime, date
 from decimal import Decimal
 import json
@@ -564,8 +565,8 @@ def payment_processing(request):
     else:
         form = PaymentForm()
 
-    return render(request, "finance/online_payments.html", {"form": form})
-    # return render(request, "finance/online_payments_2.html", {"form": form})
+    # return render(request, "finance/online_payments.html", {"form": form})
+    return render(request, "finance/online_payments_2.html", {"form": form})
 
 
 @csrf_exempt
