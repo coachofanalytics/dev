@@ -42,5 +42,9 @@ urlpatterns = [
     # path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),
     path('budget/', views.budget, name='company_budget'),
     path("budget/<str:subtitle>/<str:duration>/", views.budget_projection, name="budget_projection"),
+
+    path("make_payment/", views.payment_processing, name="online_payment"),
+    path("paypal/checkout/", views.paypal_checkout, name="paypal_checkout"),
+    path("paypal/return/", views.paypal_return, name="paypal_return"),
    
 ]

@@ -1,0 +1,17 @@
+
+{%extends "main/base_templates/base.html"%} 
+{% load static %}
+{% block content %} 
+<section id="career">
+    <h1>Online Payment</h1>
+
+    <form action="{% url 'finance:paypal_checkout' %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}  
+        <button type="submit">Submit</button>
+    </form>
+
+    <br>
+    <a href="{% url 'main:layout' %}">Back to Home </a> 
+</section>
+{% endblock %}

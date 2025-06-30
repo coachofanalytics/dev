@@ -4,6 +4,7 @@ from decimal import Decimal
 import json
 import requests
 import logging
+import paypalrestsdk
 
 from django.conf import settings
 from django.contrib import messages
@@ -17,14 +18,16 @@ from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
 
+from django.views.decorators.csrf import csrf_exempt
+from mail.custom_email import send_email
 
 
 from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
-from .forms import BudgetForm, DepartmentFilterForm, InflowForm
+from .forms import BudgetForm, DepartmentFilterForm, InflowForm, PaymentForm
 from .models import (
     Budget, CodaBudget, Payment_Information, Payment_History,
-    Default_Payment_Fees, Transaction
+    Default_Payment_Fees, Transaction, Payment
 )
 from .utils import (
     check_default_fee, get_exchange_rate, compute_amt, category_subcategory
@@ -283,7 +286,7 @@ class DefaultPaymentUpdateView(UpdateView):
             return super().form_valid(form)
         else:
             # return redirect("management:tasks")
-            return render(request,"management/contracts/supportcontract_form.html")
+            return render(request, "management/contracts/supportcontract_form.html")
 
     def test_func(self):
         task = self.get_object()
@@ -501,4 +504,134 @@ def budget_projection(request,subtitle='summary',duration=2024):
 
 
 
-   
+# Including sending email
+def payment_processing(request):
+    url = "email/payment_confirm.html"
+    user_category = "Ordinary"
+    subject = "Payment Received"
+
+    if request.method == "POST":
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            # save in a JSON
+            # we call the exchange rate API
+            # we will also need to call send notification function to send an email
+            # form.save()
+            amount = form.cleaned_data["amount"]
+            currency = form.cleaned_data["currency"]
+            first_name = form.cleaned_data["first_name"]
+            last_name = form.cleaned_data["last_name"]
+            email = form.cleaned_data["email"]
+
+            print(amount, currency, first_name, last_name, email)
+            # we call the exchange rate API converting to USD
+            exchange_rate = get_exchange_rate(currency, "USD")
+            converted_amount_USD = amount / exchange_rate
+            print(amount, exchange_rate, converted_amount_USD)
+
+            # send_notification(request, email, first_name, last_name, amount)
+            context = {
+                "user_category": user_category,
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "amount": amount,
+                "subject": subject,
+            }
+            send_email(
+                category=user_category,
+                to_email=[email],
+                subject=subject,
+                html_template=url,
+                context=context,
+            )
+            data = {
+                "amount": str(amount),
+                "currency": currency,
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "exchange_rate": str(exchange_rate),
+                "converted_amount_USD": str(converted_amount_USD),
+            }
+            file_path = os.path.join(settings.BASE_DIR, "payment_data.json")
+            with open(file_path, "w") as f:
+                json.dump(data, f, indent=4)
+
+            # return HttpResponse("JSON file saved.")
+            return redirect("main:layout")
+
+    else:
+        form = PaymentForm()
+
+    return render(request, "finance/online_payments.html", {"form": form})
+    # return render(request, "finance/online_payments_2.html", {"form": form})
+
+
+@csrf_exempt
+def paypal_checkout(request):
+    if request.method == "POST":
+        amount = request.POST.get("amount")
+        purpose = request.POST.get("purpose")
+
+        payment = paypalrestsdk.Payment(
+            {
+                "intent": "sale",
+                "payer": {"payment_method": "paypal"},
+                "redirect_urls": {
+                    "return_url": request.build_absolute_uri("/finance/paypal/return/"),
+                    "cancel_url": request.build_absolute_uri("/finance/paypal/cancel/"),
+                },
+                "transactions": [
+                    {
+                        "item_list": {
+                            "items": [
+                                {
+                                    "name": purpose,
+                                    "sku": "DC48K",
+                                    "price": amount,
+                                    "currency": "USD",
+                                    "quantity": 1,
+                                }
+                            ]
+                        },
+                        "amount": {"total": amount, "currency": "USD"},
+                        "description": f"{purpose} payment for DC48K",
+                    }
+                ],
+            }
+        )
+
+        if payment.create():
+            for link in payment.links:
+                if link.method == "REDIRECT":
+                    return redirect(link.href)
+        else:
+            return render(
+                request, "finance/payment_failed.html", {"error": payment.error}
+            )
+
+
+# Save Paypal payment to DB
+def paypal_return(request):
+    payment_id = request.GET.get("paymentId")
+    payer_id = request.GET.get("PayerID")
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        # Save to DB
+        Payment.objects.create(
+            # stripe_session_id=payment.id,
+            amount=float(payment.transactions[0].amount.total),  # * 100,
+            transaction_id=payment.id,
+            # currency=payment.transactions[0].amount.currency,
+            status=payment.state,
+            # customer_email=payment.payer.payer_info.email,
+            # customer_name=payment.payer.payer_info.first_name + " " + payment.payer.payer_info.last_name,
+            # purpose=payment.transactions[0].item_list.items[0].name,
+            # payment_method="paypal"
+        )
+        return render(request, "finance/payment_success.html")
+    else:
+        return render(request, "finance/payment_failed.html", {"error": payment.error})
