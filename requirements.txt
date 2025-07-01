@@ -100,3 +100,5 @@ whitenoise==5.2.0
 wikipedia==1.4.0
 wrapt==1.12.1
 zope.interface==5.4.0
+crispy-bootstrap4==2024.10
+paypalrestsdk==1.13.3
