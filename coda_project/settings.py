@@ -19,10 +19,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 #DEBUG Configurations
-DEBUG = True
-# DEBUG_VAL = int(os.environ.get('DEBUG'))
-# if DEBUG_VAL == 0:
-#     DEBUG = False
+# DEBUG = True
+DEBUG_VAL = int(os.environ.get('DEBUG'))
+if DEBUG_VAL == 0:
+    DEBUG = False
 
 SECURE_SSL_REDIRECT = False
 
