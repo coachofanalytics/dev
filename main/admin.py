@@ -22,7 +22,7 @@ class DescriptionGovernance(admin.ModelAdmin):
 # admin.site.register(Assets)
 #admin.site.register(Feedback)
 admin.site.register(Description, DescriptionAdmin)
-# admin.site.register(Page)
+admin.site.register(Page)
 #admin.site.register(Team)
 #admin.site.register(Content)
 #admin.site.register(Service)
