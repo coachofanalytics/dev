@@ -22,7 +22,7 @@ urlpatterns = [
     # path('users/', views.userslistview.as_view(), name='accounts-users'),
     path("processing/", views.userlist, name="processing-users"),
     path(
-        "user/update/",
+        "user/update/<int:pk>",
         UserUpdateView.as_view(template_name="accounts/admin/user_update_form.html"),
         name="user-update",
     ),

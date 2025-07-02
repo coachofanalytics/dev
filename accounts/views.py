@@ -226,9 +226,11 @@ def join(request):
                 elif category == CategoryChoices.LEADERS_MEMBERSHIP:
                     # return redirect('finance:pay')
                     return redirect("main:layout")
+                    
 
                 elif category == CategoryChoices.ORGANIZATIONAL_MEMBERSHIP:
                     return redirect("main:layout")
+        
 
             else:
                 msg = "Error validating form"
@@ -539,7 +541,7 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         "last_name",
         "date_joined",
         "email",
-        "gender",
+        # "gender",
         "phone",
         # "address",
         # "city",
@@ -547,8 +549,8 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         # "country",
         "is_admin",
         "is_staff",
-        "is_client",
-        "is_applicant",
+        # "is_client",
+        # "is_applicant",
     ]
 
     def form_valid(self, form):
