@@ -58,7 +58,7 @@ pdfkit==1.0.0
 
 prompt-toolkit==3.0.37
 protobuf==4.22.0
-psycopg2==2.9.5
+#psycopg2==2.9.5
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 PyAutoGUI==0.9.53
@@ -100,3 +100,5 @@ whitenoise==5.2.0
 wikipedia==1.4.0
 wrapt==1.12.1
 zope.interface==5.4.0
+paypalrestsdk-1.13.3
+crispy-bootstrap4-2025.6
