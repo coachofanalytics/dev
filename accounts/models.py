@@ -208,7 +208,7 @@ class Region(models.Model):
     
 
 class Chapter(models.Model):
-    region = models.ForeignKey(Region, on_delete = models.CASCADE, related_name ='subregions')
+    region = models.ForeignKey(Region, on_delete = models.CASCADE, related_name ='subregions', null=True, blank=True)
     name = models.CharField(max_length = 100)
 
     
@@ -216,12 +216,12 @@ class Chapter(models.Model):
         return self.name
     
 
-class Profile(models.Model):
-    user = models.OneToOneField(CustomerUser, on_delete=models.CASCADE, related_name='profile')
-    title = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(upload_to='img/profiles', blank=True, null=True)
-    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
-    chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True)
+# class Profile(models.Model):
+#     user = models.OneToOneField(CustomerUser, on_delete=models.CASCADE, related_name='profile')
+#     title = models.CharField(max_length=255, blank=True, null=True)
+#     image = models.ImageField(upload_to='img/profiles', blank=True, null=True)
+#     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
+#     chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True)
+#     phone = models.CharField(max_length=20, blank=True, null=True)
+#     email = models.EmailField(blank=True, null=True)
+#     updated_at = models.DateTimeField(auto_now=True)

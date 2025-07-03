@@ -24,7 +24,7 @@ django-allauth==0.58.2
 django-celery-beat==2.4.0
 django-celery-results==2.4.0
 django-countries==7.2.1
-django-crispy-forms==1.12.0
+django-crispy-forms==1.14.0
 django-crontab==0.7.1
 django-filter==2.4.0
 django-heroku==0.3.1
@@ -32,7 +32,7 @@ django-heroku==0.3.1
 django-js-asset==1.2.2
 django-mathfilters==1.0.0
 django-mptt==0.13.4
-django-storages==1.11.1
+django-storages==1.13.1
 django-timezone-field==5.0
 docutils==0.15.2
 Flask==2.2.3
@@ -100,3 +100,6 @@ whitenoise==5.2.0
 wikipedia==1.4.0
 wrapt==1.12.1
 zope.interface==5.4.0
+crispy-bootstrap4==2022.1
+paypalrestsdk==1.13.3
+azure-storage-blob
