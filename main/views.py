@@ -545,3 +545,6 @@ def governance_delete(request, pk):
 
 
 
+def organization_list_view(request):
+ organizations = DonationOrganization.objects.all()
+ return render(request, 'main/Donation/Donation_list.html', {'organizations':organizations})
