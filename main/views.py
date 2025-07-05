@@ -565,3 +565,24 @@ def organization_create_view(request):
     else:
         form = DonationOrganizationForm()
     return render(request, 'main/Donation/Donate_create.html', {'form': form})
+
+
+
+
+def organization_detail_view(request, pk):
+    organization = get_object_or_404(DonationOrganization, pk=pk)
+    return render(request, 'main/Donation/Donate_delete.html', {'organization': organization})
+
+
+
+def organization_update_view(request, pk):
+    organization = get_object_or_404(DonationOrganization, pk=pk)
+    if request.method == 'POST':
+        form = DonationOrganizationForm(request.POST, instance=organization)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Organization updated successfully.')
+            return redirect('main:organization-detail', pk=pk)
+    else:
+        form = DonationOrganizationForm(instance=organization)
+    return render(request, 'main/Donation/update.html', {'form': form})

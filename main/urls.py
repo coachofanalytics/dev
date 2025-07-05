@@ -27,8 +27,9 @@ urlpatterns = [
     path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),
     path('donation', views.organization_list_view, name='organization-list'),
     path('add/', views.organization_create_view, name='organization-add'),
+    path('<int:pk>/', views.organization_detail_view, name='organization-detail'),
+    path('<int:pk>/edit/', views.organization_update_view, name='organization-edit'),
 
-    
   
     
     
