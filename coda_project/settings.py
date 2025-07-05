@@ -135,17 +135,17 @@ def dba_values():
         password = os.environ.get('DB_PASSWORD')
 
     else:
-        # Test in staging database before staging deployment
-        # host = os.environ.get('STG_DB_HOST')
-        # dbname = os.environ.get('STG_DB_NAME') 
-        # user = os.environ.get('STG_DB_USER')
-        # password = os.environ.get('STG_DB_PASSWORD')
+        
+        host = os.environ.get('STG_DB_HOST')
+        dbname = os.environ.get('STG_DB_NAME') 
+        user = os.environ.get('STG_DB_USER')
+        password = os.environ.get('STG_DB_PASSWORD')
 
         #Test locally 
-        host = os.environ.get('LOCAL_DB_HOST')
-        dbname = os.environ.get('LOCAL_DB_NAME') 
-        user = os.environ.get('LOCAL_DB_USER')
-        password = os.environ.get('LOCAL_DB_PASSWORD') 
+        # host = os.environ.get('LOCAL_DB_HOST')
+        # dbname = os.environ.get('LOCAL_DB_NAME') 
+        # user = os.environ.get('LOCAL_DB_USER')
+        # password = os.environ.get('LOCAL_DB_PASSWORD') 
 
 
 
@@ -167,6 +167,17 @@ DATABASES = {
         "HOST": host
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'DC48K',
+#         'USER': 'postgres',
+#         'PASSWORD': 'manager@2033',  # <- You must put the correct password here
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }        
 
 # DATABASES = {
 #     "default": {

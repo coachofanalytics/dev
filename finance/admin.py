@@ -14,7 +14,7 @@ class Payment_HistoryAdmin(admin.ModelAdmin):
         "contract_submitted_date",
     )
 
-# admin.site.register(Transaction)
+# admin.site.register(DonationOrganization)
 # admin.site.register(Payment_History, Payment_HistoryAdmin)
 
 # admin.site.register(Payment_Information)

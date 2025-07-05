@@ -22,6 +22,7 @@ from .models import Payment
 from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm, PaymentForm
+
 from .models import (
     Budget,
     CodaBudget,
@@ -714,3 +715,7 @@ def paypal_return(request):
         return render(request, "finance/payment_success.html")
     else:
         return render(request, "finance/payment_failed.html", {"error": payment.error})
+
+
+
+
