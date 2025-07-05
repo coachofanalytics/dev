@@ -19,6 +19,8 @@ from mail.custom_email import send_email
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from coda_project import settings
+from django.contrib import messages
+
 
 User=get_user_model()
 
@@ -548,3 +550,18 @@ def governance_delete(request, pk):
 def organization_list_view(request):
  organizations = DonationOrganization.objects.all()
  return render(request, 'main/Donation/Donation_list.html', {'organizations':organizations})
+
+
+
+
+from .forms import DonationOrganizationForm
+def organization_create_view(request):
+    if request.method == 'POST':
+        form = DonationOrganizationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Organization added successfully.')
+            return redirect('main:organization-list')
+    else:
+        form = DonationOrganizationForm()
+    return render(request, 'main/Donation/Donate_create.html', {'form': form})

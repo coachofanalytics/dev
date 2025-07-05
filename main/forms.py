@@ -47,3 +47,20 @@ class GovernanceForm(forms.ModelForm):
 
 
 
+
+from django import forms
+from .models import DonationOrganization
+
+class DonationOrganizationForm(forms.ModelForm):
+    class Meta:
+        model = DonationOrganization
+        fields = ['name', 'contact_email', 'linked_profile']
+        labels = {
+            'name': 'Organization Name',
+            'contact_email': 'Contact Email',
+            'linked_profile': 'Linked User Profile',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Enter organization name'}),
+            'contact_email': forms.EmailInput(attrs={'placeholder': 'example@email.com'}),
+        }

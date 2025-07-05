@@ -1,0 +1,41 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="text-center mb-4">
+      {% if form.instance.pk %}
+        Edit Donation Organization
+      {% else %}
+        Add New Donation Organization
+      {% endif %}
+    </h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <div class="mt-4 d-flex gap-3">
+        <button type="submit" class="btn btn-success">
+          <i class="fa fa-save"></i> Save
+        </button>
+        <a href="{% url 'main:organization-list' %}" class="btn btn-secondary">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+
+
