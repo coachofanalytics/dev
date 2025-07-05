@@ -586,3 +586,14 @@ def organization_update_view(request, pk):
     else:
         form = DonationOrganizationForm(instance=organization)
     return render(request, 'main/Donation/update.html', {'form': form})
+
+
+
+
+def organization_delete_view(request, pk):
+    organization = get_object_or_404(DonationOrganization, pk=pk)
+    if request.method == 'POST':
+        organization.delete()
+        messages.success(request, 'Organization deleted successfully.')
+        return redirect('main:organization-list')
+    return render(request, 'main/Donation/delete.html', {'organization': organization})

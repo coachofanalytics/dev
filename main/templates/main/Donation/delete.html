@@ -1,0 +1,26 @@
+
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm p-4">
+    <h2 class="text-danger text-center">Delete Confirmation</h2>
+
+    <p class="text-center mt-4 fs-5">
+      Are you sure you want to delete the organization <strong>"{{ organization.name }}"</strong>?
+    </p>
+
+    <form method="post" class="text-center mt-4">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger px-4">
+        <i class="fa fa-trash"></i> Yes, Delete
+      </button>
+      <a href="{% url 'main:organization-detail' organization.pk %}" class="btn btn-secondary px-4 ms-2">
+        Cancel
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+
