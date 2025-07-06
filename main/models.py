@@ -228,3 +228,13 @@ class Governance(models.Model):
     def __str__(self):
         return f"{self.governance_category}, {self.title}, {self.members}"
 
+class DonationOrganization(models.Model):
+    name = models.CharField(max_length=255)
+    contact_email = models.EmailField()
+    linked_profile = models.OneToOneField(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.name
+
+
+
+

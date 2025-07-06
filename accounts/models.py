@@ -101,7 +101,9 @@ class CustomerUser(AbstractUser):
         num_str = str(num)
         user_id = num_str[1:]
         member_number = f"DC48-{user_id}"
-        return member_number
+        return member_number 
+
+   
 
 class Membership(models.Model):
     PAYMENT_STATUS = [
