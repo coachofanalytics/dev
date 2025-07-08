@@ -24,7 +24,7 @@ class DescriptionGovernance(admin.ModelAdmin):
 admin.site.register(Description, DescriptionAdmin)
 admin.site.register(Page)
 admin.site.register(DonationOrganization)
-#admin.site.register(Content)
+admin.site.register(Plan)
 #admin.site.register(Service)
 #admin.site.register(SubService)
 #admin.site.register(News)

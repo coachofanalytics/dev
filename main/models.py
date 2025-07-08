@@ -233,3 +233,25 @@ class DonationOrganization(models.Model):
  linked_profile = models.OneToOneField(User, on_delete=models.CASCADE)
  def __str__(self):
   return self.name
+ 
+
+
+ from django.db import models
+
+class Plan(models.Model):
+    task = models.CharField(max_length=255, null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    what = models.TextField(null=True, blank=True)
+    why = models.TextField(null=True, blank=True)
+    comments = models.TextField(null=True, blank=True)
+    doc = models.FileField(upload_to='docs/', null=True, blank=True)
+    pptlink = models.CharField(max_length=255, null=True, blank=True)
+    videolink = models.CharField(max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(null=True, blank=True)
+    is_answered = models.BooleanField(null=True, blank=True)
+    is_featured = models.BooleanField(null=True, blank=True)
+
+    def __str__(self):
+        return self.task or "Unnamed Plan"
