@@ -24,7 +24,7 @@
           {% for job in jobs %}
           <tr>
             <td>{{ forloop.counter }}</td>
-            <td><a href="#" class="text-decoration-none text-primary">{{ job.title }}</a></td>
+            <td><a href="{% url 'main:job_detail' job.pk %}" class="text-decoration-none text-primary">{{ job.title }}</a></td>
             <td>{{ job.employer }}</td>
             <td>{{ job.location }}</td>
             <td>{{ job.get_job_type_display }}</td>

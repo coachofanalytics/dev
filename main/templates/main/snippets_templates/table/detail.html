@@ -1,0 +1,26 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h4>{{ job.title }}</h4>
+    </div>
+    <div class="card-body">
+      <p><strong>Industry:</strong> {{ job.get_industry_display }}</p>
+      <p><strong>Job Type:</strong> {{ job.get_job_type_display }}</p>
+      <p><strong>Location:</strong> {{ job.location }}</p>
+      <p><strong>Salary Range:</strong> {{ job.salary_range }}</p>
+      <p><strong>Experience Level:</strong> {{ job.experience_level }}</p>
+      <p><strong>Employer:</strong> {{ job.employer }}</p>
+      <p><strong>Posted At:</strong> {{ job.posted_at|date:"M d, Y H:i" }}</p>
+      <p><strong>Expires At:</strong> {{ job.expires_at|date:"M d, Y" }}</p>
+      <p><strong>Description:</strong></p>
+      <p>{{ job.description }}</p>
+
+      <a href="#" class="btn btn-warning">Edit</a>
+      <a href="{% url 'main:job_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -32,6 +32,7 @@ urlpatterns = [
     path('<int:pk>/delete/', views.organization_delete_view, name='organization-delete'),
     path('joblist/', views.job_list_view, name='job_list'),  # ✅ This name is critical
     path('jobs/create/', views.job_create_view, name='job_create'),
+    path('jobs/<int:pk>/', views.job_detail_view, name='job_detail'),
     
 
   

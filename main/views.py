@@ -625,3 +625,14 @@ def job_create_view(request):
         'title': 'Post New Job',
     })
 
+
+
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import JobListing
+
+def job_detail_view(request, pk):
+    job = get_object_or_404(JobListing, pk=pk)
+    return render(request, 'main/snippets_templates/table/detail.html', {'job': job})
+
