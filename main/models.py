@@ -80,6 +80,7 @@ class Readme(TimeStampedModel):
     additional_sections = models.TextField(blank=True, null=True)
     links = models.TextField(blank=True, null=True)
 
+
     class Meta:
         verbose_name_plural = "Readme"
     def __str__(self):
@@ -92,4 +93,29 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
             instance.slug = unique_slug_generator(instance)
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
+
+
+
+
+class Testimonials(models.Model):
+    # asset_id = models.ForeignKey(Assets, on_delete=models.CASCADE,default=1)
+    title = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=255, unique=True)
+    content = models.TextField()
+    date_posted = models.DateTimeField(default=timezone.now)
+    writer = models.ForeignKey(
+        User,
+        verbose_name=("writer name"),
+        on_delete=models.CASCADE,
+        # limit_choices_to=Q(is_staff=True) |Q(is_client=True) and Q(is_active=True)| Q(is_admin=True) | Q(is_superuser=True),
+        limit_choices_to=(Q(is_staff=True) |Q(is_client=True)),
+        )
+    class Meta:
+        verbose_name_plural = "Testimonials"
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse('main:post-detail', kwargs={'pk': self.pk})
 

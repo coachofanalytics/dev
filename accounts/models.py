@@ -66,3 +66,6 @@ class CustomerUser(AbstractUser):
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
     
+
+
+    
