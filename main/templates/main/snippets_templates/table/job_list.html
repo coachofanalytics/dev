@@ -33,7 +33,7 @@
             <td>{{ job.salary_range }}</td>
             <td>{{ job.posted_at|date:"Y-m-d" }}</td>
             <td>
-              <a href="#" class="btn btn-sm btn-primary">View</a>
+              <a href="{% url 'main:job_detail' job.pk %}" class="btn btn-sm btn-primary">View</a>
             </td>
           </tr>
           {% endfor %}
@@ -45,7 +45,7 @@
   {% endif %}
 
   <div class="text-end mt-3">
-    <a href="#" class="btn btn-success">Post New Job</a>
+    <a href="{% url 'main:job_create' %}" class="btn btn-success">Post New Job</a>
   </div>
 </div>
 {% endblock %}

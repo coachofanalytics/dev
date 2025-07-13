@@ -636,3 +636,20 @@ def job_detail_view(request, pk):
     job = get_object_or_404(JobListing, pk=pk)
     return render(request, 'main/snippets_templates/table/detail.html', {'job': job})
 
+
+
+
+
+
+def job_update_view(request, pk):
+    job = get_object_or_404(JobListing, pk=pk)
+
+    if request.method == 'POST':
+        form = JobListingForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            return redirect('job_detail', pk=pk)
+    else:
+        form = JobListingForm(instance=job)
+
+    return render(request, 'main/job_form.html', {'form': form, 'title': 'Edit Job'})
