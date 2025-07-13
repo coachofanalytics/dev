@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm, Textarea
 from django.contrib.auth.forms import UserCreationForm
 from accounts.models import CustomerUser
-from .models import Feedback, GetHelp  ,Governance
+from .models import Feedback, GetHelp  ,Governance,JobListing
 from django.utils.translation import gettext_lazy as _
 
 class ContactForm(forms.ModelForm):
@@ -64,3 +64,11 @@ class DonationOrganizationForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'placeholder': 'Enter organization name'}),
             'contact_email': forms.EmailInput(attrs={'placeholder': 'example@email.com'}),
         }
+
+
+
+
+class JobListingForm(forms.ModelForm):
+    class Meta:
+        model = JobListing
+        fields = '__all__'

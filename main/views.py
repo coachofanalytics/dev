@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values, generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm ,GovernanceForm
+from main.forms import ContactForm, GetHelpForm ,GovernanceForm,JobListingForm
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
@@ -602,3 +602,26 @@ def organization_delete_view(request, pk):
 def job_list_view(request):
     jobs = JobListing.objects.filter(expires_at__gt=timezone.now()).order_by('-posted_at')
     return render(request, 'main/snippets_templates/table/job_list.html', {'jobs':jobs})
+
+
+
+
+
+
+from django.shortcuts import render, redirect
+from .forms import JobListingForm
+
+def job_create_view(request):
+    if request.method == 'POST':
+        form = JobListingForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:job_list')  # ✅ Must match 'name' in urls.py
+    else:
+        form = JobListingForm()
+
+    return render(request, 'main/snippets_templates/table/creat job.html', {
+        'form': form,
+        'title': 'Post New Job',
+    })
+
