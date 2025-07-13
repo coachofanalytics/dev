@@ -30,6 +30,7 @@ urlpatterns = [
     path('<int:pk>/', views.organization_detail_view, name='organization-detail'),
     path('<int:pk>/edit/', views.organization_update_view, name='organization-edit'),
     path('<int:pk>/delete/', views.organization_delete_view, name='organization-delete'),
+
   
     
     

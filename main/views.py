@@ -597,3 +597,5 @@ def organization_delete_view(request, pk):
         messages.success(request, 'Organization deleted successfully.')
         return redirect('main:organization-list')
     return render(request, 'main/Donation/delete.html', {'organization': organization})
+
+
