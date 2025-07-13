@@ -10,6 +10,7 @@ from django.utils.text import slugify
 
 
 
+
 #from tableauhyperapi import DatabaseName
 
 User = get_user_model()
@@ -234,6 +235,44 @@ class DonationOrganization(models.Model):
  def __str__(self):
   return self.name
  
+
+
+
+
+
+
+class JobListing(models.Model):
+    INDUSTRY_CHOICES = [
+        ('IT', 'Information Technology'),
+        ('FIN', 'Finance'),
+        ('EDU', 'Education'),
+        ('HLT', 'Healthcare'),
+        ('AGR', 'Agriculture'),
+        ('OTH', 'Other'),
+    ]
+
+    JOB_TYPE_CHOICES = [
+        ('FT', 'Full Time'),
+        ('PT', 'Part Time'),
+        ('CT', 'Contract'),
+        ('IN', 'Internship'),
+        ('FL', 'Freelance'),
+    ]
+
+    title = models.CharField(max_length=255, null=False, blank=False)
+    description = models.TextField(null=False, blank=False)
+    industry = models.CharField(max_length=50, choices=INDUSTRY_CHOICES, null=False, blank=False)
+    job_type = models.CharField(max_length=50, choices=JOB_TYPE_CHOICES, null=False, blank=False)
+    location = models.CharField(max_length=100, null=False, blank=False)
+    salary_range = models.CharField(max_length=100, null=False, blank=False)
+    experience_level = models.CharField(max_length=100, null=False, blank=False)
+    employer = models.CharField(max_length=100, null=False, blank=False)
+    posted_at = models.DateTimeField(default=timezone.now, null=False, blank=False)
+    expires_at = models.DateTimeField(null=False, blank=False)
+
+    def __str__(self):
+        return f"{self.title} at {self.employer}"
+
 
 
 
