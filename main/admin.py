@@ -33,7 +33,7 @@ admin.site.register(Description, DescriptionAdmin)
 #admin.site.register(Faq)
 admin.site.register(GetHelp)
 admin.site.register(Governance, DescriptionGovernance)
-#admin.site.register(DonationOrganization)
+admin.site.register(DonationOrganization)
 
 
 
