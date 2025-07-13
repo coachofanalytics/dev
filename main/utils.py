@@ -1,4 +1,5 @@
-import os,openai
+import os
+from openai import OpenAI
 import requests
 from coda_project.settings import SITEURL
 from .models import Assets
@@ -51,7 +52,8 @@ def generate_chatbot_response(user_message, user_message_dict=None):
         ]
     else:
         messages = user_message_dict
-    client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+    # client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
 
     response = client.chat.completions.create(
     # response = openai.completions.create(
