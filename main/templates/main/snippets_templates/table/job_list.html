@@ -1,0 +1,51 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Available Job Listings</h2>
+
+  {% if jobs %}
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle text-center">
+        <thead class="table-primary">
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Employer</th>
+            <th>Location</th>
+            <th>Job Type</th>
+            <th>Industry</th>
+            <th>Experience</th>
+            <th>Salary</th>
+            <th>Posted</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in jobs %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><a href="#" class="text-decoration-none text-primary">{{ job.title }}</a></td>
+            <td>{{ job.employer }}</td>
+            <td>{{ job.location }}</td>
+            <td>{{ job.get_job_type_display }}</td>
+            <td>{{ job.get_industry_display }}</td>
+            <td>{{ job.experience_level }}</td>
+            <td>{{ job.salary_range }}</td>
+            <td>{{ job.posted_at|date:"Y-m-d" }}</td>
+            <td>
+              <a href="#" class="btn btn-sm btn-primary">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center">No job listings available.</div>
+  {% endif %}
+
+  <div class="text-end mt-3">
+    <a href="#" class="btn btn-success">Post New Job</a>
+  </div>
+</div>
+{% endblock %}

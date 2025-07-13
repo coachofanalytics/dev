@@ -599,3 +599,6 @@ def organization_delete_view(request, pk):
     return render(request, 'main/Donation/delete.html', {'organization': organization})
 
 
+def job_list_view(request):
+    jobs = JobListing.objects.filter(expires_at__gt=timezone.now()).order_by('-posted_at')
+    return render(request, 'main/snippets_templates/table/job_list.html', {'jobs':jobs})
