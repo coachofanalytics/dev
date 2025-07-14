@@ -14,6 +14,7 @@ AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend
 INSTALLED_APPS = [
     "main.apps.MainConfig",
     "accounts.apps.AccountsConfig",
+    "kpm.apps.KpmConfig",
     "application.apps.ApplicationConfig",
     "crispy_forms",
     "django.contrib.admin",
@@ -101,15 +102,16 @@ def dba_values():
         user = os.environ.get('DB_USER')
         password = os.environ.get('DB_PASSWORD')
     else:
-        host = "localhost"
-        dbname = "CODA_TRAIN"
-        user = "postgres"
-        password = "postgres" #"*******"
+        host = os.environ.get('STG_DB_HOST')
+        dbname = os.environ.get('STG_DB_NAME')
+        user = os.environ.get('STG_DB_USER')
+        password = os.environ.get('STG_DB_PASSWORD')
+
+        # host = os.environ.get('LOCAL_FASTAPI_DB_HOST')
+        # dbname = os.environ.get('LOCAL_FASTAPI_DB_NAME')
+        # user = os.environ.get('LOCAL_FASTAPI_DB_USER')
+        # password = os.environ.get('LOCAL_FASTAPI_DB_PASSWORD')
         
-        # host = os.environ.get('POSTGRES_DB_NAME')
-        # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
-        # user = os.environ.get('POSTGRESDB_USER')
-        # password = os.environ.get('POSTGRESSPASS') 
     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
@@ -128,7 +130,10 @@ DATABASES = {
         "NAME": dbname,
         "USER":user,
         "PASSWORD":password,
-        "HOST": host
+        "HOST": host,
+        "OPTIONS": {
+            'options': '-c search_path=kpm'
+        },
     }
 }
 '''=========== Heroku DB ================'''
