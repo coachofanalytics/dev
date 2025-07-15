@@ -46,5 +46,7 @@ urlpatterns = [
     path("make_payment/", views.payment_processing, name="online_payment"),
     path("paypal/checkout/", views.paypal_checkout, name="paypal_checkout"),
     path("paypal/return/", views.paypal_return, name="paypal_return"),
+
+    path('donation/', views.donate, name='donation'),
    
 ]

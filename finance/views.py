@@ -571,9 +571,9 @@ def payment_processing(request):
 
 @csrf_exempt
 def paypal_checkout(request):
-    if request.method == "POST":
-        amount = request.POST.get("amount")
-        purpose = request.POST.get("purpose")
+    if request.method == "GET":
+        amount = request.GET.get("amount")
+        purpose = request.GET.get('purpose')
 
         payment = paypalrestsdk.Payment(
             {
@@ -636,3 +636,8 @@ def paypal_return(request):
         return render(request, "finance/payment_success.html")
     else:
         return render(request, "finance/payment_failed.html", {"error": payment.error})
+    
+
+
+def donate(request):
+    return render(request, "finance/donation.html")

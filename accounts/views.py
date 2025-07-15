@@ -221,7 +221,7 @@ def join(request):
                 )
 
                 if category == CategoryChoices.ORDINARY_MEMBERSHIP:
-                    return redirect("main:layout")
+                    return redirect("finance:donation")
 
                 elif category == CategoryChoices.LEADERS_MEMBERSHIP:
                     # return redirect('finance:pay')
