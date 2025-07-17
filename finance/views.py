@@ -34,6 +34,7 @@ from .utils import (
     check_default_fee, get_exchange_rate, compute_amt, category_subcategory
 )
 from main.utils import path_values, countdown_in_month
+import uuid
 
 # Initialize Logger
 logger = logging.getLogger(__name__)
@@ -571,9 +572,9 @@ def payment_processing(request):
 
 @csrf_exempt
 def paypal_checkout(request):
-    if request.method == "POST":
-        amount = request.POST.get("amount")
-        purpose = request.POST.get("purpose")
+    if request.method == "GET":
+        amount = request.GET.get("amount")
+        purpose = request.GET.get('purpose')
 
         payment = paypalrestsdk.Payment(
             {
@@ -597,7 +598,7 @@ def paypal_checkout(request):
                             ]
                         },
                         "amount": {"total": amount, "currency": "USD"},
-                        "description": f"{purpose} payment for DC48K",
+                        "description": purpose,
                     }
                 ],
             }
@@ -621,18 +622,42 @@ def paypal_return(request):
     payment = paypalrestsdk.Payment.find(payment_id)
 
     if payment.execute({"payer_id": payer_id}):
-        # Save to DB
-        Payment.objects.create(
-            # stripe_session_id=payment.id,
-            amount=float(payment.transactions[0].amount.total),  # * 100,
-            transaction_id=payment.id,
-            # currency=payment.transactions[0].amount.currency,
-            status=payment.state,
-            # customer_email=payment.payer.payer_info.email,
-            # customer_name=payment.payer.payer_info.first_name + " " + payment.payer.payer_info.last_name,
-            # purpose=payment.transactions[0].item_list.items[0].name,
-            # payment_method="paypal"
-        )
+
+        customer_email = payment.payer.payer_info.email
+        existing_member = CustomerUser.objects.filter(email = customer_email).first()
+
+        if existing_member:
+            Payment.objects.create(
+                user = CustomerUser.objects.filter(email = customer_email).first(),
+                transaction_id = payment.id,
+                amount = float(payment.transactions[0].amount.total),
+                status = payment.state,
+                payment_type = payment.transactions[0]['description']
+            )
+        else:
+            CustomerUser.objects.create(
+                email = payment.payer.payer_info.email,
+                first_name = payment.payer.payer_info.first_name,
+                last_name = payment.payer.payer_info.last_name,
+                city = payment.transactions[0]['item_list']['shipping_address']['city'],
+                state = payment.transactions[0]['item_list']['shipping_address']['state'],
+                country = payment.transactions[0]['item_list']['shipping_address']['country_code'],
+                username = uuid.uuid4()
+            )
+            # Save to DB
+            Payment.objects.create(
+                    user = CustomerUser.objects.order_by('-id').first(),
+                    transaction_id = payment.id,
+                    amount = float(payment.transactions[0].amount.total),
+                    status = payment.state,
+                    payment_type = payment.transactions[0]['description']
+                )
+
         return render(request, "finance/payment_success.html")
     else:
         return render(request, "finance/payment_failed.html", {"error": payment.error})
+    
+
+
+def donate(request):
+    return render(request, "finance/donation.html")

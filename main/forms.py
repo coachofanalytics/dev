@@ -43,13 +43,11 @@ class GetHelpForm(forms.ModelForm):
 class GovernanceForm(forms.ModelForm):
     class Meta:
         model = Governance
-        fields = ['governance_category', 'description','members']       
+        fields = ['governance_category', 'title', 'description','members', 'region', 'chapter']       
 
 
 
         
-        
-
-
+    
 
 
