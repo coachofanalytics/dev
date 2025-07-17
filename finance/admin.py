@@ -28,4 +28,4 @@ class Payment_HistoryAdmin(admin.ModelAdmin):
 # admin.site.register(CodaBudget)
 # admin.site.register(Budget)
 # admin.site.register(BudgetCategory)
-# admin.site.register(BudgetSubCategory)
+admin.site.register(Payment)
