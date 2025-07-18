@@ -1,6 +1,5 @@
 from django import forms
 from .models import *
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.validators import validate_email
 

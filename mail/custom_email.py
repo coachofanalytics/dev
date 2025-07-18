@@ -1,7 +1,6 @@
 import os
 import logging
 from email import encoders
-from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
 
