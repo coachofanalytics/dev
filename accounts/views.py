@@ -1,7 +1,3 @@
-import secrets
-import uuid
-import string, random
-from django.core.paginator import Paginator
 from django.contrib.auth import (
     authenticate,
     login,
@@ -9,31 +5,20 @@ from django.contrib.auth import (
     get_user_model,
     get_backends,
 )
-from django.urls import reverse, reverse_lazy
-from django.utils import timezone
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 from accounts.choices import CategoryChoices
 from accounts.utils import (
     CATEGORY_FEES,
-    convert_kes_to_usd,
     get_exchange_rate,
-    send_verification_email,
     generate_random_password,
 )
 from coda_project import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import HttpRequest
 from django.contrib.auth.views import LoginView
 from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    ListView,
     UpdateView,
 )
 from .models import CustomerUser, Membership, Region, Chapter
@@ -46,15 +31,13 @@ from .forms import (
     RegionForm,
     ChapterForm
 )
-from finance.utils import DYCDefaultPayments
 import logging
-from main.views import send_notification, send_welcome_email
+from main.views import send_notification
 from mail.custom_email import send_email
 
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.http import Http404
-from django.contrib import messages
 
 
 
@@ -225,7 +208,7 @@ def join(request):
 
                 elif category == CategoryChoices.LEADERS_MEMBERSHIP:
                     # return redirect('finance:pay')
-                    return redirect("main:layout")
+                    return redirect("finance:pay_online")
                     
 
                 elif category == CategoryChoices.ORGANIZATIONAL_MEMBERSHIP:
@@ -583,8 +566,6 @@ def select_category(request):
 
 
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.core.exceptions import ImmediateHttpResponse
-from django.http import HttpResponseRedirect
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -762,9 +743,9 @@ def password_reset_request(request):
             return render(request, 'accounts/registration/password_reset_done.html', {'email': user_email})
 
 
-        except Exception as e:
+        except Exception:
             error_message = (
-                f'Please try again or contact info@diasporacounty48.org. Thank You. '
+                'Please try again or contact info@diasporacounty48.org. Thank You. '
             )
             return render(request, 'main/messages/message.html', {"message": error_message})
 

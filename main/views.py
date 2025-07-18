@@ -1,24 +1,24 @@
 from django.shortcuts import redirect, render
-from datetime import datetime,date,timedelta
-from dateutil.relativedelta import relativedelta
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
-from .utils import image_view,path_values,generate_chatbot_response
+from .utils import generate_chatbot_response
 from main.forms import ContactForm, GetHelpForm, GovernanceForm
 from django.contrib.auth import get_user_model
-from django.contrib.sites.models import Site
 
 from mail.custom_email import send_email
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from coda_project import settings
+
+#new code cece's assignment
+from .models import History
+
 
 User=get_user_model()
 
@@ -101,7 +101,7 @@ def layout(request):
    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -222,7 +222,6 @@ def team_list(request):
 
     
 
-from django.shortcuts import render
 from .models import Service,Gallery,ContactUs
 
 def service_list(request):
@@ -558,4 +557,9 @@ def organization_list_view(request):
     return render(request, 'main/snippets_templates/table/donation_list.html', {'organizations':organizations})
 
 
-
+def show_history(request):
+    history_years = History.objects.all()
+    context = {
+        "history_years": history_years
+    }
+    return render(request, "main/ourhistory.html", context)

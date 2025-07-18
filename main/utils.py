@@ -79,7 +79,7 @@ def generate_chatbot_response(user_message, user_message_dict=None):
 def path_values(request):
     try:
         previous_path = request.META.get('HTTP_REFERER', '')
-    except Exception as e:
+    except Exception:
         previous_path = f"{SITEURL}/management/companyagenda/"
 
     pre_value = previous_path.split("/")
