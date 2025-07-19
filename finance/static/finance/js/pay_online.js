@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let selectedAmount = "";
     let selectedMethod = "";
+    let selectedMembership = "";
 
     // Handle package card selection
     packageCards.forEach(card => {
@@ -13,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
         packageCards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         selectedAmount = card.getAttribute('data-amount');
+        selectedMembership = card.getAttribute('lead-level');
         updatePayNowLink();
         });
     });
@@ -31,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updatePayNowLink() {
       if (selectedMethod && selectedAmount) {
         const baseUrl = urls[selectedMethod];
-        const fullUrl = `${baseUrl}?amount=${encodeURIComponent(selectedAmount)}&purpose=general`;
+        const fullUrl = `${baseUrl}?amount=${encodeURIComponent(selectedAmount)}&purpose=${selectedMembership} Membership`;
         payNowBtn.href = fullUrl;
         payNowBtn.classList.remove("disabled");
         payNowBtn.setAttribute("aria-disabled", "false");

@@ -1,21 +1,13 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
 {% block content %}
-
-<script id="payment-urls" type="application/json">
-  {
-    "paypal": "{% url 'finance:paypal_checkout' %}",
-    "card": "#",
-    "zelle": "#"
-  }
-</script>
 <section>
   <div class="payment-container">
     <!-- LEFT PANEL -->
     <div class="payment-left">
-      <div class="package-card" data-amount="100">
-        <h5>{{context.global_executive_title}}</h5>
-        <div class="amount">{{context.global_executive_price}} <span>USD</span></div>
+      <div class="package-card" data-amount= "{{global_executive_price}}" lead-level="{{global_executive_title }}">
+        <h5>{{global_executive_title }}</h5>
+        <div class="amount">{{global_executive_price }} <span>USD</span></div>
         <div class="summary-placeholder">
           <div class="line"></div>
           <div class="line"></div>
@@ -24,9 +16,9 @@
         </div>
       </div>
 
-      <div class="package-card" data-amount="50">
-        <h5>Regional Administration</h5>
-        <div class="amount">50 <span>USD</span></div>
+      <div class="package-card" data-amount="{{regional_administration_price}}" lead-level="{{regional_administration_title}}">
+        <h5 class="lead-level">{{regional_administration_title}}</h5>
+        <div class="amount">{{regional_administration_price}} <span>USD</span></div>
         <div class="summary-placeholder">
           <div class="line"></div>
           <div class="line"></div>
@@ -35,9 +27,9 @@
         </div>
       </div>
 
-      <div class="package-card" data-amount="25">
-        <h5>County Assembly</h5>
-        <div class="amount">25 <span>USD</span></div>
+      <div class="package-card" data-amount="{{county_assembly_price}}" lead-level="{{county_assembly_title}}">
+        <h5 class="lead-level">{{county_assembly_title}}</h5>
+        <div class="amount">{{county_assembly_price}} <span>USD</span></div>
         <div class="summary-placeholder">
           <div class="line"></div>
           <div class="line"></div>
@@ -72,4 +64,11 @@
     </div>
   </div>
 </section>
+<script id="payment-urls" type="application/json">
+  {
+    "paypal": "{% url 'finance:paypal_checkout' %}",
+    "card": "#",
+    "zelle": "#"
+  }
+</script>
 {% endblock %}

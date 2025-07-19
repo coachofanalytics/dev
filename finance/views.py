@@ -694,23 +694,31 @@ def donation(request):
 
 
 def pay_online(request):
-    global_executive = (
-        Pricing.objects.filter(title="Global Executive Committee")
-        .order_by("-id")
-        .first()
-    )
-    regional_administration = (
-        Pricing.objects.filter(title="Regional Administration").order_by("-id").first()
-    )
-    county_assembly = (
-        Pricing.objects.filter(title="County Assembly").order_by("-id").first()
-    )
-    print(global_executive.price)
+    global_executive = (Pricing.objects.filter(title="Global Executive Committee").order_by("-id").first())
+    regional_administration = (Pricing.objects.filter(title="Regional Administration").order_by("-id").first())
+    county_assembly = (Pricing.objects.filter(title="County Assembly").order_by("-id").first())
+
+    # Global Executive Committe --> title & price
+    global_executive_title = global_executive.title
+    global_executive_price = int(global_executive.price)
+
+    # Regional Administration --> title & price
+    regional_administration_title = regional_administration.title
+    regional_administration_price = int(regional_administration.price)
+
+    # County Assembly --> title & price
+    county_assembly_title = county_assembly.title
+    county_assembly_price = int(county_assembly.price)
+
+    print(global_executive_price, global_executive_title)
+
     context = {
-        "global_executive_title": global_executive.title,
-        "global_executive_price": global_executive.price,
-        #     "regional_administration": regional_administration,
-        #     "county_assembly": county_assembly
+        "global_executive_title": global_executive_title,
+        "global_executive_price": global_executive_price,
+        "regional_administration_title": regional_administration_title,
+        "regional_administration_price": regional_administration_price,
+        "county_assembly_title": county_assembly_title,
+        "county_assembly_price": county_assembly_price
     }
-    # print(context["global_executive"].price)
+
     return render(request, "finance/pay_online.html", context)

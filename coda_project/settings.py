@@ -341,3 +341,4 @@ AZURE_URL_EXPIRATION_SECS = None
 # Optional: Configure the URL
 MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
 
+SECURE_SSL_REDIRECT = False

@@ -145,11 +145,11 @@ section {
 /* Pay Now Button */
 .pay-btn {
   width: 100%;
-  background: #00c28b;
-  color: white;
+  background: #00bfff;;
+  color: black;
   font-weight: bold;
   padding: 14px;
-  border: none;
+  border: 1px solid black;
   border-radius: 10px;
   font-size: 25px;
   cursor: pointer;
@@ -164,7 +164,7 @@ section {
 }
 
 .pay-btn:hover {
-  background: #019b6f;
+  background: #00bfff;
   text-decoration: none;
 }
 
