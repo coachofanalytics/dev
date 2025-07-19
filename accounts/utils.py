@@ -1,18 +1,15 @@
-import os
-from django.urls import reverse, reverse_lazy
-from django.contrib import messages
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from datetime import date
 
 import requests
 from accounts.choices import CategoryChoices
 from coda_project import settings
-from finance.utils import DYCDefaultPayments
 
 import logging
-import string, random, secrets, time
-from django.db.models import Sum, F, Q, ExpressionWrapper, fields
-from decimal import Decimal
+import string
+import random
+import secrets
 from django.core.mail.backends.smtp import EmailBackend
 # from accounts.choices import CategoryChoices,SubCategoryChoices
 
@@ -199,9 +196,7 @@ def get_exchange_rate(base, target):
 # ================================USERS========================================
 
 from django.core.mail import EmailMultiAlternatives
-from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
-from django.core.mail.backends.smtp import EmailBackend
 
 
 def send_verification_email(user, password=None):

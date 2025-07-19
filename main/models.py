@@ -1,9 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Q
-from django.urls import reverse
-from django.utils import timezone
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from accounts.models import CustomerUser, Region, Chapter
 from django.utils.text import slugify
@@ -236,3 +232,15 @@ class DonationOrganization(models.Model):
     def __str__(self):
         return self.name
 
+class History(models.Model):
+    year = models.IntegerField()
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to="history_images/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-year', 'order']
+
+    def __str__(self):
+        return f"{self.year}: {self.title}"
