@@ -16,6 +16,15 @@ class Payment_HistoryAdmin(admin.ModelAdmin):
         "contract_submitted_date",
     )
 
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = (
+        "transaction_id",
+        "payment_purpose",
+        "amount",
+        "payment_method",
+        "status",
+    )
+
 
 # admin.site.register(Transaction)
 # admin.site.register(Payment_History, Payment_HistoryAdmin)
@@ -25,4 +34,4 @@ class Payment_HistoryAdmin(admin.ModelAdmin):
 # admin.site.register(CodaBudget)
 # admin.site.register(Budget)
 admin.site.register(Pricing)
-admin.site.register(Payment)
+admin.site.register(Payment, PaymentAdmin)

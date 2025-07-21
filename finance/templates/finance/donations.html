@@ -33,7 +33,7 @@
             <p>PAYMENT DETAILS</p>
             <div class="payment-buttons">
                 <button class="payment-button selected" data-method="paypal" data-url="{% url 'finance:paypal_checkout' %}">Paypal</button>
-                <button class="payment-button" data-method="stripe" data-url="">Stripe</button>
+                <button class="payment-button" data-method="stripe" data-url="{% url 'finance:stripe_checkout' %}">Stripe</button>
             </div>
         </div>
     </div>

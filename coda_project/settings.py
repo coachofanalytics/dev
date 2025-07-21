@@ -19,17 +19,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 #DEBUG Configurations
-<<<<<<< HEAD
-DEBUG = False
+DEBUG = True
 # DEBUG_VAL = int(os.environ.get('DEBUG'))
 # if DEBUG_VAL == 0:
 #     DEBUG = False
-=======
-DEBUG = True
-DEBUG_VAL = int(os.environ.get('DEBUG'))
-if DEBUG_VAL == 0:
-    DEBUG = False
->>>>>>> 25.07_DC48K_UAT_EM
 
 SECURE_SSL_REDIRECT = False
 
@@ -143,16 +136,17 @@ def dba_values():
 
     else:
         # Test in staging database before staging deployment
-        host = os.environ.get('STG_DB_HOST')
-        dbname = os.environ.get('STG_DB_NAME') 
-        user = os.environ.get('STG_DB_USER')
-        password = os.environ.get('STG_DB_PASSWORD')
+        # host = os.environ.get('STG_DB_HOST')
+        # dbname = os.environ.get('STG_DB_NAME') 
+        # user = os.environ.get('STG_DB_USER')
+        # password = os.environ.get('STG_DB_PASSWORD')
 
         # Test locally 
-        # host = os.environ.get('LOCAL_DB_HOST')
-        # dbname = os.environ.get('LOCAL_DB_NAME') 
-        # user = os.environ.get('LOCAL_DB_USER')
-        # password = os.environ.get('LOCAL_DB_PASSWORD') 
+        host = os.environ.get('LOCAL_DB_HOST')
+        # dbname = "DC48K" #os.environ.get('LOCAL_DB_NAME') 
+        dbname = os.environ.get('LOCAL_DB_NAME') 
+        user = os.environ.get('LOCAL_DB_USER')
+        password = os.environ.get('LOCAL_DB_PASSWORD') 
 
     return host,dbname,user,password  
 
@@ -349,3 +343,7 @@ AZURE_URL_EXPIRATION_SECS = None
 MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
 
 SECURE_SSL_REDIRECT = False
+
+
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")

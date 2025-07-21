@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import paypalrestsdk
+import stripe
 
 from django.conf import settings
 from django.contrib import messages
@@ -9,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
-from django.http import QueryDict, Http404
+from django.http import QueryDict, Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
@@ -35,6 +36,7 @@ from .models import (
 from .utils import get_exchange_rate
 from main.utils import path_values
 import uuid
+
 
 # Initialize Logger
 logger = logging.getLogger(__name__)
@@ -661,7 +663,8 @@ def paypal_return(request):
                 transaction_id=payment.id,
                 amount=float(payment.transactions[0].amount.total),
                 status=payment.state,
-                payment_type=payment.transactions[0]["description"],
+                payment_purpose=payment.transactions[0]["description"],
+                payment_method = "paypal",
             )
         else:
             CustomerUser.objects.create(
@@ -670,9 +673,7 @@ def paypal_return(request):
                 last_name=payment.payer.payer_info.last_name,
                 city=payment.transactions[0]["item_list"]["shipping_address"]["city"],
                 state=payment.transactions[0]["item_list"]["shipping_address"]["state"],
-                country=payment.transactions[0]["item_list"]["shipping_address"][
-                    "country_code"
-                ],
+                country=payment.transactions[0]["item_list"]["shipping_address"]["country_code"],
                 username=uuid.uuid4(),
             )
             # Save to DB
@@ -681,12 +682,118 @@ def paypal_return(request):
                 transaction_id=payment.id,
                 amount=float(payment.transactions[0].amount.total),
                 status=payment.state,
-                payment_type=payment.transactions[0]["description"],
+                payment_purpose=payment.transactions[0]["description"],
+                payment_method = "paypal",
             )
 
         return render(request, "finance/payment_success.html")
     else:
         return render(request, "finance/payment_failed.html", {"error": payment.error})
+    
+
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+@csrf_exempt
+def stripe_checkout(request):
+    if request.method == 'GET':
+        amount = int(request.GET.get("amount", 0)) * 100  # Convert to cents
+        purpose = request.GET.get('purpose')
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'unit_amount': amount,
+                        'product_data': {
+                            'name': f'DC48K {purpose}',
+                        },
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url=request.build_absolute_uri(reverse('finance:stripe_success')),
+                cancel_url=request.build_absolute_uri(reverse('finance:stripe_cancel')),
+                metadata={'purpose': purpose},
+            )
+            return redirect(checkout_session.url)
+        except Exception as e:
+            return render(request, "finance/payment_failed.html", {"error": str(e)})
+        
+
+def stripe_payment_success(request):
+    return render(request, "finance/payment_success.html")
+
+def stripe_payment_cancel(request):
+    return render(request, "finance/payment_failed.html")
+
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+endpoint_secret = settings.STRIPE_WEBHOOK_SECRET  
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
+
+    # Handle the event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        # ✅ Place logic here: e.g. save payment to database, send email, etc.
+        customer_email = session.get("customer_details", {}).get("email")
+        existing_member = CustomerUser.objects.filter(email=customer_email).first()
+
+        if existing_member:
+            Payment.objects.create(
+               user=CustomerUser.objects.filter(email=customer_email).first(),
+               transaction_id = session.get("payment_intent"),
+               amount = float(session.get("amount_total", 0)) / 100,  # Convert from cents
+               status = session.get("payment_status"),
+               payment_purpose = session.get("metadata", {}).get("purpose", ""),
+               payment_method = "stripe",
+            )
+        else:
+            CustomerUser.objects.create(
+                email = session.get("customer_details", {}).get("email"),
+                first_name = session.get("customer_details", {}).get("name").split(" ")[0],
+                last_name = session.get("customer_details", {}).get("name").split(" ")[1],
+                city = session.get("customer_details", {}).get("address").get("city"),
+                state = session.get("customer_details", {}).get("address").get("state"),
+                country = session.get("customer_details", {}).get("address").get("country"),
+                username=uuid.uuid4(),
+            )
+
+            Payment.objects.create(
+               user=CustomerUser.objects.filter(email=customer_email).first(),
+               transaction_id = session.get("payment_intent"),
+               amount = float(session.get("amount_total", 0)) / 100,  # Convert from cents
+               status = session.get("payment_status"),
+               payment_purpose = session.get("metadata", {}).get("purpose", ""),
+               payment_method = "stripe",
+            )
+
+
+        print(f"Payment successful for session ID: {session['payment_intent']}")
+        print(f"Amount paid: {session['amount_total']}")
+
+    return HttpResponse(status=200)
+
+
+
+
+
     
 
 def donation(request):

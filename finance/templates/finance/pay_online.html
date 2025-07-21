@@ -2,6 +2,13 @@
 {% load static %}
 {% block content %}
 <section>
+  <script id="payment-urls" type="application/json">
+  {
+    "paypal": "{% url 'finance:paypal_checkout' %}",
+    "card": "{% url 'finance:stripe_checkout' %}",
+    "zelle": "#"
+  }
+  </script>
   <div class="payment-container">
     <!-- LEFT PANEL -->
     <div class="payment-left">
@@ -64,11 +71,4 @@
     </div>
   </div>
 </section>
-<script id="payment-urls" type="application/json">
-  {
-    "paypal": "{% url 'finance:paypal_checkout' %}",
-    "card": "#",
-    "zelle": "#"
-  }
-</script>
 {% endblock %}
