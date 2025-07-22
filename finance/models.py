@@ -400,25 +400,22 @@ class CodaBudget(TimeStampedModel):
 
 
 class Payment(models.Model):
-    PAYMENT_TYPE_CHOICES = [
-        ("dues", "Membership Dues"),
-        ("donation", "Donation"),
-    ]
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    payment_type = models.CharField(max_length=100, choices=PAYMENT_TYPE_CHOICES)
+    # PAYMENT_TYPE_CHOICES = [
+    #     ("dues", "Membership Dues"),
+    #     ("donation", "Donation"),
+    # ]
+    user_id = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    payment_purpose = models.CharField(max_length=50, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=30,  null=True, blank=True)
     transaction_id = models.CharField(max_length=100, unique=True)
-    status = models.CharField(
-        max_length=30, default="Pending"
-    )  # Pending, Completed, Failed
-    receipt_url = models.URLField(
-        max_length=500, blank=True, null=True
-    )  # link to Stripe/PayPal receipt
+    status = models.CharField(max_length=30, default="Pending")  # Pending, Completed, Failed
+    receipt_url = models.URLField(max_length=500, blank=True, null=True)  # link to Stripe/PayPal receipt
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.payment_type} - {self.amount} ({self.status})"
+        return f"{self.payment_purpose} - {self.amount} ({self.status})"
 
 
 class Pricing(models.Model):

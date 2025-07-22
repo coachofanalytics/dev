@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
-from django.http import QueryDict, Http404
+from django.http import QueryDict, Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
@@ -693,6 +693,7 @@ def paypal_return(request):
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+# Stripe Checkout View
 @csrf_exempt
 def stripe_checkout(request):
     if request.method == 'GET':
@@ -729,6 +730,68 @@ def stripe_payment_cancel(request):
     return render(request, "finance/payment_failed.html")
 
 
+
+# Stripe Webhook
+endpoint_secret = settings.STRIPE_WEBHOOK_SECRET  
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+        # print("event >>>>>>", event)
+    except ValueError as e:
+        print(e)
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        print(e)
+        return HttpResponse(status=400)
+    print("Event Type >>>>", event['type'])
+    # Handle the event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        # save payment info to database
+        customer_email = session.get("customer_details", {}).get("email")
+        existing_member = CustomerUser.objects.filter(email=customer_email).first()
+
+        if existing_member:
+            Payment.objects.create(
+               user_id=CustomerUser.objects.filter(email=customer_email).first(),
+               transaction_id = session.get("payment_intent"),
+               amount = float(session.get("amount_total", 0)) / 100,  # Convert from cents
+               status = session.get("payment_status"),
+               payment_purpose = session.get("metadata", {}).get("purpose", ""),
+               payment_method = "stripe",
+            )
+        else:
+            CustomerUser.objects.create(
+                email = session.get("customer_details", {}).get("email"),
+                first_name = session.get("customer_details", {}).get("name").split(" ")[0],
+                last_name = session.get("customer_details", {}).get("name").split(" ")[1],
+                city = session.get("customer_details", {}).get("address").get("city"),
+                state = session.get("customer_details", {}).get("address").get("state"),
+                country = session.get("customer_details", {}).get("address").get("country"),
+                username=uuid.uuid4(),
+            )
+
+            Payment.objects.create(
+               user_id=CustomerUser.objects.filter(email=customer_email).first(),
+               transaction_id = session.get("payment_intent"),
+               amount = float(session.get("amount_total", 0)) / 100,  # Convert from cents
+               status = session.get("payment_status"),
+               payment_purpose = session.get("metadata", {}).get("purpose", ""),
+               payment_method = "stripe",
+            )
+
+
+        print(f"Payment successful for session ID: {session['payment_intent']}")
+        print(f"Amount paid: {session['amount_total']}")
+
+    return HttpResponse(status=200)
 
 
 

@@ -43,10 +43,12 @@
     <div class="payment-right">
         <h3 style="text-align: center; font-size: 20px; margin-bottom: 30px;">Select Payment Method</h3>
         <div class="payment-icons">
+          <!--
             <div class="icon-button" data-method="paypal" title="PayPal">
                 <i class="fab fa-paypal" style="color: #003087;"></i>
                 <span>PayPal</span>
             </div>
+          -->
             <div class="icon-button selected" data-method="card" title="Card">
                 <i class="fas fa-credit-card" style="color: #4a4a4a;"></i>
                 <span>Card</span>
@@ -67,7 +69,7 @@
 <script id="payment-urls" type="application/json">
   {
     "paypal": "{% url 'finance:paypal_checkout' %}",
-    "card": "#",
+    "card": "{% url 'finance:stripe_checkout' %}",
     "zelle": "#"
   }
 </script>

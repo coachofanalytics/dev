@@ -88,4 +88,6 @@ urlpatterns = [
     path("stripe/checkout/", views.stripe_checkout, name="stripe_checkout"),
     path("stripe/success/", views.stripe_payment_success, name="stripe_success"),
     path("stripe/cancel/", views.stripe_payment_success, name="stripe_cancel"),
+    path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
+
 ]
