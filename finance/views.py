@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import paypalrestsdk
+import stripe
 
 from django.conf import settings
 from django.contrib import messages
@@ -689,8 +690,50 @@ def paypal_return(request):
         return render(request, "finance/payment_failed.html", {"error": payment.error})
     
 
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+@csrf_exempt
+def stripe_checkout(request):
+    if request.method == 'GET':
+        amount = int(request.GET.get("amount", 0)) * 100  # Convert to cents
+        purpose = request.GET.get('purpose')
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'unit_amount': amount,
+                        'product_data': {
+                            'name': f'DC48K {purpose}',
+                        },
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url=request.build_absolute_uri(reverse('finance:stripe_success')),
+                cancel_url=request.build_absolute_uri(reverse('finance:stripe_cancel')),
+                metadata={'purpose': purpose},
+            )
+            return redirect(checkout_session.url)
+        except Exception as e:
+            return render(request, "finance/payment_failed.html", {"error": str(e)})
+        
+
+def stripe_payment_success(request):
+    return render(request, "finance/payment_success.html")
+
+
+def stripe_payment_cancel(request):
+    return render(request, "finance/payment_failed.html")
+
+
+
+
+
 def donation(request):
-    return render(request, "finance/donations.html")
+    return render(request, "finance/donation.html")
 
 
 def pay_online(request):
