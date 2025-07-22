@@ -272,6 +272,30 @@ class JobListing(models.Model):
 
     def __str__(self):
         return f"{self.title} at {self.employer}"
+    
+
+
+
+from django.db import models
+
+class History(models.Model):
+    ASSET_CHOICES = [
+        ('land', 'Land'),
+        ('building', 'Building'),
+        ('equipment', 'Equipment'),
+    ]
+
+    year = models.CharField(max_length=4)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    asset = models.CharField(max_length=20, choices=ASSET_CHOICES)
+    order = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.year} - {self.title} ({self.get_asset_display()})"
+
+
+    
 
 
 
