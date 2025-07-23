@@ -19,6 +19,7 @@ class Payment_HistoryAdmin(admin.ModelAdmin):
 
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
+        "user_id",
         "payment_purpose",
         "amount",
         "payment_method",

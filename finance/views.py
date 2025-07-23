@@ -775,7 +775,8 @@ def stripe_webhook(request):
                 city = session.get("customer_details", {}).get("address").get("city"),
                 state = session.get("customer_details", {}).get("address").get("state"),
                 country = session.get("customer_details", {}).get("address").get("country"),
-                username=uuid.uuid4(),
+                username = session.get("customer_details", {}).get("name").split(" ")[0].lower() + session.get("customer_details", {}).get("name").split(" ")[1].lower()
+                # username=uuid.uuid4(),
             )
 
             Payment.objects.create(
