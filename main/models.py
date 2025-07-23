@@ -280,7 +280,7 @@ class History(models.Model):
         ('land', 'Land'),
         ('building', 'Building'),
         ('equipment', 'Equipment'),
-       ("DC48K", "DC48K")
+       
     ]
 
     year = models.CharField(max_length=4)
