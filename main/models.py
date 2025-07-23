@@ -275,14 +275,12 @@ class JobListing(models.Model):
     
 
 
-
-from django.db import models
-
 class History(models.Model):
     ASSET_CHOICES = [
         ('land', 'Land'),
         ('building', 'Building'),
         ('equipment', 'Equipment'),
+       ("DC48K", "DC48K")
     ]
 
     year = models.CharField(max_length=4)
