@@ -216,12 +216,21 @@ class Chapter(models.Model):
         return self.name
     
 
-# class Profile(models.Model):
-#     user = models.OneToOneField(CustomerUser, on_delete=models.CASCADE, related_name='profile')
-#     title = models.CharField(max_length=255, blank=True, null=True)
-#     image = models.ImageField(upload_to='img/profiles', blank=True, null=True)
-#     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
-#     chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True)
-#     phone = models.CharField(max_length=20, blank=True, null=True)
-#     email = models.EmailField(blank=True, null=True)
-#     updated_at = models.DateTimeField(auto_now=True)
+class Profile(models.Model):
+    GovernanceCategoryChoices = [
+        ('Global Executive Committee', 'Global Executive Committee'),
+        ('Regional Administration', 'Regional Administration'),
+        ('County Assembly Administration', 'County Assembly Administration')
+    ]
+    governance_category = models.CharField(max_length=255, choices=GovernanceCategoryChoices)
+    member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='profile')
+    title = models.CharField(max_length=255, blank=True, null=True)
+    title_description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
+    chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    ui_order = models.IntegerField(unique=False, default=0) # used organize leadership/photos on ui.
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
