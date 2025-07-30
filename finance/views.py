@@ -713,6 +713,7 @@ def stripe_checkout(request):
                     'quantity': 1,
                 }],
                 mode='payment',
+                customer_email=request.user.email if request.user.is_authenticated else None, # pre-populates the user email
                 success_url=request.build_absolute_uri(reverse('finance:stripe_success')),
                 cancel_url=request.build_absolute_uri(reverse('finance:stripe_cancel')),
                 metadata={'purpose': purpose},
