@@ -79,3 +79,17 @@ class Reporting(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.interview_type}"
+
+
+
+class JobDetails(models.Model):
+    job_description = models.TextField(null=False)
+    skills_expertise = models.TextField(null=False)
+    number_of_connects =models.IntegerField(null=False)
+    min_payment =models.DecimalField(max_digits=10,decimal_places=2, null=False)
+    max_payment = models.DecimalField(max_digits=10,decimal_places=2,null=False)
+    min_duration = models.IntegerField(null=False)
+    max_duration = models.IntegerField(null=False)
+    project_type = models.TextField(null=False)
+    deliverables = models.TextField(null=False)
+    links = models.URLField(null=True)
