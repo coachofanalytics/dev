@@ -2,7 +2,8 @@ from django.urls import path
 
 from . import views
 # from .utils import convert_html_to_pdf
-
+from django.urls import path
+from .views import VolunteerListView, VolunteerCreateView
 app_name = 'main'
 urlpatterns = [
     path('', views.layout, name='layout'),
@@ -19,7 +20,7 @@ urlpatterns = [
        
         #--------------------------MANAGEMENT--------------------#
     #----------------------------IT-------------------------#
-        path('it/', views.it, name='it'),
+    path('it/', views.it, name='it'),
     #-----------------------README-------------------------#
     path('newusecase/', views.UseCaseCreateView.as_view(template_name='main/form.html'), name='newusecase'),
     path('display_usecases/', views.display_usecases, name='display_usecases'),
@@ -34,6 +35,11 @@ urlpatterns = [
     path('403/', views.hendler403, name='403-error'),
     path('404/', views.hendler404, name='404-error'),
     path('500/', views.hendler500, name='500-error'),
+
+
+    # path('', VolunteerListView.as_view(), name='list'),      # ✅ CORRECT
+    # path('create/', VolunteerCreateView.as_view(), name='create'),  # ✅ CORRECT
+
 
     #===========company records=======
 

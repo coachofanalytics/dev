@@ -93,3 +93,74 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
 
+
+
+
+
+from django.db import models
+
+class Volunteer(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
+    motivation = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+
+
+class  ClientAvailability(models.Model):
+    client  =models.CharField(max_length=255,null=False)
+    day  = models.CharField(max_length=255,null=False)
+    start_time =models.TimeField(null=False)
+    end_time =models.TimeField(null=False)
+    time_standards =models.CharField(max_length=22,null= False)
+    topic=models.CharField(max_length=100,null=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

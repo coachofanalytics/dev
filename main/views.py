@@ -269,3 +269,67 @@ def general_errors(request):
     # return render(request, "main/errors/noresult.html")
     context={'message':'message'}
     return render(request,'main/errors/generalerrors.html',context)
+
+
+
+
+from django.views.generic import ListView
+from django.urls import reverse_lazy
+from .models import Volunteer
+
+# List View
+class VolunteerListView(ListView):
+    model = Volunteer
+    template_name = 'volunteer/volunteer_list.html'
+    context_object_name = 'volunteers'
+
+
+
+
+from django.views.generic import DetailView
+from django.urls import reverse_lazy
+from .models import Volunteer
+
+# Detail View
+class VolunteerDetailView(DetailView):
+    model = Volunteer
+    template_name = 'volunteer/volunteer_detail.html'
+    context_object_name = 'volunteer'
+
+
+
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from .models import Volunteer
+
+# Create View
+class VolunteerCreateView(CreateView):
+    model = Volunteer
+    fields = ['name', 'email', 'motivation']
+    template_name = 'volunteer/volunteer_form.html'
+    success_url = reverse_lazy('volunteer_list')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -74,6 +74,8 @@ urlpatterns = [
     ),
     path("", include("main.urls", namespace="main")),
     path("accounts/", include("accounts.urls")),
+    path("application/", include("application.urls", namespace="data")),
+
     #redirect and custom url for social login
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),
     path('social_accounts/signup/', account_views.join),
