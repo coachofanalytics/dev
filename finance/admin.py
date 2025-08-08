@@ -23,7 +23,8 @@ class PaymentAdmin(admin.ModelAdmin):
         "payment_purpose",
         "amount",
         "payment_method",
-        "status"
+        "status",
+        "created_at",
     )
 
 
