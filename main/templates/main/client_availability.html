@@ -1,0 +1,34 @@
+{%extends "main/base_templates/base.html"%} {% block content %}
+
+<div class="container mt-4">
+    <h2> client availability</h2>
+   
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>client</th>
+                <th>day</th>
+                <th>start_time</th>
+                <th>end_time</th>
+                <th>time_standards</th>
+                <th>topic</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>{{ client.client }}</td>
+                <td>{{ client.day }}</td>
+                <td>{{ client.start_time }}</td>
+                <td>{{ client.end_time }}</td>
+                <td>{{ client.time_standards }}</td>
+
+                
+                <td>{{ client.topic }}</td>
+               
+            </tr>
+        
+        </tbody>
+    </table>
+</div>
+{% endblock %}

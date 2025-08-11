@@ -1,0 +1,41 @@
+{%extends "main/base_templates/analysis_index.html"%} {% block content %}
+
+<div class="container mt-4">
+    <h2>Pricing Plans</h2>
+    <a href="{% url 'pricing_create' %}" class="btn btn-primary mb-3">Create New Plan</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>client</th>
+                <th>day</th>
+                <th>start_time</th>
+                <th>end_time</th>
+                <th>time_standards</th>
+                <th>topic</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for client in client %}
+            <tr>
+                <td>{{ client.client }}</td>
+                <td>{{ client.day }}</td>
+                <td>{{ client.start_time }}</td>
+                <td>{{ client.end_time }}</td>
+                <td>{{ client.time_standards }}</td>
+               
+                </td>
+                
+                <td>{{ client.topic }}</td>
+                <!-- <td>
+                    <a href="{% url 'pricing_detail' plan.pk %}" class="btn btn-info btn-sm">View</a>
+                    <a href="{% url 'pricing_update' plan.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'pricing_delete' plan.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                </td> -->
+            </tr>
+        {% empty %}
+            <tr><td colspan="6">No pricing plans found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
