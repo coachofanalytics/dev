@@ -29,7 +29,7 @@ from django.apps import apps
 from langchain_community.llms import OpenAI
 from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
-from django.db.models import F, FloatField, Case, When, Value, Subquery, OuterRef, Q
+from django.db.models import F, FloatField, Case, When, Value, Subquery, OuterRef
 from django.contrib.auth import get_user_model
 from django.db.models.functions import Coalesce
 
@@ -312,8 +312,10 @@ class VolunteerCreateView(CreateView):
 
 
 
-
-
+def client_availability_view(request):
+    clients = ClientAvailability.objects.all()
+    print(clients)
+    return render(request, "main/client_availability.html", {"client": clients})
 
 
 

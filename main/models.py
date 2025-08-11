@@ -117,8 +117,26 @@ class  ClientAvailability(models.Model):
     end_time =models.TimeField(null=False)
     time_standards =models.CharField(max_length=22,null= False)
     topic=models.CharField(max_length=100,null=False)
+  
+class service_coda(models.Model):
+    serial =models.PositiveIntegerField(null=True)
+    # company = models.ForeignKey('Company', on_delete=models.SET_NULL, null=True, blank=True)
+    title =models.CharField(max_length=255)
+    slug =models.SlugField(null=True)
+    description =models.TextField(null=True)
+    sub_titles =models.TextField(null=True)
+    executive_summary =models.TextField(null=True)
+    is_active =models.BooleanField(null=True)
+    is_featured =models.BooleanField(null=True)
 
+from django.conf import settings
 
+class Testimonials(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, max_length=50)
+    content = models.TextField()
+    date_posted = models.DateTimeField()
+    writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 
 
