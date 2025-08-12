@@ -84,6 +84,7 @@ urlpatterns = [
     path("paypal/return/", views.paypal_return, name="paypal_return"),
     path("donation/", views.donation, name="donation"),
     path("pay_online/", views.pay_online, name="pay_online"),
+    path("partial_payment/", views.partial_payment, name="partial_payment"),
 
     path("stripe/checkout/", views.stripe_checkout, name="stripe_checkout"),
     path("stripe/success/", views.stripe_payment_success, name="stripe_success"),
