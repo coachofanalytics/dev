@@ -12,63 +12,74 @@
   <div class="payment-container">
     <!-- LEFT PANEL -->
     <div class="payment-left">
-      <div class="package-card" data-amount= "{{global_executive_price}}" lead-level="{{global_executive_title }}">
-        <h5>{{global_executive_title }}</h5>
-        <div class="amount">{{global_executive_price }} <span>USD</span></div>
+      <div class="package-card" data-amount="{{ global_executive_price }}" lead-level="{{ global_executive_title }}">
+        <h5>{{ global_executive_title }}</h5>
+        <div class="amount">{{ global_executive_price }} <span>USD</span></div>
         <div class="summary-placeholder">
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line short"></div>
+          <div class="line"></div><div class="line"></div><div class="line"></div><div class="line short"></div>
         </div>
       </div>
 
-      <div class="package-card" data-amount="{{regional_administration_price}}" lead-level="{{regional_administration_title}}">
-        <h5 class="lead-level">{{regional_administration_title}}</h5>
-        <div class="amount">{{regional_administration_price}} <span>USD</span></div>
+      <div class="package-card" data-amount="{{ regional_administration_price }}" lead-level="{{ regional_administration_title }}">
+        <h5 class="lead-level">{{ regional_administration_title }}</h5>
+        <div class="amount">{{ regional_administration_price }} <span>USD</span></div>
         <div class="summary-placeholder">
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line short"></div>
+          <div class="line"></div><div class="line"></div><div class="line"></div><div class="line short"></div>
         </div>
       </div>
 
-      <div class="package-card" data-amount="{{county_assembly_price}}" lead-level="{{county_assembly_title}}">
-        <h5 class="lead-level">{{county_assembly_title}}</h5>
-        <div class="amount">{{county_assembly_price}} <span>USD</span></div>
+      <div class="package-card" data-amount="{{ county_assembly_price }}" lead-level="{{ county_assembly_title }}">
+        <h5 class="lead-level">{{ county_assembly_title }}</h5>
+        <div class="amount">{{ county_assembly_price }} <span>USD</span></div>
         <div class="summary-placeholder">
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line short"></div>
+          <div class="line"></div><div class="line"></div><div class="line"></div><div class="line short"></div>
         </div>
       </div>
     </div>
 
     <!-- RIGHT PANEL -->
     <div class="payment-right">
-        <h3 style="text-align: center; font-size: 20px; margin-bottom: 30px;">Select Payment Method</h3>
-        <div class="payment-icons">
-            <div class="icon-button" data-method="paypal" title="PayPal">
-                <i class="fab fa-paypal" style="color: #003087;"></i>
-                <span>PayPal</span>
-            </div>
-            <div class="icon-button selected" data-method="card" title="Card">
-                <i class="fas fa-credit-card" style="color: #4a4a4a;"></i>
-                <span>Card</span>
-            </div>
-            <div class="icon-button" data-method="zelle" title="Zelle">
-                <i class="fas fa-university" style="color: #6f2dbd;"></i>
-                <span>Zelle</span>
-            </div>
+      <h3 style="text-align:center;font-size:20px;margin-bottom:30px;">Select Payment Method</h3>
+
+      <div class="payment-icons">
+        <div class="icon-button selected" data-method="card" title="Card">
+          <i class="fas fa-credit-card" style="color:#4a4a4a;"></i>
+          <span>Card</span>
         </div>
-        <input type="hidden" id="selectedAmount" name="amount" value="" />
-        <!-- <button class="pay-btn">Pay Now <i class="fas fa-arrow-right"></i></button> -->
-        <a id="payNowBtn" href="#" class="pay-btn disabled" aria-disabled="true">
-            Pay Now <i class="fas fa-arrow-right"></i>
-        </a>
+        <div class="icon-button" data-method="zelle" title="Zelle">
+          <i class="fas fa-university" style="color:#6f2dbd;"></i>
+          <span>Zelle</span>
+        </div>
+      </div>
+
+      <input type="hidden" id="selectedAmount" name="amount" value="" />
+
+      <!-- Primary action -->
+      <a id="payNowBtn" href="#" class="pay-btn disabled" aria-disabled="true">
+        Pay Now <i class="fas fa-arrow-right"></i>
+      </a>
+
+      <!-- NEW: Partial payment action -->
+      <a id="partialPayBtn" href="#" class="pay-btn disabled" aria-disabled="true"
+         style="margin-top:12px; background:#eef3ff; color:#2b3a67;">
+        Make Partial Payment
+      </a>
     </div>
   </div>
 </section>
+
+<!-- URLs the JS can use -->
+<script id="payment-urls" type="application/json">
+{
+  "paypal": "{% url 'finance:paypal_checkout' %}",
+  "card": "{% url 'finance:stripe_checkout' %}",
+  "partial": "{% url 'finance:partial_payment' %}",
+  "zelle": "#"
+}
+</script>
+{% endblock %}
+
+ <!--Pay_online Page JS -->
+{% block page_js %}
+  <script src="{% static 'finance/js/pay_online.js' %}" defer></script>
 {% endblock %}

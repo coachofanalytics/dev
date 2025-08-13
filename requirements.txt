@@ -103,3 +103,4 @@ zope.interface==5.4.0
 crispy-bootstrap4==2022.1
 paypalrestsdk==1.13.3
 azure-storage-blob
+stripe

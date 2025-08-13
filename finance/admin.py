@@ -26,6 +26,19 @@ class PaymentAdmin(admin.ModelAdmin):
     )
 
 
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = (
+        "user_id",
+        "payment_purpose",
+        "original_amount",
+        "amount",
+        "balance",
+        "payment_method",
+        "status",
+        "created_at",
+    )
+
+
 # admin.site.register(Transaction)
 # admin.site.register(Payment_History, Payment_HistoryAdmin)
 

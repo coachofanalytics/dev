@@ -1,0 +1,41 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="wrapper">
+  <div class="partial-payment-form">
+    <h2>Partial Membership Payment</h2>
+
+    <!-- Step indicator -->
+    <div class="step-indicator">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+
+    <!-- Fixed amounts only -->
+    <div class="amount-options">
+      <button class="amount-button selected" data-value="25">$25</button>
+      <button class="amount-button" data-value="50">$50</button>
+      <button class="amount-button" data-value="100">$100</button>
+    </div>
+
+    <!-- No custom amount field -->
+
+    <!-- Payment details -->
+    <div class="payment-section">
+      <p>PAYMENT DETAILS</p>
+      <div class="payment-buttons">
+        <!-- If you add PayPal later, give it a data-url -->
+        <button type="button" class="payment-button" data-method="stripe" data-url="{% url 'finance:stripe_checkout' %}">Stripe</button>
+        <button class="payment-button" data-method="zelle"  data-url="#">Zelle</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock content %}
+ <!--partial_payment Page JS -->
+{% block page_js %}
+  <script src="{% static 'finance/js/partial_payment.js' %}" defer></script>
+{% endblock %}

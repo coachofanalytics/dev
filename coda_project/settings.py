@@ -19,10 +19,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 #DEBUG Configurations
-DEBUG = True
-# DEBUG_VAL = int(os.environ.get('DEBUG'))
-# if DEBUG_VAL == 0:
-#     DEBUG = False
+if os.environ.get('ENVIRONMENT') == 'production':
+    DEBUG = False
+else:
+    DEBUG = True
+
 
 SECURE_SSL_REDIRECT = False
 
@@ -147,6 +148,11 @@ def dba_values():
         dbname = os.environ.get('LOCAL_DB_NAME') 
         user = os.environ.get('LOCAL_DB_USER')
         password = os.environ.get('LOCAL_DB_PASSWORD') 
+
+
+
+
+        
 
     return host,dbname,user,password  
 
@@ -344,6 +350,11 @@ MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINE
 
 SECURE_SSL_REDIRECT = False
 
+STRIPE_TEST_SECRET_KEY = os.environ.get('STRIPE_TEST_SECRET_KEY')
 
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
-STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+STRIPE_TEST_WEBHOOK_SECRET = os.environ.get('STRIPE_TEST_WEBHOOK_SECRET')
+
+STRIPE_LIVE_SECRET_KEY = os.environ.get('STRIPE_LIVE_SECRET_KEY')
+
+STRIPE_LIVE_WEBHOOK_SECRET = os.environ.get('STRIPE_LIVE_WEBHOOK_SECRET')
+
