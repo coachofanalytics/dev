@@ -1,5 +1,6 @@
 from django.urls import path
-
+from django.contrib import admin
+from django.urls import path, include
 from . import views
 # from .utils import convert_html_to_pdf
 from django.urls import path
@@ -13,7 +14,8 @@ urlpatterns = [
     path("display_service/<str:slug>/", views.display_service, name="display_service"),
     path("display_plans/<str:slug>/", views.service_plans, name="service_plans"),
     path('client_availability/', views.client_availability_view, name='client_availability'),
-    
+    # path('admin/', admin.site.urls),
+    # path('', include('main.urls')),
     #==============DEPARTMENTS==============================================
     #==============DEPARTMENTS==============================================
     #---------------HUMAN RESOURCE--------------------#
@@ -26,6 +28,7 @@ urlpatterns = [
     #-----------------------README-------------------------#
     path('newusecase/', views.UseCaseCreateView.as_view(template_name='main/form.html'), name='newusecase'),
     path('display_usecases/', views.display_usecases, name='display_usecases'),
+    # path('', include('project.urls')),
 
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),

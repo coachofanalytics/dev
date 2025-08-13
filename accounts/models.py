@@ -66,3 +66,11 @@ class CustomerUser(AbstractUser):
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
     
+
+    from django.db import models
+
+class UserGroups(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
