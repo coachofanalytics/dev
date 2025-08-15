@@ -20,6 +20,7 @@ from decimal import Decimal
 
 from django.views.decorators.csrf import csrf_exempt
 from mail.custom_email import send_email
+from datetime import datetime
 
 
 from accounts.forms import UserForm
@@ -847,7 +848,7 @@ endpoint_secret = settings.STRIPE_LIVE_WEBHOOK_SECRET
 #     return HttpResponse(status=200)
 
 
-csrf_exempt
+@csrf_exempt
 def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
@@ -964,8 +965,13 @@ def stripe_webhook(request):
 
 
 
+# def donation(request):
+#     return render(request, "email/payment_receipt.html")
+
 def donation(request):
     return render(request, "finance/donation.html")
+
+
 
 
 def pay_online(request):
