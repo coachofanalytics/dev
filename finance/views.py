@@ -693,7 +693,7 @@ def paypal_return(request):
     
 
 
-stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
 
 # Stripe Checkout View
 @csrf_exempt
@@ -758,7 +758,7 @@ def stripe_payment_cancel(request):
 
 
 # Stripe Webhook
-endpoint_secret = settings.STRIPE_TEST_WEBHOOK_SECRET  
+endpoint_secret = settings.STRIPE_LIVE_WEBHOOK_SECRET  
 
 # @csrf_exempt
 # def stripe_webhook(request):
