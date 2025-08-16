@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from accounts.choices import CategoryChoices, SubCategoryChoices
 from accounts.modelmanager import DepartmentManager
 from django_countries.fields import CountryField
+from django.utils.text import slugify
 
 
 # class Region(models.Model):
@@ -223,14 +224,33 @@ class Profile(models.Model):
         ('County Assembly Administration', 'County Assembly Administration')
     ]
     governance_category = models.CharField(max_length=255, choices=GovernanceCategoryChoices)
-    member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='profile')
+    member = models.OneToOneField(CustomerUser, on_delete=models.CASCADE, related_name='profile')
     title = models.CharField(max_length=255, blank=True, null=True)
-    title_description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='img/governance', default='img/governance/dc48k_logo.png')
     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
     chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    email = models.CharField(max_length=255, blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True)
     ui_order = models.IntegerField(unique=False, default=0) # used organize leadership/photos on ui.
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            # Generate a slug from title or fallback to name
+            base = self.title or f"{self.members.first_name}-{self.members.last_name}" or f"user-{self.members.pk}"
+            candidate = slugify(base)
+            unique = candidate
+            i = 2
+            # Ensure the slug is unique
+            while Profile.objects.filter(slug=unique).exclude(pk=self.pk).exists():
+                unique = f"{candidate}-{i}"
+                i += 1
+            self.slug = unique
+
+        super(Profile, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.title} - {self.members.first_name} {self.members.last_name}"
