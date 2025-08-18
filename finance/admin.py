@@ -16,14 +16,26 @@ class Payment_HistoryAdmin(admin.ModelAdmin):
         "contract_submitted_date",
     )
 
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = (
+        "transaction_id",
+        "payment_purpose",
+        "amount",
+        "payment_method",
+        "status",
+    )
+
 
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
         "user_id",
         "payment_purpose",
+        "original_amount",
         "amount",
+        "balance",
         "payment_method",
-        "status"
+        "status",
+        "created_at",
     )
 
 

@@ -168,7 +168,7 @@ def layout(request):
 #         }
 #     return render(request, "main/home_templates/home.html",context)
 
-def History(request):
+def history(request):
     page_instance = Page.objects.get(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
@@ -557,7 +557,7 @@ def organization_list_view(request):
     return render(request, 'main/snippets_templates/table/donation_list.html', {'organizations':organizations})
 
 
-def show_history(request):
+def ourhistory(request):
     history_years = History.objects.all()
     context = {
         "history_years": history_years

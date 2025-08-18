@@ -9,7 +9,7 @@ app_name = 'main'
 urlpatterns = [
     path('', views.layout, name='layout'),
     path('team/', views.team_list, name='team_view'),
-    path('history',views.History, name ='history'),
+    path('history',views.history, name ='history'),
     path('services/', views.service_list, name='service_list'),
     path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/', views.news_list, name='news_list'),
@@ -25,6 +25,7 @@ urlpatterns = [
     path('create_governance/', views.governance_create, name='create_governance'),
     path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),
     path('donation',views.organization_list_view, name ='donationorganisation_list'),
+    path('ourhistory',views.ourhistory, name ='ourhistory'),
     
   
     
