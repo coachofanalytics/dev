@@ -93,3 +93,15 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
 
+
+
+class ServiceCategory(models.Model):
+    service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(max_length=255, null=True, blank=True, unique=True)
+    description = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name if self.name else "Unnamed Category"

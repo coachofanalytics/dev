@@ -269,3 +269,7 @@ def general_errors(request):
     # return render(request, "main/errors/noresult.html")
     context={'message':'message'}
     return render(request,'main/errors/generalerrors.html',context)
+    # from django.shortcuts import render
+
+def training_list(request):
+    return render(request, 'main/training_list.html')  # or your appropriate template
