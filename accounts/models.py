@@ -240,7 +240,7 @@ class Profile(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             # Generate a slug from title or fallback to name
-            base = self.title or f"{self.members.first_name}-{self.members.last_name}" or f"user-{self.members.pk}"
+            base = self.title or f"{self.member.first_name}-{self.member.last_name}" or f"user-{self.member.pk}"
             candidate = slugify(base)
             unique = candidate
             i = 2
@@ -253,4 +253,4 @@ class Profile(models.Model):
         super(Profile, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.title} - {self.members.first_name} {self.members.last_name}"
+        return f"{self.title} - {self.member.first_name} {self.member.last_name}" 
