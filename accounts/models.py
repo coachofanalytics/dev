@@ -68,30 +68,56 @@ class CustomerUser(AbstractUser):
     
 
 
-class Score(models.Model):
-    first_name = models.CharField(max_length=100, null=False)
-    last_name = models.CharField(max_length=100, null=False)
-    date_joined = models.DateTimeField(auto_now_add=True)  # auto-sets when record is created
-    email = models.EmailField(max_length=255, unique=True)  # unique to avoid duplicates
-    gender = models.CharField(max_length=10, choices=[
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other'),
-    ], null=True, blank=True)
-    phone = models.CharField(max_length=20, null=False)
-    address = models.CharField(max_length=255, null=False)
-    city = models.CharField(max_length=100, null=False)
-    state = models.CharField(max_length=100, null=False)
-    zipcode = models.CharField(max_length=20, null=False)
-    country = models.CharField(max_length=100, null=False)
 
-    CATEGORY_CHOICES = [
-        ('A', 'Category A'),
-        ('B', 'Category B'),
-        ('C', 'Category C'),
-    ]
-    category = models.CharField(max_length=25, choices=CATEGORY_CHOICES, null=False)
-    sub_category = models.IntegerField(null=False)
+
+from django.conf import settings
+from django.db import models
+
+class Tracker(models.Model):
+    category = models.CharField(max_length=100, null=False)
+    sub_category = models.CharField(max_length=100, null=False)
+    task = models.CharField(max_length=100, null=False)
+    plan = models.CharField(max_length=255, null=False)
+
+    empname = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="emp_tasks"
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="authored_tasks"
+    )
+
+    employee = models.CharField(max_length=255, null=False)  # (optional, may be redundant)
+
+    login_date = models.DateTimeField(null=False)
+    start_time = models.TimeField(null=False)
+
+    duration = models.PositiveIntegerField()  # e.g. minutes
+    time = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.task} - {self.category} ({self.empname})"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
