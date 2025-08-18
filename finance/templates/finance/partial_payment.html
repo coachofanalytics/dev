@@ -1,41 +1,58 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
+
 {% block content %}
+<section class="payment-section">
+  <div class="payment-card">
 
-<section class="wrapper">
-  <div class="partial-payment-form">
-    <h2>Partial Membership Payment</h2>
+    <!-- Page Title -->
+    <h2 class="page-title">Partial Payment for DC48K</h2>
 
-    <!-- Step indicator -->
-    <div class="step-indicator">
-      <span class="dot active"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
+    <!-- Amount Selection -->
+    <div class="amount-selection">
+      <button class="amount-btn" data-amount="25">$25</button>
+      <button class="amount-btn" data-amount="50">$50</button>
+      <button class="amount-btn" data-amount="75">$75</button>
+      <button class="amount-btn" data-amount="100">$100</button>
     </div>
 
-    <!-- Fixed amounts only -->
-    <div class="amount-options">
-      <button class="amount-button selected" data-value="25">$25</button>
-      <button class="amount-button" data-value="50">$50</button>
-      <button class="amount-button" data-value="100">$100</button>
-    </div>
+    <!-- Payment Methods -->
+    <div class="payment-method-container">
+      <h3>Select Payment Method</h3>
+      <div class="method-buttons">
+        <!-- Card -->
+        <button class="method-btn card" data-method="stripe">
+          <i class="fas fa-credit-card"></i>
+          <span>Card</span>
+        </button>
 
-    <!-- No custom amount field -->
+        <!-- Zelle -->
+        <button class="method-btn zelle" data-method="zelle">
+          <i class="fas fa-university"></i>
+          <span>Zelle</span>
+        </button>
 
-    <!-- Payment details -->
-    <div class="payment-section">
-      <p>PAYMENT DETAILS</p>
-      <div class="payment-buttons">
-        <!-- If you add PayPal later, give it a data-url -->
-        <button type="button" class="payment-button" data-method="stripe" data-url="{% url 'finance:stripe_checkout' %}">Stripe</button>
-        <button class="payment-button" data-method="zelle"  data-url="#">Zelle</button>
+        <!-- PayPal -->
+        <button class="method-btn paypal" data-method="paypal">
+          <i class="fab fa-paypal"></i>
+          <span>PayPal</span>
+        </button>
       </div>
+    </div>
+
+    <!-- Proceed -->
+    <div class="proceed-container">
+      <button id="proceed-btn" disabled>Proceed</button>
     </div>
   </div>
 </section>
+{% endblock %}
 
-{% endblock content %}
- <!--partial_payment Page JS -->
+{% block page_css %}
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="{% static 'css/partial_payment.css' %}">
+{% endblock %}
+
 {% block page_js %}
-  <script src="{% static 'finance/js/partial_payment.js' %}" defer></script>
+<script src="{% static 'finance/js/partial_payment.js' %}"></script>
 {% endblock %}

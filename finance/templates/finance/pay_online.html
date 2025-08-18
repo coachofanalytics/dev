@@ -2,84 +2,51 @@
 {% load static %}
 {% block content %}
 <section>
-  <script id="payment-urls" type="application/json">
-  {
-    "paypal": "{% url 'finance:paypal_checkout' %}",
-    "card": "{% url 'finance:stripe_checkout' %}",
-    "zelle": "#"
-  }
-  </script>
   <div class="payment-container">
     <!-- LEFT PANEL -->
     <div class="payment-left">
-      <div class="package-card" data-amount="{{ global_executive_price }}" lead-level="{{ global_executive_title }}">
+      <!-- Global Executive -->
+      <div class="package-card" data-level="{{ global_executive_title }}">
         <h5>{{ global_executive_title }}</h5>
-        <div class="amount">{{ global_executive_price }} <span>USD</span></div>
-        <div class="summary-placeholder">
-          <div class="line"></div><div class="line"></div><div class="line"></div><div class="line short"></div>
-        </div>
+        <p class="package-desc">{{ global_executive_desc }}</p>
       </div>
 
-      <div class="package-card" data-amount="{{ regional_administration_price }}" lead-level="{{ regional_administration_title }}">
-        <h5 class="lead-level">{{ regional_administration_title }}</h5>
-        <div class="amount">{{ regional_administration_price }} <span>USD</span></div>
-        <div class="summary-placeholder">
-          <div class="line"></div><div class="line"></div><div class="line"></div><div class="line short"></div>
-        </div>
+      <!-- Regional Administration -->
+      <div class="package-card" data-level="{{ regional_administration_title }}">
+        <h5>{{ regional_administration_title }}</h5>
+        <p class="package-desc">{{ regional_administration_desc }}</p>
       </div>
 
-      <div class="package-card" data-amount="{{ county_assembly_price }}" lead-level="{{ county_assembly_title }}">
-        <h5 class="lead-level">{{ county_assembly_title }}</h5>
-        <div class="amount">{{ county_assembly_price }} <span>USD</span></div>
-        <div class="summary-placeholder">
-          <div class="line"></div><div class="line"></div><div class="line"></div><div class="line short"></div>
-        </div>
+      <!-- County Assembly -->
+      <div class="package-card" data-level="{{ county_assembly_title }}">
+        <h5>{{ county_assembly_title }}</h5>
+        <p class="package-desc">{{ county_assembly_desc }}</p>
       </div>
     </div>
 
     <!-- RIGHT PANEL -->
     <div class="payment-right">
-      <h3 style="text-align:center;font-size:20px;margin-bottom:30px;">Select Payment Method</h3>
+      <h3 style="text-align:center;font-size:20px;margin-bottom:30px;">Proceed to Payment</h3>
+      <input type="hidden" id="selectedMembership" value="" />
 
-      <div class="payment-icons">
-        <div class="icon-button selected" data-method="card" title="Card">
-          <i class="fas fa-credit-card" style="color:#4a4a4a;"></i>
-          <span>Card</span>
-        </div>
-        <div class="icon-button" data-method="zelle" title="Zelle">
-          <i class="fas fa-university" style="color:#6f2dbd;"></i>
-          <span>Zelle</span>
-        </div>
-      </div>
-
-      <input type="hidden" id="selectedAmount" name="amount" value="" />
-
-      <!-- Primary action -->
-      <a id="payNowBtn" href="#" class="pay-btn disabled" aria-disabled="true">
-        Pay Now <i class="fas fa-arrow-right"></i>
-      </a>
-
-      <!-- NEW: Partial payment action -->
-      <a id="partialPayBtn" href="#" class="pay-btn disabled" aria-disabled="true"
-         style="margin-top:12px; background:#eef3ff; color:#2b3a67;">
-        Make Partial Payment
+      <a id="continueBtn" href="#" class="pay-btn disabled" aria-disabled="true">
+        Continue <i class="fas fa-arrow-right"></i>
       </a>
     </div>
+
+    <!-- Store purpose for JS -->
+    <input type="hidden" id="paymentPurpose" value="{{ purpose }}">
+
   </div>
 </section>
 
-<!-- URLs the JS can use -->
 <script id="payment-urls" type="application/json">
-{
-  "paypal": "{% url 'finance:paypal_checkout' %}",
-  "card": "{% url 'finance:stripe_checkout' %}",
-  "partial": "{% url 'finance:partial_payment' %}",
-  "zelle": "#"
-}
+  {
+    "partial": "{% url 'finance:partial_payment' %}"
+  }
 </script>
 {% endblock %}
 
- <!--Pay_online Page JS -->
 {% block page_js %}
   <script src="{% static 'finance/js/pay_online.js' %}" defer></script>
 {% endblock %}

@@ -1,187 +1,146 @@
-/* Global box-sizing for layout consistency */
-* {
-  box-sizing: border-box;
-}
-
-/* body {
-  font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
-  margin: 0;
-  padding: 0;
-} */
-
-/* Wrapper to center form on the page */
-.wrapper {
+/* Center card */
+.payment-section {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 80vh;
-  padding: 20px;
-  background-color: #f9f9f9;
+  margin: 40px 0;
 }
 
-/* Donation form styling */
-.partial-payment-form {
+.payment-card {
   background: #fff;
-  padding: 60px 40px;
+  padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 700px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  width: 420px;
   text-align: center;
 }
 
-/* Heading */
-h2 {
-  font-size: 30px;
-  margin-bottom: 20px;
-}
-
-/* Step indicator */
-.step-indicator {
-  margin: 10px 0 20px;
-}
-
-.dot {
-  height: 10px;
-  width: 10px;
-  margin: 0 3px;
-  background-color: #ccc;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.dot.active {
-  background-color: #00c28b;
-}
-
-/* Donation amounts */
-.amount-options {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 60px;
-  /* margin: 20px 0; */
-}
-
-.amount-button {
-  flex: 1 1 30%;
-  min-width: 100px;
-  padding: 14px 0;
-  background: #fff;
-  border: 2px solid #00c28b;
-  color: #00c28b;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 16px;
-}
-
-.amount-button.selected,
-.amount-button:hover {
-  background: #00c28b;
-  color: #fff;
-}
-
-/* Custom amount input */
-.custom-amount {
-  position: relative;
-  /* margin: 20px 0; */
-  margin-bottom: 60px;
-}
-
-.custom-amount input {
-  width: 100%;
-  padding: 14px 50px 14px 30px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 18px;
-}
-
-.currency-symbol,
-.currency-code {
-  position: absolute;
-  top: 14px;
-  font-size: 16px;
-  color: #999;
-}
-
-.currency-symbol {
-  left: 10px;
-}
-
-.currency-code {
-  right: 10px;
-}
-
-/* Recurring donation */
-.recurring-option {
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  margin: 20px 0;
-  font-size: 14px;
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 25px;
   color: #333;
 }
 
-.recurring-option input[type="checkbox"] {
-  accent-color: #00c28b;
-  margin-right: 8px;
-}
-
-/* Payment section */
-.payment-section {
-  margin-top: 30px;
-  text-align: left;
-}
-
-.payment-section p {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 10px;
-  font-weight: bold;
-}
-
-.payment-buttons {
+/* Amount buttons */
+.amount-selection {
   display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
   flex-wrap: wrap;
-  gap: 10px;
 }
 
-.payment-button {
-  flex: 1 1 48%;
-  padding: 14px 0;
-  border: 2px solid #00c28b;
+.amount-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #00c48c;
   border-radius: 8px;
   background: #fff;
-  color: #00c28b;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
+  color: #00c48c;
   font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
 
-.payment-button.selected,
-.payment-button:hover {
-  background: #00c28b;
+.amount-btn:hover,
+.amount-btn.selected {
+  background: #00c48c;
   color: #fff;
 }
 
-/* Responsive styles */
-@media (max-width: 768px) {
-  .donation-form {
-    padding: 40px 20px;
-  }
+/* Payment methods */
+.payment-method-container h3 {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  margin: 20px 0 15px;
+  color: #555;
+}
 
-  .amount-options,
-  .payment-buttons {
-    flex-direction: column;
-  }
+.method-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
 
-  .amount-button,
-  .payment-button {
-    width: 100%;
-  }
+.method-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 90px;
+  height: 90px; /* same as width */
+  aspect-ratio: 1 / 1;  /* force perfect circle */
+  
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  background: #f9f9f9;
+  color: #444;
+
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.method-btn i {
+  font-size: 26px;
+  margin-bottom: 4px; /* smaller gap */
+  line-height: 1;     /* prevents extra spacing */
+}
+
+.method-btn span {
+  font-size: 13px;
+}
+
+
+/* Card */
+.method-btn.card.selected {
+  border-color: #00bfff;   /* light blue */
+  box-shadow: 0 0 6px #00bfff80;
+  color: #00bfff;
+}
+
+/* Zelle */
+.method-btn.zelle.selected {
+  border-color: #6d1ed4;   /* purple */
+  box-shadow: 0 0 6px #6d1ed480;
+  color: #6d1ed4;
+}
+
+/* PayPal */
+.method-btn.paypal.selected {
+  border-color: #003087;   /* PayPal blue */
+  box-shadow: 0 0 6px #00308780;
+  color: #003087;
+}
+
+/* Proceed button */
+.proceed-container {
+  margin-top: 25px;
+}
+
+#proceed-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #00bfff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#proceed-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+#proceed-btn:hover:enabled {
+  background: #009f72;
 }

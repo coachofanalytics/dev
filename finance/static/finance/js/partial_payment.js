@@ -1,41 +1,46 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const root = document.querySelector('.partial-payment-form'); // or unique container
-  if (!root) return;
-  
-  const presetButtons = document.querySelectorAll('.amount-button');
-  const paymentButtons = document.querySelectorAll('.payment-button');
+document.addEventListener("DOMContentLoaded", function () {
+  const amountButtons = document.querySelectorAll(".amount-btn");
+  const methodButtons = document.querySelectorAll(".method-btn");
+  const proceedBtn = document.getElementById("proceed-btn");
 
-  let selectedAmount = '25';
-  const incoming = new URLSearchParams(window.location.search);
-  if (!incoming.has('purpose')) incoming.set('purpose', 'donation');
+  let selectedAmount = null;
+  let selectedMethod = null;
 
-  presetButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      presetButtons.forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedAmount = btn.getAttribute('data-value');
+  // Select amount
+  amountButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      amountButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedAmount = btn.dataset.amount;
+      toggleProceed();
     });
   });
 
-  paymentButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();              // <-- important
-      e.stopPropagation();
-
-      const baseUrl = btn.dataset.url; // e.g., /finance/stripe/checkout/
-      if (!baseUrl) return;
-
-      const dest = new URL(baseUrl, window.location.origin);
-      const params = new URLSearchParams(incoming.toString());
-
-      params.set('partial_amount', selectedAmount);
-      params.set('partial_purpose', 'Partial Payment');
-
-      const method = btn.dataset.method || '';
-      if (method) params.set('method', method);
-
-      dest.search = params.toString();
-      window.location.href = dest.toString();
+  // Select payment method
+  methodButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      methodButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedMethod = btn.dataset.method;
+      toggleProceed();
     });
+  });
+
+  // Enable/disable proceed
+  function toggleProceed() {
+    proceedBtn.disabled = !(selectedAmount && selectedMethod);
+  }
+
+  // Handle proceed
+  proceedBtn.addEventListener("click", () => {
+    if (!selectedAmount || !selectedMethod) return;
+
+    if (selectedMethod === "stripe") {
+      window.location.href = `/finance/stripe/checkout/?amount=${selectedAmount}`;
+    } else if (selectedMethod === "zelle") {
+      window.location.href = `/finance/zelle/instructions/?amount=${selectedAmount}`;
+    } else if (selectedMethod === "paypal") {
+      window.location.href = `/finance/paypal/checkout/?amount=${selectedAmount}`;
+    }
   });
 });
