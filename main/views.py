@@ -1,24 +1,24 @@
 from django.shortcuts import redirect, render
-from datetime import datetime,date,timedelta
-from dateutil.relativedelta import relativedelta
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
-from .utils import image_view,path_values, generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm ,GovernanceForm
+from .utils import generate_chatbot_response
+from main.forms import ContactForm, GetHelpForm, GovernanceForm
 from django.contrib.auth import get_user_model
-from django.contrib.sites.models import Site
 
 from mail.custom_email import send_email
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from coda_project import settings
+
+#new code cece's assignment
+from .models import History
+
 
 User=get_user_model()
 
@@ -101,7 +101,7 @@ def layout(request):
    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -168,7 +168,7 @@ def layout(request):
 #         }
 #     return render(request, "main/home_templates/home.html",context)
 
-def History(request):
+def history(request):
     page_instance = Page.objects.get(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
@@ -222,7 +222,6 @@ def team_list(request):
 
     
 
-from django.shortcuts import render
 from .models import Service,Gallery,ContactUs
 
 def service_list(request):
@@ -401,26 +400,35 @@ def gethelp_delete(request, pk):
     return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
 
 
-    def __str__(self):
-        return self.structure_category
-
-# def governance_list(request,leadership=None):
-#     # govern = Governance.objects.all()
-#     govern = Governance.objects.filter(governance_category__icontains=leadership) if leadership else govern
-#     print("Governance List:", govern)
-#     context = {
-#         'govern': govern
-#     }
-
-#     return render(request, 'main/governance_list.html',context)
 
 def governance_list(request):
-    govern = Governance.objects.all()
-    context = {
-        'govern': govern
-    }
+    category = request.GET.get('category', 'Global Executive Committee')
 
-    return render(request, 'main/governance_list.html',context)
+    # Always get the Governor regardless of selected category
+    governor = Governance.objects.filter(title__iexact="Governor").first()
+    # deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
+
+    # Get all members for the selected category except the Governor
+    govern = Governance.objects.filter(governance_category=category).exclude(title__iexact="Governor")
+
+    govern_order = sorted(govern, key=lambda member:member.ui_order)
+
+    categories = [
+        'Global Executive Committee',
+        'Regional Administration',
+        'County Assembly Administration'
+    ]
+
+
+    return render(request, 'main/governance_list.html', {
+        # 'govern': govern,
+        "govern_order": govern_order,
+        'governor': governor,
+        # 'deputy_governor': deputy_governor,
+        'selected_category': category,
+        'categories': categories
+    })
+
     
 
 
@@ -439,6 +447,38 @@ def governance_update(request, pk):
         form = GovernanceForm(instance=govern)
 
     return render(request, 'main/governance_update.html',{'form':form})
+
+def governance_create(request):
+    print("Entered governance_create view")
+
+    if request.method == 'POST':
+        print("Request method is POST")
+        form = GovernanceForm(request.POST)
+        print("Form data received:")
+        for field_name, field_value in request.POST.items():
+            print(f"{field_name}: {field_value}")
+
+        if form.is_valid():
+            #impliment API call to populate description field automantically
+            # API_description = generate_chatbot_response()
+            # form.description = API_description
+            form.save()
+            return redirect('main:governance_list')
+
+            except Exception as e:
+                print(f"Error while processing form submission: {e}")
+        else:
+            print("Form is invalid")
+            print(f"Form errors: {form.errors}")
+
+    else:
+        print("Request method is not POST, initializing empty form")
+        form = GovernanceForm()
+
+    # Optional: for debugging GET requests or invalid POSTs
+    return render(request, 'main/governance_create.html',{'form':form})
+
+
 
 def governance_create(request):
     print("Entered governance_create view")
@@ -525,4 +565,14 @@ def governance_delete(request, pk):
     return render(request, 'main/governance_confirm_delete.html', {'govern':govern})
 
 
+def organization_list_view(request):
+    organizations = DonationOrganization.objects.all()
+    return render(request, 'main/snippets_templates/table/donation_list.html', {'organizations':organizations})
 
+
+def ourhistory(request):
+    history_years = History.objects.all()
+    context = {
+        "history_years": history_years
+    }
+    return render(request, "main/ourhistory.html", context)

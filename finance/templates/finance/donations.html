@@ -1,0 +1,42 @@
+{% extends "main/base_templates/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+
+<section class="wrapper">
+    <div class="donation-form">
+        <h2>Donate To DC48K</h2>
+
+        <!-- Step indicator -->
+        <div class="step-indicator">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+
+        <!-- Predefined amounts -->
+        <div class="amount-options">
+            <button class="amount-button selected">$25</button>
+            <button class="amount-button">$50</button>
+            <button class="amount-button">$100</button>
+        </div>
+
+        <!-- Custom donation amount -->
+        <div class="custom-amount">
+            <span class="currency-symbol">$</span>
+            <input type="text" id="custom_input" placeholder="Donation Amount">
+            <span class="currency-code">USD</span>
+        </div>
+
+        <!-- Payment details -->
+        <div class="payment-section">
+            <p>PAYMENT DETAILS</p>
+            <div class="payment-buttons">
+                <button class="payment-button selected" data-method="paypal" data-url="{% url 'finance:paypal_checkout' %}">Paypal</button>
+                <button class="payment-button" data-method="stripe" data-url="{% url 'finance:stripe_checkout' %}">Stripe</button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+

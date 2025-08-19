@@ -1,0 +1,58 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="payment-section">
+  <div class="payment-card">
+
+    <!-- Page Title -->
+    <h2 class="page-title">Partial Payment for DC48K</h2>
+
+    <!-- Amount Selection -->
+    <div class="amount-selection">
+      <button class="amount-btn" data-amount="25">$25</button>
+      <button class="amount-btn" data-amount="50">$50</button>
+      <button class="amount-btn" data-amount="75">$75</button>
+      <button class="amount-btn" data-amount="100">$100</button>
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="payment-method-container">
+      <h3>Select Payment Method</h3>
+      <div class="method-buttons">
+        <!-- Card -->
+        <button class="method-btn card" data-method="stripe">
+          <i class="fas fa-credit-card"></i>
+          <span>Card</span>
+        </button>
+
+        <!-- Zelle -->
+        <button class="method-btn zelle" data-method="zelle">
+          <i class="fas fa-university"></i>
+          <span>Zelle</span>
+        </button>
+
+        <!-- PayPal -->
+        <button class="method-btn paypal" data-method="paypal">
+          <i class="fab fa-paypal"></i>
+          <span>PayPal</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Proceed -->
+    <div class="proceed-container">
+      <button id="proceed-btn" disabled>Proceed</button>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block page_css %}
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="{% static 'css/partial_payment.css' %}">
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'finance/js/partial_payment.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+<section>
+  <div class="payment-container">
+    <!-- LEFT PANEL -->
+    <div class="payment-left">
+      <!-- Global Executive -->
+      <div class="package-card" data-level="{{ global_executive_title }}">
+        <h5>{{ global_executive_title }}</h5>
+        <p class="package-desc">{{ global_executive_desc }}</p>
+      </div>
+
+      <!-- Regional Administration -->
+      <div class="package-card" data-level="{{ regional_administration_title }}">
+        <h5>{{ regional_administration_title }}</h5>
+        <p class="package-desc">{{ regional_administration_desc }}</p>
+      </div>
+
+      <!-- County Assembly -->
+      <div class="package-card" data-level="{{ county_assembly_title }}">
+        <h5>{{ county_assembly_title }}</h5>
+        <p class="package-desc">{{ county_assembly_desc }}</p>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="payment-right">
+      <h3 style="text-align:center;font-size:20px;margin-bottom:30px;">Proceed to Payment</h3>
+      <input type="hidden" id="selectedMembership" value="" />
+
+      <a id="continueBtn" href="#" class="pay-btn disabled" aria-disabled="true">
+        Continue <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <!-- Store purpose for JS -->
+    <input type="hidden" id="paymentPurpose" value="{{ purpose }}">
+
+  </div>
+</section>
+
+<script id="payment-urls" type="application/json">
+  {
+    "partial": "{% url 'finance:partial_payment' %}"
+  }
+</script>
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static 'finance/js/pay_online.js' %}" defer></script>
+{% endblock %}

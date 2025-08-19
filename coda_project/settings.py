@@ -19,10 +19,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 #DEBUG Configurations
-DEBUG = True
-# DEBUG_VAL = int(os.environ.get('DEBUG'))
-# if DEBUG_VAL == 0:
-#     DEBUG = False
+if os.environ.get('ENVIRONMENT') == 'production':
+    DEBUG = False
+else:
+    DEBUG = True
+
 
 SECURE_SSL_REDIRECT = False
 
@@ -43,7 +44,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "finance.apps.FinanceConfig",
     "crispy_forms",
-    "crispy_bootstrap4",
+    'crispy_bootstrap4',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -79,6 +80,7 @@ CRONJOBS = [
 ]
 
 MIDDLEWARE = [
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -86,7 +88,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
 
@@ -141,13 +142,17 @@ def dba_values():
         # user = os.environ.get('STG_DB_USER')
         # password = os.environ.get('STG_DB_PASSWORD')
 
-        #Test locally 
-        host = os.environ.get('LOCAL_DB_HOST')
-        dbname = os.environ.get('LOCAL_DB_NAME') 
-        user = os.environ.get('LOCAL_DB_USER')
-        password = os.environ.get('LOCAL_DB_PASSWORD') 
+        # Test locally 
+        # host = os.environ.get('LOCAL_DB_HOST')
+        # # dbname = "DC48K" #os.environ.get('LOCAL_DB_NAME') 
+        # dbname = os.environ.get('LOCAL_DB_NAME') 
+        # user = os.environ.get('LOCAL_DB_USER')
+        # password = os.environ.get('LOCAL_DB_PASSWORD') 
 
 
+
+
+        
 
     return host,dbname,user,password  
 
@@ -221,7 +226,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-MEDIA_URL = "/media/"
+# MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 STATIC_ROOT = os.path.join(BASE_DIR,  "staticfiles")
@@ -329,8 +334,27 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-# Paypal
-PAYPAL_MODE = os.environ.get('PAYPAL_MODE')
-PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
-PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
+
+# Azure configuration --> To host images used especially for the governance structure
+
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
+AZURE_ACCOUNT_NAME = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
+AZURE_ACCOUNT_KEY = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
+AZURE_CONTAINER = 'web-dev-media'
+AZURE_URL_EXPIRATION_SECS = None
+
+
+# Optional: Configure the URL
+MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+
+SECURE_SSL_REDIRECT = False
+
+STRIPE_TEST_SECRET_KEY = os.environ.get('STRIPE_TEST_SECRET_KEY')
+
+STRIPE_TEST_WEBHOOK_SECRET = os.environ.get('STRIPE_TEST_WEBHOOK_SECRET')
+
+STRIPE_LIVE_SECRET_KEY = os.environ.get('STRIPE_LIVE_SECRET_KEY')
+
+STRIPE_LIVE_WEBHOOK_SECRET = os.environ.get('STRIPE_LIVE_WEBHOOK_SECRET')
 

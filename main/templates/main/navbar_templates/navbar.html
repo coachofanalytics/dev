@@ -105,7 +105,7 @@
           <div class="sub-dropdown">
             <a href="#">Structure</a>
             <div class="sub-dropdown-content">
-              <a href="#">Our Governance</a>
+              <a href="{% url 'main:layout' %}">Our Governance</a>
               <a href="#">Global Administration</a>
               <a href="#">Ward Administration</a>
             </div>
@@ -180,15 +180,16 @@
           </div>
         </div>
       </li>
-
-      <li><a href="{% url 'accounts:joins' %}" class="navLin">MEMBERSHIP</a></li>
-
+      <li><a href="{% url 'main:governance_list' %}" class="navLin">GOVERNANCE</a></li>
+      {% if user.is_authenticated %}
+      <li><a href="{% url 'finance:pay_online' %}" class="navLin">MEMBERSHIP</a></li>
+      {% endif %}
       <li><a href="https://diaspora.go.ke/news" target="_blank" class="navLin">NEWS</a></li>
       <li><a href="#" class="navLin">CONTACT US</a></li>
       <li class="dropdown">
         <a href="#" class="navLin">SUPPORT</a>
         <div class="dropdown-content">
-          <a href="#">Donate</a>
+          <a href="{% url 'finance:donation' %}">Donate</a>
           <a href="#">Become Volunteer</a>
           <a href="https://diaspora.go.ke/diplomaticmissions" target="_blank" >Get Help</a>
         </div>

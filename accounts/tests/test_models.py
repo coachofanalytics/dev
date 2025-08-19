@@ -7,8 +7,6 @@ from accounts.models import (
     TaskGroups,
     Tracker,
 )
-from django.urls import reverse
-import datetime
 
 from django.contrib.auth import get_user_model
 

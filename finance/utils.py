@@ -1,4 +1,3 @@
-import os
 import calendar
 import requests
 from datetime import datetime
@@ -44,7 +43,7 @@ def get_exchange_rate(base, target):
     Fetch exchange rate between base and target currency.
     Fallback to a hardcoded value if the API fails.
     """
-    exchange_api_key = os.environ.get("EXCHANGE_API_KEY")
+    exchange_api_key =  os.environ.get('OPEN_EXCHANGE_API_KEY')
     url = f"https://openexchangerates.org/api/latest.json?app_id={exchange_api_key}&base={base}"
     try:
         response = requests.get(url, timeout=10)

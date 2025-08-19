@@ -400,22 +400,49 @@ class CodaBudget(TimeStampedModel):
 
 
 class Payment(models.Model):
-    PAYMENT_TYPE_CHOICES = [
-        ("dues", "Membership Dues"),
-        ("donation", "Donation"),
-    ]
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    user_id = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    payment_purpose = models.CharField(max_length=50, null=True, blank=True)  # e.g. "Membership"
+    amount = models.DecimalField(max_digits=10, decimal_places=2)             # amount of THIS transaction
+    original_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # selected full amount from pay_online
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))        # remaining after this txn
+    is_partial = models.BooleanField(default=False)
+
+    payment_method = models.CharField(max_length=30,  null=True, blank=True)
     transaction_id = models.CharField(max_length=100, unique=True)
-    status = models.CharField(
-        max_length=30, default="Pending"
-    )  # Pending, Completed, Failed
-    receipt_url = models.URLField(
-        max_length=500, blank=True, null=True
-    )  # link to Stripe/PayPal receipt
+    status = models.CharField(max_length=30, default="Pending")
+    receipt_url = models.URLField(max_length=500, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.payment_type} - {self.amount} ({self.status})"
+        kind = "Partial" if self.is_partial else "Full"
+        return f"{kind} {self.payment_purpose} - {self.amount} ({self.status})"
+
+
+class Pricing(models.Model):
+    class Contract(models.IntegerChoices):
+        One_month = 1
+        Two_months = 2
+        Three_months = 3
+        open = 12
+
+    serial = models.PositiveIntegerField(null=True, blank=True)
+    title = models.CharField(max_length=254)
+    description = models.TextField(null=True, blank=True)
+    # category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE,default=1)
+    # subcategory = models.CharField(default='Full Course', max_length=200, null=True, blank=True)
+    price = models.FloatField()
+    discounted_price = models.FloatField(null=True, blank=True)
+    duration = models.PositiveIntegerField(null=True, blank=True)
+    contract_length = models.IntegerField(choices=Contract.choices, default=3)
+    is_direct = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    redirect_url_path = models.CharField(max_length=1024, null=True)
+
+    class Meta:
+        verbose_name_plural = "Pricing"
+
+    def __str__(self):
+        return self.title

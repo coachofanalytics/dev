@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "amount": "2000",
     "currency": "KES",
     "first_name": "Phinehas",
@@ -6,4 +7,13 @@
     "email": "kiyophinehas@gmail.com",
     "exchange_rate": "139.00",
     "converted_amount_USD": "14.38848920863309352517985612"
+=======
+    "amount": "43",
+    "currency": "EUR",
+    "first_name": "Amethyst",
+    "last_name": "Dennis",
+    "email": "datytir@mailinator.com",
+    "exchange_rate": "139.00",
+    "converted_amount_USD": "0.3093525179856115107913669065"
+>>>>>>> 290de64b2f965076cae6c4d9271cdfbb666db7df
 }
