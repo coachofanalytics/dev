@@ -449,15 +449,8 @@ def governance_update(request, pk):
     return render(request, 'main/governance_update.html',{'form':form})
 
 def governance_create(request):
-    print("Entered governance_create view")
-
     if request.method == 'POST':
-        print("Request method is POST")
         form = GovernanceForm(request.POST)
-        print("Form data received:")
-        for field_name, field_value in request.POST.items():
-            print(f"{field_name}: {field_value}")
-
         if form.is_valid():
             #impliment API call to populate description field automantically
             # API_description = generate_chatbot_response()
@@ -465,17 +458,9 @@ def governance_create(request):
             form.save()
             return redirect('main:governance_list')
 
-            except Exception as e:
-                print(f"Error while processing form submission: {e}")
-        else:
-            print("Form is invalid")
-            print(f"Form errors: {form.errors}")
-
     else:
-        print("Request method is not POST, initializing empty form")
-        form = GovernanceForm()
+        form = GovernanceForm() 
 
-    # Optional: for debugging GET requests or invalid POSTs
     return render(request, 'main/governance_create.html',{'form':form})
 
 
