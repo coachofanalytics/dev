@@ -15,6 +15,16 @@ document.addEventListener("DOMContentLoaded", function () {
   // Select amount
   amountButtons.forEach(btn => {
     btn.addEventListener("click", () => {
+      // Check if balance is already cleared
+      if (balance <= 0) {
+        alert("You have already cleared your balance. No further payments are required.");
+        selectedAmount = null;
+        amountButtons.forEach(b => b.classList.remove("selected"));
+        toggleProceed();
+        return; // stop further logic
+      }
+
+      // Reset and mark selected
       amountButtons.forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       selectedAmount = parseFloat(btn.dataset.amount);
