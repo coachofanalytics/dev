@@ -80,7 +80,7 @@ urlpatterns = [
         name="budget_projection",
     ),
     path("make_payment/", views.payment_processing, name="online_payment"),
-    path("paypal/checkout/", views.paypal_checkout, name="paypal_checkout"),
+    # path("paypal/checkout/", views.paypal_checkout, name="paypal_checkout"),
     path("paypal/return/", views.paypal_return, name="paypal_return"),
     path("donation/", views.donation, name="donation"),
     path("pay_online/", views.pay_online, name="pay_online"),

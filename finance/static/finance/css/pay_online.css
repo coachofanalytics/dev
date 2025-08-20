@@ -47,8 +47,17 @@ section {
 }
 
 .package-card h5 {
+  font-size: 25px;
+  margin-bottom: 10px;
+  text-align: center;
+  color: red;
+}
+
+.package-card p {
   font-size: 20px;
   margin-bottom: 10px;
+  text-align: center;
+  color: black;
 }
 
 .package-card .amount {
