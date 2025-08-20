@@ -137,17 +137,17 @@ def dba_values():
 
     else:
         # Test in staging database before staging deployment
-        host = os.environ.get('STG_DB_HOST')
-        dbname = os.environ.get('STG_DB_NAME') 
-        user = os.environ.get('STG_DB_USER')
-        password = os.environ.get('STG_DB_PASSWORD')
+        # host = os.environ.get('STG_DB_HOST')
+        # dbname = os.environ.get('STG_DB_NAME') 
+        # user = os.environ.get('STG_DB_USER')
+        # password = os.environ.get('STG_DB_PASSWORD')
 
         # Test locally 
-        # host = os.environ.get('LOCAL_DB_HOST')
-        # # dbname = "DC48K" #os.environ.get('LOCAL_DB_NAME') 
-        # dbname = os.environ.get('LOCAL_DB_NAME') 
-        # user = os.environ.get('LOCAL_DB_USER')
-        # password = os.environ.get('LOCAL_DB_PASSWORD') 
+        host = os.environ.get('LOCAL_DB_HOST')
+        # dbname = "DC48K" #os.environ.get('LOCAL_DB_NAME') 
+        dbname = os.environ.get('LOCAL_DB_NAME') 
+        user = os.environ.get('LOCAL_DB_USER')
+        password = os.environ.get('LOCAL_DB_PASSWORD') 
 
 
 

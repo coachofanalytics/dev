@@ -16,11 +16,12 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
-from decimal import Decimal
+from decimal import Decimal,  ROUND_HALF_UP
 
 from django.views.decorators.csrf import csrf_exempt
 from mail.custom_email import send_email
 from datetime import datetime
+from django.utils.timezone import now as tz_now
 
 
 from accounts.forms import UserForm
@@ -698,57 +699,104 @@ def paypal_return(request):
 stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
 # Stripe Checkout View
+# @csrf_exempt
+# def stripe_checkout(request):
+#     if request.method == 'GET':
+#         try:
+#             # From pay_online (always present)
+#             full_amount_str = request.GET.get("amount", "0")        # dollars as string
+#             original_purpose = request.GET.get("purpose", "")
+
+#             # From partial-payment page (optional)
+#             partial_amount_str = request.GET.get("partial_amount")  # dollars as string or None
+#             partial_purpose = request.GET.get("partial_purpose")    # "partial_payment" or None
+
+#             purpose = f"{original_purpose}-{partial_purpose}" if partial_purpose else  original_purpose
+
+#             # Which amount to actually charge now?
+#             charge_amount = Decimal(partial_amount_str) if partial_amount_str else Decimal(full_amount_str)
+#             unit_amount_cents = int(charge_amount * 100)
+
+#             # Build metadata sent to Stripe → received in webhook
+#             metadata = {
+#                 "purpose": purpose,                        # original purpose
+#                 "original_amount": full_amount_str,        # full amount selected at pay_online
+#                 "is_partial": "true" if partial_amount_str else "false",
+#                 "partial_amount": partial_amount_str or "",
+#                 "partial_purpose": partial_purpose or "",
+#             }
+#             if request.user.is_authenticated:
+#                 metadata["user_id"] = str(request.user.pk)
+#                 metadata["user_email"] = request.user.email
+
+#             checkout_session = stripe.checkout.Session.create(
+#                 payment_method_types=['card'],
+#                 line_items=[{
+#                     'price_data': {
+#                         'currency': 'usd',
+#                         'unit_amount': unit_amount_cents,
+#                         'product_data': {'name': f'DC48K {purpose}'},
+#                     },
+#                     'quantity': 1,
+#                 }],
+#                 mode='payment',
+#                 customer_email=request.user.email if request.user.is_authenticated else None,
+#                 client_reference_id=str(request.user.pk) if request.user.is_authenticated else None,
+#                 success_url=request.build_absolute_uri(reverse('finance:stripe_success')),
+#                 cancel_url=request.build_absolute_uri(reverse('finance:stripe_cancel')),
+#                 metadata=metadata,
+#             )
+#             return redirect(checkout_session.url)
+#         except Exception as e:
+#             return render(request, "finance/payment_failed.html", {"error": str(e)})
+        
+
+
+
 @csrf_exempt
 def stripe_checkout(request):
-    if request.method == 'GET':
-        try:
-            # From pay_online (always present)
-            full_amount_str = request.GET.get("amount", "0")        # dollars as string
-            original_purpose = request.GET.get("purpose", "")
+    if request.method != "GET":
+        return HttpResponse(status=405)
 
-            # From partial-payment page (optional)
-            partial_amount_str = request.GET.get("partial_amount")  # dollars as string or None
-            partial_purpose = request.GET.get("partial_purpose")    # "partial_payment" or None
+    amount_str       = request.GET.get("amount", "0")
+    purpose          = (request.GET.get("purpose") or "").strip()
+    original_amount  = (request.GET.get("total_amount") or "").strip()  # optional cap for purpose
+    source           = (request.GET.get("source") or "partial_payment").strip()
 
-            purpose = f"{original_purpose}-{partial_purpose}" if partial_purpose else  original_purpose
+    try:
+        amount = Decimal(amount_str)
+    except Exception:
+        amount = Decimal("0")
 
-            # Which amount to actually charge now?
-            charge_amount = Decimal(partial_amount_str) if partial_amount_str else Decimal(full_amount_str)
-            unit_amount_cents = int(charge_amount * 100)
+    if amount <= 0:
+        return render(request, "finance/payment_failed.html", {"error": "Invalid amount"})
 
-            # Build metadata sent to Stripe → received in webhook
-            metadata = {
-                "purpose": purpose,                        # original purpose
-                "original_amount": full_amount_str,        # full amount selected at pay_online
-                "is_partial": "true" if partial_amount_str else "false",
-                "partial_amount": partial_amount_str or "",
-                "partial_purpose": partial_purpose or "",
-            }
-            if request.user.is_authenticated:
-                metadata["user_id"] = str(request.user.pk)
-                metadata["user_email"] = request.user.email
+    try:
+        session = stripe.checkout.Session.create(
+            mode="payment",
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "unit_amount": int(amount * 100),
+                    "product_data": {"name": f"DC48K {purpose or 'Payment'}"},
+                },
+                "quantity": 1,
+            }],
+            success_url=request.build_absolute_uri(reverse("finance:stripe_success")),
+            cancel_url=request.build_absolute_uri(reverse("finance:stripe_cancel")),
+            customer_email=request.user.email if request.user.is_authenticated else None,
+            metadata={
+                "purpose": purpose,
+                "original_amount": original_amount,  # the cap for this purpose (0/blank for uncapped e.g. donation)
+                "source": source,
+            },
+        )
+        return redirect(session.url)
+    except Exception as e:
+        return render(request, "finance/payment_failed.html", {"error": str(e)})
+    
 
-            checkout_session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[{
-                    'price_data': {
-                        'currency': 'usd',
-                        'unit_amount': unit_amount_cents,
-                        'product_data': {'name': f'DC48K {purpose}'},
-                    },
-                    'quantity': 1,
-                }],
-                mode='payment',
-                customer_email=request.user.email if request.user.is_authenticated else None,
-                client_reference_id=str(request.user.pk) if request.user.is_authenticated else None,
-                success_url=request.build_absolute_uri(reverse('finance:stripe_success')),
-                cancel_url=request.build_absolute_uri(reverse('finance:stripe_cancel')),
-                metadata=metadata,
-            )
-            return redirect(checkout_session.url)
-        except Exception as e:
-            return render(request, "finance/payment_failed.html", {"error": str(e)})
-        
 
 def stripe_payment_success(request):
     return render(request, "finance/payment_success.html")
@@ -756,6 +804,7 @@ def stripe_payment_success(request):
 
 def stripe_payment_cancel(request):
     return render(request, "finance/payment_failed.html")
+
 
 
 
@@ -848,44 +897,208 @@ endpoint_secret = settings.STRIPE_TEST_WEBHOOK_SECRET
 #     return HttpResponse(status=200)
 
 
-@csrf_exempt
+# @csrf_exempt
+# def stripe_webhook(request):
+#     payload = request.body
+#     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+
+#     try:
+#         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+#     except Exception:
+#         return HttpResponse(status=400)
+
+#     if event['type'] == 'checkout.session.completed':
+#         session = event['data']['object']
+
+#         # ---------- Get session + metadata ----------
+#         email = (session.get("customer_details") or {}).get("email")
+#         amount_paid = Decimal(session.get("amount_total", 0)) / 100   # dollars
+#         payment_intent_id = session.get("payment_intent")
+#         payment_status = session.get("payment_status", "")
+
+#         md = session.get("metadata") or {}
+#         purpose = md.get("purpose", "")
+#         is_partial = (md.get("is_partial") == "true")
+#         original_amount = Decimal(md.get("original_amount") or "0")   # full selected amount
+#         partial_amount = Decimal(md.get("partial_amount") or "0")
+
+#         # Expand payment method details
+#         payment_intent = stripe.PaymentIntent.retrieve(session["payment_intent"], expand=["payment_method"])
+#         card_brand = payment_intent["payment_method"]["card"]["brand"].title()
+#         card_last4 = payment_intent["payment_method"]["card"]["last4"]
+
+#         # ---------- Find or create user ----------
+#         user = CustomerUser.objects.filter(email=email).first()
+#         if not user:
+#             # Create minimal user; guard against missing name/address
+#             name = ((session.get("customer_details") or {}).get("name") or "").strip()
+#             first, last = (name.split(" ", 1) + [""])[:2]
+#             username = (f"{first}_{last}" or "user").lower()
+#             # ensure unique username if needed...
+#             user = CustomerUser.objects.create(
+#                 email=email,
+#                 first_name=first,
+#                 last_name=last,
+#                 username=username,
+#                 is_active=True,
+#             )
+
+#         # ---------- Compute running balance for partial payments ----------
+#         balance_after = Decimal("0.00")
+#         if is_partial and original_amount > 0:
+#             latest_payment = Payment.objects.filter(user_id=user).order_by("-created_at").first()
+#             if not latest_payment:
+#                 balance_after = original_amount - amount_paid
+
+#             prev_paid = (
+#                 Payment.objects.filter(user_id=user, payment_purpose=purpose)
+#                 .aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+#             )
+#             new_total_paid = prev_paid + amount_paid
+#             balance_after = original_amount - new_total_paid
+#             # balance_after = max(original_amount - new_total_paid, Decimal("0.00"))
+
+#         # ---------- (Optional) receipt_url from PaymentIntent → Charge ----------
+
+#         receipt_url = None
+#         try:
+#             pi = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["charges"])
+#             charges = pi.get("charges", {}).get("data", [])
+#             if charges:
+#                 receipt_url = charges[0].get("receipt_url")
+#         except Exception:
+#             pass
+
+#         # ---------- Save Payment row ----------
+#         Payment.objects.get_or_create(
+#             transaction_id=payment_intent_id,
+#             defaults={
+#                 "user_id": user,
+#                 "payment_purpose": purpose,
+#                 "amount": amount_paid,
+#                 "original_amount": 0 if purpose == "donation" else original_amount,
+#                 "balance": balance_after,
+#                 "transaction_id": payment_intent_id,
+#                 "is_partial": is_partial,
+#                 "payment_method": "stripe",
+#                 "status": "paid" if payment_status == "paid" else payment_status,
+#                 "receipt_url": receipt_url,
+#             },
+#         )
+
+#         # Email payment receipt to user.
+#         url = "email/payment_receipt.html"
+#         subject = "Receipt from DC48K"
+#         category = "dc48k_payments"
+#         payment = Payment.objects.filter(user_id__email=email).order_by("-created_at").first()
+#         context = {
+#             "amount_paid": amount_paid,
+#             "purpose": purpose,
+#             "receipt_number": payment.pk,
+#             "payment_method": f"{card_brand}-{card_last4}",
+#             "email": email,
+#             "date_paid": datetime.now().strftime("%B %d, %Y"),
+#             "subject": subject,
+#         }
+#         send_email(
+#             category=category,
+#             to_email=[email],
+#             subject=subject,
+#             html_template=url,
+#             context=context,
+#         )
+#         print(f"Payment receipt sent to {email}")
+
+#     return HttpResponse(status=200)
+
+
+
+
+
+
+
+# finance/views.py
+# from decimal import Decimal, ROUND_HALF_UP
+# from datetime import datetime
+# from django.http import HttpResponse
+# from django.db.models import Sum
+# from django.conf import settings
+# from django.utils.timezone import now as tz_now
+# import stripe
+
+# from .models import Payment
+# from accounts.models import CustomerUser  # adjust as needed
+# from core.mailer import send_email        # adjust as needed
+
+# endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+def _to_2dp(value: Decimal) -> Decimal:
+    return (value or Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def _resolve_cap_for_purpose(user, purpose, md_cap: Decimal) -> Decimal:
+    """
+    Return the cap (original_amount) for this user+purpose.
+    Priority: metadata cap if > 0; else last nonzero cap saved for that user+purpose; else 0.
+    """
+    if md_cap and md_cap > 0:
+        return _to_2dp(md_cap)
+    last_cap = (
+        Payment.objects.filter(user_id=user, payment_purpose__icontains=purpose)
+        .exclude(original_amount=0)
+        .order_by("-created_at")
+        .values_list("original_amount", flat=True)
+        .first()
+    )
+    return _to_2dp(last_cap or Decimal("0"))
+
 def stripe_webhook(request):
     payload = request.body
-    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except Exception:
         return HttpResponse(status=400)
 
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
 
-        # ---------- Get session + metadata ----------
-        email = (session.get("customer_details") or {}).get("email")
-        amount_paid = Decimal(session.get("amount_total", 0)) / 100   # dollars
+        # ---- Core values from session ----
+        email = ((session.get("customer_details") or {}).get("email")) or ""
+        amount_paid = _to_2dp(Decimal(session.get("amount_total", 0)) / 100)
         payment_intent_id = session.get("payment_intent")
-        payment_status = session.get("payment_status", "")
+        payment_status = (session.get("payment_status") or "").lower()  # 'paid' expected
 
         md = session.get("metadata") or {}
-        purpose = md.get("purpose", "")
-        is_partial = (md.get("is_partial") == "true")
-        original_amount = Decimal(md.get("original_amount") or "0")   # full selected amount
-        partial_amount = Decimal(md.get("partial_amount") or "0")
+        purpose = (md.get("purpose") or "").strip()
+        md_original_amount = _to_2dp(Decimal(md.get("original_amount") or "0"))
+        source = (md.get("source") or "").strip()
 
-        # Expand payment method details
-        payment_intent = stripe.PaymentIntent.retrieve(session["payment_intent"], expand=["payment_method"])
-        card_brand = payment_intent["payment_method"]["card"]["brand"].title()
-        card_last4 = payment_intent["payment_method"]["card"]["last4"]
+        # ---- Expand for method details + receipt url ----
+        card_brand, card_last4, receipt_url = "", "", None
+        try:
+            if payment_intent_id:
+                pi = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method", "charges"])
+                pm = pi.get("payment_method")
+                if pm and pm.get("type") == "card":
+                    card = pm.get("card") or {}
+                    card_brand = (card.get("brand") or "").title()
+                    card_last4 = card.get("last4") or ""
+                charges = (pi.get("charges") or {}).get("data") or []
+                if charges:
+                    receipt_url = charges[0].get("receipt_url")
+        except Exception:
+            pass
 
-        # ---------- Find or create user ----------
+        # ---- Ensure user exists ----
         user = CustomerUser.objects.filter(email=email).first()
         if not user:
-            # Create minimal user; guard against missing name/address
             name = ((session.get("customer_details") or {}).get("name") or "").strip()
-            first, last = (name.split(" ", 1) + [""])[:2]
-            username = (f"{first}_{last}" or "user").lower()
-            # ensure unique username if needed...
+            parts = name.split(" ", 1)
+            first = parts[0] if parts else ""
+            last  = parts[1] if len(parts) > 1 else ""
+            username = (f"{first}_{last}".strip() or f"user_{int(tz_now().timestamp())}").lower()
             user = CustomerUser.objects.create(
                 email=email,
                 first_name=first,
@@ -894,73 +1107,88 @@ def stripe_webhook(request):
                 is_active=True,
             )
 
-        # ---------- Compute running balance for partial payments ----------
-        balance_after = Decimal("0.00")
-        if is_partial and original_amount > 0:
-            latest_payment = Payment.objects.filter(user_id=user).order_by("-created_at").first()
-            if not latest_payment:
-                balance_after = original_amount - amount_paid
+        # ---- Determine cap for this user+purpose ----
+        cap_for_purpose = _resolve_cap_for_purpose(user, purpose, md_original_amount)  # may be 0 (uncapped)
 
-            prev_paid = (
-                Payment.objects.filter(user_id=user, payment_purpose=purpose)
-                .aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
-            )
-            new_total_paid = prev_paid + amount_paid
-            balance_after = original_amount - new_total_paid
-            # balance_after = max(original_amount - new_total_paid, Decimal("0.00"))
-
-        # ---------- (Optional) receipt_url from PaymentIntent → Charge ----------
-
-        receipt_url = None
-        try:
-            pi = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["charges"])
-            charges = pi.get("charges", {}).get("data", [])
-            if charges:
-                receipt_url = charges[0].get("receipt_url")
-        except Exception:
-            pass
-
-        # ---------- Save Payment row ----------
-        Payment.objects.get_or_create(
+        # ---- Upsert payment row (idempotent on transaction_id) ----
+        payment_obj, created = Payment.objects.get_or_create(
             transaction_id=payment_intent_id,
             defaults={
                 "user_id": user,
-                "payment_purpose": purpose,
+                "payment_purpose": purpose or "Payment",
                 "amount": amount_paid,
-                "original_amount": 0 if purpose == "donation" else original_amount,
-                "balance": balance_after,
-                "transaction_id": payment_intent_id,
-                "is_partial": is_partial,
+                "original_amount": cap_for_purpose,  # store the cap reference we resolved
                 "payment_method": "stripe",
                 "status": "paid" if payment_status == "paid" else payment_status,
                 "receipt_url": receipt_url,
             },
         )
 
-        # Email payment receipt to user.
-        url = "email/payment_receipt.html"
-        subject = "Receipt from DC48K"
-        category = "dc48k_payments"
-        payment = Payment.objects.filter(user_id__email=email).order_by("-created_at").first()
+        # If it existed (retry), make sure critical fields are up to date
+        if not created:
+            updated = False
+            if payment_obj.status != ("paid" if payment_status == "paid" else payment_status):
+                payment_obj.status = "paid" if payment_status == "paid" else payment_status
+                updated = True
+            if payment_obj.receipt_url != receipt_url and receipt_url:
+                payment_obj.receipt_url = receipt_url
+                updated = True
+            if payment_obj.original_amount != cap_for_purpose:
+                payment_obj.original_amount = cap_for_purpose
+                updated = True
+            if updated:
+                payment_obj.save(update_fields=["status", "receipt_url", "original_amount", "updated_at"])
+
+        # ---- Compute running balance for this user+purpose (independent payments) ----
+        # If cap is 0 (uncapped e.g. donations), we set balance to 0.
+        if cap_for_purpose > 0:
+            total_paid_for_purpose = (
+                Payment.objects.filter(
+                    user_id=user,
+                    payment_purpose__icontains=purpose,
+                    status__in=["paid", "succeeded", "Completed", "Paid"],
+                ).aggregate(total=Sum("amount"))["total"]
+                or Decimal("0.00")
+            )
+            balance_now = _to_2dp(cap_for_purpose - _to_2dp(total_paid_for_purpose))
+            if balance_now < 0:
+                balance_now = Decimal("0.00")
+        else:
+            balance_now = Decimal("0.00")
+
+        # Save balance on the *current* row
+        if payment_obj.balance != balance_now:
+            payment_obj.balance = balance_now
+            payment_obj.save(update_fields=["balance", "updated_at"])
+
+        # ---- Email receipt ----
+        brand_last4 = f"{card_brand}-{card_last4}" if card_brand and card_last4 else "Card"
         context = {
             "amount_paid": amount_paid,
-            "purpose": purpose,
-            "receipt_number": payment.pk,
-            "payment_method": f"{card_brand}-{card_last4}",
+            "purpose": purpose or "Payment",
+            "receipt_number": payment_intent_id,  # you can switch to payment_obj.pk if desired
+            "payment_method": brand_last4,
             "email": email,
             "date_paid": datetime.now().strftime("%B %d, %Y"),
-            "subject": subject,
+            "subject": "Receipt from DC48K",
         }
-        send_email(
-            category=category,
-            to_email=[email],
-            subject=subject,
-            html_template=url,
-            context=context,
-        )
-        print(f"Payment receipt sent to {email}")
+        try:
+            send_email(
+                category="dc48k_payments",
+                to_email=[email],
+                subject=context["subject"],
+                html_template="email/payment_receipt.html",
+                context=context,
+            )
+        except Exception as e:
+            # Don't fail webhook on email problems
+            print(f"[Webhook] Email send failed: {e}")
 
     return HttpResponse(status=200)
+
+
+
+
 
 
 
@@ -982,29 +1210,67 @@ def pay_online(request):
     # Global Executive Committe --> title & price
     global_executive_title = global_executive.title
     global_executive_price = int(global_executive.price)
+    global_executive_description = global_executive.description
 
     # Regional Administration --> title & price
     regional_administration_title = regional_administration.title
     regional_administration_price = int(regional_administration.price)
+    regional_administration_description = regional_administration.description
 
     # County Assembly --> title & price
     county_assembly_title = county_assembly.title
     county_assembly_price = int(county_assembly.price)
+    county_assembly_description = county_assembly.description
 
     print(global_executive_price, global_executive_title)
 
     context = {
         "global_executive_title": global_executive_title,
         "global_executive_price": global_executive_price,
+        # "global_executive_description": global_executive_description,
         "regional_administration_title": regional_administration_title,
         "regional_administration_price": regional_administration_price,
+        # "regional_administration_description": regional_administration_description,
         "county_assembly_title": county_assembly_title,
         "county_assembly_price": county_assembly_price
+        # "county_assembly_description": county_assembly_description
     }
 
     return render(request, "finance/pay_online.html", context)
 
 
 
+
 def partial_payment(request):
-    return render(request, "finance/partial_payment.html")
+    purpose = request.GET.get("purpose", "").strip()
+    total_amount_str = request.GET.get("total_amount", "0").strip()
+
+    try:
+        total_amount = Decimal(total_amount_str)
+    except Exception:
+        total_amount = Decimal("0")
+
+    # Sum prior successful payments for this user (optionally filtered by purpose)
+    paid_qs = Payment.objects.filter(
+        user_id=request.user,
+        status__in=["succeeded", "Succeeded", "Completed", "paid", "Paid"]
+    )
+    # If you want to track per-membership/category, also filter by purpose:
+    if purpose:
+        paid_qs = paid_qs.filter(payment_purpose__icontains=purpose)
+
+    amount_paid = paid_qs.aggregate(total=Sum("amount"))["total"] or Decimal("0")
+
+    # Remaining balance cannot go below 0
+    balance = total_amount - amount_paid
+    if balance < 0:
+        balance = Decimal("0")
+
+    context = {
+        "purpose": purpose,
+        "total_amount": total_amount,
+        "amount_paid": amount_paid,
+        "balance": balance,
+    }
+    return render(request, "finance/partial_payment.html", context)
+
