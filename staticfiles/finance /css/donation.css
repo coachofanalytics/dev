@@ -21,7 +21,7 @@
 }
 
 /* Donation form styling */
-.partial-payment-form {
+.donation-form {
   background: #fff;
   padding: 60px 40px;
   border-radius: 12px;
@@ -133,6 +133,7 @@ h2 {
 
 /* Payment section */
 .payment-section {
+  flex-direction: column;
   margin-top: 30px;
   text-align: left;
 }
