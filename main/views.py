@@ -15,9 +15,10 @@ from mail.custom_email import send_email
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from coda_project import settings
+from django.contrib import messages
 
 #new code cece's assignment
-from .models import History
+from .models import History, ContactUs
 
 
 User=get_user_model()
@@ -563,3 +564,22 @@ def ourhistory(request):
         "history_years": history_years
     }
     return render(request, "main/ourhistory.html", context)
+
+
+def contact_us(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        print (name,email,message)
+        contact_message = ContactUs.objects.create(
+            name = name,
+            email = email,
+            message = message
+        )
+        contact_message.save
+
+        messages.success(request, "Thank You For Contacting Us We Will Get To You As Soon As Possible.")
+        return redirect('main:layout')
+
+    return render(reqest, "main/home_templates/home.html")

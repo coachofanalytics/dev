@@ -109,7 +109,7 @@ href="{% static 'main/css/home.css' %}"
   {% endif %}
   {% endfor %}  
 </div>
-<div class="contact-section">
+<div class="contact-section" id="contact-us">
   <div class="left">
     {% for item in description%}
     {% if item.name == 'Need More Info?' %}
@@ -129,7 +129,7 @@ href="{% static 'main/css/home.css' %}"
       </div>
   </div>
   <div class="right">
-      <form method="POST" enctype="multipart/form-data" autocomplete="off">
+      <form method="POST" enctype="multipart/form-data" autocomplete="off" action="{% url 'main:contact_us' %}">
               {% csrf_token %}
           <h4>Leave a Message here!</h4>
           <div class="contact-form">
