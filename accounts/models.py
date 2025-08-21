@@ -89,5 +89,27 @@ class LoginHistory (models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.login_time} to {self.logout_time}"
+
     
+from django.db import models
+from django_countries.fields import CountryField
+
+
+class Score(models.Model):
+    first_name = models.CharField(max_length=100)   # Required field
+    last_name = models.CharField(max_length=100)    # Required field
+    date_joined = models.DateTimeField(auto_now_add=True)  # Automatically set on create
+    email = models.EmailField(unique=True)          # Email with uniqueness
+    gender = models.CharField(max_length=10, null=True, blank=True)  # Optional
+    phone = models.CharField(max_length=20)
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zipcode = models.CharField(max_length=20)
+    country = CountryField()                        # Dropdown country field
+    category = models.CharField(max_length=100)     # Changed to CharField for flexibility
+    sub_category = models.IntegerField()            # Still integer
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 

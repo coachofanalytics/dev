@@ -96,15 +96,22 @@ def dba_values():
         password = os.environ.get('HEROKU_PROD_PASS')
     elif os.environ.get('ENVIRONMENT') == 'testing':
         # In Heroku/Postgres it is Heroku_UAT
-        host = os.environ.get('DB_HOST')
-        dbname = os.environ.get('DB_NAME')
-        user = os.environ.get('DB_USER')
-        password = os.environ.get('DB_PASSWORD')
+        host = os.environ.get('STG_DB_HOST')
+        dbname = os.environ.get('STG_DB_NAME')
+        user = os.environ.get('STG_DB_USER')
+        password = os.environ.get('STG_DB_PASSWORD')
+        port = 5432
     else:
-        host = "localhost"
-        dbname = "postgres"
-        user = "postgres"
-        password = "postgres" #"*******"
+        host = os.environ.get('STG_DB_HOST')
+        dbname = os.environ.get('STG_DB_NAME')
+        user = os.environ.get('STG_DB_USER')
+        password = os.environ.get('STG_DB_PASSWORD')
+        # port = 5432
+        # host = "localhost"     
+        # dbname = "MAKUTANO"
+        # user = "postgres"
+        # password = "postgres" #"*******"
+       
         
         # host = os.environ.get('POSTGRES_DB_NAME')
         # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
@@ -116,21 +123,33 @@ WSGI_APPLICATION = "coda_project.wsgi.application"
 import dj_database_url
 
 host,dbname,user,password=dba_values()
+print(host,dbname,user,password)
 
 
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": dbname,
+#         "USER":user,
+#         "PASSWORD":password,
+#         "HOST": host
+#     }
+# }
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": dbname,
-        "USER":user,
-        "PASSWORD":password,
-        "HOST": host
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR,"db.sqlite3"),
+    
     }
 }
+
+
+
 '''=========== Heroku DB ================'''
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES["default"].update(db_from_env)
