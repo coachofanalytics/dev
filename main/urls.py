@@ -26,7 +26,8 @@ urlpatterns = [
     path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),
     path('donation',views.organization_list_view, name ='donationorganisation_list'),
     path('ourhistory',views.ourhistory, name ='ourhistory'),
-    
+    path('contact_us',views.contact_us, name ='contact_us'),
+
   
     
     
