@@ -10,3 +10,6 @@ admin.site.register(Volunteer)
 admin.site.register(ClientAvailability)
 admin.site.register(service_coda)
 admin.site.register(Testimonials)
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
+    ...

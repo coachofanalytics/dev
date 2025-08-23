@@ -135,8 +135,21 @@ class Testimonials(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, max_length=50)
     content = models.TextField()
-    date_posted = models.DateTimeField()
-    writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
+
+from django.db import models
+from django_countries.fields import CountryField  # install django-countries
+
+class Location(models.Model):
+    zipcode = models.CharField(max_length=10, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    country = CountryField(blank_label='(select country)', null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.city}, {self.state}, {self.country}"
+models.DateTimeField()
+writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 
 

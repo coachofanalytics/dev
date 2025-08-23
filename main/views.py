@@ -317,6 +317,25 @@ def client_availability_view(request):
     print(clients)
     return render(request, "main/client_availability.html", {"client": clients})
 
+from django.shortcuts import render, redirect
+from .models import Location
+from .forms import LocationForm
+
+def location_list(request):
+    locations = Location.objects.all()
+    return render(request, 'location_list.html', {'locations': locations})
+
+def add_location(request):
+    if request.method == 'POST':
+        form = LocationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('location_list')
+    else:
+        form = LocationForm()
+    return render(request, 'add_location.html', {'form': form})
+
+
 
 
 
