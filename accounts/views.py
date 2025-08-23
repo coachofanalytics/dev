@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Tracker
+from .models import CustomerUser,Tracker,Departments
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -264,4 +264,6 @@ def tracker(request):
     print(trackers)  
     return render(request, "accounts/admin/tracker.html", {"trackers": trackers})
 
-
+def Department_list(request):
+    departments = Departments.objects.all()   # better lowercase variable name
+    return render(request, "accounts/admin/department.html", {"departments": departments})

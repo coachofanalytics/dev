@@ -1,0 +1,30 @@
+{% include 'main/navbar_templates/home_navbar.html' %} 
+{% block content %}
+<h2>Departments</h2>
+<table border="2">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Slug</th>
+            <th>Featured</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dept in departments %}
+        <tr>
+            <td>{{ dept.id }}</td>
+            <td>{{ dept.description }}</td>
+            <td>{{ dept.slug }}</td>
+            <td>{{ dept.is_featured }}</td>
+            <td>{{ dept.is_active }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No departments available.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}
