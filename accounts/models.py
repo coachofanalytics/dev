@@ -104,6 +104,11 @@ class Tracker(models.Model):
 
 
 
+class Departments(models.Model):
+     description=models.CharField(max_length=100)
+     slug=models.IntegerField(null=False)
+     is_featured =models.BooleanField(null=False)
+     is_active=models.BooleanField(null=False)
 
 
 
