@@ -1,41 +1,77 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const root = document.querySelector('.partial-payment-form'); // or unique container
-  if (!root) return;
-  
-  const presetButtons = document.querySelectorAll('.amount-button');
-  const paymentButtons = document.querySelectorAll('.payment-button');
+// finance/static/finance/js/partial_payment.js
+document.addEventListener("DOMContentLoaded", function () {
+  const amountButtons = document.querySelectorAll(".amount-btn");
+  const methodButtons = document.querySelectorAll(".method-btn");
+  const proceedBtn = document.getElementById("proceed-btn");
 
-  let selectedAmount = '25';
-  const incoming = new URLSearchParams(window.location.search);
-  if (!incoming.has('purpose')) incoming.set('purpose', 'donation');
+  // Data from server/context
+  const purpose = document.getElementById("pp-purpose")?.value || "";
+  const totalAmount = parseFloat(document.getElementById("pp-total")?.value || "0");
+  const balance = parseFloat(document.getElementById("pp-balance")?.value || "0");
 
-  presetButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      presetButtons.forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedAmount = btn.getAttribute('data-value');
+  let selectedAmount = null;
+  let selectedMethod = null;
+
+  // Select amount
+  amountButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      // Check if balance is already cleared
+      if (balance <= 0) {
+        alert("You have already cleared your balance. No further payments are required.");
+        selectedAmount = null;
+        amountButtons.forEach(b => b.classList.remove("selected"));
+        toggleProceed();
+        return; // stop further logic
+      }
+
+      // Reset and mark selected
+      amountButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedAmount = parseFloat(btn.dataset.amount);
+
+      // Enforce balance cap
+      if (balance > 0 && selectedAmount > balance) {
+        alert(`Your remaining balance is $${balance.toFixed(2)}. Please select $${balance.toFixed(0)} or less.`);
+        // Deselect and reset
+        btn.classList.remove("selected");
+        selectedAmount = null;
+      }
+
+      toggleProceed();
     });
   });
 
-  paymentButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();              // <-- important
-      e.stopPropagation();
-
-      const baseUrl = btn.dataset.url; // e.g., /finance/stripe/checkout/
-      if (!baseUrl) return;
-
-      const dest = new URL(baseUrl, window.location.origin);
-      const params = new URLSearchParams(incoming.toString());
-
-      params.set('partial_amount', selectedAmount);
-      params.set('partial_purpose', 'Partial Payment');
-
-      const method = btn.dataset.method || '';
-      if (method) params.set('method', method);
-
-      dest.search = params.toString();
-      window.location.href = dest.toString();
+  // Select payment method
+  methodButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      methodButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedMethod = btn.dataset.method;
+      toggleProceed();
     });
+  });
+
+  // Enable/disable proceed
+  function toggleProceed() {
+    proceedBtn.disabled = !(selectedAmount && selectedMethod);
+  }
+
+  // Proceed
+  proceedBtn.addEventListener("click", () => {
+    if (!selectedAmount || !selectedMethod) return;
+
+    // Build a method-specific URL. Adjust to your URL names/routes.
+    // Examples:
+    //   /finance/pay/card/?amount=50&purpose=...&total_amount=...
+    //   /finance/pay/paypal/?amount=25&purpose=...&total_amount=...
+    //   /finance/pay/zelle/?amount=100&purpose=...&total_amount=...
+    const base = `/finance/${encodeURIComponent(selectedMethod)}/checkout/`;
+    const qs = new URLSearchParams({
+      amount: selectedAmount.toString(),
+      purpose: purpose,
+      total_amount: totalAmount.toString()
+    }).toString();
+
+    window.location.href = `${base}?${qs}`;
   });
 });

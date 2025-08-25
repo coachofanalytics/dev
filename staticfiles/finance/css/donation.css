@@ -133,6 +133,7 @@ h2 {
 
 /* Payment section */
 .payment-section {
+  flex-direction: column;
   margin-top: 30px;
   text-align: left;
 }
