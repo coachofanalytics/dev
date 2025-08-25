@@ -21,7 +21,7 @@ from django.contrib.auth.views import LoginView
 from django.views.generic import (
     UpdateView,
 )
-from .models import CustomerUser, Membership, Region, Chapter
+from .models import CustomerUser, Membership, Region, Chapter, Profile
 from .forms import (
     CustomAuthenticationForm,
     CustomUserCreationForm, 
@@ -844,3 +844,32 @@ def delete_chapter(request, pk):
         return redirect("accounts:list_chapters")
     
     return render(request, "accounts/chapter_confirm_delete.html",{"chapter":chapter})
+
+
+def governance_list(request):
+    category = request.GET.get('category', 'Global Executive Committee')
+
+    # Always get the Governor regardless of selected category
+    governor = Profile.objects.filter(title__iexact="Governor").first()
+    # deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
+
+    # Get all members for the selected category except the Governor
+    govern = Profile.objects.filter(governance_category=category).exclude(title__iexact="Governor")
+
+    govern_order = sorted(govern, key=lambda member:member.ui_order)
+
+    categories = [
+        'Global Executive Committee',
+        'Regional Administration',
+        'County Assembly Administration'
+    ]
+
+
+    return render(request, 'accounts/governance_list.html', {
+        # 'govern': govern,
+        "govern_order": govern_order,
+        'governor': governor,
+        # 'deputy_governor': deputy_governor,
+        'selected_category': category,
+        'categories': categories
+    })
