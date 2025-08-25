@@ -1,0 +1,57 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="team-section">
+  <div class="container">
+
+      <!-- Show Selected Category -->
+     <div style="background-color:black; padding-top:50px">
+        <h1 style="color:white">THE DIASPORA COUNTY 48 KENYA</h1>
+        <h2 class="selected-category" style='padding-bottom:30px; color:#35bddb'>{{ selected_category }}</h2>
+     </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      {% for cat in categories %}
+      <a href="{% url 'accounts:governance_list' %}?category={{ cat|urlencode }}"
+         class="filter-btn {% if selected_category == cat %}active{% endif %}">
+         {{ cat }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Governor Card -->
+    {% if governor and selected_category == "Global Executive Committee" %}
+    <div class="card governor-card">
+      <img src="{{ governor.image.url }}" alt="{{ governor.members.first_name }}">
+      <h4>{{ governor.members.first_name }} {{ governor.members.last_name }}</h4>
+      <h8>{{ governor.title }}</h8>
+    </div>
+    {% endif %}
+
+        <!-- Governor Card -->
+    {% if deputy_governor and selected_category == "Global Executive Committee" %}
+    <div class="card governor-card">
+      <img src="{{ deputy_governor.image.url }}" alt="{{ deputy_governor.members.first_name }}">
+      <h4>{{ deputy_governor.members.first_name }} {{ deputy_governor.members.last_name }}</h4>
+      <h8>{{ deputy_governor.title }}</h8>
+    </div>
+    {% endif %}
+
+    <!-- Other Members -->
+    <div class="team-cards">
+      {% for member in govern_order %}
+        {% if member.ui_order > 0 %}
+          <div class="card">
+            <img src="{{ member.image.url }}" alt="{{ member.members.first_name }}">
+            <h4>{{ member.members.first_name }} {{ member.members.last_name }}</h4>
+            <h8>{{ member.title }}</h8>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+

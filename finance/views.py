@@ -991,3 +991,4 @@ def partial_payment(request):
     }
     return render(request, "finance/partial_payment.html", context)
 
+
