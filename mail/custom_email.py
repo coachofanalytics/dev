@@ -9,6 +9,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from email.utils import formataddr
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from base64 import urlsafe_b64decode
@@ -95,7 +96,7 @@ from coda_project import settings
 #         logger.error(f'Error sending email: {str(e)}')
 
 
-def send_email(category, to_email, subject, html_template, context):
+def send_email(category, to_email, subject, html_template, context, from_name="Diaspora County 048"):
     purpose = context.get('purpose', 'default')  
     # if category == 1:
     #     __smtp_user = EMAIL_HR
@@ -112,10 +113,10 @@ def send_email(category, to_email, subject, html_template, context):
     hr_password = settings.EMAIL_INFO_PASS
 
 
+    from_email_header = formataddr((from_name, hr_user)) 
 
-    from_email = hr_user 
     message = MIMEMultipart('alternative')
-    message['From'] = from_email
+    message['From'] = from_email_header
     message['To'] = ', '.join(to_email)
     message['Subject'] = subject
 
@@ -129,15 +130,15 @@ def send_email(category, to_email, subject, html_template, context):
 
     msg_str = message.as_string()
 
-    logger.debug(f'from_email: {from_email}')
+    logger.debug(f'from_email(header): {from_email_header}')
     logger.debug(f'to_email: {to_email}')
     
     try:
         with smtplib.SMTP(host= hr_host, port=hr_port) as server:
             server.ehlo()
             server.starttls()
-            server.login(from_email, hr_password)
-            server.sendmail(from_email, to_email, msg_str)
+            server.login(hr_user, hr_password)
+            server.sendmail(hr_user, to_email, msg_str)
             logger.info('Email sent successfully!')
     except Exception as e:
         logger.error(f'Error sending email: {str(e)}')

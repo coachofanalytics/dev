@@ -350,11 +350,13 @@ MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINE
 
 SECURE_SSL_REDIRECT = False
 
-STRIPE_TEST_SECRET_KEY = os.environ.get('STRIPE_TEST_SECRET_KEY')
 
-STRIPE_TEST_WEBHOOK_SECRET = os.environ.get('STRIPE_TEST_WEBHOOK_SECRET')
 
-STRIPE_LIVE_SECRET_KEY = os.environ.get('STRIPE_LIVE_SECRET_KEY')
 
-STRIPE_LIVE_WEBHOOK_SECRET = os.environ.get('STRIPE_LIVE_WEBHOOK_SECRET')
-
+# Stripe checkout & webhook configuration keys.
+if os.environ.get('ENVIRONMENT') == 'production':
+    STRIPE_SECRET_KEY = os.environ.get('STRIPE_LIVE_SECRET_KEY')
+    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_LIVE_WEBHOOK_SECRET')
+else:
+    STRIPE_SECRET_KEY = os.environ.get('STRIPE_TEST_SECRET_KEY')
+    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_TEST_WEBHOOK_SECRET')

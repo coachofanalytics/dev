@@ -22,7 +22,9 @@
                 
                 <!-- Header -->
                 <tr>
-                    <td style="background:#1ca877; height:80px;"></td>
+                    <td style="background:#1ca877; height:80px; text-align: center; padding-top:3px; padding-bottom:3px">
+                        <img src="https://codanalytics.blob.core.windows.net/web-dev-media/img/governance/dc48k_logo.png" alt="DC48K Logo" style="width: 90px; height: auto;">
+                    </td>
                 </tr>
 
                 <!-- Title -->
@@ -61,7 +63,9 @@
                         <h3 style="margin:0 0 10px; font-size:14px; color:#555; letter-spacing:1px;">SUMMARY</h3>
                         <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f6f7; border-radius:6px; padding:10px; border-collapse:collapse;">
                             <tr>
-                                <td style="padding:8px; font-size:14px; color:#000;">{{ purpose }}</td>
+                                <td style="padding:8px; font-size:14px; color:#000;">
+                                    {% if purpose == "donation" %} Donation {% else %} Leaders Membership {% endif %}
+                                </td>
                                 <td align="right" style="padding:8px; font-size:14px; color:#000;">${{ amount_paid }}</td>
                             </tr>
                             <tr>
