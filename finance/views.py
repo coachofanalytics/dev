@@ -918,7 +918,7 @@ def donation(request):
 
 
 
-
+@login_required
 def pay_online(request):
     global_executive = (Pricing.objects.filter(title="Global Executive").order_by("-id").first())
     regional_administration = (Pricing.objects.filter(title="Regional Administration").order_by("-id").first())
@@ -957,7 +957,7 @@ def pay_online(request):
 
 
 
-
+@login_required
 def partial_payment(request):
     purpose = request.GET.get("purpose", "").strip()
     total_amount_str = request.GET.get("total_amount", "0").strip()

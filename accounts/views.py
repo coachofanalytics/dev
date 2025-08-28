@@ -366,7 +366,9 @@ def login_view(request):
                         if user.is_authenticated:
                             # Redirect based on user category
                             # return redirect(get_redirect_url(user))
-                            return redirect("main:layout")
+                            # return redirect("main:layout")
+                            next_url = request.GET.get("next") or request.POST.get("next") or "main:layout"
+                            return redirect(next_url)
                     else:
                         msg = "Authentication failed"
                         print(msg)
@@ -409,7 +411,9 @@ def login_view(request):
                     #     return redirect('finance:pay')
                     # else:
                     #    return redirect('main:layout')
-                    return redirect("main:layout")
+                    # return redirect("main:layout")
+                    next_url = request.GET.get("next") or request.POST.get("next") or "main:layout"
+                    return redirect(next_url)
                 else:
                     print("Authentication failed")
                     msg = "Invalid credentials"
@@ -426,10 +430,12 @@ def login_view(request):
             print("Form is invalid")
             msg = "Error validating the form"
 
+    
+    next_url = request.GET.get("next", "")
     return render(
         request,
         "accounts/registration/DC48K/login_page.html",
-        {"form": form, "msg": msg},
+        {"form": form, "msg": msg, "next": next_url},
     )
 
 
