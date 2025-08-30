@@ -112,6 +112,12 @@
       href="{% static 'main/css/ourhistory.css' %}"
     />
 
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'main/css/messages.css' %}"
+    />
+
     <link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css" />
     <!-- Link Swiper's CSS -->
     <link
@@ -124,9 +130,23 @@
     
     <!-- Stripe Payment JS -->
     <script src="https://js.stripe.com/v3/"></script>
+
+    <!-- Messages JS script -->
+    <script src="{% static 'main/js/messages.js' %}" defer></script>
   </head>
 
   <body>
+      <!-- Show messages in your base template -->
+      {% if messages %}
+          <div id="messageBox" class="messages">
+              {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }}">
+                      {{ message }}
+                  </div>
+              {% endfor %}
+          </div>
+      {% endif %}
+
     {% include 'main/navbar_templates/navbar.html' %}
     <div>{% block content %} {% endblock %}</div>
 

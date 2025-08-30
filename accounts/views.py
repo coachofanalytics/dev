@@ -38,6 +38,7 @@ from mail.custom_email import send_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.http import Http404
+from fuzzywuzzy import fuzz
 
 
 
@@ -159,33 +160,100 @@ class CustomLoginView(LoginView):
     template_name = "accounts/registration/DC48K/logins.html"
 
 
+# def join(request):
+#     form = UserForm()  # Define form variable with initial value
+#     if request.method == "POST":
+#         previous_user = CustomerUser.objects.filter(email=request.POST.get("email"))
+#         if previous_user.exists():
+#             messages.success(request, "User already exists with this email")
+#             return redirect("/password-reset")
+#         else:
+#             form = UserForm(request.POST)  # Assign form with request.POST data
+#             if form.is_valid():
+#                 # Check the selected category and update the form instance accordingly
+#                 category = form.cleaned_data.get("category")
+
+#                 print(category)
+
+#                 user = form.save(commit=False)  # Don't save yet
+#                 user.is_active = True  # Set is_active explicitly
+
+#                 user = form.save()
+
+#                 # Send a welcoming email
+#                 send_notification(request)
+
+#                 # Provide the backend parameter when logging in the user
+#                 login(
+#                     request, user, backend="django.contrib.auth.backends.ModelBackend"
+#                 )
+
+#                 if category == CategoryChoices.ORDINARY_MEMBERSHIP:
+#                     return redirect("finance:donation")
+
+#                 elif category == CategoryChoices.LEADERS_MEMBERSHIP:
+#                     # return redirect('finance:pay')
+#                     return redirect("finance:pay_online")
+                    
+
+#                 elif category == CategoryChoices.ORGANIZATIONAL_MEMBERSHIP:
+#                     return redirect("main:layout")
+        
+
+#             else:
+#                 msg = "Error validating form"
+#                 print(msg)
+
+#     return render(request, "accounts/registration/DC48K/join.html", {"form": form})
+
+
 def join(request):
     form = UserForm()  # Define form variable with initial value
     if request.method == "POST":
-        previous_user = CustomerUser.objects.filter(email=request.POST.get("email"))
+        user_email = request.POST.get("email")
+        previous_user = CustomerUser.objects.filter(email__iexact=user_email)
         if previous_user.exists():
             messages.success(request, "User already exists with this email")
             return redirect("/password-reset")
         else:
             form = UserForm(request.POST)  # Assign form with request.POST data
             if form.is_valid():
+
+                # Checking if there is a match in the first name and last name combination.
+                first_name = form.cleaned_data.get("first_name")
+                last_name = form.cleaned_data.get("last_name")
+
+                existing_user = CustomerUser.objects.filter(first_name__iexact=first_name, last_name__iexact=last_name ).first()
+
+                # if user swaps their names
+                existing_user_swap = CustomerUser.objects.filter(first_name__iexact=last_name, last_name__iexact=first_name ).first()
+
+                if existing_user or existing_user_swap:
+                    messages.error(request, "A user with that First Name & Last Name already exists. Please check your details")
+                    return redirect("accounts:joins") 
+                
+                
+                if not existing_user:
+                    # Check for similar names using fuzzywuzzy
+                    users_with_similar_name = CustomerUser.objects.all()
+                    for user in users_with_similar_name:
+                        first_name_similarity = fuzz.ratio(first_name.lower(), user.first_name.lower())
+                        last_name_similarity = fuzz.ratio(last_name.lower(), user.last_name.lower())
+
+                        #check if there is a swap in first name with last name or vice-versa
+                        first_name_similarity_swap = fuzz.ratio(first_name.lower(), user.last_name.lower())
+                        last_name_similarity_swap = fuzz.ratio(last_name.lower(), user.first_name.lower())
+                        
+                        # Define a threshold for similarity,
+                        if (first_name_similarity >= 75 and last_name_similarity >= 75) or (first_name_similarity_swap > 80 and last_name_similarity_swap > 80) :
+                            # If both first name and last name are similar enough
+                            messages.warning(request, f"A user with similar names of {user.first_name} {user.last_name} was found. Please check your details.")
+                            return redirect("accounts:joins")
+
                 # Check the selected category and update the form instance accordingly
                 category = form.cleaned_data.get("category")
 
                 print(category)
-
-                # if category == CategoryChoices.ORDINARY_MEMBERSHIP:
-                #     form.instance.is_ORDINARY_MEMBERSHIP = True
-                # elif category == CategoryChoices.LEADERS_MEMBERSHIP:
-                #     form.instance.is_active_member = True
-                # elif category == CategoryChoices.ORGANIZATIONAL_MEMBERSHIP:
-                #     form.instance.is_executive_member = True
-                # elif category == CategoryChoices.FBO_ORDINARY:
-                #     form.instance.is_fbo_ordinary = True
-                # elif category == CategoryChoices.ACTIVE_ORGANIZATION:
-                #     form.instance.is_active_organization = True
-                # elif category == CategoryChoices.ROYAL_ORGANIZATION:
-                #     form.instance.is_royal_organization = True
 
                 user = form.save(commit=False)  # Don't save yet
                 user.is_active = True  # Set is_active explicitly
@@ -193,9 +261,6 @@ def join(request):
                 user = form.save()
 
                 # Send a welcoming email
-                # new_user = CustomerUser.objects.all().order_by('-id').first()
-                # print(new_user)
-                # print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
                 send_notification(request)
 
                 # Provide the backend parameter when logging in the user
@@ -221,68 +286,6 @@ def join(request):
 
     return render(request, "accounts/registration/DC48K/join.html", {"form": form})
 
-
-# def join(request):
-#     form = UserForm()  # Define form variable with initial value
-#     if request.method == "POST":
-#         previous_user = CustomerUser.objects.filter(email=request.POST.get("email"))
-#         if previous_user.exists():
-#             messages.success(request, "User already exists with this email")
-#             return redirect("/password-reset")
-#         else:
-#             form = UserForm(request.POST)  # Assign form with request.POST data
-#             if form.is_valid():
-#                 # Check the selected category and update the form instance accordingly
-#                 category = form.cleaned_data.get("category")
-
-#                 if category == CategoryChoices.ORDINARY_MEMBER:
-#                     form.instance.is_ordinary_member = True
-#                 elif category == CategoryChoices.ACTIVE_MEMBER:
-#                     form.instance.is_active_member = True
-#                 elif category == CategoryChoices.EXECUTIVE_MEMBER:
-#                     form.instance.is_executive_member = True
-#                 elif category == CategoryChoices.FBO_ORDINARY:
-#                     form.instance.is_fbo_ordinary = True
-#                 elif category == CategoryChoices.ACTIVE_ORGANIZATION:
-#                     form.instance.is_active_organization = True
-#                 elif category == CategoryChoices.ROYAL_ORGANIZATION:
-#                     form.instance.is_royal_organization = True
-
-#                 # Generate a random password
-#                 password = generate_random_password()
-#                 print(password)
-
-#                 # Save the password and username
-#                 token = str(uuid.uuid4())
-
-#                 user = form.save(commit=False)
-#                 user.verification_token = token
-#                 user.set_password(password)
-#                 user.is_active = False  # Set the generated password
-#                 user.save()
-#                 print(category)
-#                 fee_kes = CATEGORY_FEES.get(category, 0.0)
-
-#                 fee_usd = fee_kes / get_exchange_rate('USD', 'KES')  # Convert to USD
-#                 membership = Membership.objects.create(
-#                     member=user,
-#                     fee=fee_usd,
-#                     currency="USD",  # Store in USD
-#                     status='NOT_PAID',
-#                 )
-#                 print(f"Membership created for user {user.username} with fee {fee_usd} USD")
-
-#                 print(f"User {user.username} created and saved. Account is inactive until verification.")
-
-#                 send_verification_email(user, password=password)
-
-
-#                 return redirect('accounts:email-verification-notice', user.id)
-#             else:
-#                 msg = "Error validating form"
-#                 print(msg)
-
-#     return render(request, "accounts/registration/DC48K/joins.html", {"form": form})
 
 
 def email_verification_notice(request, user_id):
