@@ -151,6 +151,18 @@ class Location(models.Model):
 models.DateTimeField()
 writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
+from django.db import models
+
+class ClientAvailability(models.Model):
+    client = models.IntegerField(null=False)
+    day = models.CharField(max_length=50, null=False)
+    start_time = models.TimeField(null=False)
+    end_time = models.TimeField(null=False)
+    time_standards = models.CharField(max_length=50, null=False)
+    topic = models.CharField(max_length=100, null=False)
+
+    def __str__(self):
+        return f"Client {self.client} - {self.day} ({self.start_time} to {self.end_time})"
 
 
 
