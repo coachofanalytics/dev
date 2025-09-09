@@ -95,12 +95,28 @@ class SubService(models.Model):
     
 
 class News(models.Model):
-    title = models.CharField(max_length=200)
-    content = models.TextField()
+    CATEGORY_CHOICES = [
+    ("political", "Political"),
+    ("business", "Business"),
+    ("education", "Education"),
+    ("health", "Health"),
+    ("culture", "Culture"),
+    ("technology", "Technology"),
+    ("events", "Events"),
+    ]
+    title = models.CharField(max_length=200, default="")
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name="news", default="")
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name="news", default="")
+    content = models.TextField(default="")
+    source = models.CharField(max_length=255, blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="")
     link = models.URLField(null=True,blank=True)
     published_date = models.DateField()
     is_event = models.BooleanField(default=False)
     image = models.ImageField(upload_to='news_images/', blank=True, null=True)  # Add this line for image field
+    create_date = models.DateTimeField(auto_now_add=True, null=True)
+    update_date = models.DateTimeField(auto_now=True, null=True)
+
 
     def __str__(self):
         return self.title    
