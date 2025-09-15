@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser,Tracker,Departments
+from .models import CustomerUser,Tracker
 
 
 # admin.site.register(CustomerUser)
@@ -65,4 +65,13 @@ admin.site.register(CustomerUser, CustomerAdmin)
 
 # Register your models here.
 admin.site.register(Tracker)
-admin.site.register(Departments)
+
+
+# main/admin.py or wherever your app is
+
+from django.contrib import admin
+from .models import TaskGroup
+
+@admin.register(TaskGroup)
+class TaskGroupAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')

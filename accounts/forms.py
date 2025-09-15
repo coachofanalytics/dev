@@ -143,3 +143,20 @@ class LoginForm(forms.Form):
             self.add_error('enter_your_username_or_email', "This field is required.")
         if not password:
             self.add_error('password', "This field is required.")    
+
+
+
+
+# from django import forms
+# from .models import Departments
+
+# class DepartmentForm(forms.ModelForm):
+#     class Meta:
+#         model = Departments
+#         fields = ['description', 'slug', 'is_featured', 'is_active']
+#         widgets = {
+#             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter department description'}),
+#             'slug': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter slug'}),
+#             'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+#             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+#         }

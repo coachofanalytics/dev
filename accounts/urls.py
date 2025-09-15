@@ -9,5 +9,10 @@ urlpatterns = [
     path('login/', views.login_view, name='account-login'),
     path('profile/', views.profile, name='account-profile'),
     path('tracker/', views.tracker, name='tracker'),
-    path('Department_list/', views.Department_list, name='Department_list'),
+    # path('Department_list/', views.Department_list, name='Department_list'),
+    # path('department_create/', views.department_create, name='department_create'),
+    # path('departments/<int:pk>/update/', views.department_update, name='department_update'),
+
+
+
 ]

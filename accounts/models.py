@@ -102,27 +102,31 @@ class Tracker(models.Model):
         return f"{self.task} - {self.category} ({self.empname})"
 
 
+from django.conf import settings
+from django.db import models
+
+class Loginhistory(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    login_time = models.DateTimeField(null=True, blank=True)
+    logout_time = models.DateTimeField(null=True, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user} - Login: {self.login_time} - Logout: {self.logout_time}"
 
 
-class Departments(models.Model):
-     description=models.CharField(max_length=100)
-     slug=models.IntegerField(null=False)
-     is_featured =models.BooleanField(null=False)
-     is_active=models.BooleanField(null=False)
+  
+    
+# main/models.py or wherever your app is
 
+from django.db import models
 
+class TaskGroup(models.Model):
+    title = models.CharField(max_length=55)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
-
-
-
-
-
-
-
-
-
-
-
-
+    def __str__(self):
+        return self.title
 
 

@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Tracker,Departments
+from .models import CustomerUser,Tracker
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -264,6 +264,54 @@ def tracker(request):
     print(trackers)  
     return render(request, "accounts/admin/tracker.html", {"trackers": trackers})
 
-def Department_list(request):
-    departments = Departments.objects.all()   # better lowercase variable name
-    return render(request, "accounts/admin/department.html", {"departments": departments})
+# def Department_list(request):
+#     departments = Departments.objects.all()   # better lowercase variable name
+#     return render(request, "accounts/admin/department.html", {"departments": departments})
+
+# from .forms import DepartmentForm
+# def department_create(request):
+#     if request.method == "POST":
+#         form = DepartmentForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             return redirect("accounts:Department_list") 
+#     else:
+#         form = DepartmentForm()
+
+#     return render(request, "accounts/admin/depart.html", {"form": form})
+
+
+
+
+
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from .models import Departments
+# from .forms import DepartmentForm
+
+# def department_update(request, pk):
+#     department = get_object_or_404(Departments, pk=pk)
+#     if request.method == "POST":
+#         form = DepartmentForm(request.POST, instance=department)
+#         if form.is_valid():
+#             form.save()
+#             return redirect("accounts:Department_list")
+#     else:
+#         form = DepartmentForm(instance=department)
+#     return render(request, "accounts/admin/depa_update.html", {"form": form})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
