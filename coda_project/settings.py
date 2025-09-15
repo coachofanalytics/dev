@@ -19,11 +19,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 #DEBUG Configurations
-DEBUG = True
-# if os.environ.get('ENVIRONMENT') == 'production':
-#     DEBUG = False
-# else:
-#     DEBUG = True
+# DEBUG = True
+if os.environ.get('ENVIRONMENT') == 'production':
+    DEBUG = False
+else:
+    DEBUG = True
 
 
 SECURE_SSL_REDIRECT = False
@@ -145,10 +145,10 @@ def dba_values():
 
         # Test locally 
         host = os.environ.get('LOCAL_DB_HOST')
-        # dbname = "DC48K" #os.environ.get('LOCAL_DB_NAME') 
         dbname = os.environ.get('LOCAL_DB_NAME') 
         user = os.environ.get('LOCAL_DB_USER')
         password = os.environ.get('LOCAL_DB_PASSWORD') 
+
 
 
 
