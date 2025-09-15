@@ -112,4 +112,28 @@ class Score(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+from django.db import models
+
+class Trackers(models.Model):
+    category = models.CharField(max_length=25, null=False)
+    sub_category = models.CharField(max_length=25, null=False)
+    task = models.CharField(max_length=25, null=False)
+    plan = models.CharField(max_length=255, null=False)
+    empname = models.IntegerField(null=False)   # could be ForeignKey
+    author = models.IntegerField(null=False)    # could be ForeignKey
+    employees = models.CharField(max_length=255, null=False)
+    login_date = models.DateTimeField(null=False)
+    start_time = models.TimeField(null=False)
+    duration = models.IntegerField(null=False)
+    time = models.PositiveIntegerField(null=False)  # removed max_length
+
+    def __str__(self):
+        return f"{self.category} - {self.task}"
+# class Trackerr(models.Model):
+#     # fields...
+#     class Meta:
+#         db_table = "accounts_trackers"
+
+
+
 
