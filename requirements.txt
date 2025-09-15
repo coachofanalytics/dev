@@ -1,16 +1,20 @@
 #====Frameworks:Flask,Django=====
-Django==3.2.6
+# Django==3.2.6
+Django>=4.2,<5.0
+
 django-extensions<=3.1.3
-django-allauth==0.58.2
+# django-allauth==0.58.2
 django-countries==7.2.1
 django-crispy-forms==1.12.0
-django-filter==2.4.0
+# django-filter==2.4.0
 django-js-asset==1.2.2
 django-mathfilters==1.0.0
 django-mptt==0.13.4
 
-django-multiupload==0.6.1
-django-otp==1.3.0
+# django-multiupload==0.6.1
+# django-otp==1.3.0
+django-celery-beat>=2.5.0
+
 django-timezone-field==5.0
 #====Scheduling=================#
 django-celery-beat==2.4.0
