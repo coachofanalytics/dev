@@ -303,6 +303,15 @@ def tracker(request):
 
 
 
+from django.views.generic import ListView
+from .models import TaskGroup
+
+class TaskGroupListView(ListView):
+    model = TaskGroup
+    template_name = 'taskgroup_list.html'  # You can change this name
+    context_object_name = 'task_groups'
+
+
 
 
 
