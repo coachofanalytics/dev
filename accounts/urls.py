@@ -11,5 +11,6 @@ urlpatterns = [
     path('trackers/', views.trackers_list_view, name='trackers'),
     path('trackers_create/', views.TrackersCreateView, name='TrackersCreateView'),
     path('trackers/<int:pk>/update/', views.TrackersUpdateView, name='trackers_update'),
+    path('trackers/<int:pk>/detail/', views.TrackersDetailView, name='trackers_detail'), 
     
 ]

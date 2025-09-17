@@ -292,6 +292,17 @@ def TrackersUpdateView(request, pk):
         form = TrackerForm(instance=tracker)  # Load form with existing data
 
     return render(request, "accounts/trackerupdate.html", {'form': form})
+
+from django.shortcuts import render, get_object_or_404
+from .models import Trackers
+
+def TrackersDetailView(request, pk):
+    # Fetch the Tracker object by primary key
+    tracker = get_object_or_404(Trackers, pk=pk)
+
+    # Render the detail template with the tracker object
+    return render(request, "accounts/trackerdetail.html", {'trackers': tracker})
+
         
 
    
