@@ -1,10 +1,11 @@
 from django import forms
 from django.forms import  Textarea
-from .models import CustomerUser
+from .models import CustomerUser,Trackers
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import  RegexValidator,validate_email
 from django.core.exceptions import ValidationError
 import re
+
 # from django.db import transaction
 
 phone_regex = r'^\d{10}$'
@@ -142,4 +143,22 @@ class LoginForm(forms.Form):
         if not username_or_email:
             self.add_error('enter_your_username_or_email', "This field is required.")
         if not password:
-            self.add_error('password', "This field is required.")    
+            self.add_error('password', "This field is required.")
+  # make sure your model is Tracker, not Trackers
+
+class TrackerForm(forms.ModelForm):
+    class Meta:
+        model = Trackers
+        fields = [
+            'category', 'sub_category', 'task', 'plan',
+            'empname', 'author', 'login_date',
+            'start_time', 'duration', 'time'
+        ]
+        widgets = {
+            'login_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'plan': forms.Textarea(attrs={'rows': 3}),
+        }
+
+
+    

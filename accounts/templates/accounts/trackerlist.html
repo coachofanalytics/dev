@@ -21,21 +21,21 @@
         </tr>
       </thead>
       <tbody>
-        {% for tracker in Trackers %}
+        {% for trackers in trackers %}
         <tr>
-          <td>{{ tracker.category }}</td>
-          <td>{{ tracker.subcategory }}</td>
-          <td>{{ tracker.task }}</td>
-          <td>{{ tracker.plan }}</td>
-          <td>{{ tracker.empname }}</td>
-          <td>{{ tracker.author }}</td>
-          <td>{{ tracker.employee }}</td>
-          <td>{{ tracker.login_date }}</td>
-          <td>{{ tracker.start_time }}</td>
-          <td>{{ tracker.duration }}</td>
-          <td>{{ tracker.time }}</td>         
+          <td>{{ trackers.category }}</td>
+          <td>{{ trackers.subcategory }}</td>
+          <td>{{ trackers.task }}</td>
+          <td>{{ trackers.plan }}</td>
+          <td>{{ trackers.empname }}</td>
+          <td>{{ trackers.author }}</td>
+          <td>{{ trackers.employee }}</td>
+          <td>{{ trackers.login_date }}</td>
+          <td>{{ trackers.start_time }}</td>
+          <td>{{ trackers.duration }}</td>
+          <td>{{ trackers.time }}</td>         
           <td>
-            <a class="article-title" href="#">Edit</a>
+            <a class="article-title" href="#">Edit</a> 
           </td>
         </tr>
         {% endfor %}

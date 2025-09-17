@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm
+from .forms import UserForm, LoginForm,TrackerForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -267,3 +267,18 @@ from .models import Trackers
 def trackers_list_view(request):
     trackers = Trackers.objects.all()
     return render(request, 'accounts/trackerlist.html', {'trackers': trackers})
+
+
+def TrackersCreateView(request):
+    if request.method == "POST":
+        form = TrackerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:trackers")  # Make sure this URL name exists
+    else:
+        form = TrackerForm()  # Empty form for GET request
+
+    return render(request, "accounts/trackercreate_html", {'form': form})
+        
+
+   
