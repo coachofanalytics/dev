@@ -303,6 +303,22 @@ def TrackersDetailView(request, pk):
     # Render the detail template with the tracker object
     return render(request, "accounts/trackerdetail.html", {'trackers': tracker})
 
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Trackers
+
+def TrackersDeleteView(request, pk):
+    # Fetch the Tracker object to delete
+    tracker = get_object_or_404(Trackers, pk=pk)
+
+    if request.method == "POST":
+        tracker.delete()
+        return redirect("accounts:trackers")  # Redirect to the list view
+
+    # For GET request, show a confirmation page
+    return render(request, "accounts/trackerdelete.html", {'tracker': tracker})
+
+
         
 
    
