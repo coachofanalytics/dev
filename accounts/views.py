@@ -279,6 +279,19 @@ def TrackersCreateView(request):
         form = TrackerForm()  # Empty form for GET request
 
     return render(request, "accounts/trackercreate_html", {'form': form})
+def TrackersUpdateView(request, pk):
+    # Fetch the Tracker object to update
+    tracker = get_object_or_404(Trackers, pk=pk)
+
+    if request.method == "POST":
+        form = TrackerForm(request.POST, instance=tracker)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:trackers")  # Redirect to your list view
+    else:
+        form = TrackerForm(instance=tracker)  # Load form with existing data
+
+    return render(request, "accounts/trackerupdate.html", {'form': form})
         
 
    
