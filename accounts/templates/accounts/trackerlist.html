@@ -1,0 +1,46 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>TRACKER</h2>
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Category</th>
+          <th>Subcategory</th>
+          <th>Task</th>
+          <th>Plan</th>
+          <th>Employee Name</th>
+          <th>Author</th>
+          <th>Employee</th>
+          <th>Login Date</th>
+          <th>Start Time</th>
+          <th>Duration</th>
+          <th>Time</th>         
+        </tr>
+      </thead>
+      <tbody>
+        {% for tracker in Trackers %}
+        <tr>
+          <td>{{ tracker.category }}</td>
+          <td>{{ tracker.subcategory }}</td>
+          <td>{{ tracker.task }}</td>
+          <td>{{ tracker.plan }}</td>
+          <td>{{ tracker.empname }}</td>
+          <td>{{ tracker.author }}</td>
+          <td>{{ tracker.employee }}</td>
+          <td>{{ tracker.login_date }}</td>
+          <td>{{ tracker.start_time }}</td>
+          <td>{{ tracker.duration }}</td>
+          <td>{{ tracker.time }}</td>         
+          <td>
+            <a class="article-title" href="#">Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

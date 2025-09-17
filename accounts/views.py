@@ -11,6 +11,9 @@ from .models import CustomerUser
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
+from  django.views import View
+from  django.views.generic import ListView
+
 
 from django.urls import reverse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
@@ -257,3 +260,10 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
+    
+from django.shortcuts import render
+from .models import Trackers
+
+def trackers_list_view(request):
+    trackers = Trackers.objects.all()
+    return render(request, 'accounts/trackerlist.html', {'trackers': trackers})
