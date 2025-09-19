@@ -163,7 +163,7 @@ class ContactUs(models.Model):
     
 
 
-class Donation_organization(models.Model):
+class Donation(models.Model):
     donor_name=models.CharField(max_length=100,null=False)
     email=models.EmailField(null=False)
     amount=models.DecimalField(max_digits=10,decimal_places=2,null=False)
