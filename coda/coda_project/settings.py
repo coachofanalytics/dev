@@ -320,6 +320,10 @@ STATICFILES_DIRS = [
     os.path.join(os.path.dirname(BASE_DIR), "main", "static"),
 ]
 
+# WhiteNoise configuration for serving static files in production
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
+
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
