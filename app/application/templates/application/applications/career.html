@@ -1,0 +1,100 @@
+{%extends "main/base_templates/new_base.html"%} {%block content%}
+<div class="container col-12">
+  <hr />
+  <div class="row text-justify pr-4 pl-4">
+    <div class="col-md-4 vertline">
+      <img
+        src="http://drive.google.com/uc?export=view&id=1aZTuXh3Vl285iNiFb9S_YV-IQtXG3qkp"
+        class="d-block img-fluid"
+        width="1500px"
+        alt="banner"
+      />
+    </div>
+    <div class="col-md-4 pl-4">
+      <p>Job Title :</p>
+      <p>Company :</p>
+      <p>Duty Station :</p>
+    </div>
+    <div class="col-md-4">
+      <p>Assistant Data Analyst (5 Positions) Organization</p>
+      <p>Crown Data Analysis and Consultancy Ltd (CODA)</p>
+      <p>Kitui and Makutano, Kenya</p>
+    </div>
+  </div>
+
+  <div class="row text-center p-4" style="border-top: 1px solid">
+    <div class="col-md-12">
+      <h4 class="text-center">About US</h4>
+      <p>
+        Crown Data Analysis and Consultancy LLC (CODA) was established to
+        provide our customers with high quality services in project management,
+        Consultancy and Software solutions. Our goal is to provide these
+        services with efficiency and effectiveness at a fair price both locally
+        & internationally.
+      </p>
+    </div>
+  </div>
+
+  <div class="row text-start pl-4 vertline" style="border-top: 1px solid">
+    <div class="col-md-6" style="border-right: 1px solid">
+      <p class="text-center"><b>Qualifications</b></p>
+      <p>
+        <b>DEGREE:</b> A bachelor’s degree in a recognized institution.
+        (Preferred degree in math, computer and sciences)
+      </p>
+      <p>
+        <b>TOOLS:</b> Good knowledge with Excel, Power point and the ability to
+        learn and understand data analysis tools (Alteryx, Tableau & SQL).
+      </p>
+      <p>
+        <b> COMMUNICATION:</b> Good presentation skills in communication and
+        organization of information using power point and box.
+      </p>
+    </div>
+    <div class="col-md-6">
+      <p class="text-center"><b>Key Duties and Responsibilities:</b></p>
+      <p>
+        <b>BI TRAINING:</b> Engage in training of online clients (students) on
+        SQL, Alteryx and Tableau.
+      </p>
+      <p>
+        <b>CONSULTANCY:</b> Assist in defining project requirements, generating
+        reports and clear communication with Clients.
+      </p>
+      <p>
+        <b>PROJECT MANAGEMENT:</b> Be a leader in managing software, consultancy
+        and field projects and providing guidance where necessary..
+      </p>
+    </div>
+  </div>
+
+  <div class="row text-center p-4" style="border-top: 1px solid">
+    <div class="col-md-12">
+      <h5 class="p-2 text-dark">Benefits</h5>
+      <div class="col-md-12">
+        <p>Health Care coverage and accommodation provided.</p>
+        <p>Salary competitive and compensated through DAF System.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row text-center p-4" style="border-top: 1px solid">
+    <div class="col-md-12">
+      <h5 class="text-center text-dark">How to Apply:</h5>
+      <p>
+        All applications should be accompanied by one merged document with a
+        cover letter and Resume/CV .All successful candidates will be required
+        to relocate to respective office of operation and full accommodation
+        will be offered to them together with internet facilitated by
+        Company.Please Click below to start your application.
+      </p>
+    </div>
+  </div>
+
+  <div class="text-center pb-2">
+    <a href="{% url 'accounts:join' %}">
+      <button type="button" class="btn btn-primary w-25">Apply</button>
+    </a>
+  </div>
+</div>
+{% include 'main/footer_templates/footer.html' %} {% endblock content %}

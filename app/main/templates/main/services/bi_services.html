@@ -1,0 +1,43 @@
+{% extends "main/base_templates/new_base.html"%}
+{% block content %}
+
+<div class="container-fluid padding">
+  <div class="row welcome text-center">
+    <div class="col-12">
+      <!-- <h2 class="display-4">{{title}}</h2> -->
+      <h2 class="display-6">{{title}}</h2>
+    </div>
+    <hr/>
+    <div class="col-12">
+      <p class="lead">
+        {{service_desc}}
+      </p>
+    </div>
+  </div> 
+</div>
+<div class="container-fluid padding">
+    <div class="row padding">
+    {% for service in services %}
+      <div class="col-md-4 text-center" id="bada">
+        <div class="card-group">
+          <div class="card">
+            <div class="">
+              <p class="display-5 text-center"><b>{{service.name}}{{service.title}}</b></p>
+              <hr>
+              <b>{{ service.price|floatformat:2 }}</b>
+              <p>{{ service.description|safe}}</p>
+              {% if service.slug %}
+              <a href="{{ SITEURL }}/{{ service.slug }}/"><button type="button" class="btn btn-primary">More</button></a>
+                {% else %}
+                  <a href="{% url 'main:layout' %}"><button type="button" class="btn btn-primary">Proceed</button></a>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+
+{% endblock content %}

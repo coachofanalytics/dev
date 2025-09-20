@@ -1,0 +1,136 @@
+{%extends "main/base_templates/new_base.html"%} {% block content %}
+<section id="rating">
+  <div class="rating text-center">
+    <h3>Welcome To CODA</h3>
+    <hr />
+    <p>
+        Thank you for your submissions, please read through our policy requirements before joining us.
+    </p>
+
+    <style type="text/css">
+      .tg {
+        border-collapse: collapse;
+        border-spacing: 0;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .tg td {
+        border-color: black;
+        border-style: solid;
+        border-width: 1px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        overflow: hidden;
+        padding: 10px 5px;
+        word-break: normal;
+      }
+      .tg th {
+        border-color: rgb(0, 0, 0);
+        border-style: solid;
+        border-width: 1px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: normal;
+        overflow: hidden;
+        padding: 10px 5px;
+        word-break: normal;
+      }
+      .tg .tg-67dp {
+        background-color: #dce6f1;
+        text-align: left;
+        vertical-align: bottom;
+      }
+      .tg .tg-8xdm {
+        background-color: #817b7b;
+        color: #ffffff;
+        font-family: Impact, Charcoal, sans-serif !important;
+        font-size: 15px;
+        text-align: center;
+        vertical-align: bottom;
+      }
+      .tg .tg-xs21 {
+        background-color: #817b7b;
+        color: #ffffff;
+        font-family: Impact, Charcoal, sans-serif !important;
+        font-size: 15px;
+        font-weight: bold;
+        text-align: center;
+        vertical-align: bottom;
+      }
+      .tg .tg-7zrl {
+        text-align: left;
+        vertical-align: bottom;
+      }
+    </style>
+
+    <table class="tg">
+      <thead>
+        <tr>
+            <th class="tg-8xdm">
+                <span style="text-decoration: none">ID</span>
+              </th>
+          <th class="tg-8xdm">
+            <span style="text-decoration: none">Policy</span>
+          </th>
+          <th class="tg-xs21">
+            <span style="font-weight: 400; text-decoration: none"
+              >Policy Description</span
+            >
+          </th>
+          <!--
+          <th class="tg-xs21">
+            <span style="font-weight: 400; text-decoration: none"
+              >Attachment</span
+            >
+          </th>
+          -->
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for upload in uploads %}
+        <tr>
+          <td class="tg-7zrl">
+            <span style="font-weight: 400; text-decoration: none; color: black"
+              >{{upload.id}}0100</span
+            >
+          </td>
+          <td class="tg-7zrl">
+            <span style="font-weight: 400; text-decoration: none; color: black"
+              >{{upload.policy_type}}</span
+            >
+          </td>
+          <td class="tg-7zrl">
+            <span style="font-weight: 400; text-decoration: none; color: black"
+              >{{upload.description}}</span
+            >
+          </td>
+          <!----
+          <td class="tg-7zrl">
+            <span style="font-weight: 400; text-decoration: none; color: black"
+              >{{upload.policy_doc}}</span
+            >
+          </td>
+          --->
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <hr />
+    <div class="container-fluid">
+      <div class="row jumbotron">
+        <div id="j-section" class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10">
+          <p>If you are in agreement with the above policies, please send below message to the following
+            contacts:<br> Email : <i></i><b>rc.hrdepartment@gmail.com</b></i> 
+            Text Message: <i><b>+254748763571</b></i>
+          <p style="color:blue;font-size:15px;"> 
+            <i>"This is <b>(Your Name)</b>, I agree with CODA's requirements and i am willing to relocate to company premises at specified location on <b>{{reporting_date}} at 5.30 PM</b> and start my 45 day Orientation for the role of Data Analyst.
+             <br>I pledge to abide by all the rules and regulations of CODA and what is expected of me.Thank You." <br>
+            </i>
+          </p>
+        </div> 
+      </div>      
+    </div> 
+  </div>
+</section>
+{% endblock content %}

@@ -1,0 +1,69 @@
+{%extends "main/base_templates/application_base.html"%}
+ {%load crispy_forms_tags%} 
+ {% load customfilters %}
+ {%block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>BACKGROUND CHECK INFORMATION</h2>
+    <button>
+        <a href="{% url 'professional_services:jobrole' %}" class="btn btn-secondary btn-sm" target="_blank"
+        >ADD INFORMATION
+      </a>
+      </button>
+    <div class="table-responsive">
+    <!-- <table id="bootstrapdatatable" class="table table-striped table-bordered" width="100%"> -->
+      <table class="table table-striped table-bordered" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Candidate id</th>
+          <th>Date</th>
+          <th>Role</th>
+          <th>End Client</th>
+          <th>Agency</th>
+          <th>Letter</th>
+          <th>Academics</th>
+          <th>Employers</th>
+          <th>reference_contacts</th>
+         
+        </tr>
+      </thead>
+      <tbody>
+        {% for check in checks %}
+        <tr>
+          <td>{{check.candidate}}</td>
+          <td>{{check.created_at|date:"n/d/Y"}}</td>
+          <td>{{check.role}}</td>
+          <td>{{check.end_client }}</td>
+          <td>{{check.recruiting_agency}}</td>
+          <td>
+            <button>
+              <a href="{{check.job_offer_letter}}}}" class="btn btn-secondary btn-sm" target="_blank"
+              >access
+            </a>
+            </button>
+          </td>
+          <td>
+            <button>
+              <a href="{{check.academic_documents}}" class="btn btn-secondary btn-sm" target="_blank"
+              >access
+            </a>
+            </button>
+          </td>
+          <td>
+            <button>
+              <a href="{{check.past_employers}}" class="btn btn-secondary btn-sm" target="_blank"
+              >access
+            </a>
+            </button>
+          </td>
+          <td>{{check.reference_contacts}}</td>
+         <td><h4 ><a href="#">Edit</H4></a></p></td>  
+         <!-- <td><h4 ><a href="#">Del</H4></a></p></td>   -->
+      </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  </div>
+</section>
+{%endblock content %}

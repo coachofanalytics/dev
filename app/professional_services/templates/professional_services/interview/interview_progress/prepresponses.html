@@ -1,0 +1,61 @@
+{%extends "main/base_templates/analysis_index.html"%} {% block content %}
+
+<section id="data_training">
+    <div class="data_training text-center">
+        <h3 class="title">CLIENT'S RESPONSES TO INTERVIEW QUESTIONS</h3>
+        <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+        <p class="p text-center"> </p>
+
+        <p class="gi">
+          Here are responses to some of the interview questions.
+      </p>
+      <!-- <div class="career text-center">
+        <div  class="row">
+            <div class="card card-body">
+              <form method="get">
+                {% csrf_token %}
+                {{ResFilter.form}}
+                <button class="btn btn-primary" type="submit">Search</button>
+              </form>
+            </div>
+          </div>
+        </div> -->
+
+        <div class="row text-center">
+          {% for response in  responses  %}
+            <div class="col-md-6" id="gi">
+                <div class="card">
+                  <!-- <img src="\media\home\project2.jpg" class="card-img-top">--->
+                    <div class="card-body">
+                      <b>Company:{{response.question.company}} | Category: {{response.question.category}}|| Updated: {{response.created_at|date:"n-d-Y"}}</b>
+                        <p class="gi">
+                            <font size="-1"><i>{{response.question.question}}</i></font>
+                        </p>
+                        <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                        <p class="gi">
+                        {{response.answer|truncatewords:100}} 
+                        </p>
+                        <hr/>
+                        <div class="row">
+                            <!-- <div class="col-md-6">
+                              <p><a href="{% url 'professional_services:question-update' response.id %}" class="btn btn-secondary btn-sm"
+                                >Edit
+                              </a></p>
+                            </div> -->
+                            <div class="col-md-12">
+                              <p><a href="{% url 'professional_services:userresponse' response.question.id %}" class="btn btn-secondary btn-sm"
+                                >Examine For Details
+                              </a></p>
+                            </div>
+                          </div>
+                    </div>
+                  </div>
+               </div>
+              {%endfor%}
+        </div>
+    </div>
+    </section>
+{% endblock content %}
+
+
+

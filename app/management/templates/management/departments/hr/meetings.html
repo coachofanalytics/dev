@@ -1,0 +1,145 @@
+{%extends "main/base_templates/analysis_index.html"%}
+{% block title %}Meetings{% endblock %}
+{% block content %}
+
+<section id="data_training">
+    <div class="data_training text-center">
+
+        <h3 class="title">WELCOME TO CODA
+          <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+          <div class="row text-center">
+            {% for name, url in header_links.items %}
+                <div class="col-md-2">
+                    <a class="btn btn-secondary" href="{{ url }}">{{ name }}</a>
+                    <div class="dropdown-divider"></div>
+                </div>
+            {% endfor %}
+        </div>
+        <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+          <!-- <p><a href="{% url 'management:newmeeting'%}" class="btn btn-primary btn-sm"
+            >ADD NEW MEETING
+          </a></p> -->
+        </h3>
+        <div class="row">
+          <div class="col-md-3">
+            <p><a href="{% url 'management:meetings' status='company' %}" class="btn btn-primary btn-sm"
+              >Company
+            </a></p>
+          </div>
+          <div class="col-md-3">
+            <p><a href="{% url 'management:meetings' status='training' %}" class="btn btn-primary btn-sm"
+              >Training Sessions
+            </a></p>
+          </div>
+          <div class="col-md-3">
+            <p><a href="{% url 'management:meetings' status='other' %}" class="btn btn-primary btn-sm"
+              >Other sessions
+            </a></p>
+          </div>
+          <div class="col-md-3">
+            <p><a href="{% url 'management:meetings' status='all' %}" class="btn btn-primary btn-sm"
+              >ALL MEETINGS
+            </a></p>
+          </div>
+        </div>
+
+        <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+        <p class="p text-center"> </p>
+        
+        <!-- Company Meetings Section -->
+        
+        <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+        
+        <div class="row text-center">
+            {% for session in  sessions  %}
+            <div class="col-md-4" id="gi">
+                <div class="card">
+                  <!-- <img src="\media\home\project2.jpg" class="card-img-top">--->
+                    <div class="card-body">
+                      <b><h5 class="gi">
+                        <a class="text-dark  text-decoration-none" 
+                        data-toggle="tooltip" title="{{  session.meeting_description  }}"
+                        href="{{ category.get_absolute_url }}">
+                        {{session.meeting_topic}}
+                        </a>
+                    </h5></b>
+                        <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                        <h1 class="gi">
+                           ID:{{session.meeting_id}} </br>
+                                Time:{{session.meeting_time}}|Held:{{ session.get_frequency_display }} </br>
+                        </h1>
+                        <hr/>
+                        <div class="row">
+                          <div class="col-md-4">
+                            <p> <a class="btn btn-secondary btn-sm" href="{{session.meeting_link|default_if_none:'#'}}">LINK</a></p>
+                          </div>
+                          <div class="col-md-4">
+                            <p>
+                                <a class="btn btn-secondary btn-sm" href="{% url 'management:companyagenda' %}?meeting_id={{session.id}}" 
+                                   id="agenda-link" 
+                                   onclick="triggerEmailSending({{ session.id }});">
+                                    Agenda
+                                </a>
+                            </p>
+                          </div>
+                          <div class="col-md-4">
+                            <p> <a class="btn btn-secondary btn-sm" href="{% url 'management:meeting-update' session.id %}">EDIT</a></p>
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+               </div>
+               <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+               {%endfor%}
+        </div>
+    </div>
+    </section>
+
+  <script>
+    function triggerEmailSending(meetingId) {
+        // Check if meeting_id is 4
+        if (meetingId === 4) {
+            // Trigger the email sending process via AJAX
+            fetch("{% url 'marketing:email_training' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ trigger: true })  // Sending some data if needed
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Email sending process triggered:', data);
+                // Optionally, show a success message to the user
+                
+                // Now trigger the WhatsApp sending process
+                fetch("{% url 'marketing:whatsapp' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ trigger: true })  // Sending some data if needed
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('WhatsApp sending process triggered:', data);
+                    // Optionally, show a success message to the user
+                })
+                .catch(error => {
+                    console.error('Error in WhatsApp process:', error);
+                });
+                
+            })
+            .catch(error => {
+                console.error('Error in email process:', error);
+            });
+        }
+    }
+</script>
+
+{% endblock content %}
+
+
+

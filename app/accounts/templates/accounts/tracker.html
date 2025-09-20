@@ -1,0 +1,51 @@
+{%extends "main/base_templates/new_base.html"%} {% block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>DURATION FOR ALL CLIENTS</h2>
+    
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Date</th>
+          <th>Trainer</th>
+          <!-- <th>Client Username</th> -->
+          <th>Client Name</th>
+          <th>End Client</th>
+          <th>Category</th>
+          <th>Task</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Duration</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+       
+        {% for tracker in trackers %}
+            <tr>
+              <td>{{tracker.login_date|date:"F d, Y"}}</td>
+              <td>{{tracker.empname.first_name}} {{tracker.empname.last_name}} </td>
+              <!-- <td> <a class="mr-2" href="{% url 'accounts:user-list' tracker.author %}">{{tracker.author}}</a></td> -->
+              <td> <a class="mr-2" href="{% url 'accounts:user-list' tracker.author %}">{{tracker.author.first_name}} {{tracker.author.last_name}}</a></td>
+              <!-- <td>{{tracker.author.first_name}} {{tracker.author.last_name}} </td> -->
+              <td>{{tracker.employee}} </td>
+              <td>{{tracker.category}}</td>
+              <td>{{tracker.task}}</td>
+              <td>{{tracker.start_time}}</td>
+              <td>{{tracker.end}}</td>
+              <td>{{tracker.duration}}</td>
+              <td> <a class="article-title" href="{% url 'accounts:tracker-detail' tracker.id %}">Edit</a></td>
+            </tr>
+        {% endfor %}
+        <a
+        class="btn btn-secondary btn-md mt-1 mb-1"
+        href="{%url 'accounts:tracker-create' %}"
+      >
+        Add Time</a
+      >
+      </tbody>
+    </table>
+  </div>
+
+</section>
+{% endblock content %}

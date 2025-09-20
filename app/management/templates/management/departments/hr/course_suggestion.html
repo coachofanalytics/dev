@@ -1,0 +1,370 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="assessment-main">
+    <div class="assessment-header">
+        <h2>{{ title }}</h2>
+        <p>{{ greeting }}</p>
+    </div>
+    
+    <!-- Assessment Summary Section -->
+    <div class="assessment-summary">
+        <h4>Assessment Summary:</h4>
+        <div class="score-data">
+            <!-- Overall Score -->
+            <div class="data-point score-section">
+                <span class="point-shape">🎉</span>
+                <h3>Your Score:</h3>
+                <ul class="styled-list">
+                    <li>
+                        <span class="main-text">Total Score: {{ assessment_summary.total_score }} / {{ assessment_summary.max_score }}</span>
+                        <span class="description-text">This is your overall score based on the assessment.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Strong Areas -->
+            <div class="data-point strong-areas">
+                <span class="point-shape">💡</span>
+                <h3>Strong Areas:</h3>
+                <ul class="styled-list">
+                    {% for area in assessment_summary.strong_areas %}
+                        <li>
+                            <span class="main-text">{{ area.skill }} (Score: {{ area.score }})</span>
+                            <p class="description">{{ area.description }}</p>
+                            <p><strong>Recommendation:</strong> {{ area.recommendation }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Weak Areas -->
+            <div class="data-point weak-areas">
+                <span class="point-shape">📖</span>
+                <h3>Weak Areas:</h3>
+                <ul class="styled-list">
+                    {% for area in assessment_summary.weak_areas %}
+                        <li>
+                            <span class="main-text">{{ area.skill }} (Score: {{ area.score }})</span>
+                            <p class="description">{{ area.description }}</p>
+                            <p><strong>Recommendation:</strong> {{ area.recommendation }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Areas of Improvement -->
+            <div class="data-point improvements-section">
+                <span class="point-shape">🏆</span>
+                <h3>Improvements:</h3>
+                <ul class="improvements-list">
+                    {% for improvement in assessment_summary.improvements %}
+                        <li>
+                            <span class="improvement-icon">🔧</span>
+                            <span class="improvement-text">{{ improvement }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Suggested Next Steps -->
+            <div class="data-point next-steps-section">
+                <span class="point-shape">🚀</span>
+                <h3>Next Steps:</h3>
+                <p>To address all identified improvement areas, we recommend enrolling in our comprehensive course, which covers each aspect in-depth and will help you overcome these challenges effectively.</p>
+
+                <!-- Course Benefits Section -->
+                <ul class="course-benefits">
+                    {% for area in assessment_summary.weak_areas %}
+                        <li>
+                            <span class="benefit-icon">✔️</span>
+                            <span class="benefit-text">Our course provides in-depth training on <strong>{{ area.skill }}</strong>, helping you master {{ area.skill|lower }} concepts and tools through hands-on projects and real-world case studies.</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'main:service_plans' 'full-course' %}" class="next-steps-link">View Course Details</a>
+            </div>
+        </div>
+        <div class="buttons-container">
+            <div class="button-box right-button">
+                <a href="javascript:void(0);" onclick="submitPaymentForm()" class="btn-link">Proceed to Payment</a>
+            </div>
+        </div>
+    </div>
+
+  
+</div>
+
+<style>
+    /* General Container Styles */
+    .assessment-header {
+        background: linear-gradient(45deg, #243865, #4a90e2);
+        color: #fff;
+        padding: 40px;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        margin-bottom: 20px;
+    }
+
+    .assessment-header h2 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #f0f4f8;
+    }
+
+    .assessment-header p {
+        font-size: 1.2rem;
+        color: #f0f4f8;
+        margin-top: 10px;
+    }
+
+    /* Main Assessment Section */
+    .assessment-main {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+        max-width: 1200px; 
+        margin: 0 auto;
+    }
+
+    .assessment-summary {
+        background: #fff;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e1e5ea;
+    }
+
+    .assessment-summary h4 {
+        font-size: 24px;
+        color: #0044cc;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    /* Data Point Styling */
+    .score-data {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .data-point {
+        background: #f8faff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0px 3px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .data-point:hover {
+        transform: translateY(-5px);
+        background: #e0f0ff;
+    }
+
+    .score-section { border-left: 5px solid #4CAF50; }
+    .strong-areas { border-left: 5px solid #2196F3; }
+    .weak-areas { border-left: 5px solid #FF5722; }
+    .improvements-section { border-left: 5px solid #FFC107; }
+    .next-steps-section { border-left: 5px solid #8BC34A; }
+
+    .point-shape {
+        font-size: 28px;
+        color: #0044cc;
+        margin-right: 10px;
+    }
+
+    /* Styled List */
+    .styled-list {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 10px;
+    }
+
+    .styled-list li {
+        background: #eef3fc;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: #333;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .main-text {
+        font-weight: bold;
+        color: #0044cc;
+        margin-bottom: 5px;
+    }
+
+    .description {
+        font-size: 14px;
+        color: #555;
+        margin: 8px 0 0 0;
+    }
+
+    .description-text {
+        font-size: 16px;
+        color: #555;
+        margin-left: 10px;
+        flex-shrink: 0;
+    }
+
+    /* Improvements Section Styling */
+    .improvements-list {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 10px;
+    }
+
+    .improvements-list li {
+        display: flex;
+        align-items: center;
+        background: #fff8e1;
+        border: 1px solid #ffc107;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .improvement-icon {
+        font-size: 20px;
+        color: #ffc107;
+        margin-right: 10px;
+    }
+
+    .improvement-text {
+        font-size: 14px;
+        color: #0044cc;
+    }
+
+    /* Course Benefits Styling */
+    .course-benefits {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 15px;
+    }
+
+    .course-benefits li {
+        display: flex;
+        align-items: flex-start;
+        background: #e0f7fa;
+        border: 1px solid #00acc1;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .benefit-icon {
+        font-size: 20px;
+        color: #00acc1;
+        margin-right: 10px;
+    }
+
+    .benefit-text {
+        font-size: 14px;
+        color: #0044cc;
+    }
+
+    /* Next Steps Link */
+    .next-steps-link {
+        display: inline-block;
+        color: #0044cc;
+        font-weight: bold;
+        text-decoration: none;
+        margin-top: 10px;
+        transition: color 0.3s;
+    }
+
+    .next-steps-link:hover {
+        color: #ff4e50;
+        text-decoration: underline;
+    }
+
+    /* Button Styles */
+    .buttons-container {
+        display: flex;
+        justify-content: flex-end;
+        margin: 20px 0;
+        width: 100%;
+    }
+
+    .btn-link {
+        padding: 12px 28px;
+        background: linear-gradient(45deg, #0056b3, #ff7e5f);
+        color: #fff;
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: none;
+        border-radius: 25px;
+        box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .btn-link:hover {
+        background: linear-gradient(45deg, #0044cc, #ff4e50);
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px);
+    }
+</style>
+
+<script>
+    function submitPaymentForm() {
+        const serviceTitle = sessionStorage.getItem("service_title");
+        const fees = sessionStorage.getItem("fees");
+        const isDirect = sessionStorage.getItem("is_direct");
+        const serviceCategoryId = sessionStorage.getItem("service_category_id");
+        const pricingSerial = sessionStorage.getItem("pricing_serial");
+        const username = sessionStorage.getItem("username");
+        const category = sessionStorage.getItem("category");
+
+        if (!serviceTitle || !fees || !isDirect || !serviceCategoryId || !pricingSerial || !username) {
+            alert("Some required fields are missing in the session storage.");
+            return;
+        }
+
+        const form = document.createElement("form");
+        form.method = "POST";
+
+        if (isDirect === "true" || parseFloat(fees) < 1000) {
+            form.action = "{% url 'finance:pay' %}";
+        } else {
+            form.action = "{% url 'finance:newcontract' 'username' %}".replace("username", username);
+        }
+
+        const csrfToken = '{{ csrf_token }}';
+        const csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "csrfmiddlewaretoken";
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+
+        addHiddenInput(form, "service_title", serviceTitle);
+        addHiddenInput(form, "fees", fees);
+        addHiddenInput(form, "is_direct", isDirect);
+        addHiddenInput(form, "service_category_id", serviceCategoryId);
+        addHiddenInput(form, "pricing_serial", pricingSerial);
+        addHiddenInput(form, "category", category);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function addHiddenInput(form, name, value) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    }
+</script>
+{% endblock content %}

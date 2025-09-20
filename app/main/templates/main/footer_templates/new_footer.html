@@ -1,0 +1,66 @@
+<div class="py-5" style="background-color: #1a1a1a;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2 class="font-weight-bold mb-4" style="color: white;">CODA</h2>
+                <p style="color: white; max-width: 510px; font-size: 14px;">
+                    Crown Data Analysis and Consultancy LLC (CODA) was established to provide
+                    our customers with high quality services in project management. Consultancy
+                    and Software solutions. Our goal is to provide these services with efficiency
+                    and effectiveness at a fair price both locally & internationally
+                </p>
+            </div>
+            <div class="col-md-6">
+                <div class="row text-white footer-liinks-div">
+                    <div class="col-md-3">
+                        <h4 style="font-size: 16px;" >MY ACCOUNT</h4>
+                        <div>
+                            {% if user.is_authenticated %}
+                            <ul>
+                                <li><a href="{% url 'account-logout'%}">Log Out</a></li>
+                            </ul>
+                            {% else %}
+                            <ul>
+                                <li><a href="{% url 'accounts:account-login' %}">Sign In</a></li>
+                                <li><a href="{% url 'accounts:join' %}">Register</a></li>
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 style="font-size: 16px;" >COMPANY</h4>
+                        <div>
+                            <ul>
+                                <li><a href="/about">Our Story</a></li>
+                                <li><a href="/why-coda">Why CODA</a></li>
+                                <li><a href="/contact">Contacts</a></li>
+                                <li><a href="/careers">Careers</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 style="font-size: 16px;" >SUPPORT</h4>
+                        <div>
+                            <ul>
+                                <li><a href="/help">FAQ</a></li>
+                                <li><a href="/student-support">Student Support</a></li>
+                                <li><a href="/customer-support">Customer Support</a></li>
+                                <li><a href="/status">System Status</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div style="margin-top: 40px;">
+                            <ul>
+                                <li><a href="/privacy">Privacy Policy</a></li>
+                                <li><a href="/terms">Terms Of Use</a></li>
+                                <li><a href="/cookies">Cookie Policy</a></li>
+                                <li><a href="/copyright">Copyright</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

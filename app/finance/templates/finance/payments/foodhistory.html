@@ -1,0 +1,114 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .small-button {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        background-color: green;
+        color: white;
+        border: none;
+    }
+    .small-button:hover {
+        background-color: darkgreen;
+    }
+</style>
+
+<section id="career text-center">
+    <h3 class="title text-center">FOOD/SUPPLIER LIST</h3>
+    <div class="form-row">
+      <div class="col-md-6">
+          <form method="get" class="form-inline">   
+              <div class="form-group mr-2">
+                  <label for="office_location" class="mr-2">Office:</label>
+                  <select name="office_location" id="office_location" class="form-control">
+                      <option value="">All Offices</option>
+                      {% for location in unique_office_locations %}
+                      <option value="{{ location }}" {% if location == selected_office_location %}selected{% endif %}>
+                          {{ location }}
+                      </option>
+                      {% endfor %}
+                  </select>
+              </div>      
+              <button type="submit" class="btn small-button">Search</button>
+          </form>
+      </div>
+
+      <div class="col-md-6">
+          <form method="get" class="form-inline">   
+              <div class="form-group mr-2">
+                  <label for="month" class="mr-2">Select Month:</label>
+                  <select name="month" id="month" class="form-control">
+                      <option value="">Select Month</option>
+                      {% for month_num, month_name in months %}
+                      <option value="{{ month_num }}" {% if month_num|stringformat:"02" == selected_month %}selected{% endif %}>
+                          {{ month_name }}
+                      </option>
+                      {% endfor %}
+                  </select>
+              </div>         
+              <div class="form-group mr-2">
+                  <label for="year" class="mr-2">Select Year:</label>
+                  <select name="year" id="year" class="form-control">
+                      <option value="" {% if not selected_year %}selected{% endif %}>All Years</option>
+                      {% for yr in years %}
+                      <option value="{{ yr }}" {% if yr|stringformat:"04" == selected_year %}selected{% endif %}>
+                          {{ yr }}
+                      </option>
+                      {% endfor %}
+                  </select>
+              </div>      
+              <button type="submit" class="btn small-button">Search</button>
+          </form>
+      </div>
+  </div>
+  
+       
+        <div class="col-md-12" id="bada">
+        <div class="row text-center">
+          <div class="card">          
+            <div class="card-body">
+              <h5><b>Total Amount: {{ total_amount }}</b></h5>
+              
+            </div>
+          </div>
+        </div>
+    <div class="col-md-12">
+        <div class="career text-center">
+            <table class="table table-borderless" style="width: 100%">
+                <thead class="border-bottom font-weight-bold">  
+                <tr>
+                    <th>id</th> 
+                    <th>Item</th> 
+                    <th>Supplier</th> 
+                    <th>Office Location</th> 
+                    <th>Unit Amount</th> 
+                    <th>Quantity</th> 
+                    <th>Balance Quantity</th> 
+                    <!--<th>Description</th>--->
+                    <th>Created At</th> 
+                    <th>History Date</th>              
+                </tr>
+            </thead>
+            <tbody>
+                {% for history in food_histories %}
+                    <tr> 
+                        <td>{{ history.id }}</td>                       
+                        <td title="{{ history.description }}">{{history.item.item }}</td> 
+                        <td>{{ history.supplier.supplier }}</td>  <!-- Assuming 'supplier' is a ForeignKey to Supplier -->
+                        <td>{{ history.office_location }}</td>
+                        <td>{{ history.unit_amt }}</td>
+                        <td>{{ history.qty }}</td>
+                        <td>{{ history.bal_qty }}</td>                        
+                        <td>{{ history.created_at|date:"n-d-Y" }}</td>
+                        <td>{{ history.history_date|date:"n-d-Y" }}</td>
+                        <td>
+                            <a href="{% url 'finance:foodhistoryupdate' history.id %}"> Update</a>
+                        </td>
+                    </tr>                  
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock content %}

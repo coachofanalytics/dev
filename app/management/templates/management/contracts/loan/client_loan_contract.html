@@ -1,0 +1,184 @@
+{% extends "main/base_templates/email_base.html" %}
+{% block content %} 
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 top-coloumn">
+            <p class="title-sub-head">
+                CODA-CROWN DATA ANALYSIS AND CONSULTANCY LLC
+            </p>
+            <p class="title-para">
+                <i>Leading provider of consultancy, education, and business services in the US.</i> 
+            </p>
+        </div>
+        <div class="col-md-4 top-coloumn text-white">
+            <div style="padding:2rem">
+                <center>
+                    <a href="{% url 'main:layout' %}" class="btn btn-md btn-bc">Back To Home</a>
+                </center>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bottom-coloumn">
+        <div class="col-md-12 top-coloumn bottom-coloumn">
+            <p class="title-sub-pay text-center">
+                {{ service_title_uppercase }} LOAN AGREEMENT DETAILS:
+            </p>
+            <div class="row">
+                <div style="background-color:#f8f8f8; border:1px solid #ccc; padding:20px;">
+                    <ul style="list-style:none; padding-left:0;">
+                        <form method="POST" action="/finance/newloan/" class="form-group">
+                            {% csrf_token %}
+                            <input type="hidden" name="loan_contract" value="loan_contract">
+                            <input type="hidden" name="usr_data" value="first_name={{client_data.first_name}}&username={{client_data.username}}&last_name={{client_data.last_name}}&
+                            email={{client_data.email}}&phone={{client_data.phone}}&
+                            username={{client_data.username}}&password1={{client_data.password1}}&password2={{client_data.password2}}">
+                            
+                            <fieldset class="form-group">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <b>Client Details</b><br>
+                                        Name: <br>
+                                        Address: <br>
+                                        Phone: <br>
+                                        Email: 
+                                    </div>
+                                    <div class="col-md-4">
+                                        <b>Your Information</b> <br>
+                                        {{ client_data.first_name }} {{ client_data.last_name }} <br>
+                                        {% if client_data.address %}{{ client_data.address }}{% else %} - {% endif %} <br>
+                                        {{ client_data.phone }} <br>
+                                        {{ client_data.email }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <b>Guarantor/Referral Details</b> <br>
+                                        <div class="form-group row mt-2">
+                                            <label class="col-sm-4 col-form-label text-end">First Name:</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" name="guarantor" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mt-2">
+                                            <label class="col-sm-4 col-form-label text-end">Last Name:</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" name="guarantor_last_name" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mt-2">
+                                            <label class="col-sm-4 col-form-label text-end">Phone:</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" name="guarantor_phone" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mt-2">
+                                            <label class="col-sm-4 col-form-label text-end">Guarantor Email:</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" name="guarantor_email" class="form-control" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr/>
+
+                                <p class="lead text-center">
+                                    <b>Loan Payment Information</b> 
+                                    <a href="#">Edit</a>
+                                </p>
+
+                                <hr/>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label>Loan Amount ({{ user_currency }}):</label>
+                                        <input type="number" name="total_amount" class="form-control" required 
+                                               placeholder="Enter amount in {{ user_currency }}" step="0.01"><br>
+                                        <small class="text-muted">
+                                            {% if user_currency != 'USD' %}
+                                                Amount will be converted to USD for processing
+                                            {% endif %}
+                                        </small><br>
+                                        <label>Interest Rate:</label> <span class="fees">{{ interest_rate }}%</span> <br>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Loan Duration (in months):</label>
+                                        <input type="number" name="loan_duration" class="form-control" required 
+                                               value="{{ plan.term_months }}" readonly><br>
+                                        <label>Tax Rate:</label> <span class="fees">{{ tax_rate|floatformat:2 }}%</span> <br>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Payment Method:</label><br>
+                                        <input type="radio" name="payment_type" value="paypal" required> Paypal<br>
+                                        <input type="radio" name="payment_type" value="cash_app"> Cash App<br>
+                                        <input type="radio" name="payment_type" value="venmo"> Venmo<br>
+                                        <input type="radio" name="payment_type" value="mpesa"> M-Pesa<br>
+                                    </div>
+                                </div>
+                                
+                                <!-- Currency Information -->
+                                {% if user_currency != 'USD' %}
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Currency Conversion:</strong> 
+                                            You are entering the amount in {{ user_currency }}. 
+                                            The system will automatically convert this to USD for processing.
+                                            {% if user_currency == 'KSH' %}
+                                                <br><strong>Note:</strong> 1 USD ≈ 142.86 KSH (approximate rate)
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <hr/>
+
+                                {% include 'main/snippets_templates/terms_conditions.html' %}
+
+                                <hr/>
+
+                                <p><strong>General Terms:</strong> 
+                                    <input type="checkbox" name="payment_terms" required>
+                                    <b>I agree to make full payment as per the agreed terms.</b>
+                                </p>
+
+                                <hr/>
+                                <br>
+                                <input type="checkbox" name="terms" required>
+                                <b>I agree to the Terms of Service</b>
+
+                                <hr/>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Client Signature:</label>
+                                        <input type="text" name="client_sign" class="form-control" value="{{ client_data.username }}" required><br>
+                                        <label>Contract Date:</label> {{ contract_date }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Company Representative:</label>
+                                        <input type="text" name="company_rep" class="form-control" value="CODA" required><br>
+                                        <label>Contract Date:</label> {{ contract_date }}
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <div class="form-group text-center">
+                                <button class="btn btn-outline-info" type="submit">Submit Loan Application</button>
+                            </div>
+                        </form>
+                    </ul>
+
+                    <!-- Footer -->
+                    <div class="contract-footer text-center">
+                        <p>&copy; {{ contract_date.year }} CODA-CROWN DATA ANALYSIS AND CONSULTANCY LLC</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

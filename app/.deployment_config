@@ -1,0 +1,22 @@
+# AI Services Deployment Configuration
+# This file contains deployment settings for easy reference
+
+HEROKU_APP_NAME=codamakutano
+HEROKU_REMOTE_URL=https://git.heroku.com/codamakutano.git
+
+# App URLs
+PRODUCTION_URL=https://codamakutano.herokuapp.com
+AI_SERVICES_URL=https://codamakutano.herokuapp.com/ai_services/diaspora/
+ANALYTICS_URL=https://codamakutano.herokuapp.com/ai_services/diaspora/analytics/
+
+# Deployment Commands
+DEPLOY_COMMAND=./deploy_ai_services.sh
+MIGRATE_COMMAND=heroku run python manage.py migrate --app codamakutano
+LOGS_COMMAND=heroku logs --tail --app codamakutano
+STATUS_COMMAND=heroku ps --app codamakutano
+
+# Quick Commands for Reference:
+# Deploy: ./deploy_ai_services.sh
+# Migrate: heroku run python manage.py migrate --app codamakutano
+# Logs: heroku logs --tail --app codamakutano
+# Status: heroku ps --app codamakutano

@@ -1,0 +1,31 @@
+{% extends "main/base_templates/new_base.html" %} {% block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>Logs</h2>
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Date</th>
+          <th>Error Location In Code</th>
+          <th>Reason Due To Code Crash</th>
+          <th>username</th>
+          <th>Exception</th>
+          <th>slug</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{log.crated_at|date:"F d, Y"}}</td>
+          <td>{{log.location_in_code}}</td>
+          <td>{{log.reason_code_crash}}</td>
+          <td>{{log.user.username}}</td>
+          <td>{{log.exception}}</td>
+          <td>{{log.api}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

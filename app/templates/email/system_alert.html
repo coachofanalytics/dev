@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CODA System Alert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .alert-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .critical { color: #e74c3c; }
+        .warning { color: #f39c12; }
+        .info { color: #3498db; }
+        .alert-details {
+            background-color: #f8f9fa;
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            margin: 10px 0;
+            display: flex;
+        }
+        .detail-label {
+            font-weight: bold;
+            min-width: 120px;
+            color: #555;
+        }
+        .detail-value {
+            flex: 1;
+        }
+        .action-required {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-critical {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .status-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .status-info {
+            background-color: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="alert-icon">
+                {% if alert_data.severity == 'critical' %}
+                    🚨
+                {% elif alert_data.severity == 'warning' %}
+                    ⚠️
+                {% else %}
+                    ℹ️
+                {% endif %}
+            </div>
+            <h1>CODA System Alert</h1>
+            <span class="status-badge status-{{ alert_data.severity }}">
+                {{ alert_data.severity|upper }}
+            </span>
+        </div>
+
+        <div class="alert-details">
+            <h3>Alert Details</h3>
+            
+            <div class="detail-row">
+                <div class="detail-label">Component:</div>
+                <div class="detail-value">{{ alert_data.component|title }}</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Severity:</div>
+                <div class="detail-value">{{ alert_data.severity|upper }}</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Message:</div>
+                <div class="detail-value">{{ alert_data.message }}</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Timestamp:</div>
+                <div class="detail-value">{{ timestamp|date:"M d, Y H:i:s T" }}</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Domain:</div>
+                <div class="detail-value">{{ domain }}</div>
+            </div>
+        </div>
+
+        {% if alert_data.severity == 'critical' %}
+        <div class="action-required">
+            <h4>🚨 IMMEDIATE ACTION REQUIRED</h4>
+            <p>This is a <strong>CRITICAL</strong> alert that requires immediate attention. Please investigate and resolve this issue as soon as possible.</p>
+        </div>
+        {% elif alert_data.severity == 'warning' %}
+        <div class="action-required">
+            <h4>⚠️ Attention Required</h4>
+            <p>This is a <strong>WARNING</strong> alert that should be addressed within the next hour to prevent potential issues.</p>
+        </div>
+        {% else %}
+        <div class="action-required">
+            <h4>ℹ️ Information</h4>
+            <p>This is an informational alert for your awareness.</p>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 30px;">
+            <h4>Recommended Actions:</h4>
+            <ul>
+                <li>Check the CODA monitoring dashboard: <a href="https://{{ domain }}/health/dashboard/">Health Dashboard</a></li>
+                <li>Review system logs for additional details</li>
+                <li>Verify system resources and performance</li>
+                {% if alert_data.component == 'ssl_certificate' %}
+                <li>Check SSL certificate status and renewal process</li>
+                {% elif alert_data.component == 'database' %}
+                <li>Verify database connectivity and performance</li>
+                <li>Check database logs for errors</li>
+                {% elif alert_data.component == 'cache' %}
+                <li>Verify cache system connectivity</li>
+                <li>Check Redis/cache server status</li>
+                {% elif alert_data.component == 'system' %}
+                <li>Check server resources (CPU, memory, disk)</li>
+                <li>Review system performance metrics</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>This alert was generated by the CODA monitoring system.</p>
+            <p>For support, please contact the development team.</p>
+            <p>Domain: {{ domain }} | Generated: {{ timestamp|date:"M d, Y H:i:s T" }}</p>
+        </div>
+    </div>
+</body>
+</html>
+

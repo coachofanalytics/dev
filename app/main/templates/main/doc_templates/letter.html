@@ -1,0 +1,65 @@
+{% extends "main/base_templates/email_base.html" %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 top-coloumn">
+                <p class="title-sub-head">
+                    CODA-CROWN DATA ANALYSIS AND CONSULTANCY LLC
+                </p>
+                <p class="title-para">
+                   <i>End to End Project Based Training</i> 
+                </p>
+            </div>
+            <div class="col-md-4 top-coloumn text-white">
+                <div style="padding:2rem">
+                    <center>
+                        <a href="{% url 'professional_services:train'%}" class="btn btn-md btn-bc">Start Training</a>
+                    </center>
+                </div>
+            </div>
+        </div>
+
+        <div class="row bottom-coloumn">
+            <div class="col-md-12 top-coloumn bottom-coloumn">
+                <p class="title-sub-pay text-center">
+                    {{request.user.first_name}},
+                </p>
+                <div class="row">
+                    <div style="background-color:#f8f8f8; border:1px solid #ccc; padding:20px; font-size:20px;">
+                        <p> 
+                            Welcome to Crown Data Analysis and Consultancy (CODA) Limited. My hope is that by the end of this course you have a new appreciation for the subject matter and will continue your education in the subject.
+                            My name is Chris Maghas and I will be your instructor for the next 12 weeks 
+                            in this completely online course. This course runs {{start_date}} to {{end_date}}
+                            In this email you will find basic information about the course as well as resources for
+                            ensuring your success in the course.
+                        </p><br>
+                        <p> 
+                            The course will be conducted on Gotomeeting.com and
+                            everything for your success will be shared. An online course is much like a face-to-face
+                            course, it takes a significant time commitment from you. I expect you to spend at least 12 hours
+                            per week working on the material. While there is a significant amount of reading, I have worked to make it all enjoyable. Each week’s material will be made available Sunday Evening. I have Attached in this email the 
+                            Course Outline as well as specifications of the laptop needed for the course.<br>
+                        </p><br>
+                        <p>
+                            Last, please contact me if you have a question about the course. 
+                            The best way to do this is via email at info@codanalytics.net or phone at +1 (417) 413-7966.
+                            My goal is to respond to your messages within 4hrs. If you do not receive a response back 
+                            within the 4-hour timeframe, resend the message as it may have been lost in cyberspace.
+                            I’m so glad you have joined this class and I look forward to working with you!<br>
+                        </p>
+                        <p>Coach.</p>
+                        <p>Chris Maghas</p>
+                    </div>
+                    <div class="col-md-5">
+                    </div>
+                </div>
+            </div>
+                <div>
+                    <a href="https://docs.google.com/document/d/1whVgYPPSss19JU5bUK0CDFMP8EvTG6g-/edit">
+                     Print
+                    </a>
+                </div>
+        </div>
+
+    </div>
+{% endblock content %}

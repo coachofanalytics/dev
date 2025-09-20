@@ -1,0 +1,63 @@
+{%extends "main/base_templates/new_base.html"%} {% block content %}
+<section id="rating">
+  <div class="rating text-center">
+    <h2>Rating Scores For All</h2>
+    
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Date</th>
+          <th>Employee Name</th>
+          <th>Topic</th>
+          <!-- <th>Punctuality</th>
+          <th>Communication</th> -->
+          <th>Worked on</th>
+          <th>Total points</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for rating in ratings %}
+          <td>{{rating.rating_date|date:"F d, Y"}}</td>
+          <td>
+            <a class="article-title" href="{% url 'application:userscores' rating.employeename %}">
+              {{rating.employeename}}
+          </td>
+          <td>{{rating.topic}}</td>
+        
+          <td>
+            {%if rating.projectDescription %}
+              <p>Project Description </p>
+            {%endif%}
+            {%if rating.requirementsAnalysis %}
+              <p>Requirements Analysis</p>
+            {%endif%}
+            {%if rating.development %}
+              <p>Development</p>
+            {%endif%}
+            {%if rating.testing %}
+              <p>Testing</p>
+            {%endif%}
+            {%if rating.deployment %}
+              <p>Deployment</p>&nbsp;
+            {%endif%}
+          </td>
+          <td>{{rating.totalpoints}}</td>
+          <td>
+            <a
+              href="{% url 'employee_update' rating.id}"
+              class="btn text-secondary px-0"
+            >
+              edit
+            </a>
+          </td>
+
+        </tr>
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

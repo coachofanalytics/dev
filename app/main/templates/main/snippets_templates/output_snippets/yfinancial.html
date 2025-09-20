@@ -1,0 +1,12 @@
+<div class="text-center">
+    <form action="{% url 'investing:overboughtsold' symbol=None %}" method="post" id="yahooForm">
+        {% csrf_token %}
+        
+        <label for="category">Financial Category:</label>
+        <select id="category" name="category">
+            {% for category in financial_categories %}
+                <option value="{{ category.title }}">{{ category.title }}</option>
+            {% endfor %}
+        </select><br><br>
+    </form>
+</div>

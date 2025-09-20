@@ -1,0 +1,48 @@
+{%extends "main/base_templates/new_base.html"%} {% block content %}
+<section id="rating">
+  <div class="rating text-center">
+    <h2>Add/Edit image</h2>
+    <button>
+      <a
+      href="{%url 'main:image'%}" 
+        class="btn text-secondary px-0"
+      >
+        Add a New Image
+      </a>
+    </button>
+    <hr>
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>category</th>
+          <th>name</th>
+          <th>image_url</th>
+          <th>description</th>
+          <th>Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for image in images %}
+        <tr>
+          <td>{{image.category}}</td>
+          <td>{{image.name}}</td>
+          <td>{{image.image_url}}</td>
+          <td>{{image.description}}</td>
+          <td>
+            <a
+            <td>
+              <a
+              href="{% url 'main:updateimage' image.id %}" 
+                class="btn text-secondary px-0"
+              >
+                edit
+              </a>
+            </td>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

@@ -1,0 +1,32 @@
+{% extends "main/base_templates/new_base.html" %} {% block content %}
+
+<style>
+    #meetingItem{
+        display: grid;
+        grid-template-columns: inherit;
+        width: 63%;
+        border-top-left-radius: 0px;
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 20px;
+        padding: 10px 10px 10px 10px;
+        background-color: antiquewhite;
+        font-size: large;
+        color: black;
+    }
+
+    #message{
+        text-align: center;
+        font-size: 1.53em;
+        padding-top: 10px;
+    }
+</style>
+    <div id="message"> --- {{ data }} --- </div>
+    {% for item in info %}
+    <hr>    
+    <div id="meetingItem">
+        <div>{{item.name}} (email : {{item.attendeeEmail}} ) joined at {{item.joinTime}} left meeting at {{item.leaveTime}}</div>
+    </div>
+        
+    {% endfor %}
+    <hr>
+{% endblock content%}
