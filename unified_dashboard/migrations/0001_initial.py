@@ -1,0 +1,108 @@
+# Generated manually for unified_dashboard
+
+from django.conf import settings
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='DashboardService',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=100)),
+                ('description', models.TextField()),
+                ('category', models.CharField(choices=[('finance', 'Finance'), ('investing', 'Investing'), ('management', 'Management'), ('ai_services', 'AI Services'), ('professional_services', 'Professional Services'), ('hr', 'Human Resources'), ('analytics', 'Analytics'), ('admin', 'Administration')], max_length=50)),
+                ('url', models.URLField()),
+                ('icon', models.CharField(default='fas fa-cog', max_length=50)),
+                ('is_active', models.BooleanField(default=True)),
+                ('requires_permission', models.CharField(blank=True, help_text='Permission required to access this service', max_length=100)),
+                ('user_roles', models.JSONField(default=list, help_text='List of user roles that can access this service')),
+                ('order', models.IntegerField(default=0)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'ordering': ['order', 'name'],
+            },
+        ),
+        migrations.CreateModel(
+            name='DashboardWidget',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('widget_type', models.CharField(choices=[('quick_action', 'Quick Action'), ('service_card', 'Service Card'), ('analytics_chart', 'Analytics Chart'), ('recent_activity', 'Recent Activity'), ('notification', 'Notification'), ('iframe_embed', 'Iframe Embed')], max_length=50)),
+                ('title', models.CharField(max_length=100)),
+                ('description', models.TextField(blank=True)),
+                ('position', models.IntegerField(default=0)),
+                ('is_active', models.BooleanField(default=True)),
+                ('config', models.JSONField(default=dict, help_text='Widget-specific configuration')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dashboard_widgets', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['position', 'created_at'],
+            },
+        ),
+        migrations.CreateModel(
+            name='UserDashboardPreferences',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('theme', models.CharField(choices=[('light', 'Light Theme'), ('dark', 'Dark Theme'), ('auto', 'Auto (System)')], default='light', max_length=20)),
+                ('layout', models.CharField(choices=[('grid', 'Grid Layout'), ('list', 'List Layout'), ('compact', 'Compact Layout')], default='grid', max_length=20)),
+                ('notifications_enabled', models.BooleanField(default=True)),
+                ('email_notifications', models.BooleanField(default=True)),
+                ('auto_refresh', models.BooleanField(default=True)),
+                ('refresh_interval', models.IntegerField(default=300, help_text='Refresh interval in seconds')),
+                ('sidebar_collapsed', models.BooleanField(default=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='dashboard_preferences', to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='UserServiceAccess',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('last_accessed', models.DateTimeField(blank=True, null=True)),
+                ('access_count', models.IntegerField(default=0)),
+                ('is_favorite', models.BooleanField(default=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='unified_dashboard.dashboardservice')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_access', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'unique_together': {('user', 'service')},
+            },
+        ),
+        migrations.CreateModel(
+            name='DashboardAnalytics',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('session_id', models.CharField(max_length=100)),
+                ('page_views', models.IntegerField(default=0)),
+                ('time_spent', models.IntegerField(default=0, help_text='Time spent in seconds')),
+                ('widgets_used', models.JSONField(default=list)),
+                ('services_accessed', models.JSONField(default=list)),
+                ('date', models.DateField()),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dashboard_analytics', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'unique_together': {('user', 'date')},
+            },
+        ),
+        migrations.AddConstraint(
+            model_name='dashboardwidget',
+            constraint=models.UniqueConstraint(fields=('user', 'position'), name='unique_user_position'),
+        ),
+    ]
+

@@ -1,0 +1,129 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% block title %}investment{% endblock %}
+{% load static %}
+{% block content %}
+<div class="banner-div">
+  <img class="banner-div" style=" position: absolute; width: 100%;height: 100%;" src="{% static 'main/image/invest3.jpg' %}" alt="Investment Image">
+  <div class="container-md" >
+    <h2>Investment</h2>
+    <p style="color: white;font-size: 90px;text-shadow: 0px 0px 22px black;">Start Your Investment With US</p>
+  </div>
+</div>
+<div class="stripdiv">
+  <div class="container">
+    <p class="me-lg-5">
+      Welcome to our investment platform! Discover lucrative investment opportunities as we guide you on the path to financial success
+    </p>
+    <div class="center-container">
+      <a class="col" href="{% url 'main:service_plans' slug='access_options' %}">Start Investing Now</a>
+    </div>
+  </div>
+</div>
+<div id="main-content">
+<div class="services-div">
+  <div class="container-lg">
+    <div class="row flex-column-reverse flex-md-row">
+      <div class="col-md-6 pe-lg-5">
+        <h2 class="mt-4 mt-md-0"> EXECUTIVE SUMMARY (BUSINESS OVERVIEW)</h2>
+        <div class="text-content" id="readMoreContent">
+          <p class="me-lg-5" id="truncatedText">
+            {{ generated_content|safe|truncatechars:400 }}
+          </p>
+          <p class="me-lg-5" id="remainingText" style="display: none;">
+            {{ generated_content|safe }}
+          </p>
+          <a onclick="toggleReadMore()" class="btn btn-primary" id="readMoreButton" tabindex="0">
+            Read more
+          </a>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <img class="img-fluid ps-lg-5" 
+          src="{% static 'main/img/background/home2.jpg' %}"
+          alt="EXECUTIVE SUMMARY Image">
+      </div>
+    </div>
+  </div> 
+</div>
+</div>
+<div class="services-div">
+  <div class="container-lg">
+      <div class="row flex-column-reverse flex-md-row">
+          <div class="col-md-6 pe-lg-5">
+              <h2 class="mt-4 mt-md-0">Market Opportunity</h2>
+              <p class="me-lg-5">
+                <p>Explore the vast market opportunities offered by the Coda platform. From training students to aiding in project management, helping students find jobs, and facilitating investments in our platforms.</p>
+                <p>Learn how Coda is making an impact in the following areas:</p>
+                <div class="styled-list-container">
+                  <div class="plain-list-container">
+                    <ul class="plain-list">
+                      <li>Training and Education</li>
+                      <li>Project Management Solutions</li>
+                      <li>Job Placement for Students</li>
+                      <li>Investment Opportunities</li>
+                    </ul>
+                  </div>
+                  
+                </div>
+              </p>
+          </div>
+          <div class="col-md-6">
+              <img class="img-fluid ps-lg-5 increased-width" 
+              
+              src="{% static 'main/image/about.jpg' %}"
+                
+              alt="Market Opportunity Image"role="presentation">
+          </div>
+      </div>
+  </div> 
+</div>
+{% include 'investing/card.html'%}
+{% include 'investing/charts.html'%}
+<!-- <div class="testimonials-div">
+  <div class="container">
+    <h1>SUCCESS STORIES</h1>
+    <div class="owl-carousel">
+      {% for investment in investments %}
+        <div class="carousel-card {% if forloop.counter > 3 %}hidden{% endif %}">
+          <h3> 
+            <h3 style="margin-top: 20px;">
+              {{ investment.client.first_name }}, {{ investment.client.last_name }}
+            </h2>
+          </h3>
+          <p style="font-size: 18px;">Date: {{ investment.investment_date }}</p>
+          <p style="font-size: 16px;">{{ investment.description }}</p>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="owl-controls" style="margin-top: 20px;" >
+      <button class="prev" onclick="moveCarousel(-1)"  style="color:var(--golden-color); font-size: 50px;">❮</button>
+      <button class="next" onclick="moveCarousel(1)" style="color:var(--golden-color); font-size: 50px;">❯</button>
+    </div>
+  </div>
+</div> -->
+ <!-- <div class="row text-center">
+
+  <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
+    <a href="{% url 'main:post-create' %}">Share Your Experiences</a>
+  </div>
+  <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
+    <a href="">back to top</a>
+  </div>
+  </div>  -->
+
+  {% include 'main/snippets_templates/chat.html'%}
+
+  </div> 
+  <script>
+  
+    function toggleReadMore() {
+      
+    }
+    document.getElementById("readMoreButton").addEventListener("keypress", function(event) {
+        if (event.key === "Enter" || event.keyCode === 13) {
+            event.preventDefault();
+            toggleReadMore();
+        }
+    });
+  </script>
+{% endblock %}

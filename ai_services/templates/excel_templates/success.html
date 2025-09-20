@@ -1,0 +1,15 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
+    <main>
+        <section class="success">
+            <div class="container">
+                <p>Your Excel file has been successfully processed and the data has been saved!</p>
+                <a href="{% url 'export_data_to_excel' %}" class="btn-primary">Export Data to Excel</a>
+            </div>
+        </section>
+    </main>
+{% endblock content %}

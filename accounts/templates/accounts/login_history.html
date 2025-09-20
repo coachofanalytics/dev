@@ -1,0 +1,32 @@
+{% extends "main/base_templates/new_base.html" %} {% load crispy_forms_tags %} {% block content %}
+
+ <div class="container">
+   <h2>Login and Logout History</h2>
+   <table class="table table-striped">
+     <thead>
+       <tr>
+         <th>id</th>
+         <th>Login Time</th>
+         <th>Logout Time</th>
+       
+       </tr>
+     </thead>
+     <tbody>
+       {% for entry in login_history %}
+         <tr>
+           <td>{{ entry.id }}</td>
+           <td>{{ entry.login_time }}</td>
+           <td>{{ entry.logout_time }}</td>
+         
+         </tr>
+       {% empty %}
+         <tr>
+           <td colspan="2">No login history available.</td>
+         </tr>
+       {% endfor %}
+     </tbody>
+   </table>
+ </div>
+
+
+{% endblock %}

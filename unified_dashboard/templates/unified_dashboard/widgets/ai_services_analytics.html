@@ -1,0 +1,103 @@
+<div class="widget-content">
+    <div class="analytics-summary">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-brain text-primary"></i>
+                    </div>
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">AI Analyses</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-users text-success"></i>
+                    </div>
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Active Users</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-chart-line text-info"></i>
+                    </div>
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Sessions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-clock text-warning"></i>
+                    </div>
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Avg Response Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="analytics-actions mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{% url 'ai_services:diaspora_dashboard' %}" class="btn btn-primary btn-block">
+                    <i class="fas fa-brain"></i> AI Services Dashboard
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{% url 'ai_services:analytics_dashboard' %}" class="btn btn-outline-primary btn-block">
+                    <i class="fas fa-chart-bar"></i> Detailed Analytics
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="recent-activity mt-4">
+        <h6><i class="fas fa-history"></i> Recent Activity</h6>
+        <div class="activity-list">
+            <div class="activity-item">
+                <i class="fas fa-info-circle text-muted"></i>
+                <span class="text-muted">No recent AI service activity</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.metric-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.metric-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.activity-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+</style>

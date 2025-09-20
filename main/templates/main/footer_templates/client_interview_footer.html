@@ -1,0 +1,77 @@
+{% load static %}
+
+<style>
+  .footer-link {
+    color: #fff;
+    list-style-type: none;
+    text-decoration: none;
+  }
+  ul {
+    list-style-type: none;
+    text-align: left;
+  }
+  h1,
+  h4 {
+    font-weight: bold;
+  }
+  #formargin {
+    padding-top: 10px;
+  }
+</style>
+
+<div id="formargin">
+  <div class="container-fluid padding bg-dark text-white p-4 px-5 py-5">
+    <div class="row text-left">
+      <div class="col-md-5">
+        <h1 class="px-5">CODA</h1>
+        <p class="px-5">
+          Crown Data Analysis and Consultancy LLC (CODA) was established to
+          provide our customers with high quality services in project
+          management, Consultancy and Software solutions. Our goal is to provide
+          these services with efficiency and effectiveness at a fair price both
+          locally & internationally
+        </p>
+      </div>
+      <div class="col-md-7">
+        <div class="d-flex justify-center container-fluid padding" id="footer">
+          <div class="col-md-3">
+            <h4 class="px-4">MY ACCOUNT</h4>
+
+            <ul>
+              <li><a class="footer-link" href="{% url "accounts:account-login" %}">Sign In</a></li>
+              <li><a class="footer-link" href="{% url "accounts:join" %}">Register</a></li>
+              <li><a class="footer-link" href="{% url "account-logout" %}">Log Out</a></li>
+              <li><a class="footer-link" href="/">My Progress</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <h4 class="px-4">COMPANY</h4>
+
+            <ul>
+              <li><a class="footer-link" href="/">Our Story</a></li>
+              <li><a class="footer-link" href="/">Why CODA</a></li>
+              <li><a class="footer-link" href="/">Contacts</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <h4 class="px-4">SUPPORT</h4>
+
+            <ul>
+              <li><a class="footer-link" href="/">FAQ</a></li>
+              <li><a class="footer-link" href="/">Student Support</a></li>
+              <li><a class="footer-link" href="/">Customer Support</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3 m-3">
+            <h1 class="px-4"></h1>
+            <ul class="mt-3">
+              <li><a class="footer-link" href="/">Privacy Policy</a></li>
+              <li><a class="footer-link" href="/">Terms Of Use</a></li>
+              <li><a class="footer-link" href="/">Copyright</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

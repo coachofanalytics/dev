@@ -1,0 +1,311 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% block title %}Coda-Home{% endblock %}
+{% load static %}
+{% block content %}
+<div class="banner-div" style="background-image: url('{{googledriveurl}}{{banner_url}}'); background-repeat: no-repeat; background-size: cover;">
+  <div class="container-md">
+      <h2>services</h2>
+      <p>Get help with career, business, and personal projects.</p>
+  </div>
+</div>
+<div class="timer-notification" id="timer-notification">
+  <h4>
+    🎉📢 Next Session Begins : {{next_class_date}}
+  </h4>
+
+  <div class="timer">
+      <div class="time-box">
+          <span class="time-label">Days</span>
+          <span id="days" class="time-value">{{ days_left }}</span>
+      </div>
+      <div class="time-box">
+          <span class="time-label">Hours</span>
+          <span id="hours" class="time-value">{{ hours_left }}</span>
+      </div>
+      <div class="time-box">
+          <span class="time-label">Minutes</span>
+          <span id="minutes" class="time-value">{{ minutes_left }}</span>
+      </div>
+      <div class="time-box">
+          <span class="time-label" id="second">Seconds</span>
+          <span id="seconds" class="time-value">{{ seconds_left }}</span>
+      </div>
+      <button class="close-btn" onclick="removeTimer()">X</button>  
+  </div>
+  <a href="accounts/join/" class="register-btn">Register Now</a>
+</div>
+<div style="position: relative; z-index: 9999;">
+{% include 'main/snippets_templates/chatbot.html'%}
+</div>
+<div id="main-content">
+  <div class="strip-div">
+    <div class="container">
+        <p>Whether it’s learning a new skill, landing a high paying job, or managing your project where you can’t
+            be, we
+            have a solution for you.
+        </p>
+    </div>
+  </div>
+</div>
+<div class="services-div">
+  <div class="container-lg">
+    {% for service in services %}
+      <div class="row flex-column-reverse flex-md-row">
+        <div class="col-md-6 pe-lg-5">
+          <h2 class="mt-4 mt-md-0" style="text-align: left;">{{ service.title }}</h2>
+          <div class="text-content" id="description{{ forloop.counter }}">
+            <p class="me-lg-5 truncated-text" id="truncatedText{{ forloop.counter }}">
+              {{ service.description|safe|truncatechars:400 }}
+            </p>
+            <p class="me-lg-5 remaining-text" id="remainingText{{ forloop.counter }}" style="display: none;">
+              {{ service.description|safe }}
+            </p>
+            <button class="reead-more-button"aria-label="Read more on for services" data-index="{{ forloop.counter }}" tabindex="0" style="color: #000;">
+              Read more
+            </button>
+            
+          </div>
+          {% if service.title == "Investments" %}
+            <a class="btn btn-primary read-more-button" href="{% url 'investing:InvestmentPlatformOverview' %}" aria-label="Proceed to investment page">Proceed</a>
+          {% else %}
+            <a class="btn btn-primary read-more-button" href="{% url 'main:display_service' slug=service.slug %}" aria-label="Proceed to {{ service.title }}">Proceed</a>
+          {% endif %}
+          {% if request.user.is_superuser or  request.user.is_staff %}
+            <a class="btn btn-primary read-more-button" onclick="toggleContent('more-content', '{{service.description}}','{{forloop.counter}}') " tabindex="0">Long</a>
+            <a class="btn btn-primary read-more-button" onclick="toggleContent('less-content', '{{service.description}}', '{{forloop.counter}}')" tabindex="0">Short</a>
+          {% endif %}
+        </div>
+        <div class="col-md-6">
+          <img id="service_{{ service.id }}" class="img-fluid ps-lg-5"
+            {% for image in images %}
+              {% if image.name == service.slug and image.image_url != 'None' %}
+                src="{{ googledriveurl }}{{ image.image_url }}"
+                alt="{{ service.title }} Image"
+                onerror="handleImageError(this, '{{service.slug}}')"
+              {% else %}
+              src="{% static 'main/img/home/' %}{{service.slug}}.jpeg"
+              alt="{{ service.title }} Image"
+              onerror="handleImageError(this, '{{service.slug}}'); this.onerror='null';"
+
+              {% endif %}
+            {% endfor %}
+  
+            >
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="testimonials-div">
+  <div class="container">
+      <h2>CLIENT SUCCESS STORIES</h2>
+      <div class="owl-carousel">
+      <div class="row text-center commit"> 
+        {% for post in posts %}
+            <div class="{{ selected_class }}">
+              <div class="carousel-card">
+                <div class="img-div p-3">
+                  <span>
+                    <img onerror="handleImageErrorInsucessStory(this)" {%if post.writer.profile.img_url%} src="{{googledriveurl}}{{post.writer.profile.img_url}}" alt="" {%else%} src="{% static '/main/img/service-1.jpg' %}" alt="" {%endif%}class="team-img" width="115px" height="110px" style="border-radius: 50%;"/>
+                  </span>
+                </div>
+                  <h3> 
+                    <a href="{% url 'main:post-detail' post.id %}">
+                      {{ post.writer.first_name }},{{post.writer.last_name}}
+                    </a>
+                  </h3>
+                  <h3 style="font-size: 16px;">{{ post.title }} {{ count_to_class.post.count }}</h3>
+
+                  <!-- <h3>{{post.title}} {{ count_to_class.post.count }}</h3> -->
+                  <font size="2">
+                      {{post.content|truncatewords:70}}
+                    </font>
+              </div>
+            </div>
+        {% endfor %}
+        <!-- {% for post in posts %}
+        <div class="col-md-4">
+          <div class="carousel-card">
+            <div class="img-div p-3">
+              <span>
+                <img src="{{googledriveurl}}={{post.writer.profile.image2.image_url}}" class="team-img" width="110px" height="110px" style="border-radius: 50%;"/>
+              </span>
+            </div>
+              <h3> 
+                <a href="{% url 'main:post-detail' post.id %}">
+                  {{ post.writer.first_name }},{{post.writer.last_name}}
+                </a>
+              </h3>
+              <h3>{{post.title}}</h3>
+              <font size="2">
+                  {{post.content|truncatewords:50}}
+                </font>
+          </div>
+        </div>
+        {% endfor %} -->
+       </div>
+
+
+      </div>
+  </div>
+</div>
+ <div class="row text-center">
+
+  <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
+    <a href="{% url 'main:post-create' %}">Share Your Experiences</a>
+  </div>
+  <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
+    <a href="">back to top</a>
+  </div>
+  </div> 
+
+  <script>
+    function handleImageError(img) {
+      // var parentDiv = img.parentNode; // Get the grandparent div
+      
+      // // Center the content above the removed div
+      // var contentDiv = parentDiv.previousElementSibling;
+  
+      // if (contentDiv) {
+      //   contentDiv.style.textAlign = 'justify';
+      //   contentDiv.classList.remove('col-md-6'); // Remove the current class
+      //   contentDiv.classList.remove('pe-lg-5');
+      //   //contentDiv.classList.add('your-new-class'); // Add the new class
+      // }
+      // parentDiv.style.display = 'none'; // Hide the image
+  
+      // parentDiv.remove(); // Remove the grandparent div
+     img.src = "{% static 'main/img/home/project2.jpg' %}"
+    }
+    function handleImageErrorInsucessStory(img) {
+
+      img.src = "{% static '/main/img/service-1.jpg' %}"
+      // parentDiv.remove(); // Remove the grandparent div
+    }
+    function toggleContent(message_type, service_description, index) {
+        
+        var descriptionDiv = document.getElementById("description"+index)
+        // console.log(descriptionDiv)
+        if (message_type == 'more-content') {
+          var message = 'eleborate this content:' + service_description
+          // console.log(message)
+        }
+        else{
+          var message = 'short this content:' + service_description
+          // console.log(message)
+        }
+        var url = "{% url 'main:get_respos' %}?userMessage="+message+"&generalUse=True"
+        // var csrftoken = getCookie('csrftoken');  // Assuming you have a function to retrieve the CSRF token
+
+        fetch(url, {
+          method:'GET',
+          headers:{
+            'Content-type':'application/json',
+            //'X-CSRFToken':csrftoken,
+          },
+        }).then(response => response.json())
+          .then(data => {
+              // Handle the response data here
+              // console.log(data);
+
+              // Create a new p element
+              var newParagraph = document.createElement('p');
+
+              // Set the content of the new paragraph
+              newParagraph.textContent = data['response'];
+
+              // Replace the existing content with the new paragraph
+              descriptionDiv.innerHTML = '';  // Remove existing content
+              descriptionDiv.appendChild(newParagraph);
+
+          })
+          .catch(error => {
+              // Handle errors here
+              console.error('Error:', error);
+          });
+    }
+  </script>
+<script>
+  
+  const targetDate = new Date("December 25, 2024 00:00:00").getTime();
+  let countdown; 
+
+  function startTimer() {
+      countdown = setInterval(function() {
+          const now = new Date().getTime();
+          const distance = targetDate - now;
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          document.getElementById("seconds").innerHTML = seconds;
+
+          if (distance < 0) {
+              clearInterval(countdown);
+              document.querySelector(".timer").innerHTML = "Class has started!";
+          }
+      }, 1000);
+  }
+
+  startTimer();
+  function removeTimer() {
+      clearInterval(countdown); 
+      const timerNotification = document.getElementById("timer-notification");
+      if (timerNotification) {
+          timerNotification.remove(); 
+      }
+  }
+</script>
+
+  
+  
+  {% include 'main/snippets_templates/chat.html'%}
+
+  </div> 
+  <style>
+        @media (max-width: 520px) {
+        .timer-notification{
+          padding: 10px;
+        }
+          .timer-notification h2 {
+              font-size: 13px;
+              margin-left: 10px;
+              line-height: 1.2;
+              text-align: left;
+          }
+       
+       
+          .timer-notification h4 {
+              font-size: 14px;
+              margin-left: 160px;
+              line-height: 1.2;
+              text-align: left;
+          }
+       
+       
+          .time-value {
+              font-size: 0.9rem;
+          }
+       
+       
+          .time-label {
+              font-size: 0.75rem;
+          }
+       
+       
+          .timer-notification {
+              padding: 4px;
+          }
+          #second{
+               display: none;
+          }
+          #seconds{
+               display: none;
+          }
+          .timer{
+            margin-left: 160px;
+          }
+          .register-btn{
+            margin-left: 140px;
+          }
+       }  
+  </style>
+{% endblock %}

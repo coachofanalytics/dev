@@ -1,0 +1,126 @@
+{% extends "main/base_templates/email_base.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 top-coloumn">
+            <p class="title-sub-head">
+                CODA-CROWN DATA ANALYSIS AND CONSULTANCY LLC
+            </p>
+            <p class="title-para">
+            <i>Leading provider of consultancy, education, and business services in the US. </i> 
+            </p>
+        </div>
+        <div class="col-md-4 top-coloumn text-white">
+            <div style="padding:2rem">
+                <center>
+                    <a href="{% url 'main:layout'%}" class="btn btn-md btn-bc">Back To Home</a>
+                </center>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bottom-coloumn">
+        <div class="col-md-12 top-coloumn bottom-coloumn">
+            <p class="title-sub-pay text-center">
+                {{service_title_uppercase}} CONTRACT DETAILS:
+            </p>
+            <div class="row">
+                <div style="background-color:#f8f8f8; border:1px solid #ccc; padding:20px;">
+                    <ul style="list-style:none; padding-left:0;">
+                        <form  method="POST" action="/finance/contract_professional_services/" class="form-group">
+                            {% csrf_token %}
+                                    <input type="hidden" name="usr_data" value="first_name={{client_data.first_name}}&username={{client_data.username}}&last_name={{client_data.last_name}}&
+                                    email={{client_data.email}}&phone={{client_data.phone}}&
+                                    username={{client_data.username}}&password1={{client_data.password1}}&password2={{client_data.password2}}">
+                                    <input type="hidden" name="student_contract" value="student_contract">
+                                    <input type="hidden" name="contract_charge" value="{{ contract_charge|floatformat:2 }}">
+                                    <input type="hidden" name="contract_duration" value="{{ contract_duration }}">
+                                    <input type="hidden" name="contract_period" value="{{ contract_period }}">
+                            <fieldset class="form-group">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Name: <br>
+                                    Address: <br>
+                                    Phone: <br>
+                                    Email: 
+                                </div>
+                                <div class="col-md-6">
+                                    {{client_data.first_name}} {{client_data.last_name}} <br>
+                                    {%if client_data.address %}{{client_data.address}}{% else %} - {% endif %} <br>
+                                    {{client_data.phone}} <br>
+                                    {{client_data.email}}
+                                </div>
+                            </div>
+                                <div class="row">
+                                </div>
+                            <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                            <p class="lead  text-center">
+                                <b>PAYMENT INFORMATION</b> 
+                                <a href="#">Edit</a>
+                              </p>
+                            <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        Total Fee: USD.<span class="fees">{{ contract_charge|floatformat:2 }}</span> <br>
+                                        Time Assigned:<span class="fees">{{ contract_duration }} hour(s)</span> <br> 
+                                        Contract Period: <span class="fees">{{ contract_period }} month(s)</span> <br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="radio" id="One_month" name="payment_type" value="paypal" required>
+                                        Paypal<br>
+                                        <input type="radio" id="One_month" name="payment_type" value="zelle">
+                                        Zelle<br>
+                                        <input type="radio" id="One_month" name="payment_type" value="cash_app">
+                                        Cash App<br>
+                                        <input type="radio" id="One_month" name="payment_type" value="Venmo">
+                                        Venmo</br>
+                                        <input type="radio" id="One_month" name="payment_type" value="mpesa">
+                                        mpesa</br>
+                                    </div>
+                                </div>
+                            <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <p class="lead  text-center">
+                                        <b>Terms and Conditions</b>
+                                    </p>
+                                    1.THAT all the training sessions shall be virtual via the <b>GoToMeeting & ZOOM</b> platform with dates
+                                    communicated by CODA, any change of training platform shall be communicated through WhatsApp
+                                    platforms,<br>
+                                    2. THAT CODA shall provide all the necessary learning materials including PowerPoints and videos within the
+                                    training period.<br>
+                                    3. THAT the Client shall commit to making payment according to the <b>payment schedule</b> attached to the
+                                    contract.<br>
+                                    4. THAT CODA retains the power to stop any form of training including sharing of materials where the client has
+                                    failed to remit payments in accordance with the schedule, and where there is no commitment to do the same.<br>
+                                </div>
+                              </div>
+                            <input type="checkbox" name="terms" required><b> I agree to the Terms of service</b>
+                            <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                            <div class="row" >
+                                <div class="col-md-6">
+                                    client signature:<input type="text" name="client_sign" class="signature" value="{{client_data.username}}" required><br>
+                                    Contract Date:     {{contract_date}}
+                                </div>
+                                <div class="col-md-6">
+                                    company reprensentative:<input type="text" name="client_sign" class="signature" value="coda" required><br>
+                                    Contract Date:      {{contract_date}}
+                                </div>
+                            </div>
+                            </fieldset>
+                            <div class="form-group">
+                                <button class="btn btn-outline-info" type="submit">Submit</button>
+                            </div>
+                        </form>
+                    </ul>
+                </div>
+                <div class="col-md-5">
+                </div>
+            </div>
+    </div>
+    </div>
+</div>
+
+
+{% endblock content %}

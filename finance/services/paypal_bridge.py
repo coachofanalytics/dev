@@ -1,0 +1,2 @@
+class PayPalBridge: pass
+

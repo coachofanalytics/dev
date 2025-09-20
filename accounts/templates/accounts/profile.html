@@ -1,0 +1,113 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+
+<div class="container-fluid padding">
+ <div class="row padding text-center">
+   <div class="col-md-4" id="bada">
+     <div class="card">
+          <div class="card-body">
+             <h4><b>{{ user.username}}</b></h4>
+             <img
+             class="rounded-circle account-img"
+             src="{{ user.profile.image.url }}"
+           />
+             <hr/>
+             <p class="bd">
+               {{ user.email }}
+             </p>
+             <hr>
+             <div class="row">
+               <div class="col-md-4" id="bada">
+                 <a href="{% url 'main:members' title='team_profiles' %}" >
+                   <button type="button" class="btn btn-primary">GET MORE INFORMATION</button>
+                 </a>
+               </div>
+               <hr>
+               <div class="col-md-4" id="bada">
+                 <a href="{% url 'accounts:login_history' username %}" >
+                   <button type="button" class="btn btn-primary">Login History</button>
+                 </a>
+               </div>
+               <div class="col-md-4" id="bada">
+                 <a href="{% url 'main:update_profile' user.id %}" >
+                   <button type="button" class="btn btn-primary">Edit Profile</button>
+                 </a>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+
+ <!-- Right Side - Daily Login Hours Section -->
+ <div class="col-md-8" id="login-hours-section">
+   <h2>Daily Login Hours</h2>
+  <!-- Button to display the form -->
+  <button onclick="toggleForm()" id="btn" class="btn btn-secondary">add Login/Logout time</button>
+  <div id="loginForm" style="display: none;">
+      <form method="POST" action="{% url 'accounts:account-profile' username=username %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="login_time" class="form-label">Login Time</label>
+          <input type="datetime-local" id="login_time" name="login_time" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="logout_time" class="form-label">Logout Time</label>
+          <input type="datetime-local" id="logout_time" name="logout_time" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add</button>
+      </form>
+  </div>
+
+
+  <!-- Login History Table -->
+<table id="loginTable" class="table table-striped mt-4">
+ <thead>
+   <tr>
+     <th>Date</th>
+     <th>Total Hours Logged</th>
+     <th>Update</th>
+   </tr>
+ </thead>
+ <tbody id="loginTableBody">
+   {% for entry in login_history %}
+     {% if entry.day and entry.total_hours %}
+       <tr data-day="{{ entry.day }}">
+         <td class="date-cell">{{ entry.day }}</td>
+         <td class="hours-cell">{{ entry.total_hours }} hours</td>
+         <td>
+           {% if entry.id %}
+             <a href="{% url 'accounts:time-update' entry.id %}">Edit</a>
+           {% else %}
+             <span>No Edit Link</span>
+           {% endif %}
+         </td>
+       </tr>
+     {% endif %}
+   {% empty %}
+     <tr>
+       <td colspan="3">No login history available.</td>
+     </tr>
+   {% endfor %}
+ </tbody>
+</table>
+ </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+
+
+<!-- login and logout_time -->
+<script>
+ function toggleForm() {
+     const form = document.getElementById('loginForm');
+     form.style.display = form.style.display === 'none' ? 'block' : 'none';
+     const btn = document.getElementById('btn');
+     btn.style.display = form.style.display === 'block' ? 'none' : 'block';
+ }
+  </script>
+{% endblock content %}

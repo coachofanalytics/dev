@@ -1,0 +1,432 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load custom_tags %}
+
+{% block content %}
+<section id="career">
+    <div class="career text-center">
+        <div class="row text-center">
+            <!-- Welcome back and ticker refresh area -->
+            <div class="col-md-2 amount_msg" id="bada">
+                <div class="card">
+                    <div class="card-body">
+                        <h5><b>WELCOME BACK</b></h5>
+                        <hr/>
+                        <i><h6>{{ user.first_name|upper }}</h6></i>
+                        <hr/>
+                        <p>
+                            <a href="{% url 'ai_services:fetch_and_insert_data' %}" class="btn btn-secondary btn-sm">Refresh</a>
+                        </p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Include financial data snippet for refresh -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main options result area -->
+            <div class="col-md-8" id="bada">
+                <div class="card">
+                   
+                </div>
+
+              
+                <!-- Show RSI and Stock Status for Selected Symbol -->
+                {% if symbol_info %}
+                <div class="card">
+                    <div class="card-body">
+                        <h5><b>Analysis for {{ symbol_info.symbol }}</b></h5>
+                        <ul>
+                            <li><b>RSI:</b> {{ symbol_info.rsi|floatformat:2 }}</li>
+                            <li><b>Status:</b> 
+                                {% if symbol_info.status == "Oversold" %}
+                                    <span class="badge badge-danger">{{ symbol_info.status }} by {{ symbol_info.percentage|floatformat:2 }}%</span>
+                                {% elif symbol_info.status == "Overbought" %}
+                                    <span class="badge badge-warning">{{ symbol_info.status }} by {{ symbol_info.percentage|floatformat:2 }}%</span>
+                                {% else %}
+                                    <span class="badge badge-info">{{ symbol_info.status }}</span>
+                                {% endif %}
+                            </li>
+                            <li><b>Tony Zac Signal:</b> {{ tony_zac_signal }}</li>
+                            <li><b>Coda Signal:</b> {{ coda_signal }}</li>
+                        </ul>
+                        <!-- OpenAI Recommendation -->
+                        <div class="alert alert-primary">
+                            <h5>AI Recommendation</h5>
+                            <p>{{openai_recommendation }}</p>
+                        </div>
+                        <!-- Add Button to Redirect to Latest Options Page -->
+                        <a href="https://finance.yahoo.com/quote/{{ symbol_info.symbol }}/options?p={{ symbol_info.symbol }}" target="_blank" class="btn btn-primary">
+                            View Options Chain
+                        </a>
+                        <!-- Display New Options Indicator -->
+                        {% if new_options %}
+                        <div class="alert alert-success mt-3">
+                            <strong>New Options Available!</strong> {{ options_message }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}            
+               
+                {% if top_symbols_data %}
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5><b>Top Symbols in {{ symbol_info.industry }} Industry with Larger Market Cap</b></h5>
+                        {% for symbol_data in top_symbols_data %}
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h6><b>{{ symbol_data.company_name }} ({{ symbol_data.symbol }}) - {{ symbol_data.market }}</b></h6>
+                                <p>Market Cap: {{ symbol_data.marketCap  }}</p>
+                                <canvas id="chart_{{ forloop.counter }}"></canvas>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Chart.js Script for Additional Charts -->
+              
+                <script>
+                    {% for symbol_data in top_symbols_data %}
+                    var ctx{{ forloop.counter }} = document.getElementById('chart_{{ forloop.counter }}').getContext('2d');
+                    var chartData{{ forloop.counter }} = {
+                        labels: {{ symbol_data.chart_data.dates|safe }},
+                        datasets: [{
+                            label: '{{ symbol_data.company_name }} Closing Prices',
+                            data: {{ symbol_data.chart_data.prices|safe }},
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            fill: true,
+                            pointRadius: 0,
+                            lineTension: 0
+                        }]
+                    };
+                    var stockChart{{ forloop.counter }} = new Chart(ctx{{ forloop.counter }}, {
+                        type: 'line',
+                        data: chartData{{ forloop.counter }},
+                        options: {
+                            scales: {
+                                xAxes: [{
+                                    type: 'time',
+                                    time: {
+                                        unit: 'day',
+                                        tooltipFormat: 'll'
+                                    },
+                                    distribution: 'linear'
+                                }],
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: false
+                                    }
+                                }]
+                            },
+                            elements: {
+                                point: {
+                                    radius: 0
+                                }
+                            },
+                            tooltips: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            hover: {
+                                mode: 'nearest',
+                                intersect: false
+                            }
+                        }
+                    });
+                    {% endfor %}
+                </script>
+                {% endif %}
+
+                <!-- Global Market Data -->
+                {% if global_market_info %}
+                <div class="card">
+                    <div class="card-body">
+                        <h5><b>Global Market Data for {{ symbol_info.symbol }}</b></h5>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Market</th>
+                                    <th>Latest Price</th>
+                                    <th>Trend (%)</th>
+                                    <th>More Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for market, market_info in global_market_info.items %}
+                                <tr>
+                                    <td>{{ market }}</td>
+                                    <td>{{ market_info.latestPrice }}</td>
+                                    <td>{{ market_info.trend|floatformat:2 }}%</td>
+                                    <td>
+                                        <a class="btn btn-primary btn-sm" target="_blank" href="https://finance.yahoo.com/quote/{{ market_info.symbol }}">
+                                            View on Yahoo Finance
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+                {% if symbol_info %}
+                <div class="card">
+                    <div class="card-body">
+                        <h5><b>{{ symbol_info.symbol }} - Stock Chart</b></h5>
+                        <!-- Time Period Selection -->
+                        <form method="get" action="">
+                            <div class="btn-group mb-3" role="group" aria-label="Time Period">
+                                {% csrf_token %}
+                                <input type="hidden" name="symbol" value="{{ symbol_info.symbol }}">
+                                <button type="submit" name="period" value="1d" class="btn btn-secondary {% if selected_period == '1d' %}active{% endif %}">1D</button>
+                                <button type="submit" name="period" value="5d" class="btn btn-secondary {% if selected_period == '5d' %}active{% endif %}">5D</button>
+                                <button type="submit" name="period" value="1mo" class="btn btn-secondary {% if selected_period == '1mo' %}active{% endif %}">1M</button>
+                                <button type="submit" name="period" value="6mo" class="btn btn-secondary {% if selected_period == '6mo' %}active{% endif %}">6M</button>
+                                <button type="submit" name="period" value="1y" class="btn btn-secondary {% if selected_period == '1y' %}active{% endif %}">1Y</button>
+                                <button type="submit" name="period" value="2y" class="btn btn-secondary {% if selected_period == '2y' %}active{% endif %}">2Y</button>
+                                <button type="submit" name="period" value="5y" class="btn btn-secondary {% if selected_period == '5y' %}active{% endif %}">5Y</button>
+                                <button type="submit" name="period" value="max" class="btn btn-secondary {% if selected_period == 'max' %}active{% endif %}">Max</button>
+                            </div>
+                        </form>
+
+                        <!-- Chart Canvas -->
+                        <canvas id="stockChart"></canvas>
+
+                        <!-- Chart.js Script -->
+                        <script>
+                            var ctx = document.getElementById('stockChart').getContext('2d');
+                            var chartData = {
+                                labels: {{ chart_data.dates|safe }},
+                                datasets: [{
+                                    label: '{{ symbol_info.symbol }} Closing Prices',
+                                    data: {{ chart_data.prices|safe }},
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    fill: true,
+                                    pointRadius: 0,
+                                    lineTension: 0
+                                }]
+                            };
+                            var stockChart = new Chart(ctx, {
+                                type: 'line',
+                                data: chartData,
+                                options: {
+                                    scales: {
+                                        xAxes: [{
+                                            type: 'time',
+                                            time: {
+                                                unit: 'day',
+                                                tooltipFormat: 'll'
+                                            },
+                                            distribution: 'linear'
+                                        }],
+                                        yAxes: [{
+                                            ticks: {
+                                                beginAtZero: false
+                                            }
+                                        }]
+                                    },
+                                    elements: {
+                                        point: {
+                                            radius: 0
+                                        }
+                                    },
+                                    tooltips: {
+                                        mode: 'index',
+                                        intersect: false,
+                                    },
+                                    hover: {
+                                        mode: 'nearest',
+                                        intersect: false
+                                    }
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+                {% endif %}
+               
+             
+               
+            </div>
+            {% if options_page %}   
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5><b>Options Chain for {{ symbol_info.symbol }}</b></h5>
+                    <!-- Filters Form -->
+                    <form method="get" action="">
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="expirationDate">Expiration Date</label>
+                                <select name="expirationDate" id="expirationDate" class="form-control">
+                                    <option value="">All Dates</option>
+                                    {% for date in options_dates %}
+                                        <option value="{{ date }}" {% if request.GET.expirationDate == date %}selected{% endif %}>{{ date }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="strike">Strike Price</label>
+                                <input type="number" step="0.01" name="strike" id="strike" class="form-control" value="{{ request.GET.strike }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="type">Option Type</label>
+                                <select name="type" id="type" class="form-control">
+                                    <option value="">All Types</option>
+                                    <option value="Call" {% if request.GET.type == 'Call' %}selected{% endif %}>Call</option>
+                                    <option value="Put" {% if request.GET.type == 'Put' %}selected{% endif %}>Put</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3 align-self-end">
+                                <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Options Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Contract Name</th>
+                                    <th>Last Trade Date (EDT)</th>
+                                    <th>Expiration Date</th>
+                                    <th>Strike</th>
+                                    <th>Last Price</th>
+                                    <th>Bid</th>
+                                    <th>Ask</th>
+                                    <th>Change</th>
+                                    <th>% Change</th>
+                                    <th>Volume</th>
+                                    <th>Open Interest</th>
+                                    <th>Implied Volatility</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for option in options_page.object_list %}
+                                <tr>
+                                    <td>{{ option.contractSymbol }}</td>
+                                    <td>{{ option.lastTradeDate|date:"Y-m-d H:i:s" }}</td>
+                                    <td>{{ option.expirationDate }}</td>
+                                    <td>{{ option.strike|floatformat:2 }}</td>
+                                    <td>{{ option.lastPrice|floatformat:2 }}</td>
+                                    <td>{{ option.bid|floatformat:2 }}</td>
+                                    <td>{{ option.ask|floatformat:2 }}</td>
+                                    <td>{{ option.change|floatformat:2 }}</td>
+                                    <td>{{ option.percentChange|floatformat:2 }}%</td>
+                                    <td>{{ option.volume }}</td>
+                                    <td>{{ option.openInterest }}</td>
+                                    <td>{{ option.impliedVolatility|floatformat:2 }}%</td>
+                                    <td>{{ option.type }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <!-- Previous Page Link -->
+                            {% if options_page.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ options_page.previous_page_number }}" aria-label="Previous">
+                                    &laquo;
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                            {% endif %}
+                    
+                            <!-- Page Number Links -->
+                            {% for num in page_range %}
+                                {% if num == '...' %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% elif num == options_page.number %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                    
+                            <!-- Next Page Link -->
+                            {% if options_page.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ options_page.next_page_number }}" aria-label="Next">
+                                    &raquo;
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info mt-4">
+                No options data available for {{ symbol_info.symbol }}.
+            </div>
+            {% endif %}
+        </div>
+
+
+            <!-- Risk ratios and description area -->
+       
+
+        <!-- Display any messages -->
+        <p class="lead">{{ message }}</p>
+
+        <!-- Display the overbought/sold positions -->
+   
+    </div>
+</section>
+<style>
+    .pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+}
+
+.pagination li {
+    margin: 0 5px;
+}
+
+.pagination a, .pagination span {
+    display: inline-block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #007bff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.pagination .active span {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+</style>
+{% endblock content %}

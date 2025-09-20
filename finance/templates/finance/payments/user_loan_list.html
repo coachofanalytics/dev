@@ -1,0 +1,64 @@
+{% extends "main/base_templates/new_base.html" %}
+
+{% block content %}
+<section id="user-loans">
+  <div class="data_training text-center">
+    <h3 class="title">My Loan Applications</h3>
+    <div class="mb-3">
+      <a class="btn btn-primary" href="{% url 'finance:loan-home' %}">Apply for New Loan</a>
+      <a class="btn btn-secondary" href="{% url 'finance:loan-home' %}">Back to Loan Home</a>
+    </div>
+  </div>
+  
+  <hr>
+  
+  {% if loans %}
+    <div class="career">
+      <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+          <tr>
+            <th>Loan Product</th>
+            <th>Amount Requested</th>
+            <th>Purpose</th>
+            <th>Status</th>
+            <th>Applied Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in loans %}
+            <tr>
+              <td>{{ loan.loan_product.name }}</td>
+              <td>${{ loan.amount_requested }}</td>
+              <td>{{ loan.purpose|default:"Not specified" }}</td>
+              <td>
+                <span class="badge badge-{% if loan.status == 'approved' %}success{% elif loan.status == 'rejected' %}danger{% elif loan.status == 'active' %}info{% else %}warning{% endif %}">
+                  {{ loan.get_status_display }}
+                </span>
+              </td>
+              <td>{{ loan.created_at|date:"M d, Y" }}</td>
+              <td>
+                {% if loan.status == 'draft' %}
+                  <a href="{% url 'finance:apply-for-loan' loan.loan_product.id %}" class="btn btn-sm btn-outline-primary">Complete Application</a>
+                {% elif loan.status == 'submitted' %}
+                  <span class="text-muted">Under Review</span>
+                {% elif loan.status == 'approved' %}
+                  <span class="text-success">Approved!</span>
+                {% elif loan.status == 'rejected' %}
+                  <a href="{% url 'finance:loan-rejection' %}" class="btn btn-sm btn-outline-danger">View Details</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <h4 class="text-muted">No loan applications yet</h4>
+      <p class="text-muted">You haven't applied for any loans yet.</p>
+      <a href="{% url 'finance:loan-home' %}" class="btn btn-primary">Apply for Your First Loan</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock content %} 

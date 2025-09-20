@@ -1,0 +1,361 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Investment Details - {{ object.get_investment_type_display }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-briefcase"></i> Investment Details
+                </h1>
+                <div>
+                    <a href="{% url 'investing:individual_investments' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Investments
+                    </a>
+                    <a href="{% url 'investing:investment_dashboard' %}" class="btn btn-info">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Overview -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Investment Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Investment Type:</strong></td>
+                                    <td>
+                                        <span class="badge badge-info">
+                                            {{ object.get_investment_type_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Investment Amount:</strong></td>
+                                    <td class="font-weight-bold text-primary">
+                                        ${{ object.investment_amount|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Current Value:</strong></td>
+                                    <td class="font-weight-bold text-success">
+                                        ${{ object.current_value|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Expected Return Rate:</strong></td>
+                                    <td class="font-weight-bold">
+                                        {{ object.expected_return_rate|floatformat:2 }}%
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Investment Date:</strong></td>
+                                    <td>{{ object.investment_date|date:"M d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if object.status == 'active' %}success{% elif object.status == 'completed' %}info{% else %}secondary{% endif %}">
+                                            {{ object.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Monthly Reports:</strong></td>
+                                    <td>
+                                        {% if object.monthly_reports %}
+                                            <span class="badge badge-success">Enabled</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Disabled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Current Return:</strong></td>
+                                    <td class="font-weight-bold {% if object.current_return_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ object.current_return_percentage|floatformat:2 }}%
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if object.investment_purpose %}
+                    <div class="mt-3">
+                        <h6><strong>Investment Purpose:</strong></h6>
+                        <p class="text-muted">{{ object.investment_purpose }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie"></i> Performance Summary
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <h3 class="{% if object.current_return_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ object.current_return_percentage|floatformat:2 }}%
+                        </h3>
+                        <p class="text-muted">Total Return</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h4 class="text-primary">
+                            ${{ object.current_value|floatformat:2 }}
+                        </h4>
+                        <p class="text-muted">Current Value</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5 class="text-info">
+                            ${{ object.expected_total_return|floatformat:2 }}
+                        </h5>
+                        <p class="text-muted">Expected Total Return</p>
+                    </div>
+                    
+                    <div class="progress mb-3">
+                        <div class="progress-bar {% if object.current_return_percentage >= 0 %}bg-success{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ object.current_return_percentage|floatformat:0 }}%"
+                             aria-valuenow="{{ object.current_return_percentage|floatformat:0 }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    
+                    <small class="text-muted">
+                        Performance vs Expected: {{ object.expected_return_rate|floatformat:2 }}%
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance History -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line"></i> Performance History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if performance_history %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Start Value</th>
+                                    <th>End Value</th>
+                                    <th>Return</th>
+                                    <th>Return %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for perf in performance_history %}
+                                <tr>
+                                    <td>{{ perf.performance_date|date:"M Y" }}</td>
+                                    <td>${{ perf.period_start_value|floatformat:2 }}</td>
+                                    <td>${{ perf.period_end_value|floatformat:2 }}</td>
+                                    <td class="{% if perf.period_return >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ perf.period_return|floatformat:2 }}
+                                    </td>
+                                    <td class="{% if perf.period_return_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ perf.period_return_percentage|floatformat:2 }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No performance history available yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt"></i> Investment Reports
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if reports %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Report Type</th>
+                                    <th>Period</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                    <th>Sent Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-info">
+                                            {{ report.get_report_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ report.period_start|date:"M d" }} - {{ report.period_end|date:"M d, Y" }}</td>
+                                    <td>{{ report.subject }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if report.delivery_status == 'sent' %}success{% else %}warning{% endif %}">
+                                            {{ report.get_delivery_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ report.sent_date|date:"M d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-alt fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No reports available yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Milestones -->
+    {% if milestones %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy"></i> Investment Milestones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for milestone in milestones %}
+                    <div class="alert alert-info">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="alert-heading">{{ milestone.title }}</h6>
+                                <p class="mb-1">{{ milestone.description }}</p>
+                                <small class="text-muted">{{ milestone.achieved_date|date:"M d, Y" }}</small>
+                            </div>
+                            <div class="text-right">
+                                {% if milestone.expected_value_increase %}
+                                <span class="badge badge-success">
+                                    +${{ milestone.expected_value_increase|floatformat:2 }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs"></i> Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        {% if object.status == 'active' %}
+                        <a href="{% url 'investing:update_investment_performance' object.id %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Update Performance
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'investing:individual_investment_detail' object.id %}?format=pdf" class="btn btn-info">
+                            <i class="fas fa-download"></i> Download Report
+                        </a>
+                        <button onclick="shareInvestment()" class="btn btn-secondary">
+                            <i class="fas fa-share"></i> Share Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Investment detail page loaded');
+    
+    // Add any interactive functionality here
+    if (typeof $ !== 'undefined') {
+        $('.table').DataTable({
+            "pageLength": 5,
+            "order": [[ 0, "desc" ]], // Sort by date descending
+            "responsive": true
+        });
+    }
+});
+
+// Share investment function
+function shareInvestment() {
+    const investmentData = {
+        title: 'Investment Details',
+        text: 'Check out my investment details',
+        url: window.location.href
+    };
+    
+    if (navigator.share) {
+        navigator.share(investmentData)
+            .then(() => console.log('Investment shared successfully'))
+            .catch((error) => console.log('Error sharing:', error));
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href)
+            .then(() => alert('Investment link copied to clipboard!'))
+            .catch(() => alert('Unable to copy link. Please copy manually: ' + window.location.href));
+    }
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,122 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% block title %}
+    {% if department %}{{ department.name }}{% else %}activities{% endif %}
+{% endblock %}
+{% block content %}
+<section id="data_training">
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="data_training text-center">
+        <h3 class="title">Applications-Upload Data</h3>
+        <h3 class="title">
+            <a href="{% url 'ai_services:all_apps' app='all' %}" target="">
+                <button type="button" class="btn btn-primary">USE CASES</button>
+            </a>
+        </h3>
+        <p>
+            Upload only a CSV File, Check field formats to minimize errors during upload.
+        </p>
+        <div class="row text-center">
+            {% for category, apps in categories.items %}
+                <div class="col-md-3" id="gi">
+                    <h3 class="title">{{ category }} App</h3>
+                    {% for app in apps %}
+                        <div class="card">
+                            <div class="card-body">
+                                <p>{{ app.table_name }}</p>
+                                <a class="dropdown-item" target="_blank" href="{{ app.sample_file }}">
+                                    <i class="fas fa-download"></i> Sample_file
+                                </a>
+                                <div>
+                                    {{ app.url }}
+                                    {% include 'main/snippets_templates/forms/uploadform.html' with instance=app.url app_label=category %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<div class="row text-center">
+    <div class="col-md-6" id="gi">
+        <h3 class="title">DATA MIGRATIONS</h3>
+        <div class="card">
+            <div class="card-body">
+                <p>XEL</p>
+                <a href="#" target="">
+                    <button type="button" class="btn btn-primary">Load</button>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6" id="gi">
+        <h3 class="title">Images/Assets</h3>
+        <div class="card">
+            <div class="card-body">
+                <p>Images</p>
+                <a href="{% url 'main:images' %}" target="">
+                    <button type="button" class="btn btn-primary">Proceed</button>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6" id="gi">
+        <h3 class="title">Excel/data</h3>
+        <div class="card">
+            <div class="card-body">
+                <p>Dashboard</p>
+                <a href="{% url 'ai_services:dashboard' %}" target="_blank">
+                    <button type="button" class="btn btn-primary">Proceed</button>
+                </a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <p >Upload</p>
+                <a href="{% url 'ai_services:upload_excel' %}" target="">
+                    <button type="button" class="btn btn-primary">Proceed</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    /* Example CSS */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+}
+
+.alert-warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+}
+
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
+</style>
+{% endblock content %}

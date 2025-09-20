@@ -1,0 +1,143 @@
+{% extends "main/base_templates/new_base.html"%}
+{% block content %}
+<div class="container mt-5">
+    <div class="upload-section text-center">
+        <h2>Upload Assignment</h2>
+        
+        <div id="upload-area" class="upload-area mb-3" ondragover="event.preventDefault();" ondrop="handleFileDrop(event)">
+            <p>Drag & drop your file here, or click to browse</p>
+            <input type="file" id="file-input" name="files" class="d-none" onchange="handleFileSelect(event)">
+        </div>
+        
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.assignment_type.label_tag }}
+                {{ form.assignment_type }}
+            </div>
+            <div class="form-group">
+                {{ form.files.label_tag }}
+                <input type="file" name="files" id="file-upload" required>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Upload</button>
+        </form>
+
+        <!-- Progress Bar -->
+        <div class="progress mt-3" style="height: 30px; display: none;">
+            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;">
+                0%
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-message" class="alert alert-success mt-3" style="display: none;">
+            <strong>Success!</strong> Your file has been uploaded.
+        </div>
+    </div>
+</div>
+<script>
+    jQuery.noConflict();  // Prevents conflicts with other libraries
+
+    // Handle drag-and-drop file upload
+    function handleFileDrop(event) {
+        event.preventDefault();
+        jQuery('#file-input').prop('files', event.dataTransfer.files);
+    }
+
+    function handleFileSelect(event) {
+        const files = event.target.files;
+        if (files.length > 0) {
+            jQuery('#upload-form').submit();
+        }
+    }
+
+    jQuery('#upload-area').on('click', function() {
+        jQuery('#file-input').click();
+    });
+
+    jQuery('#upload-form').on('submit', function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        jQuery('.progress').show();  // Show progress bar
+
+        // Reset progress bar to zero before starting upload
+        jQuery('#progress-bar').css('width', '0%').text('0%');
+
+        jQuery.ajax({
+            xhr: function() {
+                var xhr = new XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        var percentComplete = Math.round((e.loaded / e.total) * 100);
+                        // Smoothly increment the progress bar to match the upload progress
+                        incrementProgressBar(percentComplete);
+                    }
+                }, false);
+                return xhr;
+            },
+            type: 'POST',
+            url: '{% url "management:assignment_upload" %}',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function() {
+                // Show the uploaded message and clear the file input
+                jQuery('#progress-bar').css('width', '100%').text('Uploaded');
+                jQuery('#success-message').fadeIn(500);  // Show success message
+                window.location.href = '{% url "management:assignment_list" %}'; // Smoothly hide progress bar
+
+            },
+            error: function() {
+                alert('An error occurred while uploading files.');
+                jQuery('#progress-bar').css('width', '0%').text('0%');
+                jQuery('.progress').hide();
+            }
+        });
+    });
+
+    function incrementProgressBar(targetPercent) {
+        var currentPercent = parseInt(jQuery('#progress-bar').text());
+        
+        // Incrementally increase the progress bar to the target percentage
+        var interval = setInterval(function() {
+            if (currentPercent < targetPercent) {
+                currentPercent++;
+                jQuery('#progress-bar').css('width', currentPercent + '%').text(currentPercent + '%');
+            } else {
+                clearInterval(interval);  // Stop the interval when target is reached
+            }
+        }, 120); // Adjust this value for faster/slower animation
+    }
+</script>
+
+<!-- CSS -->
+<style>
+    .upload-section {
+        max-width: 500px;
+        margin: auto;
+        padding: 30px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .upload-area {
+        padding: 20px;
+        border: 2px dashed #007bff;
+        border-radius: 10px;
+        background: #f3f3f3;
+        color: #666;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .upload-area:hover {
+        background: #e8f0ff;
+    }
+
+    .progress-bar {
+        transition: width 0.2s ease;
+    }
+</style>
+{% endblock %}
+

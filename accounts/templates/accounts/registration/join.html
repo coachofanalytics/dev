@@ -1,0 +1,266 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %}Register{% endblock %}
+{% block content %}
+
+<!-- External CSS -->
+<link rel="stylesheet" href="{% static 'main/css/accounts.css' %}">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous">
+
+<!-- Rest of your HTML content (without the <style> block) -->
+
+<div class="sign-up-div">
+  <form method="POST" id="signupForm" enctype="multipart/form-data" autocomplete="off">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      <div class="row">
+        <div class="col-lg-6 introduction-div ">
+          <div class="row">
+            <div class="select-div">
+              <h1 class="position-relative">SIGN-UP</h1>
+              <div class="content">
+                <p class="mb-2">Welcome to CODA, Are you NEW here?</p>
+                <p>
+                  Sign-up to enjoy all the benefits and trainings CODA
+                  provides.
+                </p>
+              </div>
+              <h2>Pick your Category | Register As:</h2>
+              <div class="d-flex">
+                <div class="second-select-div">
+                  <div class="form-group">
+                    <div class="">
+                      <select
+                        name="category"
+                        class="select form-control"
+                        id="id_category"
+                        onchange="toggle_sub_selection(this.value)"
+                      >
+                        <option
+                          id="category_disabled"
+                          value=""
+                          style="display: none"
+                          selected
+                        >
+                          Select Category
+                        </option>
+                        <option value="1">Applicant - Want to work for CODA</option>
+                        <option value="2">Student - Taking courses</option>
+                        <option value="3">Consultant - Professionals, advisors, service providers</option>
+                        <option value="4">Investor - Financial, strategic, KCC members</option>
+                        <option value="5">Explorer - Exploring CODA</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Sub Category Selection -->
+            <div class="col-md-6" id="sub_selection" style="display: none">
+              <div id="div_id_sub_category" class="form-group">
+                <label for="id_sub_category" class="requiredField" style="color: white;">
+                  Sub Category<span class="asteriskField">*</span>
+                </label>
+                <div class="">
+                  <select
+                    name="sub_category"
+                    class="select form-control"
+                    id="id_sub_category"
+                    onchange="checkSubCategoryValidity()"
+                  >
+                    <option
+                      id="subcategoryoption0"
+                      value=""
+                      style="display: none"
+                      selected
+                    >
+                      Select Sub Category
+                    </option>
+                    <!-- Dynamic subcategories will be populated by JavaScript -->
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+          <!-- Dont touch below this -->
+        <div class="col-lg-6 form-div">
+          <p><small>* Required fields</small></p>
+          <div class="row" id="first_name">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">First Name*</p>
+            </div>
+            <div class="col-md-10">
+              {{form.first_name|as_crispy_field}}
+            </div>
+          </div>
+          <div class="row" id="last_name">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Last Name*</p>
+            </div>
+            <div class="col-md-10">
+              {{form.last_name|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="username">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">User Name*</p>
+            </div>
+            <div class="col-md-10">
+              {{form.username|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="password">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Password</p>
+            </div>
+            <div class="col-md-10">
+              {{form.password1|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="confirm_password">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Confirm Password</p>
+            </div>
+            <div class="col-md-10">
+              {{form.password2|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="email">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Email</p>
+            </div>
+            <div class="col-md-10">
+              {{form.email|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="gender">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Gender</p>
+            </div>
+            <div class="col-md-10">
+              {{form.gender|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="phone">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Phone</p>
+            </div>
+            <div class="col-md-10">
+              {{form.phone|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="address">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Address</p>
+            </div>
+            <div class="col-md-10">
+              {{form.address|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="city">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">City</p>
+            </div>
+            <div class="col-md-10">
+              {{form.city|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="state">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">State</p>
+            </div>
+            <div class="col-md-10">
+              {{form.state|as_crispy_field }}
+            </div>
+          </div>
+          <div class="row" id="country">
+            <div class="col-md-2 align-self-center">
+              <p class="mb-0">Country</p>
+            </div>
+            <div class="col-md-10">
+              {{form.country|as_crispy_field }}
+            </div>
+          </div>
+          
+          <div class="row" id="resume-field" style="display: none">
+            <div class="col-md-4">{{form.resume_file|as_crispy_field }}</div>
+          </div>
+          <div class="form-group row" style="margin-bottom: -60px;" >
+            <div class="col-md-6">
+              <button class="btn btn-outline-success " style="color: black;" type="submit" id="signupBtn" tabindex="0" aria-label="Sign Up">Sign Up</button>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted text-center">
+                Already Have An Account?
+                <a class="ml-2" href="{% url 'accounts:account-login' %}" >Sign In</a>
+              </small>
+            </div>
+          </div>
+          <p class="text-center mt-2">or</p>
+          <div class="row" style="display: flex; justify-content: center; align-items: center;">
+            <div class="col-md-3 d-flex justify-content-center">
+              <a id="google-signin-link" style="color: black;" href="{% url 'custom_social_login' %}" onclick="return enableSocialSignInLink(event, this, 'google_login')"  class="loginBtn loginBtn--google">
+                Login with Google
+              </a>
+              <!-- <a id="facebook-signin-link" href="{% url 'custom_social_login' %}" onclick="return enableSocialSignInLink(event, this, 'facebook_login')" type='button' class="loginBtn loginBtn--facebook">
+                Login with Facebook
+              </a> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="testModal" tabindex="-1" role="dialog" aria-labelledby="testModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="testModalLabel">Invalid Input</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>If you want to proceed with testing, please click on the "Proceed with Testing" button below.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closeModalBtn" data-dismiss="modal">Close</button>
+        <a href="https://codamakutano.herokuapp.com/accounts/join/" class="btn btn-primary">Proceed with Testing</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Model -->
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="emailModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="emailModalLabel">Sending Email</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>An email will send to your registered email address with your temporary login credentials.</p>
+        <p>Please check your inbox, including the spam folder, if you don't see the email in your primary inbox.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="submitModalBtn" data-dismiss="modal">Submit</button>
+        <button type="button" class="btn btn-secondary" id="cancelModalBtn" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Choices data for JavaScript -->
+{{ choices_data|json_script:"choices-data" }}
+
+<!-- External JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="{% static 'accounts/js/registration.js' %}"></script>
+{% endblock content%}

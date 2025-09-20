@@ -1,0 +1,102 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% load static %}
+{% block content %}
+<!--------------------------Slider Section--------------------------------->
+<section id="data_training">
+  <div class="row text-center">
+
+    <div class="col-md-2" id="bada">
+        <div class="card">
+          <div class="card-body">
+            <h5><b>APPS</b></h5>
+            <hr/>
+            <div class="col-md-12" id="gi">
+              <p>
+                <a href="{% url 'ai_services:all_apps' app='all' %}" class="btn btn-secondary btn-sm"
+                  >All APPS
+                </a>
+            </p>
+            </div>
+            <div class="col-md-12" id="gi">
+              <p>
+                <a href="{% url 'ai_services:all_apps' app='AI' %}" class="btn btn-secondary btn-sm"
+                  >AI Usecases
+                </a>
+            </p>
+            </div>
+            <hr/>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-8" id="bada">
+        {% if app_count > 1 %}
+        <h5><b>SELECTING AN APP</b></h5>
+        <div class="card">
+          <div class="card-body">
+            <hr/>
+                  <div class="row text-center">
+                            {% for app in apps %}
+                            <div class="col-md-3 text-center" id="bada">
+                              <div class="card-group">
+                                <div class="card">
+                                  <div class="">
+                                    <!-- <p class="display-5 text-center"><b>
+                                      
+                                    </b></p> -->
+                                      <a class="article-title" href="{% url 'ai_services:all_apps' app=app %}">{{app|upper}}</a>
+                                    <hr>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            {% endfor%}
+            {% else %}
+            <h5><b>{{apps}}</b></h5>
+            <div class="card">
+              <div class="card-body">
+                      <div class="row text-center">
+                                {% for app_usecase in app_usecases %}
+                                <div class="col-md-3 text-center" id="bada">
+                                  <div class="card-group">
+                                    <div class="card">
+                                      <div class="">
+                                        <p class="display-5 text-center"><b>
+                                          <h5>{{app_usecase.title}}</h5>
+                                        </b></p>
+                                        <button>
+                                            <a class="article-title" href="{% url 'ai_services:display_usecases' pk=app_usecase.id %}">Button</a>
+                                          </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                {% endfor%}
+              {% endif %}
+                </div>
+            <hr/>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2" id="bada">
+        <div class="card">
+          <div class="card-body">
+            <h5><b>ACTIONS</b></h5>
+            <hr/>
+            <i><h6>{{payday}}</h6></i>
+            <div class="col-md-12" id="gi">
+              <p><a href="{% url 'ai_services:newusecase'%}" class="btn btn-secondary btn-sm"
+                  >Add Use Case
+              </a></p>
+          </div>
+            <hr/>
+          </div>
+        </div>
+      </div>
+</div>
+    </div>
+
+<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+</section>
+
+{% endblock content %}
