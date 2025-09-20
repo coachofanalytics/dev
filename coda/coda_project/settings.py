@@ -270,7 +270,8 @@ if db_from_env:
 
 import sys
 # Use existing DB for tests and skip test DB creation
-TEST_RUNNER = 'coda_project.test_runner.NoDbTestRunner'
+# TEST_RUNNER = 'coda_project.test_runner.NoDbTestRunner'  # Commented out - file doesn't exist
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -309,7 +310,7 @@ USE_TZ = True
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "staticfiles")
 STATIC_URL = "/static/"
 STATICFILES_DIR = os.path.join(BASE_DIR, "static")
 
