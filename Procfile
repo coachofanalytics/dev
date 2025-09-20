@@ -1,1 +1,1 @@
-web: cd coda && PYTHONPATH=/app/coda:/app gunicorn coda_project.wsgi:application --log-file -
+web: cd app && PYTHONPATH=/app/app:/app gunicorn coda_project.wsgi:application --log-file -
