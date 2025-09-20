@@ -1,7 +1,0 @@
-<form method="post" enctype="multipart/form-data" action="/ai_services/{{instance}}/">
-    {%csrf_token%}
-    &nbsp <input type="file" id="myfile" name="csv_upload"> <br>
-    <input type="hidden" name="model_name" value="{{ app.table_name }}">
-    <input type="hidden" name="app_label" value="{{ app_label }}"> 
-    <button type="submit">upload csv</button>
-</form>
