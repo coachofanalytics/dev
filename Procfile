@@ -1,0 +1,1 @@
+web: cd app && gunicorn coda_project.wsgi:application --log-file -
