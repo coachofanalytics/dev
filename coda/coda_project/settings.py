@@ -382,6 +382,7 @@ def payment_details(request):
 # Environment-based settings (using centralized configuration)
 if ENV_CONFIG['is_production']:
     SITEURL = "https://www.codanalytics.net"
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 elif ENV_CONFIG['is_testing']:
     SITEURL = "https://codamakutano.herokuapp.com"
     STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
