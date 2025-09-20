@@ -15,7 +15,7 @@ import os
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('NhCZLFI2G/lNnEfwmB3QaBxktVtNS5s8hw5mTKmZ')
 
 
 #DEBUG Configurations
