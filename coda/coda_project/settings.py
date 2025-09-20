@@ -314,6 +314,12 @@ STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "staticfiles")
 STATIC_URL = "/static/"
 STATICFILES_DIR = os.path.join(BASE_DIR, "static")
 
+# Additional locations of static files
+STATICFILES_DIRS = [
+    os.path.join(os.path.dirname(BASE_DIR), "static"),
+    os.path.join(os.path.dirname(BASE_DIR), "main", "static"),
+]
+
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
