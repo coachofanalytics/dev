@@ -160,6 +160,34 @@ heroku run "cd coda && python manage.py shell" --app codatrainingapp
 heroku config --app codatrainingapp
 ```
 
+### **Advanced Heroku Log Filtering** 🎯
+```bash
+# Filter by source (most useful for debugging)
+heroku logs --app codamakutano --source app --num 100          # App logs only
+heroku logs --app codamakutano --source heroku --num 50        # System logs only
+heroku logs --app codamakutano --source api --num 20           # API/deployment logs
+
+# Filter by process type
+heroku logs --app codamakutano --process-type web --num 100    # Web process only
+heroku logs --app codamakutano --process-type worker --num 50  # Worker process only
+
+# Filter by specific dyno instance
+heroku logs --app codamakutano --dyno-name web.1 --num 50
+
+# Combination filters (most powerful)
+heroku logs --app codamakutano --source app --process-type web --num 100
+
+# Real-time streaming with filters
+heroku logs --app codamakutano --tail --source app             # Stream app logs
+heroku logs --app codamakutano --tail --process-type web       # Stream web logs
+```
+
+**Log Filtering Recommendations:**
+- Use `--source app` for application-specific issues
+- Use `--num 100` or higher for comprehensive debugging
+- Use `--tail` for real-time monitoring during deployments
+- Combine filters for targeted debugging
+
 ### **Common Issues & Solutions**
 
 #### **CSS Not Loading**
@@ -193,7 +221,7 @@ heroku run "cd coda && python manage.py dbshell" --app codatrainingapp
 
 ## ⚡ Optimization Workflow
 
-### **Slug Size Optimization**
+### **Slug Size Optimization** 🚀
 ```bash
 # 1. Analyze current slug size
 heroku run "du -sh /app" --app codatrainingapp
@@ -208,6 +236,39 @@ python coda/scripts/optimize_images.py
 find . -name "*.pyc" -delete
 find . -name "__pycache__" -type d -exec rm -rf {} +
 ```
+
+### **Advanced Optimization Strategies** ⚡
+```bash
+# 1. Remove heavy packages from requirements.txt
+# Remove: chromedriver, google-api-python-client, selenium, etc.
+# Keep only essential packages
+
+# 2. Optimize virtual environment
+rm -rf venv/lib/python*/site-packages/*/tests/
+rm -rf venv/lib/python*/site-packages/*/test/
+find venv -name "*.pyc" -delete
+find venv -name "__pycache__" -type d -exec rm -rf {} +
+
+# 3. Clean static files
+find . -name "*.jpg" -size +500k -exec ls -lh {} \;  # Find large images
+find . -name "*.png" -size +500k -exec ls -lh {} \;  # Find large images
+find . -name "*.gif" -size +500k -exec ls -lh {} \;  # Find large images
+
+# 4. Remove development files
+rm -rf .git/hooks/
+rm -rf node_modules/  # If using Node.js
+rm -rf .vscode/
+rm -rf .idea/
+
+# 5. Use optimized requirements file
+cp requirements-optimized.txt requirements.txt
+```
+
+**Optimization Results Achieved:**
+- **Before**: 956MB slug size
+- **After**: 163.1MB slug size
+- **Reduction**: 83% (793MB saved)
+- **Virtual Environment**: 727MB → 159MB (78% reduction)
 
 ### **Performance Optimization**
 ```bash
@@ -249,6 +310,14 @@ python -c "import psutil; print(f'Memory: {psutil.virtual_memory().percent}%')"
 - Maintain high test coverage
 - Use meaningful test names
 
+### **Cursor AI Assistant Best Practices**
+- **Be Specific**: Provide detailed context and requirements
+- **Iterative Development**: Break complex tasks into smaller steps
+- **Test-Driven**: Always request testing after implementing features
+- **Documentation-First**: Ask Cursor to document changes and lessons learned
+- **Error Analysis**: When errors occur, ask Cursor to analyze and provide solutions
+- **Performance Focus**: Always consider performance implications of changes
+
 ---
 
 ## 🔍 Troubleshooting Guide
@@ -281,6 +350,94 @@ python -c "import psutil; print(f'Memory: {psutil.virtual_memory().percent}%')"
 - **Cause**: Memory leaks or inefficient code
 - **Solution**: Profile memory usage, optimize code
 - **Prevention**: Monitor memory in production
+
+---
+
+## 📖 Documentation & Lessons Learned
+
+### **Documentation Update Protocol** 📝
+**IMPORTANT**: Always update documentation when implementing changes or learning new lessons.
+
+#### **When to Update Documentation:**
+- After fixing bugs or errors
+- After implementing new features
+- After optimizing performance
+- After resolving deployment issues
+- After learning new debugging techniques
+- After successful problem-solving sessions
+
+#### **What to Document:**
+```markdown
+## Lessons Learned - [Date]
+
+### Issue/Challenge:
+- Brief description of the problem
+
+### Root Cause:
+- Technical explanation of why it occurred
+
+### Solution Applied:
+- Step-by-step resolution process
+- Code changes made
+- Configuration updates
+
+### Prevention Measures:
+- How to avoid this issue in the future
+- Best practices to implement
+- Monitoring recommendations
+
+### Performance Impact:
+- Before/after metrics
+- Optimization results
+
+### Files Modified:
+- List of files changed
+- Key changes made
+```
+
+### **Cursor AI Documentation Commands**
+When working with Cursor AI, always request documentation updates:
+
+```bash
+# Request documentation update after completing tasks
+"Please update the documentation with the lessons learned from this session"
+
+# Request specific documentation sections
+"Please add this solution to the troubleshooting guide"
+
+# Request performance documentation
+"Please document the performance improvements achieved"
+```
+
+### **Documentation Files to Maintain:**
+1. **CURSOR_WORKFLOW.md** - This file (workflow and best practices)
+2. **README.md** - Project overview and setup
+3. **FIXES_APPLIED_SUMMARY.md** - Bug fixes and resolutions
+4. **COMPREHENSIVE_TEST_ANALYSIS.md** - Test results and analysis
+5. **SLUG_SIZE_OPTIMIZATION_ANALYSIS.md** - Performance optimization records
+
+### **Recent Lessons Learned** (Updated: September 21, 2025)
+
+#### **Slug Size Optimization Success**
+- **Issue**: Heroku slug size was 956MB, exceeding limits
+- **Solution**: Removed heavy packages, optimized virtual environment, cleaned static files
+- **Result**: Reduced to 163.1MB (83% reduction)
+- **Lesson**: Always monitor slug size and implement optimization strategies
+
+#### **Heroku Log Filtering Best Practices**
+- **Issue**: Difficult to find relevant logs among continuous log generation
+- **Solution**: Use `--source app` and `--process-type` filters
+- **Lesson**: `heroku logs --app codamakutano --source app --num 100` is most effective for debugging
+
+#### **Database Migration Conflicts**
+- **Issue**: Multiple migration conflicts during deployment
+- **Solution**: Use `--fake` flag for existing fields, proper field defaults
+- **Lesson**: Always check existing database schema before creating migrations
+
+#### **UI/UX Button Visibility**
+- **Issue**: Login buttons were dark on blue background, invisible to users
+- **Solution**: Applied golden-orange background (#e7ad4a) with white text
+- **Lesson**: Always test UI visibility and contrast ratios
 
 ---
 
@@ -322,7 +479,43 @@ python -c "import psutil; print(f'Memory: {psutil.virtual_memory().percent}%')"
 
 ---
 
-**Last Updated**: September 20, 2025  
-**Version**: 1.0  
-**Status**: Production Ready ✅
+## 🎯 Quick Reference Commands
+
+### **Most Used Commands**
+```bash
+# Deploy to UAT
+git push heroku master:main --force
+
+# Check UAT logs (filtered)
+heroku logs --app codamakutano --source app --num 100
+
+# Run comprehensive tests
+python coda/tests/run_comprehensive_tests.py
+
+# Check app status
+heroku ps --app codamakutano
+
+# Optimize slug size
+python optimize_slug_size.py
+```
+
+### **Emergency Commands**
+```bash
+# Rollback deployment
+heroku rollback --app codamakutano
+
+# Restart app
+heroku restart --app codamakutano
+
+# Check critical errors
+heroku logs --app codamakutano --source app --num 50 | grep -E "(ERROR|CRITICAL|Exception)"
+```
+
+---
+
+**Last Updated**: September 21, 2025  
+**Version**: 2.0  
+**Status**: Production Ready ✅  
+**UAT Environment**: codamakutano.herokuapp.com ✅  
+**Slug Size**: 163.1MB (83% optimized) ✅
 
