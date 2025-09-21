@@ -85,10 +85,13 @@ class LoanService(BaseFinanceService):
                 loan_application = LoanApplication.objects.create(
                     borrower=user,
                     loan_product=loan_product,
+                    loan_plan_id=loan_product.id,  # Set loan_plan_id to match loan_product
                     amount_requested=Decimal(str(loan_amount)),
                     purpose=loan_data['purpose'],
                     employment_status=loan_data.get('employment_status', ''),
                     monthly_income=Decimal(str(loan_data.get('monthly_income', 0))),
+                    duration=loan_data.get('duration', loan_product.term_months),
+                    interest_rate=loan_product.interest_rate,
                     status='pending',
                     submitted_at=timezone.now()
                 )
@@ -263,6 +266,33 @@ class LoanService(BaseFinanceService):
             
         except Exception as e:
             self._handle_error(e, 'get_user_loan_applications', user)
+    
+    def get_user_loans(
+        self, 
+        user: User,
+        status: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get loans for a user (alias for get_user_loan_applications for compatibility).
+        
+        Args:
+            user: The user whose loans to retrieve
+            status: Optional status filter ('pending', 'approved', 'rejected', etc.)
+            
+        Returns:
+            Dict with success status and list of loans
+        """
+        try:
+            # Use the existing get_user_loan_applications method
+            return self.get_user_loan_applications(user, status)
+            
+        except Exception as e:
+            self._handle_error(e, 'get_user_loans', user)
+            return {
+                'status': 'error',
+                'message': f'Failed to retrieve loans: {str(e)}',
+                'loans': []
+            }
     
     def _send_application_notification(self, loan_application: LoanApplication):
         """Send notification email for loan application submission."""

@@ -345,7 +345,7 @@ class UserProfile(models.Model):
     is_active = models.BooleanField("Is active", default=True, help_text="Whether profile is active")
     
     # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
     # ==================== META CONFIGURATION ====================

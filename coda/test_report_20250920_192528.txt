@@ -1,0 +1,62 @@
+🧪 COMPREHENSIVE TEST REPORT
+============================================================
+
+📊 OVERALL SUMMARY
+------------------------------
+Overall Success: ❌ FAILED
+Total Test Suites: 6
+Successful Suites: 0
+Failed Suites: 6
+Total Execution Time: 92.75s
+Total Memory Usage: -37.12MB
+
+📋 INDIVIDUAL TEST RESULTS
+------------------------------
+UNIT: ❌ FAILED
+  Execution Time: 10.31s
+  Memory Usage: -35.82MB
+  Coverage: 1.0%
+  Errors: Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py"...
+
+INTEGRATION: ❌ FAILED
+  Execution Time: 33.34s
+  Memory Usage: -11.98MB
+  Errors: Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py"...
+
+E2E: ❌ FAILED
+  Execution Time: 17.22s
+  Memory Usage: -0.69MB
+  Errors: Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py"...
+
+PERFORMANCE: ❌ FAILED
+  Execution Time: 13.47s
+  Memory Usage: -0.51MB
+  Errors: Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py"...
+
+SECURITY: ❌ FAILED
+  Execution Time: 8.73s
+  Memory Usage: 0.48MB
+  Errors: Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py"...
+
+REGRESSION: ❌ FAILED
+  Execution Time: 9.21s
+  Memory Usage: 0.35MB
+  Errors: Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py"...
+
+⚡ PERFORMANCE ANALYSIS
+------------------------------
+✅ Total execution time is acceptable
+✅ Memory usage is acceptable
+
+💡 RECOMMENDATIONS
+------------------------------
+❌ Fix failing tests before deployment
+📊 Increase unit test coverage (currently 1.0%)
+
+============================================================

@@ -989,7 +989,43 @@ def about(request):
         return render(request, "main/doc_templates/appointment_letter.html",context)
     elif sub_title == 'about':
         return render(request, "main/about.html",context)
+
+
+def why_coda(request):
+    """Why CODA page - showcasing our unique value proposition."""
+    path_list, sub_title, pre_sub_title = path_values(request)
     
+    context = {
+        'title': 'Why CODA',
+        'sub_title': sub_title,
+        'pre_sub_title': pre_sub_title,
+    }
+    return render(request, "main/why_coda.html", context)
+
+
+def careers(request):
+    """Careers page - job opportunities and career development."""
+    path_list, sub_title, pre_sub_title = path_values(request)
+    
+    context = {
+        'title': 'Careers',
+        'sub_title': sub_title,
+        'pre_sub_title': pre_sub_title,
+    }
+    return render(request, "main/careers.html", context)
+
+
+def student_support(request):
+    """Student support page - resources and assistance for students."""
+    path_list, sub_title, pre_sub_title = path_values(request)
+    
+    context = {
+        'title': 'Student Support',
+        'sub_title': sub_title,
+        'pre_sub_title': pre_sub_title,
+    }
+    return render(request, "main/student_support.html", context)
+
 
 class UserCreateView(LoginRequiredMixin, CreateView):
     model = UserProfile

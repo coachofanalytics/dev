@@ -1,107 +1,321 @@
-<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
- <!--------------------------WHY US Section--------------------------------->
- <section id="service-why">
-  <div class="service-why text-center container-fluid">
-      <div class="row welcome text-center">
-        <div class="col-12">
-          <h1 class="display-4">WHY US ?</h1>
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}About CODA - Your Financial Technology Partner{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 font-weight-bold mb-4">About CODA</h1>
+                <p class="lead mb-4">
+                    We are a leading financial technology company dedicated to empowering individuals and businesses 
+                    with innovative financial solutions, comprehensive training, and cutting-edge technology services.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <span class="badge badge-light badge-lg px-3 py-2">Financial Services</span>
+                    <span class="badge badge-light badge-lg px-3 py-2">Technology Training</span>
+                    <span class="badge badge-light badge-lg px-3 py-2">Investment Solutions</span>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image-placeholder bg-white rounded-lg p-5 shadow-lg">
+                    <i class="fas fa-chart-line fa-5x text-primary mb-3"></i>
+                    <h3 class="text-dark">Innovation in Finance</h3>
+                    <p class="text-muted">Transforming the way people think about money and technology</p>
+                </div>
+            </div>
         </div>
-        <hr/>
-        <div class="col-12">
-          <p class="lead">
-            Building Customer Relationships is our number one priority. 
-          </p>
-        </div> 
-      </div> 
-  <div id="headerSlider" class="carousel slide" data-ride="carousel">
-      <ol class="carousel-indicators">
-        <li data-target="#headerSlider" data-slide-to="2" class="active"></li>
-        <li data-target="#headerSlider" data-slide-to="2"></li>
-        <li data-target="#headerSlider" data-slide-to="2"></li>
-      </ol>
-      <div class="carousel-inner">
-        <div class="carousel-item active">
-          <!-- <img src="..\media\background\why_v3.jpg" 
-          class="d-block img-fluid"
-          width="1500px"
-          alt="home1"
-          > -->
-        </div>
-        <div class="carousel-item">
-          <div class="row text-center commit">
-            <div class="col-md-3">
-              <!--   
-              <img
-                src="..\media\background\commitment_v1.jpg"
-                class="team-img"
-                width="100px"
-                height="150px"
-              />
-              -->
-              <h3>Commitment</h3>
-              <p>
-                A 24/7 management system committed to meeting the needs of our clients.
-              </p>
-              <a href="#" target="_blank">
-                <button type="button" class="btn btn-primary">Understand Our Way</button>
-              </a>
-            </div>
-            <div class="col-md-3">
-              
-              <!--<img
-                src="..\media\background\cost_v1.jpg"
-                class="team-img"
-                width="100px"
-                height="150px"
-              />-->
-              <h3>Cost Effectiveness</h3>
-              <p>
-               You get all you need to know in investment,and Data Analysis Courses for just $2999.
-              </p>
-              <a href="{% url 'main:coach_profile' %}" target="_blank">
-                <button type="button" class="btn btn-primary">Sign Up!</button>
-              </a>
-            </div>
-            <div class="col-md-3">
-              <!--<img
-                src="..\media\background\delivery_v1.jpg"
-                class="team-img"
-                width="100px"
-                height="150px"
-              />-->
-              <h3>We Deliver</h3>
-              <p>
-                Utilization of Agile methodology to deliver high quality services to our customers.
-              </p>
-              <a href="{% url 'professional_services:finance' %}" target="_blank">
-                <button type="button" class="btn btn-primary">See Our deliverables</button>
-              </a>
-            </div>
-            <div class="col-md-3">
-              <!--<img
-                src="..\media\background\teamwork_v1.jpg"
-                class="team-img"
-                width="100px"
-                height="150px"
-              />-->
-              <h3>Team Work</h3>
-              <p>
-               Over 20 years of experience in all our services.You can trust the quality of our work.
-              </p>
-              <a href="{% url 'main:members' title='team' %}" target="_blank">
-                <button type="button" class="btn btn-primary">Meet the team</button>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <a class="carousel-control-prev" href="#headerSlider" role="button" data-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
-      </a>
-      <a class="carousel-control-next" href="#headerSlider" role="button" data-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
-      </a>
-</div>
+    </div>
 </section>
+
+<!-- Mission & Vision Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-bullseye fa-3x text-primary"></i>
+                        </div>
+                        <h3 class="card-title text-center mb-4">Our Mission</h3>
+                        <p class="card-text text-center">
+                            To democratize access to financial services and technology education, 
+                            empowering individuals and businesses to achieve their financial goals 
+                            through innovative solutions and comprehensive support.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-eye fa-3x text-success"></i>
+                        </div>
+                        <h3 class="card-title text-center mb-4">Our Vision</h3>
+                        <p class="card-text text-center">
+                            To become the leading platform that bridges the gap between financial 
+                            opportunity and technological literacy, creating a world where everyone 
+                            has the tools and knowledge to thrive financially.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose CODA Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Why Choose CODA?</h2>
+            <p class="lead text-muted">We deliver excellence through our core values and innovative approach</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Commitment</h4>
+                    <p class="text-muted">
+                        A 24/7 management system committed to meeting the needs of our clients with 
+                        personalized attention and dedicated support.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Cost Effective</h4>
+                    <p class="text-muted">
+                        Get comprehensive investment and data analysis training for just $2,999 - 
+                        exceptional value for world-class education.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-rocket fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">We Deliver</h4>
+                    <p class="text-muted">
+                        Utilizing Agile methodology to deliver high-quality services and solutions 
+                        that exceed customer expectations.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-handshake fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Teamwork</h4>
+                    <p class="text-muted">
+                        Over 20 years of combined experience across all our services. 
+                        Trust the quality and expertise of our dedicated team.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Overview -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Our Services</h2>
+            <p class="lead text-muted">Comprehensive solutions for all your financial and technology needs</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-university fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Financial Services</h5>
+                        <p class="card-text text-muted">
+                            Loan applications, payment processing, investment planning, and comprehensive 
+                            financial management solutions.
+                        </p>
+                        <a href="{% url 'finance:loan-home' %}" class="btn btn-outline-primary btn-sm">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-graduation-cap fa-2x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Professional Training</h5>
+                        <p class="card-text text-muted">
+                            Data analysis, business intelligence, interview preparation, and career 
+                            development programs.
+                        </p>
+                        <a href="{% url 'professional_services:bitraining' %}" class="btn btn-outline-success btn-sm">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-cogs fa-2x text-info"></i>
+                        </div>
+                        <h5 class="card-title">AI Services</h5>
+                        <p class="card-text text-muted">
+                            Artificial intelligence solutions, automation tools, and cutting-edge 
+                            technology implementations.
+                        </p>
+                        <a href="{% url 'ai_services:ai_dashboard' %}" class="btn btn-outline-info btn-sm">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Meet Our Team</h2>
+            <p class="lead text-muted">Dedicated professionals committed to your success</p>
+        </div>
+        
+        {% if active_employees %}
+        <div class="row">
+            {% for member in active_employees %}
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        {% if member.img_url %}
+                        <img src="{{ member.img_url }}" class="rounded-circle mb-3" width="100" height="100" alt="{{ member.user.get_full_name }}">
+                        {% else %}
+                        <div class="rounded-circle bg-primary text-white mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-2x"></i>
+                        </div>
+                        {% endif %}
+                        <h5 class="card-title">{{ member.user.get_full_name|default:member.user.username }}</h5>
+                        <p class="text-muted">{{ member.job_title|default:"Team Member" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">Our team information is being updated. Please check back soon!</p>
+            <a href="{% url 'main:members' title='team' %}" class="btn btn-primary">View Team</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-4 font-weight-bold mb-2">20+</h3>
+                    <p class="mb-0">Years Experience</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-4 font-weight-bold mb-2">1000+</h3>
+                    <p class="mb-0">Happy Clients</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-4 font-weight-bold mb-2">24/7</h3>
+                    <p class="mb-0">Customer Support</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-4 font-weight-bold mb-2">100%</h3>
+                    <p class="mb-0">Satisfaction Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h2 class="display-5 font-weight-bold mb-4">Ready to Get Started?</h2>
+        <p class="lead text-muted mb-4">
+            Join thousands of satisfied clients who trust CODA for their financial and technology needs.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'accounts:join' %}" class="btn btn-primary btn-lg px-4 py-3">
+                <i class="fas fa-user-plus mr-2"></i>Get Started Today
+            </a>
+            <a href="{% url 'main:contact' %}" class="btn btn-outline-primary btn-lg px-4 py-3">
+                <i class="fas fa-envelope mr-2"></i>Contact Us
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.feature-icon:hover {
+    transform: translateY(-5px);
+}
+
+.stat-item {
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: scale(1.05);
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

@@ -349,12 +349,18 @@ class FinanceFunctionalityTest:
             url_tests = [
                 ('finance:loan-home', 'Loan home page'),
                 ('finance:unified_method_selection', 'Payment method selection'),
-                ('finance:payments', 'Payments history'),
+                ('finance:payments', 'Payments history', {'title': 'history', 'status': 'completed'}),
             ]
             
-            for url_name, description in url_tests:
+            for url_test in url_tests:
+                if len(url_test) == 3:
+                    url_name, description, kwargs = url_test
+                else:
+                    url_name, description = url_test
+                    kwargs = {}
+                
                 try:
-                    url = reverse(url_name)
+                    url = reverse(url_name, kwargs=kwargs)
                     assert url is not None, f"URL for {url_name} is None"
                     self.log_test_result(f"URL Pattern: {description}", "PASS", f"URL: {url}")
                 except Exception as e:

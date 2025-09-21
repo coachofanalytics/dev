@@ -54,7 +54,7 @@ class Payment_Information(models.Model):
     payment_fees=models.IntegerField()
     down_payment=models.IntegerField(default=500)
     student_bonus=models.IntegerField(null=True,blank=True)
-    fee_balance=models.IntegerField(default=None)
+    # fee_balance field removed - using property instead
     plan = models.IntegerField() # assuming service_category id
     subplan = models.IntegerField(default=1,null=True, blank=True)
     pricing_plan = models.IntegerField(default=1,null=True, blank=True)
@@ -356,6 +356,7 @@ class LoanApplication(models.Model):
     # Core fields
     application_number = models.CharField(max_length=20, unique=True, blank=True, help_text="Auto-generated application number")
     loan_product = models.ForeignKey(LoanProduct, on_delete=models.CASCADE, help_text="Selected loan product")
+    loan_plan_id = models.IntegerField(default=1, help_text="Legacy loan plan ID")
     borrower = models.ForeignKey("accounts.CustomerUser", on_delete=models.CASCADE, related_name='loan_applications')
     
     # Guarantor fields
@@ -403,6 +404,8 @@ class LoanApplication(models.Model):
     amount_requested = models.DecimalField(max_digits=10, decimal_places=2, help_text="Amount requested (stored in USD)")
     purpose = models.TextField(help_text="Purpose of the loan")
     collateral = models.TextField(blank=True, null=True, help_text="Additional collateral information")
+    duration = models.PositiveIntegerField(default=12, help_text="Loan duration in months")
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=15.00, help_text="Interest rate percentage")
     
     # Financial calculations
     total_payable = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -425,6 +428,10 @@ class LoanApplication(models.Model):
     ], blank=True, help_text="Current employment status")
     monthly_income = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Monthly income amount")
     is_eligible = models.BooleanField(default=True, help_text="Whether applicant meets basic eligibility criteria")
+    
+    # Status fields
+    is_active = models.BooleanField(default=True, help_text="Whether this loan application is active")
+    is_featured = models.BooleanField(default=False, help_text="Whether this loan application is featured")
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -464,10 +471,7 @@ class LoanApplication(models.Model):
     def __str__(self):
         return f"{self.application_number} - {self.borrower.username} - {self.amount_requested}"
     
-    @property
-    def interest_rate(self):
-        """Get interest rate from loan product"""
-        return self.loan_product.interest_rate if self.loan_product else Decimal('0.00')
+    # interest_rate is now a database field, property removed to avoid conflict
     
     @property
     def term_months(self):
