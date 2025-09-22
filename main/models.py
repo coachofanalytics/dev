@@ -160,5 +160,14 @@ class ContactUs(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
-
     
+class Donation_organization(models.Model):
+    donor_name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=254)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.donor_name} - {self.amount}"
+
