@@ -140,3 +140,6 @@ class Department(models.Model):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
         return self.name    
+
+
+
