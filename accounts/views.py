@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser
+from .models import CustomerUser,Department
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -257,3 +257,9 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
+    
+
+def Department_list_view(request):
+    departments = Department.objects.all()
+
+    return render(request, 'accounts/Departmentlist.html', {'departments': departments})

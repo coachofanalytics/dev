@@ -1,0 +1,33 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>DEPARTMENTS</h2>
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>description</th>
+          <th>slug</th>
+          <th>is_featured</th>
+          <th>is_active</th>                 
+        </tr>
+      </thead>
+      <tbody>
+        {% for departments in departments %}
+        <tr>
+          <td>{{ departments.description }}</td>
+          <td>{{ departments.slug }}</td>
+          <td>{{ departments.is_featured }}</td>
+          <td>{{ departments.is_active }}</td>
+                
+          <td>
+         <a class="article-title" href="#">Edit</a>  
+                      </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <a class="article-title" href="#"></a> 
+    </table>
+  </div>
+</section>
+{% endblock %}
