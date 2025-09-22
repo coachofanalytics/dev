@@ -467,9 +467,12 @@ class SSLMonitor:
         """Check if HTTP redirects to HTTPS"""
         try:
             # Test HTTP redirect
-            response = requests.get(f'http://{domain}', 
-                                  allow_redirects=False, 
-                                  timeout=10)
+            # Keep this probe very fast to avoid blocking workers
+            response = requests.get(
+                f'http://{domain}',
+                allow_redirects=False,
+                timeout=2
+            )
             
             is_redirecting = response.status_code in [301, 302, 303, 307, 308]
             redirects_to_https = False
@@ -640,9 +643,12 @@ class UptimeMonitor:
         for endpoint in endpoints:
             try:
                 start_time = time.time()
-                response = requests.get(f'https://{domain}{endpoint}', 
-                                      timeout=10,
-                                      allow_redirects=True)
+                # Fast, non-blocking uptime probe
+                response = requests.get(
+                    f'https://{domain}{endpoint}',
+                    timeout=3,
+                    allow_redirects=True
+                )
                 response_time = (time.time() - start_time) * 1000
                 
                 results['endpoints'][endpoint] = {
