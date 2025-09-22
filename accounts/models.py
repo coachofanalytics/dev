@@ -91,3 +91,19 @@ class LoginHistory (models.Model):
         return f"{self.user.username} - {self.login_time} to {self.logout_time}"
     
 
+from django.db import models
+from django.utils.text import slugify
+
+class Department(models.Model):
+    description = models.CharField(max_length=500, null=True, blank=True)
+    slug = models.SlugField(unique=True, null=False)
+    is_featured = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.description[:50])  # auto-generate slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.description
