@@ -161,4 +161,33 @@ class ContactUs(models.Model):
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
 
-    
+# donation model
+class Donation_organisation(models.Model):
+    # DONATION_TYPE_CHOICES = [
+    #     ('One-Time', 'One-Time'),
+    #     ('Monthly', 'Monthly'),
+    #     ('Yearly', 'Yearly'),
+    # ]
+
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="The user who made the donation (if applicable)."
+    )
+    donor_name = models.CharField(max_length=100, help_text="Full name of the donor.")
+    email = models.EmailField(help_text="Email address of the donor.")
+    amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Amount donated.")
+    # donation_type = models.CharField(
+    #     max_length=20, 
+    #     choices=DONATION_TYPE_CHOICES, 
+    #     default='One-Time',
+    #     help_text="Type of donation."
+    # )
+    message = models.TextField(blank=True, null=True, help_text="Optional message from the donor.")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Timestamp when the donation was made.")
+    # is_anonymous = models.BooleanField(default=False, help_text="Flag to indicate if the donor wants to remain anonymous.")
+
+    def __str__(self):
+        return f"Donation of {self.amount} by {self.donor_name} ({self.email})"  

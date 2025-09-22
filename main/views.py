@@ -83,8 +83,9 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-    page_instance = Page.objects.get(page_name='Home')
-    description = Description.objects.filter(page = page_instance)
+    # Define page_instance for the home page or desired page
+    page_instance = Page.objects.filter(page_name='Home').first()
+    description = Description.objects.filter(page=page_instance)
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
