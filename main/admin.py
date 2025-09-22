@@ -14,5 +14,9 @@ admin.site.register(SubService)
 admin.site.register(News)
 admin.site.register(Gallery_image)
 admin.site.register(ContactUs)
+from django.contrib import admin
+from .models import DonationOrganization
+
+admin.site.register(DonationOrganization)
 
 
