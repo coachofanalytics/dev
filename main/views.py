@@ -13,6 +13,7 @@ from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm
 from django.contrib.auth import get_user_model
+from .models import Donation_organisation
 
 User=get_user_model()
 
@@ -209,3 +210,6 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+def donation_list(request):
+    donation = Donation_organisation.objects.all().order_by("-created_at")
+    return render(request,"main/snippets_templates/table/donation_list.html",{"donations":donation})
