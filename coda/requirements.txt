@@ -72,3 +72,5 @@ psutil==7.1.0
 # - PyAutoGUI and related automation packages
 # - PyInstaller (build tool, not needed in production)
 # - Various Google Cloud packages (use only if needed)
+
+django-mathfilters==1.0.0
