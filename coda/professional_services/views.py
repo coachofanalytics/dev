@@ -231,7 +231,7 @@ def user_response_update_view(request, pk):
         form = UserAnswerForm(request.POST, instance=user_answer)
         if form.is_valid():
             if 'regenerate' in request.POST:  # Check if "regenerate" flag is present
-                print("regenerate")
+                logger.debug("regenerate")
                 # Construct new prompt based on form data
                 new_prompt = f'Based on the question: {form.instance.question.question} and the role: {form.instance.role}, please provide a detailed response.'
                 # Generate response with new_prompt
@@ -239,7 +239,7 @@ def user_response_update_view(request, pk):
                 # Redirect to userresponse view without passing new_prompt
                 return redirect('professional_services:userresponse', question_id=user_answer.question.pk)
             else:
-                print("regenerate")
+                logger.debug("regenerate")
                 form.save()
                 return redirect('professional_services:prepresponses')  # Redirect to success URL
     else:
@@ -407,7 +407,7 @@ class InterviewListView(ListView):
 
 @login_required
 def iuploads(request):
-    print("HERE",request.user.category in [1, 3, 4, 5, 6, 7])  # Job_Applicant, Jobsupport, Student, Investor, Vendor, General_User
+    logger.debug("HERE",request.user.category in [1, 3, 4, 5, 6, 7])  # Job_Applicant, Jobsupport, Student, Investor, Vendor, General_User
     # uploads={}
     if request.user.category in [1, 3, 4, 5, 6, 7]:  # Job_Applicant, Jobsupport, Student, Investor, Vendor, General_User
         usernames = ['coda','makied', 'Sipho','JudyG', 'coda_info']  # Add as many usernames as needed
@@ -478,9 +478,9 @@ def courseview(request, question_type=None, *args, **kwargs):
     value=request.path.split("/")
     pathvalues = [i for i in value if i.strip()]
     path=pathvalues[-1]
-    print(path)
+    logger.debug(path)
     url=f'professional_services/interview/interview_progress/questions.html'
-    print(url)
+    logger.debug(url)
     context = {
         "form":form,
         "object": instance,
@@ -556,7 +556,7 @@ def generate_review_sets():
                 )
         new_review.save()
                 
-        print(f"Generated and saved review set '{new_title}'")
+        logger.debug(f"Generated and saved review set '{new_title}'")
                     # Call OpenAI API
            
                 
@@ -584,14 +584,14 @@ def generate_feedback_async(user_id, question_type, dynamic_fields, required_fie
             # Pick one of the existing reviews (you can randomize or use any selection criteria)
             existing_response = existing_responses.order_by('?').first()
             feedback_comment = existing_response.review
-            print(f'Using existing review from title: {existing_response.title}')
+            logger.debug(f'Using existing review from title: {existing_response.title}')
         else:
-            print(f'No existing reviews found for titles: {possible_titles}')
-            print('Cannot proceed without existing reviews.')
+            logger.debug(f'No existing reviews found for titles: {possible_titles}')
+            logger.debug('Cannot proceed without existing reviews.')
             return  # Exit the function or handle the absence of reviews as needed
     else:
-        print(f'No mapped titles found for question_type: {question_type}')
-        print('Cannot proceed without mapped titles.')
+        logger.debug(f'No mapped titles found for question_type: {question_type}')
+        logger.debug('Cannot proceed without mapped titles.')
         return  # Exit the function or handle the absence of mappings as needed
     
     # Save the feedback to the Training_Responses model with the question_type as the title
@@ -603,7 +603,7 @@ def generate_feedback_async(user_id, question_type, dynamic_fields, required_fie
     )
     response.save()
     
-    print(f'Saved feedback for user {user_id} with title "{question_type}"')
+    logger.debug(f'Saved feedback for user {user_id} with title "{question_type}"')
 from django.contrib import messages    
 def questionview(request, question_type=None, *args, **kwargs):
     question_mapping = {
@@ -943,7 +943,7 @@ def training_response_update_view(request, pk):
 @login_required
 def subcategorydetail(request, title=None, *args, **kwargs):
     instance = get_object_or_404(FeaturedSubCategory, title=title)
-    print("training_question",instance,request.user.category)
+    logger.debug("training_question",instance,request.user.category)
     if request.user.category == 4:
         try:
             tracking = TrainingResponsesTracking.objects.get(user=request.user)
@@ -1264,7 +1264,7 @@ def employetraining(request):
     subcategories = FeaturedSubCategory.objects.filter(featuredcategory__in=video_categories)
     links = ActivityLinks.objects.filter(Featuredsubcategory__in=subcategories).distinct()
     calender = ClientAvailability.objects.all()
-    print(calender)
+    logger.debug(calender)
     context = {
         "categories": video_categories,
         "subcategories": subcategories,
@@ -1277,7 +1277,7 @@ def employetraining(request):
 def get_subcategories(request):
     featured_category_id = request.GET.get('category_id')  # This expects the `id` of the selected category.
     subcategories = FeaturedSubCategory.objects.filter(featuredcategory_id=featured_category_id).values('id', 'title')
-    print(subcategories)
+    logger.debug(subcategories)
     return JsonResponse(list(subcategories), safe=False)
 
 def get_activity_links(request):
@@ -1454,7 +1454,7 @@ def populate_section_data(request):
     """View to populate SectionData model"""
         # Optional: Clear existing data if needed
     Correct_answers.objects.all().delete()
-    print("All previous SectionData entries deleted.")
+    logger.debug("All previous SectionData entries deleted.")
     try:
         populate_data('performance', correct_answers_performance)
         populate_data('testing', correct_answers_testing)
@@ -1462,7 +1462,7 @@ def populate_section_data(request):
         populate_data('methodology', correct_answers_methodology)
         populate_data('sdlc', correct_answers_sdlc)
     except Exception as e:
-        print(f"Error while populating data: {str(e)}")
+        logger.debug(f"Error while populating data: {str(e)}")
 
     return render(request, 'professional_services/jobroles/job_tracker.html')
 
@@ -1471,7 +1471,7 @@ def populate_data(section, data_dict):
     """Helper function to save the data into the Correct_answers model"""
     entries = []
     for category, content in data_dict.items():
-            print(f"Adding entry - Section: {section}, Category: {category}")
+            logger.debug(f"Adding entry - Section: {section}, Category: {category}")
             if isinstance(content, (list, tuple, set)):
                 cleaned_content = ' '.join(map(str, content))  # Convert list/tuple/set to string
             elif isinstance(content, dict):
@@ -1491,9 +1491,9 @@ def populate_data(section, data_dict):
     try:
         # Bulk create all entries at once for better performance
         Correct_answers.objects.bulk_create(entries)
-        print(f"All entries for section '{section}' saved successfully.")
+        logger.debug(f"All entries for section '{section}' saved successfully.")
     except Exception as e:
-        print(f"Error saving entries for section {section}: {str(e)}")
+        logger.debug(f"Error saving entries for section {section}: {str(e)}")
 
 from django.views.decorators.http import require_POST        
 def deactivate_notification(request, notification_id):
@@ -1510,7 +1510,7 @@ def deactivate_notification(request, notification_id):
     return JsonResponse({'success': False, 'message': 'Invalid request.'})
 def generate_review_sets(request):
     # if request.user.is_authenticated:
-    #     print('ok')
+    #     logger.debug('ok')
     #     # Update all unseen notifications for the user
     #     Training_Responses.objects.filter(user=request.user, seen_notifications=False).update(seen_notifications=True)
     #     return JsonResponse({'success': True})
@@ -1567,10 +1567,10 @@ def generate_review_sets(request):
                 seen_notifications=False,
             )
             new_review.save()
-            print(f"Generated and saved Review Set {i} for title '{title_to_process}'")
+            logger.debug(f"Generated and saved Review Set {i} for title '{title_to_process}'")
 
         except Exception as e:
-            print(f"An error occurred while generating Review Set {i} for title '{title_to_process}': {e}")
+            logger.debug(f"An error occurred while generating Review Set {i} for title '{title_to_process}': {e}")
             continue  # Proceed to the next review set
 
     return JsonResponse({'success': True, 'message': 'Review sets generated successfully'})

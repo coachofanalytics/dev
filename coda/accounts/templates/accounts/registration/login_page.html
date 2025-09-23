@@ -37,24 +37,6 @@
   }
 
 
-  /* Facebook */
-  .loginBtn--facebook {
-    background-color: #4C69BA;
-    background-image: linear-gradient(#4C69BA, #3B55A0);
-    /*font-family: "Helvetica neue", Helvetica Neue, Helvetica, Arial, sans-serif;*/
-    text-shadow: 0 -1px 0 #354C8C;
-  }
-  .loginBtn--facebook:before {
-    border-right: #364e92 1px solid;
-    background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/14082/icon_facebook.png') 6px 6px no-repeat;
-  }
-  .loginBtn--facebook:hover,
-  .loginBtn--facebook:focus {
-    background-color: #5B7BD5;
-    background-image: linear-gradient(#5B7BD5, #4864B1);
-  }
-
-
   /* Google */
   .loginBtn--google {
     /*font-family: "Roboto", Roboto, arial, sans-serif;*/
@@ -78,7 +60,7 @@
 <div class="login-div">
 	<div class="user_card">
 		<div class="d-flex justify-content-center">
-			<h2 id="form-title">LOGIN</h2>
+			<h2 id="form-title" style="color: white;">LOGIN</h2>
 	    </div>
 			<div class="d-flex justify-content-center">
 				<font size="3"
@@ -89,7 +71,7 @@
 		<div class="row">
 			<div class="col-md-6 form-div">
 				<div class="container">
-					<h2>Login</h2>
+ 
 					{% if otp %}
 					<div class="row">
 						<button type="submit" class="btn btn-primary mb-3" style="color: black;">Check Your Email and Enter Code</button>
@@ -142,13 +124,7 @@
 							Login with a One Time Code
 						</a>
 					</div>
-					{# Facebook login disabled - allauth not configured
-					<div class="row" style="display: flex; justify-content: center; align-items: center;">
-						<a id="facebook-signin-link" href="#" type='button' class="loginBtn loginBtn--facebook">
-						  Login with Facebook
-						</a>
-					</div>
-					#}
+					
 					</div>
 				</form>
 				{%endif%}

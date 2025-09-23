@@ -97,11 +97,11 @@ def enter_prompt(request):
             form.save()
         else:
             # Form is not valid, print errors
-            print("Form is not valid. Errors:")
+            logger.debug("Form is not valid. Errors:")
             for field, errors in form.errors.items():
-                print(f"Field: {field}")
+                logger.debug(f"Field: {field}")
                 for error in errors:
-                    print(f"- {error}")
+                    logger.debug(f"- {error}")
     else:
         form = OpenaiForm()
     return render(request, "ai_services/openai_form.html", {"form": form})
@@ -251,7 +251,7 @@ def exchange_code_for_tokens(auth_code):
         cache.set(REFRESH_TOKEN_CACHE_KEY, refresh_token, timeout=86400)  # Refresh token valid for 1 day (adjust as needed)
         return True
     else:
-        print(f"Error exchanging code for tokens: {response.status_code} {response.text}")
+        logger.debug(f"Error exchanging code for tokens: {response.status_code} {response.text}")
         return False
 
 def refresh_access_token():
@@ -260,7 +260,7 @@ def refresh_access_token():
     """
     refresh_token = cache.get(REFRESH_TOKEN_CACHE_KEY)
     if not refresh_token:
-        print("No refresh token available.")
+        logger.debug("No refresh token available.")
         return False
 
     headers = {
@@ -286,7 +286,7 @@ def refresh_access_token():
         cache.set(REFRESH_TOKEN_CACHE_KEY, new_refresh_token, timeout=86400)  # Adjust as needed
         return True
     else:
-        print(f"Error refreshing access token: {response.status_code} {response.text}")
+        logger.debug(f"Error refreshing access token: {response.status_code} {response.text}")
         return False
 
 def get_access_token():
@@ -350,7 +350,7 @@ def getmeetingresponse(startDate, endDate):
                 'attendee_Info': []   # To be filled below
             })
         else:
-            print(f"Meeting ID: {meeting_id} has no download URL.")
+            logger.debug(f"Meeting ID: {meeting_id} has no download URL.")
 
         # Fetch attendee information
         if meeting_id:
@@ -374,7 +374,7 @@ def getmeetingresponse(startDate, endDate):
                     myCleanResponse[-1]['attendeeNames'] = attendee_names
                     myCleanResponse[-1]['attendee_Info'] = attendee_info
             else:
-                print(f"Failed to fetch attendees for Meeting ID: {meeting_id}")
+                logger.debug(f"Failed to fetch attendees for Meeting ID: {meeting_id}")
 
     return myCleanResponse
 
@@ -426,7 +426,7 @@ def save_meeting_data(meeting_data):
                 try:
                     user = User.objects.filter(Q(username__iexact=attendee_name)).first()
                 except User.DoesNotExist:
-                    print(f"No matching user found for attendee name: {attendee_name}")
+                    logger.debug(f"No matching user found for attendee name: {attendee_name}")
                     continue 
 
                 try:
@@ -437,7 +437,7 @@ def save_meeting_data(meeting_data):
                         tasks = Task.objects.filter(activity_name=activity_name)
                         if tasks.exists(): 
                             for task in tasks:
-                                print(user)
+                                logger.debug(user)
                                 TaskLinks.objects.create(
                                     task=task,
                                     added_by=user,
@@ -455,11 +455,11 @@ def save_meeting_data(meeting_data):
                                     points, maxpoints = task_values["point"], task_values["mxpoint"]
                                     Task.objects.filter(id=task.id).update(point=points + 1)
                         else:
-                            print(f"No tasks found with activity_name '{activity_name}'.")
+                            logger.debug(f"No tasks found with activity_name '{activity_name}'.")
                     else:
-                        print(f"Meeting ID {meeting_id} not found in activity mapping.")
+                        logger.debug(f"Meeting ID {meeting_id} not found in activity mapping.")
                 except:
-                     print('error occured')        
+                     logger.debug('error occured')        
    
 
 @login_required
@@ -527,7 +527,7 @@ def download_and_upload_recordings(request):
     if request.method == 'POST':
         # Get list of selected meeting IDs from the form
         selected_meeting_ids = request.POST.getlist('selected_meetings')
-        print('id',selected_meeting_ids)
+        logger.debug('id',selected_meeting_ids)
         if not selected_meeting_ids:
             messages.warning(request, "No recordings selected for upload.")
             return redirect('getdata:download_upload_recordings')  # Adjust redirect as needed
@@ -548,15 +548,15 @@ def download_and_upload_recordings(request):
 
         for meeting_id in selected_meeting_ids:
             try:
-                print('going')
-                print(meeting_id)
+                logger.debug('going')
+                logger.debug(meeting_id)
                 meeting = GotoMeetings.objects.get(meeting_id=meeting_id)
-                print('not ok')
+                logger.debug('not ok')
                 for meetings in meeting:
-                    print(meeting)
+                    logger.debug(meeting)
                 
                 download_url = meeting.download_url
-                print(download_url)
+                logger.debug(download_url)
                 if not download_url:
                     messages.warning(request, f"No download URL available for meeting ID {meeting_id}.")
                     continue
@@ -629,11 +629,11 @@ def add_today_meetings(request):
         meeting_start_time__startswith=start_date_str,
         meeting_end_time__startswith=end_date_str
     )
-    print(existing_meetings)
+    logger.debug(existing_meetings)
     if existing_meetings.exists():
         message = f"Meetings for today ({today}) already exist in the database."
         allDataJsons = list(existing_meetings.values())
-        print(message)
+        logger.debug(message)
         # Early return if data exists
         return render(request, 'ai_services/todayMeetingList.html', {
             'data': allDataJsons,
@@ -690,7 +690,7 @@ def upload_csv(request):
 		file = csv_file.read().decode("ISO-8859-1")
 		file_data = file.split("\n")
 		csv_data = [line for line in file_data if line.strip() != ""]
-		print(csv_data)
+		logger.debug(csv_data)
 		for x in csv_data:
 			fields = x.split(",")
 			created = Transaction.objects.update_or_create(
@@ -740,7 +740,7 @@ def upload_daily_trades(request):
 			date_str = fields[4].strip() if fields[4] else None
 			expiry_str = fields[5].strip() if fields[5] else None
 			final_date,expiry_date=convert_excel_dates(date_str,expiry_str)
-			print("Dates=====>", final_date,expiry_date)
+			logger.debug("Dates=====>", final_date,expiry_date)
 
 			# Convert decimal fields to Decimal objects
 			price = decimal.Decimal(fields[1]) if fields[1] else decimal.Decimal('0.00')
@@ -757,7 +757,7 @@ def upload_daily_trades(request):
 
 					date = datetime.strptime(date_str, format).date() if date_str else date.today()
 					expiry = datetime.strptime(expiry_str, format).date() if expiry_str else date.today()
-					print(date,expiry)
+					logger.debug(date,expiry)
 					break  # Break the loop if parsing succeeds
 				except ValueError:
 					pass  # Continue to the next format if parsing fails
@@ -919,12 +919,12 @@ def groups_upload_csv(request):
             file = csv_file.read().decode("ISO-8859-1")
             file_data = file.split("\n")
             csv_data = [line for line in file_data if line.strip() != " "]
-            print(csv_data)
+            logger.debug(csv_data)
             
             # Create a set to store unique symbols
             unique_ids = set()
             for x in csv_data:
-                print(x)
+                logger.debug(x)
                 fields = x.split(",")
                 
                 group_id = fields[0]
@@ -932,7 +932,7 @@ def groups_upload_csv(request):
                 # Check if the symbol is unique
                 if group_id not in unique_ids:
                     unique_ids.add(group_id)
-                    print(group_id)
+                    logger.debug(group_id)
 
                     # Create or update the record
                     created = Whatsapp_Groups.objects.update_or_create(
@@ -1013,7 +1013,7 @@ def UseCaseCreateView(request):
 					requirement=f'{what},{why}'
 					user_message=openai_user_message(openai_context,requirement)
 					# Construct the user message
-					# print(user_message)
+					# logger.debug(user_message)
 					try:
 						# openai_response = "For Testing"
 						openai_response = generate_chatbot_response(user_message) if why else "No further context provided."
@@ -1025,20 +1025,20 @@ def UseCaseCreateView(request):
 				form.save()
 				return redirect('getdata:all_apps', app=form.instance.app)
 			except DataError as e:
-				print(f"DataError: {e}")
+				logger.debug(f"DataError: {e}")
 				# Check if the cleaned data has any values that are too long
 				cleaned_data = form.cleaned_data
 				for field_name, field_value in cleaned_data.items():
 					if len(str(field_value)) > 50:  # Adjust the length as per your model
-						print(f"Field causing the error: {field_name}")
+						logger.debug(f"Field causing the error: {field_name}")
 						break  
 		else:
 			# Form is not valid, print errors
-			print("Form is not valid. Errors:")
+			logger.debug("Form is not valid. Errors:")
 			for field, errors in form.errors.items():
-				print(f"Field: {field}")
+				logger.debug(f"Field: {field}")
 				for error in errors:
-					print(f"- {error}")
+					logger.debug(f"- {error}")
 	else:
 		form = UseCaseForm()
 		
@@ -1075,7 +1075,7 @@ def use_case_update_view(request, pk):
                     f"clarification:{openai_context.clarification_description},"
                     f"Number of words:{openai_context.clarification_description},"
                 )
-                print(user_message)
+                logger.debug(user_message)
                 # Generate OpenAI response if 'why' is present
                 try:
                     # openai_response = "testing"
@@ -1111,7 +1111,7 @@ def all_apps(request, app="all"):
                 case_categories.append(case.category)
 
             case_categories = list(set(case_categories))
-            print(case_categories)
+            logger.debug(case_categories)
 			
             context={
 				'case_categories':case_categories,
@@ -1171,7 +1171,7 @@ def migrate_transactions_to_codabudget(request):
     From_Transaction='Transaction Table'
     To_CodaBudget='Budget Table'
     message=f'We are done transfering data from your {From_Transaction} to {To_CodaBudget}'
-    print(message)
+    logger.debug(message)
     cat='web'
     subcat='web'
     # populate_budget_categories(cat)
@@ -1241,7 +1241,7 @@ def connects_suggestion(request):
         if form.is_valid():
             job = form.save(commit=False)
             connects = calculate_connects(job)
-            # print(connects)
+            # logger.debug(connects)
             suggestion = f"Based on your selections, you can apply for {connects} connects."
             main_context = (
 				"Write a concise and engaging proposal that highlights CODA ANALYTICS' expertise in the relevant field, whether it's Business Intelligence, Web Development, AI, or Automation. "
@@ -1258,7 +1258,7 @@ def connects_suggestion(request):
 				
 			)
             proposal = generate_chatbot_response(user_message)  
-            print(proposal)
+            logger.debug(proposal)
 
             
 
@@ -1302,18 +1302,18 @@ def upload_excel(request, folder_name=None, file_name=None):
             response.raise_for_status()
             
             file_content = io.BytesIO(response.content)  
-            print(f"File downloaded from GitHub: {file_name}")
+            logger.debug(f"File downloaded from GitHub: {file_name}")
             threading.Thread(target=process_excel_file, args=(file_content,)).start()
         
         except Exception as e:
-            print(f"Error downloading or processing file: {e}")
+            logger.debug(f"Error downloading or processing file: {e}")
             return render(request, 'excel_templates/upload.html', {
                 'form': form,
                 'error': f"Error downloading file: {str(e)}",
                 'folder_name': folder_name,
             })
         # pass_file_name = f"data/{file_name}"
-        # print('file', pass_file_name)
+        # logger.debug('file', pass_file_name)
         # threading.Thread(target=process_excel_file, args=(local_save_path,)).start()
         
         return redirect('getdata:dashboard')  # Redirect after processing
@@ -1331,7 +1331,7 @@ def upload_excel(request, folder_name=None, file_name=None):
     response = requests.get(github_url, headers=headers)
     
     # if response.status_code == 200:
-    #     print(f"GitHub API error")
+    #     logger.debug(f"GitHub API error")
     #     return render(request, 'excel_templates/upload.html', {
     #         'form': form,
     #         'error': f"Failed to fetch data from GitHub. Status code: {response.status_code}",
@@ -1340,23 +1340,23 @@ def upload_excel(request, folder_name=None, file_name=None):
 
     try:
         files_and_folders = response.json()
-        print(files_and_folders)
+        logger.debug(files_and_folders)
       
     except json.JSONDecodeError as e:
-        print(f"JSON decode error: {e}")
+        logger.debug(f"JSON decode error: {e}")
         return render(request, 'excel_templates/upload.html', {
             'form': form,
             'error': "Failed to parse GitHub API response as JSON.",
             'folder_name': folder_name,
         })
 
-    print(f"==>> files_and_folders: {files_and_folders}")
+    logger.debug(f"==>> files_and_folders: {files_and_folders}")
     return render(request, 'excel_templates/upload.html', {'form': form, 'files': files_and_folders, 'folder_name': folder_name})
 
 def dashboard(request):
     data = DynamicExcelData.objects.all().values_list('data', flat=True)
     data = [json.loads(item) for item in data] 
-    print(data)# Convert JSON string to Python dict
+    logger.debug(data)# Convert JSON string to Python dict
     return render(request, 'excel_templates/dashboard.html', {'data': data})
 
 

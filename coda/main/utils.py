@@ -1,4 +1,9 @@
-import os,requests,openai,json
+import os,requests,json
+# Optional import - removed during optimization to reduce slug size
+try:
+    import openai
+except ImportError:
+    openai = None
 import random,string
 from coda_project.settings import SITEURL
 from coda_project import settings
@@ -12,15 +17,37 @@ from django import template
 from django.apps import apps
 from django.db.models import Q
 from django.db import models
-from langchain.agents import create_sql_agent
-from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain.agents.agent_types import AgentType
-from langchain_openai import ChatOpenAI, OpenAI
-from langchain_community.utilities import SQLDatabase
+# Optional import - removed during optimization to reduce slug size
+try:
+    from langchain.agents import create_sql_agent
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    create_sql_agent = None
+    LANGCHAIN_AVAILABLE = False
+# Optional imports - removed during optimization to reduce slug size
+try:
+    from langchain_community.agent_toolkits import SQLDatabaseToolkit
+    from langchain.agents.agent_types import AgentType
+    from langchain_openai import ChatOpenAI, OpenAI
+    from langchain_community.utilities import SQLDatabase
+except ImportError:
+    SQLDatabaseToolkit = None
+    AgentType = None
+    ChatOpenAI = None
+    OpenAI = None
+    SQLDatabase = None
 """ ========This code is for save images in google drive======= """
-from google.oauth2 import service_account
-from googleapiclient.http import MediaFileUpload 
-from googleapiclient.discovery import build
+# Optional imports - removed during optimization to reduce slug size
+try:
+    from google.oauth2 import service_account
+    from googleapiclient.http import MediaFileUpload 
+    from googleapiclient.discovery import build
+    GOOGLE_MAIN_AVAILABLE = True
+except ImportError:
+    service_account = None
+    MediaFileUpload = None
+    build = None
+    GOOGLE_MAIN_AVAILABLE = False
 
 import httplib2  # Import the httplib2 library for setting the timeout
 from accounts.models import UserGroups
@@ -297,6 +324,9 @@ def generate_chatbot_response(user_message, user_message_dict=None):
             ]
         else:
             messages = user_message_dict
+        if openai is None:
+            return "AI service temporarily unavailable (optimization mode)"
+            
         client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         response = client.chat.completions.create(
             model="gpt-4-1106-preview",
@@ -1206,7 +1236,9 @@ def split_sentences(description):
     return onboarding_description,troubleshooting_description,requirement_description
 
 def langchainModelForAnswer(question): 
-
+    if not LANGCHAIN_AVAILABLE:
+        return "AI service temporarily unavailable (optimization mode)"
+        
     try:
         agent_executor = create_sql_agent(
             llm=ChatOpenAI(temperature=0, openai_api_key=os.getenv('OPENAI_API_KEY'), model=os.getenv('SEACH_DATA_AI_MODEL')),

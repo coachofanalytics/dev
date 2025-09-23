@@ -924,9 +924,17 @@ suggestions = {
 }
  
 import re   
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload 
+# Optional imports - removed during optimization to reduce slug size
+try:
+    from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import build
+    from googleapiclient.http import MediaFileUpload
+    GOOGLE_AVAILABLE = True
+except ImportError:
+    Credentials = None
+    build = None
+    MediaFileUpload = None
+    GOOGLE_AVAILABLE = False 
 def split_review_by_sections(text):
     # Use regex to split based on numbered sections like "1.", "2.", etc.
     sections = re.split(r'(?=\d+\.)', text)
@@ -938,6 +946,10 @@ def upload_file_to_drive(temp_file_path, original_filename, user, task, folder_i
     """
     Uploads the given file to Google Drive in a specific folder and returns the file's web view link.
     """
+    if not GOOGLE_AVAILABLE:
+        logger.warning("Google Drive API not available - feature disabled during optimization")
+        return None
+        
     try:
         creds = Credentials(
             token=os.environ.get('GOOGLE_ACCESS_TOKEN'),

@@ -155,7 +155,7 @@ class LoanService(BaseFinanceService):
                 self._log_operation(
                     'approve_loan_application',
                     approver,
-                    {'loan_id': loan_id, 'applicant_id': loan_app.user.id}
+                    {'loan_id': loan_id, 'applicant_id': loan_app.borrower.id}
                 )
                 
                 # Send approval notification
@@ -256,7 +256,7 @@ class LoanService(BaseFinanceService):
                     'purpose': app.purpose,
                     'status': app.status,
                     'application_date': app.submitted_at,
-                    'loan_product': app.loan_product.name if app.loan_product else None
+                    'loan_product': app.loan_product.name if app.loan_product else 'No Product Assigned'
                 })
             
             return self.create_success_response(

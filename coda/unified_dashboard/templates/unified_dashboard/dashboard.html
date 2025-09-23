@@ -185,6 +185,78 @@
         height: 400px;
     }
 }
+
+/* Task and Task History Styling */
+.task-item, .history-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.task-item:hover, .history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.task-header, .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.task-header h5, .history-header h6 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.task-status, .history-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+}
+
+.task-description, .history-description {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.task-meta, .history-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.task-meta small, .history-meta small {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.dashboard-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.dashboard-section h2 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 </style>
 <div class="unified-dashboard">
     <div class="container-fluid">
@@ -233,6 +305,97 @@
             </div>
         </div>
         {% endif %}
+
+        <!-- Tasks and Task History Section -->
+        <div class="dashboard-sections">
+            <div class="row">
+                <!-- Current Tasks -->
+                <div class="col-md-6">
+                    <div class="dashboard-section">
+                        <h2>
+                            <i class="fas fa-tasks"></i>
+                            My Current Tasks
+                        </h2>
+                        <div class="section-content">
+                            {% if user_tasks %}
+                                <div class="task-list">
+                                    {% for task in user_tasks %}
+                                    <div class="task-item">
+                                        <div class="task-header">
+                                            <h5>{{ task.activity_name }}</h5>
+                                            <span class="task-status badge badge-{% if task.status == 'completed' %}success{% elif task.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                                                {{ task.status|title }}
+                                            </span>
+                                        </div>
+                                        <p class="task-description">{{ task.description|truncatechars:100 }}</p>
+                                        <div class="task-meta">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar"></i> {{ task.created_at|date:"M d, Y" }}
+                                                <i class="fas fa-user"></i> {{ task.employee.get_full_name|default:task.employee.username }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'management:task_list' %}" class="btn btn-primary">
+                                        <i class="fas fa-list"></i> View All Tasks
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-tasks fa-3x mb-3"></i>
+                                    <p>No current tasks assigned to you.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task History -->
+                <div class="col-md-6">
+                    <div class="dashboard-section">
+                        <h2>
+                            <i class="fas fa-history"></i>
+                            Task History
+                        </h2>
+                        <div class="section-content">
+                            {% if user_task_history %}
+                                <div class="task-history-list">
+                                    {% for history in user_task_history %}
+                                    <div class="history-item">
+                                        <div class="history-header">
+                                            <h6>{{ history.activity_name }}</h6>
+                                            <span class="history-status badge badge-{% if history.status == 'completed' %}success{% elif history.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                                                {{ history.status|title }}
+                                            </span>
+                                        </div>
+                                        <p class="history-description">{{ history.description|truncatechars:80 }}</p>
+                                        <div class="history-meta">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar"></i> {{ history.created_at|date:"M d, Y" }}
+                                                <i class="fas fa-clock"></i> {{ history.created_at|time:"H:i" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'management:task_history' %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-history"></i> View Full History
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-history fa-3x mb-3"></i>
+                                    <p>No task history found.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Dashboard Sections -->
         <div class="dashboard-sections">

@@ -1,5 +1,11 @@
 # AI Services for Diaspora Demo Platform
-import openai
+# Optional import - removed during optimization to reduce slug size
+try:
+    import openai
+    OPENAI_AI_AVAILABLE = True
+except ImportError:
+    openai = None
+    OPENAI_AI_AVAILABLE = False
 import time
 import json
 import logging
@@ -54,6 +60,9 @@ class SimpleAIResponseManager:
     
     def _call_openai(self, analysis_type: str, input_data: Dict) -> Dict:
         """Call OpenAI API"""
+        if not OPENAI_AI_AVAILABLE:
+            return self._get_fallback_response(analysis_type, input_data)
+            
         try:
             client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
             

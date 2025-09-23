@@ -99,41 +99,41 @@ def thank(request):
 
 
 def join(request):
-    print("=" * 50)
-    print("🔍 DEBUG: join function called")
-    print(f"🔍 DEBUG: request.method = {request.method}")
-    print(f"🔍 DEBUG: request.user = {request.user}")
-    print(
+    logger.debug("=" * 50)
+    logger.debug("🔍 DEBUG: join function called")
+    logger.debug(f"🔍 DEBUG: request.method = {request.method}")
+    logger.debug(f"🔍 DEBUG: request.user = {request.user}")
+    logger.debug(
         f"🔍 DEBUG: request.POST = {dict(request.POST) if request.method == 'POST' else 'N/A'}"
     )
-    print("=" * 50)
+    logger.debug("=" * 50)
 
     form = UserForm()
 
     if request.method == "POST":
-        print("🔍 DEBUG: Processing POST request")
+        logger.debug("🔍 DEBUG: Processing POST request")
         email = request.POST.get("email")
-        print(f"🔍 DEBUG: Email = {email}")
+        logger.debug(f"🔍 DEBUG: Email = {email}")
 
         if CustomerUser.objects.filter(email=email).exists():
-            print("🔍 DEBUG: User already exists with this email")
+            logger.debug("🔍 DEBUG: User already exists with this email")
             messages.warning(request, "User already exists with this email")
             return redirect("/password-reset")
 
         # Update subcategory choices based on selected category BEFORE form validation
         category_id = request.POST.get("category")
         sub_category_id = request.POST.get("sub_category")
-        print(f"🔍 DEBUG: Category = {category_id}, Sub Category = {sub_category_id}")
+        logger.debug(f"🔍 DEBUG: Category = {category_id}, Sub Category = {sub_category_id}")
 
         form = UserForm(request.POST)
 
         if category_id:
-            print(f"🔍 DEBUG: Updating subcategory choices for category {category_id}")
+            logger.debug(f"🔍 DEBUG: Updating subcategory choices for category {category_id}")
             form.update_subcategory_choices(category_id)
-        print(f"🔍 DEBUG: Form is_valid = {form.is_valid()}")
+        logger.debug(f"🔍 DEBUG: Form is_valid = {form.is_valid()}")
 
         if form.is_valid():
-            print("🔍 DEBUG: Form is valid, creating user")
+            logger.debug("🔍 DEBUG: Form is valid, creating user")
             user = form.save(commit=False)
             user.username = user.email
             user.set_password(form.cleaned_data["password2"])
@@ -146,35 +146,35 @@ def join(request):
             # In development/testing: allauth will auto-verify
             # In production: allauth will require email verification
 
-            print("🔍 DEBUG: User details before save:")
-            print(f"  Username: {user.username}")
-            print(f"  Email: {user.email}")
-            print(f"  Category: {user.category}")
-            print(f"  Sub Category: {user.sub_category}")
-            print(f"  First Name: {user.first_name}")
-            print(f"  Last Name: {user.last_name}")
-            print(f"  Is Active: {user.is_active}")
-            print(f"  Email Verified: {user.email_verified}")
-            print(f"  Verification Token: {user.verification_token}")
+            logger.debug("🔍 DEBUG: User details before save:")
+            logger.debug(f"  Username: {user.username}")
+            logger.debug(f"  Email: {user.email}")
+            logger.debug(f"  Category: {user.category}")
+            logger.debug(f"  Sub Category: {user.sub_category}")
+            logger.debug(f"  First Name: {user.first_name}")
+            logger.debug(f"  Last Name: {user.last_name}")
+            logger.debug(f"  Is Active: {user.is_active}")
+            logger.debug(f"  Email Verified: {user.email_verified}")
+            logger.debug(f"  Verification Token: {user.verification_token}")
 
             # Save user with all fields including category and sub_category
             user.save()
-            print(f"🔍 DEBUG: User saved successfully with ID: {user.id}")
+            logger.debug(f"🔍 DEBUG: User saved successfully with ID: {user.id}")
 
             # Email verification handled by allauth settings
             # In development/testing: allauth will auto-verify
             # In production: allauth will require email verification
-            print("🔍 DEBUG: User registration complete, redirecting to dashboard")
+            logger.debug("🔍 DEBUG: User registration complete, redirecting to dashboard")
             return redirect(get_redirect_url(user))
 
         else:
             # Log form errors for debugging
-            print(f"🔍 DEBUG: Form validation failed: {form.errors}")
+            logger.debug(f"🔍 DEBUG: Form validation failed: {form.errors}")
             logger.error(f"Form validation failed: {form.errors}")
 
     # Force logout any existing user before registration
     if request.user.is_authenticated:
-        print(f"🔍 DEBUG: Force logging out existing user {request.user.username}")
+        logger.debug(f"🔍 DEBUG: Force logging out existing user {request.user.username}")
         logout(request)
         logger.info(
             f"Force logged out existing user {request.user.username} before registration"
@@ -185,13 +185,13 @@ def join(request):
         )
 
     # Get choices data for JavaScript
-    print("🔍 DEBUG: Getting choices data for JavaScript")
+    logger.debug("🔍 DEBUG: Getting choices data for JavaScript")
     choices_data = form.get_choices_data()
-    print(
+    logger.debug(
         f"🔍 DEBUG: Choices data keys: {list(choices_data.keys()) if choices_data else 'None'}"
     )
 
-    print("🔍 DEBUG: Rendering registration template")
+    logger.debug("🔍 DEBUG: Rendering registration template")
     return render(
         request,
         "accounts/registration/join.html",

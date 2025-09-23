@@ -8,7 +8,13 @@ from django.db.models import Q
 from django.shortcuts import redirect, render,get_object_or_404
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
-import openai
+# Optional import - removed during optimization to reduce slug size
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    openai = None
+    OPENAI_AVAILABLE = False
 from django.db.models import Sum
 from professional_services.models import ClientAssessment
 from investing.models import InvestmentContent
@@ -31,9 +37,22 @@ from django.views.generic import (
 from .forms import *
 from django.http import JsonResponse
 from django.apps import apps
-from langchain_community.llms import OpenAI
-from langchain_community.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage
+# Optional import - removed during optimization to reduce slug size
+try:
+    from langchain_community.llms import OpenAI
+    LANGCHAIN_COMMUNITY_AVAILABLE = True
+except ImportError:
+    OpenAI = None
+    LANGCHAIN_COMMUNITY_AVAILABLE = False
+# Optional imports - removed during optimization to reduce slug size
+try:
+    from langchain_community.chat_models import ChatOpenAI
+    from langchain.schema import HumanMessage
+    LANGCHAIN_SCHEMA_AVAILABLE = True
+except ImportError:
+    ChatOpenAI = None
+    HumanMessage = None
+    LANGCHAIN_SCHEMA_AVAILABLE = False
 from django.db.models import F, FloatField, Case, When, Value, Subquery, OuterRef, Q
 from django.contrib.auth import get_user_model
 from django.db.models.functions import Coalesce
@@ -671,7 +690,9 @@ def plan_urls(request):
 #     }
 #     return render(request, "main/team_profiles.html", context)
     
-openai.api_key = os.environ.get('OPENAI_API_KEY')
+# Set OpenAI API key if available
+if OPENAI_AVAILABLE:
+    openai.api_key = os.environ.get('OPENAI_API_KEY')
 class SQSum(Subquery):
     output_field = models.IntegerField()
     template = "(SELECT sum(point) from (%(subquery)s) _sum)"

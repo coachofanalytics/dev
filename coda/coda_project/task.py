@@ -1,4 +1,10 @@
-import tweepy
+# Optional import - removed during optimization to reduce slug size
+try:
+    import tweepy
+    TWEEPY_AVAILABLE = True
+except ImportError:
+    tweepy = None
+    TWEEPY_AVAILABLE = False
 import logging
 
 from celery import shared_task
@@ -181,7 +187,13 @@ def search_job_mail():
                 logger.error('error msg is ' + str(e))
 
                 # from django.core.management import call_command
-import tweepy
+# Optional import - removed during optimization to reduce slug size
+try:
+    import tweepy
+    TWEEPY_AVAILABLE_2 = True
+except ImportError:
+    tweepy = None
+    TWEEPY_AVAILABLE_2 = False
 import requests
 from management.models import Advertisement
 
@@ -194,6 +206,10 @@ Twitter and Facebook AD management Scripts below
 @shared_task(name="advertisement")
 def advertisement():
     #This function will post the latest tweet
+    if not TWEEPY_AVAILABLE:
+        logging.warning("Tweepy not available - Twitter posting disabled during optimization")
+        return
+        
     context = Advertisement.objects.all().first()
     apiKey = context.twitter_api_key 
     apiSecret = context.twitter_api_key_secret

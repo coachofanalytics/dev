@@ -492,7 +492,7 @@ class LoanApplication(models.Model):
     @property
     def total_paid(self):
         """Calculate total amount paid from all payments"""
-        return sum(payment.amount for payment in self.payments.all())
+        return sum(payment.amount for payment in self.loan_payments.all())
     
     @property
     def next_payment_date(self):
@@ -627,6 +627,7 @@ class LoanApplication(models.Model):
                 'total_benefits': Decimal('0.00')
             }
 
+    @property
     def amount_in_user_currency(self):
         """Get the loan amount in the user's preferred currency"""
         from .utils import convert_from_usd

@@ -7,11 +7,25 @@ from functools import wraps
 
 import os
 # import pandas as pd
-from bs4 import BeautifulSoup
+# Optional import - removed during optimization to reduce slug size
+try:
+    from bs4 import BeautifulSoup
+    BS4_AVAILABLE = True
+except ImportError:
+    BeautifulSoup = None
+    BS4_AVAILABLE = False
+
 # Gmail API utils
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+try:
+    from googleapiclient.discovery import build
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    from google.auth.transport.requests import Request
+    GOOGLE_GAPI_AVAILABLE = True
+except ImportError:
+    build = None
+    InstalledAppFlow = None
+    Request = None
+    GOOGLE_GAPI_AVAILABLE = False
 
 import logging
 logger = logging.getLogger(__name__)
@@ -202,6 +216,9 @@ def get_message(service, msg_id):
 
 def getdata(file):
     '''Get the html content'''
+    if not BS4_AVAILABLE:
+        return None
+        
     HTMLFile = open(file, "r")
   
     # Reading the file

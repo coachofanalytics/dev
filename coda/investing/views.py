@@ -8,11 +8,36 @@ from decimal import Decimal, DecimalException
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Third-Party Library Imports
-import numpy as np
-import pandas as pd
-import yfinance as yf
+# Optional import - removed during optimization to reduce slug size
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    np = None
+    NUMPY_AVAILABLE = False
+# Optional imports - removed during optimization to reduce slug size
+try:
+    import pandas as pd
+    PANDAS_INVESTING_AVAILABLE = True
+except ImportError:
+    pd = None
+    PANDAS_INVESTING_AVAILABLE = False
+
+try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    yf = None
+    YFINANCE_AVAILABLE = False
+
 import requests
-import ta  # Technical Analysis Library
+
+try:
+    import ta  # Technical Analysis Library
+    TA_AVAILABLE = True
+except ImportError:
+    ta = None
+    TA_AVAILABLE = False
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.mixins import LoginRequiredMixin
 

@@ -10,7 +10,13 @@ from django.db.models import Count, Avg, Q, F
 from django.utils import timezone
 from django.core.cache import cache
 from django.http import HttpRequest
-from user_agents import parse as parse_user_agent
+# Optional import - removed during optimization to reduce slug size
+try:
+    from user_agents import parse as parse_user_agent
+    USER_AGENTS_AVAILABLE = True
+except ImportError:
+    parse_user_agent = None
+    USER_AGENTS_AVAILABLE = False
 
 from .models import (
     UserBehaviorAnalytics, AnalysisSession, DiasporaAnalysisData,
@@ -36,17 +42,23 @@ class AnalyticsService:
             
             # Parse user agent
             user_agent_string = request.META.get('HTTP_USER_AGENT', '')
-            user_agent = parse_user_agent(user_agent_string)
-            
-            # Determine device type
-            device_type = 'desktop'
-            if user_agent.is_mobile:
-                device_type = 'mobile'
-            elif user_agent.is_tablet:
-                device_type = 'tablet'
+            if USER_AGENTS_AVAILABLE:
+                user_agent = parse_user_agent(user_agent_string)
+                # Determine device type
+                device_type = 'desktop'
+                if user_agent.is_mobile:
+                    device_type = 'mobile'
+                elif user_agent.is_tablet:
+                    device_type = 'tablet'
+            else:
+                # Fallback: simple detection based on user agent string
+                device_type = 'mobile' if 'Mobile' in user_agent_string else 'desktop'
             
             # Get browser info
-            browser = f"{user_agent.browser.family} {user_agent.browser.version_string}"
+            if USER_AGENTS_AVAILABLE:
+                browser = f"{user_agent.browser.family} {user_agent.browser.version_string}"
+            else:
+                browser = "Unknown"
             
             # Create analytics record
             UserBehaviorAnalytics.objects.create(

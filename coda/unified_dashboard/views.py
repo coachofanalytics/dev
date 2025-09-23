@@ -221,6 +221,12 @@ def unified_dashboard(request):
         # Get role-based links and buttons (similar to management system)
         role_based_links = get_role_based_links(request)
         
+        # Get Tasks and TaskHistory for the user
+        from management.models import Task, TaskHistory
+        
+        user_tasks = Task.objects.filter(employee=request.user).order_by('-created_at')[:5]
+        user_task_history = TaskHistory.objects.filter(employee=request.user).order_by('-created_at')[:5]
+        
         # Simplified context without complex model queries for now
         context = {
             'user_role': user_role,
@@ -229,6 +235,8 @@ def unified_dashboard(request):
             'quick_actions': get_quick_actions(user_role),
             'recent_activities': get_recent_activities(request.user),
             'notifications': get_user_notifications(request.user),
+            'user_tasks': user_tasks,
+            'user_task_history': user_task_history,
             'title': f'CODA Command Center - {dashboard_config["title"]}',
             'user': request.user,
         }

@@ -1,7 +1,13 @@
 from __future__ import print_function
 import os
 import re
-from bs4 import BeautifulSoup
+# Optional import - removed during optimization to reduce slug size
+try:
+    from bs4 import BeautifulSoup
+    BS4_AI_AVAILABLE = True
+except ImportError:
+    BeautifulSoup = None
+    BS4_AI_AVAILABLE = False
 import json
 import psycopg2
 import requests
@@ -9,7 +15,13 @@ from django.http import JsonResponse
 from ai_services.models import DynamicExcelData
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-import pandas as pd
+# Optional import - removed during optimization to reduce slug size
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    pd = None
+    PANDAS_AVAILABLE = False
 from datetime import datetime, time
 import mimetypes
 
@@ -392,6 +404,9 @@ def crypto_data(symbol,action,unit_price, total_price,date):
 
 def getdata(file):
     '''Get the html content'''
+    if not BS4_AI_AVAILABLE:
+        return None
+        
     try:
         HTMLFile = open(file, "r")
     
@@ -1067,6 +1082,9 @@ def handle_non_serializable(data):
     """
     Convert non-serializable objects such as datetime and time to a serializable format.
     """
+    if not PANDAS_AVAILABLE:
+        return data
+        
     for key, value in data.items():
         if isinstance(value, (datetime, pd.Timestamp)):
             data[key] = value.isoformat()
@@ -1078,6 +1096,10 @@ def process_excel_file(file_path):
     """
     Process the Excel file and save data to the database.
     """
+    if not PANDAS_AVAILABLE:
+        print("Pandas not available - Excel processing disabled during optimization")
+        return
+        
     print('file',file_path)
     mime_type, _ = mimetypes.guess_type('/home/mehboob/coda/task/cores/data/Bangalore Dental - 1385.xlsx')
     print(f"MIME type: {mime_type}")
