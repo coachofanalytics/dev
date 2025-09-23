@@ -172,8 +172,8 @@ migrations/000[4-9]*.py
 migrations/00[1-9][0-9]*.py
 
 # Ignore documentation folder for deployment
-docs/
-docs/**
+# docs/
+# docs/**
 tests/
 tests/**
 **/tests/

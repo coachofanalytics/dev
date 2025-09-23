@@ -480,43 +480,6 @@ def loan_computation(total_pay, user_data, payslip_config):
     return loan_amount, loan_payment, balance_amount
 
 
-# Phase 1 doesn't need this complex function - keeping it simple
-# def record_loan_deduction(loan, salary_amount, deduction_amount):
-#     """Record a loan deduction for salary processing."""
-#     try:
-#         from finance.models import LoanDeduction
-#         from datetime import date
-#         
-#         current_date = date.today()
-#         
-#         # Check if deduction already exists for this month
-#         existing_deduction = LoanDeduction.objects.filter(
-#             employee=loan.borrower,
-#             loan=loan,
-#             payslip_month=current_date.month,
-#             payslip_year=current_date.year
-#         ).first()
-#         
-#         if not existing_deduction and deduction_amount > 0:
-#             # Create new deduction record
-#             LoanDeduction.objects.create(
-#                 employee=loan.borrower,
-#                 loan=loan,
-#                 payslip_month=current_date.month,
-#                 payslip_year=current_date.year,
-#                 deduction_amount=deduction_amount,
-#                 salary_amount=salary_amount,
-#                 deduction_date=current_date,
-#                 processed=False
-#             )
-#             logger.info(f'Loan deduction recorded: {deduction_amount} for {loan.borrower.username}')
-#             
-#     except ImportError:
-#         logger.warning('LoanDeduction model not available - skipping deduction recording')
-#     except Exception as e:
-#         logger.error(f'Error recording loan deduction: {str(e)}')
-
-
 def updateloantable(user_data, employee, total_pay, payslip_config):
     """Update loan table using Phase 1 simplified approach."""
     loan_amount, loan_payment, balance_amount = loan_computation(total_pay, user_data, payslip_config)
@@ -672,14 +635,6 @@ def bonus(tasks,total_pay,payslip_config):
               +Decimal(EOM)+Decimal(EOQ)+Decimal(EOY)
               +Decimal(offpay))
     return bonus_points_ammount,latenight_Bonus,yearly,offpay,EOM,EOQ,EOY,sub_bonus#,Lap_Bonus
-
-# def additional_earnings(employee,user_data,tasks,total_pay,payslip_config):
-#     """Computes the loan amount, loan payment and loan balance for an employee"""
-#     # ================BONUS============================
-#     *_,sub_bonus=bonus(tasks,total_pay,payslip_config)
-#     # ===============DEDUCTIONS=======================
-#     total_deduction=deductions(employee,user_data,payslip_config,total_pay)[-1]
-#     return total_deduction,sub_bonus
 
 
 def calculate_total_pay(tasks):
