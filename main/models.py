@@ -160,5 +160,21 @@ class ContactUs(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
+    
+
+
+class Donation_organization(models.Model):
+    donal_name=models.CharField(max_length=100,null=False)
+    email= models.EmailField(null=False)
+    amount=models.DecimalField(max_digits=10,decimal_places=2,null=False)
+    message=models.TextField(null=False)
+    created_at=models.DateField(auto_now_add=True,null=False)
+
+    def _str_(self):
+        return f"{self.donar_name}={self.amount}"
+
+
 
     
+      
+      
