@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, News, Page, Service, SubService,Team
+from .models import Assets,Description, Donation, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm
@@ -208,4 +208,6 @@ from django.views.generic import TemplateView
 class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
-
+def Donation_list(request):
+    donations=Donation.objects.all().order_by('-created_at')
+    return render(request,"main/snippets_templates/table/Donation_list.html",{'donations':donations})
