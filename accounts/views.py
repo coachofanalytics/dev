@@ -11,6 +11,7 @@ from .models import CustomerUser,Department
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
+from .forms import DepartmentForm
 
 from django.urls import reverse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
@@ -263,3 +264,12 @@ def Department_list_view(request):
     departments = Department.objects.all()
 
     return render(request, 'accounts/Departmentlist.html', {'departments': departments})
+def DepartmentCreateView(request):
+    if request.method == "POST":
+        form = DepartmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:departments')  # Redirect to list view
+    else:
+        form = DepartmentForm()
+    return render(request, 'accounts/dpcreate.html', {'form': form})

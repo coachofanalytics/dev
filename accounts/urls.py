@@ -8,5 +8,6 @@ urlpatterns = [
     path('join/', views.join, name='join'),
     path('login/', views.login_view, name='account-login'),
     path('profile/', views.profile, name='account-profile'),
-    path('Departments/', views.Department_list_view, name='Departments'),
+    path('Departments/', views.Department_list_view, name='department_create'),
+    path("department_create/", views.DepartmentCreateView, name="department_create"),
 ]

@@ -1,0 +1,11 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<div class="container">
+  <h2>Add Department</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">CREATE</button>
+  </form>
+</div>
+{% endblock %}
