@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm
+from main.forms import ContactForm,Donation
 from django.contrib.auth import get_user_model
 from .models import Donation_organisation
 
@@ -213,3 +213,31 @@ class AboutView(TemplateView):
 def donation_list(request):
     donation = Donation_organisation.objects.all().order_by("-created_at")
     return render(request,"main/snippets_templates/table/donation_list.html",{"donations":donation})
+
+# def Donation_create(request):
+#     if request.method == "POST":
+#         form =  Donation_form(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             return redirect("main:main-donation_list")
+#         else:
+#             form= Donation_form()
+#             return render(request,"main/snippets_templates/table/donation_create.html",{"form":form})
+
+
+
+
+def Donation_create(request):
+    if request.method == "POST":
+        form = Donation(request.POST, request.FILES)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.save()
+            context = {
+                "message": "Thank You for your donation, we will get back to you within 48 hours."
+            }
+            return redirect("main:donation")
+    else:
+        form = Donation()
+    return render(request, "main/snippets_templates/table/donation_create.html", {"form": form})
+    

@@ -16,6 +16,7 @@ urlpatterns = [
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
     path('donation/', views.donation_list, name='donation'),
+    path('donation_create/', views.Donation_create, name='donation_create'),
     
   
     

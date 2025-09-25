@@ -62,7 +62,7 @@
                     <td>{{ donation.email }}</td>
                     <td>{{ donation.amount }}</td>
                     <td>{{ donation.message|default:"—" }}</td>
-                    <td>{{ donation.created_at|date:"M d, Y }}</td>
+                    <td>{{ donation.created_at }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
