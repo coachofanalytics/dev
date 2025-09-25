@@ -92,14 +92,14 @@ urlpatterns = [
     path(
         "upload/<int:pk>/",
         InterviewDetailView.as_view(
-            template_name="data/interview/interviews_detail.html"
+            template_name="professional_services/interview/interviews_detail.html"
         ),
         name="interview-detail",
     ),
     # ----------------------UPDATE----------------------------------------------------
     path(
         "interview/<int:pk>/update",
-        InterviewUpdateView.as_view(template_name="data/interview/interview_form.html"),
+        InterviewUpdateView.as_view(template_name="professional_services/interview/interview_form.html"),
         name="interview-update",
     ),
     path(
@@ -111,14 +111,14 @@ urlpatterns = [
     path(
         "interview/<int:pk>/delete",
         InterviewDeleteView.as_view(
-            template_name="data/interview/interview_confirm_delete.html"
+            template_name="professional_services/interview/interview_confirm_delete.html"
         ),
         name="delete-interview",
     ),
     # =============================JOB VIEWS=====================================
     path(
         "newjob/",
-        JobCreateView.as_view(template_name="data/interview/interview_form.html"),
+        JobCreateView.as_view(template_name="professional_services/interview/interview_form.html"),
         name="job-create",
     ),
     path("job_tracker/", JobListView.as_view(), name="job-list"),
