@@ -65,6 +65,7 @@
                     <td>{{ donation.message|default:"—" }}</td>
                     <td>{{ donation.created_at|date:"M d, Y " }}</td>
                     <td>
+                        <a href="{% url 'main:donation_detail' donation.pk %}" class="action-btn detail-btn">Details</a>
                         <a href="{% url 'main:donation_edit' donation.pk %}" class="action-btn edit-btn">Edit</a>
                         <a href="{% url 'main:donation_delete' donation.pk %}" class="action-btn delete-btn">Delete</a>
                     </td>
@@ -99,6 +100,12 @@
                 margin-right: 4px;
                 font-size: 0.95em;
                 transition: background 0.2s;
+            }
+            .detail-btn {
+                background: #17a2b8;
+            }
+            .detail-btn:hover {
+                background: #117a8b;
             }
             .edit-btn {
                 background: #007bff;

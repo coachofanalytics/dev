@@ -16,6 +16,11 @@ from django.contrib.auth import get_user_model
 
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
+# Details Donation View
+class DonationDetailView(DetailView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_detail.html'
 # Create Donation View
 class DonationCreateView(CreateView):
     model = Donation_organization
