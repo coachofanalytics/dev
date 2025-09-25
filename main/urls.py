@@ -16,10 +16,12 @@ urlpatterns = [
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
     path('donors/', views.donor_list, name='donor_list'),
-    
-  
-    
-    
+    path('add-donor/', views.add_donor, name='add_donor'),
+    path('donor/<int:pk>/', views.donor_details, name='donor_details'),
+    path('edit-donor/<int:pk>/', views.edit_donor, name='edit_donor'),
+    path('delete-donor/<int:pk>/', views.delete_donor, name='delete_donor'),
+
+
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),

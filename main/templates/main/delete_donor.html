@@ -1,0 +1,26 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm p-4 border-danger">
+        <h2 class="mb-4 text-danger">Delete Donor</h2>
+
+        <p>
+            Are you sure you want to permanently delete the following donor?
+        </p>
+
+        <ul class="list-group mb-3">
+            <li class="list-group-item"><strong>Name:</strong> {{ donation.donor_name }}</li>
+            <li class="list-group-item"><strong>Email:</strong> {{ donation.email }}</li>
+            <li class="list-group-item"><strong>Amount:</strong> {{ donation.amount }}</li>
+            <li class="list-group-item"><strong>message:</strong> {{ donation.message }}</li>
+        </ul>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">🗑️ Yes, Delete Donor</button>
+            <a href="{% url 'main:donor_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

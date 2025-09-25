@@ -11,7 +11,7 @@ from django.views.generic import (
 from .models import Assets,Description, News, Page, Service, SubService,Team,Donation_organisation
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm
+from .forms import ContactForm, DonorForm
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -213,3 +213,40 @@ class AboutView(TemplateView):
 def donor_list(request):
     donations = Donation_organisation.objects.all()  # Remove is_donor filter
     return render(request, 'main/donor.html', {'donations': donations})
+def donor_details(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    return render(request, 'main/donor_details.html', {'donation': donation})
+def add_donor(request):
+    if request.method == "POST":
+        form = DonorForm(request.POST, request.FILES)
+        message=f'Thank You for your donation, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = DonorForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_donor.html",context)
+def edit_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        form = DonorForm(request.POST, instance=donation)
+        if form.is_valid():
+            form.save()
+            return redirect('main:donor_list')
+    else:
+        form = DonorForm(instance=donation)
+    return render(request, 'main/edit_donor.html', {'form': form, 'donation': donation})
+def delete_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        donation.delete()
+        return redirect('main:donor_list')
+    return render(request, 'main/delete_donor.html', {'donation': donation})
