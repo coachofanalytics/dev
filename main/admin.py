@@ -18,5 +18,3 @@ from django.contrib import admin
 from .models import DonationOrganization
 
 admin.site.register(DonationOrganization)
-
-
