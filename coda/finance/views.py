@@ -206,15 +206,25 @@ def loan_application_home(request):
     # Get user's loans through service
     user_loans_result = loan_service.get_user_loans(request.user)
 
-    if user_loans_result["status"] == "success":
-        user_loans = user_loans_result["loans"]
+    if user_loans_result.get("success", False):
+        # Get loans from the service response
+        loan_data = user_loans_result.get("data", {})
+        user_loans = loan_data.get("applications", [])
+        
+        # Convert to a queryset-like object for filtering
+        from django.db.models import Q
+        from finance.models import LoanApplication
+        
+        # Get actual LoanApplication objects for filtering
+        loan_ids = [loan["id"] for loan in user_loans]
+        user_loans_queryset = LoanApplication.objects.filter(id__in=loan_ids)
 
         # Separate loans by status for better display
-        active_loans = user_loans.filter(status__in=["approved", "active", "overdue"])
-        pending_loans = user_loans.filter(
+        active_loans = user_loans_queryset.filter(status__in=["approved", "active", "overdue"])
+        pending_loans = user_loans_queryset.filter(
             status__in=["draft", "submitted", "pending_guarantor", "under_review"]
         )
-        completed_loans = user_loans.filter(status__in=["repaid", "rejected"])
+        completed_loans = user_loans_queryset.filter(status__in=["repaid", "rejected"])
 
         context = {
             "today_date": today_date,
@@ -224,11 +234,11 @@ def loan_application_home(request):
             "user_loan_limits": user_loan_limits,
             "is_kcc_member": is_kcc_member,
             "loan_products": loan_products,
-            "user_loans": user_loans,
+            "user_loans": user_loans_queryset,
             "active_loans": active_loans,
             "pending_loans": pending_loans,
             "completed_loans": completed_loans,
-            "total_loans": user_loans.count(),
+            "total_loans": user_loans_queryset.count(),
         }
         
         # Add credit report for KCC members
