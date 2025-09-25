@@ -85,7 +85,7 @@ class UpworkConnectsForm(forms.ModelForm):
 class UseCaseForm(forms.ModelForm):
     class Meta:
         model = UseCase
-        fields=['app','title', 'requirements_id','description', 'installation', 'usage_link', 'deployment', 'license', 'credits', 'contact', 'additional_sections', 'links']
+        fields=['app','title', 'description', 'installation', 'usage_link', 'deployment', 'license', 'credits', 'contact', 'additional_sections', 'links']
 
  
 

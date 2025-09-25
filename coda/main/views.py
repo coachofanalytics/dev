@@ -756,24 +756,24 @@ def team(request,title):
                 )
             ).values('education_point'))
         
-        #from task history model    
-        employee_taskhistory_subquery = get_sqsum('point')(TaskHistory.objects.filter(employee_id__profile=OuterRef('pk')).values('point'))
+        #from task history model - Temporarily disabled for migration fix
+        # employee_taskhistory_subquery = get_sqsum('point')(TaskHistory.objects.filter(employee_id__profile=OuterRef('pk')).values('point'))
         
-        #from requirement model(counting duration-task hour as point for staff)
-        employee_requiremet_subquery = get_sqsum('duration')(Requirement.objects.filter(assigned_to__profile=OuterRef('pk')).values('duration'))
+        #from requirement model(counting duration-task hour as point for staff) - Temporarily disabled for migration fix
+        # employee_requiremet_subquery = get_sqsum('duration')(Requirement.objects.filter(assigned_to__profile=OuterRef('pk')).values('duration'))
         
-        #from Training model
-        employee_training_subquery = get_sqsum('level_point')(Training.objects.filter(presenter__profile=OuterRef('pk')).annotate(
-            level_point=Case(
-                When(level=1, then=F('level') * 5.0),
-                When(level=2, then=F('level') * 10.0),
-                When(level=3, then=F('level') * 15.0),
-                When(level=4, then=F('level') * 20.0),
-                When(level=5, then=F('level') * 25.0),
-                default=F('level'),  # Default case, if level doesn't match any condition
-                output_field=FloatField()
-            )
-        ).values('level_point'))
+        #from Training model - Temporarily disabled for migration fix
+        # employee_training_subquery = get_sqsum('level_point')(Training.objects.filter(presenter__profile=OuterRef('pk')).annotate(
+        #     level_point=Case(
+        #         When(level=1, then=F('level') * 5.0),
+        #         When(level=2, then=F('level') * 10.0),
+        #         When(level=3, then=F('level') * 15.0),
+        #         When(level=4, then=F('level') * 20.0),
+        #         When(level=5, then=F('level') * 25.0),
+        #         default=F('level'),  # Default case, if level doesn't match any condition
+        #         output_field=FloatField()
+        #     )
+        # ).values('level_point'))
         
         #from clientassesment model(takeing latest totalpoints for that user)
         employee_clientassesment = ClientAssessment.objects.filter(email=OuterRef('user__email')).order_by('-rating_date')[:1]

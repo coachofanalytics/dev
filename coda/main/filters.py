@@ -50,7 +50,7 @@ class TaskHistoryFilter(django_filters.FilterSet):
                 'activity_name':['icontains']
         }
         labels={
-                'employee'
+                'employee': 'Employee',
                 'activity_name':'Task',
                 'group':'Group',
         }
