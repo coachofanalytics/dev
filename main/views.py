@@ -207,5 +207,8 @@ from django.views.generic import TemplateView
 
 class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
+from.models import Donationorganization
 
-
+def donation_list(request):
+    donations =Donationorganization.objects.all().order_by('-created_at')
+    return render(request,'main/snippets_templates/table/donation_list.html',{'donations': donations})
