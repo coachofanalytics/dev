@@ -14,6 +14,9 @@ from .utils import image_view,path_values
 from main.forms import ContactForm
 from django.contrib.auth import get_user_model
 
+from django.urls import reverse_lazy
+from django.views.generic.edit import UpdateView, DeleteView
+
 User=get_user_model()
 
 
@@ -212,5 +215,19 @@ class AboutView(TemplateView):
 def donation_list(request):
     donations = Donation_organization.objects.all().order_by('-created_at')
     return render(request,'main/snippets_templates/table/donation_list.html',{'donations': donations})
+
+
+# Edit Donation View
+class DonationEditView(UpdateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_edit.html'
+    success_url = reverse_lazy('main:donation')
+
+# Delete Donation View
+class DonationDeleteView(DeleteView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_confirm_delete.html'
+    success_url = reverse_lazy('main:donation')
 
 

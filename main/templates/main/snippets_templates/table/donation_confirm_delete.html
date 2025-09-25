@@ -1,0 +1,21 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Donation</title>
+</head>
+<body>
+    <h1>Delete Donation</h1>
+    <p>Are you sure you want to delete this donation from <strong>{{ object.donor_name }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, delete</button>
+        <a href="{% url 'main:donation' %}">Cancel</a>
+    </form>
+</body>
+</html>
+{% endblock %}

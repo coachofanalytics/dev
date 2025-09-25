@@ -52,6 +52,7 @@
                     <th>Amount</th>
                     <th>Message</th>
                     <th>Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,6 +63,10 @@
                     <td>{{ donation.amount }}</td>
                     <td>{{ donation.message|default:"—" }}</td>
                     <td>{{ donation.created_at|date:"M d, Y " }}</td>
+                    <td>
+                        <a href="{% url 'main:donation_edit' donation.pk %}">Edit</a> |
+                        <a href="{% url 'main:donation_delete' donation.pk %}">Delete</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -1,0 +1,21 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Donation</title>
+</head>
+<body>
+    <h1>Edit Donation</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+        <a href="{% url 'main:donation' %}">Cancel</a>
+    </form>
+</body>
+</html>
+{% endblock %}
