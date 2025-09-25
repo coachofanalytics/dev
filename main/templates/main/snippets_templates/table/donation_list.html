@@ -42,6 +42,7 @@
 </head>
 <body>
     <h1>Donation List</h1>
+        <a href="{% url 'main:donation_add' %}" class="add-btn">+ Add Donation</a>
 
     {% if donations %}
         <table>
@@ -64,8 +65,8 @@
                     <td>{{ donation.message|default:"—" }}</td>
                     <td>{{ donation.created_at|date:"M d, Y " }}</td>
                     <td>
-                        <a href="{% url 'main:donation_edit' donation.pk %}">Edit</a> |
-                        <a href="{% url 'main:donation_delete' donation.pk %}">Delete</a>
+                        <a href="{% url 'main:donation_edit' donation.pk %}" class="action-btn edit-btn">Edit</a>
+                        <a href="{% url 'main:donation_delete' donation.pk %}" class="action-btn delete-btn">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -74,6 +75,44 @@
     {% else %}
         <p class="empty">No donations have been made yet.</p>
     {% endif %}
+        <style>
+            .add-btn {
+                display: inline-block;
+                margin-bottom: 15px;
+                background: #28a745;
+                color: #fff;
+                padding: 8px 18px;
+                border-radius: 4px;
+                text-decoration: none;
+                font-weight: bold;
+                transition: background 0.2s;
+            }
+            .add-btn:hover {
+                background: #218838;
+            }
+            .action-btn {
+                display: inline-block;
+                padding: 6px 14px;
+                border-radius: 4px;
+                color: #fff;
+                text-decoration: none;
+                margin-right: 4px;
+                font-size: 0.95em;
+                transition: background 0.2s;
+            }
+            .edit-btn {
+                background: #007bff;
+            }
+            .edit-btn:hover {
+                background: #0056b3;
+            }
+            .delete-btn {
+                background: #dc3545;
+            }
+            .delete-btn:hover {
+                background: #a71d2a;
+            }
+        </style>
 </body>
 </html>
 

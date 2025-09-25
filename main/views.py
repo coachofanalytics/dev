@@ -15,7 +15,13 @@ from main.forms import ContactForm
 from django.contrib.auth import get_user_model
 
 from django.urls import reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+# Create Donation View
+class DonationCreateView(CreateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_create.html'
+    success_url = reverse_lazy('main:donation')
 
 User=get_user_model()
 
