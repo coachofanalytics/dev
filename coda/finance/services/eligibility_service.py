@@ -62,7 +62,16 @@ class EligibilityService(ModelService):
             else:
                 return self._check_external_eligibility()
         except Exception as e:
-            return self.handle_error(e, "Checking loan eligibility for user {}".format(self.user.username))
+            self.logger.error("Error checking loan eligibility for user {}: {}".format(self.user.username, e))
+            return {
+                'eligible': False,
+                'reason': 'error',
+                'message': 'Error checking eligibility. Please contact support.',
+                'loan_limits': None,
+                'unpaid_loans': [],
+                'total_outstanding': Decimal('0.00'),
+                'user_type': 'unknown'
+            }
     
     def _check_staff_eligibility(self):
         """Staff-specific eligibility logic"""
@@ -81,7 +90,16 @@ class EligibilityService(ModelService):
                 'user_type': 'staff'
             }
         except Exception as e:
-            return self.handle_error(e, "Checking staff eligibility for user {}".format(self.user.username))
+            self.logger.error("Error checking staff eligibility for user {}: {}".format(self.user.username, e))
+            return {
+                'eligible': False,
+                'reason': 'error',
+                'message': 'Error checking staff eligibility. Please contact support.',
+                'loan_limits': None,
+                'unpaid_loans': [],
+                'total_outstanding': Decimal('0.00'),
+                'user_type': 'staff'
+            }
     
     def _check_kcc_eligibility(self):
         """KCC-specific eligibility logic"""
@@ -100,7 +118,16 @@ class EligibilityService(ModelService):
                 'user_type': 'kcc_member'
             }
         except Exception as e:
-            return self.handle_error(e, "Checking KCC eligibility for user {}".format(self.user.username))
+            self.logger.error("Error checking KCC eligibility for user {}: {}".format(self.user.username, e))
+            return {
+                'eligible': False,
+                'reason': 'error',
+                'message': 'Error checking KCC eligibility. Please contact support.',
+                'loan_limits': None,
+                'unpaid_loans': [],
+                'total_outstanding': Decimal('0.00'),
+                'user_type': 'kcc_member'
+            }
     
     def _check_external_eligibility(self):
         """External user eligibility logic"""
@@ -119,4 +146,13 @@ class EligibilityService(ModelService):
                 'user_type': 'external'
             }
         except Exception as e:
-            return self.handle_error(e, "Checking external eligibility for user {}".format(self.user.username))
+            self.logger.error("Error checking external eligibility for user {}: {}".format(self.user.username, e))
+            return {
+                'eligible': False,
+                'reason': 'error',
+                'message': 'Error checking external eligibility. Please contact support.',
+                'loan_limits': None,
+                'unpaid_loans': [],
+                'total_outstanding': Decimal('0.00'),
+                'user_type': 'external'
+            }
