@@ -42,6 +42,7 @@
 </head>
 <body>
     <h1>Donation List</h1>
+<a href="{% url 'main:create_donation' %}">+ Add Donation</a>
 
     {% if donations %}
         <table>
@@ -55,16 +56,25 @@
                 </tr>
             </thead>
             <tbody>
-                {% for donation in donations %}
-                <tr>
-                    <td>{{ donation.donor_name }}</td>
-                    <td>{{ donation.email }}</td>
-                    <td>{{ donation.amount }}</td>
-                    <td>{{ donation.message|default:"—" }}</td>
-                    <td>{{ donation.created_at|date:"M d, Y H:i" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+    {% for donation in donations %}
+    <tr>
+        <td>{{ donation.donor_name }}</td>
+        <td>{{ donation.email }}</td>
+        <td>{{ donation.amount }}</td>
+        <td>{{ donation.message|default:"—" }}</td>
+        <td>{{ donation.created_at|date:"M d, Y H:i" }}</td>
+        <td>
+           <td>
+    <a href="{% url 'main:update_donation' donation.id %}">Edit</a> |
+<a href="{% url 'main:delete_donation' donation.id %}">Delete</a>
+
+</td>
+
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
         </table>
     {% else %}
         <p class="empty">No donations have been made yet.</p>

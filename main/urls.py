@@ -16,6 +16,9 @@ urlpatterns = [
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
     path('donation/', views.donation_list, name='donation'),
+    path("donation/create/", views.create_donation, name="create_donation"),
+    path("update/<int:pk>/", views.update_donation, name="update_donation"),
+    path("delete/<int:pk>/", views.delete_donation, name="delete_donation"),
   
     
     

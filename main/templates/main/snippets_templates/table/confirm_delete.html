@@ -1,0 +1,15 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+<div style="max-width:600px; margin:0 auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0px 2px 8px rgba(0,0,0,0.1)">
+    <h2 style="margin-bottom:15px; color:#dc3545;">Delete Donation</h2>
+    <p>Are you sure you want to delete the donation from 
+       <strong>{{ donation.donor_name }}</strong> 
+       ({{ donation.amount }})?</p>
+
+    <form method="post" style="margin-top:15px;">
+        {% csrf_token %}
+        <button type="submit" style="background:#dc3545; color:white; padding:10px 15px; border:none; border-radius:5px;">Yes, Delete</button>
+        <a href="{% url 'main:donation' %}" style="margin-left:10px; padding:10px 15px; background:#6c757d; color:white; text-decoration:none; border-radius:5px;">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -13,7 +13,7 @@ from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm
 from django.contrib.auth import get_user_model
-
+from .forms import DonationForm
 User=get_user_model()
 
 
@@ -210,7 +210,33 @@ class AboutView(TemplateView):
 
 
 def donation_list(request):
-    donations= Donation_organization.objects.all().order_by('-created_at')
-    return render(request, 'main/snippets_templates/table/donation_list.html',{'donations': donations})
+    donations = Donation_organization.objects.all().order_by('-created_at')
+    return render(request, 'main/snippets_templates/table/donation_list.html', {'donations': donations})
+    
+def create_donation(request):
+    if request.method == "POST":
+        form = DonationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("main:donation")  
+    else:
+        form = DonationForm()
+    return render(request, "main/snippets_templates/table/create_donation.html", {"form": form})
 
+def update_donation(request, pk):
+    donation = get_object_or_404(Donation_organization, pk=pk)
+    if request.method == "POST":
+        form = DonationForm(request.POST, instance=donation)
+        if form.is_valid():
+            form.save()
+            return redirect("main:donation")   
+    else:
+        form = DonationForm(instance=donation)
+    return render(request, "main/snippets_templates/table/update_donation.html", {"form": form})
 
+def delete_donation(request, pk):
+    donation = get_object_or_404(Donation_organization, pk=pk)
+    if request.method == "POST":
+        donation.delete()
+        return redirect("main:donation")   
+    return render(request, "main/snippets_templates/table/confirm_delete.html", {"donation": donation})
