@@ -488,6 +488,7 @@ def get_role_based_links(request):
             'Apply for Loan': reverse('finance:loan-home'),
         })
     elif user.category == 3:  # Student
+        # Base links for all students
         links.update({
             'Training Dashboard': reverse('professional_services:train'),
             'My Progress': reverse('professional_services:student_feedback'),
@@ -495,6 +496,23 @@ def get_role_based_links(request):
             'My Responses': reverse('professional_services:student_feedback'),
             'Apply for Loan': reverse('finance:loan-home'),
         })
+        
+        # Add subcategory-specific links
+        if user.sub_category == 1:  # DATA_ANALYTICS
+            links.update({
+                'Data Analysis Training': reverse('professional_services:bitraining'),
+                'Analytics Tools': reverse('professional_services:train'),
+            })
+        elif user.sub_category == 2:  # PROGRAMMING
+            links.update({
+                'Programming Courses': reverse('professional_services:bitraining'),
+                'Code Practice': reverse('professional_services:train'),
+            })
+        elif user.sub_category == 3:  # OTHER
+            links.update({
+                'Business Training': reverse('professional_services:bitraining'),
+                'General Courses': reverse('professional_services:train'),
+            })
     elif user.category == 4:  # Investor
         links.update({
             'Investment Dashboard': reverse('investing:investment_dashboard'),

@@ -252,6 +252,12 @@
                         <i class="fas fa-search"></i>
                     {% elif link_name == 'Apply for Loan' %}
                         <i class="fas fa-money-bill-wave"></i>
+                    {% elif 'Data Analysis' in link_name or 'Analytics' in link_name %}
+                        <i class="fas fa-chart-line"></i>
+                    {% elif 'Programming' in link_name or 'Code' in link_name %}
+                        <i class="fas fa-code"></i>
+                    {% elif 'Business' in link_name or 'General' in link_name %}
+                        <i class="fas fa-briefcase"></i>
                     {% else %}
                         <i class="fas fa-external-link-alt"></i>
                     {% endif %}
