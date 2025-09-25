@@ -26,6 +26,122 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+
+# =============================================================================
+# SHARED BASE MODELS FOR CODE OPTIMIZATION
+# =============================================================================
+
+class UserReferenceMixin(models.Model):
+    """
+    Mixin for consistent user references across all models
+    """
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s",
+        help_text="User associated with this record"
+    )
+    
+    class Meta:
+        abstract = True
+
+
+class ContractBase(TimeStampedModel):
+    """
+    Base model for contract-related fields shared across apps
+    Eliminates duplication between investing and finance apps
+    """
+    client_signature = models.ImageField(
+        upload_to="signatures/", 
+        blank=True, 
+        null=True,
+        help_text="Client signature image"
+    )
+    company_rep = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True,
+        help_text="Company representative name"
+    )
+    contract_submitted_date = models.DateTimeField(
+        default=timezone.now,
+        help_text="Date contract was submitted"
+    )
+    client_date = models.CharField(
+        max_length=100, 
+        null=True, 
+        blank=True,
+        help_text="Client signature date"
+    )
+    rep_date = models.CharField(
+        max_length=100, 
+        null=True, 
+        blank=True,
+        help_text="Representative signature date"
+    )
+    contract_signed = models.BooleanField(
+        default=False,
+        help_text="Whether contract has been signed"
+    )
+    contract_signed_date = models.DateField(
+        null=True, 
+        blank=True,
+        help_text="Date contract was signed"
+    )
+    
+    class Meta:
+        abstract = True
+
+
+class DocumentMixin(models.Model):
+    """
+    Mixin for document storage and management
+    """
+    documents = models.JSONField(
+        default=list, 
+        blank=True,
+        help_text="Stored documents and verification files"
+    )
+    
+    class Meta:
+        abstract = True
+
+
+class StatusMixin(models.Model):
+    """
+    Mixin for status tracking with audit trail
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('paused', 'Paused'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending',
+        help_text="Current status of the record"
+    )
+    last_modified_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name="modified_%(app_label)s_%(class)s",
+        help_text="User who last modified this record"
+    )
+    modification_reason = models.TextField(
+        blank=True, 
+        null=True,
+        help_text="Reason for the last modification"
+    )
+    
+    class Meta:
+        abstract = True
+
 class Location(models.Model):
     zipcode = models.CharField(max_length=10, unique=True)
     city = models.CharField(max_length=100, blank=True)

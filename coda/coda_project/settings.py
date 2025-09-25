@@ -13,7 +13,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # ==============ENVIRONMENT CONFIGURATION=====================================
 def get_environment_config():
     """Centralized environment configuration similar to database configuration"""
-    environment = os.environ.get('ENVIRONMENT', 'local')
+    # environment = os.environ.get('ENVIRONMENT', 'local')
+    environment = 'local'
 
     print(environment)
     
@@ -327,7 +328,7 @@ WHITENOISE_AUTOREFRESH = True
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
-LOGIN_REDIRECT_URL = "main:layout"
+LOGIN_REDIRECT_URL = "dashboard:unified_dashboard"
 LOGIN_URL = "accounts:account-login"
 
 
@@ -528,8 +529,8 @@ else:
     ACCOUNT_EMAIL_REQUIRED = True
 
 LOGIN_URL = '/social_accounts/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'dashboard:unified_dashboard'
+LOGOUT_REDIRECT_URL = 'dashboard:unified_dashboard'
 
 # Force disable SSL redirect for local development (must be at the end)
 SECURE_SSL_REDIRECT = False

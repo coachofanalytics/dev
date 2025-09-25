@@ -24,9 +24,9 @@ except ImportError:
     Investment_rates = None
 
 try:
-    from main.models import Company, Service, ServiceCategory, TimeStampedModel
+    from main.models import Company, Service, ServiceCategory, TimeStampedModel, ContractBase
 except ImportError:
-    Company = Service = ServiceCategory = TimeStampedModel = None
+    Company = Service = ServiceCategory = TimeStampedModel = ContractBase = None
 
 try:
     from main.utils import dates_functionality, date_converter, PayChoices
@@ -45,87 +45,106 @@ else:
     ytd_duration = current_year = first_date = None
 
 # Create your models here.
-class Payment_Information(models.Model):
+
+# =============================================================================
+# SHARED PAYMENT BASE MODEL FOR CODE OPTIMIZATION
+# =============================================================================
+
+class PaymentBase(ContractBase):
+    """
+    Base model for payment-related fields shared across finance models
+    Eliminates duplication between Payment_Information, Payment_History, etc.
+    """
+    payment_fees = models.IntegerField(
+        help_text="Total payment fees"
+    )
+    down_payment = models.IntegerField(
+        default=500,
+        help_text="Down payment amount"
+    )
+    student_bonus = models.IntegerField(
+        null=True, 
+        blank=True,
+        help_text="Student bonus amount"
+    )
+    plan = models.IntegerField(
+        help_text="Payment plan ID"
+    )
+    subplan = models.IntegerField(
+        default=1, 
+        null=True, 
+        blank=True,
+        help_text="Payment subplan ID"
+    )
+    pricing_plan = models.IntegerField(
+        default=1, 
+        null=True, 
+        blank=True,
+        help_text="Pricing plan ID"
+    )
+    payment_method = models.CharField(
+        max_length=100,
+        help_text="Payment method used"
+    )
+    description = models.TextField(
+        max_length=1000, 
+        default=None, 
+        null=True, 
+        blank=True,
+        help_text="Payment description"
+    )
+    # contract_submitted_date, client_signature, company_rep, client_date, rep_date, 
+    # contract_signed, contract_signed_date now inherited from ContractBase
+    
+    class Meta:
+        abstract = True
+    
+    @property
+    def fee_balance(self):
+        """Calculate remaining fee balance"""
+        try:
+            down_payment = int(self.down_payment or 0)
+            student_bonus = int(self.student_bonus or 0)
+            return self.payment_fees - (down_payment + student_bonus)
+        except (TypeError, ValueError) as e:
+            logger.error(f"Error calculating fee balance: {str(e)}")
+            return 0
+    
+    @property
+    def jobsupport_balance(self):
+        """Calculate jobsupport balance"""
+        try:
+            return self.payment_fees - int(self.down_payment or 0)
+        except (TypeError, ValueError) as e:
+            logger.error(f"Error calculating jobsupport balance: {str(e)}")
+            return 0
+
+
+class Payment_Information(PaymentBase):
     customer_id = models.ForeignKey(
         "accounts.CustomerUser",
         verbose_name=("Client Name"),
         on_delete=models.CASCADE,
         related_name="customer")
-    payment_fees=models.IntegerField()
-    down_payment=models.IntegerField(default=500)
-    student_bonus=models.IntegerField(null=True,blank=True)
-    # fee_balance field removed - using property instead
-    plan = models.IntegerField() # assuming service_category id
-    subplan = models.IntegerField(default=1,null=True, blank=True)
-    pricing_plan = models.IntegerField(default=1,null=True, blank=True)
-    payment_method = models.CharField(max_length=100)
-    contract_submitted_date = models.DateTimeField(default=timezone.now)
-    client_signature = models.CharField(max_length=1000)
-    company_rep = models.CharField(max_length=1000)
-    client_date = models.CharField(max_length=100, null=True, blank=True)
-    rep_date = models.CharField(max_length=100, null=True, blank=True)
-    description = models.TextField(max_length=1000, default=None,null=True, blank=True)
-    is_active = models.BooleanField('active', default=True)
-    is_featured = models.BooleanField('featured', default=True)
+    # All payment and contract fields now inherited from PaymentBase (which inherits from ContractBase -> TimeStampedModel)
 
     def __str__(self):
         return str(self.customer_id)
     
-    @property
-    def fee_balance(self):
-        try:
-            stu_bal = self.payment_fees - (int(self.down_payment) + int(self.student_bonus))
-            return stu_bal
-        except:
-            return redirect('finance:pay')
-        
-    @property
-    def jobsupport_balance(self):
-        try:
-            support_bal = self.payment_fees - int(self.down_payment) 
-            return support_bal
-        except:
-            return redirect('finance:pay')
+    # fee_balance and jobsupport_balance now inherited from PaymentBase
 
 
-class Payment_History(models.Model):
+class Payment_History(PaymentBase):
     # id = models.AutoField(primary_key=True)
     customer = models.ForeignKey(
         User,
         verbose_name=("Client Name"),
         on_delete=models.CASCADE,
         related_name="customer_payment_history")
-    payment_fees=models.IntegerField()
-    down_payment=models.IntegerField(default=500)
-    student_bonus=models.IntegerField(null=True,blank=True)
-    # fee_balance=models.IntegerField(default=None)
-    down_payment = models.IntegerField(default=500)
-    student_bonus = models.IntegerField(null=True, blank=True)
-    # fee_balance = models.IntegerField(default=None)
-    plan = models.IntegerField() # assuming service_category id
-    subplan = models.IntegerField(default=1,null=True, blank=True)
-    pricing_plan = models.IntegerField(default=1,null=True, blank=True)
-    payment_method = models.CharField(max_length=100)
-    contract_submitted_date = models.DateTimeField(default=timezone.now)
-    client_signature = models.CharField(max_length=1000)
-    company_rep = models.CharField(max_length=1000)
-    client_date = models.CharField(max_length=100, null=True, blank=True)
-    rep_date = models.CharField(max_length=100, null=True, blank=True)
-    description = models.TextField(max_length=1000, default=None,null=True, blank=True)
-    is_active = models.BooleanField('active', default=True)
-    is_featured = models.BooleanField('featured', default=True)
+    # All payment fields now inherited from PaymentBase
 
-    @property
-    def fee_balance(self):
-        try:
-            # Ensure None values are handled correctly
-            down_payment = int(self.down_payment or 0)
-            student_bonus = int(self.student_bonus or 0)
-            return self.payment_fees - (down_payment + student_bonus)
-        except (TypeError, ValueError) as e:
-            logger.error(f"Error calculating fee balance for Payment_History ID {self.id}: {str(e)}")
-            return 0  # Return a default integer instead of a redirect
-
+    # fee_balance now inherited from PaymentBase
+    
     @property
     def notification_days(self):
         last_notification_sent=date_converter(self.rep_date)
@@ -1011,7 +1030,7 @@ class LoanPayment(models.Model):
     payment_date = models.DateField(help_text="Date payment was made")
     amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Payment amount")
     payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES, default='regular')
-    reference_number = models.CharField(max_length=50, unique=True, help_text="Payment reference number")
+    reference_number = models.CharField(max_length=50, unique=True, blank=True, null=True, help_text="Payment reference number")
     notes = models.TextField(blank=True, null=True, help_text="Payment notes")
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1051,8 +1070,8 @@ class Inflow(models.Model):
                                  related_name="inflows")
     
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="company_name",default=1)
-    category = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="category_name",default=1)
-    subcategory = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, related_name="subcategory_name",default=1)
+    category = models.ForeignKey('main.Service', on_delete=models.CASCADE, related_name="category_name",default=1)
+    subcategory = models.ForeignKey('main.ServiceCategory', on_delete=models.CASCADE, related_name="subcategory_name",default=1)
     country = CountryField(blank=True, null=True)
     sender = models.CharField(max_length=100, null=True, default=None)
     phone = models.CharField(max_length=50, null=True, default=None)

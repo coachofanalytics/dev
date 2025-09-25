@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
 
@@ -103,4 +103,7 @@ urlpatterns = [
         views.investment_analytics_api,
         name="investment_analytics_api",
     ),
+    
+    # Risk Management URLs
+    path("risk/", include("investing.urls_risk_management")),
 ]

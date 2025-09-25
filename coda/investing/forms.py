@@ -6,7 +6,7 @@ from .models import (
     Investment_rates,
     Investor_Information,
     ShortPut,
-    Portifolio,
+    Portfolio,
     InvestmentsStrategy,
 )
 
@@ -67,7 +67,7 @@ class PortfolioForm(forms.ModelForm):
     is_active = forms.BooleanField(initial=False, required=False)
 
     class Meta:
-        model = Portifolio
+        model = Portfolio
         # fields = '__all__'
         fields = [
             "symbol",

@@ -711,22 +711,6 @@ def tasklist(request):
         }
         return render(request,"management/daf/tasklist.html",context)
 
-# def FilterUsersByLoan(request):
-#     user_loan_filter = request.POST["user_loan_filter"]
-#     reslist = []
-
-#     if user_loan_filter == "all_user":
-#         tasklist = Task.objects.all()
-#         res = filterdatset(tasklist)
-#         reslist = res.copy()
-#     else:
-#         loanusers = LoanUsers.objects.filter(is_loan=user_loan_filter).values_list("user", flat=True)
-#         loanusers = list(loanusers)
-#         tasklist = Task.objects.filter(employee__in=loanusers)
-#         res = filterdatset(tasklist)
-#         reslist = res.copy()
-#     return JsonResponse(reslist, safe=False)
-
 def filterdatset(obj):
     result = []
     details = {}

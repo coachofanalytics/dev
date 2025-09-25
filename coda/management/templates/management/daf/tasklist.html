@@ -28,7 +28,7 @@
 
   {% include 'components/table.html' with 
      table_header='Current Tasks'
-     objects=object_list
+     objects=tasks
      table_headers='Check,Employee,Task,Group,Deadline,Submission,Points,Max Points,Max Earnings,Earnings,Evidence,Update'
      object_fields='actions,employee,activity_name,groupname,deadline,submission,point,mxpoint,mxearning,get_pay,actions,actions'
      summary_enabled=True %}

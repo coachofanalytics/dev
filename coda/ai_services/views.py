@@ -380,7 +380,25 @@ def getmeetingresponse(startDate, endDate):
 
 	
 def save_meeting_data(meeting_data):
+    """Persist meeting data. Accepts list of dicts or list of JSON bytes."""
+    import json
     for meeting_info in meeting_data:
+        # Normalize input: decode bytes -> str -> json -> dict
+        if isinstance(meeting_info, (bytes, bytearray)):
+            try:
+                meeting_info = json.loads(meeting_info.decode('utf-8', errors='ignore'))
+            except Exception:
+                # Skip invalid item
+                continue
+        elif isinstance(meeting_info, str):
+            try:
+                meeting_info = json.loads(meeting_info)
+            except Exception:
+                # Skip invalid item
+                continue
+        if not isinstance(meeting_info, dict):
+            # Skip unexpected shapes
+            continue
         meeting_topic = meeting_info.get('subject', '')
         meeting_id = meeting_info.get('meetingId', '')
         meeting_type = meeting_info.get('meetingType', '')

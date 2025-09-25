@@ -1,0 +1,17 @@
+.risk-summary-card .card-body {
+    min-height: 110px;
+}
+
+.assessment-score {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.alert-list .alert-item {
+    padding: 8px 0;
+}
+
+.assessment-list .assessment-item {
+    padding: 8px 0;
+}
+

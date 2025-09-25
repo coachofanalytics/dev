@@ -388,8 +388,8 @@ def login_view(request):
                     user.backend = f"{backend.__module__}.{backend.__class__.__name__}"
                     login(request, user)
 
-                    # Redirect based on user category
-                    return redirect(get_redirect_url(user))
+                    # Redirect to unified dashboard
+                    return redirect("dashboard:unified_dashboard")
 
             # Handle Username/Password Login
             elif form.is_valid():
@@ -406,8 +406,8 @@ def login_view(request):
                     # User authenticated successfully
                     create_profile()
                     login(request, user)
-                    # Redirect based on user category
-                    return redirect(get_redirect_url(user))
+                    # Redirect to unified dashboard
+                    return redirect("dashboard:unified_dashboard")
                 else:
                     # Authentication failed
                     msg = "Invalid username/email or password. Please try again."

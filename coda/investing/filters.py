@@ -1,12 +1,12 @@
 import django_filters
-from .models import Portifolio
+from .models import Portfolio
 
 
 class PortfolioFilter(django_filters.FilterSet):
     is_active = django_filters.BooleanFilter(label="Is_active")
 
     class Meta:
-        model = Portifolio
+        model = Portfolio
         fields = [
             "is_active",
         ]

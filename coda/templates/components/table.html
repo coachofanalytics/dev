@@ -1,4 +1,5 @@
 {% load static %}
+{% load task_tags %}
 
 <div class="table-container">
     {% if table_header %}
@@ -72,8 +73,14 @@
                                             {{ object.get_category_display_name }}
                                         {% elif field == 'sub_category' %}
                                             {{ object.get_subcategory_display_name }}
+                                        {% elif field == 'actions' %}
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'management:taskdetail' object.id %}" class="btn btn-sm btn-info">View</a>
+                                                <a href="{% url 'management:updatetask' object.id %}" class="btn btn-sm btn-warning">Edit</a>
+                                                <a href="{% url 'management:deletetask' object.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                            </div>
                                         {% else %}
-                                            {{ object|getattr:field }}
+                                            {{ object|get_field_value:field }}
                                         {% endif %}
                                     {% endif %}
                                 </td>

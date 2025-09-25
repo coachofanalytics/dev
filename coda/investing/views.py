@@ -82,7 +82,7 @@ from .models import (
     credit_spread,
     ShortPut,
     covered_calls,
-    Portifolio,
+    Portfolio,
     OverBoughtSold,
     SavedResponses,
     Options_Returns,
@@ -1158,7 +1158,7 @@ def portfolioCreate(request):
             "1": "oversold",
             "0": "overbought",
         }
-        query_set = Portifolio.objects.filter(user=request.user)
+        query_set = Portfolio.objects.filter(user=request.user)
         (
             total_amount,
             investment_threshold,
@@ -1219,7 +1219,7 @@ def portfolio(request, symbol):
         "credit_spread": {"model": credit_spread},
     }
     stock_model = model_mapping.get(model, None)
-    symbol_in_portfolio = Portifolio.objects.filter(user=request.user, symbol=symbol)
+    symbol_in_portfolio = Portfolio.objects.filter(user=request.user, symbol=symbol)
     initial_values = None
     # amount = 0  # Unused variable
     # max_reward = 0  # Unused variable
@@ -1232,7 +1232,7 @@ def portfolio(request, symbol):
     if request.method == "POST":
         data = request.POST
 
-        query_set = Portifolio.objects.filter(user=request.user)
+        query_set = Portfolio.objects.filter(user=request.user)
         (
             total_amount,
             investment_threshold,
@@ -1374,7 +1374,7 @@ def portfolio(request, symbol):
 
 @method_decorator(login_required, name="dispatch")
 class PortfolioListView(ListView):
-    model = Portifolio
+    model = Portfolio
     template_name = "investing/portfolioList.html"
     context_object_name = "portfolio"
     ordering = ["created_at"]

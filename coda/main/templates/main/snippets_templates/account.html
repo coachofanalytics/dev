@@ -1,6 +1,6 @@
 <div class="dropdown-menu" aria-labelledby="navbarDropDown">
     {% if user.is_staff %}
-          <a class="dropdown-item"href="{% url 'main:team' %}" target="" >My Account</a >
+          <a class="dropdown-item"href="{% url 'dashboard:unified_dashboard' %}" target="" >My Account</a >
             <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="{% url 'management:user_pay' %}?username={{request.user}}&pay_type=payslip" target="" >My DAF</a>
           <div class="dropdown-divider"></div>

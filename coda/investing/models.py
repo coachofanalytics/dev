@@ -3,9 +3,9 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from decimal import *
 from django.utils import timezone
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.urls import reverse
-from main.models import TimeStampedModel
+from main.models import TimeStampedModel, ContractBase, DocumentMixin, StatusMixin
 from django.contrib.auth import get_user_model
 
 # from finance.utils import get_exchange_rate
@@ -14,7 +14,7 @@ User = get_user_model()
 # Create your models here.
 
 
-class Investor_Information(TimeStampedModel):
+class Investor_Information(ContractBase, DocumentMixin, StatusMixin):
     """
     Unified model for all investor types in CODA
     Supports Individual, Angel, VC, Private, and Equity investors
@@ -26,13 +26,7 @@ class Investor_Information(TimeStampedModel):
         ("Options", "Options"),
     ]
 
-    STATUS_CHOICES = [
-        ("pending", "Pending"),
-        ("active", "Active"),
-        ("completed", "Completed"),
-        ("paused", "Paused"),
-        ("cancelled", "Cancelled"),
-    ]
+    # STATUS_CHOICES now inherited from StatusMixin
 
     # Enhanced investment type choices for all investor types
     INVESTMENT_TYPE_CHOICES = [
@@ -130,15 +124,39 @@ class Investor_Information(TimeStampedModel):
     )
     beneficiary_name = models.CharField(max_length=50, blank=True, null=True)
     beneficiary_relation = models.CharField(max_length=50, blank=True, null=True)
-    company_rep = models.CharField(max_length=255, blank=True, null=True)
+    # contract_date, status, client_signature, contract_signed, contract_signed_date now inherited from ContractBase and StatusMixin
     contract_date = models.DateField(auto_now_add=True, blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    client_signature = models.ImageField(upload_to="signatures/", blank=True, null=True)
-
-    # New metadata fields
-    contract_signed = models.BooleanField(default=False)
-    contract_signed_date = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True, null=True)
+    
+    # Phase 2: Risk Assessment Fields
+    RISK_TOLERANCE_CHOICES = [
+        ('conservative', 'Conservative'),
+        ('moderate', 'Moderate'),
+        ('aggressive', 'Aggressive'),
+    ]
+    
+    risk_tolerance = models.CharField(
+        max_length=20, 
+        choices=RISK_TOLERANCE_CHOICES, 
+        default='moderate',
+        help_text="Investor's risk tolerance level"
+    )
+    
+    # Phase 2: Compliance Tracking Fields
+    KYC_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    kyc_status = models.CharField(
+        max_length=20, 
+        choices=KYC_STATUS_CHOICES, 
+        default='pending',
+        help_text="KYC verification status"
+    )
+    
+    # documents, last_modified_by, modification_reason now inherited from DocumentMixin and StatusMixin
 
     class Meta:
         verbose_name_plural = "Investor Information"
@@ -177,6 +195,75 @@ class Investor_Information(TimeStampedModel):
             raise ValidationError("Duration must be at least 6 months.")
         if self.amount_invested <= 0:
             raise ValidationError("Amount invested must be greater than zero.")
+        
+        # Phase 2: Enhanced validation
+        # Validate risk tolerance
+        if self.risk_tolerance not in [choice[0] for choice in self.RISK_TOLERANCE_CHOICES]:
+            raise ValidationError(f"Invalid risk tolerance: {self.risk_tolerance}")
+        
+        # Validate KYC status
+        if self.kyc_status not in [choice[0] for choice in self.KYC_STATUS_CHOICES]:
+            raise ValidationError(f"Invalid KYC status: {self.kyc_status}")
+        
+        # Validate risk tolerance vs amount (conservative investors with large amounts need review)
+        if (self.risk_tolerance == 'conservative' and 
+            self.amount_invested and self.amount_invested > Decimal('50000.00')):
+            # This is just a warning, not an error
+            pass
+    
+    def get_risk_level(self):
+        """Calculate overall risk level based on multiple factors"""
+        risk_score = 0
+        
+        # Base risk from tolerance
+        risk_tolerance_scores = {
+            'conservative': 1,
+            'moderate': 2,
+            'aggressive': 3
+        }
+        risk_score += risk_tolerance_scores.get(self.risk_tolerance, 2)
+        
+        # Adjust based on amount (larger amounts = higher risk)
+        if self.amount_invested:
+            if self.amount_invested > Decimal('100000.00'):
+                risk_score += 2
+            elif self.amount_invested > Decimal('50000.00'):
+                risk_score += 1
+        
+        # Adjust based on investment type
+        high_risk_types = ['options', 'vc_investment', 'private_equity']
+        if self.investment_type in high_risk_types:
+            risk_score += 1
+        
+        # Determine risk level
+        if risk_score <= 2:
+            return 'low'
+        elif risk_score <= 4:
+            return 'medium'
+        else:
+            return 'high'
+    
+    def is_compliance_complete(self):
+        """Check if all compliance requirements are met"""
+        return (
+            self.kyc_status == 'verified' and
+            len(self.documents) > 0 and
+            self.contract_signed
+        )
+    
+    def get_compliance_percentage(self):
+        """Get compliance completion percentage"""
+        total_requirements = 3
+        completed = 0
+        
+        if self.kyc_status == 'verified':
+            completed += 1
+        if len(self.documents) > 0:
+            completed += 1
+        if self.contract_signed:
+            completed += 1
+        
+        return (completed / total_requirements) * 100
 
     def __str__(self):
         return f"{self.investor.username if self.investor else 'No Investor'} - ${self.amount_invested} - {self.status}"
@@ -437,7 +524,7 @@ class covered_calls(models.Model):
     #     return self.symbol
 
 
-class Portifolio(TimeStampedModel):
+class Portfolio(TimeStampedModel):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     symbol = models.CharField(max_length=255, blank=True, null=True)
@@ -480,7 +567,7 @@ class Portifolio(TimeStampedModel):
 
     # Comes from TimeStampedModel in main
     class Meta:
-        verbose_name_plural = "portifolio"
+        verbose_name_plural = "Portfolio"
         indexes = [
             models.Index(fields=["symbol"]),
             models.Index(fields=["user"]),
@@ -984,3 +1071,564 @@ class InvestmentUpgradeOffer(TimeStampedModel):
     def is_expired(self):
         """Check if offer has expired"""
         return date.today() > self.valid_until
+
+
+# =============================================================================
+# PHASE 3: NEW MODELS FOR ENHANCED FUNCTIONALITY
+# =============================================================================
+
+class RiskAssessment(TimeStampedModel):
+    """
+    Comprehensive risk assessment for investments
+    """
+    
+    RISK_RATING_CHOICES = [
+        ('low', 'Low Risk'),
+        ('medium', 'Medium Risk'),
+        ('high', 'High Risk'),
+        ('critical', 'Critical Risk'),
+    ]
+    
+    investment = models.ForeignKey(
+        Investor_Information, 
+        on_delete=models.CASCADE, 
+        related_name="risk_assessments"
+    )
+    assessment_date = models.DateField(default=date.today)
+    
+    # Risk Scores (1-10 scale)
+    market_risk_score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Market risk score (1-10)"
+    )
+    credit_risk_score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Credit risk score (1-10)"
+    )
+    liquidity_risk_score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Liquidity risk score (1-10)"
+    )
+    operational_risk_score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Operational risk score (1-10)"
+    )
+    
+    # Overall Assessment
+    overall_risk_rating = models.CharField(
+        max_length=20, 
+        choices=RISK_RATING_CHOICES,
+        help_text="Overall risk rating"
+    )
+    
+    # Risk Mitigation
+    mitigation_strategies = models.JSONField(
+        default=list,
+        help_text="List of mitigation strategies"
+    )
+    
+    # Additional Information
+    notes = models.TextField(blank=True, null=True)
+    assessed_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name="risk_assessments"
+    )
+    
+    class Meta:
+        verbose_name = "Risk Assessment"
+        verbose_name_plural = "Risk Assessments"
+        ordering = ["-assessment_date"]
+        indexes = [
+            models.Index(fields=["investment", "assessment_date"]),
+            models.Index(fields=["overall_risk_rating"]),
+        ]
+    
+    def clean(self):
+        """Validate risk assessment data"""
+        if self.market_risk_score < 1 or self.market_risk_score > 10:
+            raise ValidationError("Market risk score must be between 1 and 10")
+        if self.credit_risk_score < 1 or self.credit_risk_score > 10:
+            raise ValidationError("Credit risk score must be between 1 and 10")
+        if self.liquidity_risk_score < 1 or self.liquidity_risk_score > 10:
+            raise ValidationError("Liquidity risk score must be between 1 and 10")
+        if self.operational_risk_score < 1 or self.operational_risk_score > 10:
+            raise ValidationError("Operational risk score must be between 1 and 10")
+    
+    @property
+    def average_risk_score(self):
+        """Calculate average risk score"""
+        scores = [
+            self.market_risk_score,
+            self.credit_risk_score,
+            self.liquidity_risk_score,
+            self.operational_risk_score
+        ]
+        return sum(scores) / len(scores)
+    
+    def __str__(self):
+        return f"{self.investment.investor.username} - Risk Assessment - {self.assessment_date}"
+
+
+class RiskAlert(TimeStampedModel):
+    """
+    Risk alerts and notifications for investments
+    """
+    
+    ALERT_TYPE_CHOICES = [
+        ('price_drop', 'Price Drop'),
+        ('volatility_spike', 'Volatility Spike'),
+        ('liquidity_concern', 'Liquidity Concern'),
+        ('credit_downgrade', 'Credit Downgrade'),
+        ('market_crash', 'Market Crash'),
+        ('regulatory_change', 'Regulatory Change'),
+        ('operational_issue', 'Operational Issue'),
+    ]
+    
+    SEVERITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ]
+    
+    investment = models.ForeignKey(
+        Investor_Information, 
+        on_delete=models.CASCADE, 
+        related_name="risk_alerts"
+    )
+    alert_type = models.CharField(
+        max_length=20, 
+        choices=ALERT_TYPE_CHOICES
+    )
+    severity = models.CharField(
+        max_length=20, 
+        choices=SEVERITY_CHOICES
+    )
+    message = models.TextField()
+    
+    # Alert Status
+    is_resolved = models.BooleanField(default=False)
+    resolved_date = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name="resolved_alerts"
+    )
+    resolution_notes = models.TextField(blank=True, null=True)
+    
+    # Metadata
+    triggered_by = models.CharField(max_length=100, blank=True, null=True)
+    data_snapshot = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        verbose_name = "Risk Alert"
+        verbose_name_plural = "Risk Alerts"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["investment", "is_resolved"]),
+            models.Index(fields=["severity"]),
+            models.Index(fields=["alert_type"]),
+        ]
+    
+    def __str__(self):
+        return f"{self.investment.investor.username} - {self.get_alert_type_display()} - {self.severity}"
+
+
+class ComplianceRecord(TimeStampedModel):
+    """
+    Compliance tracking for investments
+    """
+    
+    REQUIREMENT_TYPE_CHOICES = [
+        ('kyc', 'KYC Verification'),
+        ('accredited_investor', 'Accredited Investor Status'),
+        ('aml', 'AML Compliance'),
+        ('regulatory', 'Regulatory Compliance'),
+        ('documentation', 'Documentation'),
+        ('reporting', 'Reporting Requirements'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
+    ]
+    
+    investment = models.ForeignKey(
+        Investor_Information, 
+        on_delete=models.CASCADE, 
+        related_name="compliance_records"
+    )
+    requirement_type = models.CharField(
+        max_length=20, 
+        choices=REQUIREMENT_TYPE_CHOICES
+    )
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    
+    # Dates
+    due_date = models.DateField()
+    completed_date = models.DateField(null=True, blank=True)
+    
+    # Documents and Notes
+    documents = models.JSONField(
+        default=list,
+        help_text="Required documents and their status"
+    )
+    notes = models.TextField(blank=True, null=True)
+    
+    # Assignment
+    assigned_to = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name="assigned_compliance_records"
+    )
+    
+    class Meta:
+        verbose_name = "Compliance Record"
+        verbose_name_plural = "Compliance Records"
+        ordering = ["due_date"]
+        indexes = [
+            models.Index(fields=["investment", "status"]),
+            models.Index(fields=["due_date"]),
+            models.Index(fields=["requirement_type"]),
+        ]
+    
+    @property
+    def is_overdue(self):
+        """Check if compliance record is overdue"""
+        return date.today() > self.due_date and self.status not in ['approved', 'rejected']
+    
+    @property
+    def days_until_due(self):
+        """Calculate days until due date"""
+        delta = self.due_date - date.today()
+        return delta.days
+    
+    def __str__(self):
+        return f"{self.investment.investor.username} - {self.get_requirement_type_display()} - {self.status}"
+
+
+class AuditTrail(TimeStampedModel):
+    """
+    Comprehensive audit trail for all investment changes
+    """
+    
+    ACTION_CHOICES = [
+        ('created', 'Created'),
+        ('updated', 'Updated'),
+        ('deleted', 'Deleted'),
+        ('status_changed', 'Status Changed'),
+        ('amount_updated', 'Amount Updated'),
+        ('document_uploaded', 'Document Uploaded'),
+        ('compliance_updated', 'Compliance Updated'),
+    ]
+    
+    investment = models.ForeignKey(
+        Investor_Information, 
+        on_delete=models.CASCADE, 
+        related_name="audit_trails"
+    )
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    performed_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name="audit_actions"
+    )
+    
+    # Change Tracking
+    old_values = models.JSONField(default=dict, blank=True)
+    new_values = models.JSONField(default=dict, blank=True)
+    reason = models.TextField(blank=True, null=True)
+    
+    # Request Metadata
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+    session_id = models.CharField(max_length=100, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Audit Trail"
+        verbose_name_plural = "Audit Trails"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["investment", "action"]),
+            models.Index(fields=["performed_by"]),
+            models.Index(fields=["created_at"]),
+        ]
+    
+    def __str__(self):
+        return f"{self.investment.investor.username} - {self.get_action_display()} - {self.created_at}"
+
+
+class MarketData(TimeStampedModel):
+    """
+    Market data for investment analytics
+    """
+    
+    DATA_TYPE_CHOICES = [
+        ('price', 'Price'),
+        ('volume', 'Volume'),
+        ('volatility', 'Volatility'),
+        ('yield', 'Yield'),
+        ('spread', 'Spread'),
+        ('rating', 'Rating'),
+    ]
+    
+    symbol = models.CharField(max_length=20, help_text="Market symbol/ticker")
+    data_type = models.CharField(max_length=20, choices=DATA_TYPE_CHOICES)
+    timestamp = models.DateTimeField()
+    value = models.DecimalField(max_digits=20, decimal_places=6)
+    
+    # Additional metadata
+    metadata = models.JSONField(default=dict, blank=True)
+    source = models.CharField(max_length=100, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Market Data"
+        verbose_name_plural = "Market Data"
+        ordering = ["-timestamp"]
+        indexes = [
+            models.Index(fields=["symbol", "data_type", "timestamp"]),
+            models.Index(fields=["timestamp"]),
+        ]
+        unique_together = [["symbol", "data_type", "timestamp"]]
+    
+    def __str__(self):
+        return f"{self.symbol} - {self.get_data_type_display()} - {self.value}"
+
+
+class InvestmentAnalytics(TimeStampedModel):
+    """
+    Advanced analytics for investments
+    """
+    
+    investment = models.ForeignKey(
+        Investor_Information, 
+        on_delete=models.CASCADE, 
+        related_name="analytics"
+    )
+    analysis_date = models.DateField(default=date.today)
+    
+    # Performance Metrics
+    sharpe_ratio = models.DecimalField(
+        max_digits=8, decimal_places=4, null=True, blank=True
+    )
+    max_drawdown = models.DecimalField(
+        max_digits=8, decimal_places=4, null=True, blank=True
+    )
+    volatility = models.DecimalField(
+        max_digits=8, decimal_places=4, null=True, blank=True
+    )
+    
+    # Predictive Analytics
+    predicted_return = models.DecimalField(
+        max_digits=8, decimal_places=4, null=True, blank=True
+    )
+    confidence_score = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
+    
+    # Market Correlation
+    market_correlation = models.DecimalField(
+        max_digits=5, decimal_places=3, null=True, blank=True
+    )
+    beta = models.DecimalField(
+        max_digits=5, decimal_places=3, null=True, blank=True
+    )
+    
+    # Additional Metrics
+    value_at_risk = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    expected_shortfall = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    
+    # Analysis Metadata
+    analysis_notes = models.TextField(blank=True, null=True)
+    calculated_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name="calculated_analytics"
+    )
+    
+    class Meta:
+        verbose_name = "Investment Analytics"
+        verbose_name_plural = "Investment Analytics"
+        ordering = ["-analysis_date"]
+        indexes = [
+            models.Index(fields=["investment", "analysis_date"]),
+            models.Index(fields=["analysis_date"]),
+        ]
+    
+    @property
+    def get_risk_level(self):
+        """Determine risk level based on volatility and drawdown"""
+        if not self.volatility or not self.max_drawdown:
+            return 'unknown'
+        
+        if self.volatility < 5 and self.max_drawdown < 3:
+            return 'low'
+        elif self.volatility < 15 and self.max_drawdown < 10:
+            return 'medium'
+        else:
+            return 'high'
+    
+    @property
+    def get_performance_rating(self):
+        """Determine performance rating based on Sharpe ratio"""
+        if not self.sharpe_ratio:
+            return 'unknown'
+        
+        if self.sharpe_ratio >= 2:
+            return 'excellent'
+        elif self.sharpe_ratio >= 1:
+            return 'good'
+        elif self.sharpe_ratio >= 0:
+            return 'fair'
+        else:
+            return 'poor'
+    
+    def __str__(self):
+        return f"{self.investment.investor.username} - Analytics - {self.analysis_date}"
+
+
+class InvestorCommunication(TimeStampedModel):
+    """
+    Communication tracking with investors
+    """
+    
+    COMMUNICATION_TYPE_CHOICES = [
+        ('email', 'Email'),
+        ('phone', 'Phone Call'),
+        ('meeting', 'Meeting'),
+        ('report', 'Report'),
+        ('notification', 'Notification'),
+    ]
+    
+    investment = models.ForeignKey(
+        Investor_Information, 
+        on_delete=models.CASCADE, 
+        related_name="communications"
+    )
+    communication_type = models.CharField(
+        max_length=20, 
+        choices=COMMUNICATION_TYPE_CHOICES
+    )
+    subject = models.CharField(max_length=200)
+    content = models.TextField()
+    
+    # Communication Details
+    sent_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name="sent_communications"
+    )
+    sent_date = models.DateTimeField(default=timezone.now)
+    
+    # Response Tracking
+    investor_response = models.TextField(blank=True, null=True)
+    response_date = models.DateTimeField(null=True, blank=True)
+    satisfaction_rating = models.IntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Investor satisfaction rating (1-5)"
+    )
+    
+    # Metadata
+    is_automated = models.BooleanField(default=False)
+    template_used = models.CharField(max_length=100, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Investor Communication"
+        verbose_name_plural = "Investor Communications"
+        ordering = ["-sent_date"]
+        indexes = [
+            models.Index(fields=["investment", "communication_type"]),
+            models.Index(fields=["sent_date"]),
+            models.Index(fields=["sent_by"]),
+        ]
+    
+    def __str__(self):
+        return f"{self.investment.investor.username} - {self.get_communication_type_display()} - {self.subject}"
+
+
+class NotificationPreference(TimeStampedModel):
+    """
+    Investor notification preferences
+    """
+    
+    NOTIFICATION_TYPE_CHOICES = [
+        ('performance_update', 'Performance Update'),
+        ('market_alert', 'Market Alert'),
+        ('milestone', 'Milestone Achievement'),
+        ('compliance', 'Compliance Reminder'),
+        ('payment', 'Payment Notification'),
+        ('report', 'Report Available'),
+    ]
+    
+    FREQUENCY_CHOICES = [
+        ('immediate', 'Immediate'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('never', 'Never'),
+    ]
+    
+    DELIVERY_METHOD_CHOICES = [
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+        ('push', 'Push Notification'),
+        ('dashboard', 'Dashboard Only'),
+    ]
+    
+    investor = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name="notification_preferences"
+    )
+    notification_type = models.CharField(
+        max_length=20, 
+        choices=NOTIFICATION_TYPE_CHOICES
+    )
+    frequency = models.CharField(
+        max_length=20, 
+        choices=FREQUENCY_CHOICES
+    )
+    delivery_method = models.CharField(
+        max_length=20, 
+        choices=DELIVERY_METHOD_CHOICES
+    )
+    enabled = models.BooleanField(default=True)
+    
+    # Additional Settings
+    quiet_hours_start = models.TimeField(null=True, blank=True)
+    quiet_hours_end = models.TimeField(null=True, blank=True)
+    timezone = models.CharField(max_length=50, default='UTC')
+    
+    class Meta:
+        verbose_name = "Notification Preference"
+        verbose_name_plural = "Notification Preferences"
+        ordering = ["investor", "notification_type"]
+        indexes = [
+            models.Index(fields=["investor", "enabled"]),
+            models.Index(fields=["notification_type"]),
+            models.Index(fields=["frequency"]),
+        ]
+        unique_together = [["investor", "notification_type", "delivery_method"]]
+    
+    def __str__(self):
+        return f"{self.investor.username} - {self.get_notification_type_display()} - {self.frequency}"

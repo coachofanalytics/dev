@@ -3,7 +3,7 @@ from .models import *
 
 # Register your models here.
 admin.site.register(Ticker_Data)
-admin.site.register(Portifolio)
+admin.site.register(Portfolio)
 admin.site.register(OverBoughtSold)
 admin.site.register(credit_spread)
 admin.site.register(ShortPut)

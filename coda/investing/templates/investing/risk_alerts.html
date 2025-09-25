@@ -1,0 +1,42 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block title %}Risk Alerts{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4"><i class="fas fa-bell text-warning"></i> Risk Alerts</h2>
+
+    <div class="card">
+        <div class="card-body">
+            {% if risk_alerts %}
+                {% for alert in risk_alerts %}
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="me-3">
+                            {% if alert.severity == 'critical' %}
+                                <i class="fas fa-exclamation-circle text-danger"></i>
+                            {% elif alert.severity == 'high' %}
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle text-info"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ alert.get_alert_type_display }}</strong>
+                                <span class="badge bg-{{ alert.severity }}">{{ alert.get_severity_display }}</span>
+                            </div>
+                            <div class="text-muted small">{{ alert.created_at|timesince }} ago</div>
+                            <div>{{ alert.message }}</div>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}<hr>{% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="mb-0">No risk alerts.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
