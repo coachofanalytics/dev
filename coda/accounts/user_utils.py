@@ -78,29 +78,13 @@ class NavigationService:
 
     def _get_student_redirect(self, user):
         """Handle student category redirects with subcategory consideration"""
-        if user.sub_category == StudentSubCategoryChoices.DATA_ANALYTICS:
-            return reverse_lazy("professional_services:bitraining")  # Updated URL
-        elif user.sub_category == StudentSubCategoryChoices.PROGRAMMING:
-            return reverse_lazy("professional_services:bitraining")
-        elif user.sub_category == StudentSubCategoryChoices.OTHER:
-            return reverse_lazy("professional_services:bitraining")
-        else:
-            return reverse_lazy(
-                "professional_services:bitraining"
-            )  # Default for students
+        # All students should go to unified dashboard with quick links for professional services
+        return reverse_lazy("dashboard:unified_dashboard")
 
     def _get_consultant_redirect(self, user):
         """Handle consultant category redirects with subcategory consideration"""
-        if user.sub_category == ConsultantSubCategoryChoices.CAREER:
-            return reverse_lazy("professional_services:interview_roles")
-        elif user.sub_category == ConsultantSubCategoryChoices.TECHNICAL:
-            return reverse_lazy("professional_services:interview_roles")
-        elif user.sub_category == ConsultantSubCategoryChoices.BUSINESS:
-            return reverse_lazy("professional_services:interview_roles")
-        else:
-            return reverse_lazy(
-                "professional_services:interview_roles"
-            )  # Default for consultants
+        # All consultants should go to unified dashboard with professional services links
+        return reverse_lazy("dashboard:unified_dashboard")
 
     def _get_investor_redirect(self, user):
         """Handle investor category redirects based on KCC membership and subcategory"""
@@ -162,14 +146,8 @@ class NavigationService:
 
     def _get_explorer_redirect(self, user):
         """Handle explorer category redirects with subcategory consideration"""
-        if user.sub_category == ExplorerSubCategoryChoices.RESEARCH:
-            return reverse_lazy("accounts:home")
-        elif user.sub_category == ExplorerSubCategoryChoices.LEARNING:
-            return reverse_lazy("professional_services:bitraining")
-        elif user.sub_category == ExplorerSubCategoryChoices.NETWORKING:
-            return reverse_lazy("accounts:home")
-        else:
-            return reverse_lazy("accounts:home")  # Default for explorers
+        # All explorers should go to unified dashboard with appropriate links
+        return reverse_lazy("dashboard:unified_dashboard")
 
     def get_user_dashboard_url(self, user):
         """
