@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, News, Page, Service, SubService,Team
+from .models import Assets,Description, News, Page, Service, SubService,Team,Donation_organisation
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm
@@ -210,3 +210,6 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+def donor_list(request):
+    donations = Donation_organisation.objects.all()  # Remove is_donor filter
+    return render(request, 'main/donor.html', {'donations': donations})
