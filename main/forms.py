@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from accounts.models import CustomerUser
 from .models import Feedback
 from django.utils.translation import gettext_lazy as _
+from .models import Donation
 
 class ContactForm(forms.ModelForm):
     class Meta:
@@ -32,7 +33,10 @@ class ContactForm(forms.ModelForm):
         # self.fields['sub_category'].required=False
 
 
-
+class Donation_form(forms.ModelForm):
+    class Meta:
+        model=Donation
+        fields={"donor_name","email","amount","message"}
 
         
         

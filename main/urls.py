@@ -15,7 +15,8 @@ urlpatterns = [
     path('news/', views.news_list, name='news_list'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
-    path('Donation_list/', views.Donation_list, name='donation'),
+    path('Donation_list/', views.Donation_list, name='Donation_list'),
+    path('Donation_create/', views.Donation_create, name='Donation_create'),
     
   
     
