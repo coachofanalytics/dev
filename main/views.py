@@ -255,3 +255,9 @@ def Donation_update(request,pk):
         return redirect("main:donation")
     return render(request,"main/snippets_templates/table/donation_edit.html",{"form":form})
     
+def Donation_delete(request,pk):
+    donation = get_object_or_404(Donation_organisation,pk=pk)
+    if request.method == "POST":
+        donation.delete()
+        return redirect("main:donation")
+    return render(request,"main/snippets_templates/table/donation_delete.html",{"donation":donation})

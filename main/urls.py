@@ -18,6 +18,7 @@ urlpatterns = [
     path('donation/', views.donation_list, name='donation'),
     path('donation_create/', views.Donation_create, name='donation_create'),
     path("donation/<int:pk>/update/", views.Donation_update, name="donation_update"),
+    path("donation/<int:pk>/delete/", views.Donation_delete, name="donation_delete"),
     
   
     
