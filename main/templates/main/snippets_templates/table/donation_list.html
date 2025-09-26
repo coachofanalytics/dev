@@ -43,7 +43,7 @@
 </head>
 <body>
     <h1>Donation List</h1>
-
+    <a href="{% url 'main:donation_create' %}">Add New Donation</a>
     {% if donations %}
         <table>
             <thead>
@@ -53,6 +53,7 @@
                     <th>Amount</th>
                     <th>Message</th>
                     <th>Date</th>
+                    <th>action</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,6 +64,11 @@
                     <td>{{ donation.amount }}</td>
                     <td>{{ donation.message|default:"—" }}</td>
                     <td>{{ donation.created_at }}</td>
+                    <td>
+                        <a href="{% url 'main:donation_delete' donation.id %}" style="padding: 5px 8px;border-radius: 3px;background-color: red; color: white; text-decoration: none;">delete</a>
+                        <a href="{% url 'main:donation_update' donation.id %}" style="padding: 5px 8px;border-radius: 3px;background-color: blue; color: white; text-decoration: none;">Edit</a>
+                        <a href="{% url 'main:donation_details' donation.id %}" style="padding: 5px 8px;border-radius: 3px;background-color: gray; color: black; text-decoration: none;">view</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

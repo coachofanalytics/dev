@@ -19,6 +19,7 @@ urlpatterns = [
     path('donation_create/', views.Donation_create, name='donation_create'),
     path("donation/<int:pk>/update/", views.Donation_update, name="donation_update"),
     path("donation/<int:pk>/delete/", views.Donation_delete, name="donation_delete"),
+    path("donation/<int:pk>/details/", views.Donation_details, name="donation_details"),
     
   
     
