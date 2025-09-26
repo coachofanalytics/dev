@@ -8,10 +8,10 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, News, Page, Service, SubService,Team,Donation_organisation
+from .models import Assets,Description, News, Page, Service, SubService,Team,Donation_organisation, ContactMessage
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm
+from .forms import ContactForm, DonorForm, MessageForm
 from django.contrib.auth import get_user_model
 
 User=get_user_model()
@@ -250,3 +250,50 @@ def delete_donor(request, pk):
         donation.delete()
         return redirect('main:donor_list')
     return render(request, 'main/delete_donor.html', {'donation': donation})
+
+# contact message list view
+def message_list(request):
+    messages = ContactMessage.objects.all()  # Fetch all contact messages
+    return render(request, 'main/snippets_templates/table/contact_message_list.html', {'messages': messages})
+# contact message detail view
+def message_details(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    return render(request, 'main/message_details.html', {'message': message})
+# contact message edit view
+def edit_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        form = MessageForm(request.POST, instance=message)
+        if form.is_valid():
+            form.save()
+            return redirect('main:message_list')
+    else:
+        form = MessageForm(instance=message)
+    return render(request, 'main/edit_message.html', {'form': form, 'message': message})
+# contact message delete view
+def delete_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        message.delete()
+        return redirect('main:message_list')
+    return render(request, 'main/delete_message.html', {'message': message})
+
+# add contact message view (if needed)
+def add_message(request):
+    if request.method == "POST":
+        form = MessageForm(request.POST, request.FILES)
+        message=f'Thank You, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = MessageForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_message.html",context)

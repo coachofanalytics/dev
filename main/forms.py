@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm, Textarea
 from django.contrib.auth.forms import UserCreationForm
 from accounts.models import CustomerUser 
-from .models import Feedback, Donation_organisation
+from .models import Feedback, Donation_organisation, ContactMessage
 from django.utils.translation import gettext_lazy as _
 
 class ContactForm(forms.ModelForm):
@@ -36,7 +36,10 @@ class DonorForm(forms.ModelForm):
         model = Donation_organisation
         fields = ("donor_name", "email", "amount", "message")
 
-        
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = ("name", "email", "message")
 
 
 

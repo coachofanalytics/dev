@@ -20,6 +20,11 @@ urlpatterns = [
     path('donor/<int:pk>/', views.donor_details, name='donor_details'),
     path('edit-donor/<int:pk>/', views.edit_donor, name='edit_donor'),
     path('delete-donor/<int:pk>/', views.delete_donor, name='delete_donor'),
+    path('messages/', views.message_list, name='message_list'),  # New URL pattern for contact messages
+    path('message/<int:pk>/', views.message_details, name='message_details'),  # New URL pattern for message details
+    path('edit-message/<int:pk>/', views.edit_message, name='edit_message'),  # New URL pattern for editing messages
+    path('delete-message/<int:pk>/', views.delete_message, name='delete_message'),  # New URL pattern for deleting messages
+    path('add-message/', views.add_message, name='add_message'),  # New URL pattern for adding messages
 
 
    #==============ERRORS==============================================

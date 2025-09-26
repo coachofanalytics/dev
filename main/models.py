@@ -191,3 +191,11 @@ class Donation_organisation(models.Model):
 
     def __str__(self):
         return f"Donation of {self.amount} by {self.donor_name} ({self.email})"  
+# contact Message model
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.name} => ({self.message})"

@@ -15,5 +15,6 @@ admin.site.register(News)
 admin.site.register(Gallery_image)
 admin.site.register(ContactUs)
 admin.site.register(Donation_organisation)
+admin.site.register(ContactMessage)
 
 
