@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department
+from .models import CustomerUser,Department,Credential
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -273,3 +273,7 @@ def DepartmentCreateView(request):
     else:
         form = DepartmentForm()
     return render(request, 'accounts/dpcreate.html', {'form': form})
+
+def credential_list_view(request):
+    credentials = Credential.objects.all()
+    return render(request, 'accounts/Credentiallist.htm', {'credentials': credentials})

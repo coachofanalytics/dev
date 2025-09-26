@@ -10,4 +10,5 @@ urlpatterns = [
     path('profile/', views.profile, name='account-profile'),
     path('Departments/', views.Department_list_view, name='department_create'),
     path("department_create/", views.DepartmentCreateView, name="department_create"),
+    path('Credential/', views.credential_list_view, name='Credential'),
 ]
