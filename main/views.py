@@ -227,3 +227,27 @@ def Donation_create(request):
     else:
         form = Donation_form()
         return render(request, "main/snippets_templates/table/Donation_create.html", {"form": form})
+
+
+
+
+# def Donation_update(request,pk):
+#     donation=get_object_or_404(Donation,pk=pk)
+#     form=Donation_form(request.POST or None, instance=donation)
+    
+#     if request.method=="POST":
+#         form.is_valid()
+#         form.save()
+#         return redirect("main:Donation_list")
+#     return render(request,"main/snippets_templates/table/Donation_update.html",{"form":form})
+
+    
+def Donation_update(request,pk):
+    donation = get_object_or_404(Donation,pk=pk)
+    form =  Donation_form(request.POST or None,instance=donation)
+
+    if request.method == "POST":
+        form.is_valid()
+        form.save()
+        return redirect("main:Donation_list")
+    return render(request,"main/snippets_templates/table/Donation_update.html",{"form":form})

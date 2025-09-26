@@ -38,6 +38,8 @@ class Donation_form(forms.ModelForm):
         model=Donation
         fields={"donor_name","email","amount","message"}
 
+
+
         
         
 

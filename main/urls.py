@@ -17,7 +17,7 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
     path('Donation_list/', views.Donation_list, name='Donation_list'),
     path('Donation_create/', views.Donation_create, name='Donation_create'),
-    
+    path("donation/<int:pk>/update/", views.Donation_update, name="donation_update"),
   
     
     
