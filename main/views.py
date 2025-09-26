@@ -230,17 +230,6 @@ def Donation_create(request):
 
 
 
-
-# def Donation_update(request,pk):
-#     donation=get_object_or_404(Donation,pk=pk)
-#     form=Donation_form(request.POST or None, instance=donation)
-    
-#     if request.method=="POST":
-#         form.is_valid()
-#         form.save()
-#         return redirect("main:Donation_list")
-#     return render(request,"main/snippets_templates/table/Donation_update.html",{"form":form})
-
     
 def Donation_update(request,pk):
     donation = get_object_or_404(Donation,pk=pk)
@@ -251,3 +240,15 @@ def Donation_update(request,pk):
         form.save()
         return redirect("main:Donation_list")
     return render(request,"main/snippets_templates/table/Donation_update.html",{"form":form})
+
+
+
+def Donation_delete(request,pk):
+    donation=get_object_or_404(Donation,pk=pk)
+    if request.method=="POST":
+        donation.delete()
+        return redirect("main:Donation_list")
+    return render(request,"main/snippets_templates/table/Donation_delete.html",{"donation":donation})
+
+def Donation_detail():
+    

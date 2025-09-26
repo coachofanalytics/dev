@@ -18,8 +18,8 @@ urlpatterns = [
     path('Donation_list/', views.Donation_list, name='Donation_list'),
     path('Donation_create/', views.Donation_create, name='Donation_create'),
     path("donation/<int:pk>/update/", views.Donation_update, name="donation_update"),
+    path("donation/<int:pk>/delete/", views.Donation_delete, name="donation_delete"),
   
-    
     
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
