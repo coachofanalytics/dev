@@ -240,4 +240,18 @@ def Donation_create(request):
     else:
         form = Donation()
     return render(request, "main/snippets_templates/table/donation_create.html", {"form": form})
+
+
+
+
+
+def Donation_update(request,pk):
+    donation = get_object_or_404(Donation_organisation,pk=pk)
+    form =  Donation(request.POST or None,instance=donation)
+
+    if request.method == "POST":
+        form.is_valid()
+        form.save()
+        return redirect("main:donation")
+    return render(request,"main/snippets_templates/table/donation_edit.html",{"form":form})
     
