@@ -53,6 +53,7 @@
                     <th>Amount</th>
                     <th>Message</th>
                     <th>Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,12 +64,25 @@
                     <td>{{ donation.amount }}</td>
                     <td>{{ donation.message|default:"—" }}</td>
                     <td>{{ donation.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'main:donation_details' donation.id %}"
+                        style="display:inline-block;padding:6px 12px;border-radius:6px;text-decoration:none;background:#2b6cb0;color:#fff;margin-right:6px">
+                       View
+                     </a>
+                     
+                     <a href="{% url 'main:donation_update' donation.id %}"
+                        style="display:inline-block;padding:6px 12px;border-radius:6px;text-decoration:none;background:#38a169;color:#fff;margin-right:6px">
+                       Edit
+                     </a>
+                     
+                     <a href="{% url 'main:donation_delete' donation.id %}"
+                        style="display:inline-block;padding:6px 12px;border-radius:6px;text-decoration:none;background:#e53e3e;color:#fff">
+                       Delete
+                     </a>                     
+                     
+                    </td>
                 </tr>
-                <td>
-                    <a href="{% url 'main:donation_update' donation.pk %}" class="btn btn-sm btn-warning">Edit</a>
-                    <a href="{% url 'main:donation_delete' donation.pk %}" class="btn btn-sm btn-danger">Delete</a>
-                    <a href="{% url 'main:donation_details' donation.pk %}" class="btn btn-sm btn-info">View</a>
-                </td>
+                
                 {% endfor %}
             </tbody>
         </table>
