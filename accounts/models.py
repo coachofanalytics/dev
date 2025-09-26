@@ -107,3 +107,29 @@ class Department(models.Model):
 
     def __str__(self):
         return self.description
+    
+
+
+from django.db import models
+
+class Credential(models.Model):
+    department = models.CharField(max_length=255, null=False)
+    # category = models.ManyToManyField('Category')  # Replace with actual related model
+    added_by = models.IntegerField(null=False)
+    name = models.CharField(max_length=255, null=False)
+    slug = models.SlugField(null=False)
+    description = models.TextField(max_length=1000, null=False)
+    link_name = models.CharField(max_length=255, null=False)
+    link = models.CharField(max_length=100, null=False)
+    password = models.CharField(max_length=255, null=True)
+    entry_date = models.DateField(null=False)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+    user_types = models.CharField(max_length=255, null=False)
+
+    def __str__(self):
+        return self.name
+
+
+
+

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser,Department
+from .models import CustomerUser,Department,Credential
 
 
 
@@ -75,3 +75,4 @@ admin.site.register(CustomerUser, CustomerAdmin)
 # admin.site.register(LoginHistory)
 admin.site.register(Department
                     )
+admin.site.register(Credential)
