@@ -42,6 +42,7 @@
 </head>
 <body>
     <h1>Donation List</h1>
+    <a href="{% url 'main:Donation_create' %}">Add New Donation</a>
 
     {% if donations %}
         <table>
@@ -63,6 +64,11 @@
                     <td>{{ donation.message|default:"—" }}</td>
                     <td>{{ donation.created_at|date:"M d, Y" }}</td>
                 </tr>
+                <td>
+                    <a href="{% url 'main:donation_update' donation.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'main:donation_delete' donation.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                    <a href="{% url 'main:donation_details' donation.pk %}" class="btn btn-sm btn-info">View</a>
+                </td>
                 {% endfor %}
             </tbody>
         </table>
