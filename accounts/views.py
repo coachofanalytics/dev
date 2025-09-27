@@ -308,5 +308,16 @@ def CredentialUpdateView(request, pk):
 
     return render(request, "accounts/credentialupdate.htm", {'form': form})
 
+from django.shortcuts import render, get_object_or_404
+from .models import Credential
+
+def CredentialDetailView(request, pk):
+    # Fetch the Credential object by primary key
+    credential = get_object_or_404(Credential, pk=pk)
+
+    # Render the detail template with the credential object
+    return render(request, "accounts/credentialdetail.html", {'credential': credential})
+
+
 
 
