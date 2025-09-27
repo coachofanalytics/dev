@@ -12,4 +12,6 @@ urlpatterns = [
     path("department_create/", views.DepartmentCreateView, name="department_create"),
     path('Credential/', views.credential_list_view, name='Credentials'),
     path('create/', views.Credential_CreateView, name='create'),
+    path('update/<int:pk>/', views.CredentialUpdateView, name='update')
+
 ]

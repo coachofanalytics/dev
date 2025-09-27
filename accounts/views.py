@@ -289,3 +289,24 @@ def Credential_CreateView(request):
         form = CredentialForm()
     return render(request, 'accounts/credentialcreate.html', {'form': form})
 
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Credential
+from .forms import CredentialForm
+
+def CredentialUpdateView(request, pk):
+    # Fetch the Credential object to update
+    credential = get_object_or_404(Credential, pk=pk)
+
+    if request.method == "POST":
+        form = CredentialForm(request.POST, instance=credential)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:credential")  # Redirect to the list view
+    else:
+        form = CredentialForm(instance=credential)  # Load form with existing data
+
+    return render(request, "accounts/credentialupdate.htm", {'form': form})
+
+
+
