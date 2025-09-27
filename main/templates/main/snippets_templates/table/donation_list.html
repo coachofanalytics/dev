@@ -2,49 +2,12 @@
 {% load static %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Donations</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
-        }
-        h1 {
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background-color: #fff;
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .empty {
-            margin-top: 20px;
-            color: #777;
-        }
-    </style>
-</head>
-<body>
+<div class="container">
     <h1>Donation List</h1>
+    <a href="{% url 'main:donation_create' %}" class="btn btn-add">Add New Donation</a>
 
     {% if donations %}
-        <table>
+        <table class="donation-table">
             <thead>
                 <tr>
                     <th>Donor Name</th>
@@ -52,6 +15,7 @@
                     <th>Amount</th>
                     <th>Message</th>
                     <th>Date</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,7 +25,12 @@
                     <td>{{ donation.email }}</td>
                     <td>{{ donation.amount }}</td>
                     <td>{{ donation.message|default:"—" }}</td>
-                    <td>{{ donation.created_at|date:"M d, Y " }}</td>
+                    <td>{{ donation.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <a href="{% url 'main:donation_delete' donation.id %}" class="btn btn-delete">Delete</a>
+                        <a href="{% url 'main:donation_update' donation.id %}" class="btn btn-edit">Edit</a>
+                        <a href="{% url 'main:donation_details' donation.id %}" class="btn btn-view">View</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -69,7 +38,63 @@
     {% else %}
         <p class="empty">No donations have been made yet.</p>
     {% endif %}
-</body>
-</html>
+</div>
 
+<style>
+    .container {
+        margin: 20px;
+        font-family: Arial, sans-serif;
+    }
+    h1 {
+        margin-bottom: 15px;
+        color: #333;
+    }
+    .donation-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .donation-table th, .donation-table td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+    .donation-table th {
+        background: #f4f4f4;
+    }
+    .donation-table tr:hover {
+        background: #f9f9f9;
+    }
+    .empty {
+        margin-top: 20px;
+        color: #777;
+    }
+    /* Button styles */
+    .btn {
+        padding: 6px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 14px;
+        margin-right: 4px;
+    }
+    .btn-add {
+        display: inline-block;
+        margin-bottom: 12px;
+        background: green;
+        color: #fff;
+    }
+    .btn-delete {
+        background: red;
+        color: #fff;
+    }
+    .btn-edit {
+        background: blue;
+        color: #fff;
+    }
+    .btn-view {
+        background: gray;
+        color: #fff;
+    }
+</style>
 {% endblock %}

@@ -157,15 +157,6 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 #         "PASSWORD":password,
 #         "HOST": host
 #     }
-# # }
-# DATABASES = {
-#     'default': {
-#         "ENGINE": 'django.db.backends.postgresql',
-#         "NAME": 'dfcda9qs3oqmjs',
-#         "USER": 'u71kn9j3d0t653',
-#         "PASSWORD": 'p6f1fb28430129f031a0cbadb153c422de22a06cb843a132ec8f5ba82e9b18d7b',
-#         "HOST": 'cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  
-#     }
 # }
 
 # Local DB
@@ -191,7 +182,6 @@ if 'test' in sys.argv:
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'coda_dev'
     }
-
 
 
 db_from_env = dj_database_url.config(conn_max_age=600)
