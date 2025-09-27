@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm
+from .forms import UserForm, LoginForm,CredentialForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -276,4 +276,16 @@ def DepartmentCreateView(request):
 
 def credential_list_view(request):
     credentials = Credential.objects.all()
+    print("Request object:", request)
     return render(request, 'accounts/Credentiallist.htm', {'credentials': credentials})
+
+def Credential_CreateView(request):
+    if request.method == "POST":
+        form = CredentialForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:Credential')  
+    else:
+        form = CredentialForm()
+    return render(request, 'accounts/credentialcreate.html', {'form': form})
+

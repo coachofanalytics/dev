@@ -155,5 +155,33 @@ class DepartmentForm(forms.ModelForm):
             'slug': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Slug (auto-generated if left blank)'}),
             'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }   
+
+
+
+           }  
+from django import forms
+from .models import Credential
+
+class CredentialForm(forms.ModelForm):
+    class Meta:
+        model = Credential
+        fields = [
+            'department',
+            # 'category',  # Uncomment if you add the related Category model
+            'added_by',
+            'name',
+            'slug',
+            'description',
+            'link_name',
+            'link',
+            'password',
+            'entry_date',
+            'is_active',
+            
+        ]
+
+
+
+        
+         
 
