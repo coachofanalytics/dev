@@ -318,6 +318,21 @@ def CredentialDetailView(request, pk):
     # Render the detail template with the credential object
     return render(request, "accounts/credentialdetail.html", {'credential': credential})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Credential
+
+def CredentialDeleteView(request, pk):
+    # Fetch the Credential object to delete
+    credential = get_object_or_404(Credential, pk=pk)
+
+    if request.method == "POST":
+        credential.delete()
+        return redirect("accounts:credential")  # Redirect to the list view after deletion
+
+    # For GET request, show a confirmation page
+    return render(request, "accounts/credentialdelete.html", {'credential': credential})
+
+
 
 
 

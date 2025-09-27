@@ -14,5 +14,6 @@ urlpatterns = [
     path('create/', views.Credential_CreateView, name='create'),
     path('update/<int:pk>/', views.CredentialUpdateView, name='update'),
     path('detail/<int:pk>/', views.CredentialDetailView, name='detail'),
+    path('delete/<int:pk>/', views.CredentialDeleteView, name='delete'),
 
 ]
