@@ -274,9 +274,12 @@ def DepartmentCreateView(request):
         form = DepartmentForm()
     return render(request, 'accounts/dpcreate.html', {'form': form})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Credential
+from .forms import CredentialForm
+
 def credential_list_view(request):
     credentials = Credential.objects.all()
-    print("Request object:", request)
     return render(request, 'accounts/Credentiallist.htm', {'credentials': credentials})
 
 def Credential_CreateView(request):
@@ -284,55 +287,29 @@ def Credential_CreateView(request):
         form = CredentialForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('accounts:Credential')  
+            return redirect('accounts:credential')
     else:
         form = CredentialForm()
     return render(request, 'accounts/credentialcreate.html', {'form': form})
 
-
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Credential
-from .forms import CredentialForm
-
 def CredentialUpdateView(request, pk):
-    # Fetch the Credential object to update
     credential = get_object_or_404(Credential, pk=pk)
-
     if request.method == "POST":
         form = CredentialForm(request.POST, instance=credential)
         if form.is_valid():
             form.save()
-            return redirect("accounts:credential")  # Redirect to the list view
+            return redirect("accounts:credential")
     else:
-        form = CredentialForm(instance=credential)  # Load form with existing data
-
+        form = CredentialForm(instance=credential)
     return render(request, "accounts/credentialupdate.htm", {'form': form})
 
-from django.shortcuts import render, get_object_or_404
-from .models import Credential
-
 def CredentialDetailView(request, pk):
-    # Fetch the Credential object by primary key
     credential = get_object_or_404(Credential, pk=pk)
-
-    # Render the detail template with the credential object
     return render(request, "accounts/credentialdetail.html", {'credential': credential})
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Credential
-
 def CredentialDeleteView(request, pk):
-    # Fetch the Credential object to delete
     credential = get_object_or_404(Credential, pk=pk)
-
     if request.method == "POST":
         credential.delete()
-        return redirect("accounts:credential")  # Redirect to the list view after deletion
-
-    # For GET request, show a confirmation page
+        return redirect("accounts:credential")
     return render(request, "accounts/credentialdelete.html", {'credential': credential})
-
-
-
-
-
