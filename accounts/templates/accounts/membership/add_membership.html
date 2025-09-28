@@ -1,10 +1,27 @@
-{% extends "accounts/membership/base.html"%}
-{% block content %}
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"> add membership plan</button>
-    <a href="{% url 'accounts:membership_list' %}">go back to home</a>
-</form>
+{% extends "accounts/membership/base.html" %}
 
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Add Membership Plan</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.as_p}}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'accounts:membership_list' %}" class="btn btn-secondary">Go Back</a>
+                            <button type="submit" class="btn btn-success">Add Membership Plan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock %}

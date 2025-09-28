@@ -466,6 +466,7 @@ def custom_social_login(request):
     
 
 from .models import MembershipPlan,MemberRegistration
+from .forms import MembershipRegistrationForm,MemberShipPlanForm
 
 def Membership_list(request):
     members = MemberRegistration.objects.all()
@@ -475,3 +476,18 @@ def Membership_list(request):
         "plans":plans
     }
     return render(request,"accounts/membership/membership_list.html",context)
+
+def MembershipPlanAdd(request):
+    form =  MemberShipPlanForm(request.POST)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("accounts:membership_list")
+    return render(request,"accounts/membership/add_membership.html",{"form":form})
+
+
+def MembershipPlanDelete(request,pk):
+    plan= get_object_or_404(MembershipPlan,pk=pk)
+    if request.method =="POST":
+        plan.delete()
+        return redirect("accounts:membership_list")
+     
