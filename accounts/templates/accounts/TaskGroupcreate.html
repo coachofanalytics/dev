@@ -1,0 +1,36 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0"><i class="fa fa-plus-circle"></i> Add Task Group</h4>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+              <div class="mb-3">
+                <label class="form-label fw-bold">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+            <div class="mt-4 d-flex justify-content-end gap-2">
+              <button type="submit" class="btn btn-success">
+                <i class="fa fa-save"></i> Save
+              </button>
+              <a href="#" class="btn btn-secondary">
+                <i class="fa fa-times"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

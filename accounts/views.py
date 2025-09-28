@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -320,3 +320,24 @@ from .models import TaskGroup
 def taskgroup_list_view(request):
     taskgroups = TaskGroup.objects.all()
     return render(request, 'accounts/Taskgrouplist.html', {'taskgroups': taskgroups})
+
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, ListView
+from .models import TaskGroup
+from .forms import TaskGroupForm
+
+from django.shortcuts import render, redirect
+from .forms import TaskGroupForm
+
+def TaskGroup_create_view(request):
+    if request.method == "POST":
+        form = TaskGroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:TaskGroup')  # redirect to list after save
+    else:
+        form = TaskGroupForm()
+    return render(request, 'accounts/TaskGroupcreate.html', {'form': form})
+
+
+
