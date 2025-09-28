@@ -15,5 +15,6 @@ urlpatterns = [
     path('update/<int:pk>/', views.CredentialUpdateView, name='update'),
     path('detail/<int:pk>/', views.CredentialDetailView, name='detail'),
     path('delete/<int:pk>/', views.CredentialDeleteView, name='delete'),
+    path('TaskGroup/', views.taskgroup_list_view, name='TaskGroup'),
 
 ]

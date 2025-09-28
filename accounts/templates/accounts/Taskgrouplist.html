@@ -1,0 +1,32 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">📋 Task Groups</h2>
+
+  {% if taskgroups %}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in taskgroups %}
+      <tr>
+        <td>{{ task.id }}</td>
+        <td>{{ task.title }}</td>
+        <td>{{ task.description }}</td>
+        <td>{{ task.created_at|date:"Y-m-d H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="alert alert-info">No Task Groups found.</div>
+  {% endif %}
+</div>
+{% endblock %}

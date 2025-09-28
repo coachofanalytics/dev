@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm,CredentialForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential
+from .models import CustomerUser,Department,Credential,TaskGroup
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -313,3 +313,10 @@ def CredentialDeleteView(request, pk):
         credential.delete()
         return redirect("accounts:credential")
     return render(request, "accounts/credentialdelete.html", {'credential': credential})
+
+from django.shortcuts import render
+from .models import TaskGroup
+
+def taskgroup_list_view(request):
+    taskgroups = TaskGroup.objects.all()
+    return render(request, 'accounts/Taskgrouplist.html', {'taskgroups': taskgroups})
