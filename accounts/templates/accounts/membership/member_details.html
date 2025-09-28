@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+{% extends "accounts/membership/base.html"%}
+{% block content %}
+<div>
     <p>{{member.email}}</p>
     <p>{{member.first_name}}</p>
     <p>{{member.last_name}}</p>
@@ -15,5 +10,5 @@
     <p>{{member.city}}</p>
     <p>{{member.membership_plan}}</p>
     <a href="{% url 'accounts:membership_list' %}">go back to home</a>
-</body>
-</html>
+</div>
+{% endblock %}

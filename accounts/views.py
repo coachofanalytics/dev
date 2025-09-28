@@ -463,3 +463,15 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/join.html", {"form": UserForm()})        
+    
+
+from .models import MembershipPlan,MemberRegistration
+
+def Membership_list(request):
+    members = MemberRegistration.objects.all()
+    plans = MembershipPlan.objects.all()
+    context = {
+        "members":members,
+        "plans":plans
+    }
+    return render(request,"accounts/membership/membership_list.html",context)

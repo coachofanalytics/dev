@@ -1,6 +1,10 @@
+{% extends "accounts/membership/base.html"%}
+{% block content %}
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit"> add membership plan</button>
     <a href="{% url 'accounts:membership_list' %}">go back to home</a>
 </form>
+
+{% endblock %}

@@ -1,62 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div class="membership-plans">
-    {% if plans %}
-        <h1>membership plans</h1>
-        <a href="{% url 'accounts:membership_plan_add' %}">create new member</a>
-        <ul>
-            {% for plan in plans%}
-            <li>{{plan.name}}</li>
-            <li>{{plan.price}}</li>
-            {%endfor%}
-        </ul>
-    {%else%}
-        <p>no membership plan added yet</p>
-    {%endif%}
+{% extends "accounts/membership/base.html" %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Membership Plans -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Membership Plans</h2>
+            <a href="#" class="btn btn-primary btn-sm">+ Create New Member</a>
+        </div>
+
+        {% if plans %}
+            <div class="row">
+                {% for plan in plans %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ plan.name }}</h5>
+                            <p class="card-text">
+                                <strong>Price:</strong> {{ plan.price }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-warning">No membership plans added yet.</div>
+        {% endif %}
     </div>
-    <a href="{% url 'accounts:create_member' %}">create new member</a>
-    {% if members %}
-        <h1>Registered Members</h1>
-        <table>
-            <thead>
-                <td>email</td>
-                <td>first name</td>
-                <td>last name</td>
-                <td>gender</td>
-                <td>phone_number</td>
-                <td>country</td>
-                <td>city</td>
-                <td>membership plan</td>
-                <td>action</td>
-            </thead>
-            <tbody>
-                {% for member in members%}
-                <tr>
-                    <td>{{member.email}}</td>
-                    <td>{{member.first_name}}</td>
-                    <td>{{member.last_name}}</td>
-                    <td>{{member.gender}}</td>
-                    <td>{{member.phone_number}}</td>
-                    <td>{{member.country}}</td>
-                    <td>{{member.city}}</td>
-                    <td>{{member.membership_plan}}</td>
-                    <td>
-                        <a href="{% url 'accounts:member_update' member.id%}">edit</a>
-                        <a href="{% url 'accounts:member_delete' member.id %}">delete</a>
-                        <a href="{% url 'accounts:member_details' member.id %}">view</a>
-                    </td>
-                </tr>
-                {%endfor%}
-            </tbody>
-        </table>
-    {% else %}
-        <p>no registersed members yet</p>
-    {% endif %}
-</body>
-</html>
+
+    <!-- Registered Members -->
+    <div>
+        <h2 class="mb-3">Registered Members</h2>
+        {% if members %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Email</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Gender</th>
+                            <th>Phone Number</th>
+                            <th>Country</th>
+                            <th>City</th>
+                            <th>Membership Plan</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>{{ member.email }}</td>
+                            <td>{{ member.first_name }}</td>
+                            <td>{{ member.last_name }}</td>
+                            <td>{{ member.gender }}</td>
+                            <td>{{ member.phone_number }}</td>
+                            <td>{{ member.country }}</td>
+                            <td>{{ member.city }}</td>
+                            <td>{{ member.membership_plan }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="#" class="btn btn-warning">Edit</a>
+                                    <a href="#" class="btn btn-danger">Delete</a>
+                                    <a href="#" class="btn btn-info text-white">View</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">No registered members yet.</div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
