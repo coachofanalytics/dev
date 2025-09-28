@@ -140,3 +140,33 @@ class Department(models.Model):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
         return self.name    
+    
+    
+
+class MembershipPlan(models.Model):
+    name=models.CharField(max_length=100)
+    price=models.CharField(max_length=50)
+    
+    def __str__(self):
+        return self.name
+    
+
+class MemberRegistration(models.Model):
+    GENDER_CHOICES= [
+        ('M','Male'),
+        ('F','Female'),
+        ('O','Other'),
+    ]
+    email=models.EmailField()
+    first_name=models.CharField(max_length=30)
+    last_name=models.CharField(max_length=30)
+    gender=models.CharField(max_length=1,choices=GENDER_CHOICES)
+    phone_number=models.CharField(max_length=15)
+    country=models.CharField(max_length=50)
+    city=models.CharField(max_length=50)
+    membership_plan=models.ForeignKey(MembershipPlan,on_delete=models.CASCADE)
+    agree=models.BooleanField()
+    
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+    

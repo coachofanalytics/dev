@@ -24,8 +24,8 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership
-from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
+from .models import CustomerUser, Membership, MembershipPlan
+from .forms import CustomAuthenticationForm, CustomUserCreationForm, MemberRegistrationForm, UserForm,LoginForm
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, get_user_model
@@ -462,4 +462,26 @@ def custom_social_login(request):
     
     except:
     
-        return render(request, "accounts/registration/join.html", {"form": UserForm()})        
+        return render(request, "accounts/registration/join.html", {"form": UserForm()})  
+    
+    
+    
+
+def membership_registration_view(request):
+    plans = MembershipPlan.objects.all()
+
+    if request.method == 'POST':
+        form = MemberRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:membership_registration")
+    else:
+        form = MemberRegistrationForm()
+
+    context = {
+        "plans": plans,
+        "form": form,
+    }
+    return render(request, "accounts/membership/membership_registration.html", context)
+
+         

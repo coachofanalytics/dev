@@ -24,5 +24,7 @@ urlpatterns = [
    
     path('thank/',views.thank, name='thank-you'),
     
+    path('membership/',views.membership_registration_view, name='membership_registration'),
+    
 
 ]

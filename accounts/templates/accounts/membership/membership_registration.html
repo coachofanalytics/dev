@@ -1,0 +1,22 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Membership Registration</h2>
+
+    <h3>Membership Plans</h3>
+    <ul>
+        {% for plan in plans %}
+            <li>{{ plan.name }} - {{ plan.price }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Register as a Member</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Register</button>
+    </form>
+</div>
+{% endblock %}

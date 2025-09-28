@@ -36,7 +36,7 @@ class ContactForm(forms.ModelForm):
 class Donation_form(forms.ModelForm):
     class Meta:
         model=Donation
-        fields={"donor_name","email","amount","message"}
+        fields=["donor_name","email","amount","message"]
 
 
 
