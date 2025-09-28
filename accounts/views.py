@@ -502,3 +502,14 @@ def MembershipRegistrationCreate(request):
         return redirect("accounts:membership_list")
     return render(request,"accounts/membership/create_member.html",{"form":form})
 
+def MembershipView(request,pk):
+    member = get_object_or_404(MemberRegistration,pk=pk)
+    return render(request,"accounts/membership/member_details.html",{"member":member})
+
+def MembershipUpdate(request,pk):
+    member = get_object_or_404(MemberRegistration,pk=pk)
+    form = MembershipRegistrationForm(request.POST or None, instance=member)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("accounts:membership_list")
+    return render(request,"accounts/membership/member_edit.html",{"form":form})
