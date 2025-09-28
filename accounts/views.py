@@ -341,3 +341,20 @@ def TaskGroup_create_view(request):
 
 
 
+def TaskGroup_update_view(request, pk):
+    taskgroup = get_object_or_404(TaskGroup, pk=pk)
+    if request.method == "POST":
+        form = TaskGroupForm(request.POST, instance=taskgroup)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:TaskGroup")
+    else:
+        form = TaskGroupForm(instance=taskgroup)
+    return render(request, "accounts/Taskgroupupdate.html", {"form": form, })
+
+
+    
+
+
+
+
