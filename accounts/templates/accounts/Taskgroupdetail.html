@@ -1,0 +1,45 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-lg border-0 rounded-3">
+        
+        <!-- Header -->
+        <div class="card-header bg-info text-white">
+          <h4 class="mb-0"><i class="fa fa-eye"></i> Task Group Details</h4>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9">{{ taskgroup.id }}</dd>
+
+            <dt class="col-sm-3">Title</dt>
+            <dd class="col-sm-9">{{ taskgroup.title }}</dd>
+
+            <dt class="col-sm-3">Description</dt>
+            <dd class="col-sm-9">{{ taskgroup.description }}</dd>
+
+            <dt class="col-sm-3">Created At</dt>
+            <dd class="col-sm-9">{{ taskgroup.created_at|date:"Y-m-d H:i" }}</dd>
+          </dl>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer d-flex justify-content-end gap-2">
+          <a href="#" class="btn btn-primary btn-sm">
+            <i class="fa fa-edit"></i> Edit
+          </a>
+          <a href="#" class="btn btn-secondary btn-sm">
+            <i class="fa fa-arrow-left"></i> Back to List
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

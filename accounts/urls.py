@@ -18,5 +18,6 @@ urlpatterns = [
     path('TaskGroup/', views.taskgroup_list_view, name='TaskGroup'),
     path('TaskGroupcreate/', views.TaskGroup_create_view, name='TaskGroup_create'),
     path('TaskGroupupdate/<int:pk>/', views.TaskGroup_update_view, name='TaskGroup_update'),
+    path('TaskGroup_detail/<int:pk>/', views.TaskGroup_detail_view, name='TaskGroup_detail'),
 
 ]

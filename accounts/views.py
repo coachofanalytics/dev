@@ -353,6 +353,12 @@ def TaskGroup_update_view(request, pk):
     return render(request, "accounts/Taskgroupupdate.html", {"form": form, })
 
 
+def TaskGroup_detail_view(request, pk):
+    taskgroup = get_object_or_404(TaskGroup, pk=pk)
+    return render(request, "accounts/Taskgroupdetail.html", {"taskgroup": taskgroup})
+
+
+
     
 
 
