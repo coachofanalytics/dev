@@ -490,4 +490,15 @@ def MembershipPlanDelete(request,pk):
     if request.method =="POST":
         plan.delete()
         return redirect("accounts:membership_list")
-     
+    
+
+def MembershipRegistrationCreate(request):
+    form = MembershipRegistrationForm(request.POST)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        context = {
+            "message": "Thank you for registering a member"
+        }
+        return redirect("accounts:membership_list")
+    return render(request,"accounts/membership/create_member.html",{"form":form})
+

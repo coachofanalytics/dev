@@ -130,10 +130,12 @@ class MemberShipPlanForm(forms.ModelForm):
         ]
 
 class MembershipRegistrationForm(forms.ModelForm):
+    agree = forms.BooleanField(required=True,label="I agree on terms and conditions")
+    
     class Meta :
         model = MemberRegistration
         fields = [
-            "email","first_name","last_name","gender","phone_number","country","city","membership_plan"
+            "email","first_name","last_name","gender","phone_number","country","city","membership_plan","agree"
         ]
 
         widgets = {

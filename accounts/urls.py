@@ -26,6 +26,7 @@ urlpatterns = [
     path('membership_list/',views.Membership_list, name='membership_list'),
     path('add_membership_plan/',views.MembershipPlanAdd, name='add_membership_plan'),
     path('delete_membership_plan/<int:pk>/delete',views.MembershipPlanDelete, name='delete_membership_plan'),
+    path('member_add/',views.MembershipRegistrationCreate, name='member_add'),
 
     
 
