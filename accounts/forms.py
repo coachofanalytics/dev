@@ -122,7 +122,8 @@ class LoginForm(forms.Form):
 class MemberRegistrationForm(forms.ModelForm):
     class Meta:
         model = MemberRegistration
-        fields=[
-            'membership_plan','email','first_name','last_name','gender','phone_number','country','city','agree'
+        fields = [
+            'email','first_name','last_name','gender','phone_number', 'country','city','membership_plan','agree'
         ]
+        
         

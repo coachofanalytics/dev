@@ -23,8 +23,6 @@ urlpatterns = [
     path('superuser/<int:pk>/update/', SuperuserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='superuser-update'),
    
     path('thank/',views.thank, name='thank-you'),
-    
-    path('membership/',views.membership_registration_view, name='membership_registration'),
-    
+    path('membership/',views.membership_registration_view, name='membership_registration'), 
 
 ]

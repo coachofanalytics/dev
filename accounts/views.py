@@ -462,26 +462,23 @@ def custom_social_login(request):
     
     except:
     
-        return render(request, "accounts/registration/join.html", {"form": UserForm()})  
-    
-    
-    
+        return render(request, "accounts/registration/join.html", {"form": UserForm()})
+
+
 
 def membership_registration_view(request):
-    plans = MembershipPlan.objects.all()
-
+    plans=MembershipPlan.objects.all()
+    
     if request.method == 'POST':
         form = MemberRegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("accounts:membership_registration")
+            return redirect ("accounts:membership_registration")
     else:
-        form = MemberRegistrationForm()
-
+        form=MemberRegistrationForm()
+    
     context = {
-        "plans": plans,
-        "form": form,
+        'plans':plans,
+        'form':form,
     }
-    return render(request, "accounts/membership/membership_registration.html", context)
-
-         
+    return render(request,"accounts/membership/membership_registration.html",context)
