@@ -1,10 +1,29 @@
-{% extends "accounts/membership/base.html"%}
+{% extends "accounts/membership/base.html" %}
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    <h1>are you sure you want to delete this member</h1>
-    <button type="submit">delete member</button>
-    <a href="{% url 'accounts:membership_list' %}">go back to home</a>
-</form>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
 
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4 class="mb-0">Delete Member</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="mb-4">Are you sure you want to delete this member?</h5>
+
+                    <form method="post" class="d-flex justify-content-center gap-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                        <a href="{% url 'accounts:membership_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock %}

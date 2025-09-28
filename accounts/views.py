@@ -513,3 +513,12 @@ def MembershipUpdate(request,pk):
         form.save()
         return redirect("accounts:membership_list")
     return render(request,"accounts/membership/member_edit.html",{"form":form})
+
+
+
+def MembershipDelete(request,pk):
+    member = get_object_or_404(MemberRegistration,pk=pk)
+    if request.method == "POST":
+        member.delete()
+        return redirect("accounts:membership_list")
+    return render(request,"accounts/membership/delete_member.html",{"member":member})

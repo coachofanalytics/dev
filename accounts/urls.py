@@ -29,6 +29,7 @@ urlpatterns = [
     path('member_add/',views.MembershipRegistrationCreate, name='member_add'),
     path('members_details/<int:pk>/details',views.MembershipView, name='members_details'),
     path('members_update/<int:pk>/update',views.MembershipUpdate, name='members_update'),
+    path('members_delete/<int:pk>/update',views.MembershipDelete, name='members_delete'),
 
     
 

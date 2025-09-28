@@ -1,9 +1,31 @@
-{% extends "accounts/membership/base.html"%}
+{% extends "accounts/membership/base.html" %}
 {% block content %}
-<form method="post">
-    {% csrf_token%}
-    {{form.as_p}}
-    <button type="submit">edit</button>
-    <a href="{% url 'accounts:membership_list' %}">go back to home</a>
-</form>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h4 class="mb-0">Edit Member</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.as_p }}
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{% url 'accounts:membership_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Go Back
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-pencil-square"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock %}
