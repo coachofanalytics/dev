@@ -1,0 +1,6 @@
+<form method="post">
+    {% csrf_token%}
+    {{form.as_p}}
+    <button type="submit">edit</button>
+    <a href="{% url 'accounts:membership_list' %}">go back to home</a>
+</form>

@@ -118,3 +118,25 @@ class LoginForm(forms.Form):
 #         labels = {
 #             'agree': 'I agree to the terms and conditions'
 #         }
+
+
+
+
+class MemberShipPlanForm(forms.ModelForm):
+    class Meta:
+        model = MembershipPlan
+        fields =[
+            "name","price"
+        ]
+
+class MembershipRegistrationForm(forms.ModelForm):
+    class Meta :
+        model = MemberRegistration
+        fields = [
+            "email","first_name","last_name","gender","phone_number","country","city","membership_plan"
+        ]
+
+        widgets = {
+            "gender":forms.Select(attrs={"class":"form-control"}),
+            "membership_plan":forms.Select(attrs={"class":"form-control"})
+        }
