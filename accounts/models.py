@@ -128,7 +128,20 @@ class Credential(models.Model):
     user_types = models.CharField(max_length=255, null=False)
 
     def __str__(self):
-        return self.name
+        return self.name   
+
+  
+    
+class TaskGroup(models.Model):
+    title = models.CharField(max_length=55)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+        
 
 
 
