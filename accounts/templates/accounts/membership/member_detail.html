@@ -1,0 +1,16 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Member Details</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><strong>Full Name:</strong> {{ member.first_name }} {{ member.last_name }}</li>
+    <li class="list-group-item"><strong>Email:</strong> {{ member.email }}</li>
+    <li class="list-group-item"><strong>Phone:</strong> {{ member.phone_number }}</li>
+    <li class="list-group-item"><strong>Plan:</strong> {{ member.membership_plan.name }}</li>
+    <li class="list-group-item"><strong>Country:</strong> {{ member.country }}</li>
+    <li class="list-group-item"><strong>City:</strong> {{ member.city }}</li>
+    <li class="list-group-item"><strong>Agreed to Terms:</strong> {{ member.agree }}</li>
+  </ul>
+  <a href="{% url 'accounts:members_list' %}" class="btn btn-secondary mt-3">Back to List</a>
+</div>
+{% endblock %}

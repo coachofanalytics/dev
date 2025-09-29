@@ -1,0 +1,12 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Edit Member</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="{% url 'accounts:members_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

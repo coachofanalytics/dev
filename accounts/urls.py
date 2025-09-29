@@ -23,6 +23,14 @@ urlpatterns = [
     path('superuser/<int:pk>/update/', SuperuserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='superuser-update'),
    
     path('thank/',views.thank, name='thank-you'),
+    
     path('membership/',views.membership_registration_view, name='membership_registration'), 
+   
+    path('members/',views.members_list_view, name='members_list'), 
+    path("members/<int:pk>/detail/", views.member_detail_view, name="member_detail"),
+    path("members/<int:pk>/update/", views.member_update_view, name="member_update"),
+    path("members/<int:pk>/delete/", views.member_delete_view, name="member_delete"),
+    
+    
 
 ]

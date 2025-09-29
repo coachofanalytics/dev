@@ -24,7 +24,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership, MembershipPlan
+from .models import CustomerUser, MemberRegistration, Membership, MembershipPlan
 from .forms import CustomAuthenticationForm, CustomUserCreationForm, MemberRegistrationForm, UserForm,LoginForm
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
@@ -473,7 +473,7 @@ def membership_registration_view(request):
         form = MemberRegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect ("accounts:membership_registration")
+            return redirect ("accounts:members_list")
     else:
         form=MemberRegistrationForm()
     
@@ -482,3 +482,39 @@ def membership_registration_view(request):
         'form':form,
     }
     return render(request,"accounts/membership/membership_registration.html",context)
+
+
+
+def members_list_view(request):
+    members= MemberRegistration.objects.all().order_by('-id')
+    return render(request,"accounts/membership/members_list.html",{'members':members})
+
+
+
+def member_detail_view(request,pk):
+    member=get_object_or_404(MemberRegistration,pk=pk)
+    return render(request,"accounts/membership/member_detail.html",{"member":member})
+
+
+
+
+
+def member_update_view(request,pk):
+    member=get_object_or_404(MemberRegistration,pk=pk)
+    if request.method=="POST":
+        form=MemberRegistrationForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:members_list")
+    else:
+        form = MemberRegistrationForm(instance=member)
+    return render(request,"accounts/membership/member_update.html",{"form":form})
+
+
+def member_delete_view(request,pk):
+    member=get_object_or_404(MemberRegistration,pk=pk)
+    if request.method=="POST":
+        member.delete()
+        return redirect ("accounts:members_list")
+    
+    return render(request,"accounts/membership/member_delete_view.html",{"member":member})
