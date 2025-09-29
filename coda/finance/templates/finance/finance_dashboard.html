@@ -1,0 +1,381 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Finance Dashboard - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/budget-dashboard.css' %}">
+<style>
+    .finance-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .metric-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .health-score {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+    
+    .health-excellent { color: #27ae60; }
+    .health-good { color: #2ecc71; }
+    .health-fair { color: #f39c12; }
+    .health-poor { color: #e74c3c; }
+    
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .investment-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        color: white;
+    }
+    
+    .budget-type-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+    
+    .category-performance {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .variance-positive { color: #27ae60; }
+    .variance-negative { color: #e74c3c; }
+    .variance-neutral { color: #95a5a6; }
+    
+    .quick-action-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 5px;
+        transition: transform 0.2s;
+    }
+    
+    .quick-action-btn:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Finance Dashboard</h1>
+                <div>
+                    <a href="{% url 'finance:enhanced-budget-dashboard' company.slug %}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-bar"></i> Enhanced Budget Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Health Score -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="health-score {% if health_score >= 80 %}health-excellent{% elif health_score >= 60 %}health-good{% elif health_score >= 40 %}health-fair{% else %}health-poor{% endif %}">
+                    {{ health_score }}
+                </div>
+                <div class="metric-label">Financial Health Score</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ financial_metrics.total_budget|floatformat:0 }}</div>
+                <div class="metric-label">Total Budget</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ financial_metrics.actual_spent|floatformat:0 }}</div>
+                <div class="metric-label">Actual Spent</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value {% if financial_metrics.variance_percentage > 0 %}variance-negative{% elif financial_metrics.variance_percentage < 0 %}variance-positive{% else %}variance-neutral{% endif %}">
+                    {{ financial_metrics.variance_percentage|floatformat:1 }}%
+                </div>
+                <div class="metric-label">Budget Variance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'finance:investment-planning' company.slug %}" class="quick-action-btn">
+                            <i class="fas fa-chart-line"></i> Investment Planning
+                        </a>
+                        <a href="{% url 'finance:multi-year-planning' company.slug %}" class="quick-action-btn">
+                            <i class="fas fa-calendar-alt"></i> Multi-Year Planning
+                        </a>
+                        <a href="{% url 'finance:coda-development-estimation' company.slug %}" class="quick-action-btn">
+                            <i class="fas fa-code"></i> CODA Development
+                        </a>
+                        <a href="{% url 'finance:consolidation-report' company.slug %}" class="quick-action-btn">
+                            <i class="fas fa-file-alt"></i> Consolidation Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Budget Analysis -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie"></i> Budget by Type
+                </h5>
+                {% for budget_type, data in budget_analysis.budget_by_type.items %}
+                <div class="budget-type-card">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold">{{ budget_type|title }}</h6>
+                            <small class="text-muted">{{ data.count }} budgets</small>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <strong>${{ data.total_amount|floatformat:0 }}</strong><br>
+                            <small class="text-muted">Spent: ${{ data.actual_spent|floatformat:0 }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Investment Analysis -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line"></i> Investment Overview
+                </h5>
+                <div class="investment-card">
+                    <h6 class="font-weight-bold">Total Investment Potential</h6>
+                    <div class="h4 mb-2">${{ investment_analysis.total_investment_potential|floatformat:0 }}</div>
+                    <p class="mb-0">{{ investment_analysis.investment_opportunities|length }} opportunities identified</p>
+                </div>
+                
+                {% if investment_analysis.investment_opportunities %}
+                <h6 class="mt-3">Top Investment Opportunities</h6>
+                {% for opportunity in investment_analysis.investment_opportunities|slice:":3" %}
+                <div class="budget-type-card">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="font-weight-bold">{{ opportunity.category }}</h6>
+                            <small class="text-muted">{{ opportunity.recommendation }}</small>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <strong>${{ opportunity.investment_potential|floatformat:0 }}</strong><br>
+                            <small class="text-muted">{{ opportunity.growth_rate }}% growth</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Performance -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="card-title">
+                    <i class="fas fa-tags"></i> Category Performance
+                </h5>
+                <div class="row">
+                    {% for category in category_performance|slice:":6" %}
+                    <div class="col-md-4">
+                        <div class="category-performance">
+                            <h6 class="font-weight-bold">{{ category.category.name }}</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Budget:</small><br>
+                                    <strong>${{ category.total_budget|floatformat:0 }}</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Utilization:</small><br>
+                                    <strong class="{% if category.utilization > 90 %}variance-negative{% elif category.utilization < 50 %}variance-positive{% else %}variance-neutral{% endif %}">
+                                        {{ category.utilization|floatformat:1 }}%
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 5px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ category.utilization }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="card-title">
+                    <i class="fas fa-clock"></i> Recent Budget Requests
+                </h5>
+                {% if recent_requests %}
+                    {% for request in recent_requests %}
+                    <div class="budget-type-card">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="font-weight-bold">${{ request.amount|floatformat:0 }}</h6>
+                                <small class="text-muted">{{ request.purpose|truncatechars:50 }}</small>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <span class="badge badge-{% if request.status == 'approved' %}success{% elif request.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                    {{ request.status|title }}
+                                </span><br>
+                                <small class="text-muted">{{ request.created_at|date:"M d" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3">No recent budget requests</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="card-title">
+                    <i class="fas fa-calendar"></i> Multi-Year Plans
+                </h5>
+                {% if multi_year_plans %}
+                    {% for plan in multi_year_plans %}
+                    <div class="budget-type-card">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="font-weight-bold">{{ plan.name }}</h6>
+                                <small class="text-muted">{{ plan.start_year }}-{{ plan.end_year }}</small>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <strong>${{ plan.total_investment_required|floatformat:0 }}</strong><br>
+                                <span class="badge badge-{% if plan.status == 'active' %}success{% elif plan.status == 'approved' %}primary{% else %}secondary{% endif %}">
+                                    {{ plan.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3">No multi-year plans created</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Summary -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="card-title">
+                    <i class="fas fa-exchange-alt"></i> Transaction Summary
+                </h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ transaction_analysis.recent_transactions_count }}</div>
+                            <div class="metric-label">Recent Transactions (30 days)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ transaction_analysis.recent_transactions_amount|floatformat:0 }}</div>
+                            <div class="metric-label">Recent Amount</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ transaction_analysis.average_transaction|floatformat:0 }}</div>
+                            <div class="metric-label">Average Transaction</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ transaction_analysis.top_categories|length }}</div>
+                            <div class="metric-label">Active Categories</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add any JavaScript functionality here
+    console.log('Finance Dashboard loaded');
+    
+    // Auto-refresh data every 5 minutes
+    setInterval(function() {
+        // You can add AJAX calls here to refresh specific data
+        console.log('Refreshing dashboard data...');
+    }, 300000);
+});
+</script>
+{% endblock %}

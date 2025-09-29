@@ -26,20 +26,20 @@ def get_user_role(user):
     
     # Get user category
     if hasattr(user, 'category'):
-        # Map category numbers to names
+        # Map category numbers to names (matching choices.py definitions)
         category_mapping = {
-            1: 'applicant',
-            2: 'student', 
-            3: 'consultant',
-            4: 'investor',
-            5: 'explorer',
+            1: 'applicant',    # APPLICANT - Want to work for CODA
+            2: 'student',      # STUDENT - Taking courses  
+            3: 'consultant',   # CONSULTANT - Professionals, advisors, service providers
+            4: 'investor',     # INVESTOR - Financial, strategic, KCC members
+            5: 'explorer',     # EXPLORER - Visitors, researchers, networkers
         }
         return category_mapping.get(user.category, 'explorer')
     else:
         return 'explorer'
 
 
-def get_dashboard_config(user_role):
+def get_dashboard_config(user_role, user=None):
     """Get dashboard configuration based on user role"""
     configs = {
         'admin': {
@@ -142,7 +142,7 @@ def get_dashboard_config(user_role):
             'quick_actions': [
                 {'title': 'Training Center', 'url': '/professional_services/train/', 'icon': 'fas fa-graduation-cap'},
                 {'title': 'Learning Resources', 'url': '/professional_services/train/', 'icon': 'fas fa-book'},
-                {'title': 'Progress Tracking', 'url': '/professional_services/train/', 'icon': 'fas fa-chart-bar'},
+                {'title': 'Job Placement', 'url': '/professional_services/job_tracker/', 'icon': 'fas fa-briefcase'},
                 {'title': 'Help Center', 'url': '/help/', 'icon': 'fas fa-question-circle'},
             ]
         },
@@ -190,12 +190,20 @@ def get_dashboard_config(user_role):
         }
     }
     
-    return configs.get(user_role, configs['explorer'])
+    config = configs.get(user_role, configs['explorer'])
+    
+    # Dynamically update URLs that need user-specific data
+    if user and user_role == 'student':
+        for action in config.get('quick_actions', []):
+            if action['title'] == 'Job Placement':
+                action['url'] = '/professional_services/job_tracker/' + user.username + '/'
+    
+    return config
 
 
-def get_quick_actions(user_role):
+def get_quick_actions(user_role, user=None):
     """Get quick actions based on user role"""
-    config = get_dashboard_config(user_role)
+    config = get_dashboard_config(user_role, user)
     return config.get('quick_actions', [])
 
 
@@ -216,7 +224,7 @@ def unified_dashboard(request):
     """Main unified dashboard view"""
     try:
         user_role = get_user_role(request.user)
-        dashboard_config = get_dashboard_config(user_role)
+        dashboard_config = get_dashboard_config(user_role, request.user)
         
         # Get role-based links and buttons (similar to management system)
         role_based_links = get_role_based_links(request)
@@ -226,17 +234,17 @@ def unified_dashboard(request):
             'user_role': user_role,
             'dashboard_config': dashboard_config,
             'role_based_links': role_based_links,
-            'quick_actions': get_quick_actions(user_role),
+            'quick_actions': get_quick_actions(user_role, request.user),
             'recent_activities': get_recent_activities(request.user),
             'notifications': get_user_notifications(request.user),
-            'title': f'CODA Command Center - {dashboard_config["title"]}',
+            'title': 'CODA Command Center - ' + dashboard_config["title"],
             'user': request.user,
         }
         
         return render(request, 'unified_dashboard/dashboard.html', context)
         
     except Exception as e:
-        logger.error(f"Error in unified dashboard: {str(e)}")
+        logger.error("Error in unified dashboard: " + str(e))
         # Don't use messages.error to avoid middleware issues
         return redirect('main:layout')
 
@@ -245,7 +253,7 @@ def unified_dashboard(request):
 def dashboard_overview(request):
     """Dashboard overview page"""
     user_role = get_user_role(request.user)
-    dashboard_config = get_dashboard_config(user_role)
+    dashboard_config = get_dashboard_config(user_role, request.user)
     
     context = {
         'user_role': user_role,
@@ -454,6 +462,10 @@ def get_role_based_links(request):
     from urllib.parse import urlencode
     
     user = request.user
+    
+    # Debug logging
+    print("DEBUG: User category: " + str(user.category) + ", is_staff: " + str(user.is_staff) + ", is_superuser: " + str(user.is_superuser))
+    
     links = {
         'Edit Profile': reverse('main:update_profile', args=[user.profile.id]),
         'Make a Payment': reverse('finance:unified_method_selection'),
@@ -469,7 +481,7 @@ def get_role_based_links(request):
             'Evidence': reverse('management:user_evidence'),
             'My Sessions': reverse('management:user_session', args=[user.username]),
             'My Time': reverse('accounts:account-profile', args=[user]),
-            'My Meetings': reverse('management:meetings', kwargs={'status': 'company'}),
+            'My Meetings': reverse('management:meetings', kwargs={'status': 'company 2'}),
             'My Schedule': reverse('main:my_availability'),
             'Apply for Loan': reverse('finance:loan-home'),
         })
@@ -481,20 +493,15 @@ def get_role_based_links(request):
             'Apply for Internship': reverse('main:contact'),
             'Apply for Training': reverse('main:contact'),
             'Company Policies': reverse('application:policies'),
-            'Apply for Loan': reverse('finance:loan-home'),
         })
-    elif user.category == 2:  # Staff (additional to is_staff check above)
-        links.update({
-            'Apply for Loan': reverse('finance:loan-home'),
-        })
-    elif user.category == 3:  # Student
+    elif user.category == 2:  # Student
+        print("DEBUG: Student category logic executed")
         # Base links for all students
         links.update({
             'Training Dashboard': reverse('professional_services:train'),
-            'My Progress': reverse('professional_services:student_feedback'),
+            'Job Placement': reverse('professional_services:userjoblist', args=[user.username]),
             'My Sessions': reverse('management:user_session', args=[user.username]),
             'My Responses': reverse('professional_services:student_feedback'),
-            'Apply for Loan': reverse('finance:loan-home'),
         })
         
         # Add subcategory-specific links
@@ -513,20 +520,146 @@ def get_role_based_links(request):
                 'Business Training': reverse('professional_services:bitraining'),
                 'General Courses': reverse('professional_services:train'),
             })
+            
+    elif user.category == 3:  # Consultant
+        print("DEBUG: Consultant category logic executed")
+        # Base links for all consultants
+        links.update({
+            'Interview Management': reverse('professional_services:interview_roles'),
+            'Client Projects': reverse('professional_services:interview_roles'),
+            'Service Delivery': reverse('professional_services:interview_roles'),
+        })
+        
+        # Add subcategory-specific links
+        if user.sub_category == 1:  # TECHNICAL
+            links.update({
+                'Technical Resources': reverse('professional_services:bitraining'),
+                'System Architecture': reverse('professional_services:train'),
+            })
+        elif user.sub_category == 2:  # BUSINESS
+            links.update({
+                'Business Tools': reverse('professional_services:bitraining'),
+                'Strategy Resources': reverse('professional_services:train'),
+            })
+        elif user.sub_category == 3:  # CAREER
+            links.update({
+                'Career Development': reverse('professional_services:bitraining'),
+                'Job Placement Tools': reverse('professional_services:train'),
+            })
+        elif user.sub_category == 4:  # PROJECT
+            links.update({
+                'Project Management': reverse('professional_services:bitraining'),
+                'Implementation Tools': reverse('professional_services:train'),
+            })
+            
     elif user.category == 4:  # Investor
         links.update({
-            'Investment Dashboard': reverse('investing:investment_dashboard'),
+            # 'Investment Dashboard': reverse('investing:investment_dashboard'),
             'Apply for Investment': reverse('investing:apply_for_investment'),
             'Investment Plans': reverse('investing:investment_plan_list'),
             'Apply for Loan': reverse('finance:loan-home'),
         })
-    elif user.category == 5:  # Vendor
+    elif user.category == 5:  # Explorer
+        print("DEBUG: Explorer category logic executed")
+        # Base links for all explorers
         links.update({
-            'Apply for Loan': reverse('finance:loan-home'),
+            'Learn More': reverse('main:about'),
+            'Services': reverse('main:services'),
+            'Contact Us': reverse('main:contact'),
+            'Help Center': reverse('main:help'),
         })
-    elif user.category in [6, 7]:  # General User, Explorer
-        links.update({
-            'Apply for Loan': reverse('finance:loan-home'),
-        })
+        
+        # Add subcategory-specific links
+        if user.sub_category == 1:  # RESEARCH
+            links.update({
+                'Research Tools': reverse('main:research'),
+                'Information Center': reverse('main:info'),
+            })
+        elif user.sub_category == 2:  # NETWORKING
+            links.update({
+                'Networking Events': reverse('main:events'),
+                'Industry Connect': reverse('main:networking'),
+            })
+        elif user.sub_category == 3:  # LEARNING
+            links.update({
+                'Learning Paths': reverse('main:learning'),
+                'Course Explorer': reverse('main:courses'),
+            })
+        elif user.sub_category == 4:  # PARTNERSHIP
+            links.update({
+                'Partnership Info': reverse('main:partnerships'),
+                'Business Opportunities': reverse('main:opportunities'),
+            })
     
+    print("DEBUG: Final links for user: " + str(links))
     return links
+
+
+@login_required
+def unified_department_view(request, department_slug=None):
+    """
+    Unified department view that handles both admin and staff views
+    Consolidates all department functionality into one place
+    """
+    from accounts.models import Department
+    from management.models import SubCategory, Link
+    from management.views import defined_links
+    
+    # Check user role
+    is_admin = request.user.is_superuser or request.user.is_admin
+    is_staff = request.user.is_staff and not is_admin
+    
+    # If no department specified, show role-appropriate view
+    if not department_slug:
+        if is_admin:
+            # Admin: Redirect to management companyagenda for now
+            return redirect('management:companyagenda')
+        elif is_staff:
+            # Staff: Show HR department by default
+            department_slug = 'hr-department'
+        else:
+            # Regular user: Redirect to main dashboard
+            return redirect('dashboard:unified_dashboard')
+    
+    # Get the department by slug
+    try:
+        department = Department.objects.get(slug=department_slug, is_active=True)
+    except Department.DoesNotExist:
+        # Fallback to HR department
+        try:
+            department = Department.objects.get(name="HR Department", is_active=True)
+        except Department.DoesNotExist:
+            return redirect('dashboard:unified_dashboard')
+    
+    # Get all departments for navigation
+    all_departments = Department.objects.filter(is_active=True).order_by('name')
+    
+    # Get real subcategories and links from database
+    subcategories_with_links = []
+    for subcategory in department.subcategory_set.all():
+        subcategory_links = subcategory.link_set.all()
+        if subcategory_links.exists():
+            subcategories_with_links.append((subcategory, subcategory_links))
+    
+    # Get user role for dashboard config
+    user_role = 'admin' if is_admin else 'staff' if is_staff else 'user'
+    
+    # Prepare context
+    context = {
+        'header_links': defined_links(request),
+        'title': department.name + ' - Department View',
+        'categories_with_links': [(department, subcategories_with_links)],
+        'is_admin': is_admin,
+        'is_staff': is_staff,
+        'user_role': user_role,
+        'department': department,
+        'all_departments': all_departments,
+        'is_department_view': True,
+    }
+    
+    try:
+        return render(request, 'unified_dashboard/department_unified.html', context)
+    except Exception as e:
+        # Debug: Return error details
+        from django.http import HttpResponse
+        return HttpResponse("Error in unified_department_view: " + str(e), status=500)

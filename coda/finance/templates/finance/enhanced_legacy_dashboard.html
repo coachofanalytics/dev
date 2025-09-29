@@ -1,0 +1,462 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+{% load mathfilters %}
+{% load custom_tags %}
+
+{% block title %}Finance Department Dashboard{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    /* Enhanced Legacy Dashboard Styles */
+    .legacy-dashboard {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .welcome-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .welcome-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .dashboard-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .dashboard-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 20px;
+        text-align: center;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .section-description {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 25px;
+        font-style: italic;
+    }
+    
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .menu-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #495057;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .menu-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s;
+    }
+    
+    .menu-item:hover::before {
+        left: 100%;
+    }
+    
+    .menu-item:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        text-decoration: none;
+    }
+    
+    .menu-item:hover .menu-icon {
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .menu-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .menu-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .menu-description {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-bottom: 0;
+    }
+    
+    .quick-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .stat-item {
+        display: inline-block;
+        margin: 0 20px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .enhanced-features {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 30px;
+        margin-top: 30px;
+    }
+    
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .feature-item {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-3px);
+    }
+    
+    .feature-icon {
+        font-size: 2rem;
+        color: #28a745;
+        margin-bottom: 10px;
+    }
+    
+    .feature-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .feature-description {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+        .menu-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-title {
+            font-size: 2rem;
+        }
+        
+        .stat-item {
+            margin: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legacy-dashboard">
+    <div class="container">
+        <!-- Welcome Header -->
+        <div class="welcome-header">
+            <h1 class="welcome-title">WELCOME TO FINANCE DEPARTMENT</h1>
+            <p class="welcome-subtitle">Enhanced Dashboard with Modern Features</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-item">
+                <span class="stat-value">${{ total_budget|floatformat:0|default:"0" }}</span>
+                <span class="stat-label">Total Budget</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">${{ total_inflow|floatformat:0|default:"0" }}</span>
+                <span class="stat-label">Total Inflow</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">${{ total_outflow|floatformat:0|default:"0" }}</span>
+                <span class="stat-label">Total Outflow</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ active_budgets|default:"0" }}</span>
+                <span class="stat-label">Active Budgets</span>
+            </div>
+        </div>
+
+        <!-- Legacy Dashboard Sections -->
+        <div class="row">
+            <!-- Left Dashboard Section -->
+            <div class="col-lg-6">
+                <div class="dashboard-section">
+                    <h3 class="section-title">Financial Operations</h3>
+                    <p class="section-description">Kindly, select an item to proceed</p>
+                    
+                    <div class="menu-grid">
+                        <a href="{% url 'finance:cashflows-list' type='outflow' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-arrow-up menu-icon"></i>
+                            <div class="menu-title">Cash Outflows Report</div>
+                            <div class="menu-description">View and analyze cash outflow data</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:company_budget' company_slug='coda' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-chart-pie menu-icon"></i>
+                            <div class="menu-title">Budgeting</div>
+                            <div class="menu-description">Manage company budgets and allocations</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:budget_projection' subtitle='detailed' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-calculator menu-icon"></i>
+                            <div class="menu-title">CODA BUDGET</div>
+                            <div class="menu-description">Detailed budget projections and analysis</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:open_statements' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-file-invoice menu-icon"></i>
+                            <div class="menu-title">Statements</div>
+                            <div class="menu-description">View financial statements and reports</div>
+                        </a>
+                        
+                        <a href="{% url 'investing:companyreturns' title='daily_trades' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-chart-line menu-icon"></i>
+                            <div class="menu-title">CODA Investments</div>
+                            <div class="menu-description">Track investment performance and returns</div>
+                        </a>
+                        
+                        <a href="{% url 'investing:investments' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-coins menu-icon"></i>
+                            <div class="menu-title">Run Test Investments</div>
+                            <div class="menu-description">Execute and test investment strategies</div>
+                        </a>
+                        
+                        <a href="#" class="menu-item">
+                            <i class="fas fa-chart-bar menu-icon"></i>
+                            <div class="menu-title">Cost Basis</div>
+                            <div class="menu-description">Calculate and track cost basis</div>
+                        </a>
+                        
+                        <a href="#" class="menu-item">
+                            <i class="fas fa-cog menu-icon"></i>
+                            <div class="menu-title">Options</div>
+                            <div class="menu-description">Configure financial options and settings</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Dashboard Section -->
+            <div class="col-lg-6">
+                <div class="dashboard-section">
+                    <h3 class="section-title">Payment & Reporting</h3>
+                    <p class="section-description">Kindly, select an item to proceed</p>
+                    
+                    <div class="menu-grid">
+                        <a href="{% url 'finance:finance_report' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-chart-area menu-icon"></i>
+                            <div class="menu-title">Finance Report</div>
+                            <div class="menu-description">Comprehensive financial reporting</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:investment_report' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-table menu-icon"></i>
+                            <div class="menu-title">CODA Tableau Investments</div>
+                            <div class="menu-description">Advanced investment analytics with Tableau</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:payments' title='info' status='None' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-credit-card menu-icon"></i>
+                            <div class="menu-title">Payments</div>
+                            <div class="menu-description">Manage payment information and processing</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:payments' title='history' status='in_progress' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-history menu-icon"></i>
+                            <div class="menu-title">Historical Payments</div>
+                            <div class="menu-description">View payment history and transactions</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:pay' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-plus-circle menu-icon"></i>
+                            <div class="menu-title">Make Payment</div>
+                            <div class="menu-description">Process new payments and transactions</div>
+                        </a>
+                        
+                        <a href="{% url 'finance:send_invoice' type='collection' %}" class="menu-item" target="_blank">
+                            <i class="fas fa-paper-plane menu-icon"></i>
+                            <div class="menu-title">Send Invoice</div>
+                            <div class="menu-description">Generate and send invoices to clients</div>
+                        </a>
+                        
+                        <a href="{% url 'account-logout' %}" class="menu-item">
+                            <i class="fas fa-sign-out-alt menu-icon"></i>
+                            <div class="menu-title">Logout</div>
+                            <div class="menu-description">Sign out of the system</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Features Section -->
+        <div class="enhanced-features">
+            <h3 class="section-title">Enhanced Finance Features</h3>
+            <p class="section-description">New capabilities powered by our consolidated template system</p>
+            
+            <div class="feature-grid">
+                <a href="{% url 'finance:finance-dashboard' company_slug='coda' %}" class="feature-item">
+                    <i class="fas fa-tachometer-alt feature-icon"></i>
+                    <div class="feature-title">Modern Finance Dashboard</div>
+                    <div class="feature-description">Advanced analytics and real-time metrics</div>
+                </a>
+                
+                <a href="{% url 'finance:enhanced-budget-dashboard' company_slug='coda' %}" class="feature-item">
+                    <i class="fas fa-chart-line feature-icon"></i>
+                    <div class="feature-title">Enhanced Budget Planning</div>
+                    <div class="feature-description">Weekly, monthly, and yearly budget planning</div>
+                </a>
+                
+                <a href="{% url 'finance:investment-planning' company_slug='coda' %}" class="feature-item">
+                    <i class="fas fa-chart-pie feature-icon"></i>
+                    <div class="feature-title">Investment Analysis</div>
+                    <div class="feature-description">ROI analysis and funding recommendations</div>
+                </a>
+                
+                <a href="{% url 'finance:multi-year-planning' company_slug='coda' %}" class="feature-item">
+                    <i class="fas fa-calendar-alt feature-icon"></i>
+                    <div class="feature-title">Multi-Year Planning</div>
+                    <div class="feature-description">1-year, 2-year, and 5-year strategic planning</div>
+                </a>
+                
+                <a href="{% url 'finance:consolidation-report' company_slug='coda' %}" class="feature-item">
+                    <i class="fas fa-file-alt feature-icon"></i>
+                    <div class="feature-title">Consolidation Reports</div>
+                    <div class="feature-description">Unified reporting across all budget models</div>
+                </a>
+                
+                <a href="{% url 'finance:automation-dashboard' %}" class="feature-item">
+                    <i class="fas fa-robot feature-icon"></i>
+                    <div class="feature-title">Automation Dashboard</div>
+                    <div class="feature-description">Automated workflows and approval processes</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+$(document).ready(function() {
+    console.log('Enhanced Legacy Finance Dashboard loaded');
+    
+    // Add smooth scrolling for better UX
+    $('a[href^="#"]').on('click', function(event) {
+        var target = $(this.getAttribute('href'));
+        if (target.length) {
+            event.preventDefault();
+            $('html, body').stop().animate({
+                scrollTop: target.offset().top - 100
+            }, 1000);
+        }
+    });
+    
+    // Add loading states for external links
+    $('a[target="_blank"]').on('click', function() {
+        var $this = $(this);
+        var originalText = $this.find('.menu-title').text();
+        $this.find('.menu-title').text('Loading...');
+        
+        // Reset after 3 seconds as fallback
+        setTimeout(function() {
+            $this.find('.menu-title').text(originalText);
+        }, 3000);
+    });
+    
+    // Add hover effects for menu items
+    $('.menu-item').hover(
+        function() {
+            $(this).find('.menu-icon').addClass('fa-spin');
+        },
+        function() {
+            $(this).find('.menu-icon').removeClass('fa-spin');
+        }
+    );
+    
+    // Auto-refresh stats every 5 minutes
+    setInterval(function() {
+        console.log('Refreshing dashboard stats...');
+        // You can add AJAX calls here to refresh the quick stats
+    }, 300000);
+});
+</script>
+{% endblock %}
+
+
+

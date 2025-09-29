@@ -1,0 +1,285 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+{% load mathfilters %}
+
+{% block title %}Finance Automation Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Finance Automation Dashboard</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:unified_dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Finance Automation</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row">   
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-truncate font-size-14 mb-2">Total Budget Requests</p>
+                            <h4 class="mb-0">{{ dashboard_data.budget_requests.total }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm rounded-circle bg-primary-subtle">
+                                <span class="avatar-title rounded-circle bg-primary text-white font-size-18">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-truncate font-size-14 mb-2">Pending Requests</p>
+                            <h4 class="mb-0 text-warning">{{ dashboard_data.budget_requests.pending }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm rounded-circle bg-warning-subtle">
+                                <span class="avatar-title rounded-circle bg-warning text-white font-size-18">
+                                    <i class="fas fa-clock"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-truncate font-size-14 mb-2">Approved Requests</p>
+                            <h4 class="mb-0 text-success">{{ dashboard_data.budget_requests.approved }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm rounded-circle bg-success-subtle">
+                                <span class="avatar-title rounded-circle bg-success text-white font-size-18">
+                                    <i class="fas fa-check-circle"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-truncate font-size-14 mb-2">Total Disbursements</p>
+                            <h4 class="mb-0">{{ dashboard_data.disbursements.total }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm rounded-circle bg-info-subtle">
+                                <span class="avatar-title rounded-circle bg-info text-white font-size-18">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'finance:budget-requests-dashboard' %}" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-file-invoice-dollar me-2"></i>
+                                Manage Budget Requests
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'finance:disbursements-dashboard' %}" class="btn btn-success btn-lg w-100">
+                                <i class="fas fa-money-bill-wave me-2"></i>
+                                Manage Disbursements
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'finance:approval-policies-dashboard' %}" class="btn btn-info btn-lg w-100">
+                                <i class="fas fa-cogs me-2"></i>
+                                Approval Policies
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'finance:audit-logs-dashboard' %}" class="btn btn-warning btn-lg w-100">
+                                <i class="fas fa-history me-2"></i>
+                                Audit Logs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Recent Activities</h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                        <div class="timeline">
+                            {% for activity in recent_activities %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker">
+                                    {% if activity.type == 'budget_request' %}
+                                        <i class="fas fa-file-invoice-dollar text-primary"></i>
+                                    {% elif activity.type == 'disbursement' %}
+                                        <i class="fas fa-money-bill-wave text-success"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">{{ activity.title }}</h6>
+                                    <p class="timeline-text">{{ activity.description }}</p>
+                                    <small class="text-muted">{{ activity.timestamp|date:"M d, Y H:i" }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No recent activities found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Notifications</h4>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                        <div class="alert alert-{% if notification.priority == 'high' %}danger{% else %}warning{% endif %} alert-dismissible fade show" role="alert">
+                            <strong>{{ notification.title }}</strong><br>
+                            {{ notification.message }}
+                            <a href="{{ notification.url }}" class="btn btn-sm btn-outline-primary ms-2">View</a>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No notifications at this time.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">System Status</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-success">{{ dashboard_data.approval_policies.active }}</h5>
+                                <p class="text-muted">Active Policies</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-info">{{ dashboard_data.audit_logs.total }}</h5>
+                                <p class="text-muted">Total Audit Logs</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-success">{{ dashboard_data.audit_logs.successful }}</h5>
+                                <p class="text-muted">Successful Actions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-danger">{{ dashboard_data.audit_logs.failed }}</h5>
+                                <p class="text-muted">Failed Actions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border: 2px solid #007bff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #007bff;
+}
+
+.timeline-title {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.timeline-text {
+    margin-bottom: 5px;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+

@@ -27,7 +27,7 @@ from django.views.generic import (
     DetailView,
     DeleteView,
 )
-from accounts.models import CustomerUser
+from accounts.models import CustomerUser, Department
 from finance.services.eligibility_service import EligibilityService
 from accounts.choices import UserCategory as CategoryChoices
 from .models import (
@@ -50,6 +50,10 @@ from .models import (
     BalanceSheetCategory,
     web_budget,
 )
+from .utils.calculation_utils import CalculationUtils
+from .utils.filter_utils import FilterUtils
+from .services.budget_estimation_service import BudgetEstimationService
+from .services.budget_consolidation_service import BudgetConsolidationService
 from .forms import (
     TransactionForm,
     InflowForm,
@@ -102,10 +106,32 @@ phone_number, email_info, cashapp, venmo, account_no = payment_details(None)
 )
 today_date = timezone.now().date().strftime("%Y-%m-%d")
 # Exchange Rate details
-usd_to_kes = get_exchange_rate("USD", "KES")
+try:
+    usd_to_kes = get_exchange_rate("USD", "KES")
+except NameError:
+    usd_to_kes = 150.0  # Default exchange rate
 rate = round(Decimal(usd_to_kes), 2)
 
 logger = logging.getLogger(__name__)
+
+
+def finance_index(request):
+    """Finance app index view - redirects to appropriate dashboard based on user role"""
+    from accounts.user_utils import get_user_permissions
+    
+    # Get user permissions
+    permissions = get_user_permissions(request.user)
+    
+    # Redirect based on user permissions
+    if permissions.get('can_access_finance'):
+        # User has finance access - redirect to finance dashboard
+        return redirect('finance:finance-dashboard', company_slug='coda')
+    else:
+        # User doesn't have finance access - show limited access page
+        return render(request, "finance/limited_access.html", {
+            "title": "Finance Access",
+            "message": "You don't have permission to access the finance system."
+        })
 
 
 def finance_report(request):
@@ -113,7 +139,10 @@ def finance_report(request):
 
 
 # Exchange Rate details
-usd_to_kes = get_exchange_rate("USD", "KES")
+try:
+    usd_to_kes = get_exchange_rate("USD", "KES")
+except NameError:
+    usd_to_kes = 150.0  # Default exchange rate
 rate = round(Decimal(usd_to_kes), 2)
 
 logger = logging.getLogger(__name__)
@@ -137,6 +166,9 @@ def loan_application_home(request):
     # Use service layer (OUR ARCHITECTURE!)
     eligibility_service = EligibilityService(request.user)
     loan_service = LoanService()
+    
+    # Import KCC service
+    from finance.services.kcc_service import KCCOptimizationService
 
     # Check loan eligibility through service
     eligibility = eligibility_service.check_loan_eligibility()
@@ -178,7 +210,7 @@ def loan_application_home(request):
         # Get all KCC products ordered by tier (min_amount)
         all_products = LoanProduct.objects.filter(
             is_active=True, 
-            product_type="kcc_member"
+            product_type="kcc_premium"
         ).order_by("min_amount")
         
         # Prioritize user's current tier product first
@@ -195,12 +227,17 @@ def loan_application_home(request):
     elif request.user.category == 2:  # Staff members
         # Staff members see only staff-specific loans
         loan_products = LoanProduct.objects.filter(
-            is_active=True, product_type="staff_only"
+            is_active=True, product_type__in=["staff_emergency", "staff_development"]
         ).order_by("name")
     else:
-        # External users see general/external loans
+        # External users see general/external loans and other relevant types
         loan_products = LoanProduct.objects.filter(
-            is_active=True, product_type__in=["external", "general"]
+            is_active=True, 
+            product_type__in=[
+                "external", "general", "business_startup", "education", 
+                "home_improvement", "medical_emergency", "vehicle_purchase", 
+                "debt_consolidation", "wedding_events"
+            ]
         ).order_by("name")
 
     # Get user's loans through service
@@ -297,21 +334,26 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
         if request.user.category == 2:  # Staff user
             selected_guarantor = request.POST.get("selected_guarantor")
             if not selected_guarantor:
-                messages.error(request, "Please select a guarantor from the staff list.")
+                messages.error(request, "Staff members must select a guarantor from the eligible staff list.")
                 return redirect("finance:apply-for-loan", plan_id=plan_id)
-        else:  # External user (including KCC members)
-            # Check if guarantor is required based on loan amount
-            loan_amount = float(request.POST.get("total_amount", 0))
-            requires_guarantor = loan_amount > 500
+        elif hasattr(request.user, 'profile') and request.user.profile.is_karen_country_club_member:  # KCC member
+            selected_guarantor = request.POST.get("selected_guarantor")
+            if not selected_guarantor:
+                messages.error(request, "KCC members must select a guarantor from the eligible KCC member list.")
+                return redirect("finance:apply-for-loan", plan_id=plan_id)
+        else:  # External user (non-KCC, non-staff)
+            # External users must provide guarantor + collateral
+            guarantor_fields = ['guarantor_first_name', 'guarantor_last_name', 'guarantor_phone', 'guarantor_email', 'guarantor_relationship']
+            missing_guarantor = [field for field in guarantor_fields if not request.POST.get(field)]
+            if missing_guarantor:
+                messages.error(request, f"External users must provide guarantor information. Please provide: {', '.join(missing_guarantor)}")
+                return redirect("finance:apply-for-loan", plan_id=plan_id)
             
-            if requires_guarantor:
-                guarantor_fields = ['guarantor_first_name', 'guarantor_last_name', 'guarantor_phone', 'guarantor_email', 'guarantor_relationship']
-                missing_guarantor = [field for field in guarantor_fields if not request.POST.get(field)]
-                if missing_guarantor:
-                    messages.error(request, f"Loans over $500 require guarantor information. Please provide: {', '.join(missing_guarantor)}")
-                    return redirect("finance:apply-for-loan", plan_id=plan_id)
-            else:
-                pass
+            # Check collateral requirement
+            collateral = request.POST.get("collateral", "").strip()
+            if len(collateral) < 10:
+                messages.error(request, "External users must provide detailed collateral information (minimum 10 characters).")
+                return redirect("finance:apply-for-loan", plan_id=plan_id)
         
         try:
             # Get form data
@@ -565,6 +607,7 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
     # Get loan limits through service
     user_loan_limits = None
     if eligibility["user_type"] == "kcc_member":
+        from finance.services.kcc_service import KCCOptimizationService
         kcc_service = KCCOptimizationService()
         kcc_limits = kcc_service.get_kcc_loan_limits(request.user)
         if kcc_limits["status"] == "success":
@@ -574,9 +617,21 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
         user_loan_limits = eligibility.get("loan_limits")
 
     # Get existing guarantor information for staff (keep utility for now)
-    from finance.utils import get_existing_guarantor_info
+    from finance.utils import get_existing_guarantor_info, get_eligible_staff_guarantors, get_eligible_kcc_guarantors
 
     existing_guarantor_info = get_existing_guarantor_info(request.user)
+    
+    # Get appropriate guarantor lists based on user type
+    eligible_guarantors = []
+    guarantor_type = None
+    
+    if request.user.category == 2:  # Staff members
+        eligible_guarantors = get_eligible_staff_guarantors(limit=10)
+        guarantor_type = "staff"
+    elif hasattr(request.user, 'profile') and request.user.profile.is_karen_country_club_member:  # KCC members
+        eligible_guarantors = get_eligible_kcc_guarantors(limit=10)
+        guarantor_type = "kcc"
+    # External users don't get a pre-populated list - they must provide manual guarantor info
 
     context = {
         "plan": plan,
@@ -587,6 +642,8 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
         "user_loan_limits": user_loan_limits,
         "existing_guarantor_info": existing_guarantor_info,
         "is_kcc_member": is_kcc_member,
+        "eligible_guarantors": eligible_guarantors,
+        "guarantor_type": guarantor_type,
     }
     
 
@@ -2443,7 +2500,16 @@ def cashflows(request, type=None, time_filter="30_days"):
     webhour, delta = PayslipConfig.objects.values_list(
         "web_pay_hour", "web_delta"
     ).first()
-    ytd_duration, current_year, first_date = dates_functionality()
+    # Handle dates_functionality which might return None
+    dates_result = dates_functionality()
+    if dates_result:
+        ytd_duration, current_year, first_date = dates_result
+    else:
+        # Fallback values if dates_functionality returns None
+        from datetime import datetime
+        current_year = datetime.now().year
+        ytd_duration = 365
+        first_date = datetime(current_year, 1, 1).date()
 
     # Determine date range for time filters
     today = datetime.now().date()
@@ -2689,7 +2755,7 @@ class LoanListView(ListView):
 @method_decorator(login_required, name="dispatch")
 class userLoanListView(ListView):
     model = LoanApplication
-    template_name = "finance/payments/user_loan_list.html"
+    template_name = "finance/loan_applications_list.html"
     context_object_name = "loans"
 
     def get_queryset(self):
@@ -3353,20 +3419,144 @@ def budget_projection(request, subtitle="summary"):
 
     # Prepare context
     context = {
-        "departments": departments,
-        "categories": available_categories,
+        "form": form,
         "budget_items": budget_items,
+        "total": total,
+        "available_categories": available_categories,
         "selected_year": selected_year,
         "selected_month": selected_month,
-        "total_amt_ksh": total,
-        "total_amt": total / rate if total else 0,
-        "form": form,
+        "selected_company": selected_company,
+        "subtitle": subtitle,
     }
-    # Render the correct template
-    if subtitle == "detailed":
-        return render(request, "finance/budgets/detailed_budget.html", context)
-    else:
-        return render(request, "finance/budgets/summary_budget.html", context)
+
+    return render(request, "finance/budgets/budget_projection.html", context)
+
+
+@login_required
+def automated_budget_estimation(request, company_slug="coda"):
+    """
+    Automated budget estimation view using historical transaction data
+    """
+    try:
+        # Get company
+        company = Company.objects.get(slug=company_slug)
+    except Company.DoesNotExist:
+        return redirect("some_error_view")
+    
+    # Initialize services
+    calculation_utils = CalculationUtils()
+    filter_utils = FilterUtils()
+    budget_service = BudgetEstimationService()
+    consolidation_service = BudgetConsolidationService()
+    
+    # Get departments for filtering
+    departments = Department.objects.all()
+    selected_department = None
+    
+    if request.method == "POST":
+        department_id = request.POST.get("department_id")
+        if department_id:
+            selected_department = Department.objects.get(id=department_id)
+    
+    # Get spending analysis
+    spending_analysis = budget_service.analyze_spending_patterns(
+        company=company,
+        department=selected_department,
+        months=3
+    )
+    
+    # Get budget estimates
+    budget_estimates = budget_service.estimate_next_month_budget(
+        company=company,
+        department=selected_department,
+        method='average'
+    )
+    
+    # Get variance analysis
+    variance_analysis = budget_service.get_budget_variance_analysis(
+        company=company,
+        department=selected_department
+    )
+    
+    # Get consolidated report
+    consolidated_report = consolidation_service.get_unified_budget_report(
+        company=company,
+        department=selected_department
+    )
+    
+    # Get recommendations
+    recommendations = budget_service.get_budget_recommendations(
+        company=company,
+        department=selected_department
+    )
+    
+    context = {
+        "company": company,
+        "departments": departments,
+        "selected_department": selected_department,
+        "spending_analysis": spending_analysis,
+        "budget_estimates": budget_estimates,
+        "variance_analysis": variance_analysis,
+        "consolidated_report": consolidated_report,
+        "recommendations": recommendations,
+        "calculation_utils": calculation_utils,
+        "filter_utils": filter_utils,
+    }
+    
+    return render(request, "finance/budgets/automated_estimation.html", context)
+
+
+@login_required
+def budget_consolidation_dashboard(request, company_slug="coda"):
+    """
+    Budget consolidation dashboard showing unified view of all budget models
+    """
+    try:
+        # Get company
+        company = Company.objects.get(slug=company_slug)
+    except Company.DoesNotExist:
+        return redirect("some_error_view")
+    
+    # Initialize services
+    consolidation_service = BudgetConsolidationService()
+    budget_service = BudgetEstimationService()
+    
+    # Get departments for filtering
+    departments = Department.objects.all()
+    selected_department = None
+    
+    if request.method == "POST":
+        department_id = request.POST.get("department_id")
+        if department_id:
+            selected_department = Department.objects.get(id=department_id)
+    
+    # Get consolidated view
+    consolidated_view = consolidation_service.create_consolidated_view(
+        company=company,
+        department=selected_department
+    )
+    
+    # Get model statistics
+    model_statistics = consolidation_service.get_model_usage_statistics(
+        company=company
+    )
+    
+    # Get unified report
+    unified_report = consolidation_service.get_unified_budget_report(
+        company=company,
+        department=selected_department
+    )
+    
+    context = {
+        "company": company,
+        "departments": departments,
+        "selected_department": selected_department,
+        "consolidated_view": consolidated_view,
+        "model_statistics": model_statistics,
+        "unified_report": unified_report,
+    }
+    
+    return render(request, "finance/budgets/consolidation_dashboard.html", context)
 
 
 class CodaBudgetUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

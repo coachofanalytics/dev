@@ -1,327 +1,156 @@
 from django import forms
-from django.forms import Textarea
-from django.db.models import Q
-from pyexpat import model
-from accounts.models import CustomerUser,Department
-from datetime import datetime
+from django.utils import timezone
+from datetime import timedelta
+from .models import BudgetRequest, Transaction, Inflow, FoodHistory, Budget
 
-from .models import (
-    LoanApplication,
-    Transaction,
-    Inflow,
-    FoodHistory,
-    Budget,
-    LoanProduct
-)
-
-# class DepartmentFilterForm(forms.Form):
-#     name = forms.ModelChoiceField(
-#         queryset=Department.objects.all(),
-#         label='Select a Deparment'
-#     )
-
-class DepartmentFilterForm(forms.Form):
-    def __init__(self, *args, departments=None, companies=None, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Populate department choices dynamically
-        department_choices = [("", "All Departments")] + [
-            (dept.name, dept.name) for dept in departments
-        ] if departments else [("", "All Departments")]
-
-        # Populate company choices dynamically
-        company_choices = [(company.name, company.name) for company in companies] if companies else [("Coda", "Coda")]
-
-        self.fields["name"] = forms.ChoiceField(
-            choices=department_choices,
-            required=False,
-            label="Select Department"
-        )
-
-        self.fields["company"] = forms.ChoiceField(
-            choices=company_choices,
-            required=True,
-            label="Select Company",
-            initial="Coda"  # Default company selection
-        )
-
-    year = forms.IntegerField(
-        required=True,
-        label="Select Year",
-        initial=datetime.now().year
-    )
-
-    month = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All Months')] + [(str(i), str(i)) for i in range(1, 13)],
-        label="Select Month (Optional)",
-        initial=str(datetime.now().month)
-    )
-
-class FoodHistoryForm(forms.ModelForm):
+class BudgetRequestForm(forms.ModelForm):
+    """Form for creating budget requests by regular users"""
+    
     class Meta:
-        model = FoodHistory
-        fields = '__all__'
+        model = BudgetRequest
+        fields = [
+            'amount', 'currency', 'purpose', 'department', 'budget_category',
+            'required_date', 'priority', 'cost_center', 'attachments'
+        ]
+        widgets = {
+            'purpose': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Describe the purpose and justification for this budget request...'
+            }),
+            'required_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control',
+                'min': 'today'
+            }),
+            'amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0.01',
+                'placeholder': '0.00'
+            }),
+            'cost_center': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., PROJ-2024-Q1, MKT-CAMPAIGN-001'
+            }),
+            'attachments': forms.Textarea(attrs={
+                'rows': 2,
+                'class': 'form-control',
+                'placeholder': 'List any supporting documents (comma-separated)'
+            })
+        }
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Set default currency
+        self.fields['currency'].initial = 'USD'
+        
+        # Set default priority
+        self.fields['priority'].initial = 'medium'
+        
+        # Set default required date to 30 days from now
+        if not self.instance.pk:
+            self.fields['required_date'].initial = timezone.now().date() + timedelta(days=30)
+        
+        # Add CSS classes
+        for field_name, field in self.fields.items():
+            if field_name != 'attachments':
+                field.widget.attrs['class'] = 'form-control'
+    
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount and amount <= 0:
+            raise forms.ValidationError('Amount must be greater than zero.')
+        return amount
+    
+    def clean_required_date(self):
+        required_date = self.cleaned_data.get('required_date')
+        if required_date and required_date < timezone.now().date():
+            raise forms.ValidationError('Required date cannot be in the past.')
+        return required_date
+    
+    def clean_cost_center(self):
+        cost_center = self.cleaned_data.get('cost_center')
+        if cost_center:
+            # Basic validation for cost center format
+            if len(cost_center) < 3:
+                raise forms.ValidationError('Cost center must be at least 3 characters long.')
+        return cost_center
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.user:
+            instance.requester = self.user
+            instance.created_by = self.user
+            instance.last_modified_by = self.user
+        if commit:
+            instance.save()
+        return instance
+
+
+# Existing forms that were in the original file
 class TransactionForm(forms.ModelForm):
+    """Form for transaction entries"""
     class Meta:
         model = Transaction
-
-        fields = [
-            "id",
-            "sender",
-            "receiver",
-            "vendor_supplier",
-            "phone",
-            "department",
-            "category",
-            "subcategory",
-            "type",
-            "payment_method",
-            "qty",
-            "amount",
-            "transaction_cost",
-            "description",
-            "receipt_link",
-        ]
-        labels = {
-            "sender": "Your full Name",
-            "vendor_supplier": "Vendor/Supplier Name",
-            "receiver": "Enter Receiver Name",
-            "phone": "Receiver Phone",
-            "department": "Department",
-            "category": "category",
-            "type": "Type",
-            "payment_method": "Payment Method",
-            "qty": "Quantity",
-            "amount": "Unit Price",
-            "transaction_cost": "Transaction Cost",
-            "description": "Description",
-            "receipt_link": "Link",
+        fields = '__all__'
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
-        widgets = {"description": Textarea(attrs={"cols": 30, "rows": 1})}
-
-    def __init__(self, *args, **kwargs):
-        super(TransactionForm, self).__init__(*args, **kwargs)
-        self.fields["payment_method"].empty_label = "Select"
-
-
-class BudgetForm(forms.ModelForm):
-    class Meta:
-        model = Budget
-
-        fields = [
-            "company", 
-            "budget_lead", 
-            "department", 
-            "category", 
-            "subcategory", 
-            "item", 
-            "qty", 
-            "unit_price", 
-            "description", 
-            "is_active", 
-            "receipt_link"
-        ]
-        labels = {
-            "company": "Company Name",
-            "budget_lead": "Username",
-            # "phone": "Receiver Phone",
-            "department": "Department",
-            "category": "Category",
-            "subcategory": "Sub Category",
-            "item": "Item",
-            # "payment_method": "Payment Method",
-            "qty": "Quantity",
-            "unit_price": "Unit Price",
-            # "transaction_cost": "Transaction Cost",
-            "description": "Description",
-            "receipt_link": "Link",
-        }
-        widgets = {"description": Textarea(attrs={"cols": 30, "rows": 1})}
-
-    def __init__(self, *args, **kwargs):
-        super(BudgetForm, self).__init__(*args, **kwargs)
-        # self.fields["payment_method"].empty_label = "Select"
 
 
 class InflowForm(forms.ModelForm):
+    """Form for inflow entries"""
     class Meta:
         model = Inflow
-        fields = [
-            "receiver",
-            "sender",
-            "phone",
-            "country",
-            "company",
-            "category",
-            "subcategory",
-            "item",
-            "method",
-            "period",
-            "qty",
-            "amount",
-            "transaction_cost",
-            "description",
-        ]
-        labels = {
-            "receiver": "Select Receiver",
-            "phone": "Sender's Phone",
-            "country": "Country",
-            "company": "Company",
-            "department": "Department",
-            "category": "Category",
-            "task": "Task",
-            "item": "item",
-            "method": "Payment Method",
-            "period": "Period",
-            "qty": "Quantity",
-            "amount": "Unit Price",
-            "transaction_cost": "Transaction Cost",
-            "description": "Comments",
+        fields = '__all__'
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
-        widgets = {"description": Textarea(attrs={"cols": 30, "rows": 1})}
 
-    def __init__(self, *args, **kwargs):
-        super(InflowForm, self).__init__(*args, **kwargs)
-        self.fields["method"].empty_label = "Select"
 
-class LoanForm(forms.ModelForm):
+class DepartmentFilterForm(forms.Form):
+    """Form for filtering by department"""
+    def __init__(self, *args, departments=None, companies=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if departments:
+            self.fields['name'] = forms.ModelChoiceField(
+                queryset=departments,
+                empty_label="All Departments",
+                widget=forms.Select(attrs={'class': 'form-control'})
+            )
+        else:
+            self.fields['name'] = forms.CharField(
+                max_length=100,
+                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Department name'})
+            )
+
+
+class FoodHistoryForm(forms.ModelForm):
+    """Form for food history entries"""
     class Meta:
-        model = LoanApplication
-        # fields = [ "user","category","amount","is_active"]
-        fields = "__all__"
-        
-        # labels = {
-        #     "user":"user",
-        #     "category":"category",
-        #     "amount":"amount",
-        #     "is_active":"is_active",
-        # }
-    # def __init__(self, **kwargs):
-    #     super(LoanForm, self).__init__(**kwargs)
-    #     self.fields["user"].queryset = CustomerUser.objects.filter(
-    #         Q(is_admin=True) | Q(is_staff=True)| Q(is_client=True)
-    #     )
+        model = FoodHistory
+        fields = '__all__'
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
 
 
-# ===== NEW OPTIMIZED LOAN FORMS =====
-
-class LoanApplicationForm(forms.Form):
-    """Form for loan application submission."""
-    
-    loan_amount = forms.DecimalField(
-        label="Loan Amount",
-        max_digits=10,
-        decimal_places=2,
-        min_value=100.00,
-        max_value=100000.00,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter loan amount'
-        })
-    )
-    
-    loan_product = forms.ModelChoiceField(
-        label="Loan Product",
-        queryset=LoanProduct.objects.filter(is_active=True),
-        empty_label="Select a loan product",
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-    
-    purpose = forms.CharField(
-        label="Purpose",
-        max_length=500,
-        widget=forms.Textarea(attrs={
-            'class': 'form-control',
-            'rows': 3,
-            'placeholder': 'Describe the purpose of this loan'
-        })
-    )
-    
-    employment_status = forms.ChoiceField(
-        label="Employment Status",
-        choices=[
-            ('employed', 'Employed'),
-            ('self_employed', 'Self-Employed'),
-            ('unemployed', 'Unemployed'),
-            ('student', 'Student'),
-            ('retired', 'Retired')
-        ],
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-    
-    monthly_income = forms.DecimalField(
-        label="Monthly Income",
-        max_digits=10,
-        decimal_places=2,
-        min_value=0.00,
-        required=False,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter your monthly income'
-        })
-    )
-    
-    def clean_loan_amount(self):
-        """Validate loan amount."""
-        amount = self.cleaned_data.get('loan_amount')
-        if amount and amount < 100.00:
-            raise forms.ValidationError("Minimum loan amount is $100")
-        return amount
-    
-    def clean_monthly_income(self):
-        """Validate monthly income."""
-        income = self.cleaned_data.get('monthly_income')
-        if income and income < 0.00:
-            raise forms.ValidationError("Monthly income cannot be negative")
-        return income
-
-
-class LoanApprovalForm(forms.Form):
-    """Form for loan approval/rejection."""
-    
-    ACTION_CHOICES = [
-        ('approve', 'Approve'),
-        ('reject', 'Reject')
-    ]
-    
-    action = forms.ChoiceField(
-        label="Action",
-        choices=ACTION_CHOICES,
-        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
-    )
-    
-    notes = forms.CharField(
-        label="Notes",
-        required=False,
-        widget=forms.Textarea(attrs={
-            'class': 'form-control',
-            'rows': 3,
-            'placeholder': 'Add any notes about this decision'
-        })
-    )
-    
-    rejection_reason = forms.ChoiceField(
-        label="Rejection Reason",
-        required=False,
-        choices=[
-            ('insufficient_income', 'Insufficient Income'),
-            ('poor_credit_history', 'Poor Credit History'),
-            ('incomplete_documentation', 'Incomplete Documentation'),
-            ('high_debt_ratio', 'High Debt-to-Income Ratio'),
-            ('other', 'Other')
-        ],
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-    
-    def clean(self):
-        """Validate form based on action selected."""
-        cleaned_data = super().clean()
-        action = cleaned_data.get('action')
-        rejection_reason = cleaned_data.get('rejection_reason')
-        
-        if action == 'reject' and not rejection_reason:
-            raise forms.ValidationError("Rejection reason is required when rejecting an application")
-        
-        return cleaned_data
+class BudgetForm(forms.ModelForm):
+    """Form for budget entries"""
+    class Meta:
+        model = Budget
+        fields = '__all__'
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }

@@ -508,7 +508,9 @@ class Department(models.Model):
         verbose_name_plural = _("Departments")
 
     def get_absolute_url(self):
-        return reverse("main:department_reports", args=[self.slug])
+        if self.slug:
+            return reverse("main:department_reports", args=[self.slug])
+        return "#"
 
     def __str__(self):
         return self.name

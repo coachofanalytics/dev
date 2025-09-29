@@ -1,0 +1,249 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Approval Policies Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Approval Policies Management</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:unified_dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'finance:automation-dashboard' %}">Finance Automation</a></li>
+                        <li class="breadcrumb-item active">Approval Policies</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row">
+        <div class="col-xl-4 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-truncate font-size-14 mb-2">Total Policies</p>
+                            <h4 class="mb-0">{{ stats.total_policies }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm rounded-circle bg-primary-subtle">
+                                <span class="avatar-title rounded-circle bg-primary text-white font-size-18">
+                                    <i class="fas fa-cogs"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-truncate font-size-14 mb-2">Active Policies</p>
+                            <h4 class="mb-0 text-success">{{ stats.active_policies }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm rounded-circle bg-success-subtle">
+                                <span class="avatar-title rounded-circle bg-success text-white font-size-18">
+                                    <i class="fas fa-check-circle"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-truncate font-size-14 mb-2">Inactive Policies</p>
+                            <h4 class="mb-0 text-warning">{{ stats.inactive_policies }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm rounded-circle bg-warning-subtle">
+                                <span class="avatar-title rounded-circle bg-warning text-white font-size-18">
+                                    <i class="fas fa-pause-circle"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policies Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Approval Policies</h4>
+                    <div class="card-tools">
+                        <a href="/admin/finance/approvalpolicy/add/" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> New Policy
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if policies %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Amount Range</th>
+                                        <th>Approver Roles</th>
+                                        <th>Auto Approve</th>
+                                        <th>OTP Required</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in policies %}
+                                    <tr>
+                                        <td><strong>{{ policy.name }}</strong></td>
+                                        <td>{{ policy.description|truncatechars:50 }}</td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ policy.currency }} {{ policy.min_amount|floatformat:2 }} - {{ policy.max_amount|floatformat:2 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% for role in policy.approver_roles %}
+                                                <span class="badge bg-secondary me-1">{{ role }}</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% if policy.auto_approve %}
+                                                <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if policy.requires_otp %}
+                                                <span class="badge bg-info">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if policy.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ policy.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="/admin/finance/approvalpolicy/{{ policy.id }}/change/" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="/admin/finance/approvalpolicy/{{ policy.id }}/change/" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if policy.is_active %}
+                                                <button class="btn btn-sm btn-outline-warning" onclick="togglePolicy({{ policy.id }}, false)">
+                                                    <i class="fas fa-pause"></i>
+                                                </button>
+                                                {% else %}
+                                                <button class="btn btn-sm btn-outline-success" onclick="togglePolicy({{ policy.id }}, true)">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No approval policies found</h5>
+                            <p class="text-muted">Get started by creating a new approval policy.</p>
+                            <a href="/admin/finance/approvalpolicy/add/" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> Create New Policy
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Configuration Help -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Policy Configuration Guide</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Amount Ranges</h6>
+                            <ul class="list-unstyled">
+                                <li><span class="badge bg-info me-2">Low</span> $0 - $100 (Auto-approve)</li>
+                                <li><span class="badge bg-warning me-2">Medium</span> $100 - $1,000 (Manager approval)</li>
+                                <li><span class="badge bg-danger me-2">High</span> $1,000+ (Multiple approvals)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Approver Roles</h6>
+                            <ul class="list-unstyled">
+                                <li><span class="badge bg-secondary me-2">Manager</span> Department managers</li>
+                                <li><span class="badge bg-primary me-2">Director</span> Department directors</li>
+                                <li><span class="badge bg-success me-2">CEO</span> Executive approval</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePolicy(policyId, activate) {
+    const action = activate ? 'activate' : 'deactivate';
+    if (confirm(`Are you sure you want to ${action} this policy?`)) {
+        fetch(`/api/v1/approval-policies/${policyId}/${action}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('Error updating policy: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error updating policy: ' + error);
+        });
+    }
+}
+</script>
+{% endblock %}
+

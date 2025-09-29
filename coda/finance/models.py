@@ -24,9 +24,9 @@ except ImportError:
     Investment_rates = None
 
 try:
-    from main.models import Company, Service, ServiceCategory, TimeStampedModel, ContractBase
+    from main.models import Company, Service, ServiceCategory, TimeStampedModel, ContractBase, StatusMixin
 except ImportError:
-    Company = Service = ServiceCategory = TimeStampedModel = ContractBase = None
+    Company = Service = ServiceCategory = TimeStampedModel = ContractBase = StatusMixin = None
 
 try:
     from main.utils import dates_functionality, date_converter, PayChoices
@@ -45,6 +45,541 @@ else:
     ytd_duration = current_year = first_date = None
 
 # Create your models here.
+
+# =============================================================================
+# AUTOMATION SYSTEM MODELS
+# =============================================================================
+
+class BudgetRequest(TimeStampedModel, StatusMixin):
+    """Budget request submission and tracking for automation system"""
+    
+    # Request Status Choices
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('under_review', 'Under Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('cancelled', 'Cancelled'),
+        ('disbursed', 'Disbursed'),
+    ]
+    
+    # Priority Choices
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+    
+    # Request Information
+    requester = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='budget_requests',
+        help_text="User who submitted the request"
+    )
+    amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        help_text="Requested amount"
+    )
+    currency = models.CharField(
+        max_length=3, 
+        default='USD',
+        help_text="Currency code"
+    )
+    purpose = models.TextField(
+        help_text="Purpose of the budget request"
+    )
+    department = models.ForeignKey(
+        Department, 
+        on_delete=models.CASCADE,
+        help_text="Department requesting the budget"
+    )
+    
+    # Request Details
+    request_date = models.DateTimeField(
+        default=timezone.now,
+        help_text="Date when request was submitted"
+    )
+    required_date = models.DateField(
+        help_text="Date when budget is required"
+    )
+    priority = models.CharField(
+        max_length=20, 
+        choices=PRIORITY_CHOICES, 
+        default='medium',
+        help_text="Priority level of the request"
+    )
+    
+    # Approval Information
+    approval_policy = models.ForeignKey(
+        'ApprovalPolicy', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        help_text="Approval policy applied to this request"
+    )
+    current_approver = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='pending_approvals',
+        help_text="Current approver in the chain"
+    )
+    approval_chain = models.JSONField(
+        default=list,
+        help_text="List of approvers in the approval chain"
+    )
+    
+    # Status Tracking
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='draft',
+        help_text="Current status of the request"
+    )
+    rejection_reason = models.TextField(
+        blank=True, 
+        null=True,
+        help_text="Reason for rejection if applicable"
+    )
+    
+    # Financial Information
+    budget_category = models.ForeignKey(
+        'BudgetCategory', 
+        on_delete=models.CASCADE,
+        help_text="Budget category for this request"
+    )
+    cost_center = models.CharField(
+        max_length=50, 
+        blank=True,
+        help_text="Cost center for the request"
+    )
+    
+    # Attachments
+    attachments = models.JSONField(
+        default=list,
+        help_text="List of attached documents"
+    )
+    
+    # Audit Fields
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='created_budget_requests',
+        help_text="User who created the request"
+    )
+    last_modified_by = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='modified_budget_requests',
+        help_text="User who last modified the request"
+    )
+    
+    class Meta:
+        ordering = ['-request_date']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['requester']),
+            models.Index(fields=['department']),
+            models.Index(fields=['request_date']),
+            models.Index(fields=['priority']),
+        ]
+        verbose_name = "Budget Request"
+        verbose_name_plural = "Budget Requests"
+    
+    def __str__(self):
+        return f"Budget Request #{self.id} - {self.requester.username} - ${self.amount}"
+    
+    def get_approval_chain_display(self):
+        """Get human-readable approval chain"""
+        return [f"{approver['role']}: {approver['user']}" for approver in self.approval_chain]
+    
+    def is_overdue(self):
+        """Check if request is overdue"""
+        return self.required_date < timezone.now().date() and self.status not in ['approved', 'rejected', 'disbursed']
+
+
+class ApprovalPolicy(TimeStampedModel):
+    """Configurable approval policies and rules for automation system"""
+    
+    # Policy Information
+    name = models.CharField(
+        max_length=100, 
+        unique=True,
+        help_text="Name of the approval policy"
+    )
+    description = models.TextField(
+        help_text="Description of the policy"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this policy is active"
+    )
+    
+    # Amount Thresholds
+    min_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0,
+        help_text="Minimum amount for this policy to apply"
+    )
+    max_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Maximum amount for this policy to apply"
+    )
+    
+    # Approval Rules
+    approver_roles = models.JSONField(
+        default=list,
+        help_text="List of roles that can approve under this policy"
+    )
+    approval_chain = models.JSONField(
+        default=list,
+        help_text="Sequential approval chain configuration"
+    )
+    auto_approve = models.BooleanField(
+        default=False,
+        help_text="Whether to auto-approve requests under this policy"
+    )
+    requires_otp = models.BooleanField(
+        default=True,
+        help_text="Whether OTP verification is required"
+    )
+    
+    # Department and Category Rules
+    applicable_departments = models.ManyToManyField(
+        Department, 
+        blank=True,
+        help_text="Departments this policy applies to"
+    )
+    applicable_categories = models.ManyToManyField(
+        'BudgetCategory', 
+        blank=True,
+        help_text="Budget categories this policy applies to"
+    )
+    
+    # User Type Rules
+    applicable_user_types = models.JSONField(
+        default=list,
+        help_text="User types this policy applies to (Staff, KCC, External)"
+    )
+    
+    # Time-based Rules
+    max_approval_days = models.PositiveIntegerField(
+        default=7,
+        help_text="Maximum days for approval"
+    )
+    escalation_days = models.PositiveIntegerField(
+        default=3,
+        help_text="Days before escalation"
+    )
+    
+    class Meta:
+        ordering = ['min_amount']
+        indexes = [
+            models.Index(fields=['is_active']),
+            models.Index(fields=['min_amount']),
+        ]
+        verbose_name = "Approval Policy"
+        verbose_name_plural = "Approval Policies"
+    
+    def __str__(self):
+        return f"{self.name} (${self.min_amount} - ${self.max_amount or '∞'})"
+    
+    def is_applicable(self, request):
+        """Check if this policy applies to a request"""
+        # Check amount range
+        if request.amount < self.min_amount:
+            return False
+        if self.max_amount and request.amount > self.max_amount:
+            return False
+        
+        # Check department
+        if self.applicable_departments.exists() and request.department not in self.applicable_departments.all():
+            return False
+        
+        # Check category
+        if self.applicable_categories.exists() and request.budget_category not in self.applicable_categories.all():
+            return False
+        
+        # Check user type
+        if self.applicable_user_types:
+            user_type = self.get_user_type(request.requester)
+            if user_type not in self.applicable_user_types:
+                return False
+        
+        return True
+    
+    def get_user_type(self, user):
+        """Get user type for policy matching"""
+        if user.is_staff:
+            return 'Staff'
+        elif hasattr(user, 'profile') and user.profile.is_karen_country_club_member:
+            return 'KCC'
+        else:
+            return 'External'
+
+
+class DisbursementRequest(TimeStampedModel, StatusMixin):
+    """Automated disbursement requests and tracking"""
+    
+    # Disbursement Method Choices
+    DISBURSEMENT_METHODS = [
+        ('mpesa', 'MPESA'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('stanbic', 'Stanbic Bank'),
+        ('cash', 'Cash'),
+        ('check', 'Check'),
+    ]
+    
+    # Status Choices
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('otp_sent', 'OTP Sent'),
+        ('otp_verified', 'OTP Verified'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    # Request Information
+    budget_request = models.OneToOneField(
+        BudgetRequest, 
+        on_delete=models.CASCADE, 
+        related_name='disbursement_request',
+        help_text="Associated budget request"
+    )
+    disbursement_method = models.CharField(
+        max_length=50, 
+        choices=DISBURSEMENT_METHODS,
+        help_text="Method of disbursement"
+    )
+    
+    # Payment Details
+    recipient_name = models.CharField(
+        max_length=255,
+        help_text="Name of the recipient"
+    )
+    recipient_phone = models.CharField(
+        max_length=20, 
+        blank=True,
+        help_text="Phone number of the recipient"
+    )
+    recipient_email = models.EmailField(
+        blank=True,
+        help_text="Email of the recipient"
+    )
+    bank_account = models.CharField(
+        max_length=50, 
+        blank=True,
+        help_text="Bank account number if applicable"
+    )
+    
+    # Amount Information
+    amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        help_text="Amount to be disbursed"
+    )
+    currency = models.CharField(
+        max_length=3, 
+        default='USD',
+        help_text="Currency of the disbursement"
+    )
+    exchange_rate = models.DecimalField(
+        max_digits=10, 
+        decimal_places=4, 
+        default=1.0000,
+        help_text="Exchange rate applied"
+    )
+    
+    # Status and Tracking
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending',
+        help_text="Current status of the disbursement"
+    )
+    payment_reference = models.CharField(
+        max_length=100, 
+        blank=True,
+        help_text="Payment reference number"
+    )
+    transaction_id = models.CharField(
+        max_length=100, 
+        blank=True,
+        help_text="Transaction ID from payment provider"
+    )
+    
+    # OTP Verification
+    otp_code = models.CharField(
+        max_length=10, 
+        blank=True,
+        help_text="OTP code for verification"
+    )
+    otp_expires_at = models.DateTimeField(
+        null=True, 
+        blank=True,
+        help_text="OTP expiration time"
+    )
+    otp_verified = models.BooleanField(
+        default=False,
+        help_text="Whether OTP has been verified"
+    )
+    
+    # Timestamps
+    disbursement_date = models.DateTimeField(
+        null=True, 
+        blank=True,
+        help_text="Date when disbursement was processed"
+    )
+    completion_date = models.DateTimeField(
+        null=True, 
+        blank=True,
+        help_text="Date when disbursement was completed"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['disbursement_method']),
+            models.Index(fields=['disbursement_date']),
+        ]
+        verbose_name = "Disbursement Request"
+        verbose_name_plural = "Disbursement Requests"
+    
+    def __str__(self):
+        return f"Disbursement #{self.id} - {self.recipient_name} - ${self.amount}"
+    
+    def is_otp_expired(self):
+        """Check if OTP has expired"""
+        if not self.otp_expires_at:
+            return False
+        return timezone.now() > self.otp_expires_at
+    
+    def generate_otp(self):
+        """Generate new OTP code"""
+        import random
+        import string
+        self.otp_code = ''.join(random.choices(string.digits, k=6))
+        self.otp_expires_at = timezone.now() + timezone.timedelta(minutes=10)
+        self.otp_verified = False
+        self.save()
+
+
+class AutomationAuditLog(TimeStampedModel):
+    """Comprehensive audit logging for automation system"""
+    
+    # Action Type Choices
+    ACTION_TYPES = [
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('delete', 'Delete'),
+        ('approve', 'Approve'),
+        ('reject', 'Reject'),
+        ('disburse', 'Disburse'),
+        ('otp_send', 'OTP Send'),
+        ('otp_verify', 'OTP Verify'),
+        ('escalate', 'Escalate'),
+        ('cancel', 'Cancel'),
+    ]
+    
+    # Action Information
+    action = models.CharField(
+        max_length=100,
+        help_text="Action performed"
+    )
+    action_type = models.CharField(
+        max_length=50, 
+        choices=ACTION_TYPES,
+        help_text="Type of action"
+    )
+    description = models.TextField(
+        help_text="Description of the action"
+    )
+    
+    # User and Context
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='audit_logs',
+        help_text="User who performed the action"
+    )
+    ip_address = models.GenericIPAddressField(
+        help_text="IP address of the user"
+    )
+    user_agent = models.TextField(
+        blank=True,
+        help_text="User agent string"
+    )
+    
+    # Object Information
+    content_type = models.ForeignKey(
+        'contenttypes.ContentType', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        help_text="Content type of the affected object"
+    )
+    object_id = models.PositiveIntegerField(
+        null=True, 
+        blank=True,
+        help_text="ID of the affected object"
+    )
+    object_repr = models.CharField(
+        max_length=255, 
+        blank=True,
+        help_text="String representation of the affected object"
+    )
+    
+    # Details
+    details = models.JSONField(
+        default=dict,
+        help_text="Additional details about the action"
+    )
+    old_values = models.JSONField(
+        default=dict,
+        help_text="Old values before the action"
+    )
+    new_values = models.JSONField(
+        default=dict,
+        help_text="New values after the action"
+    )
+    
+    # Status
+    success = models.BooleanField(
+        default=True,
+        help_text="Whether the action was successful"
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error message if action failed"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['action']),
+            models.Index(fields=['user']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['content_type', 'object_id']),
+            models.Index(fields=['action_type']),
+        ]
+        verbose_name = "Automation Audit Log"
+        verbose_name_plural = "Automation Audit Logs"
+    
+    def __str__(self):
+        return f"{self.action} by {self.user.username} at {self.created_at}"
+
 
 # =============================================================================
 # SHARED PAYMENT BASE MODEL FOR CODE OPTIMIZATION
@@ -101,11 +636,28 @@ class PaymentBase(ContractBase):
     
     @property
     def fee_balance(self):
-        """Calculate remaining fee balance"""
+        """Calculate remaining fee balance after all payments"""
         try:
             down_payment = int(self.down_payment or 0)
             student_bonus = int(self.student_bonus or 0)
-            return self.payment_fees - (down_payment + student_bonus)
+            
+            # Calculate total paid from Payment_History
+            total_paid = 0
+            if hasattr(self, 'customer_id'):
+                # For Payment_Information
+                from .models import Payment_History
+                payments = Payment_History.objects.filter(customer=self.customer_id)
+                total_paid = sum(payment.payment_fees for payment in payments)
+            elif hasattr(self, 'customer'):
+                # For Payment_History
+                from .models import Payment_History
+                payments = Payment_History.objects.filter(customer=self.customer)
+                total_paid = sum(payment.payment_fees for payment in payments)
+            
+            # Calculate remaining balance
+            remaining = self.payment_fees - total_paid
+            return max(0, remaining)  # Ensure balance doesn't go negative
+            
         except (TypeError, ValueError) as e:
             logger.error(f"Error calculating fee balance: {str(e)}")
             return 0
@@ -724,6 +1276,93 @@ class LoanApplication(models.Model):
             send_guarantor_rejection_notification(self)
         
         self.save()
+    
+    def validate_guarantor_requirements(self):
+        """
+        Validate guarantor requirements based on user type:
+        - Staff: Must have guarantor who is current/active staff with 3+ months employment
+        - KCC: Must have guarantor who is KCC member with active membership
+        - External: Must have guarantor + collateral
+        """
+        try:
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            borrower_category = getattr(self.borrower, 'category', None)
+            
+            # Check if guarantor is provided
+            if not self.guarantor:
+                return False, "Guarantor is required for all loan applications"
+            
+            # Staff member requirements
+            if borrower_category == 2:  # Staff
+                # Guarantor must be staff with 3+ months employment
+                if self.guarantor.category != 2 or not self.guarantor.is_staff:
+                    return False, "Staff members must have another staff member as guarantor"
+                
+                if not self.guarantor.is_active:
+                    return False, "Guarantor must be an active staff member"
+                
+                # Check employment duration (3+ months)
+                three_months_ago = timezone.now().date() - timedelta(days=90)
+                if self.guarantor.date_joined > three_months_ago:
+                    return False, "Guarantor must have been employed for more than 3 months"
+                
+                return True, "Staff guarantor requirements satisfied"
+            
+            # KCC member requirements
+            elif hasattr(self.borrower, 'profile') and self.borrower.profile.is_karen_country_club_member:
+                # Check if KCC membership is active
+                if (self.borrower.profile.kcc_membership_expiry and 
+                    self.borrower.profile.kcc_membership_expiry < timezone.now().date()):
+                    return False, "KCC membership has expired"
+                
+                # Guarantor must be KCC member with active membership
+                if (not hasattr(self.guarantor, 'profile') or 
+                    not self.guarantor.profile.is_karen_country_club_member):
+                    return False, "KCC members must have another KCC member as guarantor"
+                
+                # Check guarantor's KCC membership expiry
+                if (self.guarantor.profile.kcc_membership_expiry and 
+                    self.guarantor.profile.kcc_membership_expiry < timezone.now().date()):
+                    return False, "Guarantor's KCC membership has expired"
+                
+                return True, "KCC guarantor requirements satisfied"
+            
+            # External user requirements
+            else:
+                # Must have guarantor + collateral
+                if not self.guarantor:
+                    return False, "External users must provide a guarantor"
+                
+                if not self.collateral or len(self.collateral.strip()) < 10:
+                    return False, "External users must provide collateral information (minimum 10 characters)"
+                
+                # Check if smart collateral is required based on loan amount
+                loan_amount = float(self.amount_requested)
+                if loan_amount > 1000:  # Smart collateral required for loans > $1000
+                    # Check if LoanCollateral instance exists with smart features
+                    try:
+                        collateral_instance = self.loan_collateral
+                        if not collateral_instance:
+                            return False, "Smart collateral verification required for loans over $1000"
+                        
+                        # Check smart features based on collateral type
+                        if collateral_instance.collateral_type == 'vehicle':
+                            if not collateral_instance.gps_tracking_enabled:
+                                return False, "Vehicle collateral requires GPS tracking for loans over $1000"
+                        elif collateral_instance.collateral_type == 'land_title':
+                            if not collateral_instance.title_deed_verified:
+                                return False, "Land collateral requires verified title deed for loans over $1000"
+                        
+                    except Exception:
+                        return False, "Smart collateral verification required for loans over $1000"
+                
+                return True, "External user guarantor and collateral requirements satisfied"
+                
+        except Exception as e:
+            logger.error(f"Error validating guarantor requirements: {e}")
+            return False, f"Error validating guarantor requirements: {str(e)}"
     
     def validate_eligibility(self):
         """Validate loan eligibility based on criteria
@@ -1425,24 +2064,181 @@ class Budget(models.Model):
     
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(default=timezone.now)
-    item = models.CharField(max_length=100, null=True, default=None)
+    item_name = models.CharField(max_length=100, null=True, default=None)
     cases = models.PositiveIntegerField(default=1,null=True,blank=True)
-    qty = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
     unit_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, default=None
     )
     description = models.TextField(max_length=1000, default=None)
-    receipt_link = models.CharField(max_length=100, blank=True, null=True)
+    receipt_link = models.URLField(max_length=500, blank=True, null=True, help_text='Link to receipt or documentation')
     is_active=models.BooleanField(default=True,null=True,blank=True)
+    
+    # Enhanced Budget Fields (added by migration)
+    budget_type = models.CharField(
+        max_length=30,
+        choices=[
+            ('general', 'General Budget'),
+            ('website_development', 'Website Development'),
+            ('operations', 'Operations'),
+            ('marketing', 'Marketing'),
+            ('infrastructure', 'Infrastructure'),
+            ('investment', 'Investment'),
+        ],
+        default='general',
+        help_text="Type of budget (e.g., General, Website Development)"
+    )
+    timeframe = models.CharField(
+        max_length=20,
+        choices=[
+            ('weekly', 'Weekly'),
+            ('monthly', 'Monthly'),
+            ('quarterly', 'Quarterly'),
+            ('yearly', 'Yearly'),
+            ('multi_year', 'Multi-Year'),
+        ],
+        default='monthly',
+        help_text="Timeframe for the budget"
+    )
+    project_name = models.CharField(max_length=200, blank=True, null=True, help_text="Name of the project if applicable")
+    project_description = models.TextField(blank=True, null=True, help_text="Description of the project")
+
+    # Estimation fields
+    estimation_method = models.CharField(
+        max_length=50,
+        choices=[
+            ('manual', 'Manual'),
+            ('average_3_months', 'Average of Last 3 Months'),
+            ('average_6_months', 'Average of Last 6 Months'),
+            ('last_year_actual', 'Last Year Actual'),
+            ('trend_analysis', 'Trend Analysis'),
+            ('coda_development', 'CODA Development Estimation'),
+        ],
+        default='manual',
+        help_text="Method used for budget estimation"
+    )
+    estimated_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, help_text="Automatically estimated amount")
+    estimation_confidence = models.DecimalField(max_digits=5, decimal_places=2, default=0.0, help_text="Confidence score for automated estimation (0-100)")
+    estimation_source = models.CharField(max_length=255, blank=True, null=True, help_text="Source of the estimation data (e.g., Transaction history)")
+
+    # Status and Approval fields
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('draft', 'Draft'),
+            ('submitted', 'Submitted'),
+            ('under_review', 'Under Review'),
+            ('approved', 'Approved'),
+            ('active', 'Active'),
+            ('completed', 'Completed'),
+            ('cancelled', 'Cancelled'),
+        ],
+        default='draft',
+        help_text="Current status of the budget"
+    )
+    requires_approval = models.BooleanField(default=True, help_text="Does this budget require approval?")
+    approval_policy = models.ForeignKey(
+        'ApprovalPolicy', 
+        on_delete=models.SET_NULL, 
+        null=True, blank=True,
+        help_text="The approval policy applicable to this budget"
+    )
+    approved_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name='approved_budgets',
+        help_text="User who approved the budget"
+    )
+    approved_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp of approval")
+
+    # Investment Planning fields
+    is_investment = models.BooleanField(default=False, help_text="Is this budget related to an investment?")
+    investment_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('equity', 'Equity Investment'),
+            ('debt', 'Debt Investment'),
+            ('capital_expenditure', 'Capital Expenditure'),
+            ('r&d', 'Research & Development'),
+            ('other', 'Other Investment'),
+        ],
+        blank=True, null=True,
+        help_text="Type of investment if applicable"
+    )
+    expected_roi = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Expected Return on Investment (%)")
+    payback_period = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Expected payback period in months")
+
+    # Tracking fields
+    actual_spent = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Actual amount spent against this budget")
+    variance = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Variance (Actual - Budgeted)")
+    variance_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="Variance as a percentage")
+    
+    # Additional fields
+    notes = models.TextField(blank=True, null=True, help_text="Any additional notes for the budget")
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         ordering = ["-start_date"]
 
     def __str__(self):
-        return self.item
+        return self.item_name or f"Budget {self.id}"
     
     def get_absolute_url(self):
         return reverse("management:inflow-detail", kwargs={"pk": self.pk})
+    
+    # Enhanced Budget Methods
+    @property
+    def total_amount(self):
+        """Calculate total budget amount"""
+        if self.unit_price and self.quantity:
+            return round(Decimal(self.unit_price) * Decimal(self.quantity) * Decimal(self.cases), 2)
+        return Decimal('0.00')
+    
+    @property
+    def days_duration(self):
+        """Calculate budget duration in days"""
+        if self.end_date and self.start_date:
+            return (self.end_date - self.start_date).days
+        return 0
+    
+    @property
+    def is_over_budget(self):
+        """Check if actual spending exceeds budget"""
+        return self.actual_spent > self.total_amount
+    
+    @property
+    def remaining_budget(self):
+        """Calculate remaining budget amount"""
+        return max(Decimal('0.00'), self.total_amount - self.actual_spent)
+    
+    def calculate_variance(self):
+        """Calculate variance from budget"""
+        self.variance = self.actual_spent - self.total_amount
+        if self.total_amount > 0:
+            self.variance_percentage = (self.variance / self.total_amount) * 100
+        else:
+            self.variance_percentage = 0
+        self.save(update_fields=['variance', 'variance_percentage'])
+    
+    def approve(self, approved_by_user):
+        """Approve the budget"""
+        self.status = 'approved'
+        self.approved_by = approved_by_user
+        self.approved_at = timezone.now()
+        self.save(update_fields=['status', 'approved_by', 'approved_at'])
+    
+    def activate(self):
+        """Activate the budget"""
+        self.status = 'active'
+        self.save(update_fields=['status'])
+    
+    def complete(self):
+        """Mark budget as completed"""
+        self.status = 'completed'
+        self.calculate_variance()
+        self.save(update_fields=['status'])
 
     @property
     def days(self):
@@ -1461,11 +2257,225 @@ class Budget(models.Model):
     def amount(self):
         try:
             # total_amount = round(Decimal(self.unit_price * self.qty * self.days), 2)
-            total_amount = round(Decimal(self.unit_price * self.cases* self.qty), 2)
+            total_amount = round(Decimal(self.unit_price * self.cases* self.quantity), 2)
         except:
             total_amount = 0
         return total_amount
     
+    # Enhanced Budget Properties and Methods
+    
+    @property
+    def total_amount(self):
+        """Calculate total budget amount"""
+        if self.unit_price and self.quantity:
+            return round(Decimal(self.unit_price) * Decimal(self.quantity) * Decimal(self.cases), 2)
+        return Decimal('0.00')
+    
+    @property
+    def days_duration(self):
+        """Calculate budget duration in days"""
+        if self.end_date and self.start_date:
+            return (self.end_date - self.start_date).days
+        return 0
+    
+    @property
+    def is_over_budget(self):
+        """Check if actual spending exceeds budget"""
+        return self.actual_spent > self.total_amount
+    
+    @property
+    def remaining_budget(self):
+        """Calculate remaining budget amount"""
+        return max(Decimal('0.00'), self.total_amount - self.actual_spent)
+    
+    def calculate_variance(self):
+        """Calculate variance from budget"""
+        self.variance = self.actual_spent - self.total_amount
+        if self.total_amount > 0:
+            self.variance_percentage = (self.variance / self.total_amount) * 100
+        else:
+            self.variance_percentage = 0
+        self.save(update_fields=['variance', 'variance_percentage'])
+    
+    def approve(self, approved_by_user):
+        """Approve the budget"""
+        self.status = 'approved'
+        self.approved_by = approved_by_user
+        self.approved_at = timezone.now()
+        self.save(update_fields=['status', 'approved_by', 'approved_at'])
+    
+    def activate(self):
+        """Activate the budget"""
+        self.status = 'active'
+        self.save(update_fields=['status'])
+    
+    def complete(self):
+        """Mark budget as completed"""
+        self.status = 'completed'
+        self.calculate_variance()
+        self.save(update_fields=['status'])
+
+
+class BudgetEstimationTemplate(models.Model):
+    """
+    Template for automated budget estimation
+    
+    Stores estimation templates for different types of budgets,
+    including the CODA development estimation logic
+    """
+    
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(max_length=1000)
+    budget_type = models.CharField(
+        max_length=30, 
+        choices=[
+            ('general', 'General Budget'),
+            ('website_development', 'Website Development'),
+            ('operations', 'Operations'),
+            ('marketing', 'Marketing'),
+            ('infrastructure', 'Infrastructure'),
+            ('investment', 'Investment'),
+        ]
+    )
+    
+    # Estimation Configuration
+    estimation_config = models.JSONField(
+        help_text="JSON configuration for estimation parameters"
+    )
+    
+    # CODA Development Estimation (from coda_budget_estimation)
+    development_tasks = models.JSONField(
+        default=dict,
+        help_text="Development task configuration (createview, updateview, etc.)"
+    )
+    hourly_rate = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=30.00,
+        help_text="Default hourly rate for development tasks"
+    )
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Budget Estimation Template"
+        verbose_name_plural = "Budget Estimation Templates"
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_budget_type_display()})"
+    
+    def get_development_estimation(self, app_models_count):
+        """Calculate development cost estimation"""
+        total_cost = 0
+        for task_name, task_config in self.development_tasks.items():
+            task_cost = (
+                task_config.get('quantity', 1) * 
+                task_config.get('hours', 1) * 
+                self.hourly_rate
+            )
+            total_cost += task_cost
+        
+        return total_cost * app_models_count
+
+
+class MultiYearBudgetPlan(models.Model):
+    """
+    Multi-year budget planning (1-year, 2-year, 5-year plans)
+    
+    Links multiple Budget instances to create long-term plans
+    """
+    
+    name = models.CharField(max_length=200)
+    description = models.TextField(max_length=2000)
+    company = models.ForeignKey(
+        Company, 
+        on_delete=models.CASCADE, 
+        related_name="multi_year_plans"
+    )
+    department = models.ForeignKey(
+        'accounts.Department', 
+        on_delete=models.CASCADE, 
+        related_name="multi_year_plans"
+    )
+    
+    # Plan Duration
+    start_year = models.PositiveIntegerField()
+    end_year = models.PositiveIntegerField()
+    plan_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('1_year', '1 Year Plan'),
+            ('2_year', '2 Year Plan'),
+            ('5_year', '5 Year Plan'),
+            ('custom', 'Custom Duration'),
+        ]
+    )
+    
+    # Investment Planning
+    total_investment_required = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        default=0,
+        help_text="Total investment required for the plan"
+    )
+    funding_sources = models.JSONField(
+        default=list,
+        help_text="List of funding sources and amounts"
+    )
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('draft', 'Draft'),
+            ('in_review', 'In Review'),
+            ('approved', 'Approved'),
+            ('active', 'Active'),
+            ('completed', 'Completed'),
+        ],
+        default='draft'
+    )
+    
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name="created_plans"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Multi-Year Budget Plan"
+        verbose_name_plural = "Multi-Year Budget Plans"
+    
+    def __str__(self):
+        return f"{self.name} ({self.start_year}-{self.end_year})"
+    
+    @property
+    def duration_years(self):
+        """Calculate plan duration in years"""
+        return self.end_year - self.start_year + 1
+    
+    def get_budgets_for_year(self, year):
+        """Get all budgets for a specific year"""
+        return self.budget_set.filter(
+            start_date__year=year
+        )
+    
+    def calculate_total_investment(self):
+        """Calculate total investment required"""
+        total = sum(
+            budget.total_amount for budget in self.budget_set.all()
+            if budget.is_investment
+        )
+        self.total_investment_required = total
+        self.save(update_fields=['total_investment_required'])
+        return total
+
 
 # ========================Food Models============================
 
@@ -1949,7 +2959,7 @@ class LoanPerformance(models.Model):
 
 # Physical Collateral Management
 class LoanCollateral(models.Model):
-    """Manage physical collateral for KCC loans"""
+    """Enhanced collateral management with smart tracking features"""
     loan_application = models.OneToOneField(LoanApplication, on_delete=models.CASCADE, related_name='loan_collateral')
     
     # Collateral type
@@ -1984,14 +2994,66 @@ class LoanCollateral(models.Model):
     vehicle_plate = models.CharField(max_length=20, blank=True, null=True)
     vehicle_title_number = models.CharField(max_length=50, blank=True, null=True)
     
+    # SMART VEHICLE TRACKING FIELDS
+    gps_tracking_enabled = models.BooleanField(default=False, help_text="Enable GPS tracking for vehicle collateral")
+    gps_device_id = models.CharField(max_length=100, blank=True, null=True, help_text="GPS device identifier")
+    gps_install_date = models.DateTimeField(blank=True, null=True, help_text="When GPS was installed")
+    gps_last_location = models.CharField(max_length=200, blank=True, null=True, help_text="Last known GPS location")
+    gps_last_update = models.DateTimeField(blank=True, null=True, help_text="Last GPS update timestamp")
+    gps_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('active', 'Active'),
+            ('inactive', 'Inactive'),
+            ('offline', 'Offline'),
+            ('tampered', 'Tampered')
+        ],
+        default='inactive',
+        help_text="Current GPS tracking status"
+    )
+    
     # Land-specific fields
     land_location = models.CharField(max_length=200, blank=True, null=True)
     land_size = models.CharField(max_length=50, blank=True, null=True)  # e.g., "2 acres"
     land_title_number = models.CharField(max_length=50, blank=True, null=True)
     
+    # SMART LAND TITLE VERIFICATION
+    title_deed_verified = models.BooleanField(default=False, help_text="Land title deed verified with government registry")
+    title_deed_number = models.CharField(max_length=100, blank=True, null=True, help_text="Official title deed number")
+    title_deed_verification_date = models.DateTimeField(blank=True, null=True, help_text="When title was verified")
+    land_survey_done = models.BooleanField(default=False, help_text="Professional land survey completed")
+    land_survey_report = models.FileField(upload_to='collateral/surveys/', blank=True, null=True, help_text="Land survey report file")
+    land_photos = models.JSONField(default=list, blank=True, help_text="Array of land photo URLs")
+    
     # Equipment-specific fields
     equipment_type = models.CharField(max_length=100, blank=True, null=True)
     equipment_condition = models.CharField(max_length=50, blank=True, null=True)
+    
+    # SMART EQUIPMENT TRACKING
+    equipment_serial_number = models.CharField(max_length=100, blank=True, null=True, help_text="Equipment serial number")
+    equipment_condition_report = models.FileField(upload_to='collateral/equipment/', blank=True, null=True, help_text="Equipment condition assessment report")
+    equipment_photos = models.JSONField(default=list, blank=True, help_text="Array of equipment photo URLs")
+    
+    # REAL-TIME MONITORING
+    monitoring_enabled = models.BooleanField(default=False, help_text="Enable real-time monitoring of collateral")
+    monitoring_frequency = models.CharField(
+        max_length=20,
+        choices=[
+            ('daily', 'Daily'),
+            ('weekly', 'Weekly'),
+            ('monthly', 'Monthly'),
+            ('real_time', 'Real-time')
+        ],
+        default='weekly',
+        help_text="How often to monitor collateral"
+    )
+    last_monitoring_check = models.DateTimeField(blank=True, null=True, help_text="Last monitoring check performed")
+    monitoring_alerts = models.JSONField(default=list, blank=True, help_text="Array of monitoring alerts and notifications")
+    
+    # RISK ASSESSMENT
+    risk_score = models.IntegerField(default=0, help_text="Collateral risk score (0-100)")
+    risk_factors = models.JSONField(default=list, blank=True, help_text="Identified risk factors")
+    mitigation_measures = models.TextField(blank=True, null=True, help_text="Risk mitigation measures implemented")
     
     # Verification details
     verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='collateral_verifications')
@@ -2008,7 +3070,137 @@ class LoanCollateral(models.Model):
         verbose_name_plural = 'Loan Collaterals'
     
     def __str__(self):
-        return f"{self.collateral_type} - {self.loan_application.id} - ${self.estimated_value}"
+        return f"{self.get_collateral_type_display()} - {self.loan_application.borrower.username} - ${self.estimated_value}"
+    
+    def enable_gps_tracking(self, device_id, install_date=None):
+        """Enable GPS tracking for vehicle collateral"""
+        if self.collateral_type != 'vehicle':
+            return False, "GPS tracking only available for vehicle collateral"
+        
+        self.gps_tracking_enabled = True
+        self.gps_device_id = device_id
+        self.gps_install_date = install_date or timezone.now()
+        self.gps_status = 'active'
+        self.save()
+        
+        return True, "GPS tracking enabled successfully"
+    
+    def update_gps_location(self, location, timestamp=None):
+        """Update GPS location for vehicle collateral"""
+        if not self.gps_tracking_enabled:
+            return False, "GPS tracking not enabled"
+        
+        self.gps_last_location = location
+        self.gps_last_update = timestamp or timezone.now()
+        self.save()
+        
+        return True, "GPS location updated"
+    
+    def verify_title_deed(self, deed_number, verification_date=None):
+        """Verify land title deed with government registry"""
+        if self.collateral_type != 'land_title':
+            return False, "Title deed verification only available for land collateral"
+        
+        self.title_deed_verified = True
+        self.title_deed_number = deed_number
+        self.title_deed_verification_date = verification_date or timezone.now()
+        self.save()
+        
+        return True, "Title deed verified successfully"
+    
+    def add_land_survey(self, survey_report):
+        """Add professional land survey report"""
+        if self.collateral_type != 'land_title':
+            return False, "Land survey only available for land collateral"
+        
+        self.land_survey_done = True
+        self.land_survey_report = survey_report
+        self.save()
+        
+        return True, "Land survey added successfully"
+    
+    def add_monitoring_alert(self, alert_type, message, severity='medium'):
+        """Add monitoring alert for collateral"""
+        alert = {
+            'timestamp': timezone.now().isoformat(),
+            'type': alert_type,
+            'message': message,
+            'severity': severity
+        }
+        
+        if not self.monitoring_alerts:
+            self.monitoring_alerts = []
+        
+        self.monitoring_alerts.append(alert)
+        self.save()
+        
+        return True, "Monitoring alert added"
+    
+    def calculate_risk_score(self):
+        """Calculate risk score based on collateral type and verification status"""
+        score = 0
+        
+        # Base score by collateral type
+        type_scores = {
+            'vehicle': 30,
+            'land_title': 20,
+            'equipment': 40,
+            'jewelry': 50,
+            'other': 60
+        }
+        score += type_scores.get(self.collateral_type, 50)
+        
+        # Verification status bonus
+        if self.verification_status == 'verified':
+            score -= 20
+        elif self.verification_status == 'rejected':
+            score += 30
+        
+        # Smart tracking bonus
+        if self.collateral_type == 'vehicle' and self.gps_tracking_enabled:
+            score -= 15
+        
+        if self.collateral_type == 'land_title' and self.title_deed_verified:
+            score -= 10
+        
+        # Monitoring bonus
+        if self.monitoring_enabled:
+            score -= 5
+        
+        # Ensure score is within 0-100 range
+        self.risk_score = max(0, min(100, score))
+        self.save()
+        
+        return self.risk_score
+    
+    def get_smart_features_status(self):
+        """Get status of smart features for this collateral"""
+        features = {
+            'gps_tracking': {
+                'enabled': self.gps_tracking_enabled,
+                'status': self.gps_status,
+                'last_update': self.gps_last_update,
+                'device_id': self.gps_device_id
+            },
+            'title_verification': {
+                'verified': self.title_deed_verified,
+                'deed_number': self.title_deed_number,
+                'verification_date': self.title_deed_verification_date
+            },
+            'monitoring': {
+                'enabled': self.monitoring_enabled,
+                'frequency': self.monitoring_frequency,
+                'last_check': self.last_monitoring_check,
+                'alerts_count': len(self.monitoring_alerts) if self.monitoring_alerts else 0
+            },
+            'risk_assessment': {
+                'score': self.risk_score,
+                'factors': self.risk_factors,
+                'mitigation_measures': bool(self.mitigation_measures)
+            }
+        }
+        
+        return features
 
 # KCC Loan Rollover Management
 class LoanRollover(models.Model):

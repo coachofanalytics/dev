@@ -966,35 +966,34 @@ class TrackCreateView(LoginRequiredMixin, CreateView):
 
     def update_job_support_points(self, form):
         try:
-            # task_id, current_points, target_points = self.get_task_details(  # Temporarily disabled for migration fix
-            #     form.instance.empname, form.instance.category
-            # )
-            # self.idval = task_id
-            # updated_points = self.calculate_updated_points(
-            #     form.instance.sub_category, form.instance.duration, current_points
-            # )
-            # self.update_task_points(task_id, updated_points, target_points)
-            pass
+            task_id, current_points, target_points = self.get_task_details(
+                form.instance.empname, form.instance.category
+            )
+            self.idval = task_id
+            updated_points = self.calculate_updated_points(
+                form.instance.sub_category, form.instance.duration, current_points
+            )
+            self.update_task_points(task_id, updated_points, target_points)
         except Exception:
             # Handle specific exceptions or log them
             pass
 
-    # def get_task_details(self, empname, category):  # Temporarily disabled for migration fix
-    #     return Task.objects.values_list("id", "point", "mxpoint").filter(
-    #         Q(activity_name__in=JOB_SUPPORT_CATEGORIES), employee__username=empname
-    #     )[0]
+    def get_task_details(self, empname, category):
+        return Task.objects.values_list("id", "point", "mxpoint").filter(
+            Q(activity_name__in=JOB_SUPPORT_CATEGORIES), employee__username=empname
+        )[0]
 
     def calculate_updated_points(self, sub_category, duration, current_points):
         if sub_category in ["Development", "Testing"]:
             return float(current_points) + (0.5 * duration)
         return float(current_points) + duration
 
-    # def update_task_points(self, task_id, updated_points, target_points):  # Temporarily disabled for migration fix
-    #     if updated_points >= target_points:
-    #         target_points += 10
-    #     Task.objects.filter(id=task_id).update(
-    #         point=updated_points, mxpoint=target_points
-    #     )
+    def update_task_points(self, task_id, updated_points, target_points):
+        if updated_points >= target_points:
+            target_points += 10
+        Task.objects.filter(id=task_id).update(
+            point=updated_points, mxpoint=target_points
+        )
 
     def get_success_url(self):
         if self.request.user.category in [

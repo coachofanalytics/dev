@@ -1,0 +1,264 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}CODA Development Estimation - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/budget-dashboard.css' %}">
+<style>
+    .estimation-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .task-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .metric-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .cost-breakdown {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">CODA Development Estimation</h1>
+                <div>
+                    <a href="{% url 'finance:enhanced-budget-dashboard' company.slug %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estimation Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ estimation.total_estimated_cost|floatformat:0 }}</div>
+                <div class="metric-label">Total Estimated Cost</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ estimation.app_models_count }}</div>
+                <div class="metric-label">App Models</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ estimation.cost_per_model|floatformat:0 }}</div>
+                <div class="metric-label">Cost per Model</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ estimation.estimated_hours }}</div>
+                <div class="metric-label">Estimated Hours</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Breakdown -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks"></i> Development Task Breakdown
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if estimation.task_breakdown %}
+                        {% for task_name, task_data in estimation.task_breakdown.items %}
+                        <div class="task-card">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="font-weight-bold">{{ task_name|title }}</h6>
+                                    <p class="text-muted mb-2">Development task for each model</p>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <small class="text-muted">Hours:</small><br>
+                                            <strong>{{ task_data.hours }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Quantity:</small><br>
+                                            <strong>{{ task_data.quantity }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Unit Price:</small><br>
+                                            <strong>${{ task_data.unit_price }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="text-right">
+                                        <div class="cost-breakdown">
+                                            <h6 class="font-weight-bold">Cost Calculation</h6>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Per Model:</small><br>
+                                                    <strong>${{ task_data.cost|floatformat:0 }}</strong>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">Total ({{ estimation.app_models_count }} models):</small><br>
+                                                    <strong>${{ task_data.cost|floatformat:0 }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Task Breakdown Available</h5>
+                            <p class="text-muted">Task breakdown data is not available for this estimation.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estimation Details -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> Estimation Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Method:</strong><br>
+                            <span class="text-muted">{{ estimation.method|title }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Generated:</strong><br>
+                            <span class="text-muted">{{ estimation.generated_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Calculation Formula:</strong><br>
+                            <small class="text-muted">
+                                Total Cost = (Hours × Quantity × Unit Price) × Number of Models<br>
+                                = ({{ estimation.cost_per_model|floatformat:0 }} × {{ estimation.app_models_count }}) = ${{ estimation.total_estimated_cost|floatformat:0 }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie"></i> Cost Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="h4 mb-3">${{ estimation.total_estimated_cost|floatformat:0 }}</div>
+                        <p class="text-muted">Total Development Cost</p>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Per Model:</small><br>
+                                <strong>${{ estimation.cost_per_model|floatformat:0 }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Total Hours:</small><br>
+                                <strong>{{ estimation.estimated_hours }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">CODA Development Actions</h5>
+                    <p class="card-text">Use this estimation to create a budget for your CODA development project.</p>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-primary" onclick="createBudgetFromEstimation()">
+                            <i class="fas fa-plus"></i> Create Budget from Estimation
+                        </button>
+                        <a href="{% url 'finance:investment-planning' company.slug %}" class="btn btn-success">
+                            <i class="fas fa-chart-line"></i> Investment Planning
+                        </a>
+                        <a href="{% url 'finance:multi-year-planning' company.slug %}" class="btn btn-warning">
+                            <i class="fas fa-calendar-alt"></i> Multi-Year Planning
+                        </a>
+                        <a href="{% url 'finance:enhanced-budget-dashboard' company.slug %}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar"></i> Budget Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    console.log('CODA Development Estimation loaded');
+});
+
+function createBudgetFromEstimation() {
+    // This would typically make an AJAX call to create a budget
+    // For now, we'll show an alert
+    alert('Budget creation from estimation would be implemented here. This would create a new budget with the estimated cost.');
+}
+</script>
+{% endblock %}

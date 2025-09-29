@@ -100,12 +100,14 @@ def payment_method_selection(request):
         # Calculate amounts
         total_amount = payment_info.payment_fees
         down_payment = payment_info.down_payment
-        print(f"DEBUG: total_amount: {total_amount}, down_payment: {down_payment}")
+        balance = payment_info.fee_balance  # This will now use the updated calculation
+        print(f"DEBUG: total_amount: {total_amount}, down_payment: {down_payment}, balance: {balance}")
         
         context = {
             'available_methods': PAYMENT_METHODS,
             'total_amount': total_amount,
             'down_payment': down_payment,
+            'balance': balance,
             'payment_info': payment_info,
         }
         print(f"DEBUG: Context created successfully: {context}")

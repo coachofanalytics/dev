@@ -156,7 +156,7 @@ class CreditScoringService:
         # Get loan products ordered by tier (min_amount)
         products = LoanProduct.objects.filter(
             is_active=True,
-            product_type='kcc_member'
+            product_type='kcc_premium'
         ).order_by('min_amount')
         
         if not products.exists():

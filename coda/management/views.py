@@ -124,7 +124,22 @@ User = get_user_model()
 register = template.Library()
 
 def home(request):
-    return redirect('main:layout')
+    """Management system home view - redirects to appropriate dashboard based on user role"""
+    from accounts.user_utils import get_user_permissions
+    
+    # Get user permissions
+    permissions = get_user_permissions(request.user)
+    
+    # Redirect based on user permissions
+    if permissions.get('can_access_management'):
+        # User has management access - redirect to management dashboard
+        return redirect('management:companyagenda')
+    else:
+        # User doesn't have management access - show limited access page
+        return render(request, "management/limited_access.html", {
+            "title": "Management Access",
+            "message": "You don't have permission to access the management system."
+        })
 
 # dckdashboard function removed - functionality moved to unified dashboard
 
@@ -343,8 +358,6 @@ tasksummary = [
 
 # ----------------------REPORTS--------------------------------
 @login_required
-@user_passes_test(lambda user: check_payment_history_permission_student(user), login_url='/display_plans/full-course/')
-@user_passes_test(lambda user: check_payment_history_permission_job_support(user), login_url='/display_plans/job-support/')
 def companyagenda(request):
     request.session["siteurl"] = settings.SITEURL
     meeting_id = request.GET.get('meeting_id', None)
@@ -394,6 +407,89 @@ def companyagenda(request):
         "categories_with_links": categories_with_links  # Note the context variable change here
     }
     return render(request, "management/departments/agenda/general_agenda.html", context)
+
+
+@login_required
+def companyagenda_improved(request):
+    """
+    Improved version of companyagenda with modern UI
+    Role-based view: Admins see all departments, Staff see single department with subtopics
+    """
+    request.session["siteurl"] = settings.SITEURL
+    meeting_id = request.GET.get('meeting_id', None)
+    
+    # Check user role
+    is_admin = request.user.is_superuser or request.user.is_admin
+    is_staff = request.user.is_staff and not is_admin
+    
+    if meeting_id:
+        meeting = get_object_or_404(Meetings, id=meeting_id, is_active=True)
+        
+        # Get all links related to the meeting.
+        links = Link.objects.filter(meeting=meeting,is_active=True)
+        
+        # Get unique subcategories IDs from those links.
+        subcategory_ids = links.values_list('subcategory_id', flat=True).distinct()
+        
+        # Get departments that have these subcategories.
+        departments = Department.objects.filter(
+            subcategory__in=subcategory_ids,
+            is_active=True
+        ).distinct()
+
+        # Prepare the data structure for the template.
+        categories_with_links = []
+        for department in departments:
+            subcategories_with_links = []
+            for subcategory in department.subcategory_set.filter(id__in=subcategory_ids):
+                subcategory_links = links.filter(subcategory=subcategory)
+                if subcategory_links.exists():
+                    subcategories_with_links.append((subcategory, subcategory_links))
+            if subcategories_with_links:
+                categories_with_links.append((department, subcategories_with_links))
+
+    elif is_admin:
+        # Admin view: Show all departments in columns
+        categories_with_links = []
+        departments = Department.objects.filter(is_active=True)
+        for department in departments:
+            subcategories_with_links = []
+            for subcategory in department.subcategory_set.all():
+                subcategory_links = subcategory.link_set.all()
+                if subcategory_links.exists():
+                    subcategories_with_links.append((subcategory, subcategory_links))
+            if subcategories_with_links:
+                categories_with_links.append((department, subcategories_with_links))
+    
+    elif is_staff:
+        # Staff view: Show single department (HR) with real database subtopics
+        # Get HR Department as the main department
+        try:
+            hr_department = Department.objects.get(name="HR Department", is_active=True)
+        except Department.DoesNotExist:
+            hr_department = Department.objects.filter(is_active=True).first()
+        
+        # Get real subcategories and links from database
+        subcategories_with_links = []
+        for subcategory in hr_department.subcategory_set.all():
+            subcategory_links = subcategory.link_set.all()
+            if subcategory_links.exists():
+                subcategories_with_links.append((subcategory, subcategory_links))
+        
+        categories_with_links = [(hr_department, subcategories_with_links)]
+    
+    else:
+        categories_with_links = []
+    
+    context = {
+        'header_links': defined_links(request),
+        "title": "Company Agenda - Improved",
+        "categories_with_links": categories_with_links,
+        "is_admin": is_admin,
+        "is_staff": is_staff,
+        "user_role": "admin" if is_admin else "staff" if is_staff else "user"
+    }
+    return render(request, "management/departments/agenda/general_agenda_improved.html", context)
 
 
 def updatelinks_companyagenda(request, title, pk):
@@ -685,6 +781,7 @@ class TaskListView(FilteredListViewMixin, ListView):
             form = TagFilterForm()
         
         context['form'] = form
+        context['total_count'] = self.get_queryset().count()
         return context
 
 def tasklist(request):

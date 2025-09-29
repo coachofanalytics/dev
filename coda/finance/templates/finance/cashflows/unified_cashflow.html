@@ -1,0 +1,427 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load mathfilters %}
+
+{% block title %}{{ page_title|default:"Cashflow Management" }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/budget-dashboard.css' %}">
+<style>
+    /* Cashflow-specific styles */
+    .cashflow-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .cashflow-metric {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+        margin-bottom: 20px;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .metric-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .inflow-positive { color: #27ae60; font-weight: bold; }
+    .outflow-negative { color: #e74c3c; font-weight: bold; }
+    .net-neutral { color: #95a5a6; font-weight: bold; }
+    
+    .cashflow-tabs {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .cashflow-tab {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .cashflow-tab.active {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+    
+    .cashflow-tab:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+    }
+    
+    .table-responsive {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .table td {
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .action-buttons {
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    .action-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 5px;
+        transition: transform 0.2s;
+        font-weight: 500;
+    }
+    
+    .action-btn:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .action-btn-secondary {
+        background: transparent;
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+    
+    .action-btn-secondary:hover {
+        background: #667eea;
+        color: white;
+    }
+    
+    .filter-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">{{ page_title|default:"Cashflow Management" }}</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:unified_dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Cashflow</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="cashflow-metric">
+                <h5><b>WELCOME BACK</b></h5>
+                <hr/>
+                <i><h6>{{ user.first_name|upper }}</h6></i>
+                <hr/>
+                {% if request.user.is_superuser %}
+                    <p><i><h6>Exchange Rate: KES.{{ rate|default:"0.00" }}</h6></i></p>
+                {% else %}
+                    <p><a href="#" class="btn btn-secondary btn-sm">Rate</a></p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="cashflow-card">
+                <h5><b>CASH {{ cashflow_type|upper|default:"FLOW" }} PORTAL</b></h5>
+                <p class="mb-0">{{ cashflow_description|default:"Manage your cash inflows and outflows efficiently" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    {% if show_filters %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="filter-section">
+                <form method="POST" class="form-group">
+                    {% csrf_token %}
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label for="department_filter">Filter by Department</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-3">
+                            <button class="action-btn" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Cashflow Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="cashflow-tabs">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="cashflow-tab {% if cashflow_type == 'inflow' %}active{% endif %}" data-tab="inflow">
+                            <i class="fas fa-arrow-down"></i><br>
+                            <strong>Inflows</strong><br>
+                            <small>Money coming in</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="cashflow-tab {% if cashflow_type == 'outflow' %}active{% endif %}" data-tab="outflow">
+                            <i class="fas fa-arrow-up"></i><br>
+                            <strong>Outflows</strong><br>
+                            <small>Money going out</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="cashflow-tab {% if cashflow_type == 'net' %}active{% endif %}" data-tab="net">
+                            <i class="fas fa-balance-scale"></i><br>
+                            <strong>Net Flow</strong><br>
+                            <small>Inflow - Outflow</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="cashflow-tab {% if cashflow_type == 'all' %}active{% endif %}" data-tab="all">
+                            <i class="fas fa-chart-line"></i><br>
+                            <strong>All</strong><br>
+                            <small>Complete view</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    {% if show_metrics %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="cashflow-metric">
+                <div class="metric-value inflow-positive">${{ total_inflow|floatformat:2|default:"0.00" }}</div>
+                <div class="metric-label">Total Inflow</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="cashflow-metric">
+                <div class="metric-value outflow-negative">${{ total_outflow|floatformat:2|default:"0.00" }}</div>
+                <div class="metric-label">Total Outflow</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="cashflow-metric">
+                <div class="metric-value {% if net_flow >= 0 %}inflow-positive{% else %}outflow-negative{% endif %}">
+                    ${{ net_flow|floatformat:2|default:"0.00" }}
+                </div>
+                <div class="metric-label">Net Cash Flow</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Cashflow Data -->
+    <div class="row">
+        <div class="col-12">
+            <div class="cashflow-metric">
+                <h5 class="mb-3">
+                    <i class="fas fa-{% if cashflow_type == 'inflow' %}arrow-down{% elif cashflow_type == 'outflow' %}arrow-up{% else %}chart-line{% endif %}"></i>
+                    {{ cashflow_title|default:"Cashflow Records" }}
+                </h5>
+                
+                {% if cashflow_records %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Date</th>
+                                    {% if show_sender %}<th>Sender</th>{% endif %}
+                                    {% if show_receiver %}<th>Receiver</th>{% endif %}
+                                    {% if show_phone %}<th>Phone</th>{% endif %}
+                                    {% if show_department %}<th>Department</th>{% endif %}
+                                    {% if show_category %}<th>Category</th>{% endif %}
+                                    {% if show_period %}<th>Period</th>{% endif %}
+                                    {% if show_method %}<th>Method</th>{% endif %}
+                                    {% if show_quantity %}<th>Quantity</th>{% endif %}
+                                    <th>Amount</th>
+                                    {% if show_total %}<th>Total</th>{% endif %}
+                                    {% if show_description %}<th>Description</th>{% endif %}
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in cashflow_records %}
+                                    <tr>
+                                        <td>{{ record.date|date:"M d, Y" }}</td>
+                                        {% if show_sender %}<td>{{ record.sender|default:"N/A" }}</td>{% endif %}
+                                        {% if show_receiver %}<td>{{ record.receiver|default:"N/A" }}</td>{% endif %}
+                                        {% if show_phone %}<td>{{ record.phone|default:"N/A" }}</td>{% endif %}
+                                        {% if show_department %}<td>{{ record.department|default:"N/A" }}</td>{% endif %}
+                                        {% if show_category %}<td>{{ record.category|default:"N/A" }}</td>{% endif %}
+                                        {% if show_period %}<td>{{ record.period|default:"N/A" }}</td>{% endif %}
+                                        {% if show_method %}<td>{{ record.method|default:"N/A" }}</td>{% endif %}
+                                        {% if show_quantity %}<td>{{ record.quantity|default:"N/A" }}</td>{% endif %}
+                                        <td class="{% if record.amount >= 0 %}inflow-positive{% else %}outflow-negative{% endif %}">
+                                            ${{ record.amount|floatformat:2 }}
+                                        </td>
+                                        {% if show_total %}<td class="inflow-positive">${{ record.total|floatformat:2 }}</td>{% endif %}
+                                        {% if show_description %}<td>{{ record.description|truncatechars:30|default:"N/A" }}</td>{% endif %}
+                                        <td>
+                                            <a href="{% url 'finance:cashflow-detail' record.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No cashflow records found</h5>
+                        <p class="text-muted">There are no cashflow records to display for the selected criteria.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    {% if show_actions %}
+    <div class="row">
+        <div class="col-12">
+            <div class="action-buttons">
+                <a href="{% url 'finance:inflow-entry' %}" class="action-btn">
+                    <i class="fas fa-plus"></i> Add Inflow
+                </a>
+                <a href="{% url 'finance:outflow-entry' %}" class="action-btn action-btn-secondary">
+                    <i class="fas fa-minus"></i> Add Outflow
+                </a>
+                <a href="{% url 'finance:cashflow-report' %}" class="action-btn action-btn-secondary">
+                    <i class="fas fa-chart-bar"></i> Generate Report
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="Cashflow pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    console.log('Unified cashflow loaded');
+    
+    // Tab switching functionality
+    $('.cashflow-tab').click(function() {
+        $('.cashflow-tab').removeClass('active');
+        $(this).addClass('active');
+        
+        var tabType = $(this).data('tab');
+        console.log('Switching to tab:', tabType);
+        
+        // You can add AJAX calls here to load different cashflow data
+        // loadCashflowData(tabType);
+    });
+    
+    // Initialize data tables if needed
+    if ($.fn.DataTable) {
+        $('.table').DataTable({
+            "pageLength": 25,
+            "order": [[ 0, "desc" ]],
+            "responsive": true
+        });
+    }
+    
+    // Auto-refresh data every 5 minutes
+    setInterval(function() {
+        console.log('Refreshing cashflow data...');
+        // You can add AJAX calls here to refresh specific data
+    }, 300000);
+});
+</script>
+{% endblock %}

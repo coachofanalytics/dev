@@ -1,9 +1,10 @@
-{% extends "main/base_templates/new_base.html" %}
+{% extends "finance/base_dashboard.html" %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block extra_css %}
+{{ block.super }}
 <style>
     .analytics-container {
         padding: 20px;

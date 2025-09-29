@@ -7,6 +7,8 @@ urlpatterns = [
     # Main dashboard
     path('', views.unified_dashboard, name='unified_dashboard'),
     path('overview/', views.dashboard_overview, name='dashboard_overview'),
+    path('departments/', views.unified_department_view, name='unified_department'),
+    path('departments/<str:department_slug>/', views.unified_department_view, name='unified_department'),
     
     # Dashboard sections
     path('services/', views.service_catalog, name='service_catalog'),

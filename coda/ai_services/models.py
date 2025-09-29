@@ -209,7 +209,7 @@ class UseCase(TimeStampedModel):
     )
     category=models.ForeignKey(CaseCategory, on_delete=models.CASCADE,null=True, blank=True,default=40)
     title = models.CharField(max_length=100, blank=True, null=True)
-    # requirements_id = models.ForeignKey(Requirement, on_delete=models.CASCADE,null=True, blank=True)  # Temporarily disabled for migration fix
+    requirements_id = models.ForeignKey(Requirement, on_delete=models.CASCADE,null=True, blank=True)
     description = models.TextField(blank=True, null=True)
     installation = models.TextField(help_text="Provide tools used", null=True, blank=True,
                                             default=DEFAULT_HARDWARE_REQUIREMENTS)

@@ -20,6 +20,7 @@ urlpatterns = [
     path('wcag_list_view/', views.wcag_list_view, name='wcag_list_view'),
     path('contact/', views.contact, name='contact'),
     path('help/', views.help, name='help'),
+    path('help/new-features/', views.new_features, name='new_features'),
     path('hr/', views.hr, name='hr'),
     path('bbdashboard/', views.bbdashboard, name='bbdashboard'),
     path('FAQS/', views.FrequentlyAskedQuestion, name='FAQS'),
@@ -72,6 +73,7 @@ urlpatterns = [
     #-----------------------finance-------------------------#
     # path('finance/', views.finance, name='finance'),
     path('department/<str:slug>/', views.department_reports, name='department_reports'),
+    path('system/maintenance/', views.system_maintenance, name='system_maintenance'),
 
     path('coach_profile/', views.coach_profile, name='coach_profile'),
     path('contact/', views.contact, name='contact'),

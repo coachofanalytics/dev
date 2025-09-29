@@ -168,22 +168,159 @@ def check_karen_country_club_membership(user):
         return False
 
 
-def get_eligible_staff_guarantors(limit=5):
+def get_eligible_kcc_guarantors(limit=5):
     """
-    Get eligible staff members who can act as guarantors with eligibility scores.
-    Only returns staff members (category 2) who are active.
+    Get eligible KCC members who can act as guarantors.
+    Requirements:
+    - Must be KCC members with active membership
+    - Must not be staff members (staff have their own guarantor system)
+    - Must be active users
     """
     try:
         from accounts.models import CustomerUser
+        from django.utils import timezone
 
-        # Get active staff members (category 2) who can be guarantors
+        # Get active KCC members who are not staff
         eligible_guarantors = (
             CustomerUser.objects.filter(
-                category=2, is_active=True, is_staff=True  # Staff members only
+                is_active=True,
+                profile__is_karen_country_club_member=True,
+                category__in=[1, 3, 4, 5]  # Non-staff categories only
             )
             .exclude(
-                # Exclude users who might have restrictions
-                Q(is_superuser=False)  # Exclude superusers
+                category=2  # Exclude staff members
+            )
+            .filter(
+                # Check if KCC membership is not expired
+                Q(profile__kcc_membership_expiry__isnull=True) |
+                Q(profile__kcc_membership_expiry__gte=timezone.now().date())
+            )
+            .order_by("first_name", "last_name")[:limit]
+        )
+
+        # Calculate eligibility scores for each guarantor
+        guarantor_data = []
+        for kcc_member in eligible_guarantors:
+            # Calculate eligibility score based on KCC membership and tier
+            eligibility_score = calculate_kcc_guarantor_eligibility_score(kcc_member)
+            
+            # Determine KCC tier based on credit score
+            kcc_tier = get_kcc_tier_by_credit_score(kcc_member)
+
+            guarantor_data.append(
+                {
+                    "kcc_member": kcc_member,
+                    "eligibility_score": eligibility_score,
+                    "kcc_tier": kcc_tier,
+                    "membership_status": "Active",
+                }
+            )
+
+        return guarantor_data
+
+    except Exception as e:
+        logger.error(f"Error getting eligible KCC guarantors: {e}")
+        return []
+
+
+def calculate_kcc_guarantor_eligibility_score(kcc_user):
+    """
+    Calculate eligibility score for KCC guarantors based on:
+    - Active KCC membership
+    - Credit score tier
+    - Membership duration
+    """
+    try:
+        score = 0
+        
+        # Active KCC membership (40 points)
+        if (hasattr(kcc_user, 'profile') and 
+            kcc_user.profile.is_karen_country_club_member):
+            score += 40
+        
+        # Credit score tier (60 points max)
+        kcc_tier = get_kcc_tier_by_credit_score(kcc_user)
+        if kcc_tier == 3:  # Tier 3 (highest)
+            score += 60
+        elif kcc_tier == 2:  # Tier 2
+            score += 40
+        elif kcc_tier == 1:  # Tier 1
+            score += 20
+        
+        return min(score, 100)  # Cap at 100
+        
+    except Exception as e:
+        logger.error(f"Error calculating KCC guarantor eligibility score: {e}")
+        return 0
+
+
+def get_kcc_tier_by_credit_score(user):
+    """
+    Determine KCC tier based on credit score:
+    - Tier 1: Credit score 300-499 (Basic)
+    - Tier 2: Credit score 500-699 (Standard) 
+    - Tier 3: Credit score 700+ (Premium)
+    """
+    try:
+        # Get credit score from user profile or loan applications
+        credit_score = None
+        
+        if hasattr(user, 'profile') and hasattr(user.profile, 'credit_score'):
+            credit_score = user.profile.credit_score
+        
+        # If no profile credit score, check latest loan application
+        if not credit_score:
+            from .models import LoanApplication
+            latest_application = LoanApplication.objects.filter(
+                borrower=user
+            ).order_by('-submitted_at').first()
+            
+            if latest_application and latest_application.credit_score:
+                credit_score = latest_application.credit_score
+        
+        # Determine tier based on credit score
+        if not credit_score:
+            return 1  # Default to Tier 1 if no credit score
+        
+        if credit_score >= 700:
+            return 3  # Tier 3 - Premium
+        elif credit_score >= 500:
+            return 2  # Tier 2 - Standard
+        else:
+            return 1  # Tier 1 - Basic
+            
+    except Exception as e:
+        logger.error(f"Error determining KCC tier for user {user.username}: {e}")
+        return 1  # Default to Tier 1
+
+
+def get_eligible_staff_guarantors(limit=5):
+    """
+    Get eligible staff members who can act as guarantors.
+    Requirements:
+    - Must be current/active staff members (category 2, is_staff=True)
+    - Must have been employed for more than 3 months
+    - Must be active users
+    """
+    try:
+        from accounts.models import CustomerUser
+        from datetime import date, timedelta
+        from django.utils import timezone
+
+        # Calculate 3 months ago date
+        three_months_ago = timezone.now().date() - timedelta(days=90)
+
+        # Get active staff members who have been employed for more than 3 months
+        eligible_guarantors = (
+            CustomerUser.objects.filter(
+                category=2,           # Staff members only
+                is_active=True,       # Must be active
+                is_staff=True,        # Must be current staff
+                date_joined__lte=three_months_ago  # Must have been employed for 3+ months
+            )
+            .exclude(
+                # Exclude superusers from guarantor list
+                is_superuser=True
             )
             .order_by("first_name", "last_name")[:limit]
         )
@@ -191,13 +328,16 @@ def get_eligible_staff_guarantors(limit=5):
         # Calculate eligibility scores and earnings for each guarantor
         guarantor_data = []
         for staff in eligible_guarantors:
-            # Calculate eligibility score (simplified for now)
-            eligibility_score = calculate_guarantor_eligibility_score(staff)
+            # Calculate eligibility score based on employment duration and earnings
+            eligibility_score = calculate_staff_guarantor_eligibility_score(staff)
 
             # Calculate average earnings
             avg_earnings = _compute_average_monthly_income_last_3_months(staff)
             if avg_earnings is None:
                 avg_earnings = Decimal("0.00")
+
+            # Calculate employment duration in months
+            employment_months = (timezone.now().date() - staff.date_joined.date()).days // 30
 
             guarantor_data.append(
                 {
@@ -205,6 +345,8 @@ def get_eligible_staff_guarantors(limit=5):
                     "eligibility_score": eligibility_score,
                     "avg_earnings": avg_earnings,
                     "monthly_earnings": avg_earnings,
+                    "employment_months": employment_months,
+                    "employment_duration": f"{employment_months} months",
                 }
             )
 
@@ -213,6 +355,46 @@ def get_eligible_staff_guarantors(limit=5):
     except Exception as e:
         logger.error(f"Error getting eligible staff guarantors: {e}")
         return []
+
+
+def calculate_staff_guarantor_eligibility_score(staff_user):
+    """
+    Calculate eligibility score for staff guarantors based on:
+    - Employment duration (3+ months required)
+    - Consistent earnings history
+    - Active status
+    """
+    try:
+        from datetime import timedelta
+        from django.utils import timezone
+        
+        score = 0
+        
+        # Employment duration check (40 points max)
+        employment_duration = (timezone.now().date() - staff_user.date_joined.date()).days
+        if employment_duration >= 90:  # 3+ months
+            score += 40
+        elif employment_duration >= 60:  # 2+ months
+            score += 20
+        else:
+            return 0  # Not eligible if less than 3 months
+        
+        # Active status (20 points)
+        if staff_user.is_active and staff_user.is_staff:
+            score += 20
+        
+        # Consistent earnings (40 points max)
+        avg_earnings = _compute_average_monthly_income_last_3_months(staff_user)
+        if avg_earnings and avg_earnings > 0:
+            score += 40
+        elif avg_earnings and avg_earnings > Decimal('100'):
+            score += 20
+        
+        return min(score, 100)  # Cap at 100
+        
+    except Exception as e:
+        logger.error(f"Error calculating staff guarantor eligibility score: {e}")
+        return 0
 
 
 def _compute_average_monthly_income_last_3_months(user):

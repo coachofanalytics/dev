@@ -1,0 +1,427 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Finance Dashboard{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .dashboard-container {
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .dashboard-header {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .dashboard-subtitle {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    .dashboard-tabs {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .tab-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .tab-button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        background: #f8f9fa;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .tab-button.active {
+        background: #667eea;
+        color: white;
+    }
+    
+    .tab-button:hover {
+        background: #5a6fd8;
+        color: white;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .quick-actions {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .quick-actions-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .action-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .action-card:hover {
+        background: #e9ecef;
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+    
+    .action-icon {
+        font-size: 2rem;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    
+    .action-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .action-description {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 10px;
+        }
+        
+        .dashboard-title {
+            font-size: 2rem;
+        }
+        
+        .tab-buttons {
+            flex-direction: column;
+        }
+        
+        .action-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Finance Dashboard</h1>
+        <p class="dashboard-subtitle">Comprehensive financial management and analytics</p>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">${{ total_budget|default:"0" }}</div>
+            <div class="stat-label">Total Budget</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${{ total_expenses|default:"0" }}</div>
+            <div class="stat-label">Total Expenses</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${{ total_income|default:"0" }}</div>
+            <div class="stat-label">Total Income</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ pending_requests|default:"0" }}</div>
+            <div class="stat-label">Pending Requests</div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2 class="quick-actions-title">Quick Actions</h2>
+        <div class="action-grid">
+            <a href="{% url 'finance:budget-requests' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="action-title">New Budget Request</div>
+                <div class="action-description">Submit a new budget request</div>
+            </a>
+            
+            <a href="{% url 'finance:payment-form' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="action-title">Make Payment</div>
+                <div class="action-description">Process a payment</div>
+            </a>
+            
+            <a href="{% url 'finance:budget-planning' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="action-title">Budget Planning</div>
+                <div class="action-description">Plan and forecast budgets</div>
+            </a>
+            
+            <a href="{% url 'finance:automation-dashboard' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="action-title">Automation</div>
+                <div class="action-description">Manage automated processes</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Dashboard Tabs -->
+    <div class="dashboard-tabs">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-button" onclick="showTab('budgets')">Budgets</button>
+            <button class="tab-button" onclick="showTab('payments')">Payments</button>
+            <button class="tab-button" onclick="showTab('cashflows')">Cashflows</button>
+            <button class="tab-button" onclick="showTab('analytics')">Analytics</button>
+            <button class="tab-button" onclick="showTab('automation')">Automation</button>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <h3>Financial Overview</h3>
+            <p>Welcome to your comprehensive finance dashboard. Here you can manage budgets, track expenses, process payments, and analyze financial data.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h4>Recent Activity</h4>
+                    <div class="list-group">
+                        <div class="list-group-item">Budget request submitted</div>
+                        <div class="list-group-item">Payment processed</div>
+                        <div class="list-group-item">Monthly report generated</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h4>Upcoming Deadlines</h4>
+                    <div class="list-group">
+                        <div class="list-group-item">Monthly budget review - 3 days</div>
+                        <div class="list-group-item">Quarterly report - 1 week</div>
+                        <div class="list-group-item">Annual planning - 1 month</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Budgets Tab -->
+        <div id="budgets" class="tab-content">
+            <h3>Budget Management</h3>
+            <p>Manage your budgets, create new budget requests, and track budget performance.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="{% url 'finance:budget-requests' %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-plus me-2"></i>New Budget Request
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:budget-planning' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Budget Planning
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:budget-projection' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-project-diagram me-2"></i>Budget Projection
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payments Tab -->
+        <div id="payments" class="tab-content">
+            <h3>Payment Management</h3>
+            <p>Process payments, view payment history, and manage payment methods.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="{% url 'finance:payment-form' %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-credit-card me-2"></i>Make Payment
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:payment-history' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-history me-2"></i>Payment History
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:loans' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-hand-holding-usd me-2"></i>Loans
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cashflows Tab -->
+        <div id="cashflows" class="tab-content">
+            <h3>Cashflow Management</h3>
+            <p>Track cash inflows and outflows, analyze cashflow patterns, and manage liquidity.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="{% url 'finance:cashflows' %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-exchange-alt me-2"></i>View Cashflows
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:inflows' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-arrow-down me-2"></i>Inflows
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:outflows' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-arrow-up me-2"></i>Outflows
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <h3>Financial Analytics</h3>
+            <p>Analyze financial data, generate reports, and track key performance indicators.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="{% url 'finance:analytics-dashboard' %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-chart-bar me-2"></i>Analytics Dashboard
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:reports' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-file-alt me-2"></i>Reports
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:kcc-optimization' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-cogs me-2"></i>KCC Optimization
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Automation Tab -->
+        <div id="automation" class="tab-content">
+            <h3>Automation Management</h3>
+            <p>Manage automated processes, approval workflows, and system integrations.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="{% url 'finance:automation-dashboard' %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-robot me-2"></i>Automation Dashboard
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:approval-policies' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-check-circle me-2"></i>Approval Policies
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'finance:audit-logs' %}" class="btn btn-outline-primary btn-block mb-3">
+                        <i class="fas fa-clipboard-list me-2"></i>Audit Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    // Hide all tab contents
+    var tabContents = document.getElementsByClassName('tab-content');
+    for (var i = 0; i < tabContents.length; i++) {
+        tabContents[i].classList.remove('active');
+    }
+    
+    // Remove active class from all tab buttons
+    var tabButtons = document.getElementsByClassName('tab-button');
+    for (var i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].classList.remove('active');
+    }
+    
+    // Show selected tab content
+    document.getElementById(tabName).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}

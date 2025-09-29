@@ -79,13 +79,15 @@
       {% if user.is_admin or  user.is_staff or  user.is_superuser%}
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#"  id="navbarDropDown" role="button" data-toggle="dropdown"
-          >Reports</a>
+          >Departments</a>
               <div class="dropdown-menu" aria-labelledby="navbarDropDown">
                 <ul>
                   {% for department in departments %}
-                  <a class="dropdown-item" href="{{department.get_absolute_url}}" 
+                  {% if department.slug %}
+                  <a class="dropdown-item" href="{% url 'dashboard:unified_department' department.slug %}" 
                   target="" >{{ department.name }}</a>
                    <div class="dropdown-divider"></div>
+                  {% endif %}
                   {% endfor %}
               </ul>
               <a class="dropdown-item" href="{% url 'management:assess' %}"

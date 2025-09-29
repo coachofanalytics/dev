@@ -1,0 +1,360 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Projection - {{ subtitle|title }}{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .budget-projection-container {
+        padding: 20px;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    .projection-header {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .projection-filters {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .projection-results {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .budget-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    
+    .budget-table th,
+    .budget-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .budget-table th {
+        background: #f8f9fa;
+        font-weight: bold;
+        color: #495057;
+    }
+    
+    .budget-table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .total-row {
+        background: #e3f2fd !important;
+        font-weight: bold;
+    }
+    
+    .category-header {
+        background: #f5f5f5;
+        font-weight: bold;
+    }
+    
+    .amount {
+        text-align: right;
+        font-weight: 500;
+    }
+    
+    .positive {
+        color: #28a745;
+    }
+    
+    .negative {
+        color: #dc3545;
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 15px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+    
+    .filter-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .btn-filter {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        height: fit-content;
+    }
+    
+    .btn-filter:hover {
+        background: #0056b3;
+    }
+    
+    .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+    
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="budget-projection-container">
+    <!-- Header -->
+    <div class="projection-header">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-chart-line me-2"></i>
+            Budget Projection - {{ subtitle|title }}
+        </h1>
+        <p class="text-muted mb-0">Analyze budget projections and financial forecasts</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="projection-filters">
+        <h5 class="mb-3">
+            <i class="fas fa-filter me-2"></i>
+            Filters
+        </h5>
+        <form method="post" class="filter-form">
+            {% csrf_token %}
+            <div class="filter-group">
+                <label for="id_name">Department</label>
+                {{ form.name }}
+            </div>
+            <div class="filter-group">
+                <label for="id_year">Year</label>
+                {{ form.year }}
+            </div>
+            <div class="filter-group">
+                <label for="id_month">Month</label>
+                {{ form.month }}
+            </div>
+            <div class="filter-group">
+                <label for="id_company">Company</label>
+                {{ form.company }}
+            </div>
+            <button type="submit" class="btn-filter">
+                <i class="fas fa-search me-1"></i>
+                Apply Filters
+            </button>
+        </form>
+    </div>
+
+    <!-- Summary Statistics -->
+    {% if budget_items %}
+    <div class="summary-stats">
+        <div class="stat-card">
+            <div class="stat-value">{{ budget_items|length }}</div>
+            <div class="stat-label">Total Items</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ total|floatformat:2 }}</div>
+            <div class="stat-label">Total Amount</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ available_categories|length }}</div>
+            <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ selected_year }}</div>
+            <div class="stat-label">Selected Year</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Results -->
+    <div class="projection-results">
+        <h5 class="mb-3">
+            <i class="fas fa-table me-2"></i>
+            Budget Projection Results
+        </h5>
+        
+        {% if budget_items %}
+            <div class="table-responsive">
+                <table class="budget-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in budget_items %}
+                        <tr>
+                            <td>
+                                {% if item.item_name %}
+                                    {{ item.item_name }}
+                                {% elif item.description %}
+                                    {{ item.description }}
+                                {% else %}
+                                    {{ item.receiver|default:"N/A" }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.category %}
+                                    {{ item.category.name }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.quantity %}
+                                    {{ item.quantity }}
+                                {% elif item.qty %}
+                                    {{ item.qty }}
+                                {% else %}
+                                    1
+                                {% endif %}
+                            </td>
+                            <td class="amount">
+                                {% if item.amount %}
+                                    ${{ item.amount|floatformat:2 }}
+                                {% elif item.unit_price %}
+                                    ${{ item.unit_price|floatformat:2 }}
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </td>
+                            <td class="amount">
+                                {% if item.amount and item.quantity %}
+                                    ${{ item.amount|mul:item.quantity|floatformat:2 }}
+                                {% elif item.amount and item.qty %}
+                                    ${{ item.amount|mul:item.qty|floatformat:2 }}
+                                {% elif item.unit_price and item.quantity %}
+                                    ${{ item.unit_price|mul:item.quantity|floatformat:2 }}
+                                {% elif item.unit_price and item.qty %}
+                                    ${{ item.unit_price|mul:item.qty|floatformat:2 }}
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.created_at %}
+                                    {{ item.created_at|date:"M d, Y" }}
+                                {% elif item.date %}
+                                    {{ item.date|date:"M d, Y" }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="total-row">
+                            <td colspan="4"><strong>Total</strong></td>
+                            <td class="amount"><strong>${{ total|floatformat:2 }}</strong></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-chart-line"></i>
+                <h5>No Budget Data Found</h5>
+                <p>No budget items found for the selected criteria. Try adjusting your filters.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Category Breakdown -->
+    {% if available_categories %}
+    <div class="projection-results mt-4">
+        <h5 class="mb-3">
+            <i class="fas fa-tags me-2"></i>
+            Category Breakdown
+        </h5>
+        <div class="row">
+            {% for category in available_categories %}
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-value">{{ category|default:"Uncategorized" }}</div>
+                    <div class="stat-label">Category</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any JavaScript functionality here
+    console.log('Budget projection page loaded');
+});
+</script>
+{% endblock %}
+

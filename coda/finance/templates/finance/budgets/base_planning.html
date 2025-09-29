@@ -1,0 +1,162 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/budget-dashboard.css' %}">
+<style>
+    /* Common Planning Styles */
+    .planning-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .category-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .metric-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .confidence-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .confidence-high { background-color: #d4edda; color: #155724; }
+    .confidence-medium { background-color: #fff3cd; color: #856404; }
+    .confidence-low { background-color: #f8d7da; color: #721c24; }
+    
+    .trend-increasing { color: #e74c3c; }
+    .trend-decreasing { color: #27ae60; }
+    .trend-stable { color: #95a5a6; }
+    
+    .growth-positive { color: #27ae60; }
+    .growth-negative { color: #e74c3c; }
+    .growth-neutral { color: #95a5a6; }
+    
+    .variance-positive { color: #27ae60; }
+    .variance-negative { color: #e74c3c; }
+    .variance-neutral { color: #95a5a6; }
+    
+    .planning-tabs {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .planning-tab {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .planning-tab.active {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+    
+    .planning-tab:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+    }
+    
+    .action-buttons {
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    .action-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 5px;
+        transition: transform 0.2s;
+        font-weight: 500;
+    }
+    
+    .action-btn:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .action-btn-secondary {
+        background: transparent;
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+    
+    .action-btn-secondary:hover {
+        background: #667eea;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    console.log('Planning dashboard loaded');
+    
+    // Tab switching functionality
+    $('.planning-tab').click(function() {
+        $('.planning-tab').removeClass('active');
+        $(this).addClass('active');
+        
+        // You can add tab content switching logic here
+        var tabId = $(this).data('tab');
+        $('.tab-content').hide();
+        $('#' + tabId).show();
+    });
+    
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Auto-refresh data every 10 minutes
+    setInterval(function() {
+        console.log('Refreshing planning data...');
+        // You can add AJAX calls here to refresh specific data
+    }, 600000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Consolidation Report - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/budget-dashboard.css' %}">
+<style>
+    .consolidation-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .report-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .metric-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .variance-positive { color: #27ae60; }
+    .variance-negative { color: #e74c3c; }
+    .variance-neutral { color: #95a5a6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Budget Consolidation Report</h1>
+                <div>
+                    <a href="{% url 'finance:enhanced-budget-dashboard' company.slug %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consolidation Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ consolidation_data.total_budget|floatformat:0 }}</div>
+                <div class="metric-label">Total Budget</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ consolidation_data.total_actual|floatformat:0 }}</div>
+                <div class="metric-label">Total Actual</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value {% if consolidation_data.total_variance > 0 %}variance-negative{% elif consolidation_data.total_variance < 0 %}variance-positive{% else %}variance-neutral{% endif %}">
+                    ${{ consolidation_data.total_variance|floatformat:0 }}
+                </div>
+                <div class="metric-label">Total Variance</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ consolidation_data.total_budgets }}</div>
+                <div class="metric-label">Total Budgets</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget by Type -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie"></i> Budget Consolidation by Type
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if consolidation_data.budget_by_type %}
+                        {% for budget_type, data in consolidation_data.budget_by_type.items %}
+                        <div class="report-card">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h6 class="font-weight-bold">{{ budget_type|title }}</h6>
+                                    <small class="text-muted">{{ data.count }} budgets</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Budgeted:</small><br>
+                                    <strong>${{ data.budgeted|floatformat:0 }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Actual:</small><br>
+                                    <strong>${{ data.actual|floatformat:0 }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Variance:</small><br>
+                                    <strong class="{% if data.variance > 0 %}variance-negative{% elif data.variance < 0 %}variance-positive{% else %}variance-neutral{% endif %}">
+                                        ${{ data.variance|floatformat:0 }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Budget Data Available</h5>
+                            <p class="text-muted">No budget data found for consolidation report.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget by Timeframe -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt"></i> Budget Consolidation by Timeframe
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if consolidation_data.budget_by_timeframe %}
+                        {% for timeframe, data in consolidation_data.budget_by_timeframe.items %}
+                        <div class="report-card">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h6 class="font-weight-bold">{{ timeframe|title }}</h6>
+                                    <small class="text-muted">{{ data.count }} budgets</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Budgeted:</small><br>
+                                    <strong>${{ data.budgeted|floatformat:0 }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Actual:</small><br>
+                                    <strong>${{ data.actual|floatformat:0 }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Variance:</small><br>
+                                    <strong class="{% if data.variance > 0 %}variance-negative{% elif data.variance < 0 %}variance-positive{% else %}variance-neutral{% endif %}">
+                                        ${{ data.variance|floatformat:0 }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Timeframe Data Available</h5>
+                            <p class="text-muted">No timeframe data found for consolidation report.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Analysis -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building"></i> Department Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if consolidation_data.department_analysis %}
+                        {% for department, data in consolidation_data.department_analysis.items %}
+                        <div class="report-card">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h6 class="font-weight-bold">{{ department }}</h6>
+                                    <small class="text-muted">{{ data.count }} budgets</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Budgeted:</small><br>
+                                    <strong>${{ data.budgeted|floatformat:0 }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Actual:</small><br>
+                                    <strong>${{ data.actual|floatformat:0 }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Variance:</small><br>
+                                    <strong class="{% if data.variance > 0 %}variance-negative{% elif data.variance < 0 %}variance-positive{% else %}variance-neutral{% endif %}">
+                                        ${{ data.variance|floatformat:0 }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Department Data Available</h5>
+                            <p class="text-muted">No department data found for consolidation report.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Consolidation Report Actions</h5>
+                    <p class="card-text">Use this consolidated report to analyze budget performance across all categories and timeframes.</p>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-primary" onclick="exportReport()">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                        <a href="{% url 'finance:investment-planning' company.slug %}" class="btn btn-success">
+                            <i class="fas fa-chart-line"></i> Investment Planning
+                        </a>
+                        <a href="{% url 'finance:multi-year-planning' company.slug %}" class="btn btn-warning">
+                            <i class="fas fa-calendar-alt"></i> Multi-Year Planning
+                        </a>
+                        <a href="{% url 'finance:enhanced-budget-dashboard' company.slug %}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar"></i> Budget Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    console.log('Budget Consolidation Report loaded');
+});
+
+function exportReport() {
+    // This would typically generate and download a PDF or Excel report
+    alert('Report export functionality would be implemented here. This would generate a PDF or Excel file with the consolidation data.');
+}
+</script>
+{% endblock %}

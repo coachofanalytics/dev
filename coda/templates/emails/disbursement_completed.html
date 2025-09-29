@@ -1,0 +1,127 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Disbursement Completed - {{ site_name }}{% endblock %}
+
+{% block header_title %}Disbursement Completed{% endblock %}
+{% block header_subtitle %}Your disbursement has been successfully processed{% endblock %}
+
+{% block content_title %}Disbursement Successfully Completed{% endblock %}
+
+{% block content_message %}
+Your disbursement has been successfully processed and completed. Please find the transaction details below:
+{% endblock %}
+
+{% block additional_content %}
+<div class="success-box">
+    <h3>✅ Disbursement Completed Successfully</h3>
+    <p>Your funds have been successfully transferred and the disbursement is now complete.</p>
+</div>
+
+<div class="info-box">
+    <h3>Transaction Details</h3>
+    <p><strong>Disbursement ID:</strong> #{{ disbursement.id }}</p>
+    <p><strong>Amount:</strong> {{ disbursement.currency }} {{ disbursement.amount|floatformat:2 }}</p>
+    <p><strong>Recipient:</strong> {{ disbursement.recipient_name }}</p>
+    <p><strong>Method:</strong> {{ disbursement.disbursement_method|title }}</p>
+    {% if disbursement.payment_reference %}
+    <p><strong>Payment Reference:</strong> {{ disbursement.payment_reference }}</p>
+    {% endif %}
+    {% if disbursement.transaction_id %}
+    <p><strong>Transaction ID:</strong> {{ disbursement.transaction_id }}</p>
+    {% endif %}
+    <p><strong>Processed Date:</strong> {{ disbursement.disbursement_date|date:"F d, Y \a\t g:i A" }}</p>
+    <p><strong>Completed Date:</strong> {{ disbursement.completion_date|date:"F d, Y \a\t g:i A" }}</p>
+</div>
+
+{% if disbursement.budget_request %}
+<div class="info-box">
+    <h3>Original Request Details</h3>
+    <p><strong>Request ID:</strong> #{{ disbursement.budget_request.id }}</p>
+    <p><strong>Purpose:</strong> {{ disbursement.budget_request.purpose }}</p>
+    <p><strong>Department:</strong> {{ disbursement.budget_request.department.name }}</p>
+    <p><strong>Budget Category:</strong> {{ disbursement.budget_request.budget_category.name }}</p>
+    <p><strong>Requested By:</strong> {{ disbursement.budget_request.requester.get_full_name }}</p>
+</div>
+{% endif %}
+
+<div class="info-box">
+    <h3>Payment Method Details</h3>
+    {% if disbursement.disbursement_method == 'mpesa' %}
+    <p><strong>Method:</strong> MPESA Mobile Money</p>
+    {% if disbursement.recipient_phone %}
+    <p><strong>Phone Number:</strong> {{ disbursement.recipient_phone }}</p>
+    {% endif %}
+    <p><strong>Instructions:</strong> Check your phone for MPESA confirmation message</p>
+    {% elif disbursement.disbursement_method == 'bank_transfer' %}
+    <p><strong>Method:</strong> Bank Transfer</p>
+    {% if disbursement.bank_account %}
+    <p><strong>Account Number:</strong> {{ disbursement.bank_account }}</p>
+    {% endif %}
+    <p><strong>Instructions:</strong> Check your bank account for the transfer</p>
+    {% elif disbursement.disbursement_method == 'stanbic' %}
+    <p><strong>Method:</strong> Stanbic Bank Transfer</p>
+    {% if disbursement.bank_account %}
+    <p><strong>Account Number:</strong> {{ disbursement.bank_account }}</p>
+    {% endif %}
+    <p><strong>Instructions:</strong> Check your Stanbic account for the transfer</p>
+    {% elif disbursement.disbursement_method == 'cash' %}
+    <p><strong>Method:</strong> Cash Disbursement</p>
+    <p><strong>Instructions:</strong> Contact the finance department to collect your cash</p>
+    {% elif disbursement.disbursement_method == 'check' %}
+    <p><strong>Method:</strong> Check Disbursement</p>
+    <p><strong>Instructions:</strong> Contact the finance department to collect your check</p>
+    {% endif %}
+</div>
+
+<div class="success-box">
+    <h3>What Happens Next</h3>
+    <ul>
+        <li>Your funds have been successfully transferred</li>
+        <li>You should receive confirmation from your payment provider</li>
+        <li>Keep this email as proof of transaction</li>
+        <li>Contact support if you don't receive your funds within 24 hours</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Transaction Timeline</h3>
+    <ul>
+        <li><strong>Request Submitted:</strong> {{ disbursement.budget_request.request_date|date:"F d, Y \a\t g:i A" }}</li>
+        <li><strong>Request Approved:</strong> {{ disbursement.budget_request.updated_at|date:"F d, Y \a\t g:i A" }}</li>
+        <li><strong>Disbursement Processed:</strong> {{ disbursement.disbursement_date|date:"F d, Y \a\t g:i A" }}</li>
+        <li><strong>Disbursement Completed:</strong> {{ disbursement.completion_date|date:"F d, Y \a\t g:i A" }}</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin/finance/disbursementrequest/{{ disbursement.id }}/change/" class="action-button">
+        View Transaction Details
+    </a>
+</div>
+
+<div class="warning-box">
+    <h3>Important Reminders</h3>
+    <ul>
+        <li>Keep this email as proof of your transaction</li>
+        <li>Check your payment method for confirmation</li>
+        <li>Contact support if you have any issues</li>
+        <li>Report any discrepancies immediately</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Support Information</h3>
+    <p>If you have any questions or concerns about this disbursement:</p>
+    <ul>
+        <li><strong>Email:</strong> support@{{ site_url|cut:"https://"|cut:"http://" }}</li>
+        <li><strong>Phone:</strong> +1 (555) 123-4567</li>
+        <li><strong>Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</li>
+        <li><strong>Reference:</strong> Include Disbursement ID #{{ disbursement.id }} in all communications</li>
+    </ul>
+</div>
+
+<div class="success-box">
+    <h3>Thank You</h3>
+    <p>Thank you for using the {{ site_name }} automation system. We hope this process was smooth and efficient for you.</p>
+</div>
+{% endblock %}

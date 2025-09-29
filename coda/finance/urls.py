@@ -9,8 +9,20 @@ from .views import (
 # Import new unified payment views
 from . import payment_views
 
+# Import automation dashboard views
+from . import views_automation
+
+# Import enhanced budget views
+from . import views_enhanced_budget, views_finance_dashboard, views_legacy_dashboard, views_unified_department
+
+# Import user-friendly form views
+from . import views_forms
+
 app_name = 'finance'
 urlpatterns = [
+    #=============================FINANCE INDEX=====================================
+    path('', views.finance_index, name='finance-index'),
+    
     #=============================FINANCES=====================================
     path('statements/', views.openai_balancesheet, name='open_statements'),
     path('update_statements/<int:pk>', views.StatementsUpdateView.as_view(template_name="main/snippets_templates/generalform.html"), name='update_statements'),
@@ -139,4 +151,63 @@ urlpatterns = [
     path('analytics/kcc-optimization/', views.kcc_optimization_analytics, name='kcc-optimization-analytics'),
     path('analytics/export/', views.analytics_export, name='analytics-export'),
     path('analytics/api/', views.analytics_api, name='analytics-api'),
+    
+    #=============================AUTOMATION DASHBOARD=====================================
+    path('automation/', views_automation.automation_dashboard, name='automation-dashboard'),
+    path('automation/budget-requests/', views_automation.budget_requests_dashboard, name='budget-requests-dashboard'),
+    path('automation/disbursements/', views_automation.disbursements_dashboard, name='disbursements-dashboard'),
+    path('automation/policies/', views_automation.approval_policies_dashboard, name='approval-policies-dashboard'),
+    path('automation/audit-logs/', views_automation.audit_logs_dashboard, name='audit-logs-dashboard'),
+    path('automation/api/', views_automation.automation_dashboard_api, name='automation-dashboard-api'),
+    
+    #=============================AUTOMATED BUDGET ESTIMATION=====================================
+    path('automated-budget-estimation/', views.automated_budget_estimation, name='automated-budget-estimation'),
+    path('budget-consolidation/', views.budget_consolidation_dashboard, name='budget-consolidation-dashboard'),
+    
+    #=============================FINANCE DASHBOARD=====================================
+    # Finance dashboard
+    path('finance-dashboard/<str:company_slug>/', views_finance_dashboard.finance_dashboard, name='finance-dashboard'),
+    path('api/finance-dashboard/<str:company_slug>/', views_finance_dashboard.finance_dashboard_api, name='finance-dashboard-api'),
+    
+    # Enhanced Legacy Dashboard
+    path('legacy-dashboard/<str:company_slug>/', views_legacy_dashboard.enhanced_legacy_dashboard, name='enhanced-legacy-dashboard'),
+    path('legacy-dashboard/', views_legacy_dashboard.legacy_dashboard_redirect, name='legacy-dashboard-redirect'),
+    
+    #=============================ENHANCED BUDGET SYSTEM=====================================
+    # Enhanced budget dashboard
+    path('enhanced-budget-dashboard/<str:company_slug>/', views_enhanced_budget.enhanced_budget_dashboard, name='enhanced-budget-dashboard'),
+    
+    # Multi-timeframe planning
+    path('weekly-planning/<str:company_slug>/', views_enhanced_budget.weekly_budget_planning, name='weekly-budget-planning'),
+    path('monthly-planning/<str:company_slug>/', views_enhanced_budget.monthly_budget_planning, name='monthly-budget-planning'),
+    path('yearly-planning/<str:company_slug>/', views_enhanced_budget.yearly_budget_planning, name='yearly-budget-planning'),
+    path('multi-year-planning/<str:company_slug>/', views_enhanced_budget.multi_year_planning, name='multi-year-planning'),
+    
+    # CODA development estimation
+    path('coda-development-estimation/<str:company_slug>/', views_enhanced_budget.coda_development_estimation, name='coda-development-estimation'),
+    
+    # Investment planning
+    path('investment-planning/<str:company_slug>/', views_enhanced_budget.investment_planning, name='investment-planning'),
+    
+    # Budget consolidation report
+    path('consolidation-report/<str:company_slug>/', views_enhanced_budget.budget_consolidation_report, name='consolidation-report'),
+    
+    # API endpoints
+    path('api/create-budget-from-estimation/<str:company_slug>/', views_enhanced_budget.create_budget_from_estimation, name='create-budget-from-estimation'),
+    
+    #=============================UNIFIED DEPARTMENT DASHBOARD=====================================
+    # Unified department dashboard (serves all departments)
+    path('department/<str:department_name>/', views_unified_department.unified_department_dashboard, name='unified-department-dashboard'),
+    path('api/department/<str:department_name>/', views_unified_department.department_dashboard_api, name='department-dashboard-api'),
+    path('api/search-links/', views_unified_department.search_department_links, name='search-department-links'),
+    
+    #=============================USER-FRIENDLY BUDGET REQUEST FORMS=====================================
+    # Budget request forms for regular users
+    path('budget-requests/create/', views_forms.budget_request_form, name='budget_request_form'),
+    path('budget-requests/', views_forms.budget_requests_list, name='budget_requests_list'),
+    path('budget-requests/<int:pk>/', views_forms.budget_request_detail, name='budget_request_detail'),
+    path('budget-requests/<int:pk>/edit/', views_forms.budget_request_edit, name='budget_request_edit'),
+    path('budget-requests/<int:pk>/submit/', views_forms.submit_for_approval, name='submit_for_approval'),
+    path('budget-requests/<int:pk>/approve/', views_forms.approve_request, name='approve_request'),
+    path('budget-requests/<int:pk>/reject/', views_forms.reject_request, name='reject_request'),
 ]

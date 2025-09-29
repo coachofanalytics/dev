@@ -794,7 +794,7 @@ def task_assignment_random(employees):
 
 def defined_links(request):
     links = {
-        'My Meetings': reverse('management:meetings', kwargs={'status': 'company'}),
+        'My Meetings': reverse('management:meetings', kwargs={'status': 'company 2'}),
         'My Schedule': reverse('main:my_availability'),
         'My Sessions': reverse('management:user_session', args=[request.user]),
         'My Responses': reverse('professional_services:student_feedback'),

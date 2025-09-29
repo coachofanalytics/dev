@@ -13,49 +13,49 @@
             <div class="col-md-6">
                 <div class="row text-white footer-liinks-div">
                     <div class="col-md-3">
-                        <h4 style="font-size: 16px;" >MY ACCOUNT</h4>
+                        <h4 style="font-size: 16px; color: white;" >MY ACCOUNT</h4>
                         <div>
                             {% if user.is_authenticated %}
                             <ul>
-                                <li><a href="{% url 'account-logout'%}">Log Out</a></li>
+                                <li><a href="{% url 'account-logout'%}" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Log Out</a></li>
                             </ul>
                             {% else %}
                             <ul>
-                                <li><a href="{% url 'accounts:account-login' %}">Sign In</a></li>
-                                <li><a href="{% url 'accounts:join' %}">Register</a></li>
+                                <li><a href="{% url 'accounts:account-login' %}" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Sign In</a></li>
+                                <li><a href="{% url 'accounts:join' %}" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Register</a></li>
                             </ul>
                             {% endif %}
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <h4 style="font-size: 16px;" >COMPANY</h4>
+                        <h4 style="font-size: 16px; color: white;" >COMPANY</h4>
                         <div>
                             <ul>
-                                <li><a href="/about">Our Story</a></li>
-                                <li><a href="/why-coda">Why CODA</a></li>
-                                <li><a href="/contact">Contacts</a></li>
-                                <li><a href="/careers">Careers</a></li>
+                                <li><a href="/about" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Our Story</a></li>
+                                <li><a href="/why-coda" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Why CODA</a></li>
+                                <li><a href="/contact" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Contacts</a></li>
+                                <li><a href="/careers" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Careers</a></li>
                             </ul>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <h4 style="font-size: 16px;" >SUPPORT</h4>
+                        <h4 style="font-size: 16px; color: white;" >SUPPORT</h4>
                         <div>
                             <ul>
-                                <li><a href="/help">FAQ</a></li>
-                                <li><a href="/student-support">Student Support</a></li>
-                                <li><a href="/customer-support">Customer Support</a></li>
-                                <li><a href="/status">System Status</a></li>
+                                <li><a href="/help" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">FAQ</a></li>
+                                <li><a href="/student-support" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Student Support</a></li>
+                                <li><a href="/customer-support" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Customer Support</a></li>
+                                <li><a href="/status" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">System Status</a></li>
                             </ul>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div style="margin-top: 40px;">
                             <ul>
-                                <li><a href="/privacy">Privacy Policy</a></li>
-                                <li><a href="/terms">Terms Of Use</a></li>
-                                <li><a href="/cookies">Cookie Policy</a></li>
-                                <li><a href="/copyright">Copyright</a></li>
+                                <li><a href="/privacy" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Privacy Policy</a></li>
+                                <li><a href="/terms" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Terms Of Use</a></li>
+                                <li><a href="/cookies" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Cookie Policy</a></li>
+                                <li><a href="/copyright" style="color: white; text-decoration: none;" onmouseover="this.style.color='#e7ad4a'" onmouseout="this.style.color='white'">Copyright</a></li>
                             </ul>
                         </div>
                     </div>

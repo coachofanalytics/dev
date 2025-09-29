@@ -7,7 +7,7 @@
 <style>
 .unified-dashboard {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #243865 0%, #001f3f 100%);
     padding: 2rem 0;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .role-badge {
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, #243865, #E7AD4A);
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 20px;
@@ -53,7 +53,7 @@
 }
 
 .unified-dashboard .quick-action-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #243865 0%, #001f3f 100%) !important;
     border-radius: 15px !important;
     padding: 1.5rem !important;
     text-decoration: none !important;
@@ -61,7 +61,7 @@
     transition: all 0.3s ease !important;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
     backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(231, 173, 74, 0.3) !important;
     text-align: center !important;
     display: flex !important;
     flex-direction: column !important;
@@ -238,6 +238,8 @@
                         <i class="fas fa-file-alt"></i>
                     {% elif link_name == 'My Sessions' %}
                         <i class="fas fa-graduation-cap"></i>
+                    {% elif link_name == 'Job Placement' %}
+                        <i class="fas fa-briefcase"></i>
                     {% elif link_name == 'My Time' %}
                         <i class="fas fa-clock"></i>
                     {% elif link_name == 'My Meetings' %}

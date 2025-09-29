@@ -1,0 +1,871 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ department_display_name }} Dashboard{% endblock %}
+
+{% block extra_head %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#667eea">
+<meta name="description" content="{{ department_display_name }} Dashboard - Unified department management system">
+<link rel="manifest" href="{% url 'finance:department-manifest' department_name %}">
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .unified-department-dashboard {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .department-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .department-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .department-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .department-selector {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .department-tabs {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .department-tab {
+        padding: 10px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        background: white;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .department-tab:hover,
+    .department-tab.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .dashboard-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .dashboard-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 20px;
+        text-align: center;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .section-description {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 25px;
+        font-style: italic;
+    }
+    
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .menu-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #495057;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .menu-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s;
+    }
+    
+    .menu-item:hover::before {
+        left: 100%;
+    }
+    
+    .menu-item:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        text-decoration: none;
+    }
+    
+    .menu-item:hover .menu-icon {
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .menu-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .menu-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .menu-description {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-bottom: 0;
+    }
+    
+    .quick-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .stat-item {
+        display: inline-block;
+        margin: 0 20px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .subcategory-section {
+        margin-bottom: 30px;
+    }
+    
+    .subcategory-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .link-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-left: 20px;
+    }
+    
+    .link-item {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .link-item:hover {
+        border-color: #667eea;
+        background: #f8f9fa;
+        color: #667eea;
+        text-decoration: none;
+        transform: translateX(5px);
+    }
+    
+    .link-name {
+        font-weight: 500;
+        flex-grow: 1;
+    }
+    
+    .link-icon {
+        color: #6c757d;
+        margin-left: 10px;
+    }
+    
+    /* Search Functionality Styles */
+    .search-container {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        position: relative;
+    }
+    
+    .search-box {
+        position: relative;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 15px 50px 15px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1.2rem;
+    }
+    
+    .clear-search {
+        position: absolute;
+        right: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6c757d;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 5px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    
+    .clear-search:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 1000;
+        margin-top: 5px;
+    }
+    
+    .search-result-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #f8f9fa;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #495057;
+    }
+    
+    .search-result-item:hover {
+        background: #f8f9fa;
+        text-decoration: none;
+        color: #495057;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .search-result-icon {
+        margin-right: 15px;
+        color: #667eea;
+        font-size: 1.2rem;
+        width: 20px;
+    }
+    
+    .search-result-content {
+        flex: 1;
+    }
+    
+    .search-result-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .search-result-category {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .search-highlight {
+        background: #fff3cd;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    
+    .no-search-results {
+        padding: 20px;
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    /* Notifications Styles */
+    .notifications-container {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .notifications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .notification-item {
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .notification-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .notification-header i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        flex: 1;
+    }
+    
+    .notification-priority {
+        background: #667eea;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .notification-message {
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+    
+    .notification-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    /* Notification Types */
+    .notification-warning {
+        border-left-color: #ffc107;
+        background: #fff8e1;
+    }
+    
+    .notification-error {
+        border-left-color: #dc3545;
+        background: #fdeaea;
+    }
+    
+    .notification-success {
+        border-left-color: #28a745;
+        background: #e8f5e8;
+    }
+    
+    .notification-info {
+        border-left-color: #17a2b8;
+        background: #e1f7fa;
+    }
+    
+    /* Announcements Styles */
+    .announcements-container {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .announcements-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .announcement-item {
+        padding: 20px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .announcement-item.featured {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+    
+    .announcement-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .announcement-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .announcement-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .announcement-badge {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .announcement-content {
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+    
+    .announcement-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .announcement-item.featured .announcement-meta {
+        color: rgba(255,255,255,0.8);
+    }
+
+    @media (max-width: 768px) {
+        .menu-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .department-title {
+            font-size: 2rem;
+        }
+        
+        .stat-item {
+            margin: 10px;
+        }
+        
+        .department-tabs {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .search-input {
+            padding: 12px 45px 12px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .search-icon {
+            right: 15px;
+            font-size: 1rem;
+        }
+        
+        .clear-search {
+            right: 45px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="unified-department-dashboard">
+    <div class="container">
+        <!-- Department Header -->
+        <div class="department-header">
+            <h1 class="department-title">{{ department_display_name|upper }}</h1>
+            <p class="department-subtitle">Unified Dashboard with Modern Features</p>
+        </div>
+
+        <!-- Search Functionality -->
+        {% if search_enabled %}
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="department-search" placeholder="Search links across all departments..." class="search-input">
+                <i class="fas fa-search search-icon"></i>
+                <button type="button" id="clear-search" class="clear-search" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="search-results" class="search-results" style="display: none;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Notifications -->
+        {% if notifications %}
+        <div class="notifications-container">
+            <h4><i class="fas fa-bell"></i> Important Updates</h4>
+            <div class="notifications-list">
+                {% for notification in notifications %}
+                <div class="notification-item notification-{{ notification.priority }} notification-{{ notification.notification_type }}">
+                    <div class="notification-header">
+                        <i class="fas fa-{% if notification.notification_type == 'warning' %}exclamation-triangle{% elif notification.notification_type == 'error' %}times-circle{% elif notification.notification_type == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        <span class="notification-title">{{ notification.title }}</span>
+                        <span class="notification-priority">{{ notification.priority|title }}</span>
+                    </div>
+                    <div class="notification-message">{{ notification.message }}</div>
+                    {% if notification.action_url and notification.action_text %}
+                    <div class="notification-actions">
+                        <a href="{{ notification.action_url }}" class="btn btn-sm btn-primary">{{ notification.action_text }}</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Announcements -->
+        {% if announcements %}
+        <div class="announcements-container">
+            <h4><i class="fas fa-bullhorn"></i> Department Announcements</h4>
+            <div class="announcements-list">
+                {% for announcement in announcements %}
+                <div class="announcement-item {% if announcement.is_featured %}featured{% endif %}">
+                    <div class="announcement-header">
+                        <span class="announcement-title">{{ announcement.title }}</span>
+                        {% if announcement.is_featured %}
+                        <span class="announcement-badge">Featured</span>
+                        {% endif %}
+                    </div>
+                    <div class="announcement-content">{{ announcement.content }}</div>
+                    <div class="announcement-meta">
+                        <small>By {{ announcement.created_by }} • {{ announcement.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Department Selector -->
+        <div class="department-selector">
+            <h4>Select Department</h4>
+            <div class="department-tabs">
+                <a href="?department=finance" class="department-tab {% if department_name == 'finance' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Finance
+                </a>
+                <a href="?department=management" class="department-tab {% if department_name == 'management' %}active{% endif %}">
+                    <i class="fas fa-cogs"></i> Management
+                </a>
+                <a href="?department=hr" class="department-tab {% if department_name == 'hr' %}active{% endif %}">
+                    <i class="fas fa-users"></i> HR
+                </a>
+                <a href="?department=it" class="department-tab {% if department_name == 'it' %}active{% endif %}">
+                    <i class="fas fa-laptop-code"></i> IT
+                </a>
+                <a href="?department=marketing" class="department-tab {% if department_name == 'marketing' %}active{% endif %}">
+                    <i class="fas fa-bullhorn"></i> Marketing
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Stats (Department-specific) -->
+        {% if department_stats %}
+        <div class="quick-stats">
+            {% for stat in department_stats %}
+            <div class="stat-item">
+                <span class="stat-value">{{ stat.value }}</span>
+                <span class="stat-label">{{ stat.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Department Sections -->
+        <div class="row">
+            {% for section in department_sections %}
+            <div class="col-lg-6">
+                <div class="dashboard-section">
+                    <h3 class="section-title">{{ section.title }}</h3>
+                    <p class="section-description">{{ section.description }}</p>
+                    
+                    {% for subcategory in section.subcategories %}
+                    <div class="subcategory-section">
+                        <div class="subcategory-title">{{ subcategory.name }}</div>
+                        <div class="link-grid">
+                            {% for link in subcategory.links %}
+                            <a href="{{ link.url }}" class="link-item" target="_blank">
+                                <span class="link-name">{{ link.name }}</span>
+                                <i class="fas fa-external-link-alt link-icon"></i>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Enhanced Features Section -->
+        <div class="dashboard-section">
+            <h3 class="section-title">Enhanced {{ department_config.name }} Features</h3>
+            <p class="section-description">Modern capabilities powered by our unified dashboard system</p>
+            
+            <div class="menu-grid">
+                {% for feature in enhanced_features %}
+                <a href="{{ feature.url }}" class="menu-item">
+                    <i class="{{ feature.icon }} menu-icon"></i>
+                    <div class="menu-title">{{ feature.title }}</div>
+                    <div class="menu-description">{{ feature.description }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+$(document).ready(function() {
+    console.log('Unified Department Dashboard loaded for {{ department_display_name }}');
+    
+    // Search functionality
+    {% if search_enabled %}
+    var allLinks = [];
+    
+    // Collect all links from the current page
+    $('.link-item, .menu-item').each(function() {
+        var $this = $(this);
+        var linkData = {
+            title: $this.find('.link-name, .menu-title').text().trim(),
+            url: $this.attr('href'),
+            category: $this.closest('.subcategory-title').text().trim() || $this.closest('.section-title').text().trim(),
+            element: this
+        };
+        if (linkData.title && linkData.url) {
+            allLinks.push(linkData);
+        }
+    });
+    
+    console.log('Collected', allLinks.length, 'links for search');
+    
+    // Search input functionality
+    $('#department-search').on('input', function() {
+        var query = $(this).val().toLowerCase().trim();
+        var $results = $('#search-results');
+        var $clearBtn = $('#clear-search');
+        
+        if (query.length < 2) {
+            $results.hide();
+            $clearBtn.hide();
+            return;
+        }
+        
+        $clearBtn.show();
+        
+        // Filter links based on query
+        var filteredLinks = allLinks.filter(function(link) {
+            return link.title.toLowerCase().includes(query) || 
+                   link.category.toLowerCase().includes(query);
+        });
+        
+        // Display results
+        if (filteredLinks.length > 0) {
+            var resultsHtml = '';
+            filteredLinks.slice(0, 10).forEach(function(link) {
+                var highlightedTitle = link.title.replace(
+                    new RegExp('(' + query + ')', 'gi'), 
+                    '<span class="search-highlight">$1</span>'
+                );
+                
+                resultsHtml += `
+                    <a href="${link.url}" class="search-result-item" target="_blank">
+                        <i class="fas fa-external-link-alt search-result-icon"></i>
+                        <div class="search-result-content">
+                            <div class="search-result-title">${highlightedTitle}</div>
+                            <div class="search-result-category">${link.category}</div>
+                        </div>
+                    </a>
+                `;
+            });
+            
+            if (filteredLinks.length > 10) {
+                resultsHtml += `
+                    <div class="no-search-results">
+                        Showing 10 of ${filteredLinks.length} results. Refine your search for more specific results.
+                    </div>
+                `;
+            }
+            
+            $results.html(resultsHtml).show();
+        } else {
+            $results.html('<div class="no-search-results">No results found. Try a different search term.</div>').show();
+        }
+    });
+    
+    // Clear search functionality
+    $('#clear-search').on('click', function() {
+        $('#department-search').val('');
+        $('#search-results').hide();
+        $(this).hide();
+    });
+    
+    // Hide search results when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.search-container').length) {
+            $('#search-results').hide();
+        }
+    });
+    
+    // Search keyboard shortcuts
+    $('#department-search').on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            $('#clear-search').click();
+        }
+    });
+    {% endif %}
+    
+    // Add smooth scrolling for better UX
+    $('a[href^="#"]').on('click', function(event) {
+        var target = $(this.getAttribute('href'));
+        if (target.length) {
+            event.preventDefault();
+            $('html, body').stop().animate({
+                scrollTop: target.offset().top - 100
+            }, 1000);
+        }
+    });
+    
+    // Add loading states for external links
+    $('a[target="_blank"]').on('click', function() {
+        var $this = $(this);
+        var originalText = $this.find('.link-name').text();
+        $this.find('.link-name').text('Loading...');
+        
+        // Reset after 3 seconds as fallback
+        setTimeout(function() {
+            $this.find('.link-name').text(originalText);
+        }, 3000);
+    });
+    
+    // Add hover effects for menu items
+    $('.menu-item').hover(
+        function() {
+            $(this).find('.menu-icon').addClass('fa-spin');
+        },
+        function() {
+            $(this).find('.menu-icon').removeClass('fa-spin');
+        }
+    );
+    
+    // Auto-refresh stats every 5 minutes
+    setInterval(function() {
+        console.log('Refreshing {{ department_display_name }} dashboard stats...');
+        // You can add AJAX calls here to refresh the quick stats
+    }, 300000);
+});
+</script>
+{% endblock %}

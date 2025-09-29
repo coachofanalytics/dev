@@ -1,0 +1,406 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Automated Budget Estimation - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .estimation-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .analysis-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-left: 4px solid #667eea;
+    }
+    
+    .metric-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid #e9ecef;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .category-breakdown {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s ease;
+    }
+    
+    .recommendation-item {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .variance-positive {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .variance-negative {
+        color: #28a745;
+        font-weight: bold;
+    }
+    
+    .variance-neutral {
+        color: #6c757d;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="estimation-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="fas fa-robot me-2"></i>
+                            Automated Budget Estimation
+                        </h2>
+                        <p class="mb-0">AI-powered budget estimation based on historical spending patterns</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h4>{{ company.name }}</h4>
+                        <small>Generated on {{ "now"|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="analysis-card">
+                <form method="post" class="row align-items-end">
+                    {% csrf_token %}
+                    <div class="col-md-4">
+                        <label for="department_id" class="form-label">Filter by Department</label>
+                        <select name="department_id" id="department_id" class="form-select">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if selected_department and selected_department.id == dept.id %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Apply Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">
+                    {% if spending_analysis.total_spent %}
+                        ${{ spending_analysis.total_spent|floatformat:2 }}
+                    {% else %}
+                        $0.00
+                    {% endif %}
+                </div>
+                <div class="metric-label">Total Spent (3 months)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">
+                    {% if budget_estimates.total_estimate %}
+                        ${{ budget_estimates.total_estimate|floatformat:2 }}
+                    {% else %}
+                        $0.00
+                    {% endif %}
+                </div>
+                <div class="metric-label">Next Month Estimate</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">
+                    {% if spending_analysis.summary.total_categories %}
+                        {{ spending_analysis.summary.total_categories }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </div>
+                <div class="metric-label">Active Categories</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">
+                    {% if variance_analysis.summary.total_variance %}
+                        {% if variance_analysis.summary.total_variance > 0 %}
+                            <span class="variance-positive">+${{ variance_analysis.summary.total_variance|floatformat:2 }}</span>
+                        {% elif variance_analysis.summary.total_variance < 0 %}
+                            <span class="variance-negative">-${{ variance_analysis.summary.total_variance|floatformat:2|slice:"1:" }}</span>
+                        {% else %}
+                            <span class="variance-neutral">$0.00</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="variance-neutral">$0.00</span>
+                    {% endif %}
+                </div>
+                <div class="metric-label">Budget Variance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spending Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Spending Analysis (Last 3 Months)
+                </h5>
+                {% if spending_analysis.category_analysis %}
+                    <div class="category-breakdown">
+                        {% for category, data in spending_analysis.category_analysis.items %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold">{{ category }}</span>
+                                    <span class="text-muted">${{ data.total_spent|floatformat:2 }}</span>
+                                </div>
+                                <div class="progress-bar-custom">
+                                    <div class="progress-fill" style="width: {{ data.percentage_of_total }}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">{{ data.transaction_count }} transactions</small>
+                                    <small class="text-muted">{{ data.percentage_of_total|floatformat:1 }}%</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No spending data available for the selected period.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Budget Estimates -->
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-calculator me-2"></i>
+                    Next Month Budget Estimates
+                </h5>
+                {% if budget_estimates.estimates %}
+                    <div class="category-breakdown">
+                        {% for category, amount in budget_estimates.estimates.items %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold">{{ category }}</span>
+                                    <span class="text-primary fw-bold">${{ amount|floatformat:2 }}</span>
+                                </div>
+                                <div class="progress-bar-custom">
+                                    <div class="progress-fill" style="width: {% widthratio amount budget_estimates.total_estimate 100 %}%"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No budget estimates available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Variance Analysis -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="analysis-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Budget Variance Analysis
+                </h5>
+                {% if variance_analysis.variance_analysis %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Actual</th>
+                                    <th>Budget</th>
+                                    <th>Variance</th>
+                                    <th>Variance %</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category, data in variance_analysis.variance_analysis.items %}
+                                    <tr>
+                                        <td class="fw-bold">{{ category }}</td>
+                                        <td>${{ data.actual|floatformat:2 }}</td>
+                                        <td>${{ data.budget|floatformat:2 }}</td>
+                                        <td>
+                                            {% if data.variance > 0 %}
+                                                <span class="variance-positive">+${{ data.variance|floatformat:2 }}</span>
+                                            {% elif data.variance < 0 %}
+                                                <span class="variance-negative">-${{ data.variance|floatformat:2|slice:"1:" }}</span>
+                                            {% else %}
+                                                <span class="variance-neutral">$0.00</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if data.variance_percentage > 0 %}
+                                                <span class="variance-positive">+{{ data.variance_percentage|floatformat:1 }}%</span>
+                                            {% elif data.variance_percentage < 0 %}
+                                                <span class="variance-negative">{{ data.variance_percentage|floatformat:1 }}%</span>
+                                            {% else %}
+                                                <span class="variance-neutral">0.0%</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if data.status == 'over_budget' %}
+                                                <span class="badge bg-danger">Over Budget</span>
+                                            {% elif data.status == 'under_budget' %}
+                                                <span class="badge bg-success">Under Budget</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">On Budget</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No variance data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="analysis-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    AI Recommendations
+                </h5>
+                {% if recommendations.recommendations %}
+                    {% for recommendation in recommendations.recommendations %}
+                        <div class="recommendation-item">
+                            <i class="fas fa-arrow-right me-2"></i>
+                            {{ recommendation }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recommendations available at this time.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Consolidated Report Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="analysis-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Consolidated Budget Report
+                </h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ consolidated_report.summary.legacy_budget_total|floatformat:2 }}</div>
+                            <div class="metric-label">Legacy Budget Total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ consolidated_report.summary.legacy_coda_budget_total|floatformat:2 }}</div>
+                            <div class="metric-label">CodaBudget Total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ consolidated_report.summary.combined_total|floatformat:2 }}</div>
+                            <div class="metric-label">Combined Total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ consolidated_report.summary.total_categories }}</div>
+                            <div class="metric-label">Total Categories</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'finance:budget-consolidation-dashboard' %}" class="btn btn-primary me-3">
+                <i class="fas fa-chart-pie me-1"></i> View Consolidation Dashboard
+            </a>
+            <a href="{% url 'finance:automation-dashboard' %}" class="btn btn-secondary me-3">
+                <i class="fas fa-robot me-1"></i> Automation Dashboard
+            </a>
+            <button class="btn btn-success" onclick="exportReport()">
+                <i class="fas fa-download me-1"></i> Export Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportReport() {
+    // Implement export functionality
+    alert('Export functionality will be implemented in the next phase.');
+}
+</script>
+{% endblock %}
+

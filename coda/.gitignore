@@ -195,6 +195,9 @@ fix_allauth_imports.py
 coda_dev.db
 coda_test.db
 coda_test.db-journal
+coda_project/coda_dev.db
+coda_project/coda_test.db
+coda_project/coda_prod.db
 
 # Development-specific files
 bypass_email_verification.py
@@ -246,3 +249,198 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Heroku deployment exclusions for smaller slug size
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and debugging
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython
+cython_debug/
+
+# Ruff
+.ruff_cache/
+.ruff.toml
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Large media files that should be on CDN
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mkv
+*.m4v
+
+# Large image files (keep only optimized versions)
+*.psd
+*.ai
+*.sketch
+*.fig
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Environment files (keep .env.example)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Local development files
+local_settings.py
+settings_old.py
+minimal_local_settings.py
+ultra_minimal_settings.py
+
+# Test files
+test_*.py
+*_test.py
+tests/
+test/
+spec/
+specs/
+
+# Documentation (keep only essential)
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE.md
+
+# Deployment scripts
+deploy/
+deployment/
+scripts/
+*.sh
+!deploy.sh
+
+# Monitoring and analytics
+monitoring/
+analytics/
+metrics/
+
+# Cache directories
+.cache/
+cache/
+tmp/
+temp/

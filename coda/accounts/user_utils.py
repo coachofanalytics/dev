@@ -357,6 +357,18 @@ def get_user_permissions(user):
     """
     Get user permissions based on category and subcategory
     """
+    # Check if user is authenticated and has category attribute
+    if not user.is_authenticated or not hasattr(user, 'category'):
+        return {
+            "can_apply_jobs": False,
+            "can_access_courses": False,
+            "can_access_finance": False,
+            "can_access_management": False,
+            "can_access_analytics": False,
+            "can_access_investment": False,
+            "can_access_visitor_resources": False,
+        }
+    
     permissions = {
         "can_apply_jobs": user.category == CategoryChoices.APPLICANT,
         "can_access_courses": user.category == CategoryChoices.STUDENT,

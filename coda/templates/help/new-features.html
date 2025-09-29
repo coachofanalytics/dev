@@ -1,0 +1,398 @@
+{% extends "main/layout.html" %}
+{% load static %}
+
+{% block title %}New Features - CODA Help{% endblock %}
+
+{% block extra_head %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CODA New Features and Updates">
+<style>
+    .features-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+    
+    .features-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .features-title {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+    
+    .features-subtitle {
+        font-size: 1.3rem;
+        color: #6c757d;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+    
+    .feature-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+    
+    .feature-description {
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    
+    .feature-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .feature-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .badge-new {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-enhanced {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .badge-improved {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .feature-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-feature {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary {
+        background: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+    }
+    
+    .btn-secondary:hover {
+        background: #e9ecef;
+        color: #495057;
+        text-decoration: none;
+    }
+    
+    .search-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 40px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .search-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .help-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 40px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+    
+    .help-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+    
+    .help-description {
+        color: #6c757d;
+        margin-bottom: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="features-container">
+    <div class="features-header">
+        <h1 class="features-title">New Features & Updates</h1>
+        <p class="features-subtitle">
+            Discover the latest enhancements and improvements to the CODA platform
+        </p>
+    </div>
+    
+    <div class="search-section">
+        <h2 class="search-title">
+            <i class="fas fa-search"></i> Search Features
+        </h2>
+        <input type="text" class="search-input" placeholder="Search for specific features or updates...">
+    </div>
+    
+    <div class="features-grid">
+        <!-- Enhanced Search Functionality -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-search-plus"></i>
+            </div>
+            <h3 class="feature-title">Enhanced Search Functionality</h3>
+            <p class="feature-description">
+                Our search system has been completely redesigned with improved algorithms, 
+                faster results, and better filtering options across all departments.
+            </p>
+            <div class="feature-badges">
+                <span class="feature-badge badge-new">New</span>
+                <span class="feature-badge badge-enhanced">Enhanced</span>
+            </div>
+            <div class="feature-actions">
+                <a href="#" class="btn-feature btn-primary">Try It Now</a>
+                <a href="#" class="btn-feature btn-secondary">Learn More</a>
+            </div>
+        </div>
+        
+        <!-- Unified Department Dashboard -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <h3 class="feature-title">Unified Department Dashboard</h3>
+            <p class="feature-description">
+                A comprehensive dashboard that provides real-time insights, 
+                streamlined navigation, and personalized views for each department.
+            </p>
+            <div class="feature-badges">
+                <span class="feature-badge badge-new">New</span>
+                <span class="feature-badge badge-improved">Improved</span>
+            </div>
+            <div class="feature-actions">
+                <a href="{% url 'dashboard:unified_dashboard' %}" class="btn-feature btn-primary">View Dashboard</a>
+                <a href="#" class="btn-feature btn-secondary">Documentation</a>
+            </div>
+        </div>
+        
+        <!-- Advanced Budget Planning -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="feature-title">Advanced Budget Planning</h3>
+            <p class="feature-description">
+                New multi-year planning tools, automated estimations, 
+                and enhanced consolidation features for better financial management.
+            </p>
+            <div class="feature-badges">
+                <span class="feature-badge badge-enhanced">Enhanced</span>
+                <span class="feature-badge badge-new">New</span>
+            </div>
+            <div class="feature-actions">
+                <a href="{% url 'finance:multi-year-planning' company_slug='coda' %}" class="btn-feature btn-primary">Start Planning</a>
+                <a href="#" class="btn-feature btn-secondary">Guide</a>
+            </div>
+        </div>
+        
+        <!-- Real-time Notifications -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <h3 class="feature-title">Real-time Notifications</h3>
+            <p class="feature-description">
+                Instant updates for important events, system alerts, 
+                and department announcements with customizable preferences.
+            </p>
+            <div class="feature-badges">
+                <span class="feature-badge badge-new">New</span>
+                <span class="feature-badge badge-improved">Improved</span>
+            </div>
+            <div class="feature-actions">
+                <a href="#" class="btn-feature btn-primary">Configure</a>
+                <a href="#" class="btn-feature btn-secondary">Settings</a>
+            </div>
+        </div>
+        
+        <!-- Enhanced Security -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="feature-title">Enhanced Security Features</h3>
+            <p class="feature-description">
+                Improved authentication, better data protection, 
+                and advanced security monitoring for your peace of mind.
+            </p>
+            <div class="feature-badges">
+                <span class="feature-badge badge-enhanced">Enhanced</span>
+                <span class="feature-badge badge-improved">Improved</span>
+            </div>
+            <div class="feature-actions">
+                <a href="#" class="btn-feature btn-primary">Security Center</a>
+                <a href="#" class="btn-feature btn-secondary">Learn More</a>
+            </div>
+        </div>
+        
+        <!-- Mobile Optimization -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h3 class="feature-title">Mobile Optimization</h3>
+            <p class="feature-description">
+                Fully responsive design with mobile-first approach, 
+                touch-friendly interfaces, and offline capabilities.
+            </p>
+            <div class="feature-badges">
+                <span class="feature-badge badge-new">New</span>
+                <span class="feature-badge badge-improved">Improved</span>
+            </div>
+            <div class="feature-actions">
+                <a href="#" class="btn-feature btn-primary">Mobile App</a>
+                <a href="#" class="btn-feature btn-secondary">Features</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="help-section">
+        <h2 class="help-title">
+            <i class="fas fa-question-circle"></i> Need Help with New Features?
+        </h2>
+        <p class="help-description">
+            Our support team is here to help you make the most of these new features. 
+            Contact us for personalized assistance and training.
+        </p>
+        <div class="feature-actions" style="justify-content: center;">
+            <a href="{% url 'main:about' %}" class="btn-feature btn-primary">Contact Support</a>
+            <a href="{% url 'dashboard:unified_dashboard' %}" class="btn-feature btn-secondary">Return to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-input');
+    const featureCards = document.querySelectorAll('.feature-card');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        featureCards.forEach(card => {
+            const title = card.querySelector('.feature-title').textContent.toLowerCase();
+            const description = card.querySelector('.feature-description').textContent.toLowerCase();
+            
+            if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

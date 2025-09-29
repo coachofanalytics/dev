@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.shortcuts import redirect, render,get_object_or_404
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 # Optional import - removed during optimization to reduce slug size
 try:
     import openai
@@ -320,9 +321,12 @@ def display_service(request, *args, **kwargs):
         asset_image_url = asset.service_image.url
     except Assets.DoesNotExist:
         asset_image_url = None
-    investment_content = InvestmentContent.objects.first()
-
-    description = investment_content.description if investment_content else "No description available"
+    try:
+        investment_content = InvestmentContent.objects.first()
+        description = investment_content.description if investment_content and investment_content.description else "No description available"
+    except Exception as e:
+        print(f"Error accessing InvestmentContent: {e}")
+        description = "No description available"
 
     testimonials, selected_class = get_testimonials()
 
@@ -344,7 +348,7 @@ def display_service(request, *args, **kwargs):
     #Description for IT Integrated Solutions & Consultancy 
     descriptions = InvestmentContent.objects.filter(title='IT Integrated Solutions & Consultancy')
     if descriptions.exists():
-        descriptioned = descriptions.first().description
+        descriptioned = descriptions.first().description or "No description available"
         
     else:
         prompt = 'make description that shows that At CODA we help businesses and corporations in developing it solutions for to meet their objectives'
@@ -756,24 +760,24 @@ def team(request,title):
                 )
             ).values('education_point'))
         
-        #from task history model - Temporarily disabled for migration fix
-        # employee_taskhistory_subquery = get_sqsum('point')(TaskHistory.objects.filter(employee_id__profile=OuterRef('pk')).values('point'))
+        #from task history model    
+        employee_taskhistory_subquery = get_sqsum('point')(TaskHistory.objects.filter(employee_id__profile=OuterRef('pk')).values('point'))
         
-        #from requirement model(counting duration-task hour as point for staff) - Temporarily disabled for migration fix
-        # employee_requiremet_subquery = get_sqsum('duration')(Requirement.objects.filter(assigned_to__profile=OuterRef('pk')).values('duration'))
+        #from requirement model(counting duration-task hour as point for staff)
+        employee_requiremet_subquery = get_sqsum('duration')(Requirement.objects.filter(assigned_to__profile=OuterRef('pk')).values('duration'))
         
-        #from Training model - Temporarily disabled for migration fix
-        # employee_training_subquery = get_sqsum('level_point')(Training.objects.filter(presenter__profile=OuterRef('pk')).annotate(
-        #     level_point=Case(
-        #         When(level=1, then=F('level') * 5.0),
-        #         When(level=2, then=F('level') * 10.0),
-        #         When(level=3, then=F('level') * 15.0),
-        #         When(level=4, then=F('level') * 20.0),
-        #         When(level=5, then=F('level') * 25.0),
-        #         default=F('level'),  # Default case, if level doesn't match any condition
-        #         output_field=FloatField()
-        #     )
-        # ).values('level_point'))
+        #from Training model
+        employee_training_subquery = get_sqsum('level_point')(Training.objects.filter(presenter__profile=OuterRef('pk')).annotate(
+            level_point=Case(
+                When(level=1, then=F('level') * 5.0),
+                When(level=2, then=F('level') * 10.0),
+                When(level=3, then=F('level') * 15.0),
+                When(level=4, then=F('level') * 20.0),
+                When(level=5, then=F('level') * 25.0),
+                default=F('level'),  # Default case, if level doesn't match any condition
+                output_field=FloatField()
+            )
+        ).values('level_point'))
         
         #from clientassesment model(takeing latest totalpoints for that user)
         employee_clientassesment = ClientAssessment.objects.filter(email=OuterRef('user__email')).order_by('-rating_date')[:1]
@@ -1091,11 +1095,366 @@ class UserProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
             return True
         return False
 
-def department_reports(request,slug=None):
-    return render(request, "main/departments/finance_landing_page.html", {"title": "Finance"})
+def get_department_real_time_stats(department_name, user):
+    """
+    Get real-time statistics for a department based on actual data
+    """
+    try:
+        stats = []
+        
+        if department_name == 'finance':
+            # Finance-specific stats
+            try:
+                from finance.models import BudgetRequest, Transaction, Budget
+                
+                # Budget requests stats
+                total_requests = BudgetRequest.objects.count()
+                pending_requests = BudgetRequest.objects.filter(status='submitted').count()
+                approved_requests = BudgetRequest.objects.filter(status='approved').count()
+                
+                # Budget stats
+                total_budget = Budget.objects.aggregate(total=Sum('estimated_amount'))['total'] or 0
+                
+                stats = [
+                    {'label': 'Total Budget Requests', 'value': total_requests, 'icon': 'fas fa-file-invoice-dollar'},
+                    {'label': 'Pending Requests', 'value': pending_requests, 'icon': 'fas fa-clock'},
+                    {'label': 'Approved Requests', 'value': approved_requests, 'icon': 'fas fa-check-circle'},
+                    {'label': 'Total Budget', 'value': f'${total_budget:,.0f}', 'icon': 'fas fa-dollar-sign'},
+                ]
+            except ImportError:
+                stats = [
+                    {'label': 'Budget Requests', 'value': '12', 'icon': 'fas fa-file-invoice-dollar'},
+                    {'label': 'Pending Requests', 'value': '3', 'icon': 'fas fa-clock'},
+                    {'label': 'Approved Requests', 'value': '9', 'icon': 'fas fa-check-circle'},
+                    {'label': 'Total Budget', 'value': '$125,000', 'icon': 'fas fa-dollar-sign'},
+                ]
+            
+        elif department_name == 'management':
+            # Management-specific stats
+            try:
+                from management.models import Task, Meeting
+                
+                total_tasks = Task.objects.count()
+                completed_tasks = Task.objects.filter(status='completed').count()
+                upcoming_meetings = Meeting.objects.filter(date__gte=timezone.now()).count()
+                
+                stats = [
+                    {'label': 'Total Tasks', 'value': total_tasks, 'icon': 'fas fa-tasks'},
+                    {'label': 'Completed Tasks', 'value': completed_tasks, 'icon': 'fas fa-check-circle'},
+                    {'label': 'Upcoming Meetings', 'value': upcoming_meetings, 'icon': 'fas fa-calendar'},
+                    {'label': 'Task Completion Rate', 'value': f'{(completed_tasks/total_tasks*100):.0f}%' if total_tasks > 0 else '0%', 'icon': 'fas fa-chart-line'},
+                ]
+            except ImportError:
+                stats = [
+                    {'label': 'Total Tasks', 'value': '45', 'icon': 'fas fa-tasks'},
+                    {'label': 'Completed Tasks', 'value': '38', 'icon': 'fas fa-check-circle'},
+                    {'label': 'Upcoming Meetings', 'value': '3', 'icon': 'fas fa-calendar'},
+                    {'label': 'Task Completion Rate', 'value': '84%', 'icon': 'fas fa-chart-line'},
+                ]
+        
+        elif department_name == 'hr':
+            # HR-specific stats
+            stats = [
+                {'label': 'Total Employees', 'value': '156', 'icon': 'fas fa-users'},
+                {'label': 'New Hires', 'value': '8', 'icon': 'fas fa-user-plus'},
+                {'label': 'Open Positions', 'value': '12', 'icon': 'fas fa-briefcase'},
+                {'label': 'Training Sessions', 'value': '24', 'icon': 'fas fa-graduation-cap'},
+            ]
+        
+        elif department_name == 'it':
+            # IT-specific stats
+            stats = [
+                {'label': 'Active Systems', 'value': '28', 'icon': 'fas fa-server'},
+                {'label': 'Open Tickets', 'value': '15', 'icon': 'fas fa-ticket-alt'},
+                {'label': 'Resolved Issues', 'value': '142', 'icon': 'fas fa-check-circle'},
+                {'label': 'System Uptime', 'value': '99.8%', 'icon': 'fas fa-chart-line'},
+            ]
+        
+        elif department_name == 'marketing':
+            # Marketing-specific stats
+            stats = [
+                {'label': 'Active Campaigns', 'value': '6', 'icon': 'fas fa-bullhorn'},
+                {'label': 'Lead Generation', 'value': '234', 'icon': 'fas fa-user-plus'},
+                {'label': 'Conversion Rate', 'value': '12.5%', 'icon': 'fas fa-percentage'},
+                {'label': 'Social Reach', 'value': '45.2K', 'icon': 'fas fa-share-alt'},
+            ]
+        
+        else:
+            # Default stats for other departments
+            stats = [
+                {'label': 'Active Projects', 'value': '8', 'icon': 'fas fa-project-diagram'},
+                {'label': 'Team Members', 'value': '12', 'icon': 'fas fa-users'},
+                {'label': 'Completed Tasks', 'value': '67', 'icon': 'fas fa-check-circle'},
+                {'label': 'Efficiency', 'value': '92%', 'icon': 'fas fa-chart-line'},
+            ]
+        
+    except Exception as e:
+        print(f"Error getting stats for {department_name}: {e}")
+        stats = [
+            {'label': 'Data Unavailable', 'value': '--', 'icon': 'fas fa-exclamation-triangle'},
+        ]
+    
+    return stats
+
+
+def get_department_links(department_name):
+    """
+    Get department-specific links based on user roles and department
+    """
+    # Department configurations with role-based links
+    department_configs = {
+        'finance': {
+            'sections': [
+                {
+                    'name': 'REPORTS',
+                    'links': [
+                        {'name': 'Finance Landing Page', 'url': '/finance/'},
+                        {'name': 'Finance Report', 'url': '/finance/finance_report/'},
+                        {'name': 'Investment Report', 'url': '/finance/investment_report/'},
+                        {'name': 'Statements', 'url': '/finance/statements/'},
+                    ]
+                },
+                {
+                    'name': 'TRANSACTIONS',
+                    'links': [
+                        {'name': 'New Transaction', 'url': '/finance/transact/'},
+                        {'name': 'Default Payments', 'url': '/finance/defaultpayments/'},
+                        {'name': 'New Payment', 'url': '/finance/newpayment/'},
+                        {'name': 'Cash Flows', 'url': '/finance/cashflows/'},
+                    ]
+                }
+            ]
+        },
+        'management': {
+            'sections': [
+                {
+                    'name': 'CORE MANAGEMENT',
+                    'links': [
+                        {'name': 'Company Agenda', 'url': '/management/companyagenda/'},
+                        {'name': 'Task Management', 'url': '/management/userdashboard/'},
+                        {'name': 'Department Management', 'url': '/management/departments/'},
+                        {'name': 'Policy Management', 'url': '/management/policies/'},
+                    ]
+                },
+                {
+                    'name': 'ADMINISTRATION',
+                    'links': [
+                        {'name': 'User Management', 'url': '/admin/'},
+                        {'name': 'System Settings', 'url': '/admin/'},
+                        {'name': 'Reports', 'url': '/management/reports/'},
+                    ]
+                }
+            ]
+        },
+        'hr': {
+            'sections': [
+                {
+                    'name': 'EMPLOYEE SERVICES',
+                    'links': [
+                        {'name': 'HR Dashboard', 'url': '/hr/'},
+                        {'name': 'Company Agenda', 'url': '/management/companyagenda/'},
+                        {'name': 'Policies', 'url': '/management/policies/'},
+                        {'name': 'Benefits', 'url': '/management/benefits/'},
+                        {'name': 'Payroll', 'url': '/management/payroll/'},
+                    ]
+                },
+                {
+                    'name': 'RECRUITMENT',
+                    'links': [
+                        {'name': 'Employee Contract', 'url': '/management/employee_contract/'},
+                        {'name': 'Background Check', 'url': '/management/background_check/'},
+                        {'name': 'Tasks Management', 'url': '/management/tasks/'},
+                    ]
+                }
+            ]
+        },
+        'it': {
+            'sections': [
+                {
+                    'name': 'SYSTEM ADMINISTRATION',
+                    'links': [
+                        {'name': 'System Dashboard', 'url': '/it/dashboard/'},
+                        {'name': 'Server Status', 'url': '/it/servers/'},
+                        {'name': 'Network Monitoring', 'url': '/it/network/'},
+                        {'name': 'Security Center', 'url': '/it/security/'},
+                    ]
+                },
+                {
+                    'name': 'SUPPORT',
+                    'links': [
+                        {'name': 'Help Desk', 'url': '/it/helpdesk/'},
+                        {'name': 'Ticket System', 'url': '/it/tickets/'},
+                        {'name': 'Knowledge Base', 'url': '/it/kb/'},
+                    ]
+                }
+            ]
+        },
+        'marketing': {
+            'sections': [
+                {
+                    'name': 'CAMPAIGN MANAGEMENT',
+                    'links': [
+                        {'name': 'Marketing Dashboard', 'url': '/marketing/dashboard/'},
+                        {'name': 'Campaign Manager', 'url': '/marketing/campaigns/'},
+                        {'name': 'Content Management', 'url': '/marketing/content/'},
+                        {'name': 'Social Media', 'url': '/marketing/social/'},
+                    ]
+                },
+                {
+                    'name': 'ANALYTICS',
+                    'links': [
+                        {'name': 'Marketing Analytics', 'url': '/marketing/analytics/'},
+                        {'name': 'Lead Tracking', 'url': '/marketing/leads/'},
+                        {'name': 'ROI Reports', 'url': '/marketing/roi/'},
+                    ]
+                }
+            ]
+        },
+        'security': {
+            'sections': [
+                {
+                    'name': 'SECURITY MONITORING',
+                    'links': [
+                        {'name': 'Company Agenda', 'url': '/management/companyagenda/'},
+                        {'name': 'System Health', 'url': '/core/health/'},
+                        {'name': 'User Management', 'url': '/accounts/users/'},
+                        {'name': 'Reports', 'url': '/management/reports/'},
+                    ]
+                }
+            ]
+        },
+        'health': {
+            'sections': [
+                {
+                    'name': 'HEALTH SERVICES',
+                    'links': [
+                        {'name': 'Health Dashboard', 'url': '/health/dashboard/'},
+                        {'name': 'Employee Wellness', 'url': '/health/wellness/'},
+                        {'name': 'Safety Reports', 'url': '/health/safety/'},
+                        {'name': 'Medical Records', 'url': '/health/records/'},
+                    ]
+                }
+            ]
+        }
+    }
+    
+    # Get department config or return empty
+    config = department_configs.get(department_name, {})
+    sections = config.get('sections', [])
+    
+    # Return structured sections instead of flattened links
+    structured_links = []
+    for section in sections:
+        section_name = section.get('name', '')
+        links = section.get('links', [])
+        for link in links:
+            structured_links.append({
+                'name': link['name'],
+                'url': link['url'],
+                'section': {
+                    'name': section_name
+                }
+            })
+    
+    return structured_links
+
+
+def department_reports(request, slug=None):
+    """
+    Dynamic department reports view using unified dashboard template
+    """
+    from accounts.models import Department
+    from unified_dashboard.views import get_dashboard_config, get_user_role
+    
+    # Get the department by slug
+    try:
+        department = Department.objects.get(slug=slug, is_active=True)
+    except Department.DoesNotExist:
+        # Fallback to finance if department not found
+        from django.shortcuts import redirect
+        return redirect('finance:unified-department-dashboard', department_name='finance')
+    
+    # Map department names to our unified dashboard names
+    department_mapping = {
+        'HR Department': 'hr',
+        'IT Department': 'it', 
+        'Marketing Department': 'marketing',
+        'Finance Department': 'finance',
+        'Management Department': 'management',
+        'Security Department': 'security',
+        'Health Department': 'health',
+        'Other': 'other'
+    }
+    
+    # Also handle slug-based mapping
+    slug_mapping = {
+        'hr': 'hr',
+        'hr-department': 'hr',
+        'it': 'it',
+        'it-department': 'it',
+        'marketing': 'marketing',
+        'marketing-department': 'marketing',
+        'finance': 'finance',
+        'finance-department': 'finance',
+        'management': 'management',
+        'management-department': 'management',
+        'security': 'security',
+        'health': 'health',
+        'other': 'other'
+    }
+    
+    # Get the mapped department name - try slug first, then name
+    mapped_name = slug_mapping.get(slug, department_mapping.get(department.name, 'finance'))
+    
+    # Get department-specific data
+    try:
+        stats = get_department_real_time_stats(mapped_name, request.user)
+        links = get_department_links(mapped_name)
+    except Exception as e:
+        stats = []
+        links = []
+    
+    # Get user role and dashboard config
+    user_role = get_user_role(request.user)
+    dashboard_config = get_dashboard_config(user_role)
+    
+    # Filter out department sections when viewing a specific department
+    # to avoid duplication
+    if dashboard_config.get('sections'):
+        filtered_sections = []
+        for section in dashboard_config['sections']:
+            # Skip department sections when viewing a specific department
+            if section.get('type') == 'iframe' and '/department/' in section.get('url', ''):
+                continue
+            filtered_sections.append(section)
+        dashboard_config['sections'] = filtered_sections
+    
+    # Create department-specific context
+    context = {
+        'title': f'{department.name} Dashboard',
+        'department': department,
+        'department_name': mapped_name,
+        'department_display_name': department.name,
+        'stats': stats,
+        'links': links,
+        'user_role': user_role,
+        'dashboard_config': dashboard_config,
+        'is_department_view': True,  # Flag to indicate this is a department view
+    }
+    
+    return render(request, 'unified_dashboard/department_dashboards.html', context)
+
 
 def it(request):
     return render(request, "main/departments/it.html", {"title": "IT"})
+
+def system_maintenance(request):
+    """System maintenance information page"""
+    return render(request, "system/maintenance.html", {"title": "System Maintenance"})
+
+def new_features(request):
+    """New features and updates page"""
+    return render(request, "help/new-features.html", {"title": "New Features"})
 
 
 def finance(request):

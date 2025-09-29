@@ -1,0 +1,104 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}OTP Verification - {{ site_name }}{% endblock %}
+
+{% block header_title %}OTP Verification Required{% endblock %}
+{% block header_subtitle %}Verify your disbursement with the code below{% endblock %}
+
+{% block content_title %}Disbursement OTP Verification{% endblock %}
+
+{% block content_message %}
+To complete your disbursement, please use the One-Time Password (OTP) provided below. This code is valid for {{ expires_in }} minutes.
+{% endblock %}
+
+{% block additional_content %}
+<div class="otp-code">
+    {{ otp_code }}
+</div>
+
+<div class="info-box">
+    <h3>Disbursement Details</h3>
+    {% if disbursement_request %}
+    <p><strong>Disbursement ID:</strong> #{{ disbursement_request.id }}</p>
+    <p><strong>Amount:</strong> {{ disbursement_request.currency }} {{ disbursement_request.amount|floatformat:2 }}</p>
+    <p><strong>Recipient:</strong> {{ disbursement_request.recipient_name }}</p>
+    <p><strong>Method:</strong> {{ disbursement_request.disbursement_method|title }}</p>
+    {% if disbursement_request.recipient_phone %}
+    <p><strong>Phone:</strong> {{ disbursement_request.recipient_phone }}</p>
+    {% endif %}
+    {% if disbursement_request.recipient_email %}
+    <p><strong>Email:</strong> {{ disbursement_request.recipient_email }}</p>
+    {% endif %}
+    {% else %}
+    <p><strong>Amount:</strong> {{ amount|default:"N/A" }}</p>
+    <p><strong>Purpose:</strong> {{ purpose|default:"Budget Disbursement" }}</p>
+    {% endif %}
+</div>
+
+<div class="warning-box">
+    <h3>Security Instructions</h3>
+    <ul>
+        <li>Enter this OTP code exactly as shown above</li>
+        <li>Do not share this code with anyone</li>
+        <li>The code will expire in {{ expires_in }} minutes</li>
+        <li>If you didn't request this disbursement, contact support immediately</li>
+        <li>This code can only be used once</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>How to Use This OTP</h3>
+    <ol>
+        <li>Go to the disbursement verification page</li>
+        <li>Enter the OTP code: <strong>{{ otp_code }}</strong></li>
+        <li>Click "Verify" to complete the disbursement</li>
+        <li>You will receive a confirmation once processed</li>
+    </ol>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin/finance/disbursementrequest/{{ disbursement_request.id }}/change/" class="action-button">
+        Verify Disbursement
+    </a>
+</div>
+
+<div class="error-box">
+    <h3>Important Security Notes</h3>
+    <ul>
+        <li><strong>Never share this OTP code</strong> with anyone, including support staff</li>
+        <li><strong>CODA will never ask</strong> for your OTP code via phone or email</li>
+        <li>If you receive multiple OTP codes, use only the most recent one</li>
+        <li>If you suspect unauthorized activity, contact support immediately</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>What Happens Next</h3>
+    <ul>
+        <li>Once verified, your disbursement will be processed</li>
+        <li>You will receive a confirmation email with transaction details</li>
+        <li>Funds will be transferred according to your specified method</li>
+        <li>You can track the status in the admin panel</li>
+    </ul>
+</div>
+
+<div class="warning-box">
+    <h3>Troubleshooting</h3>
+    <ul>
+        <li>If the code doesn't work, check that you entered it correctly</li>
+        <li>If the code has expired, request a new one</li>
+        <li>If you're having trouble, contact support for assistance</li>
+        <li>Make sure you're using the correct verification page</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Contact Support</h3>
+    <p>If you have any questions or concerns about this disbursement:</p>
+    <ul>
+        <li><strong>Email:</strong> support@{{ site_url|cut:"https://"|cut:"http://" }}</li>
+        <li><strong>Phone:</strong> +1 (555) 123-4567</li>
+        <li><strong>Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</li>
+    </ul>
+</div>
+{% endblock %}

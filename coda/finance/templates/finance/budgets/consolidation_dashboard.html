@@ -1,0 +1,543 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Consolidation Dashboard - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .consolidation-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .model-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-left: 4px solid #667eea;
+    }
+    
+    .statistics-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .data-table {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .model-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .budget-badge {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .coda-budget-badge {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+    
+    .recommendation-item {
+        background: #e8f5e8;
+        border-left: 4px solid #4caf50;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .migration-card {
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0 8px 8px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="consolidation-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="fas fa-layer-group me-2"></i>
+                            Budget Consolidation Dashboard
+                        </h2>
+                        <p class="mb-0">Unified view of all budget models and consolidation recommendations</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h4>{{ company.name }}</h4>
+                        <small>Generated on {{ "now"|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="model-card">
+                <form method="post" class="row align-items-end">
+                    {% csrf_token %}
+                    <div class="col-md-4">
+                        <label for="department_id" class="form-label">Filter by Department</label>
+                        <select name="department_id" id="department_id" class="form-select">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if selected_department and selected_department.id == dept.id %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Apply Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Budget Model Statistics
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.budget_model.total_entries }}</div>
+                            <div class="stat-label">Budget Entries</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">${{ model_statistics.budget_model.total_amount|floatformat:2 }}</div>
+                            <div class="stat-label">Budget Total</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.budget_model.categories_used }}</div>
+                            <div class="stat-label">Categories Used</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.budget_model.departments_used }}</div>
+                            <div class="stat-label">Departments Used</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    CodaBudget Model Statistics
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.coda_budget_model.total_entries }}</div>
+                            <div class="stat-label">CodaBudget Entries</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">${{ model_statistics.coda_budget_model.total_amount|floatformat:2 }}</div>
+                            <div class="stat-label">CodaBudget Total</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.coda_budget_model.categories_used }}</div>
+                            <div class="stat-label">Categories Used</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.coda_budget_model.departments_used }}</div>
+                            <div class="stat-label">Departments Used</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consolidation Analysis -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-search me-2"></i>
+                    Consolidation Analysis
+                </h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.consolidation_analysis.shared_categories }}</div>
+                            <div class="stat-label">Shared Categories</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.consolidation_analysis.shared_departments }}</div>
+                            <div class="stat-label">Shared Departments</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.consolidation_analysis.total_unique_categories }}</div>
+                            <div class="stat-label">Total Unique Categories</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ model_statistics.consolidation_analysis.total_unique_departments }}</div>
+                            <div class="stat-label">Total Unique Departments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Report Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Unified Budget Report
+                </h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">${{ unified_report.summary.legacy_budget_total|floatformat:2 }}</div>
+                            <div class="stat-label">Legacy Budget Total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">${{ unified_report.summary.legacy_coda_budget_total|floatformat:2 }}</div>
+                            <div class="stat-label">CodaBudget Total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">${{ unified_report.summary.combined_total|floatformat:2 }}</div>
+                            <div class="stat-label">Combined Total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statistics-card">
+                            <div class="stat-value">{{ unified_report.summary.total_categories }}</div>
+                            <div class="stat-label">Total Categories</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consolidated Data View -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-table me-2"></i>
+                    Consolidated Budget Data
+                </h5>
+                {% if consolidated_view.data %}
+                    <div class="data-table">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Budget Lead</th>
+                                    <th>Department</th>
+                                    <th>Category</th>
+                                    <th>Subcategory</th>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Unit Price</th>
+                                    <th>Amount</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in consolidated_view.data %}
+                                    <tr>
+                                        <td>
+                                            {% if item.model_type == 'Budget' %}
+                                                <span class="badge budget-badge model-badge">Budget</span>
+                                            {% else %}
+                                                <span class="badge coda-budget-badge model-badge">CodaBudget</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.budget_lead }}</td>
+                                        <td>{{ item.department }}</td>
+                                        <td>{{ item.category }}</td>
+                                        <td>{{ item.subcategory }}</td>
+                                        <td>{{ item.item }}</td>
+                                        <td>{{ item.qty }}</td>
+                                        <td>${{ item.unit_price|floatformat:2 }}</td>
+                                        <td class="fw-bold">${{ item.amount|floatformat:2 }}</td>
+                                        <td>{{ item.created_at|date:"M d, Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No budget data available for the selected criteria.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Category Breakdown
+                </h5>
+                {% if unified_report.category_breakdown %}
+                    <div class="data-table">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Budget</th>
+                                    <th>CodaBudget</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category, data in unified_report.category_breakdown.items %}
+                                    <tr>
+                                        <td class="fw-bold">{{ category }}</td>
+                                        <td>${{ data.budget_amount|floatformat:2 }}</td>
+                                        <td>${{ data.coda_budget_amount|floatformat:2 }}</td>
+                                        <td class="fw-bold">${{ data.total_amount|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No category breakdown available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Department Breakdown -->
+        <div class="col-md-6">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-building me-2"></i>
+                    Department Breakdown
+                </h5>
+                {% if unified_report.department_breakdown %}
+                    <div class="data-table">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Budget</th>
+                                    <th>CodaBudget</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for department, data in unified_report.department_breakdown.items %}
+                                    <tr>
+                                        <td class="fw-bold">{{ department }}</td>
+                                        <td>${{ data.budget_amount|floatformat:2 }}</td>
+                                        <td>${{ data.coda_budget_amount|floatformat:2 }}</td>
+                                        <td class="fw-bold">${{ data.total_amount|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No department breakdown available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="model-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Consolidation Recommendations
+                </h5>
+                {% if unified_report.recommendations %}
+                    {% for recommendation in unified_report.recommendations %}
+                        <div class="recommendation-item">
+                            <i class="fas fa-arrow-right me-2"></i>
+                            {{ recommendation }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recommendations available at this time.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Migration Options -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="migration-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-exchange-alt me-2"></i>
+                    Data Migration Options
+                </h5>
+                <p class="mb-3">Choose a migration strategy to consolidate your budget data:</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-arrow-right fa-2x text-primary mb-3"></i>
+                                <h6>Budget → CodaBudget</h6>
+                                <p class="text-muted small">Migrate all Budget entries to CodaBudget model</p>
+                                <button class="btn btn-outline-primary btn-sm" onclick="migrateData('coda_budget')">
+                                    Migrate Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-arrow-left fa-2x text-success mb-3"></i>
+                                <h6>CodaBudget → Budget</h6>
+                                <p class="text-muted small">Migrate all CodaBudget entries to Budget model</p>
+                                <button class="btn btn-outline-success btn-sm" onclick="migrateData('budget')">
+                                    Migrate Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-layer-group fa-2x text-warning mb-3"></i>
+                                <h6>Consolidated Model</h6>
+                                <p class="text-muted small">Create new consolidated model (Coming Soon)</p>
+                                <button class="btn btn-outline-warning btn-sm" disabled>
+                                    Coming Soon
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'finance:automated-budget-estimation' %}" class="btn btn-primary me-3">
+                <i class="fas fa-robot me-1"></i> Automated Estimation
+            </a>
+            <a href="{% url 'finance:automation-dashboard' %}" class="btn btn-secondary me-3">
+                <i class="fas fa-robot me-1"></i> Automation Dashboard
+            </a>
+            <button class="btn btn-success" onclick="exportConsolidatedReport()">
+                <i class="fas fa-download me-1"></i> Export Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function migrateData(targetModel) {
+    if (confirm(`Are you sure you want to migrate data to ${targetModel}? This action cannot be undone.`)) {
+        // Implement migration functionality
+        fetch('/finance/api/migrate-budget-data/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                company_id: {{ company.id }},
+                target_model: targetModel
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Migration completed successfully! Migrated ${data.budget_migrations + data.coda_budget_migrations} entries.`);
+                location.reload();
+            } else {
+                alert('Migration failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Migration failed: ' + error.message);
+        });
+    }
+}
+
+function exportConsolidatedReport() {
+    // Implement export functionality
+    alert('Export functionality will be implemented in the next phase.');
+}
+</script>
+{% endblock %}
+

@@ -58,22 +58,37 @@ host,dbname,user,password=dba_values() #herokudev() #dblocal() #,herokuprod()
 #DB VARIABLES
 (source_host, source_dbname, source_user, source_password,target_db_path) = source_target()
 
+# Import appropriate database driver based on environment
+import os
+if os.environ.get('ENVIRONMENT') == 'local':
+    import sqlite3
+    DB_DRIVER = 'sqlite3'
+else:
+    import psycopg2
+    DB_DRIVER = 'psycopg2'
+
 
 
 def fetch_and_insert_data():
     (source_host, source_dbname, source_user, source_password, target_db_path) = source_target()
-
-    # Connect to the source database
-    source_conn = psycopg2.connect(
-        host=source_host,
-        dbname=source_dbname,
-        user=source_user,
-        password=source_password
-    )
+    
+    # For local development, use SQLite for both source and target
+    if DB_DRIVER == 'sqlite3':
+        # Use the same SQLite database for both source and target in local development
+        source_conn = sqlite3.connect(dbname)
+        target_conn = sqlite3.connect(dbname)
+    else:
+        # Connect to the source database (PostgreSQL)
+        source_conn = psycopg2.connect(
+            host=source_host,
+            dbname=source_dbname,
+            user=source_user,
+            password=source_password
+        )
+        # Connect to the target database (PostgreSQL)
+        target_conn = psycopg2.connect(target_db_path)
+    
     source_cursor = source_conn.cursor()
-
-    # Connect to the target database
-    target_conn = psycopg2.connect(target_db_path)
     target_cursor = target_conn.cursor()
 
     source_tables = ['investing_shortput', 'investing_credit_spread', 'investing_covered_calls',] #'investing_oversold','investing_ticker_data'
@@ -83,8 +98,14 @@ def fetch_and_insert_data():
         # Iterate over source and target tables
         for source_table, target_table in zip(source_tables, target_tables):
             # Fetch the structure of the source table
-            source_cursor.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{source_table}'")
-            columns = source_cursor.fetchall()
+            if DB_DRIVER == 'sqlite3':
+                # SQLite query
+                source_cursor.execute(f"PRAGMA table_info({source_table})")
+                columns = [(row[1], row[2]) for row in source_cursor.fetchall()]  # (name, type)
+            else:
+                # PostgreSQL query
+                source_cursor.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{source_table}'")
+                columns = source_cursor.fetchall()
 
             # Get unique column names and their corresponding data types
             unique_columns = {}
@@ -111,7 +132,10 @@ def fetch_and_insert_data():
             # Insert or update data in the target table
             for row in rows:
                 # import pdb; pdb.set_trace()
-                placeholders = "%s, " * len(row)
+                if DB_DRIVER == 'sqlite3':
+                    placeholders = "?, " * len(row)
+                else:
+                    placeholders = "%s, " * len(row)
                 placeholders = placeholders.rstrip(", ")
                 
                 column_list = tuple('{element}' for element in tuple(unique_columns.keys()))
@@ -119,11 +143,20 @@ def fetch_and_insert_data():
 
                 # Use INSERT ... ON CONFLICT to insert or update the data
                 # target_cursor.execute(f"INSERT INTO {target_table} VALUES ({placeholders}) ON CONFLICT DO NOTHING", row)
-                target_cursor.execute(
-                    f"INSERT INTO {target_table} ({column_list}) "
-                    f"SELECT {placeholders} WHERE NOT EXISTS (SELECT 1 FROM {target_table} WHERE symbol = %s)",
-                    row + (row[0],)  # Add an extra element to the tuple
-                )
+                if DB_DRIVER == 'sqlite3':
+                    # SQLite uses ? placeholders
+                    target_cursor.execute(
+                        f"INSERT INTO {target_table} ({column_list}) "
+                        f"SELECT {placeholders} WHERE NOT EXISTS (SELECT 1 FROM {target_table} WHERE symbol = ?)",
+                        row + (row[0],)  # Add an extra element to the tuple
+                    )
+                else:
+                    # PostgreSQL uses %s placeholders
+                    target_cursor.execute(
+                        f"INSERT INTO {target_table} ({column_list}) "
+                        f"SELECT {placeholders} WHERE NOT EXISTS (SELECT 1 FROM {target_table} WHERE symbol = %s)",
+                        row + (row[0],)  # Add an extra element to the tuple
+                    )
 
 
             cut_off_date = datetime.now() - timedelta(days=10)
@@ -151,22 +184,7 @@ def fetch_and_insert_data():
     source_conn.close()
     target_conn.close()
 
-# def process_file(csv_file,url):
-# 	if not csv_file.name.endswith(".csv"):
-# 		return url
-# 		# messages.warning(
-# 		# 	request, "The wrong file type was uploaded, it should be a csv file"
-# 		# )
-# 		# return render(request, "ai_services/uploaddata.html")
-# 		# return HttpResponseRedirect(request.path_info)
-# 	else:
-# 		file = csv_file.read().decode("ISO-8859-1")
-# 		file_data = file.split("\n")
-# 		csv_data = [line for line in file_data if line.strip() != ""]
-    # Define the date formats to try
-    # date_formats = ["%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y"]  # Add more formats as needed
 
-# 	return csv_data,date_formats
 def convert_excel_dates(date_str, expiry_str):
     # Define the date formats to try
     date_formats = ["%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%m/%d/%Y"]
@@ -348,13 +366,20 @@ def get_message(service, msg_id):
 def stock_data(symbol,action,qty, unit_price, total_price,date):
     #Database connection 
     try:
-        with psycopg2.connect(
-                                host = host,
-                                dbname = dbname,
-                                user = user,
-                                password = password,
-                                port = 5432
-                            ) as conn:
+        if DB_DRIVER == 'sqlite3':
+            # SQLite connection
+            conn = sqlite3.connect(dbname)
+        else:
+            # PostgreSQL connection
+            conn = psycopg2.connect(
+                host = host,
+                dbname = dbname,
+                user = user,
+                password = password,
+                port = 5432
+            )
+        
+        with conn:
             with conn.cursor() as cursor:
                 #Creating database named RobinhoodEmailInfo
                 creating_db = '''CREATE TABLE IF NOT EXISTS getdata_stockmarket (
@@ -377,13 +402,20 @@ def stock_data(symbol,action,qty, unit_price, total_price,date):
 #inserting data into cryptodatabase
 def crypto_data(symbol,action,unit_price, total_price,date):
     try:
-        with psycopg2.connect(
-                                host = host,
-                                dbname = dbname,
-                                user = user,
-                                password = password,
-                                port = 5432
-                            ) as conn:
+        if DB_DRIVER == 'sqlite3':
+            # SQLite connection
+            conn = sqlite3.connect(dbname)
+        else:
+            # PostgreSQL connection
+            conn = psycopg2.connect(
+                host = host,
+                dbname = dbname,
+                user = user,
+                password = password,
+                port = 5432
+            )
+        
+        with conn:
             with conn.cursor() as cursor:
                 #getdata_cryptomarket
                 creating_db = '''CREATE TABLE IF NOT EXISTS getdata_cryptomarket(

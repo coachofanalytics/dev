@@ -143,9 +143,11 @@
           {% else %}
           <a href="#" class="btn btn-md btn-bc font-weight-bold">Begin Course</a>
           {% endif %} -->
-          {% with 'Introduction' as Introduction %}
-          <a href="{% url 'professional_services:subcategory-detail' Introduction %}" class="btn btn-md btn-bc font-weight-bold">Begin Course</a>
-          {%endwith%}
+          {% if title %}
+          <a href="{% url 'professional_services:category-detail' title=title %}" class="btn btn-md btn-bc font-weight-bold">Begin Course</a>
+          {% else %}
+          <a href="{% url 'professional_services:course' %}" class="btn btn-md btn-bc font-weight-bold">View Courses</a>
+          {% endif %}
 
       </div>
   </div>

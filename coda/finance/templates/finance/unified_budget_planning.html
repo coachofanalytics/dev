@@ -1,0 +1,542 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Planning{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .planning-container {
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .planning-header {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .planning-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .planning-subtitle {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    .planning-tabs {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .tab-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .tab-button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        background: #f8f9fa;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .tab-button.active {
+        background: #667eea;
+        color: white;
+    }
+    
+    .tab-button:hover {
+        background: #5a6fd8;
+        color: white;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .planning-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .planning-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .card-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .card-content {
+        color: #666;
+        line-height: 1.6;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-planning {
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5a6fd8;
+        color: white;
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    
+    .btn-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .planning-container {
+            padding: 10px;
+        }
+        
+        .planning-title {
+            font-size: 2rem;
+        }
+        
+        .tab-buttons {
+            flex-direction: column;
+        }
+        
+        .planning-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="planning-container">
+    <div class="planning-header">
+        <h1 class="planning-title">Budget Planning</h1>
+        <p class="planning-subtitle">Comprehensive budget planning and forecasting tools</p>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-number">${{ weekly_budget|default:"0" }}</div>
+            <div class="stat-label">Weekly Budget</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${{ monthly_budget|default:"0" }}</div>
+            <div class="stat-label">Monthly Budget</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${{ yearly_budget|default:"0" }}</div>
+            <div class="stat-label">Yearly Budget</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ multi_year_plans|default:"0" }}</div>
+            <div class="stat-label">Multi-year Plans</div>
+        </div>
+    </div>
+    
+    <!-- Planning Tabs -->
+    <div class="planning-tabs">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('weekly')">Weekly Planning</button>
+            <button class="tab-button" onclick="showTab('monthly')">Monthly Planning</button>
+            <button class="tab-button" onclick="showTab('yearly')">Yearly Planning</button>
+            <button class="tab-button" onclick="showTab('multi-year')">Multi-year Planning</button>
+            <button class="tab-button" onclick="showTab('estimation')">Automated Estimation</button>
+            <button class="tab-button" onclick="showTab('investment')">Investment Planning</button>
+            <button class="tab-button" onclick="showTab('coda-dev')">CODA Development</button>
+            <button class="tab-button" onclick="showTab('consolidation')">Consolidation</button>
+        </div>
+        
+        <!-- Weekly Planning Tab -->
+        <div id="weekly" class="tab-content active">
+            <h3>Weekly Budget Planning</h3>
+            <p>Plan and manage your weekly budgets with detailed breakdowns and tracking.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">Current Week</h4>
+                    <div class="card-content">
+                        <p>Budget: ${{ current_week_budget|default:"0" }}</p>
+                        <p>Spent: ${{ current_week_spent|default:"0" }}</p>
+                        <p>Remaining: ${{ current_week_remaining|default:"0" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Details</a>
+                        <a href="#" class="btn-planning btn-outline">Edit Budget</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">Next Week</h4>
+                    <div class="card-content">
+                        <p>Planned Budget: ${{ next_week_budget|default:"0" }}</p>
+                        <p>Forecasted Expenses: ${{ next_week_forecast|default:"0" }}</p>
+                        <p>Status: {{ next_week_status|default:"Planning" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">Plan Budget</a>
+                        <a href="#" class="btn-planning btn-outline">View Forecast</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monthly Planning Tab -->
+        <div id="monthly" class="tab-content">
+            <h3>Monthly Budget Planning</h3>
+            <p>Comprehensive monthly budget planning with trend analysis and forecasting.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">Current Month</h4>
+                    <div class="card-content">
+                        <p>Budget: ${{ current_month_budget|default:"0" }}</p>
+                        <p>Spent: ${{ current_month_spent|default:"0" }}</p>
+                        <p>Remaining: ${{ current_month_remaining|default:"0" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Details</a>
+                        <a href="#" class="btn-planning btn-outline">Edit Budget</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">Next Month</h4>
+                    <div class="card-content">
+                        <p>Planned Budget: ${{ next_month_budget|default:"0" }}</p>
+                        <p>Forecasted Expenses: ${{ next_month_forecast|default:"0" }}</p>
+                        <p>Status: {{ next_month_status|default:"Planning" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">Plan Budget</a>
+                        <a href="#" class="btn-planning btn-outline">View Forecast</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Yearly Planning Tab -->
+        <div id="yearly" class="tab-content">
+            <h3>Yearly Budget Planning</h3>
+            <p>Strategic yearly budget planning with annual goals and objectives.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">Current Year</h4>
+                    <div class="card-content">
+                        <p>Annual Budget: ${{ current_year_budget|default:"0" }}</p>
+                        <p>YTD Spent: ${{ ytd_spent|default:"0" }}</p>
+                        <p>Remaining: ${{ ytd_remaining|default:"0" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Details</a>
+                        <a href="#" class="btn-planning btn-outline">Edit Budget</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">Next Year</h4>
+                    <div class="card-content">
+                        <p>Planned Budget: ${{ next_year_budget|default:"0" }}</p>
+                        <p>Growth Target: {{ growth_target|default:"0" }}%</p>
+                        <p>Status: {{ next_year_status|default:"Planning" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">Plan Budget</a>
+                        <a href="#" class="btn-planning btn-outline">View Forecast</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Multi-year Planning Tab -->
+        <div id="multi-year" class="tab-content">
+            <h3>Multi-year Budget Planning</h3>
+            <p>Long-term strategic planning with 1-year, 2-year, and 5-year investment horizons.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">1-Year Plan</h4>
+                    <div class="card-content">
+                        <p>Investment Horizon: 1 Year</p>
+                        <p>Budget: ${{ one_year_budget|default:"0" }}</p>
+                        <p>ROI Target: {{ one_year_roi|default:"0" }}%</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Plan</a>
+                        <a href="#" class="btn-planning btn-outline">Edit Plan</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">2-Year Plan</h4>
+                    <div class="card-content">
+                        <p>Investment Horizon: 2 Years</p>
+                        <p>Budget: ${{ two_year_budget|default:"0" }}</p>
+                        <p>ROI Target: {{ two_year_roi|default:"0" }}%</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Plan</a>
+                        <a href="#" class="btn-planning btn-outline">Edit Plan</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">5-Year Plan</h4>
+                    <div class="card-content">
+                        <p>Investment Horizon: 5 Years</p>
+                        <p>Budget: ${{ five_year_budget|default:"0" }}</p>
+                        <p>ROI Target: {{ five_year_roi|default:"0" }}%</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Plan</a>
+                        <a href="#" class="btn-planning btn-outline">Edit Plan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Automated Estimation Tab -->
+        <div id="estimation" class="tab-content">
+            <h3>Automated Budget Estimation</h3>
+            <p>AI-powered budget estimation based on historical data and trends.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">Historical Analysis</h4>
+                    <div class="card-content">
+                        <p>Data Points: {{ historical_data_points|default:"0" }}</p>
+                        <p>Trend: {{ trend_direction|default:"Stable" }}</p>
+                        <p>Accuracy: {{ estimation_accuracy|default:"0" }}%</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">Run Analysis</a>
+                        <a href="#" class="btn-planning btn-outline">View Report</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">AI Recommendations</h4>
+                    <div class="card-content">
+                        <p>Recommended Budget: ${{ ai_recommended_budget|default:"0" }}</p>
+                        <p>Confidence: {{ ai_confidence|default:"0" }}%</p>
+                        <p>Risk Level: {{ risk_level|default:"Medium" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">Apply Recommendation</a>
+                        <a href="#" class="btn-planning btn-outline">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Investment Planning Tab -->
+        <div id="investment" class="tab-content">
+            <h3>Investment Planning</h4>
+            <p>Strategic investment planning with ROI analysis and payback periods.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">Investment Opportunities</h4>
+                    <div class="card-content">
+                        <p>Available Opportunities: {{ investment_opportunities|default:"0" }}</p>
+                        <p>Total Investment: ${{ total_investment|default:"0" }}</p>
+                        <p>Expected ROI: {{ expected_roi|default:"0" }}%</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Opportunities</a>
+                        <a href="#" class="btn-planning btn-outline">Analyze ROI</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">Payback Analysis</h4>
+                    <div class="card-content">
+                        <p>Average Payback: {{ average_payback|default:"0" }} months</p>
+                        <p>Risk Assessment: {{ investment_risk|default:"Medium" }}</p>
+                        <p>Recommendation: {{ investment_recommendation|default:"Proceed" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Analysis</a>
+                        <a href="#" class="btn-planning btn-outline">Generate Report</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CODA Development Tab -->
+        <div id="coda-dev" class="tab-content">
+            <h3>CODA Development Estimation</h3>
+            <p>Specialized estimation for CODA development projects and features.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">Development Tasks</h4>
+                    <div class="card-content">
+                        <p>Total Tasks: {{ dev_tasks|default:"0" }}</p>
+                        <p>Estimated Hours: {{ estimated_hours|default:"0" }}</p>
+                        <p>Hourly Rate: ${{ hourly_rate|default:"0" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Tasks</a>
+                        <a href="#" class="btn-planning btn-outline">Edit Rate</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">Cost Estimation</h4>
+                    <div class="card-content">
+                        <p>Total Cost: ${{ total_dev_cost|default:"0" }}</p>
+                        <p>Timeline: {{ dev_timeline|default:"0" }} weeks</p>
+                        <p>Complexity: {{ dev_complexity|default:"Medium" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Estimate</a>
+                        <a href="#" class="btn-planning btn-outline">Export Report</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Consolidation Tab -->
+        <div id="consolidation" class="tab-content">
+            <h3>Budget Consolidation</h3>
+            <p>Consolidate budgets across departments and projects for unified reporting.</p>
+            
+            <div class="planning-grid">
+                <div class="planning-card">
+                    <h4 class="card-title">Department Budgets</h4>
+                    <div class="card-content">
+                        <p>Total Departments: {{ total_departments|default:"0" }}</p>
+                        <p>Consolidated Budget: ${{ consolidated_budget|default:"0" }}</p>
+                        <p>Variance: {{ budget_variance|default:"0" }}%</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Consolidation</a>
+                        <a href="#" class="btn-planning btn-outline">Export Report</a>
+                    </div>
+                </div>
+                
+                <div class="planning-card">
+                    <h4 class="card-title">Unified Reporting</h4>
+                    <div class="card-content">
+                        <p>Report Status: {{ report_status|default:"Generated" }}</p>
+                        <p>Last Updated: {{ last_updated|default:"Today" }}</p>
+                        <p>Next Update: {{ next_update|default:"Tomorrow" }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="#" class="btn-planning btn-primary">View Report</a>
+                        <a href="#" class="btn-planning btn-outline">Schedule Update</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    // Hide all tab contents
+    var tabContents = document.getElementsByClassName('tab-content');
+    for (var i = 0; i < tabContents.length; i++) {
+        tabContents[i].classList.remove('active');
+    }
+    
+    // Remove active class from all tab buttons
+    var tabButtons = document.getElementsByClassName('tab-button');
+    for (var i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].classList.remove('active');
+    }
+    
+    // Show selected tab content
+    document.getElementById(tabName).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}

@@ -14,6 +14,7 @@ urlpatterns = [
     path('', views.home, name='management-home'),
     #-----------COMPANY REPORTS---------------------------------------
     path('companyagenda/', views.companyagenda, name='companyagenda'),
+    path('companyagenda-improved/', views.companyagenda_improved, name='companyagenda_improved'),
     # userdashboard URL removed - functionality moved to unified dashboard
     path('update-agenda/<str:title>/<int:pk>/', views.updatelinks_companyagenda, name='update_agenda'),
     #-----------COMPANY POLICIES---------------------------------------

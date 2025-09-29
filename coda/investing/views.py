@@ -246,15 +246,22 @@ def get_or_create_investment_content():
         query = "Use the context as a example and generate a good overview."
         user_message = f"{context}\n\n{query}"
         generated_description = generate_chatbot_response(user_message)
+        # Ensure we have a valid description
+        if not generated_description:
+            generated_description = "Welcome to our investment platform. We provide comprehensive investment solutions for all types of investors."
+        
         investment_content = InvestmentContent.objects.filter(slug=slug).first()
         if investment_content:
             investment_content.description = generated_description
             investment_content.save()
         else:
             InvestmentContent.objects.create(
-                slug=slug, title="Your Title", description=generated_description
+                slug=slug, title="Investment Platform Overview", description=generated_description
             )
         return generated_description
+    except Exception as e:
+        print(f"Error in get_or_create_investment_content: {e}")
+        return "Welcome to our investment platform. We provide comprehensive investment solutions for all types of investors."
 
 
 def InvestmentPlatformOverview(request):
@@ -332,7 +339,11 @@ def InvestmentPlatformOverview(request):
     # category_names = [entry["category"] for entry in categories_data]  # Unused variable
 
     count_to_class = {2: "col-md-6", 3: "col-md-4", 4: "col-md-3"}
-    investments = Investments.objects.all()
+    # Fix privacy issue: Only show current user's investments
+    if request.user.is_authenticated:
+        investments = Investments.objects.filter(client=request.user)
+    else:
+        investments = Investments.objects.none()  # No investments for anonymous users
 
     selected_class = count_to_class.get(len(investments), "default-class")
 
@@ -2667,7 +2678,7 @@ def apply_for_investment(request):
 
         # Extract and validate form data
         investment_data = {
-            "investment_plan_id": request.POST.get("investment_plan"),
+            "investment_plan": request.POST.get("investment_plan"),
             "duration": request.POST.get("duration"),
             "investment_purpose": request.POST.get("investment_purpose", ""),
             "model_type": request.POST.get("model_type", "Installment"),

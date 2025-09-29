@@ -56,29 +56,34 @@ class InvestmentService(BaseInvestingService):
             self._validate_user(user)
             
             # Validate required fields
-            required_fields = ['amount', 'investment_plan_id', 'investment_type']
+            required_fields = ['amount_invested', 'investment_plan']
             for field in required_fields:
                 if field not in investment_data:
                     raise ValidationError(f"Missing required field: {field}")
             
             # Validate investment amount
-            amount = self._validate_investment_amount(investment_data['amount'])
+            amount = self._validate_investment_amount(investment_data['amount_invested'])
             
-            # Validate investment type
-            valid_types = ['stocks', 'bonds', 'mutual_funds', 'etfs', 'options', 'crypto']
-            if investment_data['investment_type'] not in valid_types:
-                raise ValidationError(f"Invalid investment type: {investment_data['investment_type']}")
+            # Get investment plan
+            try:
+                investment_plan = Investment_rates.objects.get(id=investment_data['investment_plan'])
+            except Investment_rates.DoesNotExist:
+                raise ValidationError("Invalid investment plan")
             
             with transaction.atomic():
-                # Create investment
+                # Create investment using Investor_Information model
                 investment = Investor_Information.objects.create(
-                    user=user,
-                    amount=Decimal(str(amount)),
-                    investment_plan_id=investment_data['investment_plan_id'],
-                    investment_type=investment_data['investment_type'],
-                    status='active',
-                    created_at=timezone.now(),
-                    notes=investment_data.get('notes', '')
+                    investor=user,
+                    amount_invested=Decimal(str(amount)),
+                    investment_type=investment_data.get('investment_type', 'equity'),
+                    investment_purpose=investment_data.get('investment_purpose', 'Investment in CODA'),
+                    duration=investment_data.get('duration', 12),
+                    revenue_share_percentage=investment_data.get('revenue_share_percentage', Decimal('8.00')),
+                    expected_return_rate=investment_data.get('expected_return_rate', Decimal('8.00')),
+                    risk_tolerance=investment_data.get('risk_tolerance', 'moderate'),
+                    kyc_status='pending',
+                    status='pending',
+                    model_type=investment_data.get('model_type', 'Installment')
                 )
                 
                 # Log the operation
@@ -88,13 +93,19 @@ class InvestmentService(BaseInvestingService):
                     {'investment_id': investment.id, 'amount': amount}
                 )
                 
-                return self.create_success_response(
-                    {'investment_id': investment.id, 'amount': amount},
-                    "Investment created successfully"
-                )
+                return {
+                    'status': 'success',
+                    'message': 'Investment application submitted successfully',
+                    'data': {'investment_id': investment.id, 'amount': amount}
+                }
                 
         except Exception as e:
-            self._handle_error(e, 'create_investment', user)
+            self.logger.error(f"Error creating investment for user {user.id}: {str(e)}")
+            return {
+                'status': 'error',
+                'message': f'Failed to create investment: {str(e)}',
+                'data': {}
+            }
     
     def get_user_investments(
         self, 
@@ -116,7 +127,7 @@ class InvestmentService(BaseInvestingService):
         try:
             self._validate_user(user)
             
-            queryset = Investor_Information.objects.filter(user=user)
+            queryset = Investor_Information.objects.filter(investor=user)
             
             if status_filter:
                 queryset = queryset.filter(status=status_filter)
@@ -128,10 +139,14 @@ class InvestmentService(BaseInvestingService):
             for investment in queryset.order_by('-created_at'):
                 investments.append({
                     'id': investment.id,
-                    'amount': float(investment.amount),
+                    'amount_invested': float(investment.amount_invested),
+                    'current_value': float(investment.current_value),
                     'investment_type': investment.investment_type,
                     'status': investment.status,
                     'created_at': investment.created_at,
+                    'investment_date': investment.investment_date,
+                    'expected_return_rate': float(investment.expected_return_rate),
+                    'total_returns_paid': float(investment.total_returns_paid),
                     'notes': investment.notes
                 })
             
@@ -421,3 +436,90 @@ class InvestmentService(BaseInvestingService):
             
         except Exception as e:
             self._handle_error(e, 'get_investment_summary', user)
+    
+    def get_investment_plans_for_user(self, user: User) -> Dict[str, Any]:
+        """
+        Get investment plans available for a user based on their investor type.
+        
+        Args:
+            user: The user requesting investment plans
+            
+        Returns:
+            Dict with success status and list of investment plans
+        """
+        try:
+            self._validate_user(user)
+            
+            # Determine investor type based on user category/subcategory
+            investor_type = "individual"  # Default
+            
+            if hasattr(user, 'category'):
+                if user.category == 4:  # Investor category
+                    if hasattr(user, 'sub_category'):
+                        if user.sub_category == 1:  # Angel
+                            investor_type = "angel"
+                        elif user.sub_category == 2:  # VC
+                            investor_type = "vc"
+                        elif user.sub_category == 3:  # Private
+                            investor_type = "private"
+                        elif user.sub_category == 4:  # Individual
+                            investor_type = "individual"
+            
+            # Get investment plans based on investor type
+            if investor_type == "angel":
+                # Angel investors get higher tier plans
+                plans = Investment_rates.objects.filter(
+                    type="investment",
+                    tier__in=["Tier 2", "Tier 3"],
+                    is_active=True
+                ).order_by('-base_amount')
+            elif investor_type == "vc":
+                # VC investors get all plans
+                plans = Investment_rates.objects.filter(
+                    type="investment",
+                    is_active=True
+                ).order_by('-base_amount')
+            elif investor_type == "private":
+                # Private equity investors get highest tier plans
+                plans = Investment_rates.objects.filter(
+                    type="investment",
+                    tier="Tier 3",
+                    is_active=True
+                ).order_by('-base_amount')
+            else:
+                # Individual investors get all plans
+                plans = Investment_rates.objects.filter(
+                    type="investment",
+                    is_active=True
+                ).order_by('base_amount')
+            
+            # Convert to list of dictionaries
+            plans_list = []
+            for plan in plans:
+                plans_list.append({
+                    'id': plan.id,
+                    'name': plan.name or f"Investment Plan {plan.id}",
+                    'description': plan.description or "Professional investment opportunity",
+                    'tier': plan.tier or "Tier 1",
+                    'base_amount': float(plan.base_amount or 1000),
+                    'rate': float(plan.rate * 100),  # Convert to percentage
+                    'duration': plan.duration or 12,
+                    'type': plan.type,
+                    'is_featured': plan.is_featured,
+                    'advantages': plan.advantages or "Professional management, Regular reporting"
+                })
+            
+            return {
+                'status': 'success',
+                'plans': plans_list,
+                'investor_type': investor_type
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting investment plans for user {user.id}: {str(e)}")
+            return {
+                'status': 'error',
+                'message': 'Failed to retrieve investment plans',
+                'plans': [],
+                'investor_type': 'individual'
+            }

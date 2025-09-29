@@ -1,0 +1,108 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Approval Required - {{ site_name }}{% endblock %}
+
+{% block header_title %}Approval Required{% endblock %}
+{% block header_subtitle %}Budget Request #{{ request.id }} requires your approval{% endblock %}
+
+{% block content_title %}Action Required: Budget Request Approval{% endblock %}
+
+{% block content_message %}
+A budget request requires your approval. Please review the details below and take appropriate action.
+{% endblock %}
+
+{% block additional_content %}
+<div class="info-box">
+    <h3>Request Details</h3>
+    <p><strong>Request ID:</strong> #{{ request.id }}</p>
+    <p><strong>Requester:</strong> {{ request.requester.get_full_name }} ({{ request.requester.email }})</p>
+    <p><strong>Amount:</strong> {{ request.currency }} {{ request.amount|floatformat:2 }}</p>
+    <p><strong>Purpose:</strong> {{ request.purpose }}</p>
+    <p><strong>Department:</strong> {{ request.department.name }}</p>
+    <p><strong>Budget Category:</strong> {{ request.budget_category.name }}</p>
+    <p><strong>Priority:</strong> {{ request.priority|title }}</p>
+    <p><strong>Required Date:</strong> {{ request.required_date|date:"F d, Y" }}</p>
+    <p><strong>Submitted Date:</strong> {{ request.request_date|date:"F d, Y \a\t g:i A" }}</p>
+</div>
+
+{% if request.approval_policy %}
+<div class="info-box">
+    <h3>Approval Policy</h3>
+    <p><strong>Policy:</strong> {{ request.approval_policy.name }}</p>
+    <p><strong>Description:</strong> {{ request.approval_policy.description }}</p>
+    <p><strong>Max Approval Days:</strong> {{ request.approval_policy.max_approval_days }} days</p>
+    <p><strong>Escalation Days:</strong> {{ request.approval_policy.escalation_days }} days</p>
+</div>
+{% endif %}
+
+{% if request.attachments %}
+<div class="info-box">
+    <h3>Attachments</h3>
+    <p>The following documents are attached to this request:</p>
+    <ul>
+        {% for attachment in request.attachments %}
+        <li>{{ attachment.name }} ({{ attachment.size }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="warning-box">
+    <h3>Approval Guidelines</h3>
+    <ul>
+        <li>Review the request details carefully before making a decision</li>
+        <li>Consider the budget impact and business justification</li>
+        <li>Check if all required documentation is provided</li>
+        <li>Ensure the request aligns with company policies</li>
+        <li>If rejecting, provide a clear reason for the decision</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Approval Actions</h3>
+    <p>You can take the following actions:</p>
+    <ul>
+        <li><strong>Approve:</strong> Approve the request and move to next approver or complete approval</li>
+        <li><strong>Reject:</strong> Reject the request with a reason (requires justification)</li>
+        <li><strong>Request More Info:</strong> Ask for additional information before making a decision</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin/finance/budgetrequest/{{ request.id }}/change/" class="action-button" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); margin-right: 10px;">
+        Approve Request
+    </a>
+    <a href="{{ site_url }}/admin/finance/budgetrequest/{{ request.id }}/change/" class="action-button" style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);">
+        Reject Request
+    </a>
+</div>
+
+<div class="info-box">
+    <h3>Timeline Information</h3>
+    <p><strong>Days Since Submission:</strong> {{ request.request_date|timesince }}</p>
+    {% if request.approval_policy %}
+    <p><strong>Max Approval Time:</strong> {{ request.approval_policy.max_approval_days }} days</p>
+    <p><strong>Escalation Threshold:</strong> {{ request.approval_policy.escalation_days }} days</p>
+    {% endif %}
+    <p><strong>Current Status:</strong> {{ request.status|title }}</p>
+</div>
+
+<div class="warning-box">
+    <h3>Important Reminders</h3>
+    <ul>
+        <li>Please respond to this request promptly to avoid delays</li>
+        <li>Your decision will be logged in the audit trail</li>
+        <li>If you're unavailable, the request may be escalated</li>
+        <li>Contact the requester directly if you need clarification</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Contact Information</h3>
+    <p><strong>Requester:</strong> {{ request.requester.get_full_name }}</p>
+    <p><strong>Email:</strong> {{ request.requester.email }}</p>
+    {% if request.requester.phone_number %}
+    <p><strong>Phone:</strong> {{ request.requester.phone_number }}</p>
+    {% endif %}
+</div>
+{% endblock %}

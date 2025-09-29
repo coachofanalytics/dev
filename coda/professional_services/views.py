@@ -369,14 +369,19 @@ class TrainingView(LoginRequiredMixin, ListView):
     model = Interviews
     template_name = "professional_services/training/training_progress/train.html"
     success_url = "/professional_services/course"
+    
     def get_context_data(self, **kwargs):
         try:
             context = super(TrainingView, self).get_context_data(**kwargs)
-            context['title'] = FeaturedCategory.objects.all().first().title
+            featured_category = FeaturedCategory.objects.all().first()
+            context['title'] = featured_category.title if featured_category else "Training"
             return context
-        except:
-            return redirect('professional_services:jobroles')
-            # return render(self.request, "data/training/training_progress/train.html")
+        except Exception as e:
+            # Return a proper context instead of redirect
+            context = super(TrainingView, self).get_context_data(**kwargs)
+            context['title'] = "Training"
+            context['error'] = "Unable to load training data"
+            return context
 
 class CourseView(LoginRequiredMixin, ListView):
     model = Interviews

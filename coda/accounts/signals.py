@@ -76,6 +76,32 @@ def add_user_to_group(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=CustomerUser)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Create user profile when a new user is created"""
+    if created:
+        try:
+            # Check if profile already exists
+            if not hasattr(instance, 'profile'):
+                from .models import UserProfile
+                from main.models import Assets
+                
+                # Ensure default assets exist
+                assets = Assets.objects.all()
+                if not assets:
+                    Assets.objects.create(
+                        name="default",
+                        category="default", 
+                        description="default",
+                        image_url="default",
+                    )
+                
+                # Create user profile
+                UserProfile.objects.create(user=instance)
+                print(f"Profile created for user: {instance.username}")
+        except Exception as e:
+            print(f"Error creating profile for user {instance.username}: {e}")
+
+@receiver(post_save, sender=CustomerUser)
 def send_applicant_email_on_activation(sender, instance, **kwargs):
     print(f"Signal triggered for user: {instance.email}")
     print(f"User is_active: {instance.is_active}, category: {instance.category}")

@@ -197,9 +197,11 @@
   <div class="row mt-4 mb-5">
     <div class="col-12 text-center">
       {% if eligibility.eligible and loan_products %}
-        <a href="{% url 'finance:apply-for-loan' loan_products.0.id %}" class="btn btn-primary btn-lg">
-          <i class="fas fa-edit"></i> Start Application
-        </a>
+        {% with first_product=loan_products|first %}
+          <a href="{% url 'finance:apply-for-loan' first_product.id %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-edit"></i> Start Application
+          </a>
+        {% endwith %}
         <a href="{% url 'finance:user-loans' %}" class="btn btn-outline-secondary btn-lg ml-2">
           <i class="fas fa-list"></i> View My Loans
         </a>
@@ -276,14 +278,15 @@
                     <li><i class="fas fa-check text-success"></i> Active employment status</li>
                     <li><i class="fas fa-check text-success"></i> Minimum 3 months of consistent earnings</li>
                     <li><i class="fas fa-check text-success"></i> No outstanding loans</li>
-                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> Always required (fellow staff member)</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> Current/active staff member</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor Employment:</strong> 3+ months at CODA</li>
                     <li><i class="fas fa-check text-success"></i> Maximum loan: 2x monthly income</li>
                   </ul>
                   <div class="alert alert-info mt-2">
                     <small><i class="fas fa-info-circle"></i> Staff members have access to emergency and development loans with competitive rates.</small>
                   </div>
-                  <div class="alert alert-success mt-2">
-                    <small><i class="fas fa-user-friends"></i> <strong>Guarantor:</strong> Fellow staff members are always available to act as guarantors for staff loans.</small>
+                  <div class="alert alert-warning mt-2">
+                    <small><i class="fas fa-user-friends"></i> <strong>Guarantor Requirement:</strong> Must be a current/active staff member who has been employed for more than 3 months.</small>
                   </div>
                 </div>
               </div>
@@ -298,12 +301,16 @@
                   <ul class="list-unstyled">
                     <li><i class="fas fa-check text-success"></i> Active KCC membership</li>
                     <li><i class="fas fa-check text-success"></i> Valid identification</li>
-                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> Required for amounts >$500</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> KCC member with active membership</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Tier System:</strong> Based on credit score (300-499, 500-699, 700+)</li>
                     <li><i class="fas fa-check text-success"></i> Premium loan terms available</li>
                     <li><i class="fas fa-check text-success"></i> Higher borrowing limits</li>
                   </ul>
                   <div class="alert alert-warning mt-2">
                     <small><i class="fas fa-crown"></i> KCC members enjoy exclusive loan products with the best rates.</small>
+                  </div>
+                  <div class="alert alert-info mt-2">
+                    <small><i class="fas fa-star"></i> <strong>Tier 1:</strong> 300-499 credit score, <strong>Tier 2:</strong> 500-699, <strong>Tier 3:</strong> 700+</small>
                   </div>
                 </div>
               </div>
@@ -319,11 +326,23 @@
                     <li><i class="fas fa-check text-success"></i> Valid identification</li>
                     <li><i class="fas fa-check text-success"></i> Proof of income</li>
                     <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> Always required</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Collateral:</strong> Always required</li>
                     <li><i class="fas fa-check text-success"></i> Business plan (for business loans)</li>
                     <li><i class="fas fa-check text-success"></i> Additional documentation may be required</li>
                   </ul>
                   <div class="alert alert-info mt-2">
                     <small><i class="fas fa-info-circle"></i> External users can access most loan products with proper documentation.</small>
+                  </div>
+                  <div class="alert alert-warning mt-2">
+                    <small><i class="fas fa-shield-alt"></i> <strong>Requirements:</strong> Both guarantor and collateral are mandatory for external users.</small>
+                  </div>
+                  <div class="alert alert-info mt-2">
+                    <small><i class="fas fa-car"></i> <strong>Smart Collateral:</strong> Loans over $1,000 require smart collateral features:</small>
+                    <ul class="mb-0 mt-1">
+                      <li><strong>Vehicle:</strong> GPS tracking enabled</li>
+                      <li><strong>Land:</strong> Verified title deed with government registry</li>
+                      <li><strong>Equipment:</strong> Serial number and condition report</li>
+                    </ul>
                   </div>
                 </div>
               </div>

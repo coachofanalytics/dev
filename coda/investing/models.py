@@ -405,10 +405,16 @@ class Investments(models.Model):
 class InvestmentContent(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "InvestmentContent"
+
+    def save(self, *args, **kwargs):
+        # Ensure description is never empty
+        if not self.description:
+            self.description = "Welcome to our investment platform. We provide comprehensive investment solutions for all types of investors."
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

@@ -1,0 +1,408 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">{{ title }}</h3>
+                    <div>
+                        <span class="badge 
+                            {% if budget_request.status == 'approved' %}bg-success
+                            {% elif budget_request.status == 'pending' %}bg-warning text-dark
+                            {% elif budget_request.status == 'rejected' %}bg-danger
+                            {% elif budget_request.status == 'draft' %}bg-secondary
+                            {% else %}bg-info{% endif %} fs-6">
+                            {{ budget_request.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Request Details</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Request ID:</strong></td>
+                                    <td>#{{ budget_request.pk }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Amount:</strong></td>
+                                    <td class="h5 text-success">{{ budget_request.amount }} {{ budget_request.currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Purpose:</strong></td>
+                                    <td>{{ budget_request.purpose }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Department:</strong></td>
+                                    <td>{{ budget_request.department.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Category:</strong></td>
+                                    <td>{{ budget_request.budget_category.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Priority:</strong></td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if budget_request.priority == 'high' %}bg-danger
+                                            {% elif budget_request.priority == 'medium' %}bg-warning text-dark
+                                            {% else %}bg-info{% endif %}">
+                                            {{ budget_request.get_priority_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cost Center:</strong></td>
+                                    <td>{{ budget_request.cost_center|default:"Not specified" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Timeline & Status</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Requested By:</strong></td>
+                                    <td>{{ budget_request.requester.get_full_name|default:budget_request.requester.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Request Date:</strong></td>
+                                    <td>{{ budget_request.request_date|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Required Date:</strong></td>
+                                    <td>{{ budget_request.required_date|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Current Approver:</strong></td>
+                                    <td>
+                                        {% if budget_request.current_approver %}
+                                            {{ budget_request.current_approver.get_full_name|default:budget_request.current_approver.username }}
+                                        {% else %}
+                                            <span class="text-muted">Not assigned</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Created:</strong></td>
+                                    <td>{{ budget_request.created_at|date:"F d, Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Last Modified:</strong></td>
+                                    <td>{{ budget_request.updated_at|date:"F d, Y H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if budget_request.attachments %}
+                    <div class="mt-4">
+                        <h5 class="text-primary">Attachments</h5>
+                        <div class="alert alert-info">
+                            <i class="fas fa-paperclip"></i> {{ budget_request.attachments }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if budget_request.approval_chain %}
+                    <div class="mt-4">
+                        <h5 class="text-primary">Approval Chain</h5>
+                        <div class="alert alert-light">
+                            <pre class="mb-0">{{ budget_request.approval_chain }}</pre>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <h5 class="text-primary">Actions</h5>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if budget_request.status == 'draft' %}
+                                <a href="{% url 'finance:budget_request_edit' pk=budget_request.pk %}" class="btn btn-warning">
+                                    <i class="fas fa-edit"></i> Edit Request
+                                </a>
+                                <button type="button" class="btn btn-success" onclick="submitForApproval({{ budget_request.pk }})">
+                                    <i class="fas fa-paper-plane"></i> Submit for Approval
+                                </button>
+                            {% elif budget_request.status == 'pending' and budget_request.current_approver == request.user %}
+                                <button type="button" class="btn btn-success" onclick="approveRequest({{ budget_request.pk }})">
+                                    <i class="fas fa-thumbs-up"></i> Approve Request
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="rejectRequest({{ budget_request.pk }})">
+                                    <i class="fas fa-thumbs-down"></i> Reject Request
+                                </button>
+                            {% endif %}
+                            
+                            <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                            
+                            {% if request.user.is_staff %}
+                                <a href="{% url 'admin:finance_budgetrequest_change' budget_request.pk %}" class="btn btn-info" target="_blank">
+                                    <i class="fas fa-cog"></i> Admin View
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Request History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Request Created</h6>
+                                <p class="timeline-text text-muted">
+                                    {{ budget_request.created_at|date:"M d, Y H:i" }} by {{ budget_request.requester.username }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {% if budget_request.status != 'draft' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Submitted for Approval</h6>
+                                <p class="timeline-text text-muted">
+                                    {{ budget_request.updated_at|date:"M d, Y H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if budget_request.status == 'approved' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Approved</h6>
+                                <p class="timeline-text text-muted">
+                                    Approved by {{ budget_request.current_approver.username|default:"System" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% elif budget_request.status == 'rejected' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-danger"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Rejected</h6>
+                                <p class="timeline-text text-muted">
+                                    Rejected by {{ budget_request.current_approver.username|default:"System" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="notification-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #dee2e6;
+}
+
+.timeline-title {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.timeline-text {
+    margin-bottom: 0;
+    font-size: 0.9em;
+}
+</style>
+
+<script>
+function showNotification(message, type = 'info') {
+    const notificationContainer = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+    notification.setAttribute('role', 'alert');
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    notificationContainer.appendChild(notification);
+    setTimeout(() => {
+        bootstrap.Alert.getInstance(notification)?.close();
+    }, 5000);
+}
+
+function submitForApproval(requestId) {
+    if (confirm('Are you sure you want to submit this budget request for approval?')) {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        button.disabled = true;
+
+        fetch(`{% url 'finance:submit_for_approval' pk=0 %}`.replace('0', requestId), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('✅ Request submitted for approval successfully!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                const errorMsg = data.error || 'Unknown error occurred';
+                showNotification(`❌ Error submitting request: ${errorMsg}`, 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(`❌ Network error: ${error.message}`, 'error');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+
+function approveRequest(requestId) {
+    if (confirm('Are you sure you want to approve this budget request?')) {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...';
+        button.disabled = true;
+        
+        fetch(`{% url 'finance:approve_request' pk=0 %}`.replace('0', requestId), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                comments: 'Approved via UI dashboard'
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('✅ Request approved successfully!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                const errorMsg = data.error || 'Unknown error occurred';
+                showNotification(`❌ Error approving request: ${errorMsg}`, 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(`❌ Network error: ${error.message}`, 'error');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+
+function rejectRequest(requestId) {
+    const reason = prompt('Please provide a reason for rejection:');
+    if (reason) {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rejecting...';
+        button.disabled = true;
+        
+        fetch(`{% url 'finance:reject_request' pk=0 %}`.replace('0', requestId), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                reason: reason
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('✅ Request rejected successfully!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                const errorMsg = data.error || 'Unknown error occurred';
+                showNotification(`❌ Error rejecting request: ${errorMsg}`, 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(`❌ Network error: ${error.message}`, 'error');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+</script>
+{% endblock %}

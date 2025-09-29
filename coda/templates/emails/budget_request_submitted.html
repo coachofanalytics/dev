@@ -1,0 +1,90 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Budget Request Submitted - {{ site_name }}{% endblock %}
+
+{% block header_title %}Budget Request Submitted{% endblock %}
+{% block header_subtitle %}Request #{{ request.id }} has been submitted for approval{% endblock %}
+
+{% block content_title %}Budget Request Submitted Successfully{% endblock %}
+
+{% block content_message %}
+Your budget request has been successfully submitted and is now in the approval process. 
+Please find the details below:
+{% endblock %}
+
+{% block additional_content %}
+<div class="info-box">
+    <h3>Request Details</h3>
+    <p><strong>Request ID:</strong> #{{ request.id }}</p>
+    <p><strong>Amount:</strong> {{ request.currency }} {{ request.amount|floatformat:2 }}</p>
+    <p><strong>Purpose:</strong> {{ request.purpose }}</p>
+    <p><strong>Department:</strong> {{ request.department.name }}</p>
+    <p><strong>Budget Category:</strong> {{ request.budget_category.name }}</p>
+    <p><strong>Priority:</strong> {{ request.priority|title }}</p>
+    <p><strong>Required Date:</strong> {{ request.required_date|date:"F d, Y" }}</p>
+    <p><strong>Submitted Date:</strong> {{ request.request_date|date:"F d, Y \a\t g:i A" }}</p>
+</div>
+
+{% if request.approval_policy %}
+<div class="info-box">
+    <h3>Approval Policy Applied</h3>
+    <p><strong>Policy:</strong> {{ request.approval_policy.name }}</p>
+    <p><strong>Description:</strong> {{ request.approval_policy.description }}</p>
+    {% if request.approval_policy.auto_approve %}
+    <p><strong>Status:</strong> <span style="color: #28a745;">Auto-Approval Enabled</span></p>
+    {% else %}
+    <p><strong>Status:</strong> <span style="color: #ffc107;">Manual Approval Required</span></p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if request.approval_chain %}
+<div class="info-box">
+    <h3>Approval Chain</h3>
+    <p>The following approvers will review your request:</p>
+    <ul>
+        {% for approver in request.approval_chain %}
+        <li><strong>{{ approver.role }}:</strong> {{ approver.user_name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="info-box">
+    <h3>Next Steps</h3>
+    <ul>
+        <li>Your request is now in the approval queue</li>
+        <li>You will receive notifications as the request progresses</li>
+        <li>You can track the status through the admin panel</li>
+        <li>If approved, disbursement will be processed automatically</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ site_url }}/admin/finance/budgetrequest/{{ request.id }}/change/" class="action-button">
+        View Request Details
+    </a>
+</div>
+
+{% if request.attachments %}
+<div class="info-box">
+    <h3>Attachments</h3>
+    <p>The following documents were attached to your request:</p>
+    <ul>
+        {% for attachment in request.attachments %}
+        <li>{{ attachment.name }} ({{ attachment.size }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="warning-box">
+    <h3>Important Notes</h3>
+    <ul>
+        <li>Please keep this email for your records</li>
+        <li>Do not reply to this email as it is automatically generated</li>
+        <li>Contact support if you have any questions about your request</li>
+        <li>Request modifications are not allowed once submitted</li>
+    </ul>
+</div>
+{% endblock %}

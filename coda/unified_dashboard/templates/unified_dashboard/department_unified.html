@@ -1,0 +1,343 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+/* Modern Dashboard Styling */
+.unified-dashboard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 0;
+}
+
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.dashboard-header h1 {
+    color: #2c3e50;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.role-badge {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Department Navigation */
+.department-nav {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.department-nav h3 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.department-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.department-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.department-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.department-btn.active {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+/* Department Content */
+.departments-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.department-card {
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: none;
+    overflow: hidden;
+}
+
+.department-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.department-header {
+    background: linear-gradient(135deg, #bcbce2, #9b9bc4);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #8a8ab8;
+}
+
+.department-header h3 {
+    color: #2c3e50;
+    font-weight: 700;
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.edit-btn {
+    color: #007bff !important;
+    text-decoration: none;
+    font-size: 1.3rem;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+}
+
+.edit-btn:hover {
+    background-color: #e3f2fd;
+    color: #0056b3 !important;
+    text-decoration: none;
+    transform: scale(1.1);
+}
+
+.department-content {
+    padding: 1.5rem;
+}
+
+.section-category {
+    margin-bottom: 1.5rem;
+}
+
+.section-category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.section-category-header h4 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.link-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.link-item a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    flex-grow: 1;
+    margin-right: 1rem;
+}
+
+.link-item a:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
+    
+    .department-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .department-selector {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
+
+<div class="unified-dashboard">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1><i class="fas fa-building"></i> {{ department.name }}</h1>
+            {% if is_admin %}
+                <p>Department management and resource access</p>
+            {% elif is_staff %}
+                <p>Department-focused view with access to organizational resources</p>
+            {% else %}
+                <p>Access to department resources and information</p>
+            {% endif %}
+            
+            <div class="user-info">
+                <div class="role-badge">
+                    <i class="fas fa-user-tag"></i> 
+                    {{ user_role|title }}
+                </div>
+                <span class="text-muted">Welcome, {{ request.user.first_name|default:request.user.username }}</span>
+            </div>
+        </div>
+
+        <!-- Department Navigation -->
+        <div class="department-nav">
+            <h3><i class="fas fa-th"></i> Departments</h3>
+            <div class="department-selector">
+                {% for dept in all_departments %}
+                    <a href="{% url 'dashboard:unified_department' department_slug=dept.slug %}" 
+                       class="department-btn {% if dept.slug == department.slug %}active{% endif %}">
+                        {{ dept.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Department Content -->
+        <div class="departments-container">
+            {% for department, subcategories_with_links in categories_with_links %}
+            <div class="department-card">
+                <!-- Department Header -->
+                <div class="department-header">
+                    <h3>{{ department.name }}</h3>
+                    {% if request.user.is_superuser or request.user.is_admin %}
+                        <a href="{% url 'management:update_agenda' title='department' pk=department.pk %}" class="edit-btn" title="Edit Department">&#10004;</a>
+                    {% endif %}
+                </div>
+                
+                <!-- Department Content -->
+                <div class="department-content">
+                    {% if is_staff %}
+                        <!-- Staff view: Show subtopics in a grid layout -->
+                        <div class="row">
+                            {% for subcategory, links in subcategories_with_links %}
+                            <div class="col-md-6">
+                                <div class="section-category">
+                                    <!-- Section Category Header -->
+                                    <div class="section-category-header">
+                                        <h4>{{ subcategory.name }}</h4>
+                                        {% if request.user.is_superuser or request.user.is_admin %}
+                                            <a href="{% url 'management:update_agenda' title='subcategory' pk=subcategory.pk %}" class="edit-btn" title="Edit Section">&#10004;</a>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Section Links -->
+                                    {% for link in links %}
+                                        <div class="link-item">
+                                            <a href="{{ link.url }}" target="_blank">{{ link.name }}</a>
+                                            {% if request.user.is_superuser or request.user.is_admin %}
+                                                <a href="{% url 'management:update_agenda' title='link' pk=link.pk %}" class="edit-btn" title="Edit Link">&#10004;</a>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <!-- Admin view: Show traditional layout -->
+                        {% for subcategory, links in subcategories_with_links %}
+                            <div class="section-category">
+                                <!-- Section Category Header -->
+                                <div class="section-category-header">
+                                    <h4>{{ subcategory.name }}</h4>
+                                    {% if request.user.is_superuser or request.user.is_admin %}
+                                        <a href="{% url 'management:update_agenda' title='subcategory' pk=subcategory.pk %}" class="edit-btn" title="Edit Section">&#10004;</a>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Section Links -->
+                                {% for link in links %}
+                                    <div class="link-item">
+                                        <a href="{{ link.url }}" target="_blank">{{ link.name }}</a>
+                                        {% if request.user.is_superuser or request.user.is_admin %}
+                                            <a href="{% url 'management:update_agenda' title='link' pk=link.pk %}" class="edit-btn" title="Edit Link">&#10004;</a>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

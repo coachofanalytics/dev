@@ -1,0 +1,136 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Budget Request {{ decision|title }} - {{ site_name }}{% endblock %}
+
+{% block header_title %}Budget Request {{ decision|title }}{% endblock %}
+{% block header_subtitle %}Request #{{ request.id }} has been {{ decision }}{% endblock %}
+
+{% block content_title %}Budget Request {{ decision|title }}{% endblock %}
+
+{% block content_message %}
+Your budget request has been {{ decision }}. Please find the details below:
+{% endblock %}
+
+{% block additional_content %}
+<div class="{% if decision == 'approved' %}success-box{% else %}error-box{% endif %}">
+    <h3>Decision: {{ decision|title }}</h3>
+    {% if decision == 'approved' %}
+    <p>Congratulations! Your budget request has been approved and will proceed to the next stage.</p>
+    {% else %}
+    <p>Your budget request has been rejected. Please review the reason provided below.</p>
+    {% endif %}
+</div>
+
+<div class="info-box">
+    <h3>Request Details</h3>
+    <p><strong>Request ID:</strong> #{{ request.id }}</p>
+    <p><strong>Amount:</strong> {{ request.currency }} {{ request.amount|floatformat:2 }}</p>
+    <p><strong>Purpose:</strong> {{ request.purpose }}</p>
+    <p><strong>Department:</strong> {{ request.department.name }}</p>
+    <p><strong>Budget Category:</strong> {{ request.budget_category.name }}</p>
+    <p><strong>Priority:</strong> {{ request.priority|title }}</p>
+    <p><strong>Required Date:</strong> {{ request.required_date|date:"F d, Y" }}</p>
+    <p><strong>Decision Date:</strong> {{ timestamp|date:"F d, Y \a\t g:i A" }}</p>
+</div>
+
+{% if decision == 'rejected' and request.rejection_reason %}
+<div class="error-box">
+    <h3>Rejection Reason</h3>
+    <p>{{ request.rejection_reason }}</p>
+</div>
+{% endif %}
+
+{% if decision == 'approved' %}
+<div class="success-box">
+    <h3>Next Steps</h3>
+    <ul>
+        <li>Your request has been approved and will proceed to disbursement</li>
+        <li>You will receive a disbursement notification shortly</li>
+        <li>Funds will be processed according to your specified method</li>
+        <li>You can track the disbursement status in the admin panel</li>
+    </ul>
+</div>
+
+{% if request.approval_policy and request.approval_policy.requires_otp %}
+<div class="info-box">
+    <h3>OTP Verification Required</h3>
+    <p>For security purposes, you will receive an OTP (One-Time Password) via email to verify the disbursement. Please check your email and follow the instructions provided.</p>
+</div>
+{% endif %}
+
+{% if request.approval_chain %}
+<div class="info-box">
+    <h3>Approval Chain Status</h3>
+    <p>The following approvers have reviewed your request:</p>
+    <ul>
+        {% for approver in request.approval_chain %}
+        <li>
+            <strong>{{ approver.role }}:</strong> {{ approver.user_name }}
+            <span style="color: {% if approver.status == 'approved' %}#28a745{% elif approver.status == 'rejected' %}#dc3545{% else %}#ffc107{% endif %};">
+                ({{ approver.status|title }})
+            </span>
+            {% if approver.comments %}
+            <br><em>{{ approver.comments }}</em>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% else %}
+<div class="info-box">
+    <h3>What You Can Do Next</h3>
+    <ul>
+        <li>Review the rejection reason and address any concerns</li>
+        <li>Submit a new request with corrected information</li>
+        <li>Contact the approver for clarification if needed</li>
+        <li>Consider adjusting the amount or purpose if appropriate</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Contact Information</h3>
+    <p>If you have questions about this decision, please contact:</p>
+    <ul>
+        <li><strong>Approver:</strong> {{ request.current_approver.get_full_name }}</li>
+        <li><strong>Email:</strong> {{ request.current_approver.email }}</li>
+        {% if request.current_approver.phone_number %}
+        <li><strong>Phone:</strong> {{ request.current_approver.phone_number }}</li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin/finance/budgetrequest/{{ request.id }}/change/" class="action-button">
+        View Request Details
+    </a>
+</div>
+
+{% if request.attachments %}
+<div class="info-box">
+    <h3>Attachments</h3>
+    <p>The following documents were attached to your request:</p>
+    <ul>
+        {% for attachment in request.attachments %}
+        <li>{{ attachment.name }} ({{ attachment.size }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="warning-box">
+    <h3>Important Notes</h3>
+    <ul>
+        <li>Please keep this email for your records</li>
+        <li>Do not reply to this email as it is automatically generated</li>
+        <li>Contact support if you have any questions about this decision</li>
+        {% if decision == 'approved' %}
+        <li>Monitor your email for disbursement notifications</li>
+        {% else %}
+        <li>You can submit a new request at any time</li>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}

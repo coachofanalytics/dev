@@ -16,8 +16,10 @@ from .viewsets import (
     EmployeeViewSet, TaskViewSet, MeetingViewSet,
     AIAnalysisViewSet, StockAnalysisViewSet,
     TrainingProgramViewSet, AssessmentViewSet,
-    DashboardViewSet
+    DashboardViewSet, BudgetRequestViewSet, ApprovalPolicyViewSet,
+    DisbursementRequestViewSet, AutomationAuditLogViewSet
 )
+from finance.api.budget_estimation_api import BudgetEstimationAPIView
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -38,6 +40,11 @@ router.register(r'stock-analysis', StockAnalysisViewSet)
 router.register(r'training-programs', TrainingProgramViewSet)
 router.register(r'assessments', AssessmentViewSet)
 router.register(r'dashboard', DashboardViewSet, basename='dashboard')
+router.register(r'budget-requests', BudgetRequestViewSet)
+router.register(r'approval-policies', ApprovalPolicyViewSet)
+router.register(r'disbursement-requests', DisbursementRequestViewSet)
+router.register(r'audit-logs', AutomationAuditLogViewSet)
+router.register(r'budget-estimation', BudgetEstimationAPIView, basename='budget-estimation')
 
 # API URL patterns
 urlpatterns = [
