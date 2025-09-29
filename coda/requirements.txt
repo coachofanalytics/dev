@@ -36,6 +36,9 @@ pytz==2025.2
 # Security
 cryptography==41.0.5
 PyJWT==2.8.0
+google-auth==2.23.4
+google-auth-oauthlib==1.1.0
+google-auth-httplib2==0.2.0
 
 # Data Processing (Lightweight versions)
 # Note: numpy and pandas are heavy - consider alternatives if not essential
