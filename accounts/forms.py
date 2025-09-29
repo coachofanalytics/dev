@@ -3,6 +3,7 @@ from .models import *
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.validators import validate_email
+from .models import Membership
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
@@ -105,7 +106,7 @@ class LoginForm(forms.Form):
         if not username_or_email:
             self.add_error('enter_your_username_or_email', "This field is required.")
         if not password:
-            self.add_error('password', "This field is required.") 
+            self.add_error('password', "This field is required.") ,
 
 # class MemberRegistrationForm(forms.ModelForm):
 #     class Meta:
@@ -118,3 +119,21 @@ class LoginForm(forms.Form):
 #         labels = {
 #             'agree': 'I agree to the terms and conditions'
 #         }
+
+class MembershipRegistrationForm(forms.Form):
+    email = forms.EmailField(label="Email", required=True)
+    first_name = forms.CharField(label="First Name", max_length=100, required=True)
+    last_name = forms.CharField(label="Last Name", max_length=100, required=True)
+    gender = forms.ChoiceField(label="Gender", choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], required=True)
+    plan = forms.ChoiceField(label="Plan", choices=[
+        ('1', 'Ordinary Member (Free)'),
+        ('2', 'Active Members (1,000)'),
+        ('3', 'Executive Members (10,000)'),
+        ('4', 'Executive Members (10,000)'),
+        ('5', 'ACTIVE ORGANIZATIONS (10,000)'),
+        ('6', 'ROYAL ORGANIZATION (20,000)'),
+    ], required=True)
+    phone = forms.CharField(label="Phone Number", max_length=20, required=True)
+    country = forms.CharField(label="Country", max_length=100, required=True)
+    city = forms.CharField(label="City", max_length=100, required=True)
+    accepted_terms = forms.BooleanField(label="I agree to the terms and conditions", required=True)

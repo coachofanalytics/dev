@@ -10,6 +10,7 @@ from django_countries.fields import CountryField
 
 
 class CustomerUser(AbstractUser):
+    accepted_terms = models.BooleanField(default=False)
     
     groups = models.ManyToManyField(Group, related_name='custom_user_set')
     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_set')
@@ -134,9 +135,9 @@ class Department(models.Model):
 
     class Meta:
         verbose_name = ("Department")
-        verbose_name_plural = ("Departments")
+        verbose_name_plural = ("Departments") 
 
     # def get_absolute_url(self):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
-        return self.name    
+        return self.name

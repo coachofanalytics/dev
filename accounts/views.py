@@ -1,3 +1,29 @@
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from .models import CustomerUser, Membership
+# Member CRUD views
+class MemberListView(ListView):
+    model = CustomerUser
+    template_name = 'accounts/member_list.html'
+    context_object_name = 'members'
+
+class MemberCreateView(CreateView):
+    model = CustomerUser
+    fields = ['username', 'email', 'first_name', 'last_name']
+    template_name = 'accounts/member_form.html'
+    success_url = reverse_lazy('accounts:member-list')
+
+class MemberUpdateView(UpdateView):
+    model = CustomerUser
+    fields = ['username', 'email', 'first_name', 'last_name']
+    template_name = 'accounts/member_form.html'
+    success_url = reverse_lazy('accounts:member-list')
+
+class MemberDeleteView(DeleteView):
+    model = CustomerUser
+    template_name = 'accounts/member_confirm_delete.html'
+    context_object_name = 'member'
+    success_url = reverse_lazy('accounts:member-list')
 import secrets
 import uuid
 import string, random
@@ -29,6 +55,32 @@ from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,Lo
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, get_user_model
+
+from .forms import MembershipRegistrationForm
+
+def membership_registration(request):
+    if request.method == 'POST':
+        form = MembershipRegistrationForm(request.POST)
+        if form.is_valid():
+            # Extract cleaned data
+            data = form.cleaned_data
+            # Here you can create a new CustomerUser or Membership as needed
+            # Example: create a new CustomerUser (if you want to register a user)
+            # user = CustomerUser.objects.create(
+            #     email=data['email'],
+            #     first_name=data['first_name'],
+            #     last_name=data['last_name'],
+            #     ...
+            # )
+            # Or just show a success page for now
+            return render(request, 'accounts/membership_sucess.html', {'data': data})
+        # If form is not valid, fall through to re-render with errors
+    else:
+        form = MembershipRegistrationForm()
+    return render(request, 'accounts/membership_registration.html', {'form': form})
+ 
+
+
 # Create your views here..
 
 
@@ -52,7 +104,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('')
+            return redirect('accounts:member-list')
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/registration/DC48K/registers.html', {'form': form})
@@ -87,7 +139,6 @@ def join(request):
             if form.is_valid():
                 # Check the selected category and update the form instance accordingly
                 category = form.cleaned_data.get("category")
-                
                 if category == CategoryChoices.ORDINARY_MEMBER:
                     form.instance.is_ordinary_member = True
                 elif category == CategoryChoices.ACTIVE_MEMBER:
@@ -115,7 +166,6 @@ def join(request):
                 user.save()
                 print(category)
                 fee_kes = CATEGORY_FEES.get(category, 0.0)
-                
                 fee_usd = fee_kes / get_exchange_rate('USD', 'KES')  # Convert to USD
                 membership = Membership.objects.create(
                     member=user,
@@ -124,17 +174,13 @@ def join(request):
                     status='NOT_PAID',
                 )
                 print(f"Membership created for user {user.username} with fee {fee_usd} USD")
-
                 print(f"User {user.username} created and saved. Account is inactive until verification.")
-
                 send_verification_email(user, password=password)
-
-                
-                return redirect('accounts:email-verification-notice', user.id)
+                # Redirect to member list after registration
+                return redirect('accounts:member-list')
             else:
                 msg = "Error validating form"
                 print(msg)
-
     return render(request, "accounts/registration/DC48K/joins.html", {"form": form})
 
 def email_verification_notice(request, user_id):
@@ -298,8 +344,7 @@ def select_category(request):
     return render(request, "accounts/select_category.html")
 
 
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.core.exceptions import ImmediateHttpResponse  
+from django.http import HttpResponseRedirect  
 from django.http import HttpResponseRedirect  
 def custom_social_account_adapter_pre_social_login(request, sociallogin):
     print('Inside pre_social_login')

@@ -35,6 +35,14 @@ urlpatterns = [
     path('superuser/<int:pk>/update/', superuser_update_view, name='superuser-update'),
    
     path('thank/',views.thank, name='thank-you'),
+
+    path('membership/', views.membership_registration, name = 'membership_registration'),
+
+    # Member CRUD
+    path('members/', views.MemberListView.as_view(), name='member-list'),
+    path('members/add/', views.MemberCreateView.as_view(), name='member-create'),
+    path('members/<int:pk>/edit/', views.MemberUpdateView.as_view(), name='member-update'),
+    path('members/<int:pk>/delete/', views.MemberDeleteView.as_view(), name='member-delete'),
     
 
 ]
