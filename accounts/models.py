@@ -139,6 +139,16 @@ class TaskGroup(models.Model):
 
     def __str__(self):
         return self.title
+    
+class TeamMember(models.Model):  # 🔄 Renamed to singular (best practice)
+    category = models.CharField(max_length=25)
+    title = models.CharField(max_length=255, blank=True)  
+    description = models.TextField()
+    
+    def __str__(self):
+        return f"{self.title} ({self.category})"
+
+
 
 
         
