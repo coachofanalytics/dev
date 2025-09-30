@@ -1,0 +1,49 @@
+{% extends "main/index.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<main>
+    <div class="container wow fadeIn">
+        <h2 class="my-5 h2 text-center">Client Availability List</h2>
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="mb-4">Manage Your Availability</h3>
+                        <a href="{% url 'availability_create' %}" class="btn btn-primary mb-4">Add New Availability</a>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Day</th>
+                                    <th>Time Slot</th>
+                                    <th>Topic</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for availability in availabilities %}
+                                    <tr>
+                                        <td>{{ availability.client }}</td>
+                                        <td>{{ availability.day }}</td>
+                                        <td>{{ availability.start_time }} to {{ availability.end_time }}</td>
+                                        <td>{{ availability.topic }}</td>
+                                        <td>
+                                            <a href="{% url 'availability_edit' availability.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                                            <a href="{% url 'availability_delete' availability.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this availability?');">Delete</a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No availability records found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock content %}
