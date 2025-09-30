@@ -1,0 +1,32 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">📋 Team Members</h2>
+
+  {% if members %}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Category</th>
+        <th>Title</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for member in members %}
+      <tr>
+        <td>{{ member.id }}</td>
+        <td>{{ member.category }}</td>
+        <td>{{ member.title }}</td>
+        <td>{{ member.description }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="alert alert-info">No team members found.</div>
+  {% endif %}
+</div>
+{% endblock %}

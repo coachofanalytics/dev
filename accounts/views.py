@@ -357,6 +357,14 @@ def TaskGroup_detail_view(request, pk):
     taskgroup = get_object_or_404(TaskGroup, pk=pk)
     return render(request, "accounts/Taskgroupdetail.html", {"taskgroup": taskgroup})
 
+from django.shortcuts import render
+from .models import TeamMember   # make sure the model is imported
+
+def teammember_list_view(request):
+    members = TeamMember.objects.all()  # ✅ don't overwrite the class name
+    return render(request, 'accounts/Teammemberlist.html', {'members': members})
+
+
 
 
     
