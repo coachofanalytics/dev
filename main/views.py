@@ -11,11 +11,11 @@ from django.views.generic import (
 from .models import Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from main.forms import ContactForm,Donation
+from main.forms import ContactForm,DonationForm
 from django.contrib.auth import get_user_model
-from .models import Donationorganisation
-
+from .models import Donationorganisation 
 User=get_user_model()
+
 
 
 def error400(request):
@@ -203,67 +203,75 @@ def contact_us_list(request):
     # Render the template with the context
     return render(request, 'main/snippets_templates/table/contact_us_list.html', {'contact_us_list': contact_us_list})
 
-
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Donationorganisation
+from .forms import DonationForm
 from django.views.generic import TemplateView
 
+# About page
 class AboutView(TemplateView):
-    template_name = 'main/snippets_templates/table/abour.html'
+    template_name = "main/snippets_templates/table/about.html"
 
 
+# List all donations
 def donation_list(request):
-    donation = Donationorganisation.objects.all().order_by("-created_at")
-    return render(request,"main/snippets_templates/table/donation_list.html",{"donations":donation})
-
-# def Donation_create(request):
-#     if request.method == "POST":
-#         form =  Donation_form(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             return redirect("main:main-donation_list")
-#         else:
-#             form= Donation_form()
-#             return render(request,"main/snippets_templates/table/donation_create.html",{"form":form})
+    donations = Donationorganisation.objects.all().order_by("-created_at")
+    return render(
+        request,
+        "main/snippets_templates/table/donation_list.html",
+        {"donations": donations},
+    )
 
 
+# Donation details
+def donation_details(request, pk):
+    donation = get_object_or_404(Donationorganisation, pk=pk)
+    return render(
+        request,
+        "main/snippets_templates/table/donation_details.html",
+        {"donation": donation},
+    )
 
-
-def Donation_create(request):
+# Donation add
+def donation_add(request):
     if request.method == "POST":
-        form = Donation(request.POST, request.FILES)
+        form = DonationForm(request.POST, request.FILES)
         if form.is_valid():
-            instance = form.save(commit=False)
-            instance.save()
-            context = {
-                "message": "Thank You for your donation, we will get back to you within 48 hours."
-            }
-            return redirect("main:donation")
+            form.save()
+            return redirect("main:donation_list")
     else:
-        form = Donation()
-    return render(request, "main/snippets_templates/table/donation_create.html", {"form": form})
+        form = DonationForm()
+    return render(request, "main/snippets_templates/table/donation_add.html", {"form": form})
 
 
 
 
-
-def Donation_update(request,pk):
-    donation = get_object_or_404(Donationorganisation,pk=pk)
-    form =  Donation(request.POST or None,instance=donation)
-
+# Edit donation
+def donation_edit(request, pk):
+    donation = get_object_or_404(Donationorganisation, pk=pk)
     if request.method == "POST":
-        form.is_valid()
-        form.save()
-        return redirect("main:donation")
-    return render(request,"main/snippets_templates/table/donation_edit.html",{"form":form})
-    
-def Donation_delete(request,pk):
-    donation = get_object_or_404(Donationorganisation,pk=pk)
+        form = DonationForm(request.POST, request.FILES, instance=donation)
+        if form.is_valid():
+            form.save()
+            return redirect("main:donation_list")
+    else:
+        form = DonationForm(instance=donation)
+
+    return render(
+        request,
+        "main/snippets_templates/table/donation_edit.html",
+        {"form": form, "donation": donation},
+    )
+
+
+# Delete donation
+def donation_delete(request, pk):
+    donation = get_object_or_404(Donationorganisation, pk=pk)
     if request.method == "POST":
         donation.delete()
-        return redirect("main:donation")
-    return render(request,"main/snippets_templates/table/donation_delete.html",{"donation":donation})
-
-
-
-def Donation_details(request,pk):
-    donation = get_object_or_404(Donationorganisation,pk=pk)
-    return render(request,"main/snippets_templates/table/donation_details.html",{"donation":donation})
+        return redirect("main:donation_list")
+    return render(
+        request,
+        "main/snippets_templates/table/donation_delete.html",
+        {"donation": donation},
+    )

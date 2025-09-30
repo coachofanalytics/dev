@@ -1,25 +1,29 @@
-{%extends "main/base_templates/base.html"%} 
+{% extends "main/base_templates/base.html" %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Donation Detail</h2>
+    <h2 class="mb-4">Donotion Detail</h2>
 
     <div class="card shadow p-4">
         <p><strong>ID:</strong> {{ donation.id }}</p>
         <p><strong>Donor Name:</strong> {{ donation.donor_name }}</p>
         <p><strong>Email:</strong> {{ donation.email }}</p>
-        <p><strong>Amount:</strong> {{ donation.amount }}</p>
+        <p><strong>Amount:</strong> ${{ donation.amount|floatformat:2 }}</p>
         <p><strong>Method:</strong> {{ donation.method }}</p>
-        <p><strong>Date:</strong> {{ donation.created_at }}</p>
+        <p><strong>Date:</strong> {{ donation.created_at|date:"M d, Y H:i" }}</p>
 
         {% if donation.receipt %}
-            <p><strong>Receipt:</strong> <a href="#" target="_blank">Download</a></p>
+            <p><strong>Receipt:</strong>
+                <a href="{{ donation.receipt.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    Download
+                </a>
+            </p>
         {% endif %}
 
         <div class="mt-3">
-            <a href="{% url 'main:donation_update' donation.id %}" class="btn btn-warning">Edit</a>
-            <a href="{% url 'main:donation_delete' donation.id %}" class="btn btn-danger">Delete</a>
-            <a href="{% url 'main:donation' %}" class="btn btn-secondary">Back to List</a>
+            <a href="{% url 'main:donation_edit' donation.id %}" class="btn btn-sm btn-warning">Edit</a>
+            <a href="{% url 'main:donation_delete' donation.id %}" class="btn btn-sm btn-danger">Delete</a>
+            <a href="{% url 'main:donation_list' %}" class="btn btn-sm btn-secondary">Back to List</a>
         </div>
     </div>
 </div>

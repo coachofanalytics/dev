@@ -33,7 +33,7 @@ class ContactForm(forms.ModelForm):
         # self.fields['sub_category'].required=False
 
 
-class Donation(forms.ModelForm):
+class DonationForm(forms.ModelForm):
     class Meta:
         model = Donationorganisation
         fields = ["donor_name", "email", "amount", "message"]

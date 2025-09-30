@@ -162,15 +162,18 @@ class ContactUs(models.Model):
         return f"Message from {self.name} ({self.email})"
 
 
-
-
 class Donationorganisation(models.Model):
-    donor_name = models.CharField(max_length=100,null=False)
-    email = models.EmailField(null=False)
-    amount=models.DecimalField(max_digits=10,decimal_places=2,null=False)
-    message = models.TextField(null=False)
-    created_at=models.DateTimeField(auto_now_add=True,null=False)
+    donor_name = models.CharField(max_length=100, blank=False)
+    email = models.EmailField(blank=False)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=False)
+    message = models.TextField(blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Donation"
+        verbose_name_plural = "Donations"
 
     def __str__(self):
-        return f"{self.donor_name}-{self.amount}"
+        return f"{self.donor_name} - {self.amount}"
+
