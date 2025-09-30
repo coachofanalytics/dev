@@ -1,0 +1,35 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">👤 Team Member Details</h2>
+
+  <div class="card shadow-sm p-4">
+    <dl class="row">
+      <dt class="col-sm-3">ID</dt>
+      <dd class="col-sm-9">{{ member.id }}</dd>
+
+      <dt class="col-sm-3">Category</dt>
+      <dd class="col-sm-9">{{ member.category }}</dd>
+
+      <dt class="col-sm-3">Title</dt>
+      <dd class="col-sm-9">{{ member.title }}</dd>
+
+      <dt class="col-sm-3">Description</dt>
+      <dd class="col-sm-9">{{ member.description }}</dd>
+
+      <dt class="col-sm-3">Created At</dt>
+      <dd class="col-sm-9">{{ member.created_at|date:"Y-m-d H:i" }}</dd>
+    </dl>
+
+    <div class="mt-3">
+      <a href="#" class="btn btn-primary">
+        <i class="fa fa-edit"></i> Edit
+      </a>
+      <a href="{% url 'accounts:teammember_list' %}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -395,6 +395,13 @@ def teammember_update_view(request, pk):
         form = TeamMemberForm(instance=member)
 
     return render(request, "accounts/Teammambersupdate.html", {'form': form})
+from django.shortcuts import render, get_object_or_404
+from .models import TeamMember  # Make sure this model exists
+
+def teammember_detail_view(request, pk):
+    team_member = get_object_or_404(TeamMember, pk=pk)
+    return render(request, "accounts/Teammbersdetails.html", {"team_member": team_member})
+
 
 
 

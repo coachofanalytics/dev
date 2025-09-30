@@ -22,6 +22,7 @@ urlpatterns = [
     path('teammember_list/', views.teammember_list_view, name='teammember_list'),
     path('teammember_create/', views.teammember_create_view, name='teammember_create'),
     path('teammember_update/<int:pk>/', views.teammember_update_view, name='teammember_update'),
+    path('teammember_detail/<int:pk>/', views.teammember_detail_view, name='teammember_detail'),
 
 
 ]
