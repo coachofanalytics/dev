@@ -402,6 +402,20 @@ def teammember_detail_view(request, pk):
     team_member = get_object_or_404(TeamMember, pk=pk)
     return render(request, "accounts/Teammbersdetails.html", {"team_member": team_member})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import TeamMember
+
+def teammember_delete_view(request, pk):
+    # Fetch the object
+    team_member = get_object_or_404(TeamMember, pk=pk)
+
+    if request.method == "POST":
+        team_member.delete()
+        return redirect("accounts:teammember_list")  # Replace with your list view name
+
+    return render(request, "accounts/Teammemberdelete.html", {'team_member': team_member})
+
+
 
 
 

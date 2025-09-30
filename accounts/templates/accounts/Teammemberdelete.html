@@ -1,0 +1,22 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h3 class="text-danger">Confirm Delete</h3>
+    <p>Are you sure you want to delete <strong>{{ team_member.name }}</strong>?</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">
+          <i class="fa fa-trash"></i> Delete
+        </button>
+        <a href="{% url 'accounts:teammember_list' %}" class="btn btn-secondary">
+          <i class="fa fa-arrow-left"></i> Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
