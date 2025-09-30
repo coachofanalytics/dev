@@ -3,11 +3,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential,TaskGroup
+from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -363,6 +363,20 @@ from .models import TeamMember   # make sure the model is imported
 def teammember_list_view(request):
     members = TeamMember.objects.all()  # ✅ don't overwrite the class name
     return render(request, 'accounts/Teammemberlist.html', {'members': members})
+
+from django.shortcuts import render, redirect
+from .forms import TeamMemberForm  # make sure your form is imported
+
+def teammember_create_view(request):
+    if request.method == "POST":
+        form = TeamMemberForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:teammember_list')  # ✅ use your list view URL name
+    else:
+        form = TeamMemberForm()
+    return render(request, 'accounts/Teammemberscreate.html', {'form': form})
+
 
 
 

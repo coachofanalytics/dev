@@ -1,0 +1,28 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">➕ Add Team Member</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_category" class="form-label">Category</label>
+      {{ form.category }}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_title" class="form-label">Title</label>
+      {{ form.title }}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_description" class="form-label">Description</label>
+      {{ form.description }}
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'accounts:teammember_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

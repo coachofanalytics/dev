@@ -167,3 +167,12 @@ class TaskGroupForm(forms.ModelForm):
             "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter task group title"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Enter task group description"}),
         }
+
+        from django import forms
+from .models import TeamMember  # make sure your model is imported
+
+class TeamMemberForm(forms.ModelForm):
+    class Meta:
+        model = TeamMember
+        fields = ['category', 'title', 'description']
+
