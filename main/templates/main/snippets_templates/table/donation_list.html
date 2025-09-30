@@ -1,6 +1,5 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
-
 {% block content %}
 <div class="container">
     <h1>Donation List</h1>
@@ -38,63 +37,4 @@
     {% else %}
         <p class="empty">No donations have been made yet.</p>
     {% endif %}
-</div>
-
-<style>
-    .container {
-        margin: 20px;
-        font-family: Arial, sans-serif;
-    }
-    h1 {
-        margin-bottom: 15px;
-        color: #333;
-    }
-    .donation-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: #fff;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .donation-table th, .donation-table td {
-        padding: 12px;
-        border-bottom: 1px solid #ddd;
-        text-align: left;
-    }
-    .donation-table th {
-        background: #f4f4f4;
-    }
-    .donation-table tr:hover {
-        background: #f9f9f9;
-    }
-    .empty {
-        margin-top: 20px;
-        color: #777;
-    }
-    /* Button styles */
-    .btn {
-        padding: 6px 10px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 14px;
-        margin-right: 4px;
-    }
-    .btn-add {
-        display: inline-block;
-        margin-bottom: 12px;
-        background: green;
-        color: #fff;
-    }
-    .btn-delete {
-        background: red;
-        color: #fff;
-    }
-    .btn-edit {
-        background: blue;
-        color: #fff;
-    }
-    .btn-view {
-        background: gray;
-        color: #fff;
-    }
-</style>
-{% endblock %}
+       
