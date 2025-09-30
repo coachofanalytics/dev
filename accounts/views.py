@@ -377,6 +377,25 @@ def teammember_create_view(request):
         form = TeamMemberForm()
     return render(request, 'accounts/Teammemberscreate.html', {'form': form})
 
+from django.shortcuts import get_object_or_404, render, redirect
+from .models import TeamMember
+from .forms import TeamMemberForm
+
+def teammember_update_view(request, pk):
+    # Fetch the instance, not the class
+    member = get_object_or_404(TeamMember, pk=pk)
+
+    if request.method == "POST":
+        # Pass the instance here
+        form = TeamMemberForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:teammember_list')  # replace with your list view
+    else:
+        form = TeamMemberForm(instance=member)
+
+    return render(request, "accounts/Teammambersupdate.html", {'form': form})
+
 
 
 
