@@ -172,6 +172,12 @@ urlpatterns = [
     path('budget-consolidation/', 
          lambda request: redirect('finance:unified-budget-dashboard', company_slug='coda', permanent=False) + '?tab=overview',
          name='budget-consolidation-dashboard'),
+    path('consolidation-dashboard/<str:company_slug>/', 
+         lambda request, company_slug: redirect('finance:unified-budget-dashboard', company_slug=company_slug, permanent=False) + '?tab=overview',
+         name='consolidation-dashboard'),
+    path('budget-projection/<str:company_slug>/', 
+         lambda request, company_slug: redirect('finance:unified-budget-dashboard', company_slug=company_slug, permanent=False) + '?tab=analytics',
+         name='budget-projection-redirect'),
     
     #=============================FINANCE DASHBOARD=====================================
     # Finance dashboard
