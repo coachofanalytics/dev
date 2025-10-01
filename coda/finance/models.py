@@ -1962,6 +1962,25 @@ class Transaction(models.Model):
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, default=None
     )
+    currency = models.CharField(
+        max_length=3, 
+        default='USD', 
+        help_text="Currency code (USD, KES, EUR, etc.)"
+    )
+    amount_usd = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Amount converted to USD"
+    )
+    exchange_rate = models.DecimalField(
+        max_digits=10, 
+        decimal_places=4, 
+        null=True, 
+        blank=True,
+        help_text="Exchange rate used for conversion"
+    )
     transaction_cost = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, default=0
     )
@@ -1973,10 +1992,41 @@ class Transaction(models.Model):
         default="Other",
     )
 
+    def save(self, *args, **kwargs):
+        """Override save to auto-convert to USD"""
+        if self.amount and self.currency != 'USD':
+            try:
+                from .utils.currency_converter import currency_converter
+                self.amount_usd = currency_converter.convert_to_usd(
+                    self.amount, self.currency
+                )
+                # Store the exchange rate used
+                self.exchange_rate = currency_converter.get_exchange_rate(
+                    self.currency, 'USD'
+                )
+            except Exception as e:
+                # If conversion fails, log error but don't break the save
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Currency conversion failed: {e}")
+                self.amount_usd = self.amount  # Fallback to original amount
+        elif self.amount and self.currency == 'USD':
+            self.amount_usd = self.amount
+            self.exchange_rate = 1.0
+        
+        super().save(*args, **kwargs)
+    
     @property
     def total_payment(self):
         total_payment = self.amount * self.qty
         return total_payment
+    
+    @property
+    def total_payment_usd(self):
+        """Total payment in USD"""
+        if self.amount_usd and self.qty:
+            return self.amount_usd * self.qty
+        return self.total_payment  # Fallback to original calculation
     
     def get_absolute_url(self):
         return reverse("management:transaction-detail", kwargs={"pk": self.pk})
@@ -1989,6 +2039,19 @@ class Transaction(models.Model):
         return f"{self.id} Transactions"
     
 class CodaBudget(TimeStampedModel):
+    """
+    DEPRECATED: This model is deprecated as of Phase 1 consolidation (October 2025).
+    
+    All data has been migrated to Budget model with budget_type='general'.
+    This model is kept temporarily for backward compatibility and will be
+    removed in Phase 5 of the consolidation plan.
+    
+    **DO NOT USE FOR NEW DEVELOPMENT**
+    Use Budget model instead: Budget.objects.filter(budget_type='general')
+    
+    Migration: 233/259 records migrated to Budget model on 2025-09-30.
+    Remaining records have data quality issues (missing categories).
+    """
     budget_lead = models.ForeignKey(
         User,
         on_delete=models.CASCADE, 
@@ -2020,8 +2083,8 @@ class CodaBudget(TimeStampedModel):
         return f"{self.department.name} - {self.category.name} - {self.subcategory.name}-{self.created_at}"
 
     class Meta:
-        verbose_name = _("Coda Budget")
-        verbose_name_plural = _("Coda Budget")
+        verbose_name = _("DEPRECATED - Coda Budget")
+        verbose_name_plural = _("DEPRECATED - Coda Budgets")
         ordering = ['department','created_at', 'category', 'subcategory']
 
     @property
@@ -2379,6 +2442,45 @@ class BudgetEstimationTemplate(models.Model):
             total_cost += task_cost
         
         return total_cost * app_models_count
+
+
+class BudgetEstimateProjection(models.Model):
+    """Stored output of an estimation run for user review/approval."""
+
+    HORIZON_CHOICES = [
+        ("monthly", "Monthly"),
+        ("two_year", "2 Years"),
+        ("five_year", "5 Years"),
+    ]
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("submitted", "Submitted"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="budget_projections")
+    department = models.ForeignKey('accounts.Department', on_delete=models.CASCADE, related_name="budget_projections")
+    template = models.ForeignKey(BudgetEstimationTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    horizon = models.CharField(max_length=20, choices=HORIZON_CHOICES, default="monthly")
+    method = models.CharField(max_length=30, default="average")
+
+    # Snapshot of line items/estimates by category
+    estimates = models.JSONField(default=dict)
+    total_estimate = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
+    created_by = models.ForeignKey("accounts.CustomerUser", on_delete=models.SET_NULL, null=True, blank=True, related_name="created_budget_projections")
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.company} / {self.department} / {self.horizon} ({self.status})"
 
 
 class MultiYearBudgetPlan(models.Model):
