@@ -75,9 +75,10 @@ class Command(BaseCommand):
             enhanced_budget_count = 0
             self.stdout.write(self.style.WARNING("  ⚠️  EnhancedBudget model not found in app registry"))
         
-        projection_count = BudgetEstimateProjection.objects.count()
-        item_detail_count = BudgetItemDetail.objects.count()
-        estimate_item_count = BudgetEstimateItem.objects.count()
+        # Check optional models safely
+        projection_count = BudgetEstimateProjection.objects.count() if BudgetEstimateProjection else 0
+        item_detail_count = BudgetItemDetail.objects.count() if BudgetItemDetail else 0
+        estimate_item_count = BudgetEstimateItem.objects.count() if BudgetEstimateItem else 0
         
         self.stdout.write(f"Budget records:                    {budget_count:>8}")
         self.stdout.write(f"CodaBudget records:                {coda_budget_count:>8}")
