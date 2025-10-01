@@ -54,37 +54,38 @@ class Command(BaseCommand):
 
         self.stdout.write("\n" + "="*60)
         self.stdout.write("=== CodaBudget Model (Legacy) ===")
-        coda_stats = CodaBudget.objects.aggregate(
-            count=Count('id'),
-            sum_total=Sum('total')
-        )
-        self.stdout.write(f"Total Count: {coda_stats['count']}")
-        if coda_stats['sum_total']:
-            self.stdout.write(f"Total Amount: ${coda_stats['sum_total']:,.2f}")
-        else:
-            self.stdout.write("Total Amount: $0.00")
+        
+        # Calculate totals in Python since amount is a property
+        coda_budgets = CodaBudget.objects.all()
+        coda_count = coda_budgets.count()
+        coda_total = sum(b.amount for b in coda_budgets)
+        
+        self.stdout.write(f"Total Count: {coda_count}")
+        self.stdout.write(f"Total Amount: ${coda_total:,.2f}")
 
-        # CodaBudget doesn't have status field, show category breakdown instead
+        # Category breakdown for CodaBudget (calculated in Python)
         self.stdout.write("\n--- CodaBudget by Category (Top 10) ---")
-        coda_category_breakdown = CodaBudget.objects.filter(
-            category__isnull=False
-        ).values('category__name').annotate(
-            count=Count('id'),
-            sum_total=Sum('total')
-        ).order_by('-sum_total')[:10]
-        for item in coda_category_breakdown:
-            amount = item['sum_total'] if item['sum_total'] else 0
-            self.stdout.write(f"  {item['category__name']}: {item['count']} budgets, ${amount:,.2f}")
+        from collections import defaultdict
+        category_totals = defaultdict(lambda: {'count': 0, 'total': 0})
+        
+        for budget in coda_budgets:
+            if budget.category:
+                category_totals[budget.category.name]['count'] += 1
+                category_totals[budget.category.name]['total'] += budget.amount
+        
+        # Sort by total amount
+        sorted_categories = sorted(category_totals.items(), key=lambda x: x[1]['total'], reverse=True)[:10]
+        for cat_name, data in sorted_categories:
+            self.stdout.write(f"  {cat_name}: {data['count']} budgets, ${data['total']:,.2f}")
 
         # Combined totals
         self.stdout.write("\n" + "="*60)
-        self.stdout.write("COMBINED TOTALS (from database fields)")
+        self.stdout.write("COMBINED TOTALS")
         self.stdout.write("="*60)
-        budget_total = budget_stats['sum_amount'] if budget_stats['sum_amount'] else 0
-        coda_total = coda_stats['sum_total'] if coda_stats['sum_total'] else 0
-        combined_total = budget_total + coda_total
-        self.stdout.write(f"Budget.estimated_amount:     ${budget_total:,.2f}")
-        self.stdout.write(f"CodaBudget.total:            ${coda_total:,.2f}")
+        budget_est_total = budget_stats['sum_amount'] if budget_stats['sum_amount'] else 0
+        combined_total = budget_est_total + coda_total
+        self.stdout.write(f"Budget.estimated_amount:     ${budget_est_total:,.2f}")
+        self.stdout.write(f"CodaBudget.amount (calc):    ${coda_total:,.2f}")
         self.stdout.write(f"COMBINED TOTAL:              ${combined_total:,.2f}")
         self.stdout.write("="*60)
         
