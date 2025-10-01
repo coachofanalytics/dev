@@ -7,10 +7,21 @@ Phase 0 Task 0.2: Document current usage of Budget, CodaBudget, and EnhancedBudg
 from django.core.management.base import BaseCommand
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
-from finance.models import Budget, CodaBudget, BudgetEstimateProjection, BudgetCategory
-from finance.models_detailed_budget import BudgetItemDetail, BudgetEstimateItem
+from finance.models import Budget, CodaBudget, BudgetCategory
 from datetime import datetime
 import json
+
+# Optional imports - handle gracefully if models don't exist
+try:
+    from finance.models import BudgetEstimateProjection
+except ImportError:
+    BudgetEstimateProjection = None
+
+try:
+    from finance.models_detailed_budget import BudgetItemDetail, BudgetEstimateItem
+except ImportError:
+    BudgetItemDetail = None
+    BudgetEstimateItem = None
 
 # Note: EnhancedBudget import commented out due to model conflicts
 # Will check for existence via model registry instead
