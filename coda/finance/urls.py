@@ -14,6 +14,10 @@ from . import views_automation
 
 # Import enhanced budget views
 from . import views_enhanced_budget, views_finance_dashboard, views_legacy_dashboard, views_unified_department
+from . import views_projections, views_estimates, views_approvals, views_detailed_budget
+
+# Import unified budget views (Phase 3)
+from . import views_unified_budget
 
 # Import user-friendly form views
 from . import views_forms
@@ -160,9 +164,14 @@ urlpatterns = [
     path('automation/audit-logs/', views_automation.audit_logs_dashboard, name='audit-logs-dashboard'),
     path('automation/api/', views_automation.automation_dashboard_api, name='automation-dashboard-api'),
     
-    #=============================AUTOMATED BUDGET ESTIMATION=====================================
-    path('automated-budget-estimation/', views.automated_budget_estimation, name='automated-budget-estimation'),
-    path('budget-consolidation/', views.budget_consolidation_dashboard, name='budget-consolidation-dashboard'),
+    #=============================AUTOMATED BUDGET ESTIMATION (DEPRECATED - PHASE 3)=====================================
+    # OLD URLs - Redirect to unified dashboard
+    path('automated-budget-estimation/', 
+         lambda request: redirect('finance:unified-budget-dashboard', company_slug='coda', permanent=False) + '?tab=estimation',
+         name='automated-budget-estimation'),
+    path('budget-consolidation/', 
+         lambda request: redirect('finance:unified-budget-dashboard', company_slug='coda', permanent=False) + '?tab=overview',
+         name='budget-consolidation-dashboard'),
     
     #=============================FINANCE DASHBOARD=====================================
     # Finance dashboard
@@ -173,15 +182,31 @@ urlpatterns = [
     path('legacy-dashboard/<str:company_slug>/', views_legacy_dashboard.enhanced_legacy_dashboard, name='enhanced-legacy-dashboard'),
     path('legacy-dashboard/', views_legacy_dashboard.legacy_dashboard_redirect, name='legacy-dashboard-redirect'),
     
-    #=============================ENHANCED BUDGET SYSTEM=====================================
-    # Enhanced budget dashboard
-    path('enhanced-budget-dashboard/<str:company_slug>/', views_enhanced_budget.enhanced_budget_dashboard, name='enhanced-budget-dashboard'),
+    #=============================UNIFIED BUDGET SYSTEM (PHASE 3)=====================================
+    # New unified dashboard - consolidates all budget views
+    path('budget-dashboard/<str:company_slug>/', views_unified_budget.unified_budget_dashboard, name='unified-budget-dashboard'),
+    path('budget-planning/<str:company_slug>/', views_unified_budget.unified_budget_planning, name='unified-budget-planning'),
     
-    # Multi-timeframe planning
-    path('weekly-planning/<str:company_slug>/', views_enhanced_budget.weekly_budget_planning, name='weekly-budget-planning'),
-    path('monthly-planning/<str:company_slug>/', views_enhanced_budget.monthly_budget_planning, name='monthly-budget-planning'),
-    path('yearly-planning/<str:company_slug>/', views_enhanced_budget.yearly_budget_planning, name='yearly-budget-planning'),
-    path('multi-year-planning/<str:company_slug>/', views_enhanced_budget.multi_year_planning, name='multi-year-planning'),
+    #=============================ENHANCED BUDGET SYSTEM (DEPRECATED - PHASE 3)=====================================
+    # OLD URLs - Redirect to new unified dashboard
+    # Enhanced budget dashboard → unified dashboard (planning tab)
+    path('enhanced-budget-dashboard/<str:company_slug>/', 
+         lambda request, company_slug: redirect('finance:unified-budget-dashboard', company_slug=company_slug, permanent=False) + '?tab=planning',
+         name='enhanced-budget-dashboard'),
+    
+    # Multi-timeframe planning → unified planning with timeframe parameter
+    path('weekly-planning/<str:company_slug>/', 
+         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=weekly',
+         name='weekly-budget-planning'),
+    path('monthly-planning/<str:company_slug>/', 
+         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=monthly',
+         name='monthly-budget-planning'),
+    path('yearly-planning/<str:company_slug>/', 
+         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=yearly',
+         name='yearly-budget-planning'),
+    path('multi-year-planning/<str:company_slug>/', 
+         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=multi_year&periods=2',
+         name='multi-year-planning'),
     
     # CODA development estimation
     path('coda-development-estimation/<str:company_slug>/', views_enhanced_budget.coda_development_estimation, name='coda-development-estimation'),
@@ -194,6 +219,24 @@ urlpatterns = [
     
     # API endpoints
     path('api/create-budget-from-estimation/<str:company_slug>/', views_enhanced_budget.create_budget_from_estimation, name='create-budget-from-estimation'),
+
+    # Projections review UI
+    path('projections/', views_projections.projections_list, name='projections-list'),
+
+    # User-facing Estimate Wizard
+    path('estimates/', views_estimates.estimate_wizard, name='estimates-wizard'),
+    
+        # Budget Projection Approvals
+        path('approvals/projections/', views_approvals.budget_projection_approvals, name='budget-projection-approvals'),
+        path('approvals/projections/<int:projection_id>/', views_approvals.approve_budget_projection, name='approve-projection'),
+        path('approvals/projections/<int:projection_id>/detail/', views_approvals.budget_projection_detail, name='projection-detail'),
+        path('my-projections/', views_approvals.my_budget_projections, name='my-projections'),
+        
+        # Detailed Budget Breakdown
+        path('detailed-breakdown/<int:projection_id>/', views_detailed_budget.detailed_budget_breakdown, name='detailed-budget-breakdown'),
+        path('detailed-breakdown/<int:projection_id>/save-item/', views_detailed_budget.save_item_estimate, name='save-item-estimate'),
+        path('detailed-breakdown/<int:projection_id>/submit/', views_detailed_budget.submit_detailed_estimate, name='submit-detailed-estimate'),
+        path('create-detailed/', views_detailed_budget.create_detailed_projection, name='create-detailed-projection'),
     
     #=============================UNIFIED DEPARTMENT DASHBOARD=====================================
     # Unified department dashboard (serves all departments)
