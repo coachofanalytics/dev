@@ -181,11 +181,14 @@ class Command(BaseCommand):
                             confidence += 30
                             reasons.append(f"Description contains: {keyword}")
                 
-                # Check department
-                if txn.department and pattern.get('departments'):
-                    if txn.department.name in pattern['departments']:
-                        confidence += 20
-                        reasons.append(f"Department: {txn.department.name}")
+                # Check department (handle missing department gracefully)
+                try:
+                    if txn.department and pattern.get('departments'):
+                        if txn.department.name in pattern['departments']:
+                            confidence += 20
+                            reasons.append(f"Department: {txn.department.name}")
+                except Transaction.department.RelatedObjectDoesNotExist:
+                    pass  # Transaction has no department
                 
                 # Check amount range
                 if txn.amount and pattern.get('amount_range'):
@@ -253,7 +256,11 @@ class Command(BaseCommand):
             self.stdout.write(f"\n  Unmatched examples (need rules or manual categorization):")
             for match in unmatched[:5]:
                 txn = match['transaction']
-                self.stdout.write(f"    - {txn.receiver} | ${txn.amount} | Dept: {txn.department}")
+                try:
+                    dept_name = txn.department.name if txn.department else 'No Dept'
+                except:
+                    dept_name = 'No Dept'
+                self.stdout.write(f"    - {txn.receiver} | ${txn.amount} | Dept: {dept_name}")
     
     def _confirm_execution(self):
         """Ask for confirmation before making changes"""
