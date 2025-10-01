@@ -48,57 +48,37 @@ class BudgetConsolidationService(BaseFinanceService):
                 company=company, department=department
             )
             
-            # Get data from all models
+            # Get data from Budget model (includes migrated CodaBudget data)
             budgets = Budget.objects.filter(budget_filter)
-            coda_budgets = CodaBudget.objects.filter(budget_filter)
+            
+            # Note: CodaBudget data has been migrated to Budget model
+            # No need to query CodaBudget separately
             
             # Calculate totals
             budget_total = sum(
-                budget.unit_price * budget.qty 
+                budget.unit_price * budget.quantity 
                 for budget in budgets 
-                if budget.unit_price and budget.qty
+                if budget.unit_price and budget.quantity
             )
             
-            coda_budget_total = sum(coda_budget.amount for coda_budget in coda_budgets)
-            combined_total = budget_total + coda_budget_total
+            combined_total = budget_total
             
             # Category breakdown
             category_breakdown = {}
             
-            # Process Budget model
+            # Process Budget model (includes migrated CodaBudget data)
             for budget in budgets:
                 if budget.category:
                     cat_name = budget.category.name
                     if cat_name not in category_breakdown:
                         category_breakdown[cat_name] = {
-                            'budget_amount': Decimal('0.00'),
-                            'coda_budget_amount': Decimal('0.00'),
                             'total_amount': Decimal('0.00'),
-                            'budget_count': 0,
-                            'coda_budget_count': 0
+                            'budget_count': 0
                         }
                     
-                    amount = budget.unit_price * budget.qty if budget.unit_price and budget.qty else Decimal('0.00')
-                    category_breakdown[cat_name]['budget_amount'] += amount
+                    amount = budget.unit_price * budget.quantity if budget.unit_price and budget.quantity else Decimal('0.00')
                     category_breakdown[cat_name]['total_amount'] += amount
                     category_breakdown[cat_name]['budget_count'] += 1
-            
-            # Process CodaBudget model
-            for coda_budget in coda_budgets:
-                if coda_budget.category:
-                    cat_name = coda_budget.category.name
-                    if cat_name not in category_breakdown:
-                        category_breakdown[cat_name] = {
-                            'budget_amount': Decimal('0.00'),
-                            'coda_budget_amount': Decimal('0.00'),
-                            'total_amount': Decimal('0.00'),
-                            'budget_count': 0,
-                            'coda_budget_count': 0
-                        }
-                    
-                    category_breakdown[cat_name]['coda_budget_amount'] += coda_budget.amount
-                    category_breakdown[cat_name]['total_amount'] += coda_budget.amount
-                    category_breakdown[cat_name]['coda_budget_count'] += 1
             
             # Department breakdown
             department_breakdown = {}
@@ -108,27 +88,13 @@ class BudgetConsolidationService(BaseFinanceService):
                     dept_name = budget.department.name
                     if dept_name not in department_breakdown:
                         department_breakdown[dept_name] = {
-                            'budget_amount': Decimal('0.00'),
-                            'coda_budget_amount': Decimal('0.00'),
-                            'total_amount': Decimal('0.00')
+                            'total_amount': Decimal('0.00'),
+                            'budget_count': 0
                         }
                     
-                    amount = budget.unit_price * budget.qty if budget.unit_price and budget.qty else Decimal('0.00')
-                    department_breakdown[dept_name]['budget_amount'] += amount
+                    amount = budget.unit_price * budget.quantity if budget.unit_price and budget.quantity else Decimal('0.00')
                     department_breakdown[dept_name]['total_amount'] += amount
-            
-            for coda_budget in coda_budgets:
-                if coda_budget.department:
-                    dept_name = coda_budget.department.name
-                    if dept_name not in department_breakdown:
-                        department_breakdown[dept_name] = {
-                            'budget_amount': Decimal('0.00'),
-                            'coda_budget_amount': Decimal('0.00'),
-                            'total_amount': Decimal('0.00')
-                        }
-                    
-                    department_breakdown[dept_name]['coda_budget_amount'] += coda_budget.amount
-                    department_breakdown[dept_name]['total_amount'] += coda_budget.amount
+                    department_breakdown[dept_name]['budget_count'] += 1
             
             return {
                 'summary': {
@@ -224,9 +190,9 @@ class BudgetConsolidationService(BaseFinanceService):
                             department=budget.department,
                             category=budget.category,
                             subcategory=budget.subcategory,
-                            item=budget.item,
+                            item=budget.item_name,
                             cases=1,  # Default value
-                            qty=budget.qty,
+                            quantity=budget.quantity,
                             unit_price=budget.unit_price,
                             description=budget.description or "",
                             receipt_link=budget.receipt_link or ""
@@ -247,8 +213,8 @@ class BudgetConsolidationService(BaseFinanceService):
                             department=coda_budget.department,
                             category=coda_budget.category,
                             subcategory=coda_budget.subcategory,
-                            item=coda_budget.item,
-                            qty=coda_budget.qty,
+                            item=coda_budget.item_name,
+                            qty=coda_budget.quantity,
                             unit_price=coda_budget.unit_price,
                             description=coda_budget.description or "",
                             receipt_link=coda_budget.receipt_link or ""
@@ -371,10 +337,10 @@ class BudgetConsolidationService(BaseFinanceService):
                     'department': budget.department.name if budget.department else 'Unknown',
                     'category': budget.category.name if budget.category else 'Unknown',
                     'subcategory': budget.subcategory.name if budget.subcategory else 'N/A',
-                    'item': budget.item,
-                    'qty': budget.qty,
+                    'item': budget.item_name,
+                    'quantity': budget.quantity,
                     'unit_price': budget.unit_price,
-                    'amount': budget.unit_price * budget.qty if budget.unit_price and budget.qty else Decimal('0.00'),
+                    'amount': budget.unit_price * budget.quantity if budget.unit_price and budget.quantity else Decimal('0.00'),
                     'description': budget.description,
                     'created_at': budget.created_at,
                     'updated_at': budget.updated_at
@@ -389,8 +355,8 @@ class BudgetConsolidationService(BaseFinanceService):
                     'department': coda_budget.department.name if coda_budget.department else 'Unknown',
                     'category': coda_budget.category.name if coda_budget.category else 'Unknown',
                     'subcategory': coda_budget.subcategory.name if coda_budget.subcategory else 'N/A',
-                    'item': coda_budget.item,
-                    'qty': coda_budget.qty,
+                    'item': coda_budget.item_name,
+                    'qty': coda_budget.quantity,
                     'unit_price': coda_budget.unit_price,
                     'amount': coda_budget.amount,
                     'description': coda_budget.description,

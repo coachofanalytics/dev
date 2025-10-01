@@ -1,13 +1,23 @@
 """
 Enhanced Budget Estimation Service
 
-Provides comprehensive budget estimation capabilities including:
-- Transaction-based estimation for accurate weekly/monthly/yearly planning
-- Multi-year planning (1-year, 2-year, 5-year plans)
-- Investment planning and funding analysis
+DEPRECATED (Phase 2 - October 2025):
+This service has been replaced by UnifiedBudgetEstimationService.
+
+All functionality has been consolidated into UnifiedBudgetEstimationService which provides:
+- All timeframes: weekly, monthly, quarterly, yearly, multi-year
+- All estimation methods: average, trend, AI
 - CODA development cost estimation
-- Trend analysis and AI predictions
+- Project timeline estimation
+- Backward compatible methods
+
+This file is kept temporarily for backward compatibility and will be
+removed in Phase 5 of the consolidation plan.
+
+Use UnifiedBudgetEstimationService instead.
 """
+
+import warnings
 
 from decimal import Decimal
 from typing import Dict, List, Any, Optional, Tuple
@@ -59,12 +69,20 @@ class EnhancedBudgetEstimationService(BaseFinanceService):
             end_date = timezone.now()
             start_date = end_date - timedelta(weeks=weeks)
             
-            # Filter transactions
-            transactions = Transaction.objects.filter(
-                company=company,
-                transaction_date__gte=start_date,
-                transaction_date__lte=end_date
-            )
+            # Filter transactions by department (Transaction doesn't have company field)
+            if department:
+                transactions = Transaction.objects.filter(
+                    department=department,
+                    transaction_date__gte=start_date,
+                    transaction_date__lte=end_date
+                )
+            else:
+                # If no department specified, get all transactions
+                # Note: Department model doesn't have company field, so we get all transactions
+                transactions = Transaction.objects.filter(
+                    transaction_date__gte=start_date,
+                    transaction_date__lte=end_date
+                )
             
             if department:
                 transactions = transactions.filter(department=department)
@@ -132,12 +150,20 @@ class EnhancedBudgetEstimationService(BaseFinanceService):
             end_date = timezone.now()
             start_date = end_date - timedelta(days=months * 30)
             
-            # Filter transactions
-            transactions = Transaction.objects.filter(
-                company=company,
-                transaction_date__gte=start_date,
-                transaction_date__lte=end_date
-            )
+            # Filter transactions by department (Transaction doesn't have company field)
+            if department:
+                transactions = Transaction.objects.filter(
+                    department=department,
+                    transaction_date__gte=start_date,
+                    transaction_date__lte=end_date
+                )
+            else:
+                # If no department specified, get all transactions
+                # Note: Department model doesn't have company field, so we get all transactions
+                transactions = Transaction.objects.filter(
+                    transaction_date__gte=start_date,
+                    transaction_date__lte=end_date
+                )
             
             if department:
                 transactions = transactions.filter(department=department)
@@ -231,12 +257,20 @@ class EnhancedBudgetEstimationService(BaseFinanceService):
             end_date = timezone.now()
             start_date = end_date - timedelta(days=years * 365)
             
-            # Filter transactions
-            transactions = Transaction.objects.filter(
-                company=company,
-                transaction_date__gte=start_date,
-                transaction_date__lte=end_date
-            )
+            # Filter transactions by department (Transaction doesn't have company field)
+            if department:
+                transactions = Transaction.objects.filter(
+                    department=department,
+                    transaction_date__gte=start_date,
+                    transaction_date__lte=end_date
+                )
+            else:
+                # If no department specified, get all transactions
+                # Note: Department model doesn't have company field, so we get all transactions
+                transactions = Transaction.objects.filter(
+                    transaction_date__gte=start_date,
+                    transaction_date__lte=end_date
+                )
             
             if department:
                 transactions = transactions.filter(department=department)

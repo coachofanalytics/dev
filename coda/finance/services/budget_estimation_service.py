@@ -46,16 +46,28 @@ class BudgetEstimationService(BaseFinanceService):
             Dictionary with spending pattern analysis
         """
         try:
-            end_date = timezone.now()
+            # Use the most recent transaction date as end_date instead of now()
+            latest_transaction = Transaction.objects.order_by('-transaction_date').first()
+            if latest_transaction:
+                end_date = latest_transaction.transaction_date
+            else:
+                end_date = timezone.now()
             start_date = end_date - timedelta(days=months * 30)
             
-            # Get transactions
-            transaction_filter = self.filter_utils.get_combined_filter(
-                company=company, department=department,
-                start_date=start_date, end_date=end_date
-            )
-            
-            transactions = Transaction.objects.filter(transaction_filter)
+            # Get transactions - if no department specified, get all transactions in date range
+            if department:
+                transaction_filter = self.filter_utils.get_combined_filter(
+                    company=company, department=department,
+                    start_date=start_date, end_date=end_date,
+                    model_class=Transaction
+                )
+                transactions = Transaction.objects.filter(transaction_filter)
+            else:
+                # Get all transactions in date range when no department specified
+                transactions = Transaction.objects.filter(
+                    transaction_date__gte=start_date,
+                    transaction_date__lte=end_date
+                )
             
             # Analyze by category
             category_analysis = {}
@@ -73,7 +85,11 @@ class BudgetEstimationService(BaseFinanceService):
                             'min_transaction': Decimal('0.00')
                         }
                     
-                    amount = transaction.amount * transaction.qty if transaction.amount and transaction.qty else Decimal('0.00')
+                    # Use USD amount if available, otherwise fallback to original amount
+                    if hasattr(transaction, 'amount_usd') and transaction.amount_usd:
+                        amount = transaction.amount_usd * transaction.qty if transaction.qty else transaction.amount_usd
+                    else:
+                        amount = transaction.amount * transaction.qty if transaction.amount and transaction.qty else Decimal('0.00')
                     category_analysis[cat_name]['total_spent'] += amount
                     category_analysis[cat_name]['transaction_count'] += 1
                     total_spent += amount
@@ -180,10 +196,15 @@ class BudgetEstimationService(BaseFinanceService):
             Dictionary with annual budget estimates
         """
         try:
-            current_year = datetime.now().year
+            # Use the year of the most recent transaction instead of current year
+            latest_transaction = Transaction.objects.order_by('-transaction_date').first()
+            if latest_transaction:
+                current_year = latest_transaction.transaction_date.year
+            else:
+                current_year = datetime.now().year
             current_month = datetime.now().month
             
-            # Get YTD data
+            # Get YTD data - if no department specified, get all transactions
             ytd_filter = self.filter_utils.get_financial_year_filter(current_year)
             if department:
                 ytd_filter &= self.filter_utils.get_department_filter(department)
@@ -280,7 +301,7 @@ class BudgetEstimationService(BaseFinanceService):
                     cat_name = budget.category.name
                     if cat_name not in budget_analysis:
                         budget_analysis[cat_name] = Decimal('0.00')
-                    budget_analysis[cat_name] += budget.unit_price * budget.qty if budget.unit_price and budget.qty else Decimal('0.00')
+                    budget_analysis[cat_name] += budget.unit_price * budget.quantity if budget.unit_price and budget.quantity else Decimal('0.00')
             
             for coda_budget in coda_budgets:
                 if coda_budget.category:
@@ -369,7 +390,7 @@ class BudgetEstimationService(BaseFinanceService):
             # Trend recommendations
             trend_analysis = self.calculation_utils.calculate_trend_analysis(
                 Transaction.objects.filter(
-                    self.filter_utils.get_combined_filter(company=company, department=department)
+                    self.filter_utils.get_combined_filter(company=company, department=department, model_class=Transaction)
                 ), 'amount', 'qty', periods=6
             )
             
