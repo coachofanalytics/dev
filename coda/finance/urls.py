@@ -22,6 +22,9 @@ from . import views_unified_budget
 # Import user-friendly form views
 from . import views_forms
 
+# Import smart transaction views (Phase 1 Data Cleanup)
+from . import views_smart_transaction
+
 app_name = 'finance'
 urlpatterns = [
     #=============================FINANCE INDEX=====================================
@@ -39,6 +42,13 @@ urlpatterns = [
     path('web_budget/<int:pk>/update/', views.WebBudgetUpdateView.as_view(), name='web-update'),
     path('investment_report/', views.investment_report, name='investment_report'),
     path('transact/', views.transact, name='finance-transact'),
+    
+    # Smart Transaction Entry (Phase 1 Data Cleanup - Improved UX)
+    path('transaction/smart-entry/', views_smart_transaction.smart_transaction_entry, name='smart-transaction-entry'),
+    path('api/suggest-category/', views_smart_transaction.api_suggest_category, name='api-suggest-category'),
+    path('api/validate-amount/', views_smart_transaction.api_validate_amount, name='api-validate-amount'),
+    path('api/receiver-suggestions/', views_smart_transaction.api_receiver_suggestions, name='api-receiver-suggestions'),
+    
     # path('transaction/<str:transaction_type>', views.outflows, name='transaction-list'),
     path('transaction/<int:pk>/', TransanctionDetailView.as_view(), name='transaction-detail'),
     path('transaction/<int:pk>/update/', TransactionUpdateView.as_view(template_name="finance/payments/transaction_form.html"), name='transaction-update'),

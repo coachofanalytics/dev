@@ -1,0 +1,441 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Smart Transaction Entry - CODA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+<style>
+    .smart-form-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-header {
+        border-bottom: 3px solid #007bff;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .auto-suggest-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 4px;
+        margin-left: 0.5rem;
+    }
+    
+    .confidence-high { background: #d4edda; color: #155724; }
+    .confidence-medium { background: #fff3cd; color: #856404; }
+    .confidence-low { background: #f8d7da; color: #721c24; }
+    
+    .amount-warning {
+        display: none;
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+    }
+    
+    .suggestion-panel {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .receiver-suggestions {
+        position: absolute;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .receiver-suggestion-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .receiver-suggestion-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .suggestion-name {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .suggestion-meta {
+        font-size: 0.875rem;
+        color: #666;
+    }
+    
+    .quick-fill-btn {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="smart-form-container">
+    <div class="form-header">
+        <h2><i class="fas fa-receipt"></i> Smart Transaction Entry</h2>
+        <p class="text-muted">Intelligent form with auto-suggestions and validation</p>
+    </div>
+    
+    {% if last_transaction %}
+    <div class="suggestion-panel">
+        <h5><i class="fas fa-history"></i> Your Last Transaction</h5>
+        <p><strong>{{ last_transaction.receiver }}</strong> - {{ last_transaction.category }} - ${{ last_transaction.amount }}</p>
+        <button type="button" class="btn btn-sm btn-outline-primary quick-fill-btn" onclick="fillFromLast()">
+            <i class="fas fa-copy"></i> Use Similar Details
+        </button>
+    </div>
+    {% endif %}
+    
+    {% if suggestion %}
+    <div class="suggestion-panel" id="category-suggestion">
+        <h5><i class="fas fa-lightbulb"></i> Smart Suggestion</h5>
+        <p>
+            Based on the receiver and amount, we suggest: 
+            <strong>{{ suggestion.category.name }}</strong>
+            <span class="auto-suggest-badge confidence-{{ suggestion.confidence }}">
+                {{ suggestion.confidence|upper }} confidence
+            </span>
+        </p>
+        <small class="text-muted">Reason: {{ suggestion.reason }}</small>
+    </div>
+    {% endif %}
+    
+    <form method="POST" id="smart-transaction-form" autocomplete="off">
+        {% csrf_token %}
+        
+        <!-- Receiver & Contact Info -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Receiver Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group position-relative">
+                            <label for="id_receiver">Receiver Name *</label>
+                            {{ form.receiver }}
+                            <small class="form-text text-muted">Start typing for suggestions</small>
+                            <div class="receiver-suggestions" id="receiver-suggestions"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.phone|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.location|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.vendor_supplier|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Classification -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-tags"></i> Classification *</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ form.department|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="id_category">Category * <span id="suggestion-indicator"></span></label>
+                            {{ form.category }}
+                            <small class="form-text text-muted" id="category-hint">
+                                Required field. Will auto-suggest based on context.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.subcategory|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.type|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Financial Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Financial Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ form.amount|as_crispy_field }}
+                        <div class="amount-warning" id="amount-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="amount-warning-text"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.currency|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.qty|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.transaction_cost|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.transaction_date|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.payment_method|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Information -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Additional Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ form.description|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.receipt_link|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submit -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> Save Transaction
+            </button>
+            <a href="{% url 'finance:cashflows-list' type='operations' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Receiver auto-complete data (from backend)
+const knownReceivers = {{ known_receivers|safe }};
+const categoryAverages = {{ category_averages|safe }};
+
+// Auto-complete for receiver field
+$('#id_receiver').on('input', function() {
+    const query = $(this).val().toLowerCase();
+    if (query.length < 2) {
+        $('#receiver-suggestions').hide();
+        return;
+    }
+    
+    // Filter receivers
+    const matches = knownReceivers.filter(r => 
+        r.name.toLowerCase().includes(query)
+    );
+    
+    if (matches.length > 0) {
+        let html = '';
+        matches.slice(0, 5).forEach(match => {
+            html += `
+                <div class="receiver-suggestion-item" 
+                     data-name="${match.name}" 
+                     data-category="${match.suggested_category}"
+                     data-avg-amount="${match.avg_amount}">
+                    <div class="suggestion-name">${match.name}</div>
+                    <div class="suggestion-meta">
+                        Usual category: ${match.suggested_category} | 
+                        Avg: $${match.avg_amount.toFixed(2)}
+                    </div>
+                </div>
+            `;
+        });
+        $('#receiver-suggestions').html(html).show();
+    } else {
+        $('#receiver-suggestions').hide();
+    }
+});
+
+// Select receiver suggestion
+$(document).on('click', '.receiver-suggestion-item', function() {
+    const name = $(this).data('name');
+    const category = $(this).data('category');
+    const avgAmount = $(this).data('avg-amount');
+    
+    // Fill receiver
+    $('#id_receiver').val(name);
+    
+    // Auto-select category if available
+    if (category) {
+        $('#id_category option').filter(function() {
+            return $(this).text() === category;
+        }).prop('selected', true);
+        
+        // Show suggestion indicator
+        $('#suggestion-indicator').html(`
+            <span class="auto-suggest-badge confidence-high">
+                ✓ Auto-suggested
+            </span>
+        `);
+    }
+    
+    // Suggest amount
+    if (avgAmount && avgAmount > 0) {
+        $('#category-hint').html(`
+            <i class="fas fa-info-circle"></i>
+            Average amount for ${name}: $${avgAmount.toFixed(2)}
+        `);
+    }
+    
+    $('#receiver-suggestions').hide();
+});
+
+// Hide suggestions when clicking outside
+$(document).on('click', function(e) {
+    if (!$(e.target).closest('#id_receiver, #receiver-suggestions').length) {
+        $('#receiver-suggestions').hide();
+    }
+});
+
+// Amount validation against category average
+$('#id_amount, #id_category').on('change', function() {
+    const amount = parseFloat($('#id_amount').val());
+    const categoryId = $('#id_category').val();
+    
+    if (!amount || !categoryId) return;
+    
+    const categoryName = $('#id_category option:selected').text();
+    const avgAmount = categoryAverages[categoryId];
+    
+    if (avgAmount && amount > avgAmount * 3) {
+        $('#amount-warning').show();
+        $('#amount-warning-text').html(`
+            This amount ($${amount.toFixed(2)}) is unusually high for 
+            <strong>${categoryName}</strong>. 
+            Average is $${avgAmount.toFixed(2)}. Please verify this is correct.
+        `);
+    } else {
+        $('#amount-warning').hide();
+    }
+});
+
+// Smart category suggestion based on department + amount
+$('#id_department, #id_amount').on('change', function() {
+    const dept = $('#id_department option:selected').text();
+    const amount = parseFloat($('#id_amount').val());
+    
+    if (!dept || !amount) return;
+    
+    // Pattern: HR Department + $1K-$50K = Likely salary
+    if (dept.includes('HR') && amount >= 1000 && amount <= 50000) {
+        const salaryOption = $('#id_category option').filter(function() {
+            return $(this).text().includes('Salaries');
+        });
+        
+        if (salaryOption.length && !$('#id_category').val()) {
+            salaryOption.prop('selected', true);
+            $('#suggestion-indicator').html(`
+                <span class="auto-suggest-badge confidence-high">
+                    ✓ Suggested (HR + Amount)
+                </span>
+            `);
+        }
+    }
+});
+
+// Fill from last transaction
+function fillFromLast() {
+    {% if last_transaction %}
+    $('#id_receiver').val('{{ last_transaction.receiver }}');
+    $('#id_category').val('{{ last_transaction.category.id }}');
+    $('#id_department').val('{{ last_transaction.department.id }}');
+    $('#id_payment_method').val('{{ last_transaction.payment_method }}');
+    $('#suggestion-indicator').html(`
+        <span class="auto-suggest-badge confidence-medium">
+            ℹ From last transaction
+        </span>
+    `);
+    {% endif %}
+}
+
+// Form validation before submit
+$('#smart-transaction-form').on('submit', function(e) {
+    let errors = [];
+    
+    // Check required fields
+    if (!$('#id_category').val()) {
+        errors.push('Category is required');
+    }
+    
+    if (!$('#id_department').val()) {
+        errors.push('Department is required');
+    }
+    
+    if ($('#id_description').val().length < 10) {
+        errors.push('Description must be at least 10 characters');
+    }
+    
+    // Check for location keywords in receiver
+    const receiver = $('#id_receiver').val().toLowerCase();
+    const locationKeywords = ['matunda', 'makutano', 'office', 'coda hq'];
+    
+    for (let keyword of locationKeywords) {
+        if (receiver.includes(keyword)) {
+            errors.push(
+                `"${$('#id_receiver').val()}" looks like a location. ` +
+                `Please use the Location field and enter the actual person's name.`
+            );
+            break;
+        }
+    }
+    
+    if (errors.length > 0) {
+        e.preventDefault();
+        alert('Please fix the following errors:\n\n' + errors.join('\n'));
+        return false;
+    }
+    
+    return true;
+});
+
+// Initialize tooltips
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}
+
