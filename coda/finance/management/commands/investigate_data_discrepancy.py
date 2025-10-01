@@ -55,35 +55,47 @@ class Command(BaseCommand):
         self.stdout.write("\n" + "="*60)
         self.stdout.write("=== CodaBudget Model (Legacy) ===")
         coda_stats = CodaBudget.objects.aggregate(
-            total=Count('id'),
-            sum_amount=Sum('amount')
+            count=Count('id'),
+            sum_total=Sum('total')
         )
-        self.stdout.write(f"Total Count: {coda_stats['total']}")
-        if coda_stats['sum_amount']:
-            self.stdout.write(f"Total Amount: ${coda_stats['sum_amount']:,.2f}")
+        self.stdout.write(f"Total Count: {coda_stats['count']}")
+        if coda_stats['sum_total']:
+            self.stdout.write(f"Total Amount: ${coda_stats['sum_total']:,.2f}")
         else:
             self.stdout.write("Total Amount: $0.00")
 
-        # Status breakdown for CodaBudget
-        self.stdout.write("\n--- CodaBudget by Status ---")
-        coda_status_breakdown = CodaBudget.objects.values('status').annotate(
+        # CodaBudget doesn't have status field, show category breakdown instead
+        self.stdout.write("\n--- CodaBudget by Category (Top 10) ---")
+        coda_category_breakdown = CodaBudget.objects.filter(
+            category__isnull=False
+        ).values('category__name').annotate(
             count=Count('id'),
-            total=Sum('amount')
-        ).order_by('-total')
-        for item in coda_status_breakdown:
-            amount = item['total'] if item['total'] else 0
-            self.stdout.write(f"  {item['status']}: {item['count']} budgets, ${amount:,.2f}")
+            sum_total=Sum('total')
+        ).order_by('-sum_total')[:10]
+        for item in coda_category_breakdown:
+            amount = item['sum_total'] if item['sum_total'] else 0
+            self.stdout.write(f"  {item['category__name']}: {item['count']} budgets, ${amount:,.2f}")
 
         # Combined totals
         self.stdout.write("\n" + "="*60)
-        self.stdout.write("COMBINED TOTALS")
+        self.stdout.write("COMBINED TOTALS (from database fields)")
         self.stdout.write("="*60)
         budget_total = budget_stats['sum_amount'] if budget_stats['sum_amount'] else 0
-        coda_total = coda_stats['sum_amount'] if coda_stats['sum_amount'] else 0
+        coda_total = coda_stats['sum_total'] if coda_stats['sum_total'] else 0
         combined_total = budget_total + coda_total
-        self.stdout.write(f"Budget Model Total:     ${budget_total:,.2f}")
-        self.stdout.write(f"CodaBudget Model Total: ${coda_total:,.2f}")
-        self.stdout.write(f"COMBINED TOTAL:         ${combined_total:,.2f}")
+        self.stdout.write(f"Budget.estimated_amount:     ${budget_total:,.2f}")
+        self.stdout.write(f"CodaBudget.total:            ${coda_total:,.2f}")
+        self.stdout.write(f"COMBINED TOTAL:              ${combined_total:,.2f}")
+        self.stdout.write("="*60)
+        
+        # Note about calculated properties
+        self.stdout.write("\n" + "="*60)
+        self.stdout.write("IMPORTANT NOTES")
+        self.stdout.write("="*60)
+        self.stdout.write("Budget model also has a calculated property:")
+        self.stdout.write("  total_amount = unit_price * quantity * cases")
+        self.stdout.write("\nThis property cannot be aggregated in SQL.")
+        self.stdout.write("The dashboard likely calculates this in Python.")
         self.stdout.write("="*60)
         
         self.stdout.write(self.style.SUCCESS('\nInvestigation complete!'))
