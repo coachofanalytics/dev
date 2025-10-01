@@ -22,9 +22,17 @@ class Command(BaseCommand):
         )
         self.stdout.write(f"Total Count: {budget_stats['count']}")
         if budget_stats['sum_amount']:
-            self.stdout.write(f"Total Amount: ${budget_stats['sum_amount']:,.2f}")
+            self.stdout.write(f"Total from estimated_amount field: ${budget_stats['sum_amount']:,.2f}")
         else:
-            self.stdout.write("Total Amount: $0.00")
+            self.stdout.write("Total from estimated_amount field: $0.00")
+        
+        # Calculate using total_amount property (unit_price * quantity * cases)
+        budget_records = Budget.objects.all()
+        budget_calculated_total = sum(
+            (b.unit_price or 0) * (b.quantity or 0) * (b.cases or 1) 
+            for b in budget_records
+        )
+        self.stdout.write(f"Total from calculated property (unit_price * quantity * cases): ${budget_calculated_total:,.2f}")
 
         # Status breakdown for Budget
         self.stdout.write("\n--- Budget by Status ---")
@@ -83,10 +91,20 @@ class Command(BaseCommand):
         self.stdout.write("COMBINED TOTALS")
         self.stdout.write("="*60)
         budget_est_total = budget_stats['sum_amount'] if budget_stats['sum_amount'] else 0
-        combined_total = budget_est_total + coda_total
-        self.stdout.write(f"Budget.estimated_amount:     ${budget_est_total:,.2f}")
-        self.stdout.write(f"CodaBudget.amount (calc):    ${coda_total:,.2f}")
-        self.stdout.write(f"COMBINED TOTAL:              ${combined_total:,.2f}")
+        combined_calc_total = budget_calculated_total + coda_total
+        combined_est_total = budget_est_total + coda_total
+        
+        self.stdout.write("\nUsing ESTIMATED_AMOUNT field:")
+        self.stdout.write(f"  Budget.estimated_amount:     ${budget_est_total:,.2f}")
+        self.stdout.write(f"  CodaBudget.amount (calc):    ${coda_total:,.2f}")
+        self.stdout.write(f"  COMBINED TOTAL:              ${combined_est_total:,.2f}")
+        
+        self.stdout.write("\nUsing CALCULATED property (unit_price * quantity * cases):")
+        self.stdout.write(f"  Budget.total_amount (calc):  ${budget_calculated_total:,.2f}")
+        self.stdout.write(f"  CodaBudget.amount (calc):    ${coda_total:,.2f}")
+        self.stdout.write(f"  COMBINED TOTAL:              ${combined_calc_total:,.2f}")
+        self.stdout.write("\n" + "="*60)
+        self.stdout.write(f"UI SHOWS:                    $143,586,025.96")
         self.stdout.write("="*60)
         
         # Note about calculated properties
