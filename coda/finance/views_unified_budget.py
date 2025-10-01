@@ -19,7 +19,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
-from django.db.models import Q, Sum, Count, Avg
+from django.db.models import Q, Sum, Count, Avg, F, DecimalField
+from django.db.models.functions import Coalesce
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import get_user_model
 from decimal import Decimal
@@ -161,8 +162,15 @@ def _get_overview_tab_data(company, department, estimation_service, consolidatio
         
         total_budgets = Budget.objects.filter(budget_filter).count()
         active_budgets = Budget.objects.filter(budget_filter, status='active').count()
+        
+        # FIX: Calculate item_total for each budget FIRST, then sum
+        # Wrong: Sum(quantity) * Sum(unit_price) multiplies totals
+        # Right: Sum(quantity * unit_price * cases) for each item
         total_amount = Budget.objects.filter(budget_filter).aggregate(
-            total=Sum('quantity') * Sum('unit_price')
+            total=Sum(
+                F('unit_price') * F('quantity') * Coalesce(F('cases'), 1),
+                output_field=DecimalField()
+            )
         )
         
         # Category summary
