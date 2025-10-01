@@ -1,19 +1,21 @@
 from django.urls import path
-from django.contrib import admin
+from django.urls import path
+# from django.shortcuts import render
+from django.views.generic import ListView
+# from .models import ClientAvailability
 from django.urls import path, include
-from . import views
 # from .utils import convert_html_to_pdf
 from django.urls import path
-from .views import VolunteerListView, VolunteerCreateView
+from .views import VolunteerListView
 app_name = 'main'
 urlpatterns = [
-    path('', views.layout, name='layout'),
-    #=======================SERVICES=====================================
-    path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
-    path('services/', views.services, name='services'),
-    path("display_service/<str:slug>/", views.display_service, name="display_service"),
-    path("display_plans/<str:slug>/", views.service_plans, name="service_plans"),
-    path('client_availability/', views.client_availability_view, name='client_availability'),
+    # # path('', views.layout, name='layout'),
+    # #=======================SERVICES=====================================
+    # path('newservice/',ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
+    # path('services/',services, name='services'),
+    # path("display_service/<str:slug>/",display_service, name="display_service"),
+    # path("display_plans/<str:slug>/", service_plans, name="service_plans"),
+    # path('client_availability/', views.client_availability_view, name='client_availability'),
     # path('admin/', admin.site.urls),
     # path('', include('main.urls')),
     #==============DEPARTMENTS==============================================
@@ -23,23 +25,23 @@ urlpatterns = [
     #-----------------------------FINANCE--------------------#
        
         #--------------------------MANAGEMENT--------------------#
-    #----------------------------IT-------------------------#
-    path('it/', views.it, name='it'),
-    #-----------------------README-------------------------#
-    path('newusecase/', views.UseCaseCreateView.as_view(template_name='main/form.html'), name='newusecase'),
-    path('display_usecases/', views.display_usecases, name='display_usecases'),
-    # path('', include('project.urls')),
+#     #----------------------------IT-------------------------#
+#     path('it/', views.it, name='it'),
+#     #-----------------------README-------------------------#
+#     path('newusecase/', views.UseCaseCreateView.as_view(template_name='main/form.html'), name='newusecase'),
+#     path('display_usecases/', views.display_usecases, name='display_usecases'),
+#     # path('', include('project.urls')),
 
-   #==============ERRORS==============================================
-    path('400Error/', views.error400, name='400error'),
-    path('403Error/', views.error403, name='403error'),
-    path('404Error/', views.error404, name='404error'),
-    path('500Error/', views.error500, name='500error'),
+#    #==============ERRORS==============================================
+#     path('400Error/', views.error400, name='400error'),
+#     path('403Error/', views.error403, name='403error'),
+#     path('404Error/', views.error404, name='404error'),
+#     path('500Error/', views.error500, name='500error'),
 
-    path('400/', views.hendler400, name='400-error'),
-    path('403/', views.hendler403, name='403-error'),
-    path('404/', views.hendler404, name='404-error'),
-    path('500/', views.hendler500, name='500-error'),
+#     path('400/', views.hendler400, name='400-error'),
+#     path('403/', views.hendler403, name='403-error'),
+#     path('404/', views.hendler404, name='404-error'),
+#     path('500/', views.hendler500, name='500-error'),
 
 
     # path('', VolunteerListView.as_view(), name='list'),      # ✅ CORRECT
@@ -47,6 +49,18 @@ urlpatterns = [
 
 
     #===========company records=======
+]# main/views.py
+# from rest_framework import generics
+# from .models import ServiceCategory
 
 
+# class ServiceCategoryCreateView(generics.CreateAPIView):
+#     queryset = ServiceCategory.objects.all()
+#     serializer_class = ServiceCategorySerializer
+# main/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='main_home'),
 ]

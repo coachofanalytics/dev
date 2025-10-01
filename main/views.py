@@ -1,4 +1,5 @@
-import os
+
+
 import datetime, json
 import random
 from django.db.models import Min,Max
@@ -309,48 +310,14 @@ class VolunteerCreateView(CreateView):
     template_name = 'volunteer/volunteer_form.html'
     success_url = reverse_lazy('volunteer_list')
 
+# from django.http import JsonResponse
+# from django.views import View
 
+# class ClientAvailability(View):
+#     def get(self, request):
+#         # logic here
+#         return JsonResponse({'status': 'available'})
+from django.shortcuts import render
 
-
-def client_availability_view(request):
-    clients = ClientAvailability.objects.all()
-    print(clients)
-    return render(request, "main/client_availability.html", {"client": clients})
-
-from django.shortcuts import render, redirect
-from .models import Location
-from .forms import LocationForm
-
-def location_list(request):
-    locations = Location.objects.all()
-    return render(request, 'location_list.html', {'locations': locations})
-
-def add_location(request):
-    if request.method == 'POST':
-        form = LocationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('location_list')
-    else:
-        form = LocationForm()
-    return render(request, 'add_location.html', {'form': form})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def home(request):
+    return render(request, 'main/home.html')

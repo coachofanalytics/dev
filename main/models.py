@@ -110,26 +110,6 @@ class Volunteer(models.Model):
     
 
 
-class  ClientAvailability(models.Model):
-    client  =models.CharField(max_length=255,null=False)
-    day  = models.CharField(max_length=255,null=False)
-    start_time =models.TimeField(null=False)
-    end_time =models.TimeField(null=False)
-    time_standards =models.CharField(max_length=22,null= False)
-    topic=models.CharField(max_length=100,null=False)
-  
-class service_coda(models.Model):
-    serial =models.PositiveIntegerField(null=True)
-    # company = models.ForeignKey('Company', on_delete=models.SET_NULL, null=True, blank=True)
-    title =models.CharField(max_length=255)
-    slug =models.SlugField(null=True)
-    description =models.TextField(null=True)
-    sub_titles =models.TextField(null=True)
-    executive_summary =models.TextField(null=True)
-    is_active =models.BooleanField(null=True)
-    is_featured =models.BooleanField(null=True)
-
-from django.conf import settings
 
 class Testimonials(models.Model):
     title = models.CharField(max_length=200)
@@ -151,27 +131,47 @@ class Location(models.Model):
 models.DateTimeField()
 writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-from django.db import models
+# Delete this from models.py
 
-class ClientAvailability(models.Model):
-    client = models.IntegerField(null=False)
-    day = models.CharField(max_length=50, null=False)
-    start_time = models.TimeField(null=False)
-    end_time = models.TimeField(null=False)
-    time_standards = models.CharField(max_length=50, null=False)
-    topic = models.CharField(max_length=100, null=False)
+class MembershipRegistration(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    registration_date = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Client {self.client} - {self.day} ({self.start_time} to {self.end_time})"
+        return f"{self.first_name} {self.last_name} ({self.email})"
 
+from django.db import models
 
+class ServiceCategory(models.Model):
+    service = models.IntegerField(null=True)
+    name = models.CharField(max_length=255, null=True)
+    slug = models.SlugField(max_length=255, null=True)
+    description = models.TextField(null=True)
+    is_active = models.BooleanField(null=True)
+    is_featured = models.BooleanField(null=True)
 
+    def __str__(self):
+        return self.name or f"ServiceCategory {self.pk}"
+from django.db import models
 
+class Assets(models.Model):
+    name = models.CharField(max_length=200, null=True, blank=True)
+    category = models.CharField(max_length=200, null=True, blank=True)
+    image_string = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    service_image = models.ImageField(upload_to='service_images/', null=True, blank=True)
+    image_url = models.CharField(max_length=1000, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-
-
-
-
+    def __str__(self):
+        return self.name or "Unnamed Asset"
 
 
 
