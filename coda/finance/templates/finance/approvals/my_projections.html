@@ -1,0 +1,163 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}My Budget Projections - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-3">My Budget Projections</h1>
+            
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="horizon" class="form-label">Horizon</label>
+                            <select name="horizon" id="horizon" class="form-select">
+                                <option value="">All Horizons</option>
+                                {% for value, label in horizon_choices %}
+                                    <option value="{{ value }}" {% if filters.horizon == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="{% url 'finance:my-projections' %}" class="btn btn-outline-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Projections List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">My Projections ({{ page_obj.paginator.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if projections %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Company</th>
+                                        <th>Department</th>
+                                        <th>Horizon</th>
+                                        <th>Total Estimate</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                        <th>Submitted At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for projection in projections %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'finance:projection-detail' projection.id %}" class="text-decoration-none">
+                                                #{{ projection.id }}
+                                            </a>
+                                        </td>
+                                        <td>{{ projection.company.name }}</td>
+                                        <td>{{ projection.department.name|default:"N/A" }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ projection.get_horizon_display }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>${{ projection.total_estimate|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if projection.status == 'draft' %}
+                                                <span class="badge bg-secondary">{{ projection.get_status_display }}</span>
+                                            {% elif projection.status == 'submitted' %}
+                                                <span class="badge bg-warning">{{ projection.get_status_display }}</span>
+                                            {% elif projection.status == 'approved' %}
+                                                <span class="badge bg-success">{{ projection.get_status_display }}</span>
+                                            {% elif projection.status == 'rejected' %}
+                                                <span class="badge bg-danger">{{ projection.get_status_display }}</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-dark">{{ projection.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ projection.created_at|date:"M d, Y H:i" }}</td>
+                                        <td>{{ projection.submitted_at|date:"M d, Y H:i"|default:"Not submitted" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'finance:projection-detail' projection.id %}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fa fa-eye"></i> View
+                                                </a>
+                                                {% if projection.status == 'draft' %}
+                                                    <a href="{% url 'finance:estimates-wizard' %}?edit={{ projection.id }}" 
+                                                       class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fa fa-edit"></i> Edit
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Projections pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if filters.status %}&status={{ filters.status }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filters.status %}&status={{ filters.status }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filters.status %}&status={{ filters.status }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if filters.status %}&status={{ filters.status }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No projections found</h5>
+                            <p class="text-muted">You haven't created any budget projections yet.</p>
+                            <a href="{% url 'finance:estimates-wizard' %}" class="btn btn-primary">
+                                <i class="fa fa-plus"></i> Create New Projection
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

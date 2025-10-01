@@ -1,0 +1,155 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Projection Approvals - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-3">Budget Projection Approvals</h1>
+            
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="company_id" class="form-label">Company</label>
+                            <select name="company_id" id="company_id" class="form-select">
+                                <option value="">All Companies</option>
+                                <!-- Add company options here -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="department_id" class="form-label">Department</label>
+                            <select name="department_id" id="department_id" class="form-select">
+                                <option value="">All Departments</option>
+                                <!-- Add department options here -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="horizon" class="form-label">Horizon</label>
+                            <select name="horizon" id="horizon" class="form-select">
+                                <option value="">All Horizons</option>
+                                <option value="monthly" {% if filters.horizon == 'monthly' %}selected{% endif %}>Monthly</option>
+                                <option value="two_year" {% if filters.horizon == 'two_year' %}selected{% endif %}>2-Year</option>
+                                <option value="five_year" {% if filters.horizon == 'five_year' %}selected{% endif %}>5-Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="{% url 'finance:budget-projection-approvals' %}" class="btn btn-outline-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Projections List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Pending Approvals ({{ page_obj.paginator.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if projections %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Company</th>
+                                        <th>Department</th>
+                                        <th>Horizon</th>
+                                        <th>Total Estimate</th>
+                                        <th>Submitted By</th>
+                                        <th>Submitted At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for projection in projections %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'finance:projection-detail' projection.id %}" class="text-decoration-none">
+                                                #{{ projection.id }}
+                                            </a>
+                                        </td>
+                                        <td>{{ projection.company.name }}</td>
+                                        <td>{{ projection.department.name|default:"N/A" }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ projection.get_horizon_display }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>${{ projection.total_estimate|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if projection.created_by %}
+                                                {{ projection.created_by.get_full_name|default:projection.created_by.username }}
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ projection.submitted_at|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'finance:projection-detail' projection.id %}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fa fa-eye"></i> View
+                                                </a>
+                                                <a href="{% url 'finance:approve-projection' projection.id %}" 
+                                                   class="btn btn-sm btn-success">
+                                                    <i class="fa fa-check"></i> Review
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Projections pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if filters.company_id %}&company_id={{ filters.company_id }}{% endif %}{% if filters.department_id %}&department_id={{ filters.department_id }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filters.company_id %}&company_id={{ filters.company_id }}{% endif %}{% if filters.department_id %}&department_id={{ filters.department_id }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filters.company_id %}&company_id={{ filters.company_id }}{% endif %}{% if filters.department_id %}&department_id={{ filters.department_id }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if filters.company_id %}&company_id={{ filters.company_id }}{% endif %}{% if filters.department_id %}&department_id={{ filters.department_id }}{% endif %}{% if filters.horizon %}&horizon={{ filters.horizon }}{% endif %}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No pending approvals</h5>
+                            <p class="text-muted">All budget projections have been reviewed.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

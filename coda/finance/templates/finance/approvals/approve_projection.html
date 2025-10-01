@@ -1,0 +1,129 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Review Budget Projection #{{ projection.id }} - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Review Budget Projection #{{ projection.id }}</h1>
+                <a href="{% url 'finance:budget-projection-approvals' %}" class="btn btn-outline-secondary">
+                    <i class="fa fa-arrow-left"></i> Back to Approvals
+                </a>
+            </div>
+            
+            <!-- Projection Details -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Projection Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>Company:</strong> {{ projection.company.name }}<br>
+                                    <strong>Department:</strong> {{ projection.department.name|default:"N/A" }}<br>
+                                    <strong>Horizon:</strong> {{ projection.get_horizon_display }}<br>
+                                    <strong>Method:</strong> {{ projection.estimation_method|title }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Total Estimate:</strong> <span class="h5 text-primary">${{ projection.total_estimate|floatformat:2 }}</span><br>
+                                    <strong>Submitted By:</strong> {{ projection.submitted_by.get_full_name|default:projection.submitted_by.username }}<br>
+                                    <strong>Submitted At:</strong> {{ projection.submitted_at|date:"M d, Y H:i" }}<br>
+                                    <strong>Status:</strong> <span class="badge bg-warning">{{ projection.get_status_display }}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Category Breakdown -->
+                            <h6 class="mb-3">Category Breakdown</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Amount</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category, amount in projection.estimates.items %}
+                                        <tr>
+                                            <td>{{ category }}</td>
+                                            <td>${{ amount|floatformat:2 }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 15px;">
+                                                    <div class="progress-bar" role="progressbar" 
+                                                         style="width: {% widthratio amount projection.total_estimate 100 %}%">
+                                                        {% widthratio amount projection.total_estimate 100 %}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">No categories available</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Approval Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Approval Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="comments" class="form-label">Comments</label>
+                                    <textarea name="comments" id="comments" class="form-control" rows="4" 
+                                              placeholder="Add your review comments..."></textarea>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" name="action" value="approve" 
+                                            class="btn btn-success btn-lg">
+                                        <i class="fa fa-check"></i> Approve Projection
+                                    </button>
+                                    <button type="submit" name="action" value="reject" 
+                                            class="btn btn-danger btn-lg">
+                                        <i class="fa fa-times"></i> Reject Projection
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Approval Policies -->
+                    {% if approval_policies %}
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Applicable Policies</h6>
+                        </div>
+                        <div class="card-body">
+                            {% for policy in approval_policies %}
+                            <div class="mb-2">
+                                <strong>{{ policy.name }}</strong><br>
+                                <small class="text-muted">
+                                    ${{ policy.min_amount|floatformat:2 }}
+                                    {% if policy.max_amount %} - ${{ policy.max_amount|floatformat:2 }}{% endif %}
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

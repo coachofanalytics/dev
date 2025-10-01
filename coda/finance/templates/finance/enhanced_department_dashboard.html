@@ -387,7 +387,7 @@
     
     .department-sections {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 30px;
         margin-bottom: 30px;
     }
@@ -616,7 +616,7 @@
         100% { opacity: 1; }
     }
     
-    @media (max-width: 768px) {
+    @media (max-width: 992px) {
         .department-title {
             font-size: 2rem;
         }
@@ -630,21 +630,19 @@
             padding: 15px;
         }
         
-        .department-sections {
-            grid-template-columns: 1fr;
-        }
+        .department-sections { grid-template-columns: repeat(2, 1fr); }
         
         .features-grid {
             grid-template-columns: 1fr;
         }
         
-        .announcements-grid {
-            grid-template-columns: 1fr;
-        }
+        .announcements-grid { grid-template-columns: 1fr; }
         
-        .notifications-grid {
-            grid-template-columns: 1fr;
-        }
+        .notifications-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 576px) {
+        .department-sections { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}

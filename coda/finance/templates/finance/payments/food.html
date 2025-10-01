@@ -104,12 +104,7 @@
           </table>
         </div>
         {% elif request.path == '/finance/food/' %}
-          {% include 'components/table.html' with 
-             table_header='Food Supplies'
-             objects=supplies_Fs.qs
-             table_headers='Supplier,Office,Item,Qty,Bal Qty,Budgeted,U_Price,Additional,Total,Created,Update'
-             object_fields='supplier,office_location,item,qty,bal_qty,budgeted_items,unit_amt,additional_amount,total_amount,created_at,actions'
-             summary_enabled=True %}
+          {% include 'components/table.html' with table_header='Food Supplies' objects=supplies_Fs.qs table_headers='Supplier,Office,Item,Qty,Bal Qty,Budgeted,U_Price,Additional,Total,Created,Update' object_fields='supplier,office_location,item,qty,bal_qty,budgeted_items,unit_amt,additional_amount,total_amount,created_at,actions' summary_enabled=True %}
         {% endif %}
     </div>
 </div>

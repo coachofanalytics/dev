@@ -1,0 +1,212 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Create Detailed Budget Projection - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Create Detailed Budget Projection</h1>
+                <a href="{% url 'finance:estimates-wizard' %}" class="btn btn-secondary">
+                    <i class="fa fa-arrow-left"></i> Back to Quick Estimate
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Projection Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="company_id" class="form-label">Company *</label>
+                                        <select class="form-select" id="company_id" name="company_id" required>
+                                            <option value="">Select Company</option>
+                                            {% for company in companies %}
+                                                <option value="{{ company.id }}">{{ company.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="department_id" class="form-label">Department</label>
+                                        <select class="form-select" id="department_id" name="department_id">
+                                            <option value="">All Departments</option>
+                                            {% for department in departments %}
+                                                <option value="{{ department.id }}">{{ department.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="horizon" class="form-label">Budget Horizon *</label>
+                                        <select class="form-select" id="horizon" name="horizon" required>
+                                            <option value="monthly">Monthly</option>
+                                            <option value="quarterly">Quarterly</option>
+                                            <option value="annually">Annually</option>
+                                            <option value="two_year">2 Years</option>
+                                            <option value="five_year">5 Years</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Estimation Method</label>
+                                        <div class="form-text">
+                                            <strong>Detailed Breakdown:</strong> Item-by-item estimation with user customization
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <h6><i class="fa fa-info-circle"></i> What is Detailed Budget Breakdown?</h6>
+                                    <p class="mb-0">
+                                        This method allows you to break down each budget category into specific items, 
+                                        edit quantities and costs, and get a more accurate budget estimate. You'll be 
+                                        able to see default values based on historical data and customize them according 
+                                        to your needs.
+                                    </p>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fa fa-list"></i> Create Detailed Breakdown
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Benefits of Detailed Breakdown</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fa fa-check text-success"></i>
+                                    <strong>Item-Level Control:</strong> Edit specific items within categories
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa fa-check text-success"></i>
+                                    <strong>Historical Data:</strong> Default values based on past transactions
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa fa-check text-success"></i>
+                                    <strong>Variance Analysis:</strong> See how your estimates compare to defaults
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa fa-check text-success"></i>
+                                    <strong>Real-Time Calculations:</strong> Live updates as you make changes
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa fa-check text-success"></i>
+                                    <strong>Data Quality Insights:</strong> Understand reliability of estimates
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa fa-check text-success"></i>
+                                    <strong>Approval Workflow:</strong> Submit individual items for approval
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Quick Estimate Alternative</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small">
+                                If you prefer a faster approach, you can use the quick estimate wizard 
+                                that provides automated budget estimates based on historical data.
+                            </p>
+                            <a href="{% url 'finance:estimates-wizard' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fa fa-bolt"></i> Quick Estimate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form validation
+    const form = document.querySelector('form');
+    const companySelect = document.getElementById('company_id');
+    const horizonSelect = document.getElementById('horizon');
+    
+    form.addEventListener('submit', function(e) {
+        if (!companySelect.value) {
+            e.preventDefault();
+            alert('Please select a company.');
+            companySelect.focus();
+            return false;
+        }
+        
+        if (!horizonSelect.value) {
+            e.preventDefault();
+            alert('Please select a budget horizon.');
+            horizonSelect.focus();
+            return false;
+        }
+    });
+    
+    // Add some interactivity
+    companySelect.addEventListener('change', function() {
+        if (this.value) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+    
+    horizonSelect.addEventListener('change', function() {
+        if (this.value) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+});
+</script>
+
+<style>
+.is-valid {
+    border-color: #198754;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.list-unstyled li {
+    padding: 0.25rem 0;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+</style>
+{% endblock %}

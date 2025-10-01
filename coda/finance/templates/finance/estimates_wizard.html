@@ -1,0 +1,237 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Create Budget Estimate - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-3">Create Budget Estimate</h1>
+
+      {% if messages %}
+        {% for m in messages %}
+          <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" class="card p-3 mb-4">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Company</label>
+            <select name="company_id" class="form-select" required>
+              <option value="">Select company</option>
+              {% for c in companies %}
+                <option value="{{ c.id }}" {% if selected.company_id == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Department</label>
+            <select name="department_id" class="form-select">
+              <option value="">All</option>
+              {% for d in departments %}
+                <option value="{{ d.id }}" {% if selected.department_id == d.id|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Template</label>
+            <select name="template_id" class="form-select">
+              <option value="">None</option>
+              {% for t in templates %}
+                <option value="{{ t.id }}" {% if selected.template_id == t.id|stringformat:'s' %}selected{% endif %}>{{ t.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Horizon</label>
+            <select name="horizon" class="form-select">
+              <option value="monthly" {% if selected.horizon == 'monthly' %}selected{% endif %}>Monthly</option>
+              <option value="two_year" {% if selected.horizon == 'two_year' %}selected{% endif %}>2 Years</option>
+              <option value="five_year" {% if selected.horizon == 'five_year' %}selected{% endif %}>5 Years</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Method</label>
+            <select name="method" class="form-select">
+              <option value="average" {% if selected.method == 'average' %}selected{% endif %}>Average</option>
+              <option value="ytd_average" {% if selected.method == 'ytd_average' %}selected{% endif %}>YTD Average</option>
+              <option value="trend" {% if selected.method == 'trend' %}selected{% endif %}>Trend</option>
+              <option value="conservative" {% if selected.method == 'conservative' %}selected{% endif %}>Conservative</option>
+              <option value="optimistic" {% if selected.method == 'optimistic' %}selected{% endif %}>Optimistic</option>
+            </select>
+          </div>
+        </div>
+            <div class="mt-3">
+              <button class="btn btn-primary me-2" name="action" value="estimate">Preview Estimate</button>
+              <button class="btn btn-secondary me-2" name="action" value="save">Save Draft</button>
+              <button class="btn btn-success me-2" name="action" value="submit">Submit for Approval</button>
+              <a href="{% url 'finance:create-detailed-projection' %}" class="btn btn-info">
+                <i class="fa fa-list"></i> Detailed Breakdown
+              </a>
+            </div>
+      </form>
+
+      {% if result %}
+      <div class="card p-3">
+        <h5 class="mb-3">Budget Estimate Preview</h5>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>Total Estimate:</strong> ${{ result.total_estimate|floatformat:2 }}</p>
+            <p><strong>Method:</strong> {{ result.method|title }}</p>
+            <p><strong>Horizon:</strong> {{ selected.horizon|title }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Categories:</strong> {{ result.estimates|length }}</p>
+            <p><strong>Status:</strong> <span class="badge bg-info">Draft</span></p>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>Category</th>
+                <th>Estimate</th>
+                <th>Percentage</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cat, val in result.estimates.items %}
+                <tr>
+                  <td>
+                    <strong>{{ cat }}</strong>
+                    <br><small class="text-muted">Category</small>
+                  </td>
+                  <td>
+                    <span class="h6">${{ val|floatformat:2 }}</span>
+                  </td>
+                  <td>
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar" role="progressbar" 
+                           style="width: {% widthratio val result.total_estimate 100 %}%"
+                           aria-valuenow="{% widthratio val result.total_estimate 100 %}" 
+                           aria-valuemin="0" aria-valuemax="100">
+                        {% widthratio val result.total_estimate 100 %}%
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary" 
+                            onclick="editCategory('{{ cat }}', '{{ val }}')">
+                      <i class="fa fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-success" 
+                            onclick="submitCategory('{{ cat }}', '{{ val }}')">
+                      <i class="fa fa-check"></i> Submit
+                    </button>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="text-center text-muted">No category breakdown available.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="mt-3">
+          <button class="btn btn-primary me-2" name="action" value="save">
+            <i class="fa fa-save"></i> Save All as Draft
+          </button>
+          <button class="btn btn-success" name="action" value="submit">
+            <i class="fa fa-paper-plane"></i> Submit All for Approval
+          </button>
+        </div>
+      </div>
+      {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+function editCategory(category, amount) {
+    const newAmount = prompt(`Edit amount for ${category}:`, amount);
+    if (newAmount !== null && !isNaN(newAmount)) {
+        // Update the display
+        const row = event.target.closest('tr');
+        const amountCell = row.querySelector('td:nth-child(2) span');
+        amountCell.textContent = '$' + parseFloat(newAmount).toFixed(2);
+        
+        // Update the progress bar
+        const progressBar = row.querySelector('.progress-bar');
+        const totalEstimate = {{ result.total_estimate|default:0 }};
+        const percentage = (parseFloat(newAmount) / totalEstimate) * 100;
+        progressBar.style.width = percentage + '%';
+        progressBar.setAttribute('aria-valuenow', percentage);
+        progressBar.textContent = percentage.toFixed(1) + '%';
+        
+        // Show success message
+        showMessage(`Updated ${category} to $${parseFloat(newAmount).toFixed(2)}`, 'success');
+    }
+}
+
+function submitCategory(category, amount) {
+    if (confirm(`Submit ${category} ($${amount}) for approval?`)) {
+        // Create a form to submit individual category
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "finance:estimates-wizard" %}';
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add form data
+        const fields = {
+            'company_id': '{{ selected.company_id|default:"" }}',
+            'department_id': '{{ selected.department_id|default:"" }}',
+            'template_id': '{{ selected.template_id|default:"" }}',
+            'horizon': '{{ selected.horizon|default:"monthly" }}',
+            'method': '{{ selected.method|default:"average" }}',
+            'action': 'submit_category',
+            'category': category,
+            'amount': amount
+        };
+        
+        for (const [name, value] of Object.entries(fields)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function showMessage(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}
+
