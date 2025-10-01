@@ -89,3 +89,28 @@ if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
     ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    from django.shortcuts import redirect
+
+def root_redirect(request):
+    return redirect('/application/')  # or wherever you want
+
+urlpatterns = [
+    path('', root_redirect),  # redirect root URL
+    # other routes...
+]
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('application/', include('application.urls')),  # ✅ This line
+]
+from django.contrib import admin
+from django.urls import path, include
+from main import views  # ✅ Import views from your main app
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', views.home, name='main_home'),  # ✅ This works if views.home is defined in main/views.py
+    path('main/', include('main.urls')),     # Optional if you also want /main/
+]

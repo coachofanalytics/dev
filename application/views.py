@@ -15,7 +15,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from .models import UserProfile,JobDetails
+from .models import UserProfile,JobDetails,Assets
 from datetime import datetime, timedelta
 from main.utils import path_values
 from django.contrib import messages
@@ -35,3 +35,7 @@ def career(request):
 def job_list(request):
     jobs = JobDetails.objects.all()
     return render(request,"application/job_list.html",{'jobs':jobs})
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'application/home.html')

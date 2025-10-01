@@ -5,7 +5,7 @@ from django.utils import timezone
 from main.models import Assets
 from django.db.models import Q
 from django.contrib.auth import get_user_model
-
+from django.contrib.auth.models import User
 # from finance.utils import get_exchange_rate
 User = get_user_model()
 # from coda_project.storage import GoogleDriveStorage
@@ -91,5 +91,37 @@ class JobDetails(models.Model):
     min_duration = models.IntegerField(null=False)
     max_duration = models.IntegerField(null=False)
     project_type = models.TextField(null=False)
-    deliverables = models.TextField(null=False)
-    links = models.URLField(null=True)
+from django.db import models
+from django.conf import settings
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False)
+
+    company = models.CharField(max_length=225, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    email = models.CharField(max_length=254, null=True, blank=True)
+    linkedin = models.CharField(max_length=500, null=True, blank=True)
+    section = models.CharField(max_length=2, null=True, blank=True)
+
+    image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    upload_a = models.FileField(upload_to='profile_files/', null=True, blank=True)
+    upload_b = models.FileField(upload_to='profile_files/', null=True, blank=True)
+    upload_c = models.FileField(upload_to='profile_files/', null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    laptop_status = models.BooleanField(default=False)
+
+    national_id_no = models.CharField(max_length=100, null=True, blank=True)
+    id_file = models.ImageField(upload_to='id_files/', null=True, blank=True)
+
+    # Emergency contact details
+    emergency_name = models.CharField(max_length=150, null=True, blank=True)
+    emergency_address = models.CharField(max_length=254, null=True, blank=True)
+    emergency_citizenship = models.CharField(max_length=254, null=True, blank=True)
+    emergency_national_id_no = models.CharField(max_length=254, null=True, blank=True)
+    emergency_phone = models.CharField(max_length=254, null=True, blank=True)
+    emergency_email = models.CharField(max_length=254, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user}"
+

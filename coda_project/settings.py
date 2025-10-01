@@ -14,30 +14,28 @@ AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend
 INSTALLED_APPS = [
     "main.apps.MainConfig",
     "accounts.apps.AccountsConfig",
-    "application.apps.ApplicationConfig",
+    "application.apps.ApplicationConfig",   # ✅ keep this
     "crispy_forms",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-     'django_extensions',
+    "django_extensions",
     "django.contrib.staticfiles",
     "storages",
     "django_countries",
     "mathfilters",
     "mptt",
     "django_filters",
-    # "django_celery_beat",
-    # "django_celery_results",
-    # "django_crontab",
     "django.contrib.sites",
     "allauth",
     # "allauth.account",
     # "allauth.socialaccount",
     # "allauth.socialaccount.providers.google",
-    # "allauth.socialaccount.providers.facebook"
+    # "allauth.socialaccount.providers.facebook",
 ]
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -64,29 +62,22 @@ MIDDLEWARE = [
 CSRF_COOKIE_SECURE = False
 
 ROOT_URLCONF = "coda_project.urls"
-
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            # os.path.join(BASE_DIR, 'templates')
-            "templates"
-        ],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "main.context_processors.images",
-                "main.context_processors.googledriveurl",
-                "main.context_processors.services",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],  # Add custom template dirs here if any
+        'APP_DIRS': True,  # This enables Django to find templates inside app folders
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
-          
         },
     },
 ]
+
 
 #  ==============DBFUNCTIONS=====================================
 def dba_values():
@@ -128,14 +119,20 @@ host,dbname,user,password=dba_values()
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": dbname,
+#         "USER":user,
+#         "PASSWORD":password,
+#         "HOST": host
+#     }
+# }
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": dbname,
-        "USER":user,
-        "PASSWORD":password,
-        "HOST": host
-    }
+'default': {
+'ENGINE': 'django.db.backends.sqlite3',
+'NAME': os.path.join(BASE_DIR, 'coda_dev.db'),
+}
 }
 '''=========== Heroku DB ================'''
 db_from_env = dj_database_url.config(conn_max_age=600)
@@ -145,7 +142,7 @@ import sys
 if 'test' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'coda_analytics'
+        'NAME': 'coda_dev'
     }
 
 AUTH_PASSWORD_VALIDATORS = [
