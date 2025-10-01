@@ -1,3 +1,6 @@
 # CODA Project .gitignore
 # Budget consolidation - deprecated code
 coda/finance/_deprecated/
+
+# Phase 0 Consolidation - Deprecated Components
+coda/management/deprecated/

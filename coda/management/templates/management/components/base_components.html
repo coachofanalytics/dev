@@ -1,0 +1,640 @@
+<!--
+Consolidated Template Components
+
+This file contains reusable template components that follow DRY principles
+and provide consistent UI patterns across the management app.
+
+Components include:
+- Task cards with AI insights
+- Evidence forms with AI validation
+- Performance dashboards
+- AI insights panels
+- Budget integration displays
+-->
+
+<!-- ============================================================================
+TASK COMPONENTS
+============================================================================ -->
+
+<!-- Task Card Component -->
+{% load management_tags %}
+
+<div class="task-card-container">
+    {% for task in tasks %}
+        {% include 'management/components/task_card.html' with task=task %}
+    {% endfor %}
+</div>
+
+<!-- Individual Task Card -->
+<div class="task-card" data-task-id="{{ task.id }}">
+    <div class="card-header">
+        <div class="task-title">
+            <h5 class="card-title">{{ task.activity_name }}</h5>
+            {% if task.intelligent_task.ai_generated %}
+                <span class="badge badge-ai">AI Generated</span>
+            {% endif %}
+            {% if task.intelligent_task.auto_evidence_enabled %}
+                <span class="badge badge-auto">Auto Evidence</span>
+            {% endif %}
+        </div>
+        <div class="task-meta">
+            <small class="text-muted">
+                {% if task.category %}{{ task.category.title }}{% endif %}
+                {% if task.groupname %} | {{ task.groupname.name }}{% endif %}
+            </small>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <p class="card-text">{{ task.description|truncatechars:150 }}</p>
+        
+        <!-- Performance Metrics -->
+        <div class="task-metrics row">
+            <div class="col-md-6">
+                <div class="metric-item">
+                    <strong>Points:</strong> 
+                    <span class="points-earned">{{ task.point }}</span>/<span class="points-max">{{ task.mxpoint }}</span>
+                    <div class="progress mt-1">
+                        <div class="progress-bar" style="width: {{ task.performance_score }}%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="metric-item">
+                    <strong>Earnings:</strong> ${{ task.calculated_pay|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Insights -->
+        {% if task.ai_enhanced_metrics.confidence_score %}
+            <div class="ai-insights mt-3">
+                <div class="ai-confidence">
+                    <strong>AI Confidence:</strong> 
+                    <span class="badge badge-{% if task.ai_enhanced_metrics.confidence_score >= 80 %}success{% elif task.ai_enhanced_metrics.confidence_score >= 60 %}warning{% else %}danger{% endif %}">
+                        {{ task.ai_enhanced_metrics.confidence_score }}%
+                    </span>
+                </div>
+                {% if task.ai_enhanced_metrics.complexity_score %}
+                    <div class="ai-complexity mt-1">
+                        <strong>Complexity:</strong> 
+                        <span class="badge badge-info">{{ task.ai_enhanced_metrics.complexity_score|default:"Medium" }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <!-- Performance Tier -->
+        <div class="performance-tier mt-2">
+            <strong>Performance:</strong> 
+            <span class="badge badge-{% if task.performance_tier == 'Excellent' %}success{% elif task.performance_tier == 'Good' %}primary{% elif task.performance_tier == 'Fair' %}warning{% else %}danger{% endif %}">
+                {{ task.performance_tier }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="card-footer">
+        <div class="task-actions">
+            <a href="{% url 'management:taskdetail' task.id %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-eye"></i> View
+            </a>
+            <a href="{{ task.get_enhanced_url }}" class="btn btn-sm btn-info">
+                <i class="fas fa-plus"></i> Evidence
+            </a>
+            {% if task.intelligent_task.auto_evidence_enabled %}
+                <button class="btn btn-sm btn-success auto-evidence-btn" data-task-id="{{ task.id }}">
+                    <i class="fas fa-magic"></i> Auto Evidence
+                </button>
+            {% endif %}
+        </div>
+        
+        <!-- Task Status -->
+        <div class="task-status mt-2">
+            {% if task.is_active %}
+                <span class="badge badge-success">Active</span>
+            {% else %}
+                <span class="badge badge-secondary">Completed</span>
+            {% endif %}
+            
+            {% if task.featured %}
+                <span class="badge badge-warning">Featured</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================
+EVIDENCE COMPONENTS
+============================================================================ -->
+
+<!-- Evidence Form Fields Component -->
+<div class="evidence-form-container">
+    <form method="POST" enctype="multipart/form-data" class="evidence-form" id="evidenceForm">
+        {% csrf_token %}
+        
+        <!-- AI Recommendations Panel -->
+        {% if ai_recommendations %}
+            <div class="ai-recommendations-panel mb-4">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-robot"></i> AI Recommendations</h6>
+                    <ul class="mb-0">
+                        {% for recommendation in ai_recommendations.recommendations %}
+                            <li>{{ recommendation }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Form Fields -->
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="{{ form.link_name.id_for_label }}">Evidence Name</label>
+                {{ form.link_name }}
+                {% if form.link_name.help_text %}
+                    <small class="form-text text-muted">{{ form.link_name.help_text }}</small>
+                {% endif %}
+                {% if form.link_name.errors %}
+                    <div class="invalid-feedback">{{ form.link_name.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group col-md-6">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+                {% if form.description.help_text %}
+                    <small class="form-text text-muted">{{ form.description.help_text }}</small>
+                {% endif %}
+                {% if form.description.errors %}
+                    <div class="invalid-feedback">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group col-md-8">
+                <label for="{{ form.link.id_for_label }}">Evidence URL</label>
+                {{ form.link }}
+                {% if form.link.help_text %}
+                    <small class="form-text text-muted">{{ form.link.help_text }}</small>
+                {% endif %}
+                {% if form.link.errors %}
+                    <div class="invalid-feedback">{{ form.link.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group col-md-4">
+                <label for="{{ form.linkpassword.id_for_label }}">Password (if needed)</label>
+                {{ form.linkpassword }}
+                {% if form.linkpassword.help_text %}
+                    <small class="form-text text-muted">{{ form.linkpassword.help_text }}</small>
+                {% endif %}
+                {% if form.linkpassword.errors %}
+                    <div class="invalid-feedback">{{ form.linkpassword.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                <label for="{{ form.doc.id_for_label }}">Upload Document</label>
+                {{ form.doc }}
+                {% if form.doc.help_text %}
+                    <small class="form-text text-muted">{{ form.doc.help_text }}</small>
+                {% endif %}
+                {% if form.doc.errors %}
+                    <div class="invalid-feedback">{{ form.doc.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- AI Validation Indicator -->
+        <div class="ai-validation-indicator mt-3" style="display: none;">
+            <div class="alert alert-warning">
+                <i class="fas fa-spinner fa-spin"></i> AI is validating your evidence...
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="form-actions mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Submit Evidence
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="history.back()">
+                <i class="fas fa-arrow-left"></i> Cancel
+            </button>
+        </div>
+        
+        <!-- Hidden Fields -->
+        <div style="display: none;">
+            {{ form.task }}
+            {{ form.added_by }}
+        </div>
+    </form>
+</div>
+
+<!-- ============================================================================
+PERFORMANCE COMPONENTS
+============================================================================ -->
+
+<!-- Performance Metrics Component -->
+<div class="performance-metrics-container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-value">{{ metrics.total_tasks|default:0 }}</h3>
+                    <p class="metric-label">Total Tasks</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-value">{{ metrics.completion_rate|floatformat:1|default:"0" }}%</h3>
+                    <p class="metric-label">Completion Rate</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-value">{{ metrics.average_score|floatformat:1|default:"0" }}%</h3>
+                    <p class="metric-label">Average Score</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-value">${{ metrics.total_earnings|floatformat:2|default:"0.00" }}</h3>
+                    <p class="metric-label">Total Earnings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================
+AI INSIGHTS COMPONENTS
+============================================================================ -->
+
+<!-- AI Insights Panel -->
+<div class="ai-insights-panel">
+    <div class="panel-header">
+        <h5><i class="fas fa-robot"></i> AI Insights</h5>
+        <span class="ai-status">
+            {% if ai_service_available %}
+                <span class="badge badge-success">AI Active</span>
+            {% else %}
+                <span class="badge badge-warning">AI Offline</span>
+            {% endif %}
+        </span>
+    </div>
+    
+    <div class="panel-body">
+        {% if insights %}
+            <!-- Confidence Score -->
+            <div class="insight-item">
+                <strong>Confidence Score:</strong> 
+                <span class="confidence-badge badge badge-{% if insights.confidence_score >= 80 %}success{% elif insights.confidence_score >= 60 %}warning{% else %}danger{% endif %}">
+                    {{ insights.confidence_score|floatformat:1 }}%
+                </span>
+            </div>
+            
+            <!-- Performance Summary -->
+            {% if insights.performance_summary %}
+                <div class="insight-item">
+                    <strong>Performance Summary:</strong> 
+                    <p class="mb-1">{{ insights.performance_summary }}</p>
+                </div>
+            {% endif %}
+            
+            <!-- Recommendations -->
+            {% if insights.recommendations %}
+                <div class="insight-item">
+                    <strong>Recommendations:</strong>
+                    <ul class="mb-0">
+                        {% for recommendation in insights.recommendations %}
+                            <li>{{ recommendation }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <!-- Predictions -->
+            {% if insights.predicted_completion_rate %}
+                <div class="insight-item">
+                    <strong>Predicted Completion Rate:</strong> 
+                    <span class="badge badge-info">{{ insights.predicted_completion_rate|floatformat:1 }}%</span>
+                </div>
+            {% endif %}
+            
+            <!-- Model Used -->
+            <div class="insight-meta">
+                <small class="text-muted">
+                    <i class="fas fa-cog"></i> Model: {{ insights.model_used|title }}
+                </small>
+            </div>
+        {% else %}
+            <div class="no-insights">
+                <p class="text-muted">No AI insights available at this time.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================================
+BUDGET INTEGRATION COMPONENTS
+============================================================================ -->
+
+<!-- Budget Integration Panel -->
+<div class="budget-integration-panel">
+    <div class="panel-header">
+        <h5><i class="fas fa-chart-line"></i> Budget Integration</h5>
+        <span class="budget-status">
+            {% if budget_service_available %}
+                <span class="badge badge-success">Budget Active</span>
+            {% else %}
+                <span class="badge badge-warning">Budget Offline</span>
+            {% endif %}
+        </span>
+    </div>
+    
+    <div class="panel-body">
+        {% if budget_data %}
+            <!-- Projected Earnings -->
+            {% if budget_data.suggestions.earnings_prediction %}
+                <div class="budget-item">
+                    <strong>Projected Earnings:</strong> 
+                    <span class="budget-value">${{ budget_data.suggestions.earnings_prediction|floatformat:2 }}</span>
+                </div>
+            {% endif %}
+            
+            <!-- Variance Analysis -->
+            {% if budget_data.suggestions.variance_percentage %}
+                <div class="budget-item">
+                    <strong>Variance:</strong> 
+                    <span class="budget-variance badge badge-{% if budget_data.suggestions.variance_percentage >= 0 %}success{% else %}danger{% endif %}">
+                        {{ budget_data.suggestions.variance_percentage|floatformat:1 }}%
+                    </span>
+                </div>
+            {% endif %}
+            
+            <!-- Confidence Score -->
+            <div class="budget-item">
+                <strong>Confidence:</strong> 
+                <span class="budget-confidence badge badge-{% if budget_data.confidence_score >= 80 %}success{% elif budget_data.confidence_score >= 60 %}warning{% else %}danger{% endif %}">
+                    {{ budget_data.confidence_score|floatformat:1 }}%
+                </span>
+            </div>
+            
+            <!-- Recommendations -->
+            {% if budget_data.suggestions.recommendations %}
+                <div class="budget-item">
+                    <strong>Budget Recommendations:</strong>
+                    <ul class="mb-0">
+                        {% for recommendation in budget_data.suggestions.recommendations %}
+                            <li>{{ recommendation }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="no-budget-data">
+                <p class="text-muted">No budget data available at this time.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================================
+FILTER COMPONENTS
+============================================================================ -->
+
+<!-- AI Filter Options -->
+<div class="ai-filter-panel">
+    <div class="filter-header">
+        <h6><i class="fas fa-filter"></i> AI-Enhanced Filters</h6>
+    </div>
+    
+    <div class="filter-options">
+        {% for option in ai_filter_options %}
+            <div class="form-check">
+                <input class="form-check-input ai-filter-checkbox" type="radio" 
+                       name="ai_filter" id="filter_{{ option.value }}" 
+                       value="{{ option.value }}" 
+                       {% if request.GET.ai_filter == option.value %}checked{% endif %}>
+                <label class="form-check-label" for="filter_{{ option.value }}">
+                    {{ option.label }}
+                </label>
+            </div>
+        {% endfor %}
+        
+        <div class="filter-actions mt-3">
+            <button type="button" class="btn btn-sm btn-primary" id="applyAiFilter">
+                <i class="fas fa-magic"></i> Apply AI Filter
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" id="clearAiFilter">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================
+JAVASCRIPT FOR INTERACTIVE COMPONENTS
+============================================================================ -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // AI Filter functionality
+    const applyAiFilterBtn = document.getElementById('applyAiFilter');
+    const clearAiFilterBtn = document.getElementById('clearAiFilter');
+    const aiFilterCheckboxes = document.querySelectorAll('.ai-filter-checkbox');
+    
+    if (applyAiFilterBtn) {
+        applyAiFilterBtn.addEventListener('click', function() {
+            const selectedFilter = document.querySelector('input[name="ai_filter"]:checked');
+            if (selectedFilter) {
+                const url = new URL(window.location);
+                url.searchParams.set('ai_filter', selectedFilter.value);
+                window.location.href = url.toString();
+            }
+        });
+    }
+    
+    if (clearAiFilterBtn) {
+        clearAiFilterBtn.addEventListener('click', function() {
+            const url = new URL(window.location);
+            url.searchParams.delete('ai_filter');
+            window.location.href = url.toString();
+        });
+    }
+    
+    // Auto Evidence functionality
+    const autoEvidenceBtns = document.querySelectorAll('.auto-evidence-btn');
+    autoEvidenceBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            if (confirm('Generate automatic evidence for this task?')) {
+                // Implement auto evidence generation
+                console.log('Auto evidence generation for task:', taskId);
+                // Add actual implementation here
+            }
+        });
+    });
+    
+    // AI Validation for evidence forms
+    const evidenceForm = document.getElementById('evidenceForm');
+    if (evidenceForm) {
+        evidenceForm.addEventListener('submit', function(e) {
+            const aiValidationIndicator = document.querySelector('.ai-validation-indicator');
+            if (aiValidationIndicator) {
+                aiValidationIndicator.style.display = 'block';
+            }
+            
+            // Simulate AI validation delay
+            setTimeout(() => {
+                if (aiValidationIndicator) {
+                    aiValidationIndicator.style.display = 'none';
+                }
+            }, 2000);
+        });
+    }
+});
+</script>
+
+<!-- ============================================================================
+CSS STYLES FOR COMPONENTS
+============================================================================ -->
+
+<style>
+.task-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.3s ease;
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.badge-ai {
+    background-color: #6f42c1;
+}
+
+.badge-auto {
+    background-color: #28a745;
+}
+
+.metric-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+.metric-icon {
+    font-size: 2rem;
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.ai-insights-panel, .budget-integration-panel {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.insight-item, .budget-item {
+    margin-bottom: 0.75rem;
+}
+
+.confidence-badge, .budget-confidence {
+    font-size: 0.875rem;
+}
+
+.ai-filter-panel {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.evidence-form-container {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.ai-recommendations-panel .alert {
+    border-left: 4px solid #17a2b8;
+}
+
+.task-metrics .progress {
+    height: 8px;
+}
+
+.task-actions .btn {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .task-card .row {
+        margin: 0;
+    }
+    
+    .metric-card {
+        margin-bottom: 1rem;
+    }
+    
+    .task-actions .btn {
+        width: 100%;
+        margin-right: 0;
+    }
+}
+</style>
