@@ -1,0 +1,3 @@
+# CODA Project .gitignore
+# Budget consolidation - deprecated code
+coda/finance/_deprecated/

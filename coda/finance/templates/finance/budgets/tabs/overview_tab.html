@@ -1,0 +1,108 @@
+{% load static %}
+
+<!-- Overview Tab -->
+<div class="tab-card">
+    <h3 class="mb-4">
+        <i class="fas fa-tachometer-alt"></i> Budget Overview
+    </h3>
+    
+    {% if overview_data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ overview_data.error }}
+    </div>
+    {% else %}
+    
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ overview_data.total_budgets|default:"0" }}</div>
+                <div class="metric-label">Total Budgets</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ overview_data.active_budgets|default:"0" }}</div>
+                <div class="metric-label">Active Budgets</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ overview_data.total_amount.total|default:"0"|floatformat:2 }}</div>
+                <div class="metric-label">Total Amount</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ overview_data.category_summary|length|default:"0" }}</div>
+                <div class="metric-label">Categories</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Category Summary -->
+    {% if overview_data.category_summary %}
+    <div class="row">
+        <div class="col-12">
+            <h4>Budget by Category</h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category, data in overview_data.category_summary.items %}
+                        <tr>
+                            <td><i class="fas fa-tag"></i> {{ category }}</td>
+                            <td>{{ data.count }}</td>
+                            <td>${{ data.total|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Recent Budgets -->
+    {% if overview_data.recent_budgets %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <h4>Recent Budgets</h4>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Department</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for budget in overview_data.recent_budgets %}
+                        <tr>
+                            <td>{{ budget.item_name }}</td>
+                            <td>{{ budget.department.name }}</td>
+                            <td>{{ budget.category.name|default:"N/A" }}</td>
+                            <td>${{ budget.total_amount|default:"0"|floatformat:2 }}</td>
+                            <td><span class="badge badge-success">{{ budget.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% endif %}
+</div>
+
+
