@@ -15,6 +15,9 @@ from management.views import (
 # Note: ai_dashboard_views will be added in Phase 3
 # from management.views import ai_dashboard_views
 
+# Import user testing views for Phase 2
+from management.views import user_testing_views
+
 app_name = 'management'
 urlpatterns = [
     path('', views.home, name='management-home'),
@@ -117,7 +120,6 @@ urlpatterns = [
 
 # ========== Phase 2: AI-Enhanced Features ==========
 # User Testing Dashboard (ENABLED FOR USER TESTING)
-from management.views import user_testing_views
 
 # User Testing Dashboard
 path('ai-test-dashboard/', user_testing_views.UserTestingDashboardView.as_view(), name='ai_test_dashboard'),
