@@ -170,9 +170,7 @@ Make sure you have credentials for all three user types before starting.
 
 ### 5. Performance Analytics Testing
 
-#### Access via Management Commands (Admin Only):
-
-Since the web UI routes are temporarily disabled, test these features via Heroku CLI:
+**Note:** Analytics dashboard UI is not yet deployed. Core task management features are fully functional via the web interface.
 
 ```bash
 # Connect to Heroku app
