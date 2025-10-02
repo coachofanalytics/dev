@@ -125,6 +125,12 @@ import dj_database_url
 host,dbname,user,password=dba_values()
 print(host,dbname,user,password)
 
+import os
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+
 
 
 # Database
