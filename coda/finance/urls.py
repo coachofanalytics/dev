@@ -28,6 +28,9 @@ from . import views_smart_transaction
 # Import cascading form API
 from . import api_cascading
 
+# Import auto-prediction API
+from . import api_auto_predict
+
 app_name = 'finance'
 urlpatterns = [
     #=============================FINANCE INDEX=====================================
@@ -56,6 +59,9 @@ urlpatterns = [
     path('api/subcategories/', api_cascading.api_get_subcategories, name='api-get-subcategories'),
     path('api/items/', api_cascading.api_get_items, name='api-get-items'),
     path('api/suggest-defaults/', api_cascading.api_suggest_defaults, name='api-suggest-defaults'),
+    
+    # Auto-Prediction API (Phase 2 - Intelligent Auto-Fill)
+    path('api/predict-all/', api_auto_predict.api_predict_all_fields, name='api-predict-all'),
     
     # path('transaction/<str:transaction_type>', views.outflows, name='transaction-list'),
     path('transaction/<int:pk>/', TransanctionDetailView.as_view(), name='transaction-detail'),

@@ -132,9 +132,12 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group position-relative">
-                            <label for="id_receiver">Receiver Name *</label>
+                            <label for="id_receiver">Receiver Name * <span id="receiver-type-badge"></span></label>
                             {{ form.receiver }}
-                            <small class="form-text text-muted">Start typing for suggestions</small>
+                            <small class="form-text text-muted">
+                                <strong>Person:</strong> John Doe | <strong>Company:</strong> KPLC, Safaricom<br>
+                                Start typing - we'll auto-fill everything!
+                            </small>
                             <div class="receiver-suggestions" id="receiver-suggestions"></div>
                         </div>
                     </div>
@@ -293,36 +296,170 @@ $('#id_receiver').on('input', function() {
 // Select receiver suggestion
 $(document).on('click', '.receiver-suggestion-item', function() {
     const name = $(this).data('name');
-    const category = $(this).data('category');
-    const avgAmount = $(this).data('avg-amount');
     
     // Fill receiver
     $('#id_receiver').val(name);
-    
-    // Auto-select category if available
-    if (category) {
-        $('#id_category option').filter(function() {
-            return $(this).text() === category;
-        }).prop('selected', true);
-        
-        // Show suggestion indicator
-        $('#suggestion-indicator').html(`
-            <span class="auto-suggest-badge confidence-high">
-                ✓ Auto-suggested
-            </span>
-        `);
-    }
-    
-    // Suggest amount
-    if (avgAmount && avgAmount > 0) {
-        $('#category-hint').html(`
-            <i class="fas fa-info-circle"></i>
-            Average amount for ${name}: $${avgAmount.toFixed(2)}
-        `);
-    }
-    
     $('#receiver-suggestions').hide();
+    
+    // Trigger comprehensive auto-fill
+    triggerAutoFill(name);
 });
+
+// =============================
+// COMPREHENSIVE AUTO-FILL (NEW!)
+// =============================
+
+// Trigger auto-fill when receiver loses focus (blur)
+$('#id_receiver').on('blur', function() {
+    const receiver = $(this).val().trim();
+    if (receiver.length >= 3) {
+        triggerAutoFill(receiver);
+    }
+});
+
+function triggerAutoFill(receiver) {
+    // Show loading indicator
+    $('#suggestion-indicator').html(`
+        <span class="auto-suggest-badge" style="background: #e3f2fd; color: #1976d2;">
+            <i class="fas fa-spinner fa-spin"></i> Predicting...
+        </span>
+    `);
+    
+    const departmentId = $('#id_department').val();
+    const amount = $('#id_amount').val();
+    
+    // Call comprehensive prediction API
+    $.ajax({
+        url: '{% url "finance:api-predict-all" %}',
+        data: {
+            receiver: receiver,
+            department_id: departmentId,
+            amount: amount
+        },
+        success: function(data) {
+            if (data.predictions) {
+                applyPredictions(data);
+            } else {
+                // No predictions available
+                $('#suggestion-indicator').html(`
+                    <span class="auto-suggest-badge" style="background: #fff3cd; color: #856404;">
+                        <i class="fas fa-info-circle"></i> New receiver - enter manually
+                    </span>
+                `);
+            }
+        },
+        error: function() {
+            console.error('Auto-prediction failed');
+            $('#suggestion-indicator').html('');
+        }
+    });
+}
+
+function applyPredictions(data) {
+    const pred = data.predictions;
+    const conf = data.confidence;
+    const info = data.receiver_info;
+    
+    console.log('Auto-fill predictions:', pred);
+    
+    // Show receiver type badge
+    const typeBadge = info.type === 'company' ? 
+        '<span class="badge badge-primary">Company</span>' :
+        info.type === 'person' ?
+        '<span class="badge badge-success">Person</span>' :
+        '<span class="badge badge-secondary">Unknown</span>';
+    $('#receiver-type-badge').html(typeBadge);
+    
+    // 1. Auto-fill Category (and trigger cascade)
+    if (pred.category_id && !$('#id_category').val()) {
+        $('#id_category').val(pred.category_id);
+        $('#id_category').trigger('change');  // Trigger cascade to load subcategories
+        
+        // Wait for cascade, then fill subcategory
+        setTimeout(function() {
+            if (pred.subcategory_id) {
+                $('#id_subcategory').val(pred.subcategory_id);
+                $('#id_subcategory').trigger('change');  // Trigger to load items
+                
+                // Wait for items, then fill type
+                setTimeout(function() {
+                    if (pred.type) {
+                        $('#id_type').val(pred.type);
+                    }
+                }, 400);
+            }
+        }, 400);
+    }
+    
+    // 2. Auto-fill Department
+    if (pred.department_id && !$('#id_department').val()) {
+        $('#id_department').val(pred.department_id);
+    }
+    
+    // 3. Auto-fill Amount (if not already entered)
+    if (pred.amount && (!$('#id_amount').val() || $('#id_amount').val() == '0.00')) {
+        $('#id_amount').val(pred.amount.toFixed(2));
+        
+        // Show amount range hint
+        if (pred.amount_range) {
+            $('#category-hint').html(`
+                <i class="fas fa-chart-line"></i>
+                Typical amount: $${pred.amount_range.min.toFixed(2)} - $${pred.amount_range.max.toFixed(2)} 
+                (avg: $${pred.amount_range.avg.toFixed(2)})
+            `);
+        }
+    }
+    
+    // 4. Auto-fill Description
+    if (pred.description && !$('#id_description').val()) {
+        $('#id_description').val(pred.description);
+    }
+    
+    // 5. Auto-fill Payment Method
+    if (pred.payment_method && !$('#id_payment_method').val()) {
+        $('#id_payment_method').val(pred.payment_method);
+    }
+    
+    // Show success indicator with confidence
+    const confColor = conf.overall === 'high' ? '#d4edda' : 
+                      conf.overall === 'medium' ? '#fff3cd' : '#f8d7da';
+    const confTextColor = conf.overall === 'high' ? '#155724' : 
+                         conf.overall === 'medium' ? '#856404' : '#721c24';
+    
+    $('#suggestion-indicator').html(`
+        <span class="auto-suggest-badge" style="background: ${confColor}; color: ${confTextColor};">
+            <i class="fas fa-check-circle"></i> Auto-filled (${info.transaction_count}x before, ${conf.overall} confidence)
+        </span>
+    `);
+    
+    // Show a summary notification
+    const message = `✨ Auto-filled based on ${info.transaction_count} previous transactions to ${info.name}!`;
+    showNotification(message, 'success');
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const alertClass = type === 'success' ? 'alert-success' : 
+                       type === 'warning' ? 'alert-warning' : 'alert-info';
+    
+    const notification = $(`
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 80px; right: 20px; z-index: 9999; min-width: 300px;">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `);
+    
+    $('body').append(notification);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(function() {
+        notification.fadeOut(function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
 
 // Hide suggestions when clicking outside
 $(document).on('click', function(e) {

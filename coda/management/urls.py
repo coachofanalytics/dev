@@ -105,10 +105,30 @@ urlpatterns = [
     path('oauth/callback/', views.oauth_callback, name='oauth_callback'),
     path('attendee_duration/', views.get_attendee_duration, name='attendee_duration'),
     
-    # ========== Phase 1: Performance Insights ==========
-    # Temporarily commented out for testing
-    # path('insights/performance-dashboard/', insights_views.PerformanceInsightsDashboard.as_view(), name='performance_insights_dashboard'),
-    # path('insights/export-report/', insights_views.export_insights_report, name='export_insights_report'),
-    # path('insights/api/', insights_views.get_insights_api, name='insights_api'),
+# ========== Phase 1: Performance Insights ==========
+# Temporarily commented out for testing
+# path('insights/performance-dashboard/', insights_views.PerformanceInsightsDashboard.as_view(), name='performance_insights_dashboard'),
+# path('insights/export-report/', insights_views.export_insights_report, name='export_insights_report'),
+# path('insights/api/', insights_views.get_insights_api, name='insights_api'),
+
+# ========== Phase 2: AI-Enhanced Features ==========
+# Temporarily commented out for testing - will be enabled after testing
+# from management.views import ai_dashboard_views
+
+# AI Dashboard Views
+# path('ai-dashboard/', ai_dashboard_views.AIEnhancedDashboardView.as_view(), name='ai_dashboard'),
+# path('ai-dashboard/employee-performance/', ai_dashboard_views.EmployeePerformanceDashboardView.as_view(), name='ai_employee_performance'),
+# path('ai-dashboard/task-assignment/', ai_dashboard_views.TaskAssignmentDashboardView.as_view(), name='ai_task_assignment'),
+# path('ai-dashboard/department-optimization/', ai_dashboard_views.DepartmentOptimizationDashboardView.as_view(), name='ai_department_optimization'),
+
+# AI API Endpoints
+# path('ai-api/realtime-dashboard/', ai_dashboard_views.get_realtime_dashboard_data, name='ai_realtime_dashboard'),
+# path('ai-api/performance-alerts/', ai_dashboard_views.get_performance_alerts, name='ai_performance_alerts'),
+# path('ai-api/employee-performance/<int:employee_id>/', ai_dashboard_views.get_employee_performance, name='ai_employee_performance_api'),
+# path('ai-api/department-status/<str:department_name>/', ai_dashboard_views.get_department_status, name='ai_department_status'),
+# path('ai-api/task-assignment/', ai_dashboard_views.get_task_assignment_recommendation, name='ai_task_assignment_api'),
+# path('ai-api/department-optimization/<str:department_name>/', ai_dashboard_views.get_department_optimization, name='ai_department_optimization_api'),
+# path('ai-api/data-quality/', ai_dashboard_views.get_data_quality_report, name='ai_data_quality'),
+# path('ai-api/export-report/', ai_dashboard_views.export_performance_report, name='ai_export_report'),
 
 ]
