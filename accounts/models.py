@@ -149,6 +149,25 @@ class TeamMember(models.Model):  # 🔄 Renamed to singular (best practice)
         return f"{self.title} ({self.category})"
 
 
+from django.db import models
+
+class CredentialCategory(models.Model):
+    department = models.IntegerField(null=False)   # Could later be a ForeignKey to Department model
+    category = models.CharField(max_length=255, null=False)
+    verbose_name = models.CharField(max_length=255, null=True, blank=True)
+    descriptions = models.TextField(max_length=100, null=False)
+    entry_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)   # usually better to set a default
+    is_featured = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Credential Category"
+        verbose_name_plural = "Credential Categories"
+
+    def __str__(self):
+        return self.category
+
+
 
 
         
