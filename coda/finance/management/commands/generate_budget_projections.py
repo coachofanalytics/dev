@@ -125,20 +125,33 @@ class Command(BaseCommand):
     
     def _analyze_historical_spending(self, months):
         """Analyze historical spending patterns"""
-        cutoff_date = timezone.now() - timedelta(days=months*30)
-        
-        # Get transactions from last N months, categorized only
+        # Get ALL categorized transactions (not just recent)
+        # Since the data spans 2022-2024, we need to use the full range
         transactions = Transaction.objects.filter(
-            transaction_date__gte=cutoff_date,
             category__isnull=False  # Only use categorized transactions
         )
+        
+        # Calculate actual date range
+        date_range = transactions.aggregate(
+            min_date=Min('transaction_date'),
+            max_date=Max('transaction_date')
+        )
+        
+        if not date_range['min_date'] or not date_range['max_date']:
+            self.stdout.write(self.style.ERROR("No categorized transactions found"))
+            return {}
+        
+        # Calculate actual months of data
+        actual_months = (date_range['max_date'] - date_range['min_date']).days / 30.0
+        if actual_months < 1:
+            actual_months = 1
         
         total_txns = transactions.count()
         total_amount = transactions.aggregate(total=Sum('amount'))['total'] or Decimal('0')
         
         self.stdout.write(f"\nFound {total_txns} categorized transactions")
         self.stdout.write(f"Total spending: ${total_amount:,.2f}")
-        self.stdout.write(f"Period: Last {months} months\n")
+        self.stdout.write(f"Period: {date_range['min_date'].date()} to {date_range['max_date'].date()} ({actual_months:.1f} months)\n")
         
         # Analyze by category
         by_category = transactions.values(
@@ -148,7 +161,7 @@ class Command(BaseCommand):
             count=Count('id'),
             total=Sum('amount'),
             avg=Avg('amount'),
-            monthly_avg=Sum('amount') / months
+            monthly_avg=Sum('amount') / Decimal(str(actual_months))
         ).order_by('-total')
         
         self.stdout.write(f"{'Category':<30} {'Count':>8} {'Total':>15} {'Monthly Avg':>15}")
@@ -171,7 +184,7 @@ class Command(BaseCommand):
                 'total': total,
                 'avg': cat['avg'] or Decimal('0'),
                 'monthly_avg': monthly_avg,
-                'monthly_count': count / months
+                'monthly_count': count / actual_months
             }
         
         # Analyze by department
@@ -183,7 +196,7 @@ class Command(BaseCommand):
         ).annotate(
             count=Count('id'),
             total=Sum('amount'),
-            monthly_avg=Sum('amount') / months
+            monthly_avg=Sum('amount') / Decimal(str(actual_months))
         ).order_by('-total')
         
         for dept in by_dept:
@@ -259,6 +272,8 @@ class Command(BaseCommand):
         self.stdout.write("-"*85)
         
         all_categories = set(projections.keys()) | set(existing_dict.keys())
+        # Filter out None values
+        all_categories = [c for c in all_categories if c is not None]
         
         total_current = Decimal('0')
         total_projected = Decimal('0')
