@@ -1,11 +1,41 @@
 from django.urls import path
-
+from django.urls import path
 from . import views
-# from .utils import convert_html_to_pdf
+from django.urls import path
+from . import views
 
-app_name = 'main'
+app_name = "main"  # ✅ Required for namespacing
+from django.urls import path
+from . import views  # ✅ This is okay
+
+app_name = "main"
+
 urlpatterns = [
-    path('', views.layout, name='layout'),
+    path('', views.home, name='home'),  # ✅ At least one valid path
+]
+ 
+
+from django.http import HttpResponse
+
+def test_view(request):
+    return HttpResponse("It works!")
+
+urlpatterns = [
+    path('', test_view, name='home'),
+]
+from django.http import HttpResponse
+
+def temp_view(request):
+    return HttpResponse("Temporary view works!")
+
+urlpatterns = [
+    path('', temp_view, name='home'),  # replace views.home with temp_view
+]
+
+
+def layout(request):
+    return (request, 'main/layout.html')  # Adjust template path as needed
+
     #=======================SERVICES=====================================
     path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
     path('services/', views.services, name='services'),
@@ -19,7 +49,6 @@ urlpatterns = [
        
         #--------------------------MANAGEMENT--------------------#
     #----------------------------IT-------------------------#
-        path('it/', views.it, name='it'),
     #-----------------------README-------------------------#
     path('newusecase/', views.UseCaseCreateView.as_view(template_name='main/form.html'), name='newusecase'),
     path('display_usecases/', views.display_usecases, name='display_usecases'),
@@ -35,7 +64,7 @@ urlpatterns = [
     path('404/', views.hendler404, name='404-error'),
     path('500/', views.hendler500, name='500-error'),
 
+
     #===========company records=======
 
 
-]

@@ -24,23 +24,23 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
-class Service(models.Model):
-    serial = models.PositiveIntegerField(null=True, blank=True)
-    title = models.CharField(default='training',max_length=254)
-    slug = models.SlugField(default='slug',max_length=255)
-    description = models.TextField(null=True, blank=True)
-    sub_titles = models.TextField(null=True, blank=True)
-    # executive_summary = models.TextField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    is_featured = models.BooleanField(default=False)
-    class Meta:
-        verbose_name_plural = "Services"
+# class Service(models.Model):
+#     serial = models.PositiveIntegerField(null=True, blank=True)
+#     title = models.CharField(default='training',max_length=254)
+#     slug = models.SlugField(default='slug',max_length=255)
+#     description = models.TextField(null=True, blank=True)
+#     sub_titles = models.TextField(null=True, blank=True)
+#     # executive_summary = models.TextField(null=True, blank=True)
+#     is_active = models.BooleanField(default=True)
+#     is_featured = models.BooleanField(default=False)
+#     class Meta:
+#         verbose_name_plural = "Services"
     
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
     
-    def get_absolute_url(self):
-        return "/services/{slug}/".format(slug=self.slug)
+    # def get_absolute_url(self):
+    #     return "/services/{slug}/".format(slug=self.slug)
 
 class Assets(TimeStampedModel):
     name = models.CharField(max_length=200)
@@ -95,13 +95,50 @@ pre_save.connect(readme_pre_save_receiver, sender=Readme)
 
 
 
-class ServiceCategory(models.Model):
-    service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True)
-    name = models.CharField(max_length=255, null=True, blank=True)
-    slug = models.SlugField(max_length=255, null=True, blank=True, unique=True)
-    description = models.TextField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    is_featured = models.BooleanField(default=False)
+
+
+from django.db import models
+from django.utils import timezone
+
+class Testimonials(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    content = models.TextField()
+    date_posted = models.DateTimeField(default=timezone.now)
+    writer = models.IntegerField()
 
     def __str__(self):
-        return self.name if self.name else "Unnamed Category"
+        return self.title
+
+
+
+
+
+
+from django.db import models
+
+class Company(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(null=True, blank=True, unique=True)
+    sector = models.CharField(max_length=255, null=True, blank=True)
+    mission = models.CharField(max_length=500, null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name or "Unnamed Company"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

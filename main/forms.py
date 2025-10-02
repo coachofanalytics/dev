@@ -13,3 +13,4 @@ class ClientNameForm(forms.Form):
         queryset=CustomerUser.objects.filter(Q(is_client=True) | Q(is_staff=True)),
         label='Select a client'
     )
+
