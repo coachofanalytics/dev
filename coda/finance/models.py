@@ -3601,3 +3601,14 @@ class Payment(models.Model):
         """Custom save method with validation"""
         self.clean()
         super().save(*args, **kwargs)
+
+
+# =============================================================================
+# VENDOR MANAGEMENT MODELS (Phase 1 Data Cleanup - October 2025)
+# =============================================================================
+# Import vendor models for standardized receiver names and location tracking
+try:
+    from .models_vendor import Vendor, VendorAlias, VendorCategory
+except ImportError:
+    # Models not yet migrated, will be available after migration
+    Vendor = VendorAlias = VendorCategory = None
