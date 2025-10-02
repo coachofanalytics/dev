@@ -15,8 +15,8 @@ from management.views import (
 # Note: ai_dashboard_views will be added in Phase 3
 # from management.views import ai_dashboard_views
 
-# Import user testing views for Phase 2
-from management.views import user_testing_views
+# Import user testing views for Phase 2 (temporarily commented - file not in repo)
+# from management.views import user_testing_views
 
 app_name = 'management'
 urlpatterns = [
@@ -119,19 +119,20 @@ urlpatterns = [
 # path('insights/api/', insights_views.get_insights_api, name='insights_api'),
 
 # ========== Phase 2: AI-Enhanced Features ==========
-# User Testing Dashboard (ENABLED FOR USER TESTING)
+# User Testing Dashboard (TEMPORARILY DISABLED - file not in repo)
+# Uncomment when user_testing_views.py is added to the repository
 
 # User Testing Dashboard
-path('ai-test-dashboard/', user_testing_views.UserTestingDashboardView.as_view(), name='ai_test_dashboard'),
-path('ai-features-overview/', user_testing_views.AIFeaturesOverviewView.as_view(), name='ai_features_overview'),
+# path('ai-test-dashboard/', user_testing_views.UserTestingDashboardView.as_view(), name='ai_test_dashboard'),
+# path('ai-features-overview/', user_testing_views.AIFeaturesOverviewView.as_view(), name='ai_features_overview'),
 
 # User Testing API Endpoints
-path('test-ai-predictions/', user_testing_views.test_ai_predictions_user, name='test_ai_predictions_user'),
-path('test-task-assignment/', user_testing_views.test_task_assignment_user, name='test_task_assignment_user'),
-path('test-department-optimization/', user_testing_views.test_department_optimization_user, name='test_department_optimization_user'),
-path('test-monitoring/', user_testing_views.test_monitoring_user, name='test_monitoring_user'),
-path('test-data-quality/', user_testing_views.test_data_quality_user, name='test_data_quality_user'),
-path('ai-system-status/', user_testing_views.get_ai_system_status, name='ai_system_status'),
+# path('test-ai-predictions/', user_testing_views.test_ai_predictions_user, name='test_ai_predictions_user'),
+# path('test-task-assignment/', user_testing_views.test_task_assignment_user, name='test_task_assignment_user'),
+# path('test-department-optimization/', user_testing_views.test_department_optimization_user, name='test_department_optimization_user'),
+# path('test-monitoring/', user_testing_views.test_monitoring_user, name='test_monitoring_user'),
+# path('test-data-quality/', user_testing_views.test_data_quality_user, name='test_data_quality_user'),
+# path('ai-system-status/', user_testing_views.get_ai_system_status, name='ai_system_status'),
 
 # AI Dashboard Views (temporarily commented for deployment - services are working)
 # path('ai-dashboard/', ai_dashboard_views.AIEnhancedDashboardView.as_view(), name='ai_dashboard'),
