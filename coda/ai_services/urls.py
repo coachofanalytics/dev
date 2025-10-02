@@ -10,6 +10,7 @@ urlpatterns = [
     path('groups/', views.fetch_whatsapp_groups, name='whatsappgroups'),
     path('index/', views.index, name='data-index'),
     path('bigdata/', views.bigdata, name='generate-data'),
+    path('bigdata/presentation/', views.bigdata_presentation, name='bigdata-presentation'),
     path('connects',views.connects_suggestion, name='upwork_connects'),
     #-----------------------DATA UPLOAD/MIGRATION-------------------------#
     path('upload/', views.upload_csv, name='upload'),

@@ -166,6 +166,17 @@ def bigdata(request):
 	return render(request, "ai_services/bigdata.html",context)
 
 
+def bigdata_presentation(request):
+	"""
+	Enhanced Big Data presentation board showcasing all AI use cases
+	Similar to diaspora dashboard but for budget system intelligence
+	"""
+	context = {
+		"title": "CODA AI Platform - Big Data & Analytics Use Cases",
+	}
+	return render(request, "ai_services/bigdata_presentation.html", context)
+
+
 # ========================. DISPLAY/LIST VIEWS============================
 # class CashappListView(ListView):
 #     queryset = CashappMail.objects.all()
