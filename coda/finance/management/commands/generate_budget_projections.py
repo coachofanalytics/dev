@@ -361,15 +361,28 @@ class Command(BaseCommand):
         self.stdout.write("SAVING PROJECTIONS TO DATABASE")
         self.stdout.write("="*80)
         
+        # Get main department (HR has most spending - 74%)
+        main_department = Department.objects.filter(name='HR Department').first()
+        if not main_department:
+            main_department = Department.objects.first()
+        
+        if not main_department:
+            self.stdout.write(self.style.ERROR("No departments found. Cannot save projections."))
+            return
+        
+        self.stdout.write(f"\nSaving projections for department: {main_department.name}")
+        self.stdout.write("(Note: These are company-wide projections, not department-specific)\n")
+        
         # Create BudgetEstimateProjection records
+        saved_count = 0
         for cat_id, proj in projections.items():
             try:
                 category = BudgetCategory.objects.get(id=cat_id)
                 
-                # Create projection record
+                # Create projection record (using main department as placeholder)
                 projection_obj, created = BudgetEstimateProjection.objects.update_or_create(
                     company=company,
-                    # department=None,  # Company-wide
+                    department=main_department,
                     template=None,
                     horizon='monthly',
                     method='transaction_analysis',
@@ -380,7 +393,8 @@ class Command(BaseCommand):
                             'total_projection': float(proj['total_projection']),
                             'projection_months': projection_months,
                             'growth_factor': float(proj['growth_factor']),
-                            'based_on_transactions': int(proj['historical_count'])
+                            'based_on_transactions': int(proj['historical_count']),
+                            'note': 'Company-wide projection (all departments combined)'
                         },
                         'total_estimate': proj['total_projection'],
                         'status': 'draft'
@@ -389,9 +403,14 @@ class Command(BaseCommand):
                 
                 action = 'Created' if created else 'Updated'
                 self.stdout.write(f"  {action}: {proj['name']}")
+                saved_count += 1
                 
             except BudgetCategory.DoesNotExist:
                 self.stdout.write(self.style.WARNING(f"  Skipped: Category ID {cat_id} not found"))
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"  Error saving {proj['name']}: {str(e)}"))
         
-        self.stdout.write(self.style.SUCCESS(f"\n✓ Saved {len(projections)} budget projections"))
+        self.stdout.write(self.style.SUCCESS(f"\n✓ Saved {saved_count} budget projections to database"))
+        self.stdout.write(f"\nView in admin: /admin/finance/budgetestimateprojection/")
+        self.stdout.write(f"Or query: BudgetEstimateProjection.objects.filter(method='transaction_analysis')")
 
