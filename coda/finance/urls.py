@@ -25,6 +25,9 @@ from . import views_forms
 # Import smart transaction views (Phase 1 Data Cleanup)
 from . import views_smart_transaction
 
+# Import cascading form API
+from . import api_cascading
+
 app_name = 'finance'
 urlpatterns = [
     #=============================FINANCE INDEX=====================================
@@ -48,6 +51,11 @@ urlpatterns = [
     path('api/suggest-category/', views_smart_transaction.api_suggest_category, name='api-suggest-category'),
     path('api/validate-amount/', views_smart_transaction.api_validate_amount, name='api-validate-amount'),
     path('api/receiver-suggestions/', views_smart_transaction.api_receiver_suggestions, name='api-receiver-suggestions'),
+    
+    # Cascading Form API (Phase 2 - Smart Data Entry)
+    path('api/subcategories/', api_cascading.api_get_subcategories, name='api-get-subcategories'),
+    path('api/items/', api_cascading.api_get_items, name='api-get-items'),
+    path('api/suggest-defaults/', api_cascading.api_suggest_defaults, name='api-suggest-defaults'),
     
     # path('transaction/<str:transaction_type>', views.outflows, name='transaction-list'),
     path('transaction/<int:pk>/', TransanctionDetailView.as_view(), name='transaction-detail'),

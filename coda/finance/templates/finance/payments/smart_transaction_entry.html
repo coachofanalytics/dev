@@ -377,13 +377,209 @@ $('#id_department, #id_amount').on('change', function() {
     }
 });
 
+// =============================
+// CASCADING DROPDOWNS (Phase 2)
+// =============================
+
+// When Category changes → Load Subcategories
+$('#id_category').on('change', function() {
+    const categoryId = $(this).val();
+    const $subcategoryField = $('#id_subcategory');
+    const $typeField = $('#id_type');
+    
+    if (!categoryId) {
+        $subcategoryField.html('<option value="">---------</option>').prop('disabled', true);
+        $typeField.html('<option value="">---------</option>').prop('disabled', true);
+        return;
+    }
+    
+    // Show loading
+    $subcategoryField.html('<option value="">Loading subcategories...</option>').prop('disabled', true);
+    
+    // Fetch subcategories via API
+    $.ajax({
+        url: '{% url "finance:api-get-subcategories" %}',
+        data: { category_id: categoryId },
+        success: function(data) {
+            let options = '<option value="">Select Subcategory</option>';
+            data.subcategories.forEach(sub => {
+                options += `<option value="${sub.id}">${sub.name}</option>`;
+            });
+            $subcategoryField.html(options).prop('disabled', false);
+            
+            // Auto-load items for this category
+            loadItems({ category_id: categoryId });
+        },
+        error: function() {
+            $subcategoryField.html('<option value="">Error loading subcategories</option>');
+        }
+    });
+});
+
+// When Subcategory changes → Load Items
+$('#id_subcategory').on('change', function() {
+    const categoryId = $('#id_category').val();
+    const subcategoryId = $(this).val();
+    const departmentId = $('#id_department').val();
+    
+    if (!categoryId) return;
+    
+    // Load items with filters
+    loadItems({
+        category_id: categoryId,
+        subcategory_id: subcategoryId,
+        department_id: departmentId
+    });
+});
+
+// Load items based on filters
+function loadItems(filters) {
+    const $typeField = $('#id_type');
+    
+    // Show loading
+    $typeField.html('<option value="">Loading items...</option>').prop('disabled', true);
+    
+    $.ajax({
+        url: '{% url "finance:api-get-items" %}',
+        data: filters,
+        success: function(data) {
+            let options = '<option value="">Select Item</option>';
+            
+            if (data.items.length > 0) {
+                // Add items from history (with frequency indicator)
+                options += '<optgroup label="Common Items (from history)">';
+                data.items.forEach(item => {
+                    const freq = item.frequency > 1 ? ` (${item.frequency}x)` : '';
+                    options += `<option value="${item.name}">${item.name}${freq}</option>`;
+                });
+                options += '</optgroup>';
+                
+                // Option to enter custom item
+                options += '<optgroup label="Other">';
+                options += '<option value="">-- Enter custom item --</option>';
+                options += '</optgroup>';
+            } else {
+                options = '<option value="">No items found. Type custom item below.</option>';
+            }
+            
+            $typeField.html(options).prop('disabled', false);
+            
+            // Convert to datalist for custom entry + suggestions
+            convertToDatalist($typeField, data.items);
+        },
+        error: function() {
+            $typeField.html('<option value="">Error loading items</option>');
+        }
+    });
+}
+
+// Convert dropdown to allow custom entry with suggestions
+function convertToDatalist($field, items) {
+    const fieldId = $field.attr('id');
+    const fieldValue = $field.val();
+    
+    // Replace select with input + datalist
+    const datalistId = fieldId + '_datalist';
+    let datalistOptions = '';
+    items.forEach(item => {
+        datalistOptions += `<option value="${item.name}">`;
+    });
+    
+    const newHtml = `
+        <input type="text" 
+               id="${fieldId}" 
+               name="${$field.attr('name')}" 
+               class="form-control" 
+               list="${datalistId}"
+               placeholder="Type or select an item..."
+               value="${fieldValue}">
+        <datalist id="${datalistId}">
+            ${datalistOptions}
+        </datalist>
+        <small class="form-text text-muted">
+            <i class="fas fa-lightbulb"></i> 
+            Select from common items or type a custom item
+        </small>
+    `;
+    
+    $field.replaceWith(newHtml);
+}
+
+// Smart defaults: When receiver/department changes → Suggest category
+$('#id_receiver, #id_department, #id_amount').on('change blur', function() {
+    const receiver = $('#id_receiver').val();
+    const departmentId = $('#id_department').val();
+    const amount = $('#id_amount').val();
+    
+    // Skip if category already selected
+    if ($('#id_category').val()) return;
+    
+    // Skip if not enough data
+    if (!receiver && !departmentId) return;
+    
+    // Fetch suggestions
+    $.ajax({
+        url: '{% url "finance:api-suggest-defaults" %}',
+        data: {
+            receiver: receiver,
+            department_id: departmentId,
+            amount: amount
+        },
+        success: function(data) {
+            if (data.suggested) {
+                const s = data.suggested;
+                
+                // Auto-fill category
+                if (s.category_id) {
+                    $('#id_category').val(s.category_id).trigger('change');
+                }
+                
+                // Wait for subcategories to load, then select
+                setTimeout(function() {
+                    if (s.subcategory_id) {
+                        $('#id_subcategory').val(s.subcategory_id).trigger('change');
+                    }
+                    
+                    // Wait for items to load, then select
+                    setTimeout(function() {
+                        if (s.item) {
+                            $('#id_type').val(s.item);
+                        }
+                    }, 300);
+                }, 300);
+                
+                // Show indicator
+                $('#suggestion-indicator').html(`
+                    <span class="auto-suggest-badge confidence-${s.confidence}">
+                        ✓ Auto-suggested (${s.match_count} similar)
+                    </span>
+                `);
+            }
+        }
+    });
+});
+
 // Fill from last transaction
 function fillFromLast() {
     {% if last_transaction %}
     $('#id_receiver').val('{{ last_transaction.receiver }}');
-    $('#id_category').val('{{ last_transaction.category.id }}');
+    $('#id_category').val('{{ last_transaction.category.id }}').trigger('change');
     $('#id_department').val('{{ last_transaction.department.id }}');
     $('#id_payment_method').val('{{ last_transaction.payment_method }}');
+    
+    // Wait for cascading to load, then fill subcategory
+    setTimeout(function() {
+        {% if last_transaction.subcategory %}
+        $('#id_subcategory').val('{{ last_transaction.subcategory.id }}').trigger('change');
+        {% endif %}
+        
+        setTimeout(function() {
+            {% if last_transaction.type %}
+            $('#id_type').val('{{ last_transaction.type }}');
+            {% endif %}
+        }, 300);
+    }, 300);
+    
     $('#suggestion-indicator').html(`
         <span class="auto-suggest-badge confidence-medium">
             ℹ From last transaction
