@@ -39,25 +39,44 @@ def sync_transaction_to_codabudget(sender, instance, created, **kwargs):
     truncated_receipt_link = instance.receipt_link[:255] if instance.receipt_link else None
 
     # **Check if the transaction already exists in CodaBudget**
-    coda_budget, created = CodaBudget.objects.update_or_create(
-        budget_lead=budget_lead,
-        company=company,
-        department=department,
-        category=category,
-        subcategory=subcategory,
-        item=truncated_item,
-        defaults={  # Fields to update if it already exists
-            "cases": 1,
-            "qty": instance.qty,
-            "unit_price": instance.amount,
-            "created_at": instance.transaction_date,
-            "description": truncated_description,
-            "receipt_link": truncated_receipt_link
-        }
-    )
+    try:
+        coda_budget, created = CodaBudget.objects.update_or_create(
+            budget_lead=budget_lead,
+            company=company,
+            department=department,
+            category=category,
+            subcategory=subcategory,
+            item=truncated_item,
+            defaults={  # Fields to update if it already exists
+                "cases": 1,
+                "qty": instance.qty,
+                "unit_price": instance.amount,
+                "created_at": instance.transaction_date,
+                "description": truncated_description,
+                "receipt_link": truncated_receipt_link
+            }
+        )
 
-    if created:
-        print(f"✅ New CodaBudget entry created for Transaction {instance.id}")
-    else:
-        print(f"🔄 CodaBudget entry updated for Transaction {instance.id}")
+        if created:
+            print(f"✅ New CodaBudget entry created for Transaction {instance.id}")
+        else:
+            print(f"🔄 CodaBudget entry updated for Transaction {instance.id}")
+    
+    except CodaBudget.MultipleObjectsReturned:
+        # If duplicates exist, just create a new entry
+        print(f"⚠️  Multiple CodaBudgets found for Transaction {instance.id}, creating new entry")
+        CodaBudget.objects.create(
+            budget_lead=budget_lead,
+            company=company,
+            department=department,
+            category=category,
+            subcategory=subcategory,
+            item=truncated_item,
+            cases=1,
+            qty=instance.qty,
+            unit_price=instance.amount,
+            created_at=instance.transaction_date,
+            description=truncated_description,
+            receipt_link=truncated_receipt_link
+        )
 
