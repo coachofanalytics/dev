@@ -394,3 +394,4 @@ class SimpleAIService:
         
         return recommendations
 
+

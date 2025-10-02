@@ -175,3 +175,4 @@ def budget_comparison_view(request, company_slug, category_id):
     
     return render(request, 'finance/budgets/category_comparison.html', context)
 
+

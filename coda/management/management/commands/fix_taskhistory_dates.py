@@ -171,3 +171,4 @@ class Command(BaseCommand):
         random_days = random.randint(0, total_days)
         return start_date + timedelta(days=random_days)
 
+

@@ -116,6 +116,21 @@ urlpatterns = [
 # path('insights/api/', insights_views.get_insights_api, name='insights_api'),
 
 # ========== Phase 2: AI-Enhanced Features ==========
+# User Testing Dashboard (ENABLED FOR USER TESTING)
+from management.views import user_testing_views
+
+# User Testing Dashboard
+path('ai-test-dashboard/', user_testing_views.UserTestingDashboardView.as_view(), name='ai_test_dashboard'),
+path('ai-features-overview/', user_testing_views.AIFeaturesOverviewView.as_view(), name='ai_features_overview'),
+
+# User Testing API Endpoints
+path('test-ai-predictions/', user_testing_views.test_ai_predictions_user, name='test_ai_predictions_user'),
+path('test-task-assignment/', user_testing_views.test_task_assignment_user, name='test_task_assignment_user'),
+path('test-department-optimization/', user_testing_views.test_department_optimization_user, name='test_department_optimization_user'),
+path('test-monitoring/', user_testing_views.test_monitoring_user, name='test_monitoring_user'),
+path('test-data-quality/', user_testing_views.test_data_quality_user, name='test_data_quality_user'),
+path('ai-system-status/', user_testing_views.get_ai_system_status, name='ai_system_status'),
+
 # AI Dashboard Views (temporarily commented for deployment - services are working)
 # path('ai-dashboard/', ai_dashboard_views.AIEnhancedDashboardView.as_view(), name='ai_dashboard'),
 # path('ai-dashboard/employee-performance/', ai_dashboard_views.EmployeePerformanceDashboardView.as_view(), name='ai_employee_performance'),

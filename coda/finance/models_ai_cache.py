@@ -88,3 +88,4 @@ class AIPredictionCache(models.Model):
         self.last_used = timezone.now()
         self.save(update_fields=['times_used', 'last_used'])
 
+

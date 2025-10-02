@@ -696,3 +696,4 @@ class IntelligentAssignmentService:
             return 'medium'
         else:
             return 'low'
+

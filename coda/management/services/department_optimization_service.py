@@ -924,3 +924,4 @@ class DepartmentOptimizationService:
             })
         
         return risks
+

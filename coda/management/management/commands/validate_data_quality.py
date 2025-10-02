@@ -211,3 +211,4 @@ class Command(BaseCommand):
                 self.style.ERROR(f'Failed to save results to file: {e}')
             )
 
+

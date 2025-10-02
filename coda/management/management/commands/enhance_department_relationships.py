@@ -221,3 +221,4 @@ class CustomerUser(models.Model):
         
         self.stdout.write('Created department_model_enhancement.py with model changes')
 
+

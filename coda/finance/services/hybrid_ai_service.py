@@ -386,3 +386,4 @@ Respond in JSON:
             'avg_accuracy': round(stats['avg_accuracy'] or 0, 1) if stats['avg_accuracy'] else 'N/A',
         }
 
+
