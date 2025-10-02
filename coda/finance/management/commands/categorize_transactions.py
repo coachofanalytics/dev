@@ -79,58 +79,64 @@ class Command(BaseCommand):
         """
         
         rules = {
+            'Utilities': {
+                'keywords': ['electricity', 'water', 'power', 'kplc', 'utility', 'bill payment'],
+                'receivers': ['kplc', 'nairobi water'],
+                'amount_range': (500, 10000),
+                'confidence': 'high',
+            },
+            'IT and Software': {
+                'keywords': ['software', 'hardware', 'computer', 'internet', 'hosting', 'domain', 'tech', 
+                           'data bundles', 'subscription', 'safaricom'],
+                'receivers': ['safaricom'],  # All variations handled in receiver matching
+                'amount_range': (500, 50000),
+                'confidence': 'high',
+            },
             'Salaries and Wages': {
                 'keywords': ['salary', 'wage', 'payroll', 'allowance', 'bonus', 'overtime'],
-                'receivers': ['idah wairimu', 'george ndalo', 'edwin kimtai', 'collins makokha'],
+                'receivers': ['idah wairimu', 'george ndalo', 'edwin kimtai', 'collins makokha', 
+                            'david musiitwa', 'sylvia jelante'],
                 'amount_range': (1000, 50000),  # Typical salary range
                 'departments': ['HR Department'],
                 'confidence': 'high',
             },
-            'Utilities': {
-                'keywords': ['electricity', 'water', 'power', 'kplc', 'utility'],
-                'receivers': ['kplc', 'nairobi water', 'safaricom'],
+            'Human Resources': {
+                'keywords': ['recruitment', 'training', 'hr', 'personnel', 'cleaning', 'labor', 'labour'],
+                'receivers': ['idah wairimu', 'nicodemus libindu'],
                 'amount_range': (500, 10000),
-                'confidence': 'high',
-            },
-            'Travel and Entertainment': {
-                'keywords': ['transport', 'fuel', 'taxi', 'flight', 'hotel', 'accommodation', 'boda'],
-                'receivers': ['boda', 'uber', 'bolt'],
-                'amount_range': (100, 5000),
-                'confidence': 'medium',
+                'departments': ['HR Department'],
+                'confidence': 'high',  # Upgraded from medium
             },
             'Operational Expenses': {
-                'keywords': ['supplies', 'materials', 'equipment', 'office', 'stationery'],
-                'receivers': [],
-                'amount_range': (100, 10000),
-                'confidence': 'medium',
+                'keywords': ['supplies', 'materials', 'equipment', 'office', 'stationery', 
+                           'food', 'vegetables', 'polyfilla', 'varnish', 'glue', 'nails',
+                           'timber', 'matunda', 'makutano'],  # Food and facilities supplies
+                'receivers': ['magaisi', 'philip', 'eunice', 'maxwel ikhuluru', 'geogre ndalo'],
+                'amount_range': (100, 15000),  # Expanded range
+                'confidence': 'high',  # Upgraded - clear patterns
             },
-            'IT and Software': {
-                'keywords': ['software', 'hardware', 'computer', 'internet', 'hosting', 'domain', 'tech'],
-                'receivers': ['safaricom'],
-                'amount_range': (500, 50000),
-                'confidence': 'high',
+            'Travel and Entertainment': {
+                'keywords': ['transport', 'fuel', 'taxi', 'flight', 'hotel', 'accommodation', 'boda',
+                           'butere', 'refund'],
+                'receivers': ['boda', 'uber', 'bolt'],
+                'amount_range': (100, 5000),
+                'confidence': 'high',  # Upgraded - boda is clear
             },
             'Professional Services': {
-                'keywords': ['consultant', 'legal', 'accounting', 'audit', 'professional'],
-                'receivers': [],
+                'keywords': ['consultant', 'legal', 'accounting', 'audit', 'professional', 
+                           'pavement', 'labour cost'],
+                'receivers': ['nicodemus libindu'],
                 'amount_range': (1000, 20000),
-                'confidence': 'medium',
+                'confidence': 'high',  # Upgraded - labor/pavement clear
             },
             'Maintenance and Repairs': {
-                'keywords': ['repair', 'maintenance', 'fix', 'service'],
+                'keywords': ['repair', 'maintenance', 'fix', 'service', 'trimming', 'grooving'],
                 'receivers': [],
                 'amount_range': (200, 5000),
                 'confidence': 'medium',
             },
-            'Human Resources': {
-                'keywords': ['recruitment', 'training', 'hr', 'personnel'],
-                'receivers': [],
-                'amount_range': (500, 10000),
-                'departments': ['HR Department'],
-                'confidence': 'medium',
-            },
             'Facilities and Equipment': {
-                'keywords': ['furniture', 'facility', 'building', 'renovation'],
+                'keywords': ['furniture', 'facility', 'building', 'renovation', 'construction'],
                 'receivers': [],
                 'amount_range': (1000, 50000),
                 'confidence': 'medium',
