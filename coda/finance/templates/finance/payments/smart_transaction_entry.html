@@ -254,9 +254,18 @@
 
 {% block extra_js %}
 <script>
+console.log('=== SMART FORM INITIALIZING ===');
+
 // Receiver auto-complete data (from backend)
 const knownReceivers = {{ known_receivers|safe }};
 const categoryAverages = {{ category_averages|safe }};
+
+// Debug: Check jQuery loaded
+if (typeof jQuery === 'undefined') {
+    console.error('jQuery not loaded!');
+} else {
+    console.log('jQuery loaded:', jQuery.fn.jquery);
+}
 
 // Auto-complete for receiver field
 $('#id_receiver').on('input', function() {
@@ -318,6 +327,14 @@ $('#id_receiver').on('blur', function() {
 });
 
 function triggerAutoFill(receiver) {
+    console.log('=== triggerAutoFill called ===');
+    console.log('Receiver:', receiver);
+    
+    if (!receiver || receiver.length < 3) {
+        console.log('Receiver too short, skipping');
+        return;
+    }
+    
     // Show loading indicator
     $('#suggestion-indicator').html(`
         <span class="auto-suggest-badge" style="background: #e3f2fd; color: #1976d2;">
@@ -328,18 +345,25 @@ function triggerAutoFill(receiver) {
     const departmentId = $('#id_department').val();
     const amount = $('#id_amount').val();
     
+    console.log('Calling API with:', { receiver, departmentId, amount });
+    
     // Call comprehensive prediction API
     $.ajax({
-        url: '{% url "finance:api-predict-all" %}',
+        url: '/finance/api/predict-all/',
+        method: 'GET',
         data: {
             receiver: receiver,
             department_id: departmentId,
             amount: amount
         },
         success: function(data) {
+            console.log('=== API SUCCESS ===');
+            console.log('Response:', data);
+            
             if (data.predictions) {
                 applyPredictions(data);
             } else {
+                console.log('No predictions available');
                 // No predictions available
                 $('#suggestion-indicator').html(`
                     <span class="auto-suggest-badge" style="background: #fff3cd; color: #856404;">
@@ -348,19 +372,26 @@ function triggerAutoFill(receiver) {
                 `);
             }
         },
-        error: function() {
-            console.error('Auto-prediction failed');
+        error: function(xhr, status, error) {
+            console.error('=== API ERROR ===');
+            console.error('Status:', status);
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
             $('#suggestion-indicator').html('');
         }
     });
 }
 
 function applyPredictions(data) {
+    console.log('=== applyPredictions called ===');
+    
     const pred = data.predictions;
     const conf = data.confidence;
     const info = data.receiver_info;
     
-    console.log('Auto-fill predictions:', pred);
+    console.log('Predictions:', pred);
+    console.log('Confidence:', conf);
+    console.log('Receiver Info:', info);
     
     // Show receiver type badge
     const typeBadge = info.type === 'company' ? 
@@ -369,58 +400,78 @@ function applyPredictions(data) {
         '<span class="badge badge-success">Person</span>' :
         '<span class="badge badge-secondary">Unknown</span>';
     $('#receiver-type-badge').html(typeBadge);
+    console.log('Set receiver type badge:', info.type);
     
     // 1. Auto-fill Category (and trigger cascade)
-    if (pred.category_id && !$('#id_category').val()) {
-        $('#id_category').val(pred.category_id);
-        $('#id_category').trigger('change');  // Trigger cascade to load subcategories
+    if (pred.category_id) {
+        const currentCategory = $('#id_category').val();
+        console.log('Current category value:', currentCategory);
         
-        // Wait for cascade, then fill subcategory
-        setTimeout(function() {
-            if (pred.subcategory_id) {
-                $('#id_subcategory').val(pred.subcategory_id);
-                $('#id_subcategory').trigger('change');  // Trigger to load items
-                
-                // Wait for items, then fill type
-                setTimeout(function() {
-                    if (pred.type) {
-                        $('#id_type').val(pred.type);
-                    }
-                }, 400);
-            }
-        }, 400);
+        if (!currentCategory) {
+            console.log('Setting category to:', pred.category_id);
+            $('#id_category').val(pred.category_id);
+            $('#id_category').trigger('change');  // Trigger cascade
+            console.log('Triggered category change event');
+            
+            // Wait for cascade, then fill subcategory
+            setTimeout(function() {
+                console.log('Timeout: Attempting to set subcategory');
+                if (pred.subcategory_id) {
+                    console.log('Setting subcategory to:', pred.subcategory_id);
+                    $('#id_subcategory').val(pred.subcategory_id);
+                    $('#id_subcategory').trigger('change');
+                    
+                    // Wait for items, then fill type
+                    setTimeout(function() {
+                        if (pred.type) {
+                            console.log('Setting type to:', pred.type);
+                            $('#id_type').val(pred.type);
+                        }
+                    }, 500);
+                }
+            }, 600);
+        } else {
+            console.log('Category already set, skipping');
+        }
     }
     
     // 2. Auto-fill Department
     if (pred.department_id && !$('#id_department').val()) {
+        console.log('Setting department to:', pred.department_id);
         $('#id_department').val(pred.department_id);
     }
     
     // 3. Auto-fill Amount (if not already entered)
-    if (pred.amount && (!$('#id_amount').val() || $('#id_amount').val() == '0.00')) {
+    const currentAmount = $('#id_amount').val();
+    if (pred.amount && (!currentAmount || currentAmount == '' || currentAmount == '0.00' || currentAmount == '0')) {
+        console.log('Setting amount to:', pred.amount);
         $('#id_amount').val(pred.amount.toFixed(2));
         
         // Show amount range hint
         if (pred.amount_range) {
             $('#category-hint').html(`
                 <i class="fas fa-chart-line"></i>
-                Typical amount: $${pred.amount_range.min.toFixed(2)} - $${pred.amount_range.max.toFixed(2)} 
+                Typical: $${pred.amount_range.min.toFixed(2)} - $${pred.amount_range.max.toFixed(2)} 
                 (avg: $${pred.amount_range.avg.toFixed(2)})
             `);
         }
+    } else {
+        console.log('Amount already set:', currentAmount);
     }
     
     // 4. Auto-fill Description
     if (pred.description && !$('#id_description').val()) {
+        console.log('Setting description');
         $('#id_description').val(pred.description);
     }
     
-    // 5. Auto-fill Payment Method
+    // 5. Auto-fill Payment Method  
     if (pred.payment_method && !$('#id_payment_method').val()) {
+        console.log('Setting payment method to:', pred.payment_method);
         $('#id_payment_method').val(pred.payment_method);
     }
     
-    // Show success indicator with confidence
+    // Show success indicator
     const confColor = conf.overall === 'high' ? '#d4edda' : 
                       conf.overall === 'medium' ? '#fff3cd' : '#f8d7da';
     const confTextColor = conf.overall === 'high' ? '#155724' : 
@@ -428,13 +479,14 @@ function applyPredictions(data) {
     
     $('#suggestion-indicator').html(`
         <span class="auto-suggest-badge" style="background: ${confColor}; color: ${confTextColor};">
-            <i class="fas fa-check-circle"></i> Auto-filled (${info.transaction_count}x before, ${conf.overall} confidence)
+            <i class="fas fa-check-circle"></i> Auto-filled (${info.transaction_count}x, ${conf.overall} conf)
         </span>
     `);
     
-    // Show a summary notification
-    const message = `✨ Auto-filled based on ${info.transaction_count} previous transactions to ${info.name}!`;
-    showNotification(message, 'success');
+    console.log('=== applyPredictions complete ===');
+    
+    // Show notification
+    showNotification(`✨ Auto-filled from ${info.transaction_count} previous transactions!`, 'success');
 }
 
 function showNotification(message, type) {
@@ -520,38 +572,57 @@ $('#id_department, #id_amount').on('change', function() {
 
 // When Category changes → Load Subcategories
 $('#id_category').on('change', function() {
+    console.log('=== CATEGORY CHANGE EVENT TRIGGERED ===');
+    
     const categoryId = $(this).val();
+    const categoryName = $('#id_category option:selected').text();
+    console.log('Category ID:', categoryId, 'Name:', categoryName);
+    
     const $subcategoryField = $('#id_subcategory');
     const $typeField = $('#id_type');
     
     if (!categoryId) {
-        $subcategoryField.html('<option value="">---------</option>').prop('disabled', true);
-        $typeField.html('<option value="">---------</option>').prop('disabled', true);
+        console.log('No category selected, clearing subcategory');
+        $subcategoryField.html('<option value="">Select category first</option>').prop('disabled', true);
+        $typeField.html('<option value="">Select category first</option>').prop('disabled', true);
         return;
     }
     
     // Show loading
     $subcategoryField.html('<option value="">Loading subcategories...</option>').prop('disabled', true);
+    console.log('Loading subcategories for category:', categoryId);
     
     // Fetch subcategories via API
     $.ajax({
-        url: '{% url "finance:api-get-subcategories" %}',
+        url: '/finance/api/subcategories/',
+        method: 'GET',
         data: { category_id: categoryId },
         success: function(data) {
-            let options = '<option value="">Select Subcategory</option>';
+            console.log('=== SUBCATEGORIES LOADED ===');
+            console.log('Count:', data.count);
+            console.log('Subcategories:', data.subcategories);
+            
+            let options = '<option value="">-- Select Subcategory --</option>';
             data.subcategories.forEach(sub => {
                 options += `<option value="${sub.id}">${sub.name}</option>`;
             });
             $subcategoryField.html(options).prop('disabled', false);
+            console.log('Subcategory dropdown populated with', data.subcategories.length, 'options');
             
             // Auto-load items for this category
             loadItems({ category_id: categoryId });
         },
-        error: function() {
-            $subcategoryField.html('<option value="">Error loading subcategories</option>');
+        error: function(xhr, status, error) {
+            console.error('=== SUBCATEGORY LOAD ERROR ===');
+            console.error('Status:', status);
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            $subcategoryField.html('<option value="">Error loading - check console</option>');
         }
     });
 });
+
+console.log('Category change handler bound to #id_category');
 
 // When Subcategory changes → Load Items
 $('#id_subcategory').on('change', function() {

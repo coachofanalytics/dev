@@ -90,7 +90,10 @@ class SmartTransactionForm(forms.ModelForm):
                 'placeholder': 'Provide detailed description (minimum 10 characters)...',
                 'required': 'required',
             }),
-            'currency': forms.Select(attrs={'class': 'form-control'}),
+            'currency': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_currency',
+            }),
             'qty': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'transaction_date': forms.DateTimeInput(attrs={
                 'class': 'form-control',
@@ -113,6 +116,11 @@ class SmartTransactionForm(forms.ModelForm):
         
         # Make description required with minimum length
         self.fields['description'].required = True
+        
+        # Set currency default and enable
+        self.fields['currency'].initial = 'USD'
+        self.fields['currency'].required = False
+        self.fields['currency'].disabled = False
         
         # Add help text based on learnings
         self.fields['receiver'].help_text = (
