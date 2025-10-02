@@ -756,8 +756,14 @@ class TaskListView(FilteredListViewMixin, ListView):
     order_by = '-id'
     
     def get_queryset(self):
-        """Apply task-specific filtering"""
+        """Apply task-specific filtering - filter by logged-in employee"""
         queryset = super().get_queryset()
+        
+        # Filter by logged-in employee (not all tasks)
+        if self.request.user.is_authenticated:
+            # If staff/superuser, show all tasks; otherwise show only employee's tasks
+            if not (self.request.user.is_staff or self.request.user.is_superuser):
+                queryset = queryset.filter(employee=self.request.user)
         
         # Exclude tasks with no employee email
         queryset = queryset.exclude(employee__email=None)
