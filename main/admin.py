@@ -23,5 +23,5 @@ class LocationAdmin(admin.ModelAdmin):
 class ServiceCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'slug', 'is_active', 'is_featured')
     list_filter = ('is_active', 'is_featured')
-    search_fields = ('name', 'slug')
+    search_fields = ('name', 'slug'),
     prepopulated_fields = {'slug': ('name',)}  # Optional: auto-generate slug from name
