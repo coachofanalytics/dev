@@ -17,13 +17,15 @@ try:
         LoanApplication, Payment_Information, Payment_History, 
         LoanPerformance, LoanProduct, BudgetRequest, ApprovalPolicy,
         DisbursementRequest, AutomationAuditLog, Budget, 
-        BudgetEstimationTemplate, MultiYearBudgetPlan
+        BudgetEstimationTemplate, MultiYearBudgetPlan, BudgetEstimateProjection,
+        BudgetCategory, BudgetSubCategory, Transaction
     )
 except ImportError:
     # Fallback if consolidated models not available
     LoanApplication = Payment_Information = Payment_History = LoanPerformance = LoanProduct = None
     BudgetRequest = ApprovalPolicy = DisbursementRequest = AutomationAuditLog = None
-    Budget = BudgetEstimationTemplate = MultiYearBudgetPlan = None
+    Budget = BudgetEstimationTemplate = MultiYearBudgetPlan = BudgetEstimateProjection = None
+    BudgetCategory = BudgetSubCategory = Transaction = None
 
 
 @admin.register(LoanProduct)
@@ -990,4 +992,112 @@ if MultiYearBudgetPlan:
                 plan.calculate_total_investment()
                 count += 1
             self.message_user(request, f'Investments calculated for {count} plan(s).')
-        calculate_investments.short_description = "Calculate total investments" 
+        calculate_investments.short_description = "Calculate total investments"
+
+
+# ============================================================================
+# BUDGET PROJECTION & TRANSACTION ADMIN (Phase 2 - October 2025)
+# ============================================================================
+
+@admin.register(BudgetEstimateProjection)
+class BudgetEstimateProjectionAdmin(admin.ModelAdmin):
+    """Admin interface for budget projections"""
+    
+    list_display = [
+        'id', 'company', 'department', 'horizon', 'method', 
+        'total_estimate', 'status', 'created_at'
+    ]
+    
+    list_filter = [
+        'status', 'horizon', 'method', 'company', 'department',
+        'created_at'
+    ]
+    
+    search_fields = ['company__name', 'department__name', 'estimates']
+    
+    readonly_fields = ['created_at', 'updated_at', 'created_by']
+    
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['company', 'department', 'template', 'created_by']
+        }),
+        ('Projection Details', {
+            'fields': ['horizon', 'method', 'estimates', 'total_estimate']
+        }),
+        ('Status', {
+            'fields': ['status', 'submitted_at']
+        }),
+        ('Metadata', {
+            'fields': ['created_at', 'updated_at'],
+            'classes': ['collapse']
+        }),
+    ]
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('company', 'department', 'created_by')
+
+
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    """Admin interface for transactions"""
+    
+    list_display = [
+        'id', 'receiver', 'amount', 'category', 'subcategory', 
+        'department', 'transaction_date', 'sender'
+    ]
+    
+    list_filter = [
+        'category', 'department', 'payment_method', 'transaction_date'
+    ]
+    
+    search_fields = ['receiver', 'description', 'type']
+    
+    list_editable = ['category', 'subcategory']
+    
+    date_hierarchy = 'transaction_date'
+    
+    fieldsets = [
+        ('Transaction Details', {
+            'fields': ['sender', 'receiver', 'vendor_supplier', 'phone']
+        }),
+        ('Classification', {
+            'fields': ['department', 'category', 'subcategory', 'type']
+        }),
+        ('Financial', {
+            'fields': ['amount', 'currency', 'qty', 'transaction_cost', 
+                      'transaction_date', 'payment_method']
+        }),
+        ('Additional', {
+            'fields': ['description', 'receipt_link']
+        }),
+    ]
+
+
+@admin.register(BudgetCategory)
+class BudgetCategoryAdmin(admin.ModelAdmin):
+    """Admin for budget categories"""
+    
+    list_display = ['id', 'name', 'description', 'subcategory_count', 'transaction_count']
+    search_fields = ['name', 'description']
+    
+    def subcategory_count(self, obj):
+        return obj.subcategories.count()
+    subcategory_count.short_description = 'Subcategories'
+    
+    def transaction_count(self, obj):
+        return obj.transaction_category.count()
+    transaction_count.short_description = 'Transactions'
+
+
+@admin.register(BudgetSubCategory)
+class BudgetSubCategoryAdmin(admin.ModelAdmin):
+    """Admin for budget subcategories"""
+    
+    list_display = ['id', 'name', 'category', 'transaction_count']
+    list_filter = ['category']
+    search_fields = ['name']
+    
+    def transaction_count(self, obj):
+        return obj.transaction_subcategory.count()
+    transaction_count.short_description = 'Transactions' 

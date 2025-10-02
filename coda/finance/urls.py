@@ -19,6 +19,9 @@ from . import views_projections, views_estimates, views_approvals, views_detaile
 # Import unified budget views (Phase 3)
 from . import views_unified_budget
 
+# Import budget drill-down views (Phase 2 - User perspective)
+from . import views_budget_drilldown
+
 # Import user-friendly form views
 from . import views_forms
 
@@ -216,6 +219,11 @@ urlpatterns = [
     # New unified dashboard - consolidates all budget views
     path('budget-dashboard/<str:company_slug>/', views_unified_budget.unified_budget_dashboard, name='unified-budget-dashboard'),
     path('budget-planning/<str:company_slug>/', views_unified_budget.unified_budget_planning, name='unified-budget-planning'),
+    
+    # Budget drill-down views (User perspective - Phase 2)
+    path('budget/<str:company_slug>/category/<int:category_id>/', views_budget_drilldown.budget_category_detail, name='budget-category-detail'),
+    path('budget/<str:company_slug>/category/<int:category_id>/compare/', views_budget_drilldown.budget_comparison_view, name='budget-category-compare'),
+    path('budget/item/<int:item_id>/edit/', views_budget_drilldown.budget_item_edit, name='budget-item-edit'),
     
     #=============================ENHANCED BUDGET SYSTEM (DEPRECATED - PHASE 3)=====================================
     # OLD URLs - Redirect to new unified dashboard

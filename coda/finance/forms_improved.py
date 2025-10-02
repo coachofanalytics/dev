@@ -76,6 +76,16 @@ class SmartTransactionForm(forms.ModelForm):
                 'id': 'id_department',
                 'required': 'required',
             }),
+            'subcategory': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_subcategory',
+            }),
+            'type': forms.TextInput(attrs={
+                'class': 'form-control',
+                'id': 'id_type',
+                'placeholder': 'Enter item/type...',
+                'list': 'type_suggestions'
+            }),
             'amount': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'id': 'id_amount',
