@@ -61,3 +61,21 @@ class UserProfile(models.Model):
     def img_category(self):
         img_cat=self.image2.category
         return img_cat
+
+
+
+class JobDetails(models.Model):
+    job_description = models.TextField(null=False, blank=False)
+    skills_expertise = models.TextField(null=False, blank=False)
+    number_of_connects = models.IntegerField(null=False, blank=False)
+    min_payment = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    max_payment = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    min_duration = models.IntegerField(null=False, blank=False, help_text="Minimum duration (in days or weeks)")
+    max_duration = models.IntegerField(null=False, blank=False, help_text="Maximum duration (in days or weeks)")
+    project_type = models.TextField(null=False, blank=False)
+    deliverables = models.TextField(null=False, blank=False)
+    links = models.URLField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Job: {self.job_description[:50]}..."
+
