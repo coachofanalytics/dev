@@ -415,6 +415,16 @@ def teammember_delete_view(request, pk):
 
     return render(request, "accounts/Teammemberdelete.html", {'team_member': team_member})
 
+from django.shortcuts import render
+from .models import CredentialCategory
+
+def credentialcategory_list_view(request):
+    categories = CredentialCategory.objects.all()
+    return render(request, "accounts/credentialcategory_lis.html", {"categories": categories})
+
+
+
+
 
 
 

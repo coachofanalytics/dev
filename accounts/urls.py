@@ -24,6 +24,7 @@ urlpatterns = [
     path('teammember_update/<int:pk>/', views.teammember_update_view, name='teammember_update'),
     path('teammember_detail/<int:pk>/', views.teammember_detail_view, name='teammember_detail'),
     path('teammember_delete/<int:pk>/', views.teammember_delete_view, name='teammember_delete'),
+    path('credentialcategory_list/', views.credentialcategory_list_view, name='credentialcategory_list'),
     
 
 
