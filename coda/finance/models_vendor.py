@@ -218,3 +218,4 @@ class VendorCategory(models.Model):
     def __str__(self):
         return f"{self.vendor.name} → {self.category.name} ({self.percentage}%)"
 
+

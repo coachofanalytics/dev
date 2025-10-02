@@ -31,3 +31,4 @@ class Migration(migrations.Migration):
             reverse_fix_investment_content_descriptions,
         ),
     ]
+

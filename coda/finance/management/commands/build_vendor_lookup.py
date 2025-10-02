@@ -356,3 +356,4 @@ class Command(BaseCommand):
         self.stdout.write("4. Update transaction form to use vendor lookup")
         self.stdout.write("="*80)
 
+

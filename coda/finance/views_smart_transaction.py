@@ -327,3 +327,4 @@ def api_receiver_suggestions(request):
     
     return JsonResponse({'suggestions': suggestions})
 
+

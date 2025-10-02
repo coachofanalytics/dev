@@ -1,0 +1,52 @@
+{
+  "timestamp": "20250930_205313",
+  "datetime": "2025-09-30T20:53:17.298354+00:00",
+  "total_records": 412,
+  "models": [
+    {
+      "name": "budget",
+      "model": "Budget",
+      "count": 33
+    },
+    {
+      "name": "coda_budget",
+      "model": "CodaBudget",
+      "count": 259
+    },
+    {
+      "name": "budget_category",
+      "model": "BudgetCategory",
+      "count": 25
+    },
+    {
+      "name": "budget_subcategory",
+      "model": "BudgetSubCategory",
+      "count": 77
+    },
+    {
+      "name": "budget_estimate_projection",
+      "model": "BudgetEstimateProjection",
+      "count": 8
+    },
+    {
+      "name": "budget_estimation_template",
+      "model": "BudgetEstimationTemplate",
+      "count": 4
+    },
+    {
+      "name": "multi_year_budget_plan",
+      "model": "MultiYearBudgetPlan",
+      "count": 0
+    },
+    {
+      "name": "budget_item_detail",
+      "model": "BudgetItemDetail",
+      "count": 6
+    },
+    {
+      "name": "budget_estimate_item",
+      "model": "BudgetEstimateItem",
+      "count": 0
+    }
+  ]
+}

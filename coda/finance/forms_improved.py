@@ -309,3 +309,4 @@ class TransactionBulkUploadForm(forms.Form):
         help_text="Attempt to automatically assign categories based on patterns"
     )
 
+

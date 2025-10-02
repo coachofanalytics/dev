@@ -8,6 +8,8 @@ from management.views import (
                         RequirementUpdateView,RequirementDetailView,RequirementDeleteView,
                         TaskListView, DSUListView
                      )
+# Import insights views from views directory (temporarily commented for testing)
+# from management.views import insights_views
 
 app_name = 'management'
 urlpatterns = [
@@ -102,5 +104,11 @@ urlpatterns = [
     path('oauth/login/', views.oauth_login, name='oauth_login'),
     path('oauth/callback/', views.oauth_callback, name='oauth_callback'),
     path('attendee_duration/', views.get_attendee_duration, name='attendee_duration'),
+    
+    # ========== Phase 1: Performance Insights ==========
+    # Temporarily commented out for testing
+    # path('insights/performance-dashboard/', insights_views.PerformanceInsightsDashboard.as_view(), name='performance_insights_dashboard'),
+    # path('insights/export-report/', insights_views.export_insights_report, name='export_insights_report'),
+    # path('insights/api/', insights_views.get_insights_api, name='insights_api'),
 
 ]

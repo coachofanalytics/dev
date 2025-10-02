@@ -1,0 +1,422 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Performance Insights Dashboard - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-line"></i> Performance Insights Dashboard</h2>
+            <p class="text-muted">Comprehensive analysis of task performance data</p>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Analysis Period</h6>
+                    <form method="GET" class="form-inline">
+                        <div class="form-group">
+                            <label for="months">Months:</label>
+                            <select name="months" id="months" class="form-control ml-2">
+                                <option value="3" {% if months_analyzed == 3 %}selected{% endif %}>3 Months</option>
+                                <option value="6" {% if months_analyzed == 6 %}selected{% endif %}>6 Months</option>
+                                <option value="12" {% if months_analyzed == 12 %}selected{% endif %}>12 Months</option>
+                                <option value="24" {% if months_analyzed == 24 %}selected{% endif %}>24 Months</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary ml-2">
+                            <i class="fas fa-sync"></i> Update
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Export Options</h6>
+                    <a href="{% url 'management:export_insights_report' %}?months={{ months_analyzed }}&format=json" 
+                       class="btn btn-success btn-sm">
+                        <i class="fas fa-download"></i> Export JSON
+                    </a>
+                    <a href="{% url 'management:export_insights_report' %}?months={{ months_analyzed }}&format=text" 
+                       class="btn btn-info btn-sm ml-2">
+                        <i class="fas fa-file-alt"></i> Export Report
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Analysis Status</h6>
+                    {% if success %}
+                        <span class="badge badge-success">Analysis Complete</span>
+                        <small class="text-muted d-block mt-1">{{ total_records|default:0 }} records analyzed</small>
+                    {% else %}
+                        <span class="badge badge-danger">Analysis Failed</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if success %}
+        <!-- Quick Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-primary mb-2"></i>
+                        <h3>{{ quick_stats.total_employees|default:0 }}</h3>
+                        <p class="text-muted">Employees</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
+                        <h3>{{ quick_stats.overall_completion_rate|floatformat:1|default:"0" }}%</h3>
+                        <p class="text-muted">Completion Rate</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-dollar-sign fa-3x text-warning mb-2"></i>
+                        <h3>${{ quick_stats.total_earnings|floatformat:2|default:"0.00" }}</h3>
+                        <p class="text-muted">Total Earnings</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-star fa-3x text-info mb-2"></i>
+                        <h3>{{ quick_stats.high_performance_percentage|floatformat:1|default:"0" }}%</h3>
+                        <p class="text-muted">High Performance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Insights -->
+        {% if analysis.key_insights %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5><i class="fas fa-lightbulb"></i> Key Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for insight in analysis.key_insights %}
+                        <div class="alert alert-{% if insight.priority == 'critical' %}danger{% elif insight.priority == 'high' %}warning{% else %}info{% endif %} mb-2">
+                            <h6><strong>{{ insight.title }}</strong></h6>
+                            <p class="mb-0">{{ insight.description }}</p>
+                            <small class="text-muted">Priority: {{ insight.priority|upper }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actionable Recommendations -->
+        {% if analysis.actionable_recommendations %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5><i class="fas fa-tasks"></i> Actionable Recommendations</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for rec in analysis.actionable_recommendations %}
+                        <div class="recommendation-item border-bottom pb-3 mb-3">
+                            <h6>
+                                <span class="badge badge-{% if rec.priority == 'critical' %}danger{% elif rec.priority == 'high' %}warning{% else %}info{% endif %}">
+                                    {{ rec.priority|upper }}
+                                </span>
+                                {{ rec.title }}
+                            </h6>
+                            <p>{{ rec.description }}</p>
+                            <small class="text-muted"><strong>Action:</strong> {{ rec.action }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Performance Metrics Tabs -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#employees">Employees</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#departments">Departments</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#categories">Categories</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#temporal">Temporal Patterns</a>
+                            </li>
+                            {% if analysis.ai_enhanced_insights %}
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#ai-insights">AI Insights</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- Employee Tab -->
+                            <div class="tab-pane fade show active" id="employees" role="tabpanel">
+                                <h5>Employee Performance</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>Employee</th>
+                                                <th>Total Tasks</th>
+                                                <th>Completion Rate</th>
+                                                <th>Total Earnings</th>
+                                                <th>Avg Earnings/Task</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for employee in analysis.employee_performance.top_performers %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ employee.employee__username }}</td>
+                                                <td>{{ employee.total_tasks }}</td>
+                                                <td>{{ employee.avg_completion_rate|floatformat:1|default:"0" }}%</td>
+                                                <td>${{ employee.total_earnings|floatformat:2|default:"0.00" }}</td>
+                                                <td>${{ employee.avg_earnings_per_task|floatformat:2|default:"0.00" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Department Tab -->
+                            <div class="tab-pane fade" id="departments" role="tabpanel">
+                                <h5>Department Performance</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Department</th>
+                                                <th>Total Tasks</th>
+                                                <th>Employees</th>
+                                                <th>Completion Rate</th>
+                                                <th>Total Earnings</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for dept in analysis.department_analysis.department_statistics %}
+                                            <tr>
+                                                <td>{{ dept.employee__department__name|default:"Unknown" }}</td>
+                                                <td>{{ dept.total_tasks }}</td>
+                                                <td>{{ dept.unique_employees }}</td>
+                                                <td>{{ dept.avg_completion_rate|floatformat:1|default:"0" }}%</td>
+                                                <td>${{ dept.total_earnings|floatformat:2|default:"0.00" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Category Tab -->
+                            <div class="tab-pane fade" id="categories" role="tabpanel">
+                                <h5>Category Performance</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Total Tasks</th>
+                                                <th>Employees</th>
+                                                <th>Avg Completion</th>
+                                                <th>Avg Earnings</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for category in analysis.category_analysis.category_statistics %}
+                                            <tr>
+                                                <td>{{ category.category__title|default:"Unknown" }}</td>
+                                                <td>{{ category.total_tasks }}</td>
+                                                <td>{{ category.unique_employees }}</td>
+                                                <td>{{ category.avg_completion_rate|floatformat:1|default:"0" }}%</td>
+                                                <td>${{ category.avg_earnings|floatformat:2|default:"0.00" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Temporal Patterns Tab -->
+                            <div class="tab-pane fade" id="temporal" role="tabpanel">
+                                <h5>Temporal Performance Patterns</h5>
+                                <canvas id="temporalChart" width="400" height="200"></canvas>
+                            </div>
+
+                            <!-- AI Insights Tab -->
+                            {% if analysis.ai_enhanced_insights %}
+                            <div class="tab-pane fade" id="ai-insights" role="tabpanel">
+                                <h5>AI-Enhanced Insights</h5>
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-robot"></i> AI Analysis</h6>
+                                    <p><strong>Model Used:</strong> {{ analysis.ai_enhanced_insights.model_used|title }}</p>
+                                    <p><strong>Confidence Score:</strong> {{ analysis.ai_enhanced_insights.confidence_score|floatformat:1 }}%</p>
+                                    <hr>
+                                    <p><strong>AI Summary:</strong></p>
+                                    <p>{{ analysis.ai_enhanced_insights.ai_summary }}</p>
+                                    
+                                    {% if analysis.ai_enhanced_insights.ai_recommendations %}
+                                    <p><strong>AI Recommendations:</strong></p>
+                                    <ul>
+                                        {% for rec in analysis.ai_enhanced_insights.ai_recommendations %}
+                                        <li>{{ rec }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Error Message -->
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Analysis Failed</h5>
+                    <p>Unable to analyze TaskHistory data. Please check the logs for details.</p>
+                    {% if analysis.error %}
+                        <p><strong>Error:</strong> {{ analysis.error }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Chart JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if success and performance_charts %}
+    // Temporal Patterns Chart
+    const temporalCtx = document.getElementById('temporalChart');
+    if (temporalCtx) {
+        new Chart(temporalCtx, {
+            type: 'line',
+            data: {
+                labels: {{ performance_charts.monthly_trends.labels|safe }},
+                datasets: [{
+                    label: 'Completion Rate',
+                    data: {{ performance_charts.monthly_trends.completion_rates|safe }},
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }, {
+                    label: 'Earnings',
+                    data: {{ performance_charts.monthly_trends.earnings|safe }},
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    },
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+
+<style>
+.recommendation-item:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+.alert h6 {
+    margin-bottom: 0.5rem;
+}
+
+.table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+

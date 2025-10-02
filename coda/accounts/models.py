@@ -259,6 +259,7 @@ class UserProfile(models.Model):
     emergency_email = models.EmailField(max_length=254, null=True, blank=True, help_text="Emergency contact email")
 
     account_number = models.CharField(max_length=254, null=True, blank=True, help_text="Account number")
+    country = models.CharField(max_length=2, null=True, blank=True, help_text="User's country code")
     # ==================== KCC MEMBERSHIP FIELDS ====================
     is_karen_country_club_member = models.BooleanField(
         default=False, 

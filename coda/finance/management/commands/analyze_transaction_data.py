@@ -247,9 +247,9 @@ class Command(BaseCommand):
         
         for cat in category_monthly:
             cat_name = cat['category__name']
-            total = cat['total'] or 0
-            monthly_avg = total / 12
-            suggested_budget = monthly_avg * 1.1  # Add 10% buffer
+            total = cat['total'] or Decimal('0.00')
+            monthly_avg = total / Decimal('12')
+            suggested_budget = monthly_avg * Decimal('1.1')  # Add 10% buffer
             self.stdout.write(f"{cat_name:<30} ${monthly_avg:>14,.2f} ${suggested_budget:>17,.2f}")
 
         self.stdout.write("\n" + "="*80)

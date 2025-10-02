@@ -7,7 +7,7 @@ from .base_settings import *
 import dj_database_url
 
 # Override environment for Heroku/UAT
-ENV_CONFIG['environment'] = 'heroku'
+# ENV_CONFIG['environment'] = 'heroku'
 ENV_CONFIG['is_development'] = False
 ENV_CONFIG['is_testing'] = False
 ENV_CONFIG['is_production'] = True
@@ -25,6 +25,8 @@ def dba_values():
     password = os.environ.get('HEROKU_DEV_PASS')
     return host, dbname, user, password
 
+host, dbname, user, password = dba_values()
+print(f"Database values: {host}, {dbname}, {user}, {password}")
 # Database - Use Heroku PostgreSQL
 DATABASES = {
     'default': dj_database_url.config(
