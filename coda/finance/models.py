@@ -3612,3 +3612,14 @@ try:
 except ImportError:
     # Models not yet migrated, will be available after migration
     Vendor = VendorAlias = VendorCategory = None
+
+
+# =============================================================================
+# AI PREDICTION CACHE (Phase 2 - AI Integration with Caching)
+# =============================================================================
+# Import AI cache model for self-learning prediction system
+try:
+    from .models_ai_cache import AIPredictionCache
+except ImportError:
+    # Model not yet migrated, will be available after migration
+    AIPredictionCache = None

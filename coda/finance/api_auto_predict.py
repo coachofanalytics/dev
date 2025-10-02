@@ -1,6 +1,11 @@
 """
 Intelligent Auto-Prediction API
-Predicts and auto-fills transaction fields based on historical patterns
+Predicts and auto-fills transaction fields based on historical patterns + AI
+
+Uses 3-tier hybrid system:
+- Tier 1: Historical transactions (95% coverage, FREE)
+- Tier 2: AI cache (4% coverage, FREE)
+- Tier 3: AI API or Dummy AI (1% coverage, ~$1/month)
 
 When user enters receiver name (like "KPLC"), automatically suggests:
 - Category (Utilities)
@@ -14,9 +19,13 @@ from django.http import JsonResponse
 from django.db.models import Count, Avg, Q, Max
 from django.views.decorators.http import require_http_methods
 from collections import Counter
+import logging
 
 from finance.models import Transaction, BudgetCategory, BudgetSubCategory
 from accounts.models import Department
+from finance.services.hybrid_ai_service import HybridAIPredictionService
+
+logger = logging.getLogger(__name__)
 
 
 @require_http_methods(["GET"])
@@ -58,20 +67,25 @@ def api_predict_all_fields(request):
     """
     receiver = request.GET.get('receiver', '').strip()
     department_id = request.GET.get('department_id')
-    amount = request.GET.get('amount')
+    amount_str = request.GET.get('amount')
     
     if not receiver:
         return JsonResponse({'error': 'receiver parameter required'}, status=400)
     
-    # Find similar receivers (case-insensitive, partial match)
-    similar_transactions = Transaction.objects.filter(
-        receiver__icontains=receiver,
-        category__isnull=False
-    ).select_related(
-        'category', 'subcategory', 'department'
-    )
+    # Convert amount to float if provided
+    amount = None
+    if amount_str:
+        try:
+            amount = float(amount_str)
+        except ValueError:
+            pass
     
-    if not similar_transactions.exists():
+    # Use hybrid AI service
+    service = HybridAIPredictionService()
+    result = service.predict_transaction_fields(receiver, department_id, amount)
+    
+    # If no predictions, return appropriate message
+    if not result['predictions'] or not result['predictions'].get('category_id'):
         return JsonResponse({
             'receiver_info': {
                 'name': receiver,
@@ -80,35 +94,22 @@ def api_predict_all_fields(request):
                 'transaction_count': 0
             },
             'predictions': None,
-            'message': 'No historical data found for this receiver. Please enter manually.'
+            'message': f'No data found for {receiver}. {result.get("note", "Enter manually.")}'
         })
     
-    # Analyze patterns
-    analysis = _analyze_transaction_patterns(similar_transactions, receiver)
-    
-    # Build predictions
-    predictions = _build_predictions(analysis, receiver, department_id, amount)
-    
-    # Calculate confidence scores
-    confidence = _calculate_confidence(analysis, similar_transactions.count())
-    
-    # Get alternatives
-    alternatives = _get_alternatives(analysis)
-    
+    # Return successful prediction
     return JsonResponse({
         'receiver_info': {
-            'name': analysis['most_common_receiver_name'],
+            'name': receiver,
             'type': _guess_receiver_type(receiver),
             'is_known': True,
-            'transaction_count': similar_transactions.count(),
-            'date_range': {
-                'first': analysis['date_range']['first'].isoformat() if analysis['date_range']['first'] else None,
-                'last': analysis['date_range']['last'].isoformat() if analysis['date_range']['last'] else None
-            }
+            'transaction_count': result.get('transaction_count', result.get('times_reused', 0)),
+            'source': result['source'],
+            'cost': result['cost'],
         },
-        'predictions': predictions,
-        'confidence': confidence,
-        'alternatives': alternatives
+        'predictions': result['predictions'],
+        'confidence': result['confidence'],
+        'note': result.get('note', '')
     })
 
 
