@@ -113,3 +113,9 @@ urlpatterns = [
     path('websites/<int:pk>/edit/', WCAGStandardWebsiteUpdateView.as_view(), name='website-edit'),
     path('websites/<int:pk>/delete/', WCAGStandardWebsiteDeleteView.as_view(), name='website-delete'),
 ]
+from .views import WCAGStandardWebsiteCreateView, WCAGStandardWebsiteUpdateView
+
+urlpatterns = [
+    path('websites/add/', WCAGStandardWebsiteCreateView.as_view(), name='website-add'),
+    path('websites/<int:pk>/edit/', WCAGStandardWebsiteUpdateView.as_view(), name='website-edit'),
+]

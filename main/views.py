@@ -366,3 +366,20 @@ class WCAGStandardWebsiteDeleteView(DeleteView):
     model = WCAGStandardWebsite  # ✅ Required line
     template_name = 'main/website_confirm_delete.html'
     success_url = reverse_lazy('website-list')
+
+from django.views.generic.edit import CreateView
+from .models import WCAGStandardWebsite
+from django.urls import reverse_lazy
+
+class WCAGStandardWebsiteCreateView(CreateView):
+    model = WCAGStandardWebsite
+    fields = ['company', 'app_name', 'page_name', 'website_url']
+    template_name = 'main/website_form.html'
+    success_url = reverse_lazy('website-list')
+from django.views.generic.edit import UpdateView
+
+class WCAGStandardWebsiteUpdateView(UpdateView):
+    model = WCAGStandardWebsite
+    fields = ['company', 'app_name', 'page_name', 'website_url']
+    template_name = 'main/website_form.html'
+    success_url = reverse_lazy('website-list')
