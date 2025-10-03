@@ -86,6 +86,18 @@
                         <i class="fas fa-chart-bar"></i> Analytics
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'editing' %}active{% endif %}" 
+                       href="?tab=editing{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-edit"></i> Budget Editing
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'loans' %}active{% endif %}" 
+                       href="?tab=loans{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-hand-holding-usd"></i> Loans
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

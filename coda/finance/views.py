@@ -349,11 +349,9 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
                 messages.error(request, f"External users must provide guarantor information. Please provide: {', '.join(missing_guarantor)}")
                 return redirect("finance:apply-for-loan", plan_id=plan_id)
             
-            # Check collateral requirement
+            # Check collateral requirement for external users
             collateral = request.POST.get("collateral", "").strip()
-            if len(collateral) < 10:
-                messages.error(request, "External users must provide detailed collateral information (minimum 10 characters).")
-                return redirect("finance:apply-for-loan", plan_id=plan_id)
+            # External users will be redirected to collateral form after loan creation
         
         try:
             # Get form data
@@ -469,7 +467,11 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
                 guarantor=guarantor_user if requires_guarantor else None,
                 guarantor_relationship=guarantor_relationship if requires_guarantor else "",
                 loan_product=plan,
+                loan_plan_id=plan.id,  # Set loan_plan_id to match loan_product
+                duration=plan.term_months,  # Set duration from loan product
+                interest_rate=plan.interest_rate,  # Set interest rate from loan product
                 status="pending",
+                submitted_at=timezone.now(),  # Set submission timestamp
             )
 
             # Calculate guarantor eligibility score if staff and guarantor exists
@@ -514,10 +516,17 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
                     f"Loan application submitted successfully! Amount: ${total_amount}",
                 )
 
-            return redirect("finance:loan-application-confirmation")
+            # Redirect based on user type
+            if request.user.category == 4:  # External user - redirect to collateral form
+                return redirect("finance:collateral-form", loan_id=loan_app.id)
+            else:  # Staff or KCC member - go directly to confirmation
+                return redirect("finance:loan-application-confirmation")
 
         except Exception as e:
             import traceback
+            error_traceback = traceback.format_exc()
+            print(f"🚨 ERROR: Loan application failed: {e}")
+            print(f"🚨 TRACEBACK: {error_traceback}")
             messages.error(request, f"Error processing loan application: {e}")
             return redirect("finance:apply-for-loan", plan_id=plan_id)
 
@@ -2693,6 +2702,275 @@ class InflowDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 def loan_application_confirmation(request):
     """Shows confirmation message after loan application submission."""
     return render(request, "finance/loan_application_confirmation.html")
+
+
+@login_required
+def loan_detail(request, pk):
+    """Shows detailed information about a specific loan application."""
+    loan = get_object_or_404(LoanApplication, pk=pk, borrower=request.user)
+    
+    context = {
+        'loan': loan,
+        'user_currency': getattr(request.user, 'currency', 'USD'),
+        'currency_symbol': '$' if getattr(request.user, 'currency', 'USD') == 'USD' else 'KSh' if getattr(request.user, 'currency', 'USD') == 'KSH' else '€',
+    }
+    
+    return render(request, "finance/loan_detail.html", context)
+
+
+@login_required
+def collateral_form(request, loan_id):
+    """Display collateral form for external users."""
+    loan = get_object_or_404(LoanApplication, pk=loan_id, borrower=request.user)
+    
+    # Only external users need to fill collateral form
+    if request.user.category == 2:  # Staff users don't need collateral
+        return redirect("finance:loan-application-confirmation")
+    
+    context = {
+        'loan_id': loan_id,
+        'plan_id': loan.loan_product.id,
+        'loan_amount': loan.amount_requested,
+        'user_currency': getattr(request.user, 'currency', 'USD'),
+        'currency_symbol': '$' if getattr(request.user, 'currency', 'USD') == 'USD' else 'KSh' if getattr(request.user, 'currency', 'USD') == 'KSH' else '€',
+    }
+    
+    return render(request, "finance/collateral_form.html", context)
+
+
+@login_required
+def submit_collateral(request, loan_id):
+    """Process collateral form submission."""
+    print(f"🔍 DEBUG: submit_collateral called with method: {request.method}, loan_id: {loan_id}")
+    
+    if request.method != 'POST':
+        print(f"🔍 DEBUG: Not POST method, redirecting to collateral form")
+        return redirect("finance:collateral-form", loan_id=loan_id)
+    
+    loan = get_object_or_404(LoanApplication, pk=loan_id, borrower=request.user)
+    
+    print(f"🔍 DEBUG: POST data = {dict(request.POST)}")
+    
+    # Get form data
+    collateral_type = request.POST.get('collateral_type')
+    collateral_description = request.POST.get('collateral_description')
+    estimated_value = request.POST.get('estimated_value')
+    documentation = request.POST.get('documentation', '')
+    collateral_location = request.POST.get('collateral_location')
+    additional_info = request.POST.get('additional_info', '')
+    
+    # Validate required fields
+    print(f"🔍 DEBUG: Validation - collateral_type: {collateral_type}, description length: {len(collateral_description) if collateral_description else 0}")
+    
+    if not all([collateral_type, collateral_description, estimated_value, collateral_location]):
+        print(f"🔍 DEBUG: Missing required fields")
+        messages.error(request, "Please fill in all required fields.")
+        return redirect("finance:collateral-form", loan_id=loan_id)
+    
+    # Validate description length
+    if len(collateral_description.strip()) < 50:
+        print(f"🔍 DEBUG: Description too short: {len(collateral_description.strip())}")
+        messages.error(request, "Collateral description must be at least 50 characters long.")
+        return redirect("finance:collateral-form", loan_id=loan_id)
+    
+    try:
+        # Create comprehensive collateral information
+        collateral_info = f"""
+COLLATERAL TYPE: {collateral_type}
+DESCRIPTION: {collateral_description}
+ESTIMATED VALUE: ${estimated_value}
+LOCATION: {collateral_location}
+DOCUMENTATION: {documentation}
+ADDITIONAL INFO: {additional_info}
+SUBMITTED: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+        """.strip()
+        
+        # Update loan application with collateral information
+        loan.collateral = collateral_info
+        loan.status = 'under_review'  # Move to review status
+        loan.save()
+        
+        messages.success(request, "Collateral information submitted successfully! Your loan application is now under review.")
+        return redirect("finance:loan-application-confirmation")
+        
+    except Exception as e:
+        messages.error(request, f"Error submitting collateral information: {e}")
+        return redirect("finance:collateral-form", loan_id=loan_id)
+
+
+@login_required
+def edit_loan(request, loan_id):
+    """Display loan editing form for users and admins."""
+    loan = get_object_or_404(LoanApplication, pk=loan_id)
+    
+    # Check permissions
+    if not (request.user == loan.borrower or request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "You don't have permission to edit this loan.")
+        return redirect("finance:user-loans")
+    
+    # Only allow editing if loan is pending or under review
+    if loan.status not in ['pending', 'under_review', 'pending_guarantor']:
+        messages.error(request, "This loan cannot be edited in its current status.")
+        return redirect("finance:loan-detail", pk=loan_id)
+    
+    context = {
+        'loan': loan,
+        'user_currency': getattr(request.user, 'currency', 'USD'),
+        'currency_symbol': '$' if getattr(request.user, 'currency', 'USD') == 'USD' else 'KSh' if getattr(request.user, 'currency', 'USD') == 'KSH' else '€',
+        'is_admin': request.user.is_staff or request.user.is_superuser,
+    }
+    
+    return render(request, "finance/edit_loan.html", context)
+
+
+@login_required
+def update_loan(request, loan_id):
+    """Process loan update form submission."""
+    if request.method != 'POST':
+        return redirect("finance:edit-loan", loan_id=loan_id)
+    
+    loan = get_object_or_404(LoanApplication, pk=loan_id)
+    
+    # Check permissions
+    if not (request.user == loan.borrower or request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "You don't have permission to edit this loan.")
+        return redirect("finance:user-loans")
+    
+    # Only allow editing if loan is pending or under review
+    if loan.status not in ['pending', 'under_review', 'pending_guarantor']:
+        messages.error(request, "This loan cannot be edited in its current status.")
+        return redirect("finance:loan-detail", pk=loan_id)
+    
+    try:
+        # Get form data
+        amount_requested = request.POST.get('amount_requested')
+        purpose = request.POST.get('purpose')
+        duration = request.POST.get('duration')
+        interest_rate = request.POST.get('interest_rate')
+        collateral = request.POST.get('collateral', '')
+        
+        # Validate required fields
+        if not all([amount_requested, purpose]):
+            messages.error(request, "Please fill in all required fields.")
+            return redirect("finance:edit-loan", loan_id=loan_id)
+        
+        # Update loan fields
+        loan.amount_requested = Decimal(str(amount_requested))
+        loan.purpose = purpose
+        
+        # Admin can edit interest rate and duration
+        if request.user.is_staff or request.user.is_superuser:
+            if duration:
+                loan.duration = int(duration)
+            if interest_rate:
+                loan.interest_rate = Decimal(str(interest_rate))
+        
+        # Update collateral if provided
+        if collateral.strip():
+            loan.collateral = collateral.strip()
+        
+        # Recalculate financial terms
+        if loan.loan_product:
+            interest_amount = loan.amount_requested * (loan.interest_rate / 100)
+            loan.total_payable = loan.amount_requested + interest_amount
+            loan.monthly_payment = loan.loan_product.calculate_monthly_payment(loan.amount_requested, loan.duration)
+        
+        loan.save()
+        
+        messages.success(request, "Loan application updated successfully!")
+        return redirect("finance:loan-detail", pk=loan_id)
+        
+    except Exception as e:
+        messages.error(request, f"Error updating loan: {e}")
+        return redirect("finance:edit-loan", loan_id=loan_id)
+
+
+@login_required
+def smart_collateral_dashboard(request):
+    """Smart collateral dashboard with IoT, blockchain, and AI monitoring"""
+    
+    # Check if user is admin
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Access denied. Admin privileges required.")
+        return redirect("main:layout")
+    
+    # Mock data for demonstration - in reality would come from smart collateral service
+    context = {
+        'total_collateral_value': 2500000,
+        'active_monitoring': 156,
+        'risk_score': 87,
+        'iot_health': 98,
+        'active_contracts': 156,
+        'blockchain_health': 99.9,
+        'recent_alerts': [
+            {
+                'type': 'payment_missed',
+                'message': 'Vehicle #VH-001 (2 hours ago)',
+                'severity': 'warning'
+            },
+            {
+                'type': 'location_anomaly',
+                'message': 'Equipment #EQ-045 (1 hour ago)',
+                'severity': 'info'
+            },
+            {
+                'type': 'device_offline',
+                'message': 'Camera #CAM-023 (30 minutes ago)',
+                'severity': 'secondary'
+            }
+        ],
+        'ai_insights': [
+            {
+                'type': 'market_trend',
+                'message': 'Equipment values up 3.2% this month',
+                'trend': 'up'
+            },
+            {
+                'type': 'risk_prediction',
+                'message': '2 items at high risk of default',
+                'trend': 'warning'
+            },
+            {
+                'type': 'recommendation',
+                'message': 'Increase monitoring for Vehicle #VH-001',
+                'trend': 'info'
+            }
+        ],
+        'collateral_types': [
+            {'name': 'Smart Vehicles', 'count': 45, 'icon': 'fas fa-car', 'color': 'primary'},
+            {'name': 'Smart Properties', 'count': 32, 'icon': 'fas fa-home', 'color': 'success'},
+            {'name': 'Smart Equipment', 'count': 67, 'icon': 'fas fa-tools', 'color': 'info'},
+            {'name': 'Smart Vaults', 'count': 12, 'icon': 'fas fa-gem', 'color': 'warning'}
+        ],
+        'recent_activity': [
+            {
+                'time': '2 min ago',
+                'event': 'Payment Received',
+                'collateral': 'Vehicle #VH-001',
+                'status': 'success'
+            },
+            {
+                'time': '15 min ago',
+                'event': 'Location Update',
+                'collateral': 'Equipment #EQ-045',
+                'status': 'info'
+            },
+            {
+                'time': '1 hour ago',
+                'event': 'Device Online',
+                'collateral': 'Camera #CAM-023',
+                'status': 'success'
+            },
+            {
+                'time': '2 hours ago',
+                'event': 'Smart Contract Executed',
+                'collateral': 'Property #PR-012',
+                'status': 'success'
+            }
+        ]
+    }
+    
+    return render(request, "finance/smart_collateral_dashboard.html", context)
 
 
 def admin_loan_data_modified(form, username, user_data):

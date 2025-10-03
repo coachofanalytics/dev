@@ -1,0 +1,150 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Loan Application Details - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-file-alt"></i> Loan Application Details</h4>
+                    <p class="mb-0">Application #{{ loan.application_number }}</p>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Status Badge -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-{% if loan.status == 'approved' %}success{% elif loan.status == 'rejected' %}danger{% elif loan.status == 'pending' %}warning{% else %}info{% endif %}">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-{% if loan.status == 'approved' %}check-circle{% elif loan.status == 'rejected' %}times-circle{% elif loan.status == 'pending' %}clock{% else %}info-circle{% endif %}"></i>
+                                    Status: {{ loan.get_status_display }}
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loan Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-light">
+                                    <h6><i class="fas fa-info-circle text-primary"></i> Loan Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Application Number:</strong> {{ loan.application_number }}</p>
+                                    <p><strong>Amount Requested:</strong> {{ currency_symbol }}{{ loan.amount_requested|floatformat:2 }}</p>
+                                    <p><strong>Purpose:</strong> {{ loan.purpose }}</p>
+                                    <p><strong>Interest Rate:</strong> {{ loan.interest_rate }}%</p>
+                                    <p><strong>Duration:</strong> {{ loan.duration }} months</p>
+                                    {% if loan.total_payable %}
+                                        <p><strong>Total Payable:</strong> {{ currency_symbol }}{{ loan.total_payable|floatformat:2 }}</p>
+                                    {% endif %}
+                                    {% if loan.monthly_payment %}
+                                        <p><strong>Monthly Payment:</strong> {{ currency_symbol }}{{ loan.monthly_payment|floatformat:2 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-light">
+                                    <h6><i class="fas fa-calendar text-info"></i> Timeline</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Application Date:</strong> {{ loan.created_at|date:"F d, Y" }}</p>
+                                    {% if loan.submitted_at %}
+                                        <p><strong>Submitted:</strong> {{ loan.submitted_at|date:"F d, Y" }}</p>
+                                    {% endif %}
+                                    {% if loan.approved_at %}
+                                        <p><strong>Approved:</strong> {{ loan.approved_at|date:"F d, Y" }}</p>
+                                        {% if loan.approved_by %}
+                                            <p><strong>Approved By:</strong> {{ loan.approved_by.get_full_name }}</p>
+                                        {% endif %}
+                                    {% endif %}
+                                    <p><strong>Last Updated:</strong> {{ loan.updated_at|date:"F d, Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guarantor Information -->
+                    {% if loan.guarantor %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-warning">
+                                <div class="card-header bg-light">
+                                    <h6><i class="fas fa-user-shield text-warning"></i> Guarantor Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Name:</strong> {{ loan.guarantor.get_full_name }}</p>
+                                            <p><strong>Email:</strong> {{ loan.guarantor.email }}</p>
+                                            <p><strong>Phone:</strong> {{ loan.guarantor.phone|default:"Not provided" }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Relationship:</strong> {{ loan.guarantor_relationship|title }}</p>
+                                            <p><strong>Approval Status:</strong> 
+                                                <span class="badge badge-{% if loan.guarantor_approval_status == 'approved' %}success{% elif loan.guarantor_approval_status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                                    {{ loan.guarantor_approval_status|title }}
+                                                </span>
+                                            </p>
+                                            {% if loan.guarantor_eligibility_score %}
+                                                <p><strong>Eligibility Score:</strong> {{ loan.guarantor_eligibility_score }}/100</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Collateral Information -->
+                    {% if loan.collateral %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-light">
+                                    <h6><i class="fas fa-shield-alt text-secondary"></i> Collateral Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ loan.collateral }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <a href="{% url 'finance:user-loans' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to My Applications
+                            </a>
+                            
+                            <!-- Edit button for pending/under review loans -->
+                            {% if loan.status in 'pending,under_review,pending_guarantor' %}
+                                <a href="{% url 'finance:edit-loan' loan.id %}" class="btn btn-warning ml-2">
+                                    <i class="fas fa-edit"></i> Edit Application
+                                </a>
+                            {% endif %}
+                            
+                            {% if loan.status == 'approved' %}
+                                <a href="{% url 'finance:loan-home' %}" class="btn btn-success ml-2">
+                                    <i class="fas fa-plus"></i> Apply for Another Loan
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

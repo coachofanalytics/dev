@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Loan Eligibility Check - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.eligibility-card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+.eligibility-card:hover {
+    transform: translateY(-5px);
+}
+.budget-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 25px;
+}
+.eligibility-result {
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+}
+.eligible {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+.not-eligible {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    color: white;
+}
+.recommendation {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+}
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+.btn-check-eligibility {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px 30px;
+    font-weight: 600;
+    border-radius: 25px;
+}
+.btn-check-eligibility:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-calculator"></i> Loan Eligibility Check</h2>
+                    <p class="text-muted">{{ company.name }} - {{ user_department.name|default:"All Departments" }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'loan-budget-dashboard' company.slug %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Budget Summary -->
+                <div class="col-md-4">
+                    <div class="budget-summary">
+                        <h5><i class="fas fa-chart-pie"></i> Budget Summary</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <h6>Total Budget</h6>
+                                <h4>${{ budget_summary.total_estimated|floatformat:2 }}</h4>
+                            </div>
+                            <div class="col-6">
+                                <h6>Available</h6>
+                                <h4>${{ budget_summary.available|floatformat:2 }}</h4>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Utilization</span>
+                                <span>{{ budget_summary.utilization_percentage|floatformat:1 }}%</span>
+                            </div>
+                            <div class="progress mt-1" style="height: 8px;">
+                                <div class="progress-bar bg-light" 
+                                     style="width: {{ budget_summary.utilization_percentage }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Categories -->
+                    <div class="card eligibility-card mt-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-list"></i> Top Budget Categories</h6>
+                        </div>
+                        <div class="card-body">
+                            {% for category in budget_summary.top_categories %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>{{ category.category__name }}</strong>
+                                </div>
+                                <div class="text-right">
+                                    <div>${{ category.estimated|floatformat:2 }}</div>
+                                    <small class="text-muted">${{ category.actual|floatformat:2 }} spent</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eligibility Check Form -->
+                <div class="col-md-8">
+                    <div class="card eligibility-card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-search"></i> Check Loan Eligibility</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="eligibilityForm">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="loan_amount"><strong>Loan Amount</strong></label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">$</span>
+                                                </div>
+                                                <input 
+                                                    type="number" 
+                                                    id="loan_amount" 
+                                                    name="loan_amount" 
+                                                    class="form-control" 
+                                                    placeholder="0.00"
+                                                    step="0.01"
+                                                    min="0"
+                                                    required
+                                                >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="purpose"><strong>Loan Purpose</strong></label>
+                                            <select id="purpose" name="purpose" class="form-control" required>
+                                                <option value="">Select Purpose</option>
+                                                <option value="emergency">Emergency</option>
+                                                <option value="education">Education</option>
+                                                <option value="medical">Medical</option>
+                                                <option value="home_improvement">Home Improvement</option>
+                                                <option value="vehicle">Vehicle Purchase</option>
+                                                <option value="business">Business Investment</option>
+                                                <option value="debt_consolidation">Debt Consolidation</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="purpose_details"><strong>Purpose Details</strong></label>
+                                    <textarea 
+                                        id="purpose_details" 
+                                        name="purpose_details" 
+                                        class="form-control" 
+                                        rows="3" 
+                                        placeholder="Please provide more details about the loan purpose..."
+                                    ></textarea>
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-check-eligibility">
+                                        <i class="fas fa-search"></i> Check Eligibility
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Eligibility Result -->
+                            <div id="eligibilityResult" class="eligibility-result" style="display: none;">
+                                <div id="resultContent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Checking eligibility...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#eligibilityForm').submit(function(e) {
+        e.preventDefault();
+        
+        const loanAmount = parseFloat($('#loan_amount').val()) || 0;
+        const purpose = $('#purpose').val();
+        const purposeDetails = $('#purpose_details').val();
+        
+        if (loanAmount <= 0) {
+            alert('Please enter a valid loan amount.');
+            return;
+        }
+        
+        if (!purpose) {
+            alert('Please select a loan purpose.');
+            return;
+        }
+        
+        // Show loading modal
+        $('#loadingModal').modal('show');
+        
+        // Submit form
+        $.ajax({
+            url: '{% url "loan-eligibility-check" company.slug %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+                'Content-Type': 'application/json',
+            },
+            data: JSON.stringify({
+                loan_amount: loanAmount,
+                purpose: purpose + (purposeDetails ? ': ' + purposeDetails : '')
+            }),
+            success: function(response) {
+                $('#loadingModal').modal('hide');
+                displayEligibilityResult(response);
+            },
+            error: function(xhr) {
+                $('#loadingModal').modal('hide');
+                const response = JSON.parse(xhr.responseText);
+                alert('Error: ' + (response.error || 'Unknown error occurred'));
+            }
+        });
+    });
+    
+    function displayEligibilityResult(result) {
+        const resultDiv = $('#eligibilityResult');
+        const contentDiv = $('#resultContent');
+        
+        let html = '';
+        
+        if (result.eligible) {
+            html = `
+                <div class="eligible">
+                    <h5><i class="fas fa-check-circle"></i> Eligible for Loan</h5>
+                    <p>You are eligible for a loan of $${result.requested_amount.toLocaleString()}</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Requested Amount:</strong><br>
+                            $${result.requested_amount.toLocaleString()}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Maximum Available:</strong><br>
+                            $${result.max_loan_amount.toLocaleString()}
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'loan-application-with-budget' company.slug %}" class="btn btn-light">
+                            <i class="fas fa-arrow-right"></i> Proceed to Application
+                        </a>
+                    </div>
+                </div>
+            `;
+        } else {
+            html = `
+                <div class="not-eligible">
+                    <h5><i class="fas fa-times-circle"></i> Not Eligible</h5>
+                    <p>Your requested loan amount exceeds the available budget.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Requested Amount:</strong><br>
+                            $${result.requested_amount.toLocaleString()}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Maximum Available:</strong><br>
+                            $${result.max_loan_amount.toLocaleString()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add recommendations
+        if (result.recommendations && result.recommendations.length > 0) {
+            html += '<div class="mt-3"><h6>Recommendations:</h6>';
+            result.recommendations.forEach(function(rec) {
+                html += `<div class="recommendation"><i class="fas fa-lightbulb"></i> ${rec}</div>`;
+            });
+            html += '</div>';
+        }
+        
+        // Add budget details
+        if (result.budget_availability) {
+            const budget = result.budget_availability;
+            html += `
+                <div class="mt-3">
+                    <h6>Budget Details:</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <small>Total Budget</small><br>
+                            <strong>$${budget.total_budget.toLocaleString()}</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <small>Total Spent</small><br>
+                            <strong>$${budget.total_actual.toLocaleString()}</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <small>Available</small><br>
+                            <strong>$${budget.available_budget.toLocaleString()}</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <small>Utilization</small><br>
+                            <strong>${budget.utilization_percentage.toFixed(1)}%</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        contentDiv.html(html);
+        resultDiv.show();
+        
+        // Scroll to result
+        $('html, body').animate({
+            scrollTop: resultDiv.offset().top - 100
+        }, 500);
+    }
+});
+</script>
+{% endblock %}

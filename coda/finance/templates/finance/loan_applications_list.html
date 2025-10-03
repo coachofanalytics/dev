@@ -151,6 +151,11 @@
                                             <a href="{% url 'finance:loan-detail' loan.id %}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
+                                            {% if loan.status in 'pending,under_review,pending_guarantor' %}
+                                                <a href="{% url 'finance:edit-loan' loan.id %}" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                            {% endif %}
                                             {% if loan.status == 'approved' %}
                                                 <a href="{% url 'finance:unified_method_selection' %}" class="btn btn-sm btn-success">
                                                     <i class="fas fa-credit-card"></i> Make Payment

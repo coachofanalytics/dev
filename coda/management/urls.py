@@ -8,6 +8,11 @@ from management.views import (
                         RequirementUpdateView,RequirementDetailView,RequirementDeleteView,
                         TaskListView, DSUListView
                      )
+from management.views_enhanced_dashboard import (
+                        enhanced_task_dashboard, refresh_dashboard, export_my_data,
+                        request_help, report_issue, load_more_tasks, submit_evidence,
+                        task_leaderboard, task_history_view, tier_analytics
+                     )
 # Import insights views from views directory (temporarily commented for testing)
 # from management.views import insights_views
 
@@ -149,5 +154,17 @@ urlpatterns = [
 # path('ai-api/department-optimization/<str:department_name>/', ai_dashboard_views.get_department_optimization, name='ai_department_optimization_api'),
 # path('ai-api/data-quality/', ai_dashboard_views.get_data_quality_report, name='ai_data_quality'),
 # path('ai-api/export-report/', ai_dashboard_views.export_performance_report, name='ai_export_report'),
+
+    # Enhanced Dashboard URLs
+    path('enhanced-dashboard/', enhanced_task_dashboard, name='enhanced-dashboard'),
+    path('api/refresh-dashboard/', refresh_dashboard, name='refresh-dashboard'),
+    path('api/export-my-data/', export_my_data, name='export-my-data'),
+    path('api/request-help/', request_help, name='request-help'),
+    path('api/report-issue/', report_issue, name='report-issue'),
+    path('api/load-more-tasks/', load_more_tasks, name='load-more-tasks'),
+    path('api/submit-evidence/', submit_evidence, name='submit-evidence'),
+    path('leaderboard/', task_leaderboard, name='leaderboard'),
+    path('task-history/', task_history_view, name='task-history'),
+    path('tier-analytics/', tier_analytics, name='tier-analytics'),
 
 ]

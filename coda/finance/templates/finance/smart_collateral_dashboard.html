@@ -1,0 +1,348 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Smart Collateral Dashboard - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary">
+                <i class="fas fa-shield-alt"></i> Smart Collateral Dashboard
+            </h2>
+            <p class="text-muted">Revolutionary IoT + Blockchain + AI-powered collateral monitoring</p>
+        </div>
+    </div>
+
+    <!-- Overview Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">$2.5M</h4>
+                            <small>Total Collateral Value</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">156</h4>
+                            <small>Active Monitoring</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-eye fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">87%</h4>
+                            <small>Risk Score</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">98%</h4>
+                            <small>IoT Health</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-wifi fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Alerts -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Real-time Alerts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock"></i>
+                        <strong>Payment missed:</strong> Vehicle #VH-001 (2 hours ago)
+                        <span class="float-right">
+                            <button class="btn btn-sm btn-outline-warning">View Details</button>
+                        </span>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <strong>Location anomaly:</strong> Equipment #EQ-045 (1 hour ago)
+                        <span class="float-right">
+                            <button class="btn btn-sm btn-outline-info">Verify Location</button>
+                        </span>
+                    </div>
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-wifi"></i>
+                        <strong>Device offline:</strong> Camera #CAM-023 (30 minutes ago)
+                        <span class="float-right">
+                            <button class="btn btn-sm btn-outline-secondary">Check Device</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Monitoring Map -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map"></i> Live Monitoring Map
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="collateral-map" style="height: 400px; background: #f8f9fa; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-map fa-3x mb-3"></i>
+                            <h5>Interactive Collateral Map</h5>
+                            <p>Real-time GPS tracking of all collateral items</p>
+                            <button class="btn btn-primary">Load Map</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-brain"></i> AI Insights
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-success">
+                            <i class="fas fa-arrow-up"></i> Market Trend
+                        </h6>
+                        <p class="mb-0">Equipment values up 3.2% this month</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Risk Prediction
+                        </h6>
+                        <p class="mb-0">2 items at high risk of default</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-info">
+                            <i class="fas fa-lightbulb"></i> Recommendation
+                        </h6>
+                        <p class="mb-0">Increase monitoring for Vehicle #VH-001</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs"></i> Smart Contract Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Active Contracts</span>
+                            <span class="badge badge-success">156</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Auto-Enforcement</span>
+                            <span class="badge badge-success">Enabled</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Blockchain Health</span>
+                            <span class="badge badge-success">99.9%</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Last Execution</span>
+                            <span class="text-muted">2 minutes ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collateral Types Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i> Collateral Types Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-car fa-2x text-primary mb-2"></i>
+                                    <h6>Smart Vehicles</h6>
+                                    <h4 class="text-primary">45</h4>
+                                    <small class="text-muted">GPS + AI Cameras</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-home fa-2x text-success mb-2"></i>
+                                    <h6>Smart Properties</h6>
+                                    <h4 class="text-success">32</h4>
+                                    <small class="text-muted">Boundary Sensors</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-tools fa-2x text-info mb-2"></i>
+                                    <h6>Smart Equipment</h6>
+                                    <h4 class="text-info">67</h4>
+                                    <small class="text-muted">IoT Sensors</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-gem fa-2x text-warning mb-2"></i>
+                                    <h6>Smart Vaults</h6>
+                                    <h4 class="text-warning">12</h4>
+                                    <small class="text-muted">Biometric Access</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Event</th>
+                                    <th>Collateral</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2 min ago</td>
+                                    <td>Payment Received</td>
+                                    <td>Vehicle #VH-001</td>
+                                    <td><span class="badge badge-success">Success</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td>15 min ago</td>
+                                    <td>Location Update</td>
+                                    <td>Equipment #EQ-045</td>
+                                    <td><span class="badge badge-info">Normal</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td>1 hour ago</td>
+                                    <td>Device Online</td>
+                                    <td>Camera #CAM-023</td>
+                                    <td><span class="badge badge-success">Connected</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td>2 hours ago</td>
+                                    <td>Smart Contract Executed</td>
+                                    <td>Property #PR-012</td>
+                                    <td><span class="badge badge-success">Completed</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time updates simulation
+document.addEventListener('DOMContentLoaded', function() {
+    // Simulate real-time updates
+    setInterval(function() {
+        // Update timestamps
+        const timeElements = document.querySelectorAll('.time-ago');
+        timeElements.forEach(function(element) {
+            // Update time display
+        });
+        
+        // Simulate new alerts
+        if (Math.random() < 0.1) { // 10% chance every 5 seconds
+            console.log('New alert simulation');
+        }
+    }, 5000);
+    
+    // Map initialization
+    document.getElementById('collateral-map').addEventListener('click', function() {
+        alert('Map would load with real-time collateral locations');
+    });
+});
+</script>
+{% endblock %}

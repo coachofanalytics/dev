@@ -34,6 +34,12 @@ from . import api_cascading
 # Import auto-prediction API
 from . import api_auto_predict
 
+# Import budget editing views (Phase 2)
+from . import views_budget_editing
+
+# Import loan-budget integration views (Phase 3)
+from . import views_loan_budget_integration
+
 app_name = 'finance'
 urlpatterns = [
     #=============================FINANCE INDEX=====================================
@@ -128,6 +134,11 @@ urlpatterns = [
     # Aliases to support template/test reverse names
     path('loan-application-confirmation/', views.loan_application_confirmation, name='loan-application-confirmation'),
     path('user-loans/', views.userLoanListView.as_view(), name='user-loans'),
+    path('loan/<int:pk>/', views.loan_detail, name='loan-detail'),
+    path('collateral-form/<int:loan_id>/', views.collateral_form, name='collateral-form'),
+    path('submit-collateral/<int:loan_id>/', views.submit_collateral, name='submit-collateral'),
+    path('edit-loan/<int:loan_id>/', views.edit_loan, name='edit-loan'),
+    path('update-loan/<int:loan_id>/', views.update_loan, name='update-loan'),
     path('apply-for-loan/<int:plan_id>/', views.apply_for_loan, name='apply-for-loan'),
     path('guarantor/request/<int:loan_id>/', views.guarantor_approval_request, name='guarantor-approval-request'),
     path('guarantor/approve/<int:loan_id>/', views.guarantor_approve_loan, name='guarantor-approve-loan'),
@@ -144,6 +155,7 @@ urlpatterns = [
     path('admin/loan-applications/<int:pk>/reject/', views.reject_loan_application, name='reject-loan-application'),
     path('admin/loan-applications/<int:pk>/recompute/', views.recompute_loan_application, name='recompute-loan-application'),
     path('admin/loan-analytics/', views.loan_analytics, name='loan-analytics'),
+    path('admin/smart-collateral-dashboard/', views.smart_collateral_dashboard, name='smart-collateral-dashboard'),
     path('admin/loan-applications/<int:pk>/notify-guarantor-available/', views.notify_guarantor_available, name='notify-guarantor-available'),
      #FOOD & SUPPLIERS
     path(
@@ -300,4 +312,21 @@ urlpatterns = [
     path('budget-requests/<int:pk>/submit/', views_forms.submit_for_approval, name='submit_for_approval'),
     path('budget-requests/<int:pk>/approve/', views_forms.approve_request, name='approve_request'),
     path('budget-requests/<int:pk>/reject/', views_forms.reject_request, name='reject_request'),
+
+    #=============================BUDGET EDITING & APPROVAL SYSTEM (PHASE 2)=====================================
+    # Budget editing with approval workflow
+    path('budget/<str:company_slug>/category/<int:category_id>/edit/', views_budget_editing.budget_category_edit, name='budget-category-edit'),
+    path('budget/<str:company_slug>/category/<int:category_id>/save/', views_budget_editing.save_budget_estimates, name='save-budget-estimates'),
+    path('budget/<str:company_slug>/requests/', views_budget_editing.budget_requests_list, name='budget-requests-list'),
+    path('budget/<str:company_slug>/requests/<int:request_id>/', views_budget_editing.budget_request_detail, name='budget-request-detail'),
+    path('budget/<str:company_slug>/requests/<int:request_id>/approve/', views_budget_editing.approve_budget_request, name='approve-budget-request'),
+    path('budget/<str:company_slug>/requests/<int:request_id>/reject/', views_budget_editing.reject_budget_request, name='reject-budget-request'),
+    path('budget/<str:company_slug>/approvals/', views_budget_editing.budget_approval_dashboard, name='budget-approval-dashboard'),
+
+    #=============================LOAN-BUDGET INTEGRATION (PHASE 3)=====================================
+    # Loan system integrated with budget constraints
+    path('loan/<str:company_slug>/eligibility/', views_loan_budget_integration.loan_eligibility_check, name='loan-eligibility-check'),
+    path('loan/<str:company_slug>/apply/', views_loan_budget_integration.loan_application_with_budget, name='loan-application-with-budget'),
+    path('loan/<str:company_slug>/dashboard/', views_loan_budget_integration.loan_budget_dashboard, name='loan-budget-dashboard'),
+    path('loan/<str:company_slug>/impact-analysis/', views_loan_budget_integration.budget_loan_impact_analysis, name='budget-loan-impact-analysis'),
 ]

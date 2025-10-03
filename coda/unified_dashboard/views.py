@@ -64,12 +64,19 @@ def get_dashboard_config(user_role, user=None):
                     'title': 'User Management',
                     'type': 'widget',
                     'template': 'unified_dashboard/widgets/user_management.html'
+                },
+                {
+                    'title': 'Loan Management',
+                    'type': 'widget',
+                    'template': 'unified_dashboard/widgets/loan_management.html'
                 }
             ],
             'quick_actions': [
                 {'title': 'AI Configuration', 'url': '/ai_services/diaspora/ai-configuration/', 'icon': 'fas fa-robot'},
                 {'title': 'System Analytics', 'url': '/ai_services/diaspora/advanced-analytics/', 'icon': 'fas fa-chart-line'},
                 {'title': 'User Management', 'url': '/admin/', 'icon': 'fas fa-users-cog'},
+                {'title': 'Loan Management', 'url': '/finance/admin/loan-analytics/', 'icon': 'fas fa-money-bill-wave'},
+                {'title': 'Smart Collateral', 'url': '/finance/admin/smart-collateral-dashboard/', 'icon': 'fas fa-shield-alt'},
                 {'title': 'Platform Health', 'url': '/ai_services/diaspora/ai-health/', 'icon': 'fas fa-heartbeat'},
             ]
         },
@@ -255,10 +262,46 @@ def dashboard_overview(request):
     user_role = get_user_role(request.user)
     dashboard_config = get_dashboard_config(user_role, request.user)
     
+    # Add loan statistics for admin users
+    loan_stats = {}
+    recent_activities = []
+    
+    if user_role == 'admin':
+        from finance.models import LoanApplication
+        from django.db.models import Count, Sum, Q
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Get loan statistics
+        loan_stats = {
+            'pending_count': LoanApplication.objects.filter(status='pending').count(),
+            'approved_count': LoanApplication.objects.filter(status='approved').count(),
+            'active_count': LoanApplication.objects.filter(status='active').count(),
+            'total_outstanding': LoanApplication.objects.filter(
+                status__in=['active', 'approved']
+            ).aggregate(total=Sum('amount_requested'))['total'] or 0,
+        }
+        
+        # Get recent loan activities
+        recent_loans = LoanApplication.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')[:5]
+        
+        recent_activities = [
+            {
+                'type': 'New Application',
+                'description': f"${loan.amount_requested} loan from {loan.borrower.get_full_name()}",
+                'timestamp': loan.created_at
+            }
+            for loan in recent_loans
+        ]
+    
     context = {
         'user_role': user_role,
         'dashboard_config': dashboard_config,
         'title': 'Dashboard Overview',
+        'loan_stats': loan_stats,
+        'recent_activities': recent_activities,
     }
     
     return render(request, 'unified_dashboard/overview.html', context)

@@ -1,0 +1,168 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Edit Loan Application - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4><i class="fas fa-edit"></i> Edit Loan Application</h4>
+                    <p class="mb-0">Application #{{ loan.application_number }} - Status: {{ loan.get_status_display }}</p>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Status Notice -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> You can only edit loans that are pending, under review, or pending guarantor approval.
+                    </div>
+
+                    <form method="post" action="{% url 'finance:update-loan' loan.id %}">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Loan Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="amount_requested" class="form-label">Amount Requested ({{ currency_symbol }})</label>
+                                    <input type="number" class="form-control" id="amount_requested" name="amount_requested" 
+                                           value="{{ loan.amount_requested }}" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="purpose" class="form-label">Purpose</label>
+                                    <input type="text" class="form-control" id="purpose" name="purpose" 
+                                           value="{{ loan.purpose }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Admin-only fields -->
+                        {% if is_admin %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="duration" class="form-label">Duration (months)</label>
+                                    <input type="number" class="form-control" id="duration" name="duration" 
+                                           value="{{ loan.duration }}" min="1" max="60">
+                                    <div class="form-text">Admin can modify loan duration</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="interest_rate" class="form-label">Interest Rate (%)</label>
+                                    <input type="number" class="form-control" id="interest_rate" name="interest_rate" 
+                                           value="{{ loan.interest_rate }}" step="0.01" min="0" max="100">
+                                    <div class="form-text">Admin can modify interest rate</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Show read-only admin fields for regular users -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Duration (months)</label>
+                                    <input type="text" class="form-control" value="{{ loan.duration }}" readonly>
+                                    <div class="form-text">Only admins can modify this field</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Interest Rate (%)</label>
+                                    <input type="text" class="form-control" value="{{ loan.interest_rate }}" readonly>
+                                    <div class="form-text">Only admins can modify this field</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Collateral Information -->
+                        <div class="mb-3">
+                            <label for="collateral" class="form-label">Collateral Information</label>
+                            <textarea class="form-control" id="collateral" name="collateral" rows="4" 
+                                      placeholder="Enter collateral details...">{{ loan.collateral }}</textarea>
+                            <div class="form-text">Optional: Add or update collateral information</div>
+                        </div>
+
+                        <!-- Current Loan Details (Read-only) -->
+                        <div class="card border-secondary mb-4">
+                            <div class="card-header bg-light">
+                                <h6><i class="fas fa-info-circle text-secondary"></i> Current Loan Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Application Number:</strong> {{ loan.application_number }}</p>
+                                        <p><strong>Loan Product:</strong> {{ loan.loan_product.name }}</p>
+                                        <p><strong>Status:</strong> {{ loan.get_status_display }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if loan.total_payable %}
+                                            <p><strong>Total Payable:</strong> {{ currency_symbol }}{{ loan.total_payable|floatformat:2 }}</p>
+                                        {% endif %}
+                                        {% if loan.monthly_payment %}
+                                            <p><strong>Monthly Payment:</strong> {{ currency_symbol }}{{ loan.monthly_payment|floatformat:2 }}</p>
+                                        {% endif %}
+                                        <p><strong>Created:</strong> {{ loan.created_at|date:"F d, Y" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{% url 'finance:loan-detail' loan.id %}" class="btn btn-secondary w-100">
+                                    <i class="fas fa-arrow-left"></i> Back to Loan Details
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save"></i> Update Loan Application
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-calculate total payable and monthly payment when amount, duration, or interest rate changes
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('amount_requested');
+    const durationInput = document.getElementById('duration');
+    const interestInput = document.getElementById('interest_rate');
+    
+    function calculatePayments() {
+        if (amountInput && durationInput && interestInput) {
+            const amount = parseFloat(amountInput.value) || 0;
+            const duration = parseInt(durationInput.value) || 1;
+            const interestRate = parseFloat(interestInput.value) || 0;
+            
+            if (amount > 0 && duration > 0 && interestRate >= 0) {
+                const interestAmount = amount * (interestRate / 100);
+                const totalPayable = amount + interestAmount;
+                const monthlyPayment = totalPayable / duration;
+                
+                // Update display (you could add elements to show these calculations)
+                console.log(`Total Payable: $${totalPayable.toFixed(2)}, Monthly Payment: $${monthlyPayment.toFixed(2)}`);
+            }
+        }
+    }
+    
+    if (amountInput) amountInput.addEventListener('input', calculatePayments);
+    if (durationInput) durationInput.addEventListener('input', calculatePayments);
+    if (interestInput) interestInput.addEventListener('input', calculatePayments);
+});
+</script>
+{% endblock %}

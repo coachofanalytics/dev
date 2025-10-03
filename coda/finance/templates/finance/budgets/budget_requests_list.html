@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Budget Requests - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.status-badge {
+    font-size: 0.8em;
+    padding: 4px 8px;
+}
+.request-card {
+    border-left: 4px solid #007bff;
+    transition: all 0.3s ease;
+}
+.request-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+.request-card.draft { border-left-color: #6c757d; }
+.request-card.submitted { border-left-color: #17a2b8; }
+.request-card.under_review { border-left-color: #ffc107; }
+.request-card.approved { border-left-color: #28a745; }
+.request-card.rejected { border-left-color: #dc3545; }
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+}
+.filter-buttons .btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Budget Requests</h2>
+                    <p class="text-muted">{{ company.name }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'budget-dashboard' company.slug %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Budget Request
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-2">
+                    <div class="card stats-card">
+                        <div class="card-body text-center">
+                            <h3>{{ stats.total }}</h3>
+                            <p class="mb-0">Total</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body text-center">
+                            <h3>{{ stats.draft }}</h3>
+                            <p class="mb-0">Draft</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h3>{{ stats.submitted }}</h3>
+                            <p class="mb-0">Submitted</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h3>{{ stats.under_review }}</h3>
+                            <p class="mb-0">Under Review</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h3>{{ stats.approved }}</h3>
+                            <p class="mb-0">Approved</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body text-center">
+                            <h3>{{ stats.rejected }}</h3>
+                            <p class="mb-0">Rejected</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-buttons mb-3">
+                <a href="?status=" class="btn btn-outline-primary {% if not status_filter %}active{% endif %}">
+                    All Requests
+                </a>
+                <a href="?status=draft" class="btn btn-outline-secondary {% if status_filter == 'draft' %}active{% endif %}">
+                    Draft
+                </a>
+                <a href="?status=submitted" class="btn btn-outline-info {% if status_filter == 'submitted' %}active{% endif %}">
+                    Submitted
+                </a>
+                <a href="?status=under_review" class="btn btn-outline-warning {% if status_filter == 'under_review' %}active{% endif %}">
+                    Under Review
+                </a>
+                <a href="?status=approved" class="btn btn-outline-success {% if status_filter == 'approved' %}active{% endif %}">
+                    Approved
+                </a>
+                <a href="?status=rejected" class="btn btn-outline-danger {% if status_filter == 'rejected' %}active{% endif %}">
+                    Rejected
+                </a>
+            </div>
+
+            <!-- Budget Requests List -->
+            {% if page_obj %}
+                {% for request in page_obj %}
+                <div class="card request-card {{ request.status }} mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="card-title mb-1">
+                                            <a href="{% url 'budget-request-detail' company.slug request.id %}" 
+                                               class="text-decoration-none">
+                                                {{ request.budget_category.name }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-calendar"></i> {{ request.request_date|date:"M d, Y" }}
+                                            <span class="mx-2">•</span>
+                                            <i class="fas fa-user"></i> {{ request.created_by.get_full_name|default:request.created_by.username }}
+                                        </p>
+                                        {% if request.justification %}
+                                        <p class="card-text">{{ request.justification|truncatewords:20 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="badge status-badge 
+                                            {% if request.status == 'draft' %}badge-secondary
+                                            {% elif request.status == 'submitted' %}badge-info
+                                            {% elif request.status == 'under_review' %}badge-warning
+                                            {% elif request.status == 'approved' %}badge-success
+                                            {% elif request.status == 'rejected' %}badge-danger
+                                            {% endif %}">
+                                            {{ request.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <div class="mb-2">
+                                    <h4 class="text-primary mb-0">${{ request.amount|floatformat:2 }}</h4>
+                                    <small class="text-muted">Requested Amount</small>
+                                </div>
+                                {% if request.current_approver %}
+                                <div class="mb-2">
+                                    <small class="text-muted">Current Approver:</small><br>
+                                    <strong>{{ request.current_approver.get_full_name|default:request.current_approver.username }}</strong>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <a href="{% url 'budget-request-detail' company.slug request.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Budget requests pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                        </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Last</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Budget Requests Found</h4>
+                    <p class="text-muted">
+                        {% if status_filter %}
+                            No requests with status "{{ status_filter }}".
+                        {% else %}
+                            You haven't created any budget requests yet.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'budget-dashboard' company.slug %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Your First Budget Request
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
