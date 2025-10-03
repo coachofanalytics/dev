@@ -14,7 +14,7 @@ from . import views_automation
 
 # Import enhanced budget views
 from . import views_enhanced_budget, views_finance_dashboard, views_legacy_dashboard, views_unified_department
-from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals, views_salary_dashboard, views_realtime_compliance
+from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals, views_salary_dashboard, views_realtime_compliance, views_admin_controls
 
 # Import unified budget views (Phase 3)
 from . import views_unified_budget
@@ -348,4 +348,15 @@ urlpatterns = [
     path('api/realtime/dashboard-data/', views_realtime_compliance.get_realtime_dashboard_data, name='realtime-dashboard-data'),
     path('api/realtime/check-employee/<int:employee_id>/', views_realtime_compliance.check_employee_compliance_status, name='check-employee-compliance'),
     path('api/realtime/compliance-statistics/', views_realtime_compliance.get_compliance_statistics, name='compliance-statistics'),
+
+    #=============================ADMIN CONTROLS & REGULATIONS (PHASE 3)=====================================
+    # Admin controls for employee regulations and overrides
+    path('admin/controls-dashboard/', views_admin_controls.admin_controls_dashboard, name='admin-controls-dashboard'),
+    path('api/admin/employee-regulations/', views_admin_controls.get_employee_regulations, name='employee-regulations'),
+    path('api/admin/update-threshold/', views_admin_controls.update_compliance_threshold, name='update-compliance-threshold'),
+    path('api/admin/create-override/', views_admin_controls.create_employee_override, name='create-employee-override'),
+    path('api/admin/employee-compliance/<int:employee_id>/', views_admin_controls.get_employee_compliance_with_overrides, name='employee-compliance-with-overrides'),
+    path('api/admin/statistics/', views_admin_controls.get_admin_statistics, name='admin-statistics'),
+    path('api/admin/audit-log/', views_admin_controls.get_audit_log, name='audit-log'),
+    path('api/admin/export-report/', views_admin_controls.export_admin_report, name='export-admin-report'),
 ]
