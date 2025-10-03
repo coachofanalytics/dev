@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib import admin
 from django.contrib import admin
 from .models import ServiceCategory
+from django.contrib import admin
+from .models import WCAGStandardWebsite
 
 # from .models import 
 from .models import *
@@ -25,3 +27,6 @@ class ServiceCategoryAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_featured')
     search_fields = ('name', 'slug'),
     prepopulated_fields = {'slug': ('name',)}  # Optional: auto-generate slug from name
+
+
+admin.site.register(WCAGStandardWebsite)
