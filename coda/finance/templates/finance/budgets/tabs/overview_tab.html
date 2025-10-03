@@ -56,12 +56,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for category, data in overview_data.category_summary.items %}
+                        {% for category_name, data in overview_data.category_summary.items %}
                         <tr>
-                            <td><i class="fas fa-tag"></i> {{ category }}</td>
+                            <td><i class="fas fa-tag"></i> {{ category_name }}</td>
                             <td>{{ data.count }}</td>
                             <td>${{ data.total|floatformat:2 }}</td>
                             <td>
+                                {% if data.category_id %}
                                 <div class="btn-group btn-group-sm" role="group">
                                     <a href="{% url 'budget-category-detail' company.slug data.category_id %}" 
                                        class="btn btn-outline-primary" title="View Details">
@@ -72,6 +73,9 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 </div>
+                                {% else %}
+                                <span class="text-muted">No actions available</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
