@@ -9,6 +9,7 @@ from django.urls import path
 from .views import VolunteerListView
 app_name = 'main'
 urlpatterns = [
+    
     # # path('', views.layout, name='layout'),
     # #=======================SERVICES=====================================
     # path('newservice/',ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
@@ -92,4 +93,13 @@ from .views import home, WCAGStandardWebsiteListView
 urlpatterns = [
     path('', home, name='home'),  # 👈 homepage
     path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
+]
+
+from django.urls import path
+from .views import home, WCAGStandardWebsiteListView, WCAGStandardWebsiteCreateView
+
+urlpatterns = [
+    path('', home, name='home'),
+    path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
+    path('websites/add/', WCAGStandardWebsiteCreateView.as_view(), name='website-add'),
 ]

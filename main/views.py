@@ -341,3 +341,13 @@ class WCAGStandardWebsiteListView(ListView):
     model = WCAGStandardWebsite
     template_name = 'main/website_list.html'  # Explicit path
     context_object_name = 'websites'
+
+from django.views.generic.edit import CreateView
+from .models import WCAGStandardWebsite
+from django.urls import reverse_lazy
+
+class WCAGStandardWebsiteCreateView(CreateView):
+    model = WCAGStandardWebsite
+    fields = ['company', 'app_name', 'page_name', 'website_url']  # exclude auto fields like created_at
+    template_name = 'main/website_form.html'
+    success_url = reverse_lazy('website-list')  # redirect after successful form submission
