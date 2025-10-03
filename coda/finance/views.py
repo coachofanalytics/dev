@@ -713,11 +713,11 @@ def loan_analytics(request):
         # Regular users get their own analytics
         report = analytics_service.generate_performance_report(user=request.user)
 
-    if report["status"] == "success":
-        context = {"report": report["report"]}
+    if report and report.get("status") == "success":
+        context = {"report": report.get("report", {})}
     else:
         messages.error(request, "Error generating analytics report")
-        context = {"report": None}
+        context = {"report": {}}
 
     return render(request, "finance/loan_analytics.html", context)
 
@@ -3045,6 +3045,62 @@ def smart_collateral_dashboard(request):
 def loan_system_presentation(request):
     """Investor presentation for the smart loan system"""
     return render(request, "finance/loan_system_presentation.html")
+
+
+@login_required
+def user_collateral_status(request, loan_id):
+    """User-specific collateral status page"""
+    loan = get_object_or_404(LoanApplication, pk=loan_id, borrower=request.user)
+    
+    # Mock smart collateral data - in reality would come from smart collateral service
+    context = {
+        'loan': loan,
+        'collateral_status': {
+            'status': 'active',
+            'risk_score': 85,
+            'devices_online': 2,
+            'total_devices': 2,
+            'last_check': timezone.now(),
+            'monitoring_active': True,
+            'smart_contract_deployed': True,
+            'blockchain_verified': True
+        },
+        'recent_events': [
+            {
+                'time': '2 hours ago',
+                'event': 'GPS Tracker Activated',
+                'status': 'success'
+            },
+            {
+                'time': '1 hour ago',
+                'event': 'Smart Contract Deployed',
+                'status': 'success'
+            },
+            {
+                'time': '30 minutes ago',
+                'event': 'Location Verified',
+                'status': 'info'
+            }
+        ],
+        'iot_devices': [
+            {
+                'name': 'GPS Tracker #001',
+                'type': 'GPS Tracker',
+                'status': 'online',
+                'battery': 95,
+                'last_update': '2 minutes ago'
+            },
+            {
+                'name': 'Smart Camera #001',
+                'type': 'Security Camera',
+                'status': 'online',
+                'battery': 88,
+                'last_update': '5 minutes ago'
+            }
+        ]
+    }
+    
+    return render(request, "finance/user_collateral_status.html", context)
 
 
 def admin_loan_data_modified(form, username, user_data):

@@ -14,7 +14,7 @@ from . import views_automation
 
 # Import enhanced budget views
 from . import views_enhanced_budget, views_finance_dashboard, views_legacy_dashboard, views_unified_department
-from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals, views_salary_dashboard
+from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals, views_salary_dashboard, views_realtime_compliance
 
 # Import unified budget views (Phase 3)
 from . import views_unified_budget
@@ -157,6 +157,7 @@ urlpatterns = [
     path('admin/loan-analytics/', views.loan_analytics, name='loan-analytics'),
     path('admin/smart-collateral-dashboard/', views.smart_collateral_dashboard, name='smart-collateral-dashboard'),
     path('presentation/', views.loan_system_presentation, name='loan-system-presentation'),
+    path('my-collateral-status/<int:loan_id>/', views.user_collateral_status, name='user-collateral-status'),
     path('admin/loan-applications/<int:pk>/notify-guarantor-available/', views.notify_guarantor_available, name='notify-guarantor-available'),
      #FOOD & SUPPLIERS
     path(
@@ -338,4 +339,13 @@ urlpatterns = [
     path('api/salary/compliance-report/', views_salary_dashboard.salary_compliance_report, name='salary-compliance-report'),
     path('api/salary/update-compliance/', views_salary_dashboard.update_compliance_status, name='update-compliance-status'),
     path('api/salary/export/', views_salary_dashboard.salary_export, name='salary-export'),
+
+    #=============================REAL-TIME COMPLIANCE MONITORING (PHASE 3)=====================================
+    # Real-time compliance monitoring and notifications
+    path('realtime/compliance-dashboard/', views_realtime_compliance.realtime_compliance_dashboard, name='realtime-compliance-dashboard'),
+    path('api/realtime/trigger-monitoring/', views_realtime_compliance.trigger_compliance_monitoring, name='trigger-compliance-monitoring'),
+    path('api/realtime/send-reminders/', views_realtime_compliance.send_compliance_reminders, name='send-compliance-reminders'),
+    path('api/realtime/dashboard-data/', views_realtime_compliance.get_realtime_dashboard_data, name='realtime-dashboard-data'),
+    path('api/realtime/check-employee/<int:employee_id>/', views_realtime_compliance.check_employee_compliance_status, name='check-employee-compliance'),
+    path('api/realtime/compliance-statistics/', views_realtime_compliance.get_compliance_statistics, name='compliance-statistics'),
 ]

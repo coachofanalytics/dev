@@ -45,7 +45,7 @@
                         <!-- Collateral Type -->
                         <div class="mb-3">
                             <label for="collateral_type" class="form-label">Type of Collateral</label>
-                            <select class="form-control" id="collateral_type" name="collateral_type" required>
+                            <select class="form-control" id="collateral_type" name="collateral_type" required onchange="showCollateralFields()">
                                 <option value="">Select collateral type...</option>
                                 <option value="vehicle">Vehicle (Car, Motorcycle, etc.)</option>
                                 <option value="land">Land/Property</option>
@@ -54,6 +54,201 @@
                                 <option value="savings">Savings Account/CD</option>
                                 <option value="other">Other</option>
                             </select>
+                        </div>
+
+                        <!-- Dynamic Fields Container -->
+                        <div id="dynamic-fields" style="display: none;">
+                            <!-- Vehicle Fields -->
+                            <div id="vehicle-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="vehicle_make" class="form-label">Make</label>
+                                            <input type="text" class="form-control" id="vehicle_make" name="vehicle_make" placeholder="e.g., Toyota, Honda">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="vehicle_model" class="form-label">Model</label>
+                                            <input type="text" class="form-control" id="vehicle_model" name="vehicle_model" placeholder="e.g., Camry, Civic">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="vehicle_year" class="form-label">Year</label>
+                                            <input type="number" class="form-control" id="vehicle_year" name="vehicle_year" placeholder="2020">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="vehicle_mileage" class="form-label">Mileage</label>
+                                            <input type="number" class="form-control" id="vehicle_mileage" name="vehicle_mileage" placeholder="45000">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="vehicle_condition" class="form-label">Condition</label>
+                                            <select class="form-control" id="vehicle_condition" name="vehicle_condition">
+                                                <option value="">Select condition...</option>
+                                                <option value="excellent">Excellent</option>
+                                                <option value="good">Good</option>
+                                                <option value="fair">Fair</option>
+                                                <option value="poor">Poor</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="vehicle_vin" class="form-label">VIN Number</label>
+                                    <input type="text" class="form-control" id="vehicle_vin" name="vehicle_vin" placeholder="Vehicle Identification Number">
+                                </div>
+                            </div>
+
+                            <!-- Land/Property Fields -->
+                            <div id="land-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="property_type" class="form-label">Property Type</label>
+                                            <select class="form-control" id="property_type" name="property_type">
+                                                <option value="">Select type...</option>
+                                                <option value="residential">Residential</option>
+                                                <option value="commercial">Commercial</option>
+                                                <option value="agricultural">Agricultural</option>
+                                                <option value="industrial">Industrial</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="property_size" class="form-label">Size (acres/hectares)</label>
+                                            <input type="number" class="form-control" id="property_size" name="property_size" placeholder="0.5">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="title_deed_number" class="form-label">Title Deed Number</label>
+                                            <input type="text" class="form-control" id="title_deed_number" name="title_deed_number" placeholder="Title deed reference">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="property_condition" class="form-label">Property Condition</label>
+                                            <select class="form-control" id="property_condition" name="property_condition">
+                                                <option value="">Select condition...</option>
+                                                <option value="developed">Fully Developed</option>
+                                                <option value="partially_developed">Partially Developed</option>
+                                                <option value="undeveloped">Undeveloped</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Equipment Fields -->
+                            <div id="equipment-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_type" class="form-label">Equipment Type</label>
+                                            <select class="form-control" id="equipment_type" name="equipment_type">
+                                                <option value="">Select type...</option>
+                                                <option value="construction">Construction Equipment</option>
+                                                <option value="agricultural">Agricultural Equipment</option>
+                                                <option value="manufacturing">Manufacturing Equipment</option>
+                                                <option value="medical">Medical Equipment</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_serial" class="form-label">Serial Number</label>
+                                            <input type="text" class="form-control" id="equipment_serial" name="equipment_serial" placeholder="Equipment serial number">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_year" class="form-label">Year of Manufacture</label>
+                                            <input type="number" class="form-control" id="equipment_year" name="equipment_year" placeholder="2020">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_condition" class="form-label">Condition</label>
+                                            <select class="form-control" id="equipment_condition" name="equipment_condition">
+                                                <option value="">Select condition...</option>
+                                                <option value="excellent">Excellent</option>
+                                                <option value="good">Good</option>
+                                                <option value="fair">Fair</option>
+                                                <option value="poor">Poor</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Jewelry Fields -->
+                            <div id="jewelry-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="jewelry_type" class="form-label">Jewelry Type</label>
+                                            <select class="form-control" id="jewelry_type" name="jewelry_type">
+                                                <option value="">Select type...</option>
+                                                <option value="gold">Gold</option>
+                                                <option value="diamond">Diamond</option>
+                                                <option value="silver">Silver</option>
+                                                <option value="platinum">Platinum</option>
+                                                <option value="other">Other Precious Metal</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="jewelry_weight" class="form-label">Weight (grams)</label>
+                                            <input type="number" class="form-control" id="jewelry_weight" name="jewelry_weight" placeholder="50">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="jewelry_certification" class="form-label">Certification</label>
+                                    <input type="text" class="form-control" id="jewelry_certification" name="jewelry_certification" placeholder="Gemological certification number">
+                                </div>
+                            </div>
+
+                            <!-- Savings Account Fields -->
+                            <div id="savings-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="bank_name" class="form-label">Bank Name</label>
+                                            <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="Bank name">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="account_number" class="form-label">Account Number</label>
+                                            <input type="text" class="form-control" id="account_number" name="account_number" placeholder="Account number">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="account_type" class="form-label">Account Type</label>
+                                    <select class="form-control" id="account_type" name="account_type">
+                                        <option value="">Select type...</option>
+                                        <option value="savings">Savings Account</option>
+                                        <option value="fixed_deposit">Fixed Deposit</option>
+                                        <option value="certificate_deposit">Certificate of Deposit</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Collateral Description -->
@@ -125,6 +320,31 @@
 </div>
 
 <script>
+// Function to show/hide collateral type specific fields
+function showCollateralFields() {
+    const collateralType = document.getElementById('collateral_type').value;
+    const dynamicFields = document.getElementById('dynamic-fields');
+    const allTypeFields = document.querySelectorAll('.collateral-type-fields');
+    
+    // Hide all type-specific fields first
+    allTypeFields.forEach(field => {
+        field.style.display = 'none';
+    });
+    
+    // Show dynamic fields container if a type is selected
+    if (collateralType && collateralType !== 'other') {
+        dynamicFields.style.display = 'block';
+        
+        // Show the specific fields for the selected type
+        const specificFields = document.getElementById(collateralType + '-fields');
+        if (specificFields) {
+            specificFields.style.display = 'block';
+        }
+    } else {
+        dynamicFields.style.display = 'none';
+    }
+}
+
 // Auto-expand textarea based on content
 document.addEventListener('DOMContentLoaded', function() {
     const textareas = document.querySelectorAll('textarea');
@@ -134,6 +354,9 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.height = this.scrollHeight + 'px';
         });
     });
+    
+    // Initialize collateral fields on page load
+    showCollateralFields();
 });
 </script>
 {% endblock %}

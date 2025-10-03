@@ -136,7 +136,7 @@
                             
                             <!-- Smart Collateral Status for external users -->
                             {% if loan.collateral and request.user.category == 4 %}
-                                <a href="{% url 'finance:smart-collateral-dashboard' %}" class="btn btn-info ml-2">
+                                <a href="{% url 'finance:user-collateral-status' loan.id %}" class="btn btn-info ml-2">
                                     <i class="fas fa-shield-alt"></i> Smart Collateral Status
                                 </a>
                             {% endif %}

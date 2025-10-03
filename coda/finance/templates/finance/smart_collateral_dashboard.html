@@ -93,21 +93,21 @@
                         <i class="fas fa-clock"></i>
                         <strong>Payment missed:</strong> Vehicle #VH-001 (2 hours ago)
                         <span class="float-right">
-                            <button class="btn btn-sm btn-outline-warning">View Details</button>
+                            <a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-outline-warning">View Details</a>
                         </span>
                     </div>
                     <div class="alert alert-info">
                         <i class="fas fa-map-marker-alt"></i>
                         <strong>Location anomaly:</strong> Equipment #EQ-045 (1 hour ago)
                         <span class="float-right">
-                            <button class="btn btn-sm btn-outline-info">Verify Location</button>
+                            <a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-outline-info">Verify Location</a>
                         </span>
                     </div>
                     <div class="alert alert-secondary">
                         <i class="fas fa-wifi"></i>
                         <strong>Device offline:</strong> Camera #CAM-023 (30 minutes ago)
                         <span class="float-right">
-                            <button class="btn btn-sm btn-outline-secondary">Check Device</button>
+                            <a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-outline-secondary">Check Device</a>
                         </span>
                     </div>
                 </div>
@@ -125,12 +125,16 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div id="collateral-map" style="height: 400px; background: #f8f9fa; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-map fa-3x mb-3"></i>
-                            <h5>Interactive Collateral Map</h5>
-                            <p>Real-time GPS tracking of all collateral items</p>
-                            <button class="btn btn-primary">Load Map</button>
+                    <div id="collateral-map" style="height: 400px; background: #f8f9fa; border-radius: 5px; position: relative;">
+                        <!-- Map will be loaded here -->
+                        <div id="map-loading" class="text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                            <i class="fas fa-map fa-3x mb-3 text-muted"></i>
+                            <h5>Loading Collateral Map...</h5>
+                            <p class="text-muted">Real-time GPS tracking of all collateral items</p>
+                            <button class="btn btn-primary" onclick="loadCollateralMap()">Load Map</button>
+                        </div>
+                        <div id="map-container" style="display: none; height: 100%;">
+                            <!-- Leaflet map will be inserted here -->
                         </div>
                     </div>
                 </div>
@@ -290,28 +294,28 @@
                                     <td>Payment Received</td>
                                     <td>Vehicle #VH-001</td>
                                     <td><span class="badge badge-success">Success</span></td>
-                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                    <td><a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-outline-primary">View</a></td>
                                 </tr>
                                 <tr>
                                     <td>15 min ago</td>
                                     <td>Location Update</td>
                                     <td>Equipment #EQ-045</td>
                                     <td><span class="badge badge-info">Normal</span></td>
-                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                    <td><a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-outline-primary">View</a></td>
                                 </tr>
                                 <tr>
                                     <td>1 hour ago</td>
                                     <td>Device Online</td>
                                     <td>Camera #CAM-023</td>
                                     <td><span class="badge badge-success">Connected</span></td>
-                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                    <td><a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-outline-primary">View</a></td>
                                 </tr>
                                 <tr>
                                     <td>2 hours ago</td>
                                     <td>Smart Contract Executed</td>
                                     <td>Property #PR-012</td>
                                     <td><span class="badge badge-success">Completed</span></td>
-                                    <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                    <td><a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-outline-primary">View</a></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -322,7 +326,124 @@
     </div>
 </div>
 
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
+let collateralMap = null;
+
+// Collateral locations data (mock data - in reality would come from API)
+const collateralLocations = [
+    {
+        id: 'VH-001',
+        name: 'Vehicle #VH-001',
+        type: 'vehicle',
+        lat: -1.2921,
+        lng: 36.8219,
+        status: 'active',
+        lastUpdate: '2 minutes ago',
+        borrower: 'Sheila Ananda'
+    },
+    {
+        id: 'EQ-045',
+        name: 'Equipment #EQ-045',
+        type: 'equipment',
+        lat: -1.3000,
+        lng: 36.8000,
+        status: 'warning',
+        lastUpdate: '1 hour ago',
+        borrower: 'John Doe'
+    },
+    {
+        id: 'PR-012',
+        name: 'Property #PR-012',
+        type: 'property',
+        lat: -1.2800,
+        lng: 36.8500,
+        status: 'active',
+        lastUpdate: '30 minutes ago',
+        borrower: 'Jane Smith'
+    }
+];
+
+function loadCollateralMap() {
+    // Hide loading screen
+    document.getElementById('map-loading').style.display = 'none';
+    document.getElementById('map-container').style.display = 'block';
+    
+    // Initialize map centered on Nairobi, Kenya
+    collateralMap = L.map('map-container').setView([-1.2921, 36.8219], 10);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(collateralMap);
+    
+    // Add collateral markers
+    collateralLocations.forEach(location => {
+        const markerColor = getMarkerColor(location.status);
+        const marker = L.marker([location.lat, location.lng], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            })
+        }).addTo(collateralMap);
+        
+        // Add popup with collateral information
+        marker.bindPopup(`
+            <div style="min-width: 200px;">
+                <h6><i class="fas fa-${getTypeIcon(location.type)}"></i> ${location.name}</h6>
+                <p><strong>Type:</strong> ${location.type}</p>
+                <p><strong>Status:</strong> <span class="badge badge-${getStatusClass(location.status)}">${location.status}</span></p>
+                <p><strong>Borrower:</strong> ${location.borrower}</p>
+                <p><strong>Last Update:</strong> ${location.lastUpdate}</p>
+                <div class="mt-2">
+                    <a href="{% url 'finance:loan-analytics' %}" class="btn btn-sm btn-primary">View Details</a>
+                </div>
+            </div>
+        `);
+    });
+    
+    // Fit map to show all markers
+    if (collateralLocations.length > 0) {
+        const group = new L.featureGroup(collateralMap._layers);
+        collateralMap.fitBounds(group.getBounds().pad(0.1));
+    }
+}
+
+function getMarkerColor(status) {
+    switch(status) {
+        case 'active': return '#28a745';
+        case 'warning': return '#ffc107';
+        case 'critical': return '#dc3545';
+        default: return '#6c757d';
+    }
+}
+
+function getTypeIcon(type) {
+    switch(type) {
+        case 'vehicle': return 'car';
+        case 'equipment': return 'tools';
+        case 'property': return 'home';
+        case 'vault': return 'gem';
+        default: return 'shapes';
+    }
+}
+
+function getStatusClass(status) {
+    switch(status) {
+        case 'active': return 'success';
+        case 'warning': return 'warning';
+        case 'critical': return 'danger';
+        default: return 'secondary';
+    }
+}
+
 // Real-time updates simulation
 document.addEventListener('DOMContentLoaded', function() {
     // Simulate real-time updates
@@ -338,11 +459,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('New alert simulation');
         }
     }, 5000);
-    
-    // Map initialization
-    document.getElementById('collateral-map').addEventListener('click', function() {
-        alert('Map would load with real-time collateral locations');
-    });
 });
 </script>
 {% endblock %}
