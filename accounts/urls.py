@@ -24,7 +24,8 @@ urlpatterns = [
     path('teammember_update/<int:pk>/', views.teammember_update_view, name='teammember_update'),
     path('teammember_detail/<int:pk>/', views.teammember_detail_view, name='teammember_detail'),
     path('teammember_delete/<int:pk>/', views.teammember_delete_view, name='teammember_delete'),
-    path('credentialcategoryy_list/', views.CredentialCategoryy_list_view, name='credentialcategoryy_list'),
+    path('credentialcategoryy_list/', views.CredentialCategory_list_view, name='credentialcategoryy_list'),
+     path('CredentialCategory_create/', views.CredentialCategory_create_view, name='CredentialCategory_create'),
     
 
 

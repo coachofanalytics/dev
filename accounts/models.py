@@ -148,7 +148,7 @@ class TeamMember(models.Model):  # 🔄 Renamed to singular (best practice)
     def __str__(self):
         return f"{self.title} ({self.category})"
 
-class CredentialCategoryy(models.Model):
+class CredentialCategory(models.Model):
     verbose_name = models.CharField(max_length=255, null=True)
     description = models.TextField(max_length=100)  # <-- this must exist
     entry_date = models.DateTimeField(auto_now_add=True)

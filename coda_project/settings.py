@@ -309,7 +309,7 @@ elif os.environ.get('ENVIRONMENT') == 'testing':
     SITEURL = "https://codamakutano.herokuapp.com"
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     DEBUG = True
-elif os.environ.get('ENVIRONMENT') == 'staging':
+elif os.environ.get('ENVIRONMENT') == 'testing':
     SECURE_SSL_REDIRECT = True
     SITEURL = "https://codadev.herokuapp.com"
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

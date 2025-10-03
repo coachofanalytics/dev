@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 import re
 
-from .models import CustomerUser, Department, Credential, TaskGroup
+from .models import CustomerUser, Department, Credential, TaskGroup,CredentialCategory
 
 # ------------------------------
 # Helpers
@@ -176,3 +176,14 @@ class TeamMemberForm(forms.ModelForm):
         model = TeamMember
         fields = ['category', 'title', 'description']
 
+
+class CredentialCategoryForm(forms.ModelForm):
+    class Meta:
+        model = CredentialCategory
+        fields = ["description", "verbose_name", "is_active", "is_featured"]
+        widgets = {
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "verbose_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter verbose name"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "is_featured": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }

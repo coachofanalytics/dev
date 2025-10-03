@@ -3,11 +3,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,CredentialCategoryForm
+
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategoryy
+from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -421,10 +422,27 @@ def teammember_delete_view(request, pk):
 # def credentialcategory_list_view(request):
 #     categories = CredentialCategory.objects.all()
 #     return render(request, "accounts/credentialcategory_lis.html", {"categories": categories})
-def CredentialCategoryy_list_view(request):
-    categories=CredentialCategoryy.objects.all()
+def CredentialCategory_list_view(request):
+    categories=CredentialCategory.objects.all()
     return render(request,"accounts/credentialcategory_list.html",{"categories":categories}
+    
+                  
+
                   )
+from django.shortcuts import render, redirect
+from .forms import CredentialCategoryForm
+
+def CredentialCategory_create_view(request):
+    if request.method == "POST":
+        form = CredentialCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:credentialcategory_list")  # make sure this URL name exists
+    else:
+        form = CredentialCategoryForm()
+
+    return render(request, "accounts/credentialcategory_create.html", {"form": form})
+
 
 
 
