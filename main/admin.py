@@ -29,4 +29,5 @@ class ServiceCategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}  # Optional: auto-generate slug from name
 
 
+
 admin.site.register(WCAGStandardWebsite)

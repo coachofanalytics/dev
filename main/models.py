@@ -172,9 +172,6 @@ class Assets(models.Model):
 
     def __str__(self):
         return self.name or "Unnamed Asset"
-
-
-
 class WCAGStandardWebsite(models.Model):
     company = models.CharField(max_length=500, null=True, blank=True)
     app_name = models.CharField(max_length=500, null=True, blank=True)
@@ -182,16 +179,10 @@ class WCAGStandardWebsite(models.Model):
     website_url = models.FileField(upload_to='uploads/', null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(null=True, blank=True)
+    test_field = models.CharField(max_length=10, null=True, blank=True)  # <-- TEMP
 
     def __str__(self):
         return self.page_name or "Unnamed Page"
-
-
-
-
-
-
-
 
 
 

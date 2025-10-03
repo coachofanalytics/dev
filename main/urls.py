@@ -60,7 +60,36 @@ urlpatterns = [
 # main/urls.py
 from django.urls import path
 from . import views
+from django.contrib import admin
+from django.urls import path
+
+urlpatterns = [
+    path('admin/', admin.site.urls),  # This enables the admin panel at /admin/
+]
 
 urlpatterns = [
     path('', views.home, name='main_home'),
+]
+
+from django.urls import path
+from .views import WCAGStandardWebsiteListView
+
+urlpatterns = [
+   path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list')
+]
+
+from django.urls import path
+from django.views.generic import RedirectView
+from .views import WCAGStandardWebsiteListView
+
+urlpatterns = [
+    path('', RedirectView.as_view(url='/websites/')),  # 👈 redirect root to websites/
+    path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
+]
+from django.urls import path
+from .views import home, WCAGStandardWebsiteListView
+
+urlpatterns = [
+    path('', home, name='home'),  # 👈 homepage
+    path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
 ]

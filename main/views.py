@@ -321,3 +321,23 @@ from django.shortcuts import render
 
 def home(request):
     return render(request, 'main/home.html')
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'main/home.html')
+
+from django.views.generic import ListView
+from .models import WCAGStandardWebsite
+
+class WCAGStandardWebsiteListView(ListView):
+    model = WCAGStandardWebsite
+    template_name = 'main/website_list.html'  # Custom template
+    context_object_name = 'websites'  # Optional: changes the default 'object_list'
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'main/home.html')
+class WCAGStandardWebsiteListView(ListView):
+    model = WCAGStandardWebsite
+    template_name = 'main/website_list.html'  # Explicit path
+    context_object_name = 'websites'
