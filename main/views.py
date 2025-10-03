@@ -351,3 +351,8 @@ class WCAGStandardWebsiteCreateView(CreateView):
     fields = ['company', 'app_name', 'page_name', 'website_url']  # exclude auto fields like created_at
     template_name = 'main/website_form.html'
     success_url = reverse_lazy('website-list')  # redirect after successful form submission
+from django.views.generic.detail import DetailView
+
+class WCAGStandardWebsiteDetailView(DetailView):
+    model = WCAGStandardWebsite
+    template_name = 'main/website_detail.html'

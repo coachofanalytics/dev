@@ -102,4 +102,5 @@ urlpatterns = [
     path('', home, name='home'),
     path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
     path('websites/add/', WCAGStandardWebsiteCreateView.as_view(), name='website-add'),
+    path('websites/<int:pk>/', WCAGStandardWebsiteDetailView.as_view(), name='website-detail'),
 ]
