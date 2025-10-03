@@ -21,6 +21,8 @@ urlpatterns = [
     path('processing/', views.userlist, name='processing-users'),
     path('user/<int:pk>/update/', UserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='user-update'),
     path('superuser/<int:pk>/update/', SuperuserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='superuser-update'),
+    path('account-list/', views.account_list, name='account_list'),
+    path('create-account/', views.create_account, name='create_account'),
    
     path('thank/',views.thank, name='thank-you'),
     

@@ -118,3 +118,9 @@ class LoginForm(forms.Form):
 #         labels = {
 #             'agree': 'I agree to the terms and conditions'
 #         }
+
+# form for account model
+class AccountForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ('name',)
