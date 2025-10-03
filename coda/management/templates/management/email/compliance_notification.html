@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Required: Task Completion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .alert {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .stats {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .stats h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .stats ul {
+            list-style: none;
+            padding: 0;
+        }
+        .stats li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .stats li:last-child {
+            border-bottom: none;
+        }
+        .stats strong {
+            color: #007bff;
+            min-width: 150px;
+            display: inline-block;
+        }
+        .steps {
+            background-color: #e7f3ff;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .steps h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .steps ol {
+            padding-left: 20px;
+        }
+        .steps li {
+            margin-bottom: 10px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .cta-button:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+        }
+        .urgent {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-left: 5px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .urgent h3 {
+            margin-top: 0;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">CODA Analytics</div>
+            <h2>Action Required: Task Completion</h2>
+        </div>
+        
+        <p>Dear {{ employee_name }},</p>
+        
+        <p>We hope this email finds you well. As part of our monthly payroll process, we need to inform you about your task completion status for <strong>{{ target_month }}/{{ target_year }}</strong>.</p>
+        
+        <div class="stats">
+            <h3>📊 Your Current Status</h3>
+            <ul>
+                <li><strong>Completion Rate:</strong> {{ completion_rate }}%</li>
+                <li><strong>Total Tasks Assigned:</strong> {{ total_tasks }}</li>
+                <li><strong>Tasks Completed:</strong> {{ completed_tasks }}</li>
+                <li><strong>Required for Approval:</strong> {{ required_tasks }} ({{ threshold }}%)</li>
+                <li><strong>Still Needed:</strong> {{ missing_tasks }} tasks</li>
+            </ul>
+        </div>
+        
+        {% if missing_tasks > 0 %}
+        <div class="urgent">
+            <h3>🚨 Urgent Action Required</h3>
+            <p>To be included in this month's payroll approval, you need to complete <strong>{{ missing_tasks }}</strong> more tasks by the <strong>{{ deadline }}</strong>.</p>
+            <p>Your current completion rate of <strong>{{ completion_rate }}%</strong> is below the required <strong>{{ threshold }}%</strong> threshold.</p>
+        </div>
+        {% else %}
+        <div class="alert">
+            <h3>✅ Great Progress!</h3>
+            <p>You've already met the minimum completion requirement! However, we encourage you to complete more tasks for better performance tracking.</p>
+        </div>
+        {% endif %}
+        
+        <div class="steps">
+            <h3>🎯 Next Steps</h3>
+            <ol>
+                <li><strong>Log into the task management system</strong> - Use your credentials to access your dashboard</li>
+                <li><strong>Review your assigned tasks</strong> - Check which tasks are still pending</li>
+                <li><strong>Complete your pending tasks</strong> - Focus on the {{ missing_tasks }} tasks needed</li>
+                <li><strong>Submit evidence for completed tasks</strong> - Upload proof of completion (GoToMeeting links, documents, etc.)</li>
+                <li><strong>Verify your completion rate</strong> - Ensure you reach the {{ threshold }}% completion threshold</li>
+            </ol>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ dashboard_url }}" class="cta-button">Go to Dashboard</a>
+            <a href="{{ tasks_url }}" class="cta-button" style="background-color: #28a745; margin-left: 10px;">View My Tasks</a>
+        </div>
+        
+        <div class="alert">
+            <h3>💡 Important Information</h3>
+            <ul>
+                <li><strong>Deadline:</strong> {{ deadline }}</li>
+                <li><strong>Current Date:</strong> {{ current_date }}</li>
+                <li><strong>Threshold:</strong> {{ threshold }}% completion rate required</li>
+                <li><strong>Impact:</strong> Non-compliance will result in exclusion from this month's payroll approval</li>
+            </ul>
+        </div>
+        
+        <p>Once you meet the {{ threshold }}% completion requirement, your name will be automatically added to the payroll approval list for next month's submission.</p>
+        
+        <p>If you have any questions or need assistance with task completion, please contact your supervisor or the HR department immediately.</p>
+        
+        <p>We appreciate your attention to this matter and look forward to your improved task completion.</p>
+        
+        <p>Best regards,<br>
+        <strong>HR Department</strong><br>
+        CODA Analytics</p>
+        
+        <div class="footer">
+            <hr>
+            <p>This email was sent on {{ current_date }} regarding task completion for {{ target_month }}/{{ target_year }}.</p>
+            <p>Task completion data is updated daily. Please ensure all evidence is submitted before the deadline.</p>
+            <p>For technical support, contact: support@codanalytics.net</p>
+        </div>
+    </div>
+</body>
+</html>

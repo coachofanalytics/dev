@@ -14,7 +14,7 @@ from . import views_automation
 
 # Import enhanced budget views
 from . import views_enhanced_budget, views_finance_dashboard, views_legacy_dashboard, views_unified_department
-from . import views_projections, views_estimates, views_approvals, views_detailed_budget
+from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals
 
 # Import unified budget views (Phase 3)
 from . import views_unified_budget
@@ -269,6 +269,15 @@ urlpatterns = [
         path('approvals/projections/<int:projection_id>/', views_approvals.approve_budget_projection, name='approve-projection'),
         path('approvals/projections/<int:projection_id>/detail/', views_approvals.budget_projection_detail, name='projection-detail'),
         path('my-projections/', views_approvals.my_budget_projections, name='my-projections'),
+        
+        # Enhanced Budget Approvals with 33% Compliance
+        path('approvals/enhanced/', views_enhanced_approvals.enhanced_budget_projection_approvals, name='enhanced-budget-approvals'),
+        path('approvals/compliance/', views_enhanced_approvals.compliance_report_dashboard, name='compliance-dashboard'),
+        path('approvals/compliance/export/', views_enhanced_approvals.compliance_export, name='compliance-export'),
+        path('approvals/compliance/employee/<int:employee_id>/', views_enhanced_approvals.individual_compliance_detail, name='individual-compliance'),
+        path('approvals/compliance/department/<int:department_id>/', views_enhanced_approvals.department_compliance_detail, name='department-compliance'),
+        path('approvals/budget/<int:budget_id>/compliance/', views_enhanced_approvals.budget_compliance_integration, name='budget-compliance'),
+        path('api/send-compliance-notifications/', views_enhanced_approvals.send_compliance_notifications, name='send-compliance-notifications'),
         
         # Detailed Budget Breakdown
         path('detailed-breakdown/<int:projection_id>/', views_detailed_budget.detailed_budget_breakdown, name='detailed-budget-breakdown'),
