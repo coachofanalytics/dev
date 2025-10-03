@@ -158,7 +158,7 @@
                                         <tr>
                                             <td>{{ projection.id }}</td>
                                             <td>{{ projection.company }}</td>
-                                            <td>{{ projection.department.name if projection.department else 'All' }}</td>
+                                            <td>{% if projection.department %}{{ projection.department.name }}{% else %}All{% endif %}</td>
                                             <td>{{ projection.get_horizon_display }}</td>
                                             <td>${{ projection.total_estimate|floatformat:2 }}</td>
                                             <td>

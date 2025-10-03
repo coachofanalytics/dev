@@ -77,6 +77,7 @@ def get_dashboard_config(user_role, user=None):
                 {'title': 'User Management', 'url': '/admin/', 'icon': 'fas fa-users-cog'},
                 {'title': 'Loan Management', 'url': '/finance/admin/loan-analytics/', 'icon': 'fas fa-money-bill-wave'},
                 {'title': 'Smart Collateral', 'url': '/finance/admin/smart-collateral-dashboard/', 'icon': 'fas fa-shield-alt'},
+                {'title': 'Investor Presentation', 'url': '/finance/presentation/', 'icon': 'fas fa-presentation'},
                 {'title': 'Platform Health', 'url': '/ai_services/diaspora/ai-health/', 'icon': 'fas fa-heartbeat'},
             ]
         },

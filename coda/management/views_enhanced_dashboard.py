@@ -68,7 +68,7 @@ def enhanced_task_dashboard(request):
     except Exception as e:
         logger.error(f"Error loading enhanced dashboard: {e}")
         messages.error(request, f"Error loading dashboard: {str(e)}")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
 
 
 @login_required

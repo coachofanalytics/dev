@@ -156,6 +156,7 @@ urlpatterns = [
     path('admin/loan-applications/<int:pk>/recompute/', views.recompute_loan_application, name='recompute-loan-application'),
     path('admin/loan-analytics/', views.loan_analytics, name='loan-analytics'),
     path('admin/smart-collateral-dashboard/', views.smart_collateral_dashboard, name='smart-collateral-dashboard'),
+    path('presentation/', views.loan_system_presentation, name='loan-system-presentation'),
     path('admin/loan-applications/<int:pk>/notify-guarantor-available/', views.notify_guarantor_available, name='notify-guarantor-available'),
      #FOOD & SUPPLIERS
     path(

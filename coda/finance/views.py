@@ -2973,6 +2973,11 @@ def smart_collateral_dashboard(request):
     return render(request, "finance/smart_collateral_dashboard.html", context)
 
 
+def loan_system_presentation(request):
+    """Investor presentation for the smart loan system"""
+    return render(request, "finance/loan_system_presentation.html")
+
+
 def admin_loan_data_modified(form, username, user_data):
     previous_balance_amount = user_data.order_by("-id")[0].balance_amount
     try:
