@@ -97,10 +97,19 @@ urlpatterns = [
 
 from django.urls import path
 from .views import home, WCAGStandardWebsiteListView, WCAGStandardWebsiteCreateView
+from django.urls import path
+from .views import (
+    WCAGStandardWebsiteListView,
+    WCAGStandardWebsiteDetailView,
+    WCAGStandardWebsiteCreateView,
+    WCAGStandardWebsiteUpdateView,
+    WCAGStandardWebsiteDeleteView,
+)
 
 urlpatterns = [
-    path('', home, name='home'),
     path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
     path('websites/add/', WCAGStandardWebsiteCreateView.as_view(), name='website-add'),
     path('websites/<int:pk>/', WCAGStandardWebsiteDetailView.as_view(), name='website-detail'),
+    path('websites/<int:pk>/edit/', WCAGStandardWebsiteUpdateView.as_view(), name='website-edit'),
+    path('websites/<int:pk>/delete/', WCAGStandardWebsiteDeleteView.as_view(), name='website-delete'),
 ]

@@ -33,6 +33,8 @@ from langchain.schema import HumanMessage
 from django.db.models import F, FloatField, Case, When, Value, Subquery, OuterRef
 from django.contrib.auth import get_user_model
 from django.db.models.functions import Coalesce
+from django.views.generic.edit import DeleteView
+
 
 import requests
 from accounts.choices import CategoryChoices
@@ -356,3 +358,11 @@ from django.views.generic.detail import DetailView
 class WCAGStandardWebsiteDetailView(DetailView):
     model = WCAGStandardWebsite
     template_name = 'main/website_detail.html'
+from django.views.generic.edit import DeleteView
+from .models import WCAGStandardWebsite
+from django.urls import reverse_lazy
+
+class WCAGStandardWebsiteDeleteView(DeleteView):
+    model = WCAGStandardWebsite  # ✅ Required line
+    template_name = 'main/website_confirm_delete.html'
+    success_url = reverse_lazy('website-list')
