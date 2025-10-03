@@ -160,3 +160,4 @@ class Command(BaseCommand):
         self.stdout.write("Analysis Complete!")
         self.stdout.write("=" * 80)
 
+
