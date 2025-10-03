@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberFo
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember
+from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategoryy
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -415,12 +415,16 @@ def teammember_delete_view(request, pk):
 
     return render(request, "accounts/Teammemberdelete.html", {'team_member': team_member})
 
-from django.shortcuts import render
-from .models import CredentialCategory
+# from django.shortcuts import render
+# from .models import CredentialCategory
 
-def credentialcategory_list_view(request):
-    categories = CredentialCategory.objects.all()
-    return render(request, "accounts/credentialcategory_lis.html", {"categories": categories})
+# def credentialcategory_list_view(request):
+#     categories = CredentialCategory.objects.all()
+#     return render(request, "accounts/credentialcategory_lis.html", {"categories": categories})
+def CredentialCategoryy_list_view(request):
+    categories=CredentialCategoryy.objects.all()
+    return render(request,"accounts/credentialcategory_list.html",{"categories":categories}
+                  )
 
 
 

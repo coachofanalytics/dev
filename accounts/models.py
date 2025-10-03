@@ -151,7 +151,7 @@ class TeamMember(models.Model):  # 🔄 Renamed to singular (best practice)
 class CredentialCategoryy(models.Model):
     verbose_name = models.CharField(max_length=255, null=True)
     description = models.TextField(max_length=100)  # <-- this must exist
-    entry_date = models.DateField(null=False)
+    entry_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(null=False)
     is_featured = models.BooleanField(null=True)
 
