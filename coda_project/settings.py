@@ -110,6 +110,8 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "main.context_processors.images",
                 "main.context_processors.googledriveurl",
+                "main.context_processors.services",
+                "main.context_processors.healthcare_images",
             ],
             # 'libraries': {
             #     'customfilters': 'application.templatetags.customfilters',

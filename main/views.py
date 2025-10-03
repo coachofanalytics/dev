@@ -97,7 +97,8 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-    page_instance = Page.objects.get(page_name='Home')
+    # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
+    page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page = page_instance)
     service = Service.objects.all()
     subservice = SubService.objects.all()
@@ -134,7 +135,8 @@ def layout(request):
     return render(request, "main/home_templates/home.html",context)
 
 def History(request):
-    page_instance = Page.objects.get(page_name='About')
+    # Ensure About page exists to avoid crashes when the DB is empty
+    page_instance, _ = Page.objects.get_or_create(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
             
@@ -193,6 +195,69 @@ from .models import Service,ContactUs
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
     return render(request, 'main/services.html', {'services': services})
+
+
+def healthcare_info(request):
+    """
+    Render the Healthcare Information page (per spec this page presents financial services content).
+    """
+    hero = {
+        'title': 'FINANCIAL SERVICES',
+        'subtitle': 'Secure your wealth, invest smart, and manage your cross-border finances with confidence.',
+        'cta_text': 'BOOK A FINANCIAL CONSULTATION',
+        'hero_image': 'main/img/healthcare/doctor.svg',
+    }
+
+    mission = {
+        'heading': 'Empowering Your Global Financial Future',
+        'paragraph': 'International finance, investments, and repatriating funds can be complex. Our platform provides trusted tools and expert guidance to help you manage wealth across borders with confidence and compliance.'
+    }
+
+    sections = [
+        {
+            'number': '1',
+            'title': 'Banking and Investment',
+            'description': 'Access strategic advice on managing assets both locally and in Kenya. Connect with trusted partners for banking, real estate, and portfolio growth opportunities.',
+            'bullets': [
+                'Diaspora-focused mortgage and loan referrals',
+                'Investment advisory for Kenyan stocks, bonds, and real estate',
+                'Guidance on setting up international and Kenyan bank accounts',
+                'Tax consultation and dual residency compliance',
+            ],
+            'cta_text': 'Explore Investment Portfolios',
+            'image': 'main/img/healthcare/patient.svg',
+            'align': 'left',
+        },
+        {
+            'number': '2',
+            'title': 'Remittances and Currency Exchange',
+            'description': 'Ensure your money gets home quickly, safely, and cost-effectively. We compare and vet providers for the best rates and lowest fees.',
+            'bullets': [
+                'Real-time currency exchange comparisons',
+                'Verified low-fee remittance partners',
+                'Guidance on large fund transfers and declarations',
+                'Alerts on economic and regulatory changes affecting transfers',
+            ],
+            'cta_text': 'View Remittance Calculator',
+            'image': 'main/img/healthcare/doctor.svg',
+            'align': 'right',
+        }
+    ]
+
+    contact_cta = {
+        'heading': 'URGENT MEDICAL ADVISORY',
+        'description': "For life-threatening emergencies, always dial your host country's local emergency number first.",
+        'cta_text': 'View Emergency Contacts by Country',
+    }
+
+    context = {
+        'hero': hero,
+        'mission': mission,
+        'sections': sections,
+        'contact_cta': contact_cta,
+    }
+
+    return render(request, 'main/data/healthcare_info.html', context)
 
 
 
