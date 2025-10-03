@@ -1893,6 +1893,81 @@ class BudgetSubCategory(models.Model):
         return f"{self.name}"
 
 
+class BudgetItemLibrary(models.Model):
+    """
+    Master library of budget items for all categories
+    Enables cascading dropdowns: Category → Subcategory → Item
+    Tracks usage and typical amounts from historical data
+    """
+    category = models.ForeignKey(
+        BudgetCategory, 
+        on_delete=models.CASCADE, 
+        related_name='items',
+        help_text="Budget category this item belongs to"
+    )
+    subcategory = models.ForeignKey(
+        BudgetSubCategory, 
+        on_delete=models.CASCADE, 
+        related_name='items',
+        help_text="Budget subcategory this item belongs to"
+    )
+    item_name = models.CharField(
+        max_length=200,
+        help_text="Name of the budget item (e.g., 'Safaricom internet subscription')"
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Detailed description of the item"
+    )
+    typical_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Typical/average amount based on historical data"
+    )
+    unit_type = models.CharField(
+        max_length=50,
+        blank=True,
+        default='each',
+        help_text="Unit of measurement (each, month, year, etc.)"
+    )
+    usage_count = models.IntegerField(
+        default=0,
+        help_text="Number of times this item has been used (for sorting)"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this item is active and available for selection"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _("Budget Item")
+        verbose_name_plural = _("Budget Item Library")
+        ordering = ['-usage_count', 'item_name']
+        unique_together = ['category', 'subcategory', 'item_name']
+    
+    def __str__(self):
+        return f"{self.category.name} → {self.subcategory.name} → {self.item_name}"
+    
+    def increment_usage(self):
+        """Increment usage count when item is selected"""
+        self.usage_count += 1
+        self.save(update_fields=['usage_count'])
+    
+    def update_typical_amount(self, new_amount):
+        """Update typical amount (moving average)"""
+        if self.typical_amount and self.usage_count > 0:
+            # Calculate moving average
+            total = (self.typical_amount * self.usage_count) + new_amount
+            self.typical_amount = total / (self.usage_count + 1)
+        else:
+            self.typical_amount = new_amount
+        self.save(update_fields=['typical_amount'])
+
+
 class Transaction(models.Model):
     # # Method of Category
     CAT_CHOICES = [

@@ -3,8 +3,8 @@ API endpoints for cascading form data
 Provides filtered data for Category → Subcategory → Item dropdowns
 """
 from django.http import JsonResponse
-from django.db.models import Count, Q
-from .models import BudgetCategory, BudgetSubCategory, Transaction, Budget, CodaBudget
+from django.db.models import Count, Q, Avg
+from .models import BudgetCategory, BudgetSubCategory, BudgetItemLibrary, Transaction, Budget, CodaBudget
 
 
 def api_get_subcategories(request):
@@ -33,102 +33,106 @@ def api_get_subcategories(request):
 
 def api_get_items(request):
     """
-    Get common items filtered by category and/or subcategory
+    Get items from BudgetItemLibrary filtered by category and/or subcategory
     
-    Based on historical transaction data to suggest existing items
-    and prevent data entry errors
+    Now uses predefined item library (500+ items) instead of historical data
+    Falls back to transaction history if no library items found
     
     Usage: /api/items/?category_id=5&subcategory_id=10
     """
     category_id = request.GET.get('category_id')
     subcategory_id = request.GET.get('subcategory_id')
-    department_id = request.GET.get('department_id')
     
-    # Build filter
-    filters = Q()
-    if category_id:
-        filters &= Q(category_id=category_id)
-    if subcategory_id:
-        filters &= Q(subcategory_id=subcategory_id)
-    if department_id:
-        filters &= Q(department_id=department_id)
+    if not subcategory_id and not category_id:
+        return JsonResponse({'error': 'category_id or subcategory_id required'}, status=400)
     
-    # Get items from Transaction history
-    transaction_items = Transaction.objects.filter(
-        filters
-    ).exclude(
-        type__isnull=True
-    ).exclude(
-        type=''
-    ).values('type').annotate(
-        count=Count('id')
-    ).order_by('-count')[:50]  # Top 50 most common
-    
-    # Get items from Budget
-    budget_items = Budget.objects.filter(
-        filters
-    ).exclude(
-        item_name__isnull=True
-    ).exclude(
-        item_name=''
-    ).values('item_name').annotate(
-        count=Count('id')
-    ).order_by('-count')[:50]
-    
-    # Get items from CodaBudget
-    codabudget_items = CodaBudget.objects.filter(
-        filters
-    ).exclude(
-        item__isnull=True
-    ).exclude(
-        item=''
-    ).values('item').annotate(
-        count=Count('id')
-    ).order_by('-count')[:50]
-    
-    # Combine and deduplicate
-    items_dict = {}
-    
-    # Add transaction items
-    for item in transaction_items:
-        name = item['type'].strip()
-        if name:
-            items_dict[name] = items_dict.get(name, 0) + item['count']
-    
-    # Add budget items
-    for item in budget_items:
-        name = item['item_name'].strip()
-        if name:
-            items_dict[name] = items_dict.get(name, 0) + item['count']
-    
-    # Add codabudget items
-    for item in codabudget_items:
-        name = item['item'].strip()
-        if name:
-            items_dict[name] = items_dict.get(name, 0) + item['count']
-    
-    # Sort by frequency
-    sorted_items = sorted(
-        items_dict.items(), 
-        key=lambda x: x[1], 
-        reverse=True
-    )
-    
-    # Format response
-    items_list = [
-        {'name': name, 'frequency': count} 
-        for name, count in sorted_items[:30]  # Top 30
-    ]
-    
-    return JsonResponse({
-        'items': items_list,
-        'count': len(items_list),
-        'filters': {
-            'category_id': category_id,
-            'subcategory_id': subcategory_id,
-            'department_id': department_id,
-        }
-    })
+    try:
+        # PRIMARY: Get items from BudgetItemLibrary
+        filters = Q(is_active=True)
+        
+        if subcategory_id:
+            filters &= Q(subcategory_id=subcategory_id)
+        elif category_id:
+            filters &= Q(category_id=category_id)
+        
+        library_items = BudgetItemLibrary.objects.filter(
+            filters
+        ).values(
+            'id', 
+            'item_name', 
+            'typical_amount', 
+            'unit_type', 
+            'usage_count',
+            'description'
+        ).order_by('-usage_count', 'item_name')[:100]
+        
+        if library_items:
+            # Return library items (preferred)
+            items_list = [
+                {
+                    'id': item['id'],
+                    'name': item['item_name'],
+                    'typical_amount': float(item['typical_amount']) if item['typical_amount'] else None,
+                    'unit_type': item['unit_type'],
+                    'usage_count': item['usage_count'],
+                    'description': item['description'],
+                    'source': 'library'
+                }
+                for item in library_items
+            ]
+            
+            return JsonResponse({
+                'items': items_list,
+                'count': len(items_list),
+                'source': 'Budget Item Library',
+                'filters': {
+                    'category_id': category_id,
+                    'subcategory_id': subcategory_id,
+                }
+            })
+        
+        # FALLBACK: Use historical transaction data if no library items
+        filters = Q()
+        if category_id:
+            filters &= Q(category_id=category_id)
+        if subcategory_id:
+            filters &= Q(subcategory_id=subcategory_id)
+        
+        # Get items from Transaction history
+        transaction_items = Transaction.objects.filter(
+            filters
+        ).exclude(
+            type__isnull=True
+        ).exclude(
+            type=''
+        ).values('type').annotate(
+            count=Count('id'),
+            avg_amount=Avg('amount')
+        ).order_by('-count')[:30]
+        
+        items_list = [
+            {
+                'name': item['type'],
+                'typical_amount': float(item['avg_amount']) if item['avg_amount'] else None,
+                'usage_count': item['count'],
+                'source': 'historical'
+            }
+            for item in transaction_items
+        ]
+        
+        return JsonResponse({
+            'items': items_list,
+            'count': len(items_list),
+            'source': 'Historical Transactions (Fallback)',
+            'message': 'No library items found. Showing historical data. Consider populating item library.',
+            'filters': {
+                'category_id': category_id,
+                'subcategory_id': subcategory_id,
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 def api_suggest_defaults(request):

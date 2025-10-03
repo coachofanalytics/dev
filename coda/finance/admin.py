@@ -18,14 +18,14 @@ try:
         LoanPerformance, LoanProduct, BudgetRequest, ApprovalPolicy,
         DisbursementRequest, AutomationAuditLog, Budget, 
         BudgetEstimationTemplate, MultiYearBudgetPlan, BudgetEstimateProjection,
-        BudgetCategory, BudgetSubCategory, Transaction
+        BudgetCategory, BudgetSubCategory, BudgetItemLibrary, Transaction
     )
 except ImportError:
     # Fallback if consolidated models not available
     LoanApplication = Payment_Information = Payment_History = LoanPerformance = LoanProduct = None
     BudgetRequest = ApprovalPolicy = DisbursementRequest = AutomationAuditLog = None
     Budget = BudgetEstimationTemplate = MultiYearBudgetPlan = BudgetEstimateProjection = None
-    BudgetCategory = BudgetSubCategory = Transaction = None
+    BudgetCategory = BudgetSubCategory = BudgetItemLibrary = Transaction = None
 
 
 @admin.register(LoanProduct)
@@ -1100,4 +1100,38 @@ class BudgetSubCategoryAdmin(admin.ModelAdmin):
     
     def transaction_count(self, obj):
         return obj.transaction_subcategory.count()
-    transaction_count.short_description = 'Transactions' 
+    transaction_count.short_description = 'Transactions'
+
+
+@admin.register(BudgetItemLibrary)
+class BudgetItemLibraryAdmin(admin.ModelAdmin):
+    """Admin for budget item library (cascading dropdown items)"""
+    
+    list_display = [
+        'id', 'item_name', 'category', 'subcategory', 
+        'typical_amount', 'usage_count', 'is_active'
+    ]
+    
+    list_filter = ['category', 'subcategory', 'is_active', 'unit_type']
+    
+    search_fields = ['item_name', 'description']
+    
+    list_editable = ['is_active']
+    
+    readonly_fields = ['usage_count', 'created_at', 'updated_at']
+    
+    fieldsets = [
+        ('Item Details', {
+            'fields': ['category', 'subcategory', 'item_name', 'description']
+        }),
+        ('Pricing', {
+            'fields': ['typical_amount', 'unit_type']
+        }),
+        ('Usage & Status', {
+            'fields': ['usage_count', 'is_active', 'created_at', 'updated_at']
+        }),
+    ]
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('category', 'subcategory') 
