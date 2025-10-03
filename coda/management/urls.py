@@ -1,4 +1,5 @@
 from django.urls import path
+from django.shortcuts import render
 from management import views
 from management.views import (
                         TaskDetailView,
@@ -166,5 +167,6 @@ urlpatterns = [
     path('leaderboard/', task_leaderboard, name='leaderboard'),
     path('task-history/', task_history_view, name='task-history'),
     path('tier-analytics/', tier_analytics, name='tier-analytics'),
+    path('button-testing/', lambda request: render(request, 'management/button_testing_dashboard.html'), name='button-testing'),
 
 ]
