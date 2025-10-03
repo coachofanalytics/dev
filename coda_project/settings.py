@@ -215,6 +215,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_ROOT = os.path.join(BASE_DIR, '..', "staticfiles")
 STATIC_URL = "/static/"
 STATICFILES_DIR = os.path.join(BASE_DIR, "static")
+# Use simple storage to avoid CSS post-processing errors
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
 
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
@@ -304,6 +307,11 @@ if os.environ.get('ENVIRONMENT') == 'production':
 elif os.environ.get('ENVIRONMENT') == 'testing':
     SECURE_SSL_REDIRECT = True
     SITEURL = "https://codamakutano.herokuapp.com"
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    DEBUG = True
+elif os.environ.get('ENVIRONMENT') == 'staging':
+    SECURE_SSL_REDIRECT = True
+    SITEURL = "https://codadev.herokuapp.com"
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     DEBUG = True
 else:
