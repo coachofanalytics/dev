@@ -1,0 +1,347 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Salary Dashboard - CODA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    .metric-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .compliance-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .compliant { background-color: #d4edda; color: #155724; }
+    .non-compliant { background-color: #f8d7da; color: #721c24; }
+    .salary-table { margin-top: 30px; }
+    .department-filter { margin-bottom: 20px; }
+    .summary-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-money-bill-wave text-primary"></i>
+                Salary Dashboard
+            </h1>
+            <p class="text-muted">Comprehensive salary management and compliance monitoring</p>
+        </div>
+    </div>
+
+    <!-- Period and Department Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-calendar-alt"></i> Period Information
+                    </h5>
+                    <p class="mb-1"><strong>Target Period:</strong> {{ target_month }}/{{ target_year }}</p>
+                    <p class="mb-1"><strong>Current Date:</strong> {{ current_date|date:"M d, Y" }}</p>
+                    <p class="mb-0"><strong>Department:</strong> {{ selected_department.name|default:"All Departments" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-filter"></i> Department Filter
+                    </h5>
+                    <form method="get" class="department-filter">
+                        <div class="form-group mb-0">
+                            <select name="department_id" class="form-control" onchange="this.form.submit()">
+                                <option value="">All Departments</option>
+                                {% for dept in departments %}
+                                    <option value="{{ dept.id }}" {% if selected_department and selected_department.id == dept.id %}selected{% endif %}>
+                                        {{ dept.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if salary_data.error %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>Error:</strong> {{ salary_data.error }}
+    </div>
+    {% else %}
+
+    <!-- Summary Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-success">${{ salary_data.total_amount|floatformat:2 }}</div>
+                <div class="metric-label">Total Salaries</div>
+                <small class="text-muted">(Compliant Employees)</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-primary">{{ salary_data.compliant_count }}</div>
+                <div class="metric-label">Compliant Employees</div>
+                <small class="text-muted">(≥33% completion)</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-warning">{{ salary_data.non_compliant_count }}</div>
+                <div class="metric-label">Non-Compliant</div>
+                <small class="text-muted">(<33% completion)</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-info">{{ salary_data.total_employees }}</div>
+                <div class="metric-label">Total Employees</div>
+                <small class="text-muted">(Active staff)</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Integration Summary -->
+    {% if budget_summary %}
+    <div class="summary-section">
+        <h4><i class="fas fa-chart-pie"></i> Monthly Budget Summary</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <div class="metric-value text-success">${{ budget_summary.totals.total_salaries|floatformat:2 }}</div>
+                    <div class="metric-label">Employee Salaries</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <div class="metric-value text-primary">${{ budget_summary.totals.total_budget_items|floatformat:2 }}</div>
+                    <div class="metric-label">Budget Items</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <div class="metric-value text-info">${{ budget_summary.totals.grand_total|floatformat:2 }}</div>
+                    <div class="metric-label">Grand Total</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="{% url 'finance:enhanced-budget-approvals' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-right"></i> Go to Budget Approvals
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+                <button type="button" class="btn btn-outline-success" onclick="exportSalaryData()">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <a href="{% url 'finance:compliance-report' %}" class="btn btn-outline-info">
+                    <i class="fas fa-chart-bar"></i> Compliance Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliant Employees Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-check-circle text-success"></i>
+                Compliant Employees ({{ salary_data.compliant_count }})
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if salary_data.compliant_employees %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Tasks</th>
+                            <th>Points</th>
+                            <th>Max Points</th>
+                            <th>Compliance</th>
+                            <th>Salary</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in salary_data.compliant_employees %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ emp.full_name }}</strong><br>
+                                    <small class="text-muted">{{ emp.username }}</small>
+                                </div>
+                            </td>
+                            <td>{{ emp.department.name|default:"Unknown" }}</td>
+                            <td>{{ emp.task_count }}</td>
+                            <td>{{ emp.total_points|floatformat:2 }}</td>
+                            <td>{{ emp.total_max_points|floatformat:2 }}</td>
+                            <td>
+                                <span class="compliance-badge compliant">
+                                    {{ emp.compliance_rate|floatformat:1 }}%
+                                </span>
+                            </td>
+                            <td>
+                                <strong class="text-success">${{ emp.salary_amount|floatformat:2 }}</strong>
+                            </td>
+                            <td>
+                                <a href="{% url 'finance:employee-salary-detail' emp.employee.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-2">No compliant employees found for this period.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Non-Compliant Employees Table -->
+    {% if salary_data.non_compliant_employees %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle text-warning"></i>
+                Non-Compliant Employees ({{ salary_data.non_compliant_count }})
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Tasks</th>
+                            <th>Points</th>
+                            <th>Max Points</th>
+                            <th>Compliance</th>
+                            <th>Salary</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in salary_data.non_compliant_employees %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ emp.full_name }}</strong><br>
+                                    <small class="text-muted">{{ emp.username }}</small>
+                                </div>
+                            </td>
+                            <td>{{ emp.department.name|default:"Unknown" }}</td>
+                            <td>{{ emp.task_count }}</td>
+                            <td>{{ emp.total_points|floatformat:2 }}</td>
+                            <td>{{ emp.total_max_points|floatformat:2 }}</td>
+                            <td>
+                                <span class="compliance-badge non-compliant">
+                                    {{ emp.compliance_rate|floatformat:1 }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-muted">${{ emp.salary_amount|floatformat:2 }}</span>
+                                <small class="d-block text-danger">Not included in budget</small>
+                            </td>
+                            <td>
+                                <a href="{% url 'finance:employee-salary-detail' emp.employee.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function refreshData() {
+    // Show loading indicator
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    btn.disabled = true;
+    
+    // Reload the page
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}
+
+function exportSalaryData() {
+    // Get current filters
+    const urlParams = new URLSearchParams(window.location.search);
+    const departmentId = urlParams.get('department_id') || '';
+    
+    // Build export URL
+    const exportUrl = `{% url 'finance:salary-export' %}?month={{ target_month }}&year={{ target_year }}&department_id=${departmentId}&format=json`;
+    
+    // Download the data
+    window.open(exportUrl, '_blank');
+}
+
+// Auto-refresh every 5 minutes
+setInterval(() => {
+    // Only refresh if user is active (no mouse/keyboard activity for 5 minutes)
+    // This prevents unnecessary refreshes during active use
+}, 300000);
+</script>
+{% endblock %}

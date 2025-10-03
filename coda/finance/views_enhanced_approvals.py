@@ -21,6 +21,7 @@ import json
 from finance.models import BudgetEstimateProjection, ApprovalPolicy, BudgetRequest
 from finance.services.enhanced_budget_service import EnhancedBudgetService
 from finance.services.automation_service import ApprovalEngineService
+from finance.services.integrated_budget_service import IntegratedBudgetService
 from finance.utils.filter_utils import FilterUtils
 from management.services.employee_compliance_service import EmployeeComplianceService
 
@@ -40,9 +41,16 @@ def enhanced_budget_projection_approvals(request):
     # Initialize services
     compliance_service = EmployeeComplianceService()
     budget_service = EnhancedBudgetService()
+    integrated_service = IntegratedBudgetService()
     
     # Get current compliance status
     compliance_summary = compliance_service.get_compliance_summary()
+    
+    # Get current target month/year for salary calculations
+    target_month, target_year = compliance_service.get_current_target_month_year()
+    
+    # Get monthly budget summary (salaries + budget items)
+    monthly_budget_summary = integrated_service.get_monthly_budget_summary(target_month, target_year)
     
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -103,9 +111,10 @@ def enhanced_budget_projection_approvals(request):
             
             return redirect('finance:enhanced-budget-approvals')
     
-    # Get existing projections
+    # Get existing projections (exclude zero budgets)
     projections = BudgetEstimateProjection.objects.filter(
-        status='submitted'
+        status='submitted',
+        total_amount__gt=0  # Only include budgets with amount > $0
     ).select_related('company', 'department', 'created_by').order_by('-submitted_at')
     
     # Apply pagination
@@ -122,6 +131,9 @@ def enhanced_budget_projection_approvals(request):
     context = {
         'page_obj': page_obj,
         'compliance_summary': compliance_summary,
+        'monthly_budget_summary': monthly_budget_summary,
+        'target_month': target_month,
+        'target_year': target_year,
         'is_rule_active': compliance_summary['is_rule_active'],
         'current_date': compliance_summary['current_date'],
         'user': user,  # Add user to context

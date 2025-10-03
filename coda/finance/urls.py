@@ -14,7 +14,7 @@ from . import views_automation
 
 # Import enhanced budget views
 from . import views_enhanced_budget, views_finance_dashboard, views_legacy_dashboard, views_unified_department
-from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals
+from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals, views_salary_dashboard
 
 # Import unified budget views (Phase 3)
 from . import views_unified_budget
@@ -330,4 +330,12 @@ urlpatterns = [
     path('loan/<str:company_slug>/apply/', views_loan_budget_integration.loan_application_with_budget, name='loan-application-with-budget'),
     path('loan/<str:company_slug>/dashboard/', views_loan_budget_integration.loan_budget_dashboard, name='loan-budget-dashboard'),
     path('loan/<str:company_slug>/impact-analysis/', views_loan_budget_integration.budget_loan_impact_analysis, name='budget-loan-impact-analysis'),
+
+    #=============================SALARY DASHBOARD & INTEGRATION (PHASE 3)=====================================
+    # Salary dashboard and budget integration
+    path('salary/dashboard/', views_salary_dashboard.salary_dashboard, name='salary-dashboard'),
+    path('salary/employee/<int:employee_id>/', views_salary_dashboard.employee_salary_detail, name='employee-salary-detail'),
+    path('api/salary/compliance-report/', views_salary_dashboard.salary_compliance_report, name='salary-compliance-report'),
+    path('api/salary/update-compliance/', views_salary_dashboard.update_compliance_status, name='update-compliance-status'),
+    path('api/salary/export/', views_salary_dashboard.salary_export, name='salary-export'),
 ]

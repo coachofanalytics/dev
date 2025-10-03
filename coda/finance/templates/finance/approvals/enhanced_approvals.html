@@ -131,6 +131,65 @@
                 </a>
             </div>
 
+            <!-- Monthly Budget Summary -->
+            {% if monthly_budget_summary %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie"></i>
+                                Monthly Budget Summary ({{ target_month }}/{{ target_year }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="stats-card total">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-success">${{ monthly_budget_summary.totals.total_salaries|floatformat:2 }}</h3>
+                                            <h5>Employee Salaries</h5>
+                                            <p class="text-muted">
+                                                {{ monthly_budget_summary.salary_data.compliant_count }} compliant employees
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stats-card compliant">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-primary">${{ monthly_budget_summary.totals.total_budget_items|floatformat:2 }}</h3>
+                                            <h5>Budget Items</h5>
+                                            <p class="text-muted">
+                                                {{ monthly_budget_summary.budget_items_data.item_count }} items
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stats-card non-compliant">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-info">${{ monthly_budget_summary.totals.grand_total|floatformat:2 }}</h3>
+                                            <h5>Grand Total</h5>
+                                            <p class="text-muted">
+                                                Total monthly budget
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <a href="{% url 'finance:salary-dashboard' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-money-bill-wave"></i> View Salary Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Budget Projections Table -->
             <div class="card">
                 <div class="card-header">
