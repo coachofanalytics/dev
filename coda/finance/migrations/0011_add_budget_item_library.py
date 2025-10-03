@@ -6,7 +6,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('finance', '0007_add_vendor_and_location'),
+        ('finance', '0010_add_vendor_and_location'),
     ]
 
     operations = [
