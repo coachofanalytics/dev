@@ -295,3 +295,4 @@ def salary_export(request):
     except Exception as e:
         logger.error(f"Error exporting salary data: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+

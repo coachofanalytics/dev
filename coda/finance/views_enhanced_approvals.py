@@ -114,7 +114,7 @@ def enhanced_budget_projection_approvals(request):
     # Get existing projections (exclude zero budgets)
     projections = BudgetEstimateProjection.objects.filter(
         status='submitted',
-        total_amount__gt=0  # Only include budgets with amount > $0
+        total_estimate__gt=0  # Only include budgets with amount > $0
     ).select_related('company', 'department', 'created_by').order_by('-submitted_at')
     
     # Apply pagination

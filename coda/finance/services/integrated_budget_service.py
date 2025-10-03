@@ -207,7 +207,7 @@ class IntegratedBudgetService:
             # Get budget projections with non-zero amounts
             budget_filter = Q(
                 status='submitted',
-                total_amount__gt=0  # Exclude zero budgets
+                total_estimate__gt=0  # Exclude zero budgets
             )
             
             if department:
@@ -216,7 +216,7 @@ class IntegratedBudgetService:
             budget_projections = BudgetEstimateProjection.objects.filter(budget_filter)
             
             # Calculate totals and breakdowns
-            total_amount = sum(projection.total_amount for projection in budget_projections)
+            total_amount = sum(projection.total_estimate for projection in budget_projections)
             
             # Category breakdown
             category_breakdown = {}
@@ -228,7 +228,7 @@ class IntegratedBudgetService:
                         'total_amount': Decimal('0.00')
                     }
                 category_breakdown[category_name]['count'] += 1
-                category_breakdown[category_name]['total_amount'] += projection.total_amount
+                category_breakdown[category_name]['total_amount'] += projection.total_estimate
             
             return {
                 'budget_projections': budget_projections,
@@ -362,3 +362,4 @@ class IntegratedBudgetService:
         except Exception as e:
             self.logger.error(f"Error updating compliance status: {e}")
             return {'error': str(e)}
+
