@@ -9,7 +9,7 @@ and provide clean interfaces for views and other components.
 from .loan_service import LoanService
 from .payment_service import PaymentService
 from .budget_service import BudgetService
-from .analytics_service import FinancialAnalyticsService
+from .financial_analytics_service import FinancialAnalyticsService
 
 __all__ = [
     'LoanService',

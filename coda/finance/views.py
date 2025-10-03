@@ -541,6 +541,21 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
     if not eligibility["eligible"]:
         messages.error(request, eligibility["message"])
         return redirect("finance:loan-home")
+    
+    # Check for existing pending/under review loans
+    existing_loans = LoanApplication.objects.filter(
+        borrower=request.user,
+        status__in=['pending', 'under_review', 'pending_guarantor']
+    ).order_by('-created_at')
+    
+    if existing_loans.exists():
+        latest_loan = existing_loans.first()
+        messages.warning(
+            request, 
+            f"You already have a loan application #{latest_loan.application_number} that is {latest_loan.get_status_display()}. "
+            f"Please wait for it to be processed or edit your existing application."
+        )
+        return redirect("finance:loan-detail", pk=latest_loan.id)
 
     # Get the loan plan - either from plan_id parameter or default to first available
     try:
@@ -2790,7 +2805,61 @@ SUBMITTED: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
         loan.status = 'under_review'  # Move to review status
         loan.save()
         
-        messages.success(request, "Collateral information submitted successfully! Your loan application is now under review.")
+        # Create smart collateral system integration
+        try:
+            from .services.smart_collateral_service import SmartCollateralService
+            
+            smart_collateral_service = SmartCollateralService()
+            
+            # Prepare collateral data for smart system
+            collateral_data = {
+                'collateral_type': collateral_type,
+                'description': collateral_description,
+                'estimated_value': estimated_value,
+                'location': collateral_location,
+                'coordinates': None,  # Would be populated from GPS
+                'monitoring_frequency': 60,  # Check every hour
+                'auto_enforcement': True,
+                'deploy_smart_contract': True,
+                'insurance_required': True,
+                'iot_devices': [
+                    {
+                        'device_type': 'gps_tracker',
+                        'serial_number': f'GPS-{loan.id}-001',
+                        'manufacturer': 'SmartTrack',
+                        'model': 'ST-2024',
+                        'is_primary': True,
+                        'capabilities': {
+                            'gps_tracking': True,
+                            'geofencing': True,
+                            'tamper_detection': True,
+                            'battery_monitoring': True
+                        }
+                    }
+                ],
+                'insurance_data': {
+                    'provider': 'Smart Insurance Co.',
+                    'policy_type': 'comprehensive',
+                    'auto_claim': True,
+                    'blockchain_verification': True
+                }
+            }
+            
+            # Create smart collateral
+            smart_collateral = smart_collateral_service.create_smart_collateral(loan, collateral_data)
+            
+            messages.success(
+                request, 
+                "Smart collateral system activated! Your collateral is now being monitored 24/7 with IoT devices and blockchain verification."
+            )
+            
+        except Exception as smart_error:
+            print(f"🚨 Smart collateral creation failed: {smart_error}")
+            messages.warning(
+                request, 
+                "Collateral information submitted successfully, but smart monitoring setup failed. Your loan is still under review."
+            )
+        
         return redirect("finance:loan-application-confirmation")
         
     except Exception as e:

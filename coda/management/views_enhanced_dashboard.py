@@ -60,7 +60,8 @@ def enhanced_task_dashboard(request):
             'user_tier': user_tier,
             'monthly_stats': monthly_stats,
             'recent_tasks': recent_tasks,
-            'current_date': datetime.now()
+            'current_date': datetime.now(),
+            'user': user,  # Add user to context
         }
         
         return render(request, 'management/enhanced_task_dashboard.html', context)

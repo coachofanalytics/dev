@@ -1,4 +1,4 @@
-{% extends 'new_base.html' %}
+{% extends "main/base_templates/new_base.html" %}
 {% load static %}
 
 {% block title %}Enhanced Budget Approvals - 33% Compliance{% endblock %}
@@ -166,7 +166,7 @@
                                                     {{ projection.get_status_display }}
                                                 </span>
                                             </td>
-                                            <td>{{ projection.created_by.get_full_name|default:projection.created_by.username }}</td>
+                                            <td>{% if projection.created_by %}{{ projection.created_by.get_full_name|default:projection.created_by.username }}{% else %}Unknown User{% endif %}</td>
                                             <td>{{ projection.submitted_at|date:"M d, Y H:i" }}</td>
                                             <td>
                                                 <a href="{% url 'finance:budget-compliance' projection.id %}" class="btn btn-sm btn-info">

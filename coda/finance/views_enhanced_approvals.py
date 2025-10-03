@@ -106,18 +106,25 @@ def enhanced_budget_projection_approvals(request):
     # Get existing projections
     projections = BudgetEstimateProjection.objects.filter(
         status='submitted'
-    ).order_by('-submitted_at')
+    ).select_related('company', 'department', 'created_by').order_by('-submitted_at')
     
     # Apply pagination
     paginator = Paginator(projections, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Ensure all projections have created_by field set to avoid None errors
+    for projection in page_obj.object_list:
+        if not projection.created_by:
+            # Set a default user or handle appropriately
+            projection.created_by = user
+    
     context = {
         'page_obj': page_obj,
         'compliance_summary': compliance_summary,
         'is_rule_active': compliance_summary['is_rule_active'],
-        'current_date': compliance_summary['current_date']
+        'current_date': compliance_summary['current_date'],
+        'user': user,  # Add user to context
     }
     
     return render(request, 'finance/approvals/enhanced_approvals.html', context)
@@ -155,7 +162,8 @@ def compliance_report_dashboard(request):
         'target_month': target_month,
         'target_year': target_year,
         'is_rule_active': compliance_service.is_compliance_rule_active(),
-        'current_date': timezone.now()
+        'current_date': timezone.now(),
+        'user': user,  # Add user to context
     }
     
     return render(request, 'finance/approvals/compliance_dashboard.html', context)

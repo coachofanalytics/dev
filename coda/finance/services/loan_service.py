@@ -169,6 +169,55 @@ class LoanService(BaseFinanceService):
         except Exception as e:
             self._handle_error(e, 'approve_loan_application', approver)
     
+    def get_loan_statistics(self) -> Dict[str, Any]:
+        """Get comprehensive loan statistics for admin dashboard"""
+        try:
+            from django.db.models import Count, Sum, Q
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            # Get basic counts
+            total_loans = LoanApplication.objects.count()
+            pending_loans = LoanApplication.objects.filter(status='pending').count()
+            approved_loans = LoanApplication.objects.filter(status='approved').count()
+            active_loans = LoanApplication.objects.filter(status='active').count()
+            rejected_loans = LoanApplication.objects.filter(status='rejected').count()
+            
+            # Get financial totals
+            total_outstanding = LoanApplication.objects.filter(
+                status__in=['approved', 'active']
+            ).aggregate(total=Sum('amount_requested'))['total'] or 0
+            
+            total_approved = LoanApplication.objects.filter(
+                status='approved'
+            ).aggregate(total=Sum('amount_requested'))['total'] or 0
+            
+            # Get recent activity (last 7 days)
+            week_ago = timezone.now() - timedelta(days=7)
+            recent_applications = LoanApplication.objects.filter(
+                created_at__gte=week_ago
+            ).count()
+            
+            # Get user type breakdown
+            user_type_stats = LoanApplication.objects.values('borrower__category').annotate(
+                count=Count('id')
+            ).order_by('borrower__category')
+            
+            return self.create_success_response({
+                'total_loans': total_loans,
+                'pending_loans': pending_loans,
+                'approved_loans': approved_loans,
+                'active_loans': active_loans,
+                'rejected_loans': rejected_loans,
+                'total_outstanding': total_outstanding,
+                'total_approved': total_approved,
+                'recent_applications': recent_applications,
+                'user_type_breakdown': list(user_type_stats)
+            }, "Loan statistics retrieved successfully")
+            
+        except Exception as e:
+            return self._handle_error(e, 'get_loan_statistics', None)
+    
     def reject_loan_application(
         self, 
         loan_id: int, 
