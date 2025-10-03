@@ -52,6 +52,7 @@
                             <th>Category</th>
                             <th>Count</th>
                             <th>Total Amount</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,6 +61,18 @@
                             <td><i class="fas fa-tag"></i> {{ category }}</td>
                             <td>{{ data.count }}</td>
                             <td>${{ data.total|floatformat:2 }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'budget-category-detail' company.slug data.category_id %}" 
+                                       class="btn btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'budget-category-edit' company.slug data.category_id %}" 
+                                       class="btn btn-outline-success" title="Edit Budget">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

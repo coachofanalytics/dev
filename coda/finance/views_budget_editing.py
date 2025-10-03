@@ -61,7 +61,7 @@ def budget_category_edit(request, company_slug, category_id):
     )['total'] or Decimal('0.00')
     
     total_actual = existing_budgets.aggregate(
-        total=Sum('actual_amount')
+        total=Sum('actual_spent')
     )['total'] or Decimal('0.00')
     
     context = {
@@ -287,7 +287,7 @@ def approve_budget_request(request, company_slug, request_id):
                     subcategory=subcategory,
                     item_name=item.get('item_name', ''),
                     estimated_amount=Decimal(str(item.get('amount', 0))),
-                    actual_amount=Decimal('0.00'),
+                    actual_spent=Decimal('0.00'),
                     currency='USD',
                     fiscal_year=timezone.now().year,
                     status='active',

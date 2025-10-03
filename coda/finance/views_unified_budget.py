@@ -185,7 +185,8 @@ def _get_overview_tab_data(company, department, estimation_service, consolidatio
                     'total': sum(
                         b.total_amount for b in cat_budgets 
                         if hasattr(b, 'total_amount')
-                    )
+                    ),
+                    'category_id': category.id
                 }
         
         # Recent budgets

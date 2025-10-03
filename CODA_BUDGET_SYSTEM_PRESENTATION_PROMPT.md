@@ -40,7 +40,7 @@ I need you to present the complete CODA Budget System implementation that we've 
 #### **5. LIVE DEMO SCENARIOS (5 minutes)**
 
 **Scenario A: Smart Transaction Entry**
-1. Go to: `https://codamakutano.herokuapp.com/finance/smart-transaction-entry/`
+1. Go to: `https://codamakutano.herokuapp.com/finance/transaction/smart-entry/`
 2. Type "Safaricom" in receiver field
 3. Show auto-complete suggestions
 4. Select category "IT and Software"
@@ -88,7 +88,7 @@ I need you to present the complete CODA Budget System implementation that we've 
 
 ### **Key URLs to Demo:**
 - **Main Dashboard**: `https://codamakutano.herokuapp.com/finance/budget-dashboard/coda/`
-- **Smart Form**: `https://codamakutano.herokuapp.com/finance/smart-transaction-entry/`
+- **Smart Form**: `https://codamakutano.herokuapp.com/finance/transaction/smart-entry/`
 - **Budget Editing**: `https://codamakutano.herokuapp.com/finance/budget/coda/category/5/edit/`
 - **Loan Eligibility**: `https://codamakutano.herokuapp.com/finance/loan/coda/eligibility/`
 - **Admin Panel**: `https://codamakutano.herokuapp.com/admin/finance/budgetitemlibrary/`

@@ -201,7 +201,7 @@ def loan_budget_dashboard(request, company_slug):
         )['total'] or Decimal('0.00')
         
         total_actual = category_budgets.aggregate(
-            total=Sum('actual_amount')
+            total=Sum('actual_spent')
         )['total'] or Decimal('0.00')
         
         # Check if this category has loan-related items
@@ -300,7 +300,7 @@ def calculate_budget_availability(company, department):
         department=department,
         status='active'
     ).aggregate(
-        total=Sum('actual_amount')
+        total=Sum('actual_spent')
     )['total'] or Decimal('0.00')
     
     # Get existing loan allocations
@@ -385,12 +385,12 @@ def get_budget_summary(company, department):
     )
     
     total_estimated = budgets.aggregate(total=Sum('estimated_amount'))['total'] or Decimal('0.00')
-    total_actual = budgets.aggregate(total=Sum('actual_amount'))['total'] or Decimal('0.00')
+    total_actual = budgets.aggregate(total=Sum('actual_spent'))['total'] or Decimal('0.00')
     
     # Get top categories
     top_categories = budgets.values('category__name').annotate(
         estimated=Sum('estimated_amount'),
-        actual=Sum('actual_amount')
+        actual=Sum('actual_spent')
     ).order_by('-estimated')[:5]
     
     return {
@@ -427,7 +427,7 @@ def create_loan_budget_allocation(company, department, loan_amount, loan_product
         subcategory=loan_subcategory,
         item_name=f'Loan #{loan_application["application_number"]} - {loan_product.name}',
         estimated_amount=loan_amount,
-        actual_amount=Decimal('0.00'),
+        actual_spent=Decimal('0.00'),
         currency='USD',
         fiscal_year=timezone.now().year,
         status='active',
