@@ -15,7 +15,7 @@ from django.utils import timezone
 from datetime import datetime
 import logging
 
-from ..models import Budget, CodaBudget, Transaction, Inflow, BudgetCategory, Company, Department
+from ..models import Budget, CodaBudget, Transaction, Inflow, BudgetCategory
 from ..utils.calculation_utils import CalculationUtils
 from ..utils.filter_utils import FilterUtils
 from .base_service import BaseFinanceService

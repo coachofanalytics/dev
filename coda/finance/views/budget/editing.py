@@ -17,7 +17,7 @@ import logging
 from main.models import Company
 from ..core.base import BaseFinanceView, login_required_finance, company_required, json_response, error_json_response
 from ...models import Budget, BudgetCategory, BudgetSubCategory, BudgetRequest, ApprovalPolicy
-from ...forms.budget import BudgetEditForm, BudgetRequestForm
+from ...forms import legacy_forms
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

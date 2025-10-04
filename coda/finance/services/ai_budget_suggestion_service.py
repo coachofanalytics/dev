@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 import statistics
 import json
 
-from ..models import Transaction, BudgetCategory, Company, Department, BudgetEstimateProjection
+from ..models import Transaction, BudgetCategory, BudgetEstimateProjection
 from .budget_estimation_service import BudgetEstimationService
 from .data_quality_service import DataQualityService
 from ai_services.ai_integration_service import RealAIService

@@ -1,11 +1,6 @@
 from django.urls import path
 from . import views
-from .views import (
-                    PaymentCreateView,TransanctionDetailView,TransactionUpdateView,TransactionDeleteView,
-                    UserInflowListView,InflowDetailView,InflowUpdateView,InflowDeleteView,
-                    DefaultPaymentUpdateView,DefaultPaymentListView,LoanListView,LoanUpdateView,
-                    save_and_upload_to_drive,FoodListView
-)
+from .views import legacy_views
 # Import new unified payment views
 from . import payment_views
 
@@ -23,6 +18,12 @@ from . import views_unified_budget
 from .views.budget import drilldown as views_budget_drilldown
 from .views.budget import editing as views_budget_editing
 from .views.budget import dashboard as views_budget_dashboard
+
+# Import organized loan views
+from .views.loan import budget_integration as views_loan_budget_integration
+
+# Import organized transaction views
+from .views.transaction import smart_entry as views_smart_transaction
 
 # Import user-friendly form views
 from . import views_forms
@@ -118,9 +119,9 @@ urlpatterns = [
     path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
     
     # Legacy payment URLs (maintained for backward compatibility)
-    path('defaultpayments/', DefaultPaymentListView.as_view(template_name='finance/payments/defaultpayments.html'), name='defaultpayments'),
-    path('newpayment/', PaymentCreateView.as_view(template_name='finance/payments/payment_form.html'), name='newpayment'),
-    path('payment/<int:pk>/update/', DefaultPaymentUpdateView.as_view(template_name='finance/payments/payment_form.html'), name='payment-update'),
+    path('defaultpayments/', legacy_views.DefaultPaymentListView.as_view(template_name='finance/payments/defaultpayments.html'), name='defaultpayments'),
+    path('newpayment/', legacy_views.PaymentCreateView.as_view(template_name='finance/payments/payment_form.html'), name='newpayment'),
+    path('payment/<int:pk>/update/', legacy_views.DefaultPaymentUpdateView.as_view(template_name='finance/payments/payment_form.html'), name='payment-update'),
     path('updatepaymentinfo/<int:pk>/update/', views.PaymentInformationUpdateView.as_view(template_name='finance/payments/payment_form.html'), name='paymentinfo-update'),
     path('updatepaymenthistory/<int:pk>/update/', views.PaymentHistoryUpdateView.as_view(template_name='finance/payments/payment_form.html'), name='paymentHist-update'),
     #Pay configs URLS

@@ -490,3 +490,269 @@ class BudgetVariance(models.Model):
         if notes:
             self.review_notes = notes
         self.save(update_fields=['reviewed_by', 'reviewed_at', 'review_notes'])
+
+
+class DisbursementRequest(models.Model):
+    """Automated disbursement requests and tracking"""
+    
+    # Disbursement Method Choices
+    DISBURSEMENT_METHODS = [
+        ('mpesa', 'MPESA'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('stanbic', 'Stanbic Bank'),
+        ('cash', 'Cash'),
+        ('check', 'Check'),
+    ]
+    
+    # Status Choices
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('disbursed', 'Disbursed'),
+        ('rejected', 'Rejected'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    # Request details
+    request_number = models.CharField(max_length=50, unique=True, help_text="Unique request number")
+    budget_request = models.ForeignKey(
+        BudgetRequest,
+        on_delete=models.CASCADE,
+        related_name='disbursement_requests',
+        help_text="Related budget request"
+    )
+    
+    # Disbursement details
+    amount = models.DecimalField(max_digits=12, decimal_places=2, help_text="Amount to disburse")
+    disbursement_method = models.CharField(
+        max_length=20,
+        choices=DISBURSEMENT_METHODS,
+        help_text="Method of disbursement"
+    )
+    
+    # Recipient information
+    recipient_name = models.CharField(max_length=200, help_text="Recipient name")
+    recipient_account = models.CharField(max_length=100, blank=True, help_text="Recipient account details")
+    recipient_phone = models.CharField(max_length=20, blank=True, help_text="Recipient phone number")
+    
+    # Status and tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text="Request status"
+    )
+    
+    # Approval workflow
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_disbursements',
+        help_text="User who approved the disbursement"
+    )
+    approved_at = models.DateTimeField(null=True, blank=True, help_text="Approval timestamp")
+    
+    # Disbursement execution
+    disbursed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='disbursed_requests',
+        help_text="User who executed the disbursement"
+    )
+    disbursed_at = models.DateTimeField(null=True, blank=True, help_text="Disbursement timestamp")
+    transaction_reference = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Transaction reference number"
+    )
+    
+    # Notes and documentation
+    notes = models.TextField(blank=True, help_text="Additional notes")
+    supporting_documents = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of supporting document URLs"
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _("Disbursement Request")
+        verbose_name_plural = _("Disbursement Requests")
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['budget_request']),
+        ]
+    
+    def __str__(self):
+        return f"Disbursement #{self.request_number} - {self.amount}"
+    
+    def save(self, *args, **kwargs):
+        if not self.request_number:
+            self.request_number = self.generate_request_number()
+        super().save(*args, **kwargs)
+    
+    def generate_request_number(self):
+        """Generate unique request number."""
+        from django.utils import timezone
+        timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+        return f"DISB-{timestamp}"
+    
+    def approve(self, approver):
+        """Approve the disbursement request."""
+        self.status = 'approved'
+        self.approved_by = approver
+        self.approved_at = timezone.now()
+        self.save(update_fields=['status', 'approved_by', 'approved_at'])
+    
+    def disburse(self, disburser, transaction_ref=None):
+        """Mark as disbursed."""
+        self.status = 'disbursed'
+        self.disbursed_by = disburser
+        self.disbursed_at = timezone.now()
+        if transaction_ref:
+            self.transaction_reference = transaction_ref
+        self.save(update_fields=['status', 'disbursed_by', 'disbursed_at', 'transaction_reference'])
+
+
+class AutomationAuditLog(models.Model):
+    """Comprehensive audit logging for automation system"""
+    
+    # Action Type Choices
+    ACTION_TYPES = [
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('delete', 'Delete'),
+        ('approve', 'Approve'),
+        ('reject', 'Reject'),
+        ('disburse', 'Disburse'),
+        ('notify', 'Notify'),
+        ('escalate', 'Escalate'),
+    ]
+    
+    # Object Type Choices
+    OBJECT_TYPES = [
+        ('budget_request', 'Budget Request'),
+        ('disbursement_request', 'Disbursement Request'),
+        ('approval_policy', 'Approval Policy'),
+        ('notification', 'Notification'),
+    ]
+    
+    # Log details
+    action_type = models.CharField(
+        max_length=20,
+        choices=ACTION_TYPES,
+        help_text="Type of action performed"
+    )
+    object_type = models.CharField(
+        max_length=30,
+        choices=OBJECT_TYPES,
+        help_text="Type of object affected"
+    )
+    object_id = models.CharField(
+        max_length=50,
+        help_text="ID of the affected object"
+    )
+    
+    # User and context
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='automation_audit_logs',
+        help_text="User who performed the action"
+    )
+    user_ip = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text="User's IP address"
+    )
+    user_agent = models.TextField(
+        blank=True,
+        help_text="User's browser/agent information"
+    )
+    
+    # Action details
+    description = models.TextField(help_text="Description of the action")
+    old_values = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Previous values (for updates)"
+    )
+    new_values = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="New values (for updates/creates)"
+    )
+    
+    # System context
+    system_component = models.CharField(
+        max_length=50,
+        help_text="System component that performed the action"
+    )
+    automation_rule = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Automation rule that triggered this action"
+    )
+    
+    # Result and status
+    success = models.BooleanField(
+        default=True,
+        help_text="Whether the action was successful"
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error message if action failed"
+    )
+    
+    # Additional metadata
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Additional metadata about the action"
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = _("Automation Audit Log")
+        verbose_name_plural = _("Automation Audit Logs")
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['action_type', 'created_at']),
+            models.Index(fields=['object_type', 'object_id']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.action_type} {self.object_type} #{self.object_id} by {self.user}"
+    
+    @classmethod
+    def log_action(cls, action_type, object_type, object_id, user=None, description="", 
+                   old_values=None, new_values=None, system_component="", 
+                   automation_rule="", success=True, error_message="", metadata=None):
+        """Create an audit log entry."""
+        return cls.objects.create(
+            action_type=action_type,
+            object_type=object_type,
+            object_id=str(object_id),
+            user=user,
+            description=description,
+            old_values=old_values,
+            new_values=new_values,
+            system_component=system_component,
+            automation_rule=automation_rule,
+            success=success,
+            error_message=error_message,
+            metadata=metadata or {}
+        )

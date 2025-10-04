@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Loan-Budget Integration Views - Phase 3 Implementation
 Integrates loan system with budget availability and limits
@@ -13,12 +14,12 @@ from django.db.models import Sum, Count, Q, F
 from decimal import Decimal
 import json
 
-from .models import (
+from ...models import (
     BudgetCategory, BudgetSubCategory, Budget,
     LoanApplication, LoanProduct, BudgetRequest
 )
-from .services.loan_service import LoanService
-from .services.automation_service import BudgetRequestService
+from ...services.loan_service import LoanService
+from ...services.automation_service import BudgetRequestService
 
 
 @login_required

@@ -4,6 +4,7 @@ Core finance models - the fundamental models used across the finance application
 """
 
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -157,22 +158,27 @@ class BudgetItemLibrary(models.Model):
 class Transaction(models.Model):
     """Core transaction model for all financial transactions."""
     
-    # Transaction categories
+    # Transaction categories (legacy compatibility)
     CAT_CHOICES = [
-        ('Income', 'Income'),
-        ('Expense', 'Expense'),
-        ('Transfer', 'Transfer'),
-        ('Investment', 'Investment'),
+        ("Salary", "Salary"),
+        ("Health", "Health"),
+        ("Transport", "Transport"),
+        ("Food_Accomodation", "Food & Accomodation"),
+        ("Internet_Airtime", "Internet & Airtime"),
+        ("Recruitment", "Recruitment"),
+        ("Labour", "Labour"),
+        ("Management", "Management"),
+        ("Electricity", "Electricity"),
+        ("Construction", "Construction"),
+        ("Other", "Other"),
     ]
     
-    # Transaction types
-    TYPE_CHOICES = [
-        ('Cash', 'Cash'),
-        ('Bank Transfer', 'Bank Transfer'),
-        ('Mobile Money', 'Mobile Money'),
-        ('Credit Card', 'Credit Card'),
-        ('Check', 'Check'),
-        ('Other', 'Other'),
+    # Payment method choices (legacy compatibility)
+    PAY_CHOICES = [
+        ("Cash", "Cash"),
+        ("Mpesa", "Mpesa"),
+        ("Check", "Check"),
+        ("Other", "Other"),
     ]
     
     # Transaction status
@@ -183,44 +189,53 @@ class Transaction(models.Model):
         ('Cancelled', 'Cancelled'),
     ]
     
-    # Basic transaction fields
+    # User relationships
+    sender = models.ForeignKey(
+        User,
+        verbose_name=_("sender"),
+        related_name="sender", 
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        limit_choices_to={"is_staff": True, "is_active": True},
+        help_text="User who sent the transaction"
+    )
+    vendor_supplier = models.ForeignKey(
+        User,
+        verbose_name=_("vendor_supplier"),
+        related_name="vendor_supplier", 
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        limit_choices_to=Q(is_active=True) & (Q(is_staff=True) | Q(category=6)),
+        help_text="Vendor or supplier"
+    )
+    
+    # Company and department
     company = models.ForeignKey(
         'main.Company',
         on_delete=models.CASCADE,
         related_name='transactions',
         help_text="Company this transaction belongs to"
     )
-    category = models.CharField(
-        max_length=20,
-        choices=CAT_CHOICES,
-        help_text="Transaction category"
-    )
-    type = models.CharField(
-        max_length=20,
-        choices=TYPE_CHOICES,
-        help_text="Transaction type"
-    )
-    amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        help_text="Transaction amount"
-    )
-    currency = models.CharField(
-        max_length=3,
-        default='USD',
-        help_text="Transaction currency"
+    department = models.ForeignKey(
+        'accounts.Department', 
+        on_delete=models.CASCADE, 
+        default=None,
+        help_text="Department"
     )
     
+    # Transaction details
+    receiver = models.CharField(max_length=100, null=True, default=None, help_text="Receiver name")
+    phone = models.CharField(max_length=50, null=True, default=None, help_text="Phone number")
+    
     # Budget categorization
-    budget_category = models.ForeignKey(
-        BudgetCategory,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='transactions',
-        help_text="Budget category for this transaction"
+    category = models.ForeignKey(
+        BudgetCategory, 
+        on_delete=models.CASCADE, 
+        related_name="transaction_category",
+        blank=True, null=True,
+        help_text="Budget category"
     )
-    budget_subcategory = models.ForeignKey(
+    subcategory = models.ForeignKey(
         BudgetSubCategory,
         on_delete=models.SET_NULL,
         null=True,
@@ -229,13 +244,48 @@ class Transaction(models.Model):
         help_text="Budget subcategory for this transaction"
     )
     
+    # Transaction amounts and details
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Transaction amount"
+    )
+    qty = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Quantity"
+    )
+    transaction_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Transaction cost"
+    )
+    currency = models.CharField(
+        max_length=3,
+        default='USD',
+        help_text="Transaction currency"
+    )
+    
+    # Transaction type and payment method
+    type = models.CharField(
+        max_length=20,
+        choices=PAY_CHOICES,
+        help_text="Transaction type"
+    )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAY_CHOICES,
+        help_text="Payment method"
+    )
+    
     # Transaction details
     description = models.TextField(
+        blank=True,
         help_text="Transaction description"
-    )
-    receiver = models.CharField(
-        max_length=200,
-        help_text="Receiver/payee name"
     )
     reference = models.CharField(
         max_length=100,
@@ -283,11 +333,206 @@ class Transaction(models.Model):
         indexes = [
             models.Index(fields=['company', 'transaction_date']),
             models.Index(fields=['category', 'status']),
-            models.Index(fields=['budget_category', 'budget_subcategory']),
+            models.Index(fields=['category', 'subcategory']),
         ]
     
     def __str__(self):
         return "{} - {} {} - {}".format(self.category, self.amount, self.currency, self.receiver)
+
+
+class Inflow(models.Model):
+    """Inflow model for tracking incoming payments and revenue."""
+    
+    # Period of Payment
+    PERIOD_CHOICES = [
+        ("Weekly", "Weekly"),
+        ("Bi_Weekly", "Bi_Weekly"),
+        ("Monthly", "Monthly"),
+        ("Yearly", "Yearly"),
+    ]
+    
+    # Payment method choices (using same as Transaction)
+    PAY_CHOICES = [
+        ("Cash", "Cash"),
+        ("Mpesa", "Mpesa"),
+        ("Check", "Check"),
+        ("Other", "Other"),
+    ]
+    
+    method = models.IntegerField(choices=PAY_CHOICES, default=999)
+    period = models.CharField(max_length=25, choices=PERIOD_CHOICES, default="Other")
+    receiver = models.ForeignKey(
+        "accounts.CustomerUser", 
+        on_delete=models.CASCADE,
+        limit_choices_to={"is_staff": True, "is_active": True}, 
+        related_name="inflows"
+    )
+    
+    company = models.ForeignKey('main.Company', on_delete=models.CASCADE, related_name="company_name", default=1)
+    category = models.ForeignKey('main.Service', on_delete=models.CASCADE, related_name="category_name", default=1)
+    subcategory = models.ForeignKey('main.ServiceCategory', on_delete=models.CASCADE, related_name="subcategory_name", default=1)
+    country = models.CharField(max_length=100, blank=True, null=True)  # Simplified from CountryField
+    sender = models.CharField(max_length=100, null=True, default=None)
+    phone = models.CharField(max_length=50, null=True, default=None)
+    transaction_date = models.DateTimeField(default=timezone.now)
+    item = models.CharField(max_length=255, blank=True, null=True)
+    receipt_link = models.CharField(max_length=100, blank=True, null=True)
+    qty = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, default=None
+    )
+    transaction_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, default=0
+    )
+    description = models.TextField(max_length=1000, default=None)
+    
+    class Meta:
+        verbose_name = _("Inflow")
+        verbose_name_plural = _("Inflows")
+        ordering = ["transaction_date"]
+    
+    def __str__(self):
+        return "{} - {} - {}".format(self.sender, self.amount, self.transaction_date)
+    
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse("management:inflow-detail", kwargs={"pk": self.pk})
+    
+    @property
+    def total_amount(self):
+        """Calculate total amount including transaction cost."""
+        if self.amount and self.transaction_cost:
+            return self.amount + self.transaction_cost
+        return self.amount or Decimal('0.00')
+
+
+class BudgetEstimationTemplate(models.Model):
+    """
+    Template for automated budget estimation
+    
+    Stores estimation templates for different types of budgets,
+    including the CODA development estimation logic
+    """
+    
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(max_length=1000)
+    budget_type = models.CharField(
+        max_length=30, 
+        choices=[
+            ('general', 'General Budget'),
+            ('website_development', 'Website Development'),
+            ('operations', 'Operations'),
+            ('marketing', 'Marketing'),
+            ('infrastructure', 'Infrastructure'),
+            ('investment', 'Investment'),
+        ]
+    )
+    
+    # Estimation Configuration
+    estimation_config = models.JSONField(
+        help_text="JSON configuration for estimation parameters"
+    )
+    
+    # CODA Development Estimation (from coda_budget_estimation)
+    development_tasks = models.JSONField(
+        default=dict,
+        help_text="Development task configuration (createview, updateview, etc.)"
+    )
+    hourly_rate = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=30.00,
+        help_text="Default hourly rate for development tasks"
+    )
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = _("Budget Estimation Template")
+        verbose_name_plural = _("Budget Estimation Templates")
+    
+    def __str__(self):
+        return "{} ({})".format(self.name, self.get_budget_type_display())
+
+
+class MultiYearBudgetPlan(models.Model):
+    """
+    Multi-year budget planning (1-year, 2-year, 5-year plans)
+    
+    Links multiple Budget instances to create long-term plans
+    """
+    
+    name = models.CharField(max_length=200)
+    description = models.TextField(max_length=2000)
+    company = models.ForeignKey(
+        'main.Company', 
+        on_delete=models.CASCADE, 
+        related_name="multi_year_plans"
+    )
+    department = models.ForeignKey(
+        'accounts.Department', 
+        on_delete=models.CASCADE, 
+        related_name="multi_year_plans"
+    )
+    
+    # Plan Duration
+    start_year = models.PositiveIntegerField()
+    end_year = models.PositiveIntegerField()
+    plan_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('1_year', '1 Year Plan'),
+            ('2_year', '2 Year Plan'),
+            ('5_year', '5 Year Plan'),
+            ('custom', 'Custom Duration'),
+        ]
+    )
+    
+    # Investment Planning
+    total_investment_required = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        default=0,
+        help_text="Total investment required for the plan"
+    )
+    funding_sources = models.JSONField(
+        default=list,
+        help_text="List of funding sources and amounts"
+    )
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('draft', 'Draft'),
+            ('in_review', 'In Review'),
+            ('approved', 'Approved'),
+            ('active', 'Active'),
+            ('completed', 'Completed'),
+            ('cancelled', 'Cancelled'),
+        ],
+        default='draft'
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _("Multi-Year Budget Plan")
+        verbose_name_plural = _("Multi-Year Budget Plans")
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return "{} - {} ({}-{})".format(self.name, self.get_plan_type_display(), self.start_year, self.end_year)
+    
+    @property
+    def duration_years(self):
+        """Calculate plan duration in years."""
+        return self.end_year - self.start_year + 1
     
     @property
     def is_income(self):
@@ -878,3 +1123,120 @@ class WebSubCategory(models.Model):
     
     def __str__(self):
         return "{} - {}".format(self.category.name, self.name)
+
+
+class PayslipConfig(models.Model):
+    """Model for payslip configuration"""
+    user = models.ForeignKey("accounts.CustomerUser", on_delete=models.CASCADE, null=True, blank=True)
+    loan_amount = models.DecimalField(max_digits=10, decimal_places=2, default=20000.00)
+    loan_repayment_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.20)
+    rp_starting_period = models.CharField(max_length=20, null=True, blank=True)
+    installment_amount = models.DecimalField(max_digits=10, decimal_places=2, default=1000)
+    installment_date = models.DateField(null=True, blank=True)
+    web_pay_hour = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    web_delta = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    laptop_status = models.BooleanField("Laptop Status", default=True)
+    loan_status = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name = _("Payslip Configuration")
+        verbose_name_plural = _("Payslip Configurations")
+        ordering = ['-id']
+    
+    def __str__(self):
+        return "PayslipConfig for {}".format(self.user.username if self.user else "Unknown")
+
+
+class CodaBudget(models.Model):
+    """
+    DEPRECATED: This model is deprecated as of Phase 1 consolidation (October 2025).
+    
+    All data has been migrated to Budget model with budget_type='general'.
+    This model is kept temporarily for backward compatibility and will be
+    removed in Phase 5 of the consolidation plan.
+    
+    **DO NOT USE FOR NEW DEVELOPMENT**
+    Use Budget model instead: Budget.objects.filter(budget_type='general')
+    
+    Migration: 233/259 records migrated to Budget model on 2025-09-30.
+    Remaining records have data quality issues (missing categories).
+    """
+    budget_lead = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE, 
+        limit_choices_to=(Q(is_staff=True, is_active=True, category=2) | Q(is_superuser=True)),
+        related_name="lead"
+    )
+    company = models.ForeignKey('main.Company', on_delete=models.CASCADE, related_name='company_budgets')
+    department = models.ForeignKey('accounts.Department', on_delete=models.CASCADE, related_name='department_budgets')
+    category = models.ForeignKey(
+        BudgetCategory, 
+        on_delete=models.CASCADE, 
+        related_name="budgetcategory",
+        blank=True, null=True)
+    
+    subcategory = models.ForeignKey(
+        BudgetSubCategory, 
+        on_delete=models.CASCADE, 
+        related_name="budget_subcategory",
+        blank=True, null=True)
+    
+    item = models.CharField(max_length=100, null=True, default=None)
+    cases = models.PositiveIntegerField(default=1, null=True, blank=True)
+    qty = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
+    description = models.TextField(max_length=1000, default=None)
+    receipt_link = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "{} - {} - {}-{}".format(self.department.name, self.category.name, self.subcategory.name, self.created_at)
+
+    class Meta:
+        verbose_name = _("DEPRECATED - Coda Budget")
+        verbose_name_plural = _("DEPRECATED - Coda Budgets")
+        ordering = ['department','created_at', 'category', 'subcategory']
+
+    @property
+    def amount(self):
+        """Calculate total amount."""
+        if self.qty and self.unit_price:
+            return self.qty * self.unit_price * (self.cases or 1)
+        return Decimal('0.00')
+
+
+class BalanceSheetCategory(models.Model):
+    """Balance sheet category model for financial reporting."""
+    
+    CATEGORY_TYPES = [
+        ('Asset', 'Asset'),
+        ('Long-term Asset', 'Long-term Asset'),
+        ('Liability', 'Liability'),
+        ('Long-term Liability', 'Long-term Liability'),
+        ('Revenue', 'Revenue'),
+        ('Expenses', 'Expenses'),
+        ('Cash Inflows for Investing Activities', 'Cash Inflows for Investing Activities'),
+        ('Cash Outflows for Investing Activities', 'Cash Outflows for Investing Activities'),
+        ('Cash Inflows for Financing Activities', 'Cash Inflows for Financing Activities'),
+        ('Cash Outflows for Financing Activities', 'Cash Outflows for Financing Activities'),
+    ]
+    
+    name = models.CharField(max_length=100, help_text="Category name")
+    category_type = models.CharField(
+        max_length=50,
+        choices=CATEGORY_TYPES,
+        help_text="Type of balance sheet category"
+    )
+    description = models.TextField(blank=True, help_text="Category description")
+    is_active = models.BooleanField(default=True, help_text="Whether category is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _("Balance Sheet Category")
+        verbose_name_plural = _("Balance Sheet Categories")
+        ordering = ['category_type', 'name']
+    
+    def __str__(self):
+        return "{} - {}".format(self.category_type, self.name)

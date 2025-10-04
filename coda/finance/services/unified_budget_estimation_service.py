@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 import logging
 import statistics
 
-from ..models import Transaction, Inflow, Budget, BudgetCategory, Company, Department
+from ..models import Transaction, Inflow, Budget, BudgetCategory
 from ..utils.calculation_utils import CalculationUtils
 from ..utils.filter_utils import FilterUtils
 from .base_service import BaseFinanceService
@@ -59,8 +59,8 @@ class UnifiedBudgetEstimationService(BaseFinanceService):
     
     def estimate_budget(
         self, 
-        company: Company,
-        department: Optional[Department] = None,
+        company: 'main.Company',
+        department: Optional['accounts.Department'] = None,
         timeframe: str = 'monthly',
         periods: int = 1,
         method: str = 'average'

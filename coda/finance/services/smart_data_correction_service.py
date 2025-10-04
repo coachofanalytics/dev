@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 import difflib
 import re
 
-from ..models import Transaction, BudgetCategory, Company, Department
+from ..models import Transaction, BudgetCategory
 from ai_services.ai_integration_service import RealAIService
 from ai_services.models import DiasporaAnalysisData, AIModelTypes
 
