@@ -185,7 +185,7 @@ class Transaction(models.Model):
     
     # Basic transaction fields
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='transactions',
         help_text="Company this transaction belongs to"
@@ -328,13 +328,13 @@ class Budget(models.Model):
     
     # Basic budget fields
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='budgets',
         help_text="Company this budget belongs to"
     )
     department = models.ForeignKey(
-        Department,
+        'accounts.Department',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -504,7 +504,7 @@ class BudgetEstimateProjection(models.Model):
     """Stored output of an estimation run for user review/approval."""
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='budget_projections',
         help_text="Company this projection belongs to"

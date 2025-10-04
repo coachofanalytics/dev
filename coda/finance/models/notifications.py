@@ -54,7 +54,7 @@ class FinanceNotification(models.Model):
     ]
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='finance_notifications',
         help_text="Company this notification belongs to"
@@ -221,7 +221,7 @@ class BudgetAlert(models.Model):
     ]
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='budget_alerts',
         help_text="Company this alert belongs to"

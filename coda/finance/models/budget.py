@@ -41,7 +41,7 @@ class ApprovalPolicy(models.Model):
     ]
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='approval_policies',
         help_text="Company this policy applies to"
@@ -95,7 +95,7 @@ class ApprovalPolicy(models.Model):
     
     # Department restrictions
     departments = models.ManyToManyField(
-        Department,
+        'accounts.Department',
         blank=True,
         help_text="Departments this policy applies to"
     )
@@ -176,7 +176,7 @@ class BudgetRequest(models.Model):
     ]
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='budget_requests',
         help_text="Company this request belongs to"
@@ -239,7 +239,7 @@ class BudgetRequest(models.Model):
         help_text="User who made the request"
     )
     department = models.ForeignKey(
-        Department,
+        'accounts.Department',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

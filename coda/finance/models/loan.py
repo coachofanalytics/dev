@@ -47,7 +47,7 @@ class LoanProduct(models.Model):
     ]
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='loan_products',
         help_text="Company offering this loan product"
@@ -216,7 +216,7 @@ class LoanApplication(models.Model):
     )
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='loan_applications',
         help_text="Company this application belongs to"

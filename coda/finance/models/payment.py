@@ -44,7 +44,7 @@ class PaymentMethod(models.Model):
     ]
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='payment_methods',
         help_text="Company this payment method belongs to"
@@ -180,7 +180,7 @@ class PaymentGateway(models.Model):
     ]
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='payment_gateways',
         help_text="Company this gateway belongs to"
@@ -310,7 +310,7 @@ class PaymentTransaction(models.Model):
     )
     
     company = models.ForeignKey(
-        Company,
+        'main.Company',
         on_delete=models.CASCADE,
         related_name='payment_transactions',
         help_text="Company this transaction belongs to"
