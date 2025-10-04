@@ -569,3 +569,130 @@ class BudgetEstimateProjection(models.Model):
     
     def __str__(self):
         return "{} - {}".format(self.projection_name, self.total_estimated_amount)
+
+
+class Supplier(models.Model):
+    """Supplier model for food and other items."""
+    
+    name = models.CharField(max_length=200, help_text="Supplier name")
+    contact_person = models.CharField(max_length=200, blank=True, help_text="Contact person")
+    email = models.EmailField(blank=True, help_text="Supplier email")
+    phone = models.CharField(max_length=20, blank=True, help_text="Supplier phone")
+    address = models.TextField(blank=True, help_text="Supplier address")
+    active = models.BooleanField(default=True, help_text="Whether supplier is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _("Supplier")
+        verbose_name_plural = _("Suppliers")
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
+class Food(models.Model):
+    """Food items model."""
+    
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.RESTRICT,
+        help_text="Supplier for this food item"
+    )
+    office_location = models.CharField(
+        max_length=255,
+        default='makutano',
+        help_text="Office location"
+    )
+    item = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text="Food item name"
+    )
+    unit_amt = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Unit amount"
+    )
+    slug = models.SlugField(
+        blank=True,
+        null=True,
+        help_text="URL slug"
+    )
+    qty = models.PositiveIntegerField(help_text="Quantity")
+    bal_qty = models.PositiveIntegerField(help_text="Balance quantity")
+    description = models.TextField(help_text="Item description")
+    created_at = models.DateTimeField(auto_now_add=True)
+    featured = models.BooleanField(default=False, help_text="Whether item is featured")
+    active = models.BooleanField(default=True, help_text="Whether item is active")
+    
+    class Meta:
+        verbose_name = _("Food Item")
+        verbose_name_plural = _("Food Items")
+        ordering = ['item']
+    
+    def __str__(self):
+        return self.item
+    
+    def get_absolute_url(self):
+        """Get URL for food item detail view."""
+        from django.urls import reverse
+        return reverse('finance:food-detail', kwargs={'slug': self.slug})
+    
+    @property
+    def budgeted_items(self):
+        """Calculate budgeted quantity."""
+        return self.qty - self.bal_qty
+    
+    @property
+    def total_amount(self):
+        """Calculate total amount."""
+        return Decimal(self.qty) * self.unit_amt
+    
+    @property
+    def additional_amount(self):
+        """Calculate additional amount."""
+        return Decimal(self.qty - self.bal_qty) * self.unit_amt
+
+
+class FoodHistory(models.Model):
+    """Food item history tracking."""
+    
+    item = models.ForeignKey(
+        Food,
+        on_delete=models.CASCADE,
+        related_name='history',
+        help_text="Food item"
+    )
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.RESTRICT,
+        help_text="Supplier"
+    )
+    office_location = models.CharField(
+        max_length=255,
+        default='makutano',
+        help_text="Office location"
+    )
+    unit_amt = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Unit amount"
+    )
+    qty = models.PositiveIntegerField(help_text="Quantity")
+    bal_qty = models.PositiveIntegerField(help_text="Balance quantity")
+    description = models.TextField(help_text="Description")
+    created_at = models.DateTimeField(auto_now_add=True)
+    featured = models.BooleanField(default=False, help_text="Whether item is featured")
+    active = models.BooleanField(default=True, help_text="Whether item is active")
+    
+    class Meta:
+        verbose_name = _("Food History")
+        verbose_name_plural = _("Food History")
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return "{} - {}".format(self.item.item, self.created_at.strftime('%Y-%m-%d'))

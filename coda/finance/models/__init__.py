@@ -11,6 +11,9 @@ from .core import (
     BudgetSubCategory,
     BudgetItemLibrary,
     BudgetEstimateProjection,
+    Supplier,
+    Food,
+    FoodHistory,
 )
 
 # Budget models
@@ -49,6 +52,9 @@ __all__ = [
     'BudgetSubCategory',
     'BudgetItemLibrary',
     'BudgetEstimateProjection',
+    'Supplier',
+    'Food',
+    'FoodHistory',
     
     # Budget
     'BudgetRequest',
