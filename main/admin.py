@@ -18,16 +18,20 @@ admin.site.register(Testimonials)
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
     ...
-    # your_app/admin.py
-
-
-@admin.register(ServiceCategory)
+    # your_app/admi
 class ServiceCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'slug', 'is_active', 'is_featured')
     list_filter = ('is_active', 'is_featured')
     search_fields = ('name', 'slug'),
     prepopulated_fields = {'slug': ('name',)}  # Optional: auto-generate slug from name
 
-
-
 admin.site.register(WCAGStandardWebsite)
+
+from django.contrib import admin
+from .models import ClientAvailability
+
+@admin.register(ClientAvailability)
+class ClientAvailabilityAdmin(admin.ModelAdmin):
+    list_display = ('client', 'day', 'start_time', 'end_time', 'time_standards', 'topic')
+    list_filter = ('day', 'time_standards')
+    search_fields = ('client', 'topic')

@@ -114,3 +114,32 @@ urlpatterns = [
     path('', views.home, name='main_home'),  # ✅ This works if views.home is defined in main/views.py
     path('main/', include('main.urls')),     # Optional if you also want /main/
 ]
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('main.urls')),  # Make sure this line is here
+]
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('main.urls')),  # ✅ includes app's URLs
+]
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    # ... your paths
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('main.urls')),  # <-- include your app's URLs
+]
+

@@ -383,3 +383,13 @@ class WCAGStandardWebsiteUpdateView(UpdateView):
     fields = ['company', 'app_name', 'page_name', 'website_url']
     template_name = 'main/website_form.html'
     success_url = reverse_lazy('website-list')
+def get_queryset(self):
+    query = self.request.GET.get('q')
+    if query:
+        return WCAGStandardWebsite.objects.filter(company__icontains=query)
+    return WCAGStandardWebsite.objects.all()
+
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Welcome to the homepage.")

@@ -119,3 +119,12 @@ urlpatterns = [
     path('websites/add/', WCAGStandardWebsiteCreateView.as_view(), name='website-add'),
     path('websites/<int:pk>/edit/', WCAGStandardWebsiteUpdateView.as_view(), name='website-edit'),
 ]
+from django.contrib import admin
+from django.urls import path, include
+from django.views.generic import RedirectView
+
+urlpatterns = [
+    path('', RedirectView.as_view(url='/admin/')),  # Redirect root to admin
+    path('admin/', admin.site.urls),
+    # other paths...
+]

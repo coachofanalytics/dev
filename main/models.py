@@ -185,6 +185,20 @@ class WCAGStandardWebsite(models.Model):
         return self.page_name or "Unnamed Page"
 
 
+from django.db import models
+
+class ClientAvailability(models.Model):
+    client = models.IntegerField(null=False)  # Or use ForeignKey to a Client model
+    day = models.CharField(max_length=20, null=False)  # e.g., 'Monday', 'Tuesday'
+    start_time = models.TimeField(null=False)
+    end_time = models.TimeField(null=False)
+    time_standards = models.CharField(max_length=10, null=False)  # e.g., 'UTC', 'EST'
+    topic = models.CharField(max_length=100, null=False)
+
+    def __str__(self):
+        return f"Availability for Client {self.client} on {self.day}"
+
+
 
 
 
