@@ -16,6 +16,8 @@ from .core import (
     FoodHistory,
     Payment_Information,
     Payment_History,
+    WebCategory,
+    WebSubCategory,
 )
 
 # Budget models
@@ -59,6 +61,8 @@ __all__ = [
     'FoodHistory',
     'Payment_Information',
     'Payment_History',
+    'WebCategory',
+    'WebSubCategory',
     
     # Budget
     'BudgetRequest',

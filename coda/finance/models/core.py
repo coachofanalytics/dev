@@ -829,3 +829,52 @@ class Payment_History(models.Model):
             return days
         except:
             return 0
+
+
+class WebCategory(models.Model):
+    """Web category model for web-related budget items."""
+    
+    name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        default='Operations',
+        help_text="Name of the web category"
+    )
+    description = models.TextField(
+        max_length=1000,
+        null=True,
+        blank=True,
+        help_text="Description of the web category"
+    )
+    
+    class Meta:
+        verbose_name = _("Web Category")
+        verbose_name_plural = _("Web Categories")
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name or "Unnamed Web Category"
+
+
+class WebSubCategory(models.Model):
+    """Web subcategory model for web-related budget items."""
+    
+    category = models.ForeignKey(
+        WebCategory,
+        on_delete=models.CASCADE,
+        related_name='web_subcategories',
+        help_text="Parent web category"
+    )
+    name = models.CharField(
+        max_length=255,
+        help_text="Name of the web subcategory"
+    )
+    
+    class Meta:
+        verbose_name = _("Web Subcategory")
+        verbose_name_plural = _("Web Subcategories")
+        ordering = ['category', 'name']
+    
+    def __str__(self):
+        return "{} - {}".format(self.category.name, self.name)
