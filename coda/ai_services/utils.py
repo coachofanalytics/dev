@@ -33,7 +33,7 @@ from datetime import date,datetime, timedelta
 from marketing.models import Whatsapp_Groups
 from professional_services.models import UserAnswerStatus,Prep_Questions
 from django.core.management.base import BaseCommand
-from finance.models import (Transaction, CodaBudget, BudgetCategory,
+from finance.models import (Transaction, Budget, BudgetCategory,
                             BudgetSubCategory,WebCategory,WebSubCategory
                             )
 from accounts.models import Department
@@ -983,7 +983,7 @@ def populate_budget_subcategories(subcat):
 #         #     continue
 
 #         # Create TestBudget instance
-#         coda_budget=CodaBudget.objects.create(
+#         coda_budget=Budget.objects.create(
 #             budget_lead=budget_lead,
 #             company=company,
 #             department=department,
@@ -1006,13 +1006,13 @@ def populate_budget_subcategories(subcat):
 
 def transfer_transactions_to_codabudget(current_user):
     """
-    Transfers only new transactions from `Transaction` to `CodaBudget`,
+    Transfers only new transactions from `Transaction` to `Budget`,
     starting from the last transferred `created_at` date.
     """
-    print('Transfers only new transactions from `Transaction` to `CodaBudget`')
+    print('Transfers only new transactions from `Transaction` to `Budget`')
     
-    # Step 1: Get the last created_at date from CodaBudget
-    last_transfer_date = CodaBudget.objects.aggregate(last_date=Max('created_at'))['last_date']
+    # Step 1: Get the last created_at date from Budget
+    last_transfer_date = Budget.objects.aggregate(last_date=Max('created_at'))['last_date']
     print(last_transfer_date)
     return 
     if last_transfer_date:
@@ -1055,7 +1055,7 @@ def transfer_transactions_to_codabudget(current_user):
         print(f"Processing transaction {transaction.id} from {transaction.transaction_date}")
 
         # **Check if the record already exists before creating**
-        existing_record = CodaBudget.objects.filter(
+        existing_record = Budget.objects.filter(
             budget_lead=budget_lead,
             company=company,
             department=department,
@@ -1071,8 +1071,8 @@ def transfer_transactions_to_codabudget(current_user):
             print(f"Skipping existing transaction for item {truncated_item} on {transaction.transaction_date}")
             continue  # Skip if already transferred
 
-        # Create new CodaBudget entry
-        coda_budget = CodaBudget.objects.create(
+        # Create new Budget entry
+        coda_budget = Budget.objects.create(
             budget_lead=budget_lead,
             company=company,
             department=department,
@@ -1087,7 +1087,7 @@ def transfer_transactions_to_codabudget(current_user):
             receipt_link=truncated_receipt_link
         )
 
-    return f"Successfully transferred {transactions.count()} new transactions from Transaction to CodaBudget."
+    return f"Successfully transferred {transactions.count()} new transactions from Transaction to Budget."
 
 
 
