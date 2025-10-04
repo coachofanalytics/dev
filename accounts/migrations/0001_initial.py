@@ -57,16 +57,16 @@ class Migration(migrations.Migration):
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
-        migrations.CreateModel(
-            name='Department',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', models.CharField(blank=True, max_length=500, null=True)),
-                ('slug', models.SlugField(unique=True)),
-                ('is_featured', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-            ],
-        ),
+        # migrations.CreateModel(
+        #     name='Department',
+        #     fields=[
+        #         ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        #         ('description', models.CharField(blank=True, max_length=500, null=True)),
+        #         ('slug', models.SlugField(unique=True)),
+        #         ('is_featured', models.BooleanField(default=False)),
+        #         ('is_active', models.BooleanField(default=True)),
+        #     ],
+        # ),
         migrations.CreateModel(
             name='UserGroups',
             fields=[
