@@ -64,11 +64,11 @@
                             <td>
                                 {% if data.category_id %}
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'budget-category-detail' company.slug data.category_id %}" 
+                                    <a href="{% url 'finance:budget-category-detail' company.slug data.category_id %}" 
                                        class="btn btn-outline-primary" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{% url 'budget-category-edit' company.slug data.category_id %}" 
+                                    <a href="{% url 'finance:budget-category-edit' company.slug data.category_id %}" 
                                        class="btn btn-outline-success" title="Edit Budget">
                                         <i class="fas fa-edit"></i>
                                     </a>

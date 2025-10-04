@@ -19,8 +19,10 @@ from . import views_projections, views_estimates, views_approvals, views_detaile
 # Import unified budget views (Phase 3)
 from . import views_unified_budget
 
-# Import budget drill-down views (Phase 2 - User perspective)
-from . import views_budget_drilldown
+# Import organized budget views
+from .views.budget import drilldown as views_budget_drilldown
+from .views.budget import editing as views_budget_editing
+from .views.budget import dashboard as views_budget_dashboard
 
 # Import user-friendly form views
 from . import views_forms
@@ -35,7 +37,7 @@ from . import api_cascading
 from . import api_auto_predict
 
 # Import budget editing views (Phase 2)
-from . import views_budget_editing
+# views_budget_editing now imported above
 
 # Import loan-budget integration views (Phase 3)
 from . import views_loan_budget_integration
@@ -231,7 +233,7 @@ urlpatterns = [
     
     #=============================UNIFIED BUDGET SYSTEM (PHASE 3)=====================================
     # New unified dashboard - consolidates all budget views
-    path('budget-dashboard/<str:company_slug>/', views_unified_budget.unified_budget_dashboard, name='unified-budget-dashboard'),
+    path('budget-dashboard/<str:company_slug>/', views_budget_dashboard.unified_budget_dashboard, name='unified-budget-dashboard'),
     path('budget-planning/<str:company_slug>/', views_unified_budget.unified_budget_planning, name='unified-budget-planning'),
     
     # Budget drill-down views (User perspective - Phase 2)

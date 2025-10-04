@@ -1,3 +1,22 @@
+"""
+Finance models - organized by domain for better maintainability.
+
+This file now imports from the organized model structure:
+- models.core: Core models (Transaction, Budget, BudgetCategory, etc.)
+- models.budget: Budget-specific models (BudgetRequest, ApprovalPolicy, etc.)
+- models.loan: Loan-specific models (LoanApplication, LoanProduct, etc.)
+- models.payment: Payment-specific models (PaymentMethod, PaymentTransaction, etc.)
+- models.notifications: Notification models (FinanceNotification, BudgetAlert, etc.)
+"""
+
+# Import all models from organized structure
+from .models.core import *
+from .models.budget import *
+from .models.loan import *
+from .models.payment import *
+from .models.notifications import *
+
+# Legacy imports for backward compatibility
 from django.db import models
 from datetime import datetime, date
 from decimal import *
