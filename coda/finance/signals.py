@@ -1,12 +1,12 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from datetime import datetime
-from .models import Transaction, CodaBudget, Department, BudgetCategory, BudgetSubCategory, Company
+from .models import Transaction, Budget, BudgetCategory, BudgetSubCategory
 
 @receiver(post_save, sender=Transaction)
-def sync_transaction_to_codabudget(sender, instance, created, **kwargs):
+def sync_transaction_to_budget(sender, instance, created, **kwargs):
     """
-    Auto-sync Transaction records to CodaBudget whenever a new transaction is added or updated.
+    Auto-sync Transaction records to Budget whenever a new transaction is added or updated.
     """
     print("This is my data ")
     
@@ -38,9 +38,9 @@ def sync_transaction_to_codabudget(sender, instance, created, **kwargs):
     truncated_item = instance.type[:100]
     truncated_receipt_link = instance.receipt_link[:255] if instance.receipt_link else None
 
-    # **Check if the transaction already exists in CodaBudget**
+    # **Check if the transaction already exists in Budget**
     try:
-        coda_budget, created = CodaBudget.objects.update_or_create(
+        coda_budget, created = Budget.objects.update_or_create(
             budget_lead=budget_lead,
             company=company,
             department=department,
@@ -58,14 +58,14 @@ def sync_transaction_to_codabudget(sender, instance, created, **kwargs):
         )
 
         if created:
-            print(f"✅ New CodaBudget entry created for Transaction {instance.id}")
+            print(f"✅ New Budget entry created for Transaction {instance.id}")
         else:
-            print(f"🔄 CodaBudget entry updated for Transaction {instance.id}")
+            print(f"🔄 Budget entry updated for Transaction {instance.id}")
     
-    except CodaBudget.MultipleObjectsReturned:
+    except Budget.MultipleObjectsReturned:
         # If duplicates exist, just create a new entry
-        print(f"⚠️  Multiple CodaBudgets found for Transaction {instance.id}, creating new entry")
-        CodaBudget.objects.create(
+        print(f"⚠️  Multiple Budgets found for Transaction {instance.id}, creating new entry")
+        Budget.objects.create(
             budget_lead=budget_lead,
             company=company,
             department=department,
