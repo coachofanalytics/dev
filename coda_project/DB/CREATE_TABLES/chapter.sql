@@ -1,0 +1,8 @@
+
+CREATE OR REPLACE PROCEDURE DC48K_Chapter_sp_v1()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    SELECT * FROM chapter;
+END;
+$$;
