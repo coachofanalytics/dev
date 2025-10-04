@@ -14,6 +14,8 @@ from .core import (
     Supplier,
     Food,
     FoodHistory,
+    Payment_Information,
+    Payment_History,
 )
 
 # Budget models
@@ -55,6 +57,8 @@ __all__ = [
     'Supplier',
     'Food',
     'FoodHistory',
+    'Payment_Information',
+    'Payment_History',
     
     # Budget
     'BudgetRequest',

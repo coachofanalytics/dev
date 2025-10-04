@@ -696,3 +696,136 @@ class FoodHistory(models.Model):
     
     def __str__(self):
         return "{} - {}".format(self.item.item, self.created_at.strftime('%Y-%m-%d'))
+
+
+class Payment_Information(models.Model):
+    """Payment information model for customer payments."""
+    
+    customer_id = models.ForeignKey(
+        'accounts.CustomerUser',
+        verbose_name="Client Name",
+        on_delete=models.CASCADE,
+        related_name="customer",
+        help_text="Customer for this payment information"
+    )
+    
+    # Basic payment fields
+    payment_fees = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Payment fees"
+    )
+    down_payment = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Down payment amount"
+    )
+    student_bonus = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Student bonus amount"
+    )
+    
+    # Payment plan
+    plan = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Payment plan"
+    )
+    payment_method = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Payment method"
+    )
+    
+    # Contract information
+    contract_submitted_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Contract submission date"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether payment information is active"
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _("Payment Information")
+        verbose_name_plural = _("Payment Information")
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return str(self.customer_id)
+
+
+class Payment_History(models.Model):
+    """Payment history model for tracking customer payments."""
+    
+    customer = models.ForeignKey(
+        User,
+        verbose_name="Client Name",
+        on_delete=models.CASCADE,
+        related_name="customer_payment_history",
+        help_text="Customer for this payment history"
+    )
+    
+    # Payment details
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Payment amount"
+    )
+    payment_date = models.DateField(
+        help_text="Payment date"
+    )
+    payment_method = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Payment method"
+    )
+    
+    # Reference information
+    reference = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Payment reference"
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Payment description"
+    )
+    
+    # Status
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether payment history is active"
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _("Payment History")
+        verbose_name_plural = _("Payment History")
+        ordering = ['-payment_date']
+    
+    def __str__(self):
+        return "{} - {} - {}".format(self.customer.get_full_name(), self.amount, self.payment_date)
+    
+    @property
+    def notification_days(self):
+        """Calculate days since last notification."""
+        try:
+            from datetime import datetime
+            days = (datetime.now().date() - self.payment_date).days
+            return days
+        except:
+            return 0
