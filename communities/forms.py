@@ -38,7 +38,7 @@ class EventForm(forms.ModelForm):
         if end_date and end_date <= start_date:
             raise forms.ValidationError("End date must be after the start date.")
         return end_date
-class ContactForm(forms.Form):
+class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'message']

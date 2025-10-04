@@ -170,21 +170,14 @@ def event_detail(request, id):
     
     return render(request, 'event_detail.html', {'event': event})
 # Contact Regional Coordinator
-def contact_regional_coordinator(request):
-    if request.method == "POST":
-        form = MessageForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
-        context={
-            "message":message,
-            # "link":SITEURL+'/management/companyagenda'
-        }
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
         if form.is_valid():
-            instance=form.save(commit=False)
-            instance.save()
-            return HttpResponse("check on your message")
+            # Save or send the message here (e.g., save it to the database or email)
+            form.save()
+            return redirect('home')  # Redirect back to the home page after form submission
     else:
-        form = MessageForm()
-    context={
-            "form": form,
-        }
-    return render(request, "contact_regional_coordinator.html",context)
+        form = ContactForm()
+
+    return render(request, 'contact_form.html', {'form': form})
