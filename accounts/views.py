@@ -444,6 +444,21 @@ def CredentialCategory_create_view(request):
     return render(request, "accounts/credentialcategory_create.html", {"form": form})
 
 
+def CredentialCategory_update_view(request, pk):
+    category = get_object_or_404(CredentialCategory, pk=pk)
+
+    if request.method == "POST":
+        form = CredentialCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:credentialcategory_list")  # redirect to list page
+    else:
+        form = CredentialCategoryForm(instance=category)
+
+    return render(request, "accounts/credentialcategory_update.html", {"form": form, "category": category})
+
+
+
 
 
 

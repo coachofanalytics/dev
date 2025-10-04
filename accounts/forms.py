@@ -180,7 +180,7 @@ class TeamMemberForm(forms.ModelForm):
 class CredentialCategoryForm(forms.ModelForm):
     class Meta:
         model = CredentialCategory
-        fields = ["description", "verbose_name", "is_active", "is_featured"]
+        fields = ["verbose_name", "is_active", "is_featured"]
         widgets = {
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "verbose_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter verbose name"}),

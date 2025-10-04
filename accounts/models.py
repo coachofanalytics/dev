@@ -149,14 +149,17 @@ class TeamMember(models.Model):  # 🔄 Renamed to singular (best practice)
         return f"{self.title} ({self.category})"
 
 class CredentialCategory(models.Model):
+    Department = models.IntegerField(null=False)
+    category = models.CharField(max_length=255, null=False)
     verbose_name = models.CharField(max_length=255, null=True)
-    description = models.TextField(max_length=100)  # <-- this must exist
-    entry_date = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(null=False)
-    is_featured = models.BooleanField(null=True)
+    # description = models.TextField(max_length=100, null=True, blank=True)  # ✅ this is the new field
+    entry_date = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.verbose_name if self.verbose_name else f"category {self.id}"
+        return self.verbose_name or self.category
+
 
     
     
