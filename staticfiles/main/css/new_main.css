@@ -107,11 +107,12 @@ body {
   font-size: 16px;
 }
 
-.top-left-coloumn {
-  background-image: url(/static/data/img/banner1.png);
+/* .top-left-coloumn {
+  background-image: url("../img/banner1.png");
+
   background-repeat: no-repeat;
   background-size: cover;
-}
+} */
 
 .footer-liinks-div a {
   margin-bottom: .5rem;
@@ -175,14 +176,15 @@ body {
   text-transform: uppercase;
   font-size: 52px;
   font-weight: 800;
+  min-width: 100px;
 }
-.banner-div p {
+
+.banner-div h1 {
   font-size: 90px;
   color: white;
   text-shadow: 0px 0px 22px black;
 }
-
-.banner-div h1 {
+.banner-div p {
   font-size: 90px;
   color: white;
   text-shadow: 0px 0px 22px black;
@@ -672,6 +674,12 @@ body {
     font-size: 40px;
   }
 
+  .banner-div h1 {
+    font-size: 56px;
+  }
+  .banner-div p {
+    font-size: 56px;
+  }
   .banner-div p {
     font-size: 56px;
   }

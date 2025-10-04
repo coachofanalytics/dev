@@ -113,10 +113,10 @@ def dba_values():
         # password = "postgres" #"*******"
        
         
-        # host = os.environ.get('POSTGRES_DB_NAME')
-        # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
-        # user = os.environ.get('POSTGRESDB_USER')
-        # password = os.environ.get('POSTGRESSPASS') 
+        host = os.environ.get('POSTGRES_DB_NAME')
+        dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
+        user = os.environ.get('POSTGRESDB_USER')
+        password = os.environ.get('POSTGRESSPASS') 
     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
