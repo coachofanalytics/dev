@@ -457,6 +457,11 @@ def CredentialCategory_update_view(request, pk):
 
     return render(request, "accounts/credentialcategory_update.html", {"form": form, "category": category})
 
+def CredentialCategory_detail_view(request,pk):
+        category = get_object_or_404(CredentialCategory, pk=pk)
+        return render(request, "",{"category": category}
+                  )
+
 
 
 
