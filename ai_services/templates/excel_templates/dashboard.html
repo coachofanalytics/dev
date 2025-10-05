@@ -1,0 +1,44 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <main>
+        <section class="data-display">
+            <div class="container">
+                <h2>Uploaded Data</h2>
+                <form method="post" action="{% url 'ai_services:send_email' %}">
+                    {% csrf_token %}
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>SR No.</th>
+                                    {% if data %}
+                                        {% for key in data.0.keys %}
+                                            <th>{{ key }}</th>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in data %}
+                                    <tr>
+                                        <td><input type="checkbox" name="selected_data" value="{{ forloop.counter0 }}"></td>
+                                        <td>{{ forloop.counter }}</td>
+                                        {% for key, value in item.items %}
+                                            <td>{{ value }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="submit" class="btn-submit">Send Selected Data via Email</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+{% endblock content %}

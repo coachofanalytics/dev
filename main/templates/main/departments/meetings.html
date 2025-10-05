@@ -1,0 +1,20 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% load static %}
+{% block title %}
+{% if department %}{{ department.name }}{% else %}activities{% endif %}
+{% endblock %}
+{% block content %}
+<!--------------------------Slider Section--------------------------------->
+<section id="data_training">
+  <div class="data_training text-center">
+    <h3 class="title">MEETINGS</h3>
+        <div class="row text-center">
+            {% for value in meetings %}
+            <div class="col-md-6" id="gi">
+                {% include 'main/snippets_templates/cards/card.html' with instance=value %}
+          </div>
+          {% endfor%}
+          </div>
+    </div>
+</section>
+{% endblock content %}

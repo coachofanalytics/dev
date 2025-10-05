@@ -1,0 +1,327 @@
+{% extends "main/base_templates/new_base.html" %} 
+{% block title %}Help{% endblock %}
+{% load static %}
+{% block content %}
+<div class="container">
+    {% csrf_token %}
+    <div class="bannnner">
+        <form method="get" style="padding: 15px;">
+            <p class="sub-heading">Coda Help Center</p>
+            <h1 class="heading-brand">Resolution for your inquiries</h1>
+            <p class="sub-heading" style="font-size: 17px ;">Embark on a transformative journey as you explore our dynamic platform.</p>
+            <p class="sub-heading" style="font-size: 17px ;"> Your solutions await at every click.</p> 
+        </form>
+        <img class="hero-banner" src="{% static 'main/image/help2.jpg' %}" alt=""/>
+    </div>
+    <h2 class="h2" style="margin-bottom: 32px; color: #001E00; padding-right: 417px;">Choose an account type for personalized service</h2>
+    <div class="account-type">
+        <div id="common-search-container" class="common-search-container">
+            <ul class="horizontal-list" id="account-type-list" style="padding-right: 820px;">
+                <li class="active"><a class="btn btn-primary btn-sm students" onclick="displayCategoryCards('students')">Students</a></li>
+                <li><a class="btn btn-primary btn-sm investors" onclick="displayCategoryCards('investors')">Investors</a></li>
+                <li><a class="btn btn-primary btn-sm staff" onclick="displayCategoryCards('staff')">Staff</a></li>
+            </ul>
+            <hr class="hr" style="width: 25.4%; height: 2px; background-color: #E7AD4A; margin-top: -19px;">
+        </div>
+        <div id="category-cards-container" class="category-cards">
+            <!-- Cards will be dynamically added here based on the selected account type -->
+        </div>     
+    </div>
+</div>
+<script>
+    function displayCategoryCards(accountType) {
+        var categoryCardsContainer = document.getElementById('category-cards-container');
+        categoryCardsContainer.innerHTML = "";
+
+        var categories;
+
+        switch(accountType) {
+            case 'staff':
+                categories = [
+                    { name: "Get Started", icon:  "{% static 'main/image/icons/getstarted.png' %}", description: " Get Started and unlock a, world of possibilities!", link: "https://www.codanalytics.net/" },
+                    { name: "Registration", icon: "{% static 'main/image/icons/registration.png' %}", description: "Join our vibrant community", link: "{% url 'accounts:join' %}" },
+                    { name: "Requirements", icon: "{% static 'main/image/icons/application.png' %}", description: "Website Client Needs", link: "{% url 'management:requirements-active' %}" },
+                    { name: "Financial Information", icon: "{% static 'main/image/icons/Financial Informations.png' %}", description: "Unlock Wealth Insights Today.", link: "{% url 'finance:finance_report' %}" },
+                    { name: "Employees Activities", icon: "{% static 'main/image/icons/Employees.png' %}", description: "Elevate Team Dynamics Exponentially.", link: "{% url 'management:companyagenda' %}" },
+                    { name: "WCAG Compliance", icon: "{% static 'main/image/icons/general information.png' %}", description: "WCAG Compliance Analysis.", link: "{% url 'main:check_wcag_compliance' %}" },
+                    { name: "Field Projects", icon: "{% static 'main/image/icons/field project.png' %}", description: "Innovate Through Project Excellence.", link: "https://www.codanalytics.net/display_plans/field-projects/" },
+                    { name: "FAQS", icon: "{% static 'main/image/icons/FAQS.png' %}", description: "Explore Answers, Simplify Queries.", link: "{% url 'main:FAQS' %}" },
+                    
+                ];
+                break;
+            case 'students':
+                categories = [
+                    { name: "Get Started", icon: "{% static 'main/image/icons/getstarted.png' %}", description: "Unlock a world of possibilities!", link: "https://www.codanalytics.net/" },
+                    { name: "Registration", icon: "{% static 'main/image/icons/registration.png' %}", description: "Join our vibrant community", link: "{% url 'accounts:join' %}" },
+                    { name: "Application", icon: "{% static 'main/image/icons/application.png' %}", description: "Apply for Success Now!",link: "{% url 'accounts:join' %}", },
+                    { name: "Courses", icon: "{% static 'main/image/icons/courses.png' %}", description: "Embark on a Learning Adventure: Explore Our Courses.", link: "https://www.codanalytics.net/display_service/data_analysis/" },
+                    { name: "Offers", icon: "{% static 'main/image/icons/offer.png' %}", description: "Description for Registration", link: "{% url 'professional_services:userjoblist' username=request.user %}" },
+                    { name: "Teachers", icon: "{% static 'main/image/icons/teacher.png' %}", description: "Guiding Brilliance: Meet Our Exceptional Educators.",link: "https://www.codanalytics.net/members/team_profiles"},
+                    { name: "General Information", icon: "{% static 'main/image/icons/general information.png' %}", description: "Discover Insights, Stay Informed.", link: "https://www.codanalytics.net/" },
+                    { name: "FAQS", icon: "{% static 'main/image/icons/FAQS.png' %}", description: "Explore Answers, Simplify Queries.", link: "{% url 'main:FAQS' %}" },
+                    
+                ];
+                break;
+            case 'investors':
+                categories = [
+                    { name: "Get Started", icon: "{% static 'main/image/icons/getstarted.png' %}", description: " Get Started and unlock a world of possibilities!", link: "https://www.codanalytics.net/" },
+                    { name: "Registration", icon: "{% static 'main/image/icons/registration.png' %}", description: "Join our vibrant community", link: "{% url 'accounts:join' %}" },
+                    { name: "Legal Documents", icon: "{% static 'main/image/icons/Legal documents.png' %}", description: "Ensure Confidence: Navigate Safely with Essential Legal Documents.", link: "https://www.codanalytics.net/investing/InvestmentPlatformOverview/" },
+                    { name: "Investment Plans ", icon: "{% static 'main/image/icons/Investment plans.png' %}", description: "Shape Your Future: Explore Lucrative Investment Plans.", link: "https://www.codanalytics.net/investing/InvestmentPlatformOverview/" },
+                    { name: "Trust & Safety", icon: "{% static 'main/image/icons/investment Types.png' %}", description: "Navigating with Confidence: Our Commitment to Trust & Safety.", link: "https://www.codanalytics.net/investing/InvestmentPlatformOverview/" },
+                    { name: "Loan Application", icon: "{% static 'main/image/icons/Investment return.png' %}", description: "Live life without financial stress.", link: "{% url 'finance:loan-home'%}" },
+                    { name: "General Information", icon: "{% static 'main/image/icons/general information.png' %}", description: "Discover Insights, Stay Informed.", link: "https://www.codanalytics.net/" },
+                    { name: "FAQS", icon: "{% static 'main/image/icons/FAQS.png' %}", description: "Explore Answers, Simplify Queries.", link: "{% url 'main:FAQS' %}" },
+                    
+                ];
+                break;
+            default:
+                categories = [];
+                break;
+        }
+
+        for (var i = 0; i < categories.length; i++) {
+            // Create the <a> tag
+            var link = document.createElement("a");
+            link.href = categories[i].link;
+            link.style.textDecoration = "none";
+            link.style.color = "inherit";
+
+            // Create the card
+            var card = document.createElement("div");
+            card.className = "card";
+            card.style.width = "270px"; // Set the desired width
+            card.style.height = "210px"; // Set the desired height
+
+            // Create the rest of the card content
+            var icon = document.createElement("img");
+            icon.src = categories[i].icon;
+            icon.alt = categories[i].name + " Icon";
+            icon.style.marginBottom = "20px"; //
+            icon.style.width = "40px"; // Set the desired width for the icon
+            icon.style.height = "40px"; // Set the desired height for the icon
+            card.appendChild(icon);
+
+            var title = document.createElement("h3");
+            title.innerText = categories[i].name;
+            card.appendChild(title);
+
+            var description = document.createElement("p");
+            description.innerText = categories[i].description;
+            card.appendChild(description);
+
+            link.appendChild(card);
+            categoryCardsContainer.appendChild(link);
+        }
+                // Remove the 'active' class from all buttons
+        var buttons = document.querySelectorAll('.horizontal-list li');
+        buttons.forEach(function (button) {
+            button.classList.remove('active');
+        });
+
+        // Add the 'active' class to the clicked button
+        var activeButton = document.querySelector('.horizontal-list li:nth-child(' + (accountType === 'students' ? 1 : accountType === 'investors' ? 2 : 3) + ')');
+        activeButton.classList.add('active');
+    }
+    displayCategoryCards('students');
+</script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .bannnner {
+        position: relative;
+        background-color: #001f3f; 
+        color: #fff; 
+        overflow: hidden; 
+        height: 320px; 
+        margin-top: 24px;
+        margin-bottom: 32px;
+        padding-top: 20px;
+        padding-right: 32px;
+        padding-left: 32px;
+        border-radius: 20px;
+    }
+
+    .bannnner h1 {
+        font-size: 47px;
+        line-height: 56px;
+        margin: 16px 0;
+    }
+
+    .bannnner p {
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 24px;
+        letter-spacing: 0.1px;
+    }
+
+    .hero-banner {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        max-width: 50%;
+        object-fit: cover;
+    }
+    .horizontal-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        color: black;
+        justify-content: space-around;
+        position: relative;
+        margin-bottom: 8px;
+    }
+
+    .horizontal-list :hover, .horizontal-list li.active a {
+        color: #292425; 
+        cursor: pointer;
+        text-shadow: rgb(0, 0, 0) 1px;
+    }
+
+    .horizontal-list li {
+        position: relative;
+    }
+
+    .horizontal-list a {
+        font-size: 21px;
+        /* line-height: 28px; */
+        text-decoration: none;
+        /* position: relative; */
+        margin-bottom: 20px;
+        margin-right: 9px;
+    } 
+    
+
+    .horizontal-list a::before,
+        .horizontal-list li.active a::before {
+            content: '';
+            display: block;
+            position: absolute;
+            height: 3px;
+            width: 89%;
+            background-color: #001f3f;
+            bottom: 8px;
+            left: 0;
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .horizontal-list a:hover::before,
+        .horizontal-list li.active a::before {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+    
+
+    .account-type {
+        padding-top: 10px;
+    }
+
+    .category-cards {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        margin-right: -50px;
+    }
+
+    .card {
+                display: block;
+                height: 180px;
+                margin-right: 20px;
+                margin-bottom: 32px;
+                padding: 24px;
+                text-decoration: none;
+                justify-content: center;
+                color: #001E00;
+                border-radius: 10px;
+                background-color: #FFFFFF;
+                border-style: solid;
+                border-color: #D5E0D5;
+                transition: background-color 0.3s ease; 
+            }
+        
+            .card:hover {
+                background-color: #f2f2f2; 
+            }
+        
+            .card h3 {
+                color: black;
+               
+            }
+        @media only screen and (max-width: 768px) {
+        .bannnner {
+            height: auto;
+            padding: 20px;
+        }
+
+        .bannnner h1 {
+            font-size: 32px;
+            line-height: 40px;
+        }
+
+        .hero-banner {
+            display: none; /* Hide the image at smaller screens */
+        }
+
+       
+        .horizontal-list {
+            flex-direction:column-reverse;
+            align-items: center;
+            margin-left: 240px;
+        }
+
+        .horizontal-list a {
+            margin-right: 20;
+            margin-bottom: 10px;
+            font-size: 17px;
+        }
+        .horizontal-list a::before,
+        .horizontal-list li.active a::before {
+            content: '';
+            display: block;
+            position: absolute;
+            height: 3px;
+            width: 89%;
+            background-color: #001f3f;
+            bottom: 8px;
+            left: 0;
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .horizontal-list a:hover::before,
+        .horizontal-list li.active a::before {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+        .hr{
+            display: none;
+
+        }
+
+        .category-cards {
+            margin-right: 0;
+        }
+
+        .card {
+            width: 100%;
+            margin-right: 0;
+        }
+        .h2 {
+            padding-right: 0;
+            font-size: 19px;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+        } 
+    }   
+</style>
+
+{% endblock content %}

@@ -1,0 +1,39 @@
+{% extends "main/base_templates/new_base.html"%}
+{% block content %}
+<section id="career">
+  <div class="data_training text-center">
+    <h3 class="title">Sent Invoice User Details</h3>
+  <div class="career text-center">
+    <div class="table-responsive">
+      <table class="table table-borderless" style="width: 100%">
+        <thead class="border-bottom font-weight-bold">
+          <tr>
+            <th>Organization/Customer</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Debt Amount</th>
+            <th>Installment Amount</th>
+            <th>Balance Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for payment_information in  customer_payment_information  %}
+              <tr>
+                  <td>{{payment_information.organization}}</td>
+                  <td>{{payment_information.first_name}}</td>
+                  <td>{{payment_information.last_name}}</td>
+                  <td>{{payment_information.user_email}}</td>
+                  <td>{{payment_information.debt_amount}}</td>
+                  <td>{{payment_information.repayment_amount}}</td>
+                  <td>{{payment_information.balance_amount}}</td>
+                    <td>{{payment_information.message}}</td>
+
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

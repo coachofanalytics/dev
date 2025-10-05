@@ -1,0 +1,121 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}MPESA OTP Confirmation - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid mpesa-otp-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <!-- OTP Header -->
+            <div class="otp-header text-center mb-5">
+                <div class="otp-icon mb-4">
+                    <i class="fa fa-shield text-primary" style="font-size: 4rem;"></i>
+                </div>
+                <h1 class="display-4 mb-3">Verify OTP</h1>
+                <p class="lead text-muted">Enter the verification code sent to your phone</p>
+            </div>
+
+            <!-- OTP Form -->
+            <div class="otp-form-container">
+                <div class="otp-form-card">
+                    <div class="card-header">
+                        <h4><i class="fa fa-key mr-2"></i>OTP Verification</h4>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Payment Summary -->
+                        <div class="payment-summary mb-4">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="summary-item">
+                                        <label class="summary-label">Amount:</label>
+                                        <div class="summary-value">${{ amount|default:"0" }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="summary-item">
+                                        <label class="summary-label">Phone:</label>
+                                        <div class="summary-value">{{ phone_number|default:"N/A" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OTP Input Form -->
+                        <form method="post" action="{% url 'finance:verify_mpesa_otp' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="payment_data" value="{{ payment_data|default:'' }}">
+                            
+                            <div class="form-group mb-4">
+                                <label for="otp_code" class="form-label">
+                                    <i class="fa fa-key mr-2"></i>OTP Code
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-lg text-center" 
+                                       id="otp_code" 
+                                       name="otp_code" 
+                                       placeholder="Enter 6-digit code"
+                                       maxlength="6"
+                                       pattern="[0-9]{6}"
+                                       required>
+                                <div class="form-text">
+                                    <i class="fa fa-info-circle mr-1"></i>
+                                    Enter the 6-digit code sent to your phone
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                    <i class="fa fa-check mr-2"></i>
+                                    Verify & Complete Payment
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Resend OTP -->
+                        <div class="resend-otp mt-4 text-center">
+                            <p class="text-muted">Didn't receive the code?</p>
+                            <button type="button" class="btn btn-outline-secondary" id="resend-otp-btn">
+                                <i class="fa fa-refresh mr-2"></i>
+                                Resend OTP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="instructions-card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fa fa-info-circle mr-2"></i>Important Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="instructions-list">
+                            <li><i class="fa fa-clock-o mr-2"></i>OTP expires in 10 minutes</li>
+                            <li><i class="fa fa-mobile mr-2"></i>Check your phone for SMS</li>
+                            <li><i class="fa fa-exclamation-triangle mr-2"></i>Don't share this code with anyone</li>
+                            <li><i class="fa fa-phone mr-2"></i>Contact support if you need help</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('resend-otp-btn').addEventListener('click', function() {
+    // Disable button temporarily
+    this.disabled = true;
+    this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>Resending...';
+    
+    // Simulate resend (replace with actual AJAX call)
+    setTimeout(() => {
+        this.disabled = false;
+        this.innerHTML = '<i class="fa fa-refresh mr-2"></i>Resend OTP';
+        alert('OTP resent successfully!');
+    }, 2000);
+});
+</script>
+{% endblock %}

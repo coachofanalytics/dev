@@ -1,0 +1,228 @@
+{% load static %}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-tachometer-alt"></i> System Overview
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info">
+                        <i class="fas fa-users"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Users</span>
+                        <span class="info-box-number">{{ total_users|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success">
+                        <i class="fas fa-robot"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">AI Services</span>
+                        <span class="info-box-number">{{ active_services|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning">
+                        <i class="fas fa-chart-line"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Analytics</span>
+                        <span class="info-box-number">{{ analytics_count|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box" id="alert-info-box">
+                    <span class="info-box-icon bg-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Alerts</span>
+                        <span class="info-box-number" id="alert-count">{{ alert_count|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <h6>Recent Activity</h6>
+                <div class="list-group">
+                    {% for activity in recent_activities|slice:":5" %}
+                    <div class="list-group-item">
+                        <small class="text-muted">{{ activity.timestamp|date:"M d, H:i" }}</small>
+                        <div>{{ activity.description }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-muted">
+                        No recent activity
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6>System Status <small><a href="#" onclick="refreshSystemStatus()" class="text-muted">🔄 Refresh</a></small></h6>
+                <div class="list-group" id="system-status-list">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Database</span>
+                        <span class="badge badge-success" id="db-status">Online</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>AI Services</span>
+                        <span class="badge badge-success" id="ai-status">Active</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Cache System</span>
+                        <span class="badge badge-success" id="cache-status">Online</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>SSL Certificate</span>
+                        <span class="badge badge-success" id="ssl-status">Valid</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Alerting System</span>
+                        <span class="badge badge-success" id="alert-status">Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time system monitoring for admin dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh system status every 30 seconds
+    setInterval(refreshSystemStatus, 30000);
+    
+    // Initial load
+    refreshSystemStatus();
+});
+
+function refreshSystemStatus() {
+    // Fetch enhanced health check data
+    fetch('/health/enhanced/')
+        .then(response => response.json())
+        .then(data => {
+            updateSystemStatus(data);
+        })
+        .catch(error => {
+            console.error('Error fetching system status:', error);
+            // Show error state
+            updateSystemStatusError();
+        });
+}
+
+function updateSystemStatus(data) {
+    // Update individual component statuses
+    updateStatusBadge('db-status', data.checks?.database?.status || 'unknown');
+    updateStatusBadge('cache-status', data.checks?.cache?.status || 'unknown');
+    updateStatusBadge('ssl-status', data.checks?.ssl_certificate?.status || 'unknown');
+    
+    // Update AI services status
+    const aiStatus = data.checks?.application?.services?.ai?.overall_status || 'unknown';
+    updateStatusBadge('ai-status', aiStatus);
+    
+    // Update alerting system status
+    const alertStatus = data.alerting?.active_alerts > 0 ? 'warning' : 'healthy';
+    updateStatusBadge('alert-status', alertStatus);
+    
+    // Update alert count
+    const alertCount = data.alerting?.active_alerts || 0;
+    document.getElementById('alert-count').textContent = alertCount;
+    
+    // Update alert box color based on overall status
+    const alertBox = document.getElementById('alert-info-box');
+    if (data.overall_status === 'critical') {
+        alertBox.querySelector('.info-box-icon').className = 'info-box-icon bg-danger';
+    } else if (data.overall_status === 'warning' || data.overall_status === 'degraded') {
+        alertBox.querySelector('.info-box-icon').className = 'info-box-icon bg-warning';
+    } else {
+        alertBox.querySelector('.info-box-icon').className = 'info-box-icon bg-success';
+    }
+}
+
+function updateStatusBadge(elementId, status) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    // Remove existing badge classes
+    element.className = 'badge';
+    
+    // Add appropriate badge class based on status
+    switch(status) {
+        case 'healthy':
+        case 'valid':
+        case 'available':
+            element.classList.add('badge-success');
+            element.textContent = 'Online';
+            break;
+        case 'warning':
+        case 'degraded':
+        case 'is_expiring_soon':
+            element.classList.add('badge-warning');
+            element.textContent = 'Warning';
+            break;
+        case 'error':
+        case 'critical':
+        case 'is_expired':
+        case 'unavailable':
+            element.classList.add('badge-danger');
+            element.textContent = 'Offline';
+            break;
+        default:
+            element.classList.add('badge-secondary');
+            element.textContent = 'Unknown';
+    }
+}
+
+function updateSystemStatusError() {
+    // Set all statuses to error state
+    updateStatusBadge('db-status', 'error');
+    updateStatusBadge('cache-status', 'error');
+    updateStatusBadge('ssl-status', 'error');
+    updateStatusBadge('ai-status', 'error');
+    updateStatusBadge('alert-status', 'error');
+    
+    document.getElementById('alert-count').textContent = '?';
+}
+
+// Test alert system function (for admin use)
+function testAlertSystem() {
+    if (confirm('Send a test alert to verify the alerting system is working?')) {
+        fetch('/health/test-alert/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            },
+            body: JSON.stringify({
+                severity: 'warning',
+                component: 'dashboard_test'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Test alert sent successfully!');
+            } else {
+                alert('Failed to send test alert: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error sending test alert: ' + error.message);
+        });
+    }
+}
+</script>
+

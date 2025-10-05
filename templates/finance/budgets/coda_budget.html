@@ -1,0 +1,157 @@
+{%extends "main/base_templates/new_base.html"%}
+{% load mathfilters %}
+{% block content %}
+<style>
+  /* Define the style for the tooltip */
+  .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      opacity: 0;
+  }
+
+  /* Hide the tooltip text by default */
+  .tooltiptext {
+      visibility: hidden;
+      width: 250px;
+      background-color: #555;
+      color: #ffffff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* Position the tooltip above the text */
+      left: 50%;
+      margin-left: -60px;
+      transition: opacity 0.3s;
+      opacity: 1;
+  } 
+
+  /* Show the tooltip text when hovering over the text */
+  .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+  }
+</style>
+<body>
+    <section id="rating">
+        <div class="rating text-center">
+              <div class="row text-center">
+                
+                <div class="col-md-12" id="bada">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5><b>BUDGETING CODA WEBDEVELOPEMENT</b></h5>
+                      <hr/>
+                      <div class="row padding mb-4">
+                        <!-- Subcategory cards -->
+                        {% for application in filter_list %}
+                            <div class="col-md-3 text-center" id="bada">
+                                <div class="card-group">
+                                    <div class="card">
+                                        <div class="">
+                                          <a href="{% url 'finance:coda_budget_estimation' app=application.application_name %}">
+                                            <p class="display-5 text-center" style="font-size: 24px;">
+                                                {{ application.application_name }}
+                                            </p>
+                                        </a>
+                                        
+                                            <hr>
+                                            <!-- Display total amount for the subcategory -->
+                                            <p>No of model: {{application.no_of_model}}</p>
+                                            <p>$ {{ application.no_of_model|mul:one_model_calculation }}</p>
+                                            <!-- Link to filter the table -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                  <hr/>
+                      <div class="row text-center">
+                    </div>
+                      </b></i>
+                    </div>
+                  </div>
+                </div>
+   
+            </div>
+    <table class="table" style="width: 100%">
+    <thead>
+        <tr>
+        <th>APP</th>
+        <th>CATEGORY</th>
+        <th>SUB CATEGORY</th>
+        <th>QUT</th>
+        <th>HRS</th>
+        <th>RATE</th>
+        <th>AMOUNT</th>
+        <th>TOTAL AMOUNT</th>
+        <!-- <th>Brief</th> -->
+        </tr>
+    </thead>
+    <tbody>
+
+        {% for application in application_data_json%}
+            <!-- Repeat rows as needed -->
+            {%for sub_task in application.sub_task %}
+                {% if forloop.counter == 1 %}
+                <tr class="highlight">
+                <td rowspan=8><a href="{% url 'management:requirements' %}?app__icontains={{application.application_name}}">{{application.application_name}}</a></td>
+                <td rowspan=8>
+                  <div class="tooltip" style="opacity: 1">{{application.task}}
+
+                    <span class="tooltiptext">{{application.modle}}</span>
+                  </div>
+                </td>
+                <td>{{sub_task.name}}</td>
+                <td>{{sub_task.quntity}}</td>
+                <td>{{sub_task.hour}}</td>
+                <td>{{sub_task.unit_price}}</td>
+                <td>{{sub_task.amount}}</td>
+                <td rowspan=8>{{application.total_amount}}</td>
+                <!-- <td>Connect with Cashapp API</td> -->
+                </tr>
+                {% else %}
+                <tr class="highlight">
+                <!-- <td>{{application.application_name}}</td> -->
+                <!-- <td>{{application.task}}</td> -->
+                <td>{{sub_task.name}}</td>
+                <td>{{sub_task.quntity}}</td>
+                <td>{{sub_task.hour}}</td>
+                <td>{{sub_task.unit_price}}</td>
+                <td>{{sub_task.amount}}</td>
+                <!-- <td>Connect with Cashapp API</td> -->
+                </tr>
+
+                {%endif%}
+            {%endfor%}
+            <tr class="highlight">
+              <td>Total Model</td>
+              <td>{{application.no_of_model}}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>{{sub_task.unit_price}}</td>
+              <td>{{application.one_model_calculation}}</td>
+              <!-- <td>Connect with Cashapp API</td> -->
+              </tr>
+        {% endfor %}
+        <!-- More rows here -->
+    </tbody>
+    <tfoot>
+        <tr>
+        <th colspan="3">TOTAL FINAL AMOUNT</th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th>{{final_budget_amount}}</th>
+        </tr>
+    </tfoot>
+    </table>
+</div>
+</section>
+</body>
+{% endblock content %}

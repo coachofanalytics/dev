@@ -1,0 +1,24 @@
+<tbody>
+    <tr>
+        <!-- <td>{{employee.date_joined|date:"F d, Y"}}</td> -->
+        <td>{{instance.id}}</td>
+        <td>{{instance.date_joined|date:"F d, Y"}}</td>
+        <!-- <td>{{instance.username}}</td> -->
+        <td>
+          <a class="text-dark text-decoration-none" 
+             data-toggle="tooltip" 
+             data-html="true" 
+             title="{{ instance.user_details|safe }}"
+             href="{% url 'accounts:account-profile' username=instance.username %}">
+            {{ instance.full_name }}
+          </a>
+        </td>
+        <!-- <td>{{instance.first_name|slice:":15"}},{{instance.last_name|slice:":15" }}</td> -->
+        <td>{{instance.phone}}</td>
+        <td>{{instance.email}}</td>
+        <td>{{instance.city}}</td>
+        <!-- <td>{{instance.state}}</td> -->
+        <!-- <td>{{instance.country}}</td> -->
+        <td> <a class="article-title" href="{% url 'accounts:superuser-update' instance.id %}">Edit</a></td>
+      </tr>
+</tbody>

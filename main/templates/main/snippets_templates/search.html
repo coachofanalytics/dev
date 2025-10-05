@@ -1,0 +1,114 @@
+{%extends "main/base_templates/analysis_index.html"%}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <div class="alert alert-dismissible alert-danger">
+                <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+            </div>
+        {% endfor %}
+    </ul>
+        </div>
+{% endif %}
+    <div class="row">
+        <div class="col-md-5 top-coloumn">
+            <div class="mt-4" style="width: 75px;height: 4px;background-color: #E7AD4A;"></div>
+           
+            <p class="font-weight-bold text-white">RESULTS</p>
+
+            <h3 class="font-weight-bold" style="color : #E7AD4A">{{ object.question_type|capfirst }}</h3>
+
+            <p class="title-para">
+                {{ object.desc1 }}
+            </p>
+
+            <div>
+                {% for instruction in instructions %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="background-count-bullet">{{ forloop.counter }}</div>
+                    <a class="text-white" target="_blank" href="{{ instruction.link }}">
+                        <p class="text-white ml-4 mb-0">{{ instruction.description }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+            
+        <div class="col-md-7 top-left-coloumn" style="padding-left: 15px !important;padding-right: 0px !important;">
+            <div class="content-section">
+                <form method="POST">
+                  {% csrf_token %}
+                  <fieldset class="form-group">
+                    <legend class="border-bottom mb-4">Write Review</legend>
+                    {{form.category|as_crispy_field}}
+                    <!-- {{form.topic|as_crispy_field}} -->
+                    <label for="topic">Pick a topic</label>
+                    <select id="topic" name="topic" class="form-control">
+                        <!-- Options will be dynamically populated based on the selected category -->
+                    </select>
+                    {{form.question|as_crispy_field}}
+                    
+                  </fieldset>
+                  <div class="col-md-10">
+                    Response :{{response}}
+                  </div>
+                  <div class="form-group">
+                    <button class="btn btn-outline-info" type="submit">Submit Review
+                    </button>
+                  </div>
+                </form>
+              </div>
+        </div>
+        </div>
+    </div>
+</div>
+<!-- Load jQuery from a reliable CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Ensure that jQuery is properly loaded before using $
+    jQuery(document).ready(function($) {
+        $('#id_category').change(function() {
+            updateFieldsBasedOnCategory();
+        });
+
+        function updateFieldsBasedOnCategory() {
+            const selectedCategory = $('#id_category').val();
+            console.log('Selected Category:', selectedCategory);
+
+            // Perform an AJAX request to fetch model names for the selected category
+            $.ajax({
+                url: '/fetch_model_table_names/',  // Replace with your actual URL
+                type: 'GET',
+                data: { category: selectedCategory },
+                success: function(data) {
+                    const taskDropdown = $('#topic');
+                    taskDropdown.empty();  // Clear existing options
+                    taskDropdown.append($('<option>', { value: '', text: 'Select a table' }));  // Add default option
+                    data.model_table_names.forEach(function(model) {
+                        taskDropdown.append($('<option>', {
+                            value: model.value,
+                            text: model.display_text
+                        }));
+                    });
+                },
+                error: function(error) {
+                    const taskDropdown = $('#topic');
+                    taskDropdown.empty();  // Clear existing options
+                    console.error('Error fetching model names:', error);
+                }
+            });
+        }
+    });
+    
+</script>
+
+
+{% endblock %}
+

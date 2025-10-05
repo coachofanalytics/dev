@@ -1,0 +1,150 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<div class="content-section">
+  <form method="POST" enctype="multipart/form-data" autocomplete="off" onsubmit="saveUsernameToSession()">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      <legend class="border-bottom  text-center">
+        <p class="lead font-italic mt-4  text-center">
+             BACKGROUND CHECKS
+        </p>
+      </legend>
+      {% if form.errors %}
+        <div class="alert alert-danger">
+          <ul>
+            {% for field, errors in form.errors.items %}
+              <li>{{ field }}: {{ errors|join:", " }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      <div class="row text-center">
+        <div class="col-md-6" id="bada">
+          <div class="card">
+            <div class="card-body">
+              <h5><b>Client</b></h5>
+              <hr/>
+              <i><h6>1. Education  &#160 2. Projects </h6></i>
+              <i><p>3. Computer Skills &nbsp 4. Data Tools</p></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" id="bada">
+          <div class="card">
+          <!-- <img src="\media\home\project2.jpg" class="card-img-top">--->
+            <div class="card-body">
+              <h5><b>Experience</b></h5>
+              <hr/>
+              <i><h6>1. Project Experience</h6></i>
+              <i><h6> 2. Internships</h6></i>
+              <i><h6> 3. Work Experience</h6></i>
+            </div>
+        </div>
+    </div>
+</div>
+<hr/>
+<div class="col-md-12 text-center" id="bada">
+    <div class="card-body">
+      <h5><b>Job Details/Position Information</b></h5>
+      <hr/>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-3">{{ form.candidate|as_crispy_field }}</div>
+    <div class="col-md-3">{{ form.role|as_crispy_field }}</div>
+    <div class="col-md-4">{{ form.job_offer_letter|as_crispy_field }}</div>
+    <div class="col-md-1"></div>
+</div>
+<div class="col-md-12 text-center" id="bada">
+    <div class="card-body">
+      <h5><b>Education</b></h5>
+      <hr/>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-5">{{ form.education_level|as_crispy_field }}</div>
+    <div class="col-md-5">{{ form.academic_documents|as_crispy_field }}</div>
+    <div class="col-md-1"></div>
+</div>
+<div class="col-md-12 text-center" id="bada">
+    <div class="card-body">
+      <h5><b>Employment Verification/ Past Employers and Agencies</b></h5>
+      <hr/>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-3">{{ form.end_client|as_crispy_field }}</div>
+    <div class="col-md-3">{{ form.recruiting_agency|as_crispy_field }}</div>
+    <div class="col-md-4">{{ form.hiring_company|as_crispy_field }}</div> 
+    <div class="col-md-4">{{ form.past_employers|as_crispy_field }}</div> 
+    <div class="col-md-4">{{ form.reference_contacts|as_crispy_field }}</div> 
+    <div class="col-md-4">{{ form.status|as_crispy_field }}</div> 
+    <div class="col-md-1"></div>
+</div>
+</div>
+<div class="row">
+  <div class="col-md-1"></div>
+  <div class="col-md-5"></div>
+  <div class="col-md-5"></div>
+  <div class="col-md-1"></div>
+</div>
+<hr>
+<div class="row">
+  <div class="col-md-1"></div>
+  <div class="col-md-5"></div>
+  <div class="col-md-5"></div>
+  <div class="col-md-1"></div>
+</div>
+<hr>
+
+<hr>
+    </fieldset>
+    <input type="hidden" name="category_slug" id="category_slug_field" value="">
+    <div class="form-group text-center">
+      <button class="btn btn-outline-info" type="submit">Submit</button>
+    </div>
+  </form>
+</div>
+<div class="row">
+  <div class="col-md-12 text-right">
+  <style>
+    .recaptcha-placeholder {
+      position: absolute;
+      right: -400px; /* Adjust this value based on your image width */
+      top: -120px;
+      bottom: 20px;
+      transition: right 0.3s ease;
+    }
+    .recaptcha-placeholder:hover {
+      right: 0;
+    }
+
+    .g-recaptcha .rc-anchor-error-msg {
+      display: none !important;
+    }
+  </style>
+  <img class="hero-banner recaptcha-placeholder" src="{% static 'main/img/icons/recaptcha.jpg' %}" alt=""/>
+  </div>
+</div>
+<script>
+  // Get category_slug from session storage
+  function saveUsernameToSession() {
+    const email = document.querySelector('[name="email"]').value;
+    if (email) {
+      sessionStorage.setItem('username', email);
+    }
+  }
+  const categorySlug = sessionStorage.getItem('category');
+  console.log(categorySlug);
+
+  // Set it in the hidden input field
+  document.getElementById('category_slug_field').value = categorySlug;
+</script>
+
+
+{% endblock content %}

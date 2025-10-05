@@ -1,0 +1,172 @@
+
+{%extends "main/base_templates/new_base.html"%} {%load crispy_forms_tags%}
+{%block content %}
+<div class="content-section">
+  <form method="POST" enctype="multipart/form-data" autocomplete="off">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      <legend class="border-bottom  text-center">
+        <h1>USING OPENAI FOR ACCESSIBILITY {{title}}</h1>
+      </legend>
+      <div class="row text-center">
+        <div class="col-md-12" id="bada">
+          <div class="card">
+          <!-- <img src="\media\home\project2.jpg" class="card-img-top">--->
+            <div class="card-body">
+                Committed to Excellence in Accessibility: We believe in creating an inclusive digital space that is equally accessible to everyone. Our approach adheres to the WCAG (Web Content Accessibility Guidelines) standards, ensuring that all our services, information, and resources are available to people with diverse abilities. By recognizing the importance of accessibility, we strive to empower individuals and foster an environment of equal access and opportunityi>
+            </div>
+          </div>
+          <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+          <div class="data_training text-center">
+            <h3 class="title">{{title}}</h3>
+                <div class="row text-center">
+                    {% for value in accessibility %}
+                    <div class="col-md-3" id="gi">
+                        {% include 'main/snippets_templates/cards/card.html' with instance=value %}
+                  </div>
+                  {% endfor%}
+                  </div>
+            </div>
+            <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+        </div>
+</div>
+<div class=" text-center">
+    <p>Enter Your Site To Test For Compliance 
+      <a class="btn btn-secondary" href="{% url 'main:check_wcag_compliance' %}">Check Previous Searches</a>
+      <div class="dropdown-divider"></div></p>
+  </div>
+  <hr/>
+  <div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-2">
+      <label for="page_name">Enter company:</label>
+      {{ form.company }}
+  </div>
+  <div class="col-md-2">
+      <label for="upload_file">Enter app/folder:</label>
+      {{ form.app_name }}
+  </div>
+    <div class="col-md-2">
+      <label for="page_name">Enter page name:</label>
+      {{ form.page_name }}
+  </div>
+    <div class="col-md-2">
+        <label for="website_url">Enter Page url/link:</label>
+        {{ form.website_url }}
+    </div>
+    <div class="col-md-3">
+        <label for="upload_file">Upload multi HTML file:</label>
+        {{ form.upload_multi_file }}
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+    </fieldset>
+    <div class="form-group text-center">
+      <button class="btn btn-outline-info" type="submit">Submit</button>
+    </div>
+  </form>
+</div>
+  <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+  {% if problem_json|length > 0%}
+
+  {% for problem in problem_json%}
+  <section id="career">
+    <div class="career">
+      <h1 class="text-center">WCAG Compliance Analysis for: {{ problem.page_name }} </h1>
+        <div class="card "> 
+              <div class="card-body">
+                <link href="https://cdn.jsdelivr.net/npm/prismjs@1.24.1/themes/prism-okaidia.css" rel="stylesheet" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+                <!-- Bootstrap Bundle with Popper -->
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+                <!-- Prism.js for syntax highlighting (optional) -->
+                <link href="https://cdn.jsdelivr.net/npm/prismjs@1.24.1/themes/prism-okaidia.css" rel="stylesheet" />
+                <script src="https://cdn.jsdelivr.net/npm/prismjs@1.24.1/prism.js"></script>
+
+                <style>
+                  .code-container {
+                    display: flex;
+                    justify-content: space-between;
+                  }
+                  pre {
+                    margin: 0;
+                    padding: 1rem;
+                    overflow: auto;
+                    background: #f5f5f5;
+                    border-radius: 4px;
+                  }
+                  .line-numbers .line-numbers-rows {
+                    border-right: 1px solid #cecece;
+                  }
+                  code {
+                    white-space: pre-wrap;
+                  }
+                </style>
+
+
+                <div class="accordion" id="accordionExample">
+                  <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        Check Your Improve Code: {{problem.page_name}}
+                      </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                      <div class="accordion-body">
+                        <pre><code>
+                          {{ problem.improved_code }}
+                          </code>
+                          </pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+          </div>
+
+      <div class="table-responsive">
+        <table class="table table-striped" style="width: 100%">
+        <thead class="border-bottom font-weight-bold">
+          <tr>
+            <th>Problem Statement</th>
+            <th>Description</th>
+            <th>WCAG standard</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for problem_obj in problem.problem_list %}
+            <tr>
+              <td>{{problem_obj.problem_title}}</td>
+              <td>{{problem_obj.description}}</td>
+              <td><a href="https://docs.google.com/spreadsheets/d/1J4Q-O4AVTMH1dt931mfY7-EFf7emsGAUTuumub-Ppj0/edit#gid=0">Access</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    </div>
+  </section>
+  {% endfor %}
+  {% else %}
+  <section id="career">
+  <div class="career text-center">
+    <h1>WCAG Compliance Analysis for: {{ website_url }} </h1>
+      <div class="card">
+
+            <div class="card-body">
+              {% if suggestions %}
+              <div>
+                  {{ suggestions|linebreaks }} 
+              </div>
+              {% else %}
+                  <p>No suggestions available or an error occurred during analysis.</p>
+              {% endif %}
+            </div>
+          </div>
+      </div>
+</section>
+  {% endif %}
+ 
+  {% endblock content%}

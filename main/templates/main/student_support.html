@@ -1,0 +1,384 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Student Support - CODA Learning Resources{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 font-weight-bold mb-4">Student Support Center</h1>
+                <p class="lead mb-4">
+                    Your comprehensive resource hub for academic success, career development, 
+                    and personal growth. We're here to help you thrive in your educational journey.
+                </p>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-user-graduate fa-5x text-warning"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Help -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Quick Help</h2>
+            <p class="lead text-muted">Get immediate assistance with common questions</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-question-circle fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">FAQ</h5>
+                        <p class="card-text text-muted">
+                            Find answers to frequently asked questions about courses, 
+                            payments, and platform features.
+                        </p>
+                        <a href="{% url 'main:FAQS' %}" class="btn btn-outline-primary">View FAQs</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-comments fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Live Chat</h5>
+                        <p class="card-text text-muted">
+                            Chat with our support team in real-time for immediate 
+                            assistance with any questions or issues.
+                        </p>
+                        <button class="btn btn-outline-success" onclick="openChat()">Start Chat</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-envelope fa-3x text-info"></i>
+                        </div>
+                        <h5 class="card-title">Email Support</h5>
+                        <p class="card-text text-muted">
+                            Send us a detailed message and we'll get back to you 
+                            within 24 hours with a comprehensive response.
+                        </p>
+                        <a href="{% url 'main:contact' %}" class="btn btn-outline-info">Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Learning Resources -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Learning Resources</h2>
+            <p class="lead text-muted">Everything you need to succeed in your studies</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-book fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Course Materials</h5>
+                        <p class="card-text text-muted">
+                            Access all your course materials, readings, and assignments 
+                            in one organized location.
+                        </p>
+                        <a href="{% url 'professional_services:bitraining' %}" class="btn btn-outline-primary btn-sm">Access Materials</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-video fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Video Tutorials</h5>
+                        <p class="card-text text-muted">
+                            Step-by-step video guides for complex topics and 
+                            hands-on demonstrations.
+                        </p>
+                        <a href="{% url 'professional_services:training' %}" class="btn btn-outline-success btn-sm">Watch Videos</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-file-pdf fa-3x text-info"></i>
+                        </div>
+                        <h5 class="card-title">Study Guides</h5>
+                        <p class="card-text text-muted">
+                            Comprehensive study guides and practice exams to 
+                            help you prepare for assessments.
+                        </p>
+                        <a href="#" class="btn btn-outline-info btn-sm">Download Guides</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-users fa-3x text-warning"></i>
+                        </div>
+                        <h5 class="card-title">Study Groups</h5>
+                        <p class="card-text text-muted">
+                            Join study groups with fellow students to collaborate 
+                            and learn together.
+                        </p>
+                        <a href="#" class="btn btn-outline-warning btn-sm">Join Groups</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Academic Support -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Academic Support</h2>
+            <p class="lead text-muted">Get help with your coursework and assignments</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-user-tie fa-2x text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ml-3">
+                                <h5 class="mb-1">Tutor Support</h5>
+                                <p class="text-muted mb-0">One-on-one tutoring sessions with subject matter experts</p>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success mr-2"></i>Scheduled tutoring sessions</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Subject-specific expertise</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Flexible scheduling</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary btn-sm">Schedule Session</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-edit fa-2x text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ml-3">
+                                <h5 class="mb-1">Writing Center</h5>
+                                <p class="text-muted mb-0">Get help with essays, reports, and academic writing</p>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success mr-2"></i>Essay review and feedback</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Citation and formatting help</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Grammar and style guidance</li>
+                        </ul>
+                        <a href="#" class="btn btn-success btn-sm">Submit Paper</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-chart-bar fa-2x text-info"></i>
+                            </div>
+                            <div class="flex-grow-1 ml-3">
+                                <h5 class="mb-1">Data Analysis Help</h5>
+                                <p class="text-muted mb-0">Assistance with statistical analysis and data interpretation</p>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success mr-2"></i>Statistical software support</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Data interpretation guidance</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Report writing assistance</li>
+                        </ul>
+                        <a href="{% url 'ai_services:ai_dashboard' %}" class="btn btn-info btn-sm">Get Help</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-laptop fa-2x text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ml-3">
+                                <h5 class="mb-1">Technical Support</h5>
+                                <p class="text-muted mb-0">Help with platform issues and technical problems</p>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success mr-2"></i>Platform troubleshooting</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Software installation help</li>
+                            <li><i class="fas fa-check text-success mr-2"></i>Device compatibility issues</li>
+                        </ul>
+                        <a href="#" class="btn btn-warning btn-sm">Report Issue</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Career Services -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Career Services</h2>
+            <p class="lead text-muted">Prepare for your future career</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Resume Building</h4>
+                    <p class="text-muted">
+                        Get help creating a professional resume that stands out to employers 
+                        and highlights your skills and achievements.
+                    </p>
+                    <a href="{% url 'professional_services:prepquestions' %}" class="btn btn-outline-primary">Build Resume</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-handshake fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Interview Prep</h4>
+                    <p class="text-muted">
+                        Practice interview skills with mock interviews and get feedback 
+                        from experienced professionals.
+                    </p>
+                    <a href="{% url 'professional_services:interview_roles' %}" class="btn btn-outline-success">Practice Interview</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-briefcase fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Job Placement</h4>
+                    <p class="text-muted">
+                        Connect with our network of employers and find internship 
+                        and job opportunities that match your skills.
+                    </p>
+                    <a href="{% url 'application:career' %}" class="btn btn-outline-info">Find Jobs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 font-weight-bold mb-3">Need More Help?</h2>
+            <p class="lead mb-4">Our support team is here to assist you</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 text-center mb-4">
+                <i class="fas fa-phone fa-2x mb-3"></i>
+                <h5>Phone Support</h5>
+                <p>Mon-Fri: 9 AM - 6 PM EST</p>
+                <p><strong>1-800-CODA-HELP</strong></p>
+            </div>
+            
+            <div class="col-lg-4 text-center mb-4">
+                <i class="fas fa-envelope fa-2x mb-3"></i>
+                <h5>Email Support</h5>
+                <p>24/7 email support</p>
+                <p><strong>support@coda.com</strong></p>
+            </div>
+            
+            <div class="col-lg-4 text-center mb-4">
+                <i class="fas fa-comments fa-2x mb-3"></i>
+                <h5>Live Chat</h5>
+                <p>Available during business hours</p>
+                <button class="btn btn-light" onclick="openChat()">Start Chat</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function openChat() {
+    alert('Live chat feature coming soon! For now, please use our email support or contact form.');
+}
+</script>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.feature-icon:hover {
+    transform: translateY(-5px);
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

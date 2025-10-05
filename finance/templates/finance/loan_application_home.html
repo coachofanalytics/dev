@@ -1,0 +1,354 @@
+{% extends "main/base_templates/new_base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Hero Section -->
+  <div class="row bg-primary text-white py-5">
+    <div class="col-12 text-center">
+      <h1 class="display-4">Welcome to CODA Loan Services</h1>
+      <p class="lead">Access flexible financing solutions tailored to your needs</p>
+      <p class="mb-0">Today: {{ today_date|date:"F d, Y" }}</p>
+    </div>
+  </div>
+
+  <!-- Eligibility Status -->
+  <div class="row mt-4">
+    <div class="col-12">
+      {% if eligibility.eligible %}
+        <div class="alert alert-success" role="alert">
+          <h4 class="alert-heading">✅ You're Eligible for a Loan!</h4>
+          <p class="mb-0">{{ eligibility.message }}</p>
+        </div>
+      {% else %}
+        <div class="alert alert-warning" role="alert">
+          <h4 class="alert-heading">⚠️ Loan Application Currently Unavailable</h4>
+          <p class="mb-0">{{ eligibility.message }}</p>
+          
+          {% if eligibility.reason == 'unpaid_loans' %}
+            <hr>
+            <h6>Your Unpaid Loans:</h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Loan ID</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Applied Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for loan in eligibility.unpaid_loans %}
+                    <tr>
+                      <td>#{{ loan.id }}</td>
+                      <td>{{ currency_symbol }}{{ loan.amount }}</td>
+                      <td>{{ currency_symbol }}{{ loan.balance }}</td>
+                      <td>
+                        <span class="badge badge-{% if loan.status == 'active' %}info{% elif loan.status == 'overdue' %}danger{% else %}warning{% endif %}">
+                          {{ loan.status|title }}
+                        </span>
+                      </td>
+                      <td>{{ loan.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <p class="mb-0 mt-2">
+              <strong>Total Outstanding:</strong> {{ currency_symbol }}{{ eligibility.total_outstanding|floatformat:2 }}
+            </p>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- User Eligibility & Quick Stats -->
+  {% if eligibility.eligible and user_loan_limits %}
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Your Loan Eligibility</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-6">
+                <div class="text-center">
+                  <h3 class="text-primary">{{ currency_symbol }}{{ user_loan_limits.max_amount|floatformat:0 }}</h3>
+                  <small class="text-muted">Maximum Amount</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="text-center">
+                  <h3 class="text-success">{{ currency_symbol }}{{ user_loan_limits.min_amount|floatformat:0 }}</h3>
+                  <small class="text-muted">Minimum Amount</small>
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-12">
+                <p class="mb-1"><strong>User Type:</strong> {{ user_loan_limits.user_type|title }}</p>
+                {% if user_loan_limits.monthly_income %}
+                  <p class="mb-1"><strong>Monthly Income:</strong> {{ currency_symbol }}{{ user_loan_limits.monthly_income|floatformat:2 }}</p>
+                  <p class="mb-0"><strong>Multiplier:</strong> {{ user_loan_limits.multiplier }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Your Loan Applications</h5>
+          </div>
+          <div class="card-body">
+            {% if user_loans %}
+              <div class="mb-3">
+                <span class="badge badge-primary">{{ total_loans }} Total</span>
+                {% if active_loans %}
+                  <span class="badge badge-info">{{ active_loans.count }} Active</span>
+                {% endif %}
+                {% if pending_loans %}
+                  <span class="badge badge-warning">{{ pending_loans.count }} Pending</span>
+                {% endif %}
+                {% if completed_loans %}
+                  <span class="badge badge-secondary">{{ completed_loans.count }} Completed</span>
+                {% endif %}
+              </div>
+              
+              <div class="list-group list-group-flush">
+                {% for loan in user_loans|slice:":3" %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{{ loan.loan_product.name|default:"Unknown Product" }}</strong><br>
+                      <small class="text-muted">
+                        {{ currency_symbol }}{{ loan.amount_requested|floatformat:2 }} {{ user_currency }} | 
+                        Applied: {{ loan.created_at|date:"M d, Y" }}
+                      </small>
+                    </div>
+                    <span class="badge badge-{% if loan.status == 'approved' %}success{% elif loan.status == 'active' %}info{% elif loan.status == 'rejected' %}danger{% elif loan.status == 'repaid' %}secondary{% else %}warning{% endif %}">
+                      {{ loan.status|title }}
+                    </span>
+                  </div>
+                {% endfor %}
+              </div>
+              {% if user_loans.count > 3 %}
+                <p class="text-center mt-2">
+                  <a href="{% url 'finance:user-loans' %}" class="btn btn-sm btn-outline-primary">View All ({{ user_loans.count }})</a>
+                </p>
+              {% endif %}
+            {% else %}
+              <p class="text-muted text-center mb-0">No loan applications yet</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Available Loan Products -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Available Loan Products</h5>
+        </div>
+        <div class="card-body">
+          {% if loan_products %}
+            <div class="row">
+              {% for product in loan_products %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h6 class="card-title">{{ product.name }}</h6>
+                      <p class="card-text small">{{ product.description|truncatewords:15 }}</p>
+                      <div class="row text-center">
+                        <div class="col-6">
+                          <small class="text-muted">Amount Range</small>
+                          <p class="mb-0"><strong>{{ currency_symbol }}{{ product.min_amount|floatformat:0 }} - {{ currency_symbol }}{{ product.max_amount|floatformat:0 }}</strong></p>
+                        </div>
+                        <div class="col-6">
+                          <small class="text-muted">Interest Rate</small>
+                          <p class="mb-0"><strong>{{ product.interest_rate }}%</strong></p>
+                        </div>
+                      </div>
+                      <div class="text-center mt-2">
+                        <small class="text-muted">Term: {{ product.term_months }} months</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted text-center mb-0">No loan products currently available</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="row mt-4 mb-5">
+    <div class="col-12 text-center">
+      {% if eligibility.eligible and loan_products %}
+        <a href="{% url 'finance:apply-for-loan' loan_products.0.id %}" class="btn btn-primary btn-lg">
+          <i class="fas fa-edit"></i> Start Application
+        </a>
+        <a href="{% url 'finance:user-loans' %}" class="btn btn-outline-secondary btn-lg ml-2">
+          <i class="fas fa-list"></i> View My Loans
+        </a>
+      {% else %}
+        <button class="btn btn-secondary btn-lg" disabled>
+          <i class="fas fa-ban"></i> Application Unavailable
+        </button>
+        <a href="{% url 'finance:user-loans' %}" class="btn btn-outline-primary btn-lg ml-2">
+          <i class="fas fa-list"></i> View My Loans
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">How It Works</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 text-center">
+              <div class="mb-3">
+                <i class="fas fa-edit fa-2x text-primary"></i>
+              </div>
+              <h6>1. Apply</h6>
+              <p class="small text-muted">Fill out the loan application form with your details and requirements</p>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="mb-3">
+                <i class="fas fa-search fa-2x text-primary"></i>
+              </div>
+              <h6>2. Review</h6>
+              <p class="small text-muted">Our team reviews your application and eligibility</p>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="mb-3">
+                <i class="fas fa-check-circle fa-2x text-primary"></i>
+              </div>
+              <h6>3. Approval</h6>
+              <p class="small text-muted">Get notified of approval and loan terms</p>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="mb-3">
+                <i class="fas fa-money-bill-wave fa-2x text-primary"></i>
+              </div>
+              <h6>4. Disbursement</h6>
+              <p class="small text-muted">Receive your loan amount via your preferred method</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requirements -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Requirements by User Type</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                  <h6 class="mb-0"><i class="fas fa-user-tie"></i> For Staff Members</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Active employment status</li>
+                    <li><i class="fas fa-check text-success"></i> Minimum 3 months of consistent earnings</li>
+                    <li><i class="fas fa-check text-success"></i> No outstanding loans</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> Always required (fellow staff member)</li>
+                    <li><i class="fas fa-check text-success"></i> Maximum loan: 2x monthly income</li>
+                  </ul>
+                  <div class="alert alert-info mt-2">
+                    <small><i class="fas fa-info-circle"></i> Staff members have access to emergency and development loans with competitive rates.</small>
+                  </div>
+                  <div class="alert alert-success mt-2">
+                    <small><i class="fas fa-user-friends"></i> <strong>Guarantor:</strong> Fellow staff members are always available to act as guarantors for staff loans.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                  <h6 class="mb-0"><i class="fas fa-star"></i> For KCC Members</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Active KCC membership</li>
+                    <li><i class="fas fa-check text-success"></i> Valid identification</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> Required for amounts >$500</li>
+                    <li><i class="fas fa-check text-success"></i> Premium loan terms available</li>
+                    <li><i class="fas fa-check text-success"></i> Higher borrowing limits</li>
+                  </ul>
+                  <div class="alert alert-warning mt-2">
+                    <small><i class="fas fa-crown"></i> KCC members enjoy exclusive loan products with the best rates.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                  <h6 class="mb-0"><i class="fas fa-users"></i> For External Users</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Valid identification</li>
+                    <li><i class="fas fa-check text-success"></i> Proof of income</li>
+                    <li><i class="fas fa-check text-success"></i> <strong>Guarantor:</strong> Always required</li>
+                    <li><i class="fas fa-check text-success"></i> Business plan (for business loans)</li>
+                    <li><i class="fas fa-check text-success"></i> Additional documentation may be required</li>
+                  </ul>
+                  <div class="alert alert-info mt-2">
+                    <small><i class="fas fa-info-circle"></i> External users can access most loan products with proper documentation.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Support -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card bg-light">
+        <div class="card-body text-center">
+          <h5>Need Help?</h5>
+          <p class="mb-2">Our finance team is here to assist you with any questions about loans or eligibility.</p>
+          <p class="mb-0">
+            <strong>Contact:</strong> 
+            <a href="mailto:finance@codanalytics.net">finance@codanalytics.net</a> | 
+            <strong>Hours:</strong> 24/7
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %} 

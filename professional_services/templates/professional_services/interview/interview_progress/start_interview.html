@@ -1,0 +1,71 @@
+{%extends "main/base_templates/analysis_index.html"%}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid">
+    {% include "main/messages/django_messages.html" %}
+    <div class="row">
+        <div class="col-md-7 top-coloumn">
+            <div class="mt-4" style="width: 75px;height: 4px;background-color: #E7AD4A;"></div>
+            <p class="font-weight-bold text-white">{{title}}</p>
+            <h3 class="font-weight-bold" style="color : #E7AD4A">{{ object.question_type|capfirst }}</h3>
+            <p class="title-para">
+                {{description}}
+               <!-- The most difficult roadblock to getting an IT job in any field is the interview.Here we examine on the step by step process on how one can ace that interview. -->
+            </p>
+            <!-- <a href="{% url 'professional_services:interviewlist'%}" class="btn btn-primary btn-sm">My Uploads</a> -->
+            <a href="{% url 'professional_services:user-list' request.user %}" class="btn btn-primary btn-sm">My Uploads</a>
+        </div>
+        <div class="col-md-5 top-left-coloumn" style="padding-left: 0px !important;padding-right: 0px !important;">
+            <img class="w-100" style="height: 100%;" 
+            src="{% static 'professional_services/img/project1.jpg' %}" 
+            />
+        </div>
+    </div>
+    <div class="row my-5 ">
+        <div class="col-md-1  align-items-center">
+        </div>
+        <div class="col-md-10  align-items-center">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Process</th>
+                    <th scope="col"></th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">lead</th>
+                    <th scope="col">Link</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in data_items %}
+                    <tr>
+                        <td>{{item.Inteview}}</td>
+                        <td>{{item.Concentration}}</td>
+                        <td>{{item.Description}}</td>
+                        <td>{{item.Duration}}</td>
+                        <td>{{item.Lead}}</td>
+                        <td>
+                            <a href="{{item.Link}}" class="btn btn-primary btn-sm">access</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-1  align-items-center">
+        </div>
+    </div>
+  </div>
+  <hr>
+  {% if category_slug == 'interview' %}
+  <div class="container top-coloumn bg-white align-items-center text-center">
+      {% with 'resume' as resume %}
+          <a href="{% url 'professional_services:question-detail' resume %}" class="btn btn-primary btn-sm">LETS GET STARTED</a>
+      {% endwith %}
+    </div>
+    {% endif %}
+{% endblock %}
+

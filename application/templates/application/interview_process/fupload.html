@@ -1,0 +1,49 @@
+{%extends "main/base_templates/application_base.html"%} {%load crispy_forms_tags%}
+{%block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>Applicants Work</h2>
+    <hr />
+    <table style="width: 100%">
+      <thead>
+        <tr>
+          <th>username</th>
+          <th>Date Uploaded</th>
+          <th>Powerpoint</th>
+          <th>Tableau</th>
+          <th>Alteryx</th>
+          <th>Database</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for iupload in iuploads %}
+        <tr>
+          <td>{{iupload.username}}</td>
+          <td>{{iupload.upload_date|date:"F d, Y"}}</td>
+          <td>
+            <a href="{{iupload.ppt.url}}" class="btn btn-secondary btn-sm"
+              >Download
+            </a>
+          </td>
+          <td>
+            <a href="{{iupload.report.url}}" class="btn btn-secondary btn-sm"
+              >Download
+            </a>
+          </td>
+          <td>
+            <a href="{{iupload.workflow.url}}" class="btn btn-secondary btn-sm"
+              >Download
+            </a>
+          </td>
+          <td>
+            <a href="{{iupload.proc.url}}" class="btn btn-secondary btn-sm"
+              >Download
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

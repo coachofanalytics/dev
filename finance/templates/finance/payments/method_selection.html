@@ -1,0 +1,110 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Payment Methods - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid payment-methods-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Payment Header -->
+            <div class="payment-header text-center mb-5">
+                <h1 class="display-4 mb-3">
+                    <i class="fa fa-credit-card text-primary mr-3"></i>
+                    Choose Your Payment Method
+                </h1>
+                <p class="lead text-muted">Select your preferred payment method to complete your transaction</p>
+                
+                <!-- Payment Summary -->
+                <div class="payment-summary mt-4">
+                    <div class="row justify-content-center">
+                        <div class="col-md-4">
+                            <div class="summary-card">
+                                <div class="summary-label">Total Amount</div>
+                                <div class="summary-value">${{ total_amount|default:"0" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-card">
+                                <div class="summary-label">Down Payment</div>
+                                <div class="summary-value">${{ down_payment|default:"0" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-card">
+                                <div class="summary-label">Balance</div>
+                                <div class="summary-value">${{ balance|default:"0" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods Grid -->
+            <div class="payment-methods-grid">
+                <div class="row">
+                    {% for method_key, method_config in available_methods.items %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="payment-method-card" data-method="{{ method_key }}">
+                            <div class="card-header">
+                                <div class="method-icon">
+                                    <i class="{{ method_config.icon }}"></i>
+                                </div>
+                                <h5 class="method-name">{{ method_config.display_name }}</h5>
+                            </div>
+                            
+                            <div class="card-body">
+                                <p class="method-description">{{ method_config.description }}</p>
+                                
+                                <div class="method-details">
+                                    <div class="detail-item">
+                                        <i class="fa fa-clock text-muted mr-2"></i>
+                                        <span>{{ method_config.processing_time }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fa fa-percentage text-muted mr-2"></i>
+                                        <span>{{ method_config.fees }}</span>
+                                    </div>
+                                    {% if method_config.requires_phone %}
+                                    <div class="detail-item">
+                                        <i class="fa fa-mobile text-muted mr-2"></i>
+                                        <span>Phone Required</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer">
+                                <a href="{% url 'finance:unified_processing' method=method_key %}" 
+                                   class="btn btn-primary btn-block">
+                                    <i class="fa fa-arrow-right mr-2"></i>
+                                    Continue with {{ method_config.name }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="payment-info mt-5">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h6><i class="fa fa-shield text-success mr-2"></i>Secure Payments</h6>
+                            <p class="small text-muted">All transactions are encrypted and secure</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h6><i class="fa fa-headphones text-primary mr-2"></i>24/7 Support</h6>
+                            <p class="small text-muted">Get help anytime you need it</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

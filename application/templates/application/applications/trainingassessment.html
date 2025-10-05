@@ -1,0 +1,57 @@
+{%extends "main/base_templates/application_base.html"%}
+ {%load crispy_forms_tags%} 
+ {% load customfilters %}
+ {%block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>Training Assessment</h2>
+    <button>
+      <a href="{% url 'application:assessment_create'%}">New Assessment</a></H4>
+    </button>
+    <div class="table-responsive">
+    <table id="bootstrapdatatable" class="table table-striped table-bordered" width="100%">
+      <table class="table table-striped table-bordered" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Date</th>
+          <th>assessor </th>
+          <th>username </th>
+          <th>data_tools </th>
+          <!-- <th>topic </th> -->
+          <th>audibility </th>
+          <th>score </th>
+          <th>duration </th>
+          <th>Watch </th>
+          <th>Update </th>
+          <th>Delete </th>
+        
+        </tr>
+      </thead>
+      <tbody>
+        {% for obj in assessments %}
+        <tr>
+          <td>{{obj.created_at}}</td>
+          <td>{{obj.assessor}}</td>
+          <td>{{obj.trainee_username}}</td>
+          <!-- <td>{{obj.topic.topic_name}}</td> -->
+          <td>{{obj.data_tools}}</td>
+          <td>{{obj.audibility}}</td>
+          <td>{{obj.score}}</td>
+          <td>{{obj.duration}}</td>
+          <td>
+            <button>
+              <a href="{{obj.uploadlinkurl}}" class="btn btn-secondary btn-sm" target="_blank"
+              >Watch
+            </a>
+            </button>
+          </td>
+         <td><h4 ><a href="{% url 'application:assessment_update' obj.id %}">Edit</H4></a></p></td>  
+         <td><h4 ><a href="#">❌</H4></a></p></td>  
+      </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  </div>
+</section>
+{%endblock content %}

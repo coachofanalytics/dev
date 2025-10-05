@@ -1,0 +1,331 @@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+crossorigin="anonymous"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap Bundle JS (includes Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<nav class="navbar navbar-expand-sm bg-light navbar-light sticky-top">
+  <div class="container-fluid">
+      <a class="navbar-brand logo-text" href="{% url 'main:layout'%}">CODA</a>
+      <button class="navbar-toggler nav-btn" type="button" data-bs-toggle="coll apse"
+          data-bs-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+          <ul class="navbar-nav mr-auto w-100 justify-content-end">
+              <li class="nav-item active">
+                  <a class="nav-link" href="{% url 'main:layout'%}">Home</a>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link" href="{% url 'main:layout'%}">About</a>
+              </li>
+
+              <li class="nav-item dropdown">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="navbarDropdown"
+                    role="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                  Training
+                  </a>
+                 
+                  <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+                    {% if user.is_admin or user.category == 3 or user.is_staff or  user.is_superuser %}
+                      {% for category in categories %}
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{{category.get_url}}"
+                        >{{category.title|capfirst}}</a>
+                      {% endfor%}
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:training-list'%}"
+                      >Add/Edit</a>
+                      {% else%}
+                      <a class="dropdown-item" href="{% url 'professional_services:train'%}"
+                      >training</a>
+                      {% endif %}
+                  </div>
+                  
+                 
+                </li>
+
+              <li class="nav-item dropdown">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="navbarDropdown"
+                    role="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    Interview
+                  </a>
+                  
+                  <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+                    {% if user.is_admin or  user.is_staff or  user.is_superuser %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'professional_services:start_training' slug='interview' %}"
+                    >Interview</a>
+                      {% for role in roles %}
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{{role.get_url}}"
+                        >{{role.question_type|capfirst}}</a>
+                      {% endfor%}
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:jobroles' %}"
+                      >Add/Edit</a>
+                      {% else%}
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:start_training' slug='interview' %}"
+                      >interview</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:interviewlist'%}"
+                      >Transcripts</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'management:user_session' request.user %}"
+                      >Practice Session</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:interview_section' title='questions'%}"
+                      >Prep Questions</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:prepresponses' %}"
+                      >Interview Responses</a>
+                      {% endif %}
+                  </div>
+                </li>
+              <li class="nav-item dropdown">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="navbarDropdown"
+                    role="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    Job Support
+                  </a>
+                  
+                  <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:start_training' slug='job-support' %}"
+                      >Overview</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:category-detail' title='Course Overview' %}"
+                      >Onboarding</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="https://app.box.com/s/fqdxfywn8c0uixarpuvoo2o7gx18lwdw"
+                      >Project Definition</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'professional_services:category-detail' title='Development' %}"
+                      >Technical Support</a>
+                      <div class="dropdown-divider"></div>
+                  </div>
+                </li>
+
+              <!-- <li class="nav-item">
+                  <p class="mb-1" style="font-size: 8px;text-align: right;">MODULE PROGRESS %</p>
+                  <div class="progress" style="border-radius: 20px;width: 150px;">
+                      <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60"
+                          aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+              </li> -->
+                  <!-- Notifications Dropdown -->
+                  <li class="nav-item dropdown position-relative notification-dropdown">
+                    <a class="nav-link dropdown-toggle position-relative" href="#" id="navbarDropdownNotifications" role="button"
+                      data-bs-toggle="dropdown" aria-expanded="false" style="padding: 5px; margin-top: 6px; position: relative;">
+                      <i class="fa fa-bell fa-lg" aria-hidden="true" style="font-size: 1.5rem; color: #6a737c; position: relative;">
+                        <!-- Notification Count Inside the Bell Icon -->
+                        <span class="badge bg-danger rounded-circle position-absolute"
+                        style="font-size: 0.65rem; padding: 4px 6px; top: -10px;color:white; right: -10px;"{% if recent_notifications|length == 0 %} display: none; {% endif %}" id="notificationBadge">
+                        {{ recent_notifications|length }}
+                      </span>
+                      </i>
+                    </a>
+                  
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu shadow-lg p-3" aria-labelledby="navbarDropDown" style="  max-height: 400px;width: 230px;  overflow-y: auto; overflow-x: hidden;">
+                      <h6 class="dropdown-header text-center font-weight-bold text-dark">Notifications</h6>
+                      <div class="dropdown-divider"></div>
+                  
+                      <!-- Check if there are recent notifications -->
+                      {% if recent_notifications %}
+                        <!-- Loop through the recent notifications -->
+                        {% for notification in recent_notifications %}
+                        <a class="dropdown-item d-flex align-items-start position-relative" href="{% url 'professional_services:feedback_review' notification.id %}" style="padding: 10px 13px; width: 100%;" id="test">
+                          <!-- Icon on the left -->
+                          <div class="flex-shrink-0">
+                            <i class="fa fa-envelope text-primary" style="font-size: 22px;"></i>
+                          </div>
+                          <!-- Notification content on the right -->
+                          <div class="flex-grow-1 ms-3" style="margin-right: 15px;">
+                            <!-- Review text -->
+                            <p class="mb-1" style="font-size: 14px; font-weight: 400; color: #333;">
+                              {{ notification.review|truncatewords:6 }}
+                            </p>
+                  
+                            <!-- Time text aligned to the right -->
+                            {% if notification.notification_time %}
+                            <p class="mb-0 text-muted" style="font-size: 12px;">
+                              {{ notification.notification_time }}
+                            </p>
+                            {% endif %}
+                            <div class="dropdown-divider"></div>
+                          </div>
+                          <!-- Multiplication Symbol in the Notification with data-id attribute -->
+                          <span class="notification-symbol" data-id="{{ notification.id }}" style="font-size: 2.5rem; color: rgb(148, 17, 17); cursor: pointer; position: absolute; right: 10px; margin-top: 10px; top: 10px; transform: translateY(-50%); opacity: 0; transition: opacity 0.3s;">×</span>
+                          <div class="spinner-border spinner-border-sm" style="position: absolute; right: 30px; top: 50%; transform: translateY(-50%); display: none;"></div>
+                        </a>
+                        {% endfor %}
+                      {% else %}
+                      <p class="text-center text-muted">No new notifications</p>
+                      {% endif %}
+                    </div>
+                  </li>
+                  
+
+              <li class="nav-item">
+                  <div>
+                    <a class="nav-link" href="{% url 'management:companyagenda'%}">
+                      <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
+                    </a>
+                  </div>
+              </li>
+          </ul>
+      </div>
+  </div>
+</nav>
+<style>
+
+.dropdown-item p {
+  white-space: normal; /* Ensure text wraps properly */
+}
+
+.dropdown-divider {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+#test:hover{
+  color: #333;
+}
+
+/* Spinner CSS */
+.spinner-border {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid rgba(0, 0, 0, 0.1);
+  border-right-color: rgba(0, 0, 0, 0.9); /* Spinner color */
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const badge = document.getElementById('notificationBadge');
+  let unseenNotifications = parseInt(badge.textContent) || 0;
+
+  // Function to update the badge count
+  function updateNotificationBadge() {
+    if (unseenNotifications > 0) {
+      badge.textContent = unseenNotifications;
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // Handle click on the dropdown to mark notifications as seen
+  document.getElementById('test').addEventListener('click', function () {
+    // Hide badge when opening the dropdown
+    badge.style.display = 'none'; 
+
+    // Mark all notifications as seen with an AJAX request (optional backend update)
+    fetch(`http://localhost:8000/professional_services/mark-notifications-seen/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for security
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        unseenNotifications = 0; // Reset unseen notifications count
+        updateNotificationBadge(); // Update the badge
+      } else {
+        console.error(data.message); // Handle the error message
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  });
+
+  // Handle click on the multiplication symbol to remove the notification item and update the backend
+  document.querySelectorAll('.notification-symbol').forEach(function (symbol) {
+    symbol.addEventListener('click', function (event) {
+      event.stopPropagation(); // Prevent parent link click
+      event.preventDefault(); // Prevent triggering the click event of the parent item
+      var notificationItem = this.closest('.dropdown-item');
+      var notificationId = this.getAttribute('data-id');
+      var spinner = this.nextElementSibling; // Get the spinner element
+
+      if (notificationItem && notificationId) {
+        // Show the spinner while the request is being processed
+        spinner.style.display = 'inline-block';
+
+        // Send AJAX request to deactivate the notification
+        fetch(`http://localhost:8000/professional_services/remove-notification/${notificationId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for security
+          },
+        })
+        .then(response => response.json())
+        .then(data => {
+          // Remove the spinner regardless of success or failure
+          spinner.style.display = 'none';
+
+          if (data.success) {
+            notificationItem.remove(); // Remove the notification item from the DOM
+            unseenNotifications--;
+            updateNotificationBadge(); // Update badge count after removal
+          } else {
+            alert(data.message); // Show error message if any
+          }
+        })
+        .catch(error => {
+          // Remove the spinner if an error occurs
+          spinner.style.display = 'none';
+          console.error('Error:', error);
+          alert('An error occurred while trying to remove the notification.');
+        });
+      }
+    });
+  });
+
+  // Show the multiplication symbol on hover
+  document.querySelectorAll('.dropdown-item').forEach(function (item) {
+    item.addEventListener('mouseenter', function () {
+      this.querySelector('.notification-symbol').style.opacity = '1';
+    });
+    item.addEventListener('mouseleave', function () {
+      this.querySelector('.notification-symbol').style.opacity = '0';
+    });
+  });
+});
+</script>

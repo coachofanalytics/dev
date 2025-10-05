@@ -1,0 +1,153 @@
+{%extends "main/base_templates/analysis_index.html"%}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+      <div class="col-md-7 top-coloumn">
+          <!-- <p class="title-sub-head mb-0">
+              THE PROJECT BASED
+          </p>
+          <p class="title-head">
+              BI TRAIN
+          </p> -->
+          <h5 class="title-sub-head" style="text-align: justify;"> THE PROJECT BASED <br> <span
+                  class="title-head">
+                  BI TRAINING
+              </span></h5>
+          <p class="title-para">
+              Learn The Basics Of Business Intelligence To Skyrocket
+              Your Career Even If You Don’t Have Any Experience.
+          </p>
+          <hr>
+          <p class="title-para  text-left">
+            Welcome to Business Intelligence Course. In this short course,
+            you will learn the basics of what business intelligence is, why
+            it's useful, and how it can skyrocket your career.This course will also prepare you for future hands on courses
+            that will go through the steps of a business intelligence project
+            in greater depth.
+        </p>
+      </div>
+      <div class="col-md-5 top-left-coloumn" style="padding-left: 0px !important;padding-right: 0px !important;">
+          <img class="w-100" 
+             src="{% static 'professional_services/img/laptop.jpg' %}"
+             width="100%"
+             height="500"
+          
+          />
+      </div>
+  </div>
+  <!-- <div class="row my-5"> -->
+      <!-- <div class="col-md-12 top-coloumn bg-white">
+          <p class="title-para text-dark text-left">
+              Welcome to Business Intelligence Course. In this short course,
+              you will learn the basics of what business intelligence is, why
+              it's useful, and how it can skyrocket your career. <br>
+              This course will also prepare you for future hands on courses
+              that will go through the steps of a business intelligence project
+              in greater depth.
+          </p>
+      </div> -->
+      <!-- <div class="col-md-5">
+        <div id="img2" class="mt-3">
+            <iframe
+              width="100%"
+              height="300"
+              src="https://www.youtube.com/embed/KCm6JVtoRdo"
+              title="Interview Questions and Answers! (How to PASS a JOB INTERVIEW!)"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+    </div> -->
+  <!-- </div> -->
+  <div class="row bottom-coloumn">
+      <div class="col-md-7 top-coloumn bottom-coloumn">
+          <p class="title-sub-head">
+              About Our Founder | CEO
+          </p>
+          <p class="text-dark text-left  mb-4">
+            Hi I’m Coach Chris OR It’s your coach Chris here! <br>
+            My students and fans call me Madev, madev. It’s a mantra that started to 
+            inspire and embody our roles as Data Analysts.I believe one can achieve whatever they put their minds to even if they 
+            are just starting, have no experience, have no background in IT or 
+            computers in general.<br> 
+            This is what happens to most of the graduates who went on to land high 
+            paying jobs after going through my training course. So, I talk about what 
+            I’ve seen and taught my students.I hold multiple advanced and up to date BI expertise such as Alteryx, Power Bi, AWS, 
+            ERP, Microsoft Dynamics, OAC, Oracle, Tableau, and SQL.<br>
+            From my courses you will straight away notice how I combine my real-life 
+            experience in the work force with my academic background in statistics 
+            to deliver professional step-by-step coaching in the space of both 
+            Business and Data Analysis.<br>
+            I have 10 years of experience in a wide range of disciplines including 
+            serial entrepreneurship, data, analytics, Web Design, and Project 
+            Management.One of the strongest aspects of my teaching style is that I focus on 
+            hands on training, so you can be sure that you will truly understand even 
+            the most complex topics.<br>
+            To sum it all up, I’m utterly passionate about Data Analysis, and elevating 
+            career capital for those who are willing to put in work. I am looking 
+            forward to sharing my passion and knowledge with you!
+          </p>
+      </div>
+      <div class="col-md-5 bottom-left-coloumn">
+          <div style="padding-top: 2.2rem;">
+            <!-- <img
+             {%for image in images%}
+             {% if image.name == "profile_ceo_v1"%}
+                 src="{{googledriveurl}}={{image.image_url}}""
+             {%endif%}
+             {% endfor %}
+             /> -->
+             <div style="padding-top: 0.0rem;">
+                <img src="{% static 'main/img/profile/ceo_profile_v1.png' %}" alt="Teacher Icon" class="image">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+                <p class="font-weight-bold text-uppercase follow-text">
+                    say hello :
+                </p>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex" style="align-items: center;
+                margin-top: 1%;">
+                    <i class="fa fa-linkedin" aria-hidden="true" style="font-size: 22px;
+                    color: #C5702F;"></i>
+                    <span class="ml-2" style="margin-left: 6px;
+                    font-size: 15px;
+                    margin-top: 2%;">LinkedIn</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex" style="align-items: center;
+                margin-top: 1%;">
+                    <div class="fb-circle">
+                        <i class="fa fa-facebook-f" aria-hidden="true" style="font-size: 19px;
+                        color: #ffffff;"></i>
+                    </div>
+                    <span class="ml-2" style="margin-left: 6px;
+                    font-size: 15px;
+                    margin-top: 2%;">facebook</span>
+                </div>
+            </div>
+        </div>
+      </div>
+  </div>
+  <div class="row">
+      <div class="w-100 d-flex justify-content-center" style="padding:2rem">
+          <!-- {% if title %}
+          <a href="{% url 'professional_services:category-detail' title=title %}" class="btn btn-md btn-bc font-weight-bold">Begin Course</a>
+          {% else %}
+          <a href="#" class="btn btn-md btn-bc font-weight-bold">Begin Course</a>
+          {% endif %} -->
+          {% with 'Introduction' as Introduction %}
+          <a href="{% url 'professional_services:subcategory-detail' Introduction %}" class="btn btn-md btn-bc font-weight-bold">Begin Course</a>
+          {%endwith%}
+
+      </div>
+  </div>
+</div>
+{% endblock %}

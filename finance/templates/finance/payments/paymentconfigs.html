@@ -1,0 +1,78 @@
+{% extends "main/base_templates/new_base.html"%}
+{% block content %}
+<section id="career">
+  <div class="data_training text-center">
+    <h3 class="title">PAYMENT CONFIGS</h3>
+    <td> <a class="article-title" href="{% url 'finance:newpaymentconfigs'%}">Set Payment Configurations</a></td>
+  </div>
+  <div class="career text-center">
+    <div class="table-responsive">
+      <table class="table table-borderless" style="width: 100%">
+        <thead class="border-bottom font-weight-bold">
+          <tr>
+            <th>user</th>
+            <th>L_status</th>
+            <th>loan</th>
+            <th>repay%</th>
+            <th>Installment Date</th>
+            <th>lp_status</th>
+            <th>lb_amt</th>
+            <th>ls_amt</th>
+            <th>ls_mx_limit</th>
+            <th>start_period</th>
+            <th>start_amt</th>
+            <th>Inc</th>
+            <th>Inc_mx</th>
+            <th>HP</th>
+            <th>NB</th>
+            <th>CM</th>
+            <th>FA</th>
+            <th>Health</th>
+            <th>kra</th>
+            <th>eom</th>
+            <th>eoq</th>
+            <th>eoy</th>
+            <th>Tenure</th>
+            <th>Hour</th>
+            <th>delta</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for config in  payconfigs  %}
+              <tr>
+                  <td>{{config.user}}</td>
+                  <td>{{config.loan_status}}</td>
+                  <td>{{config.loan_amount}}</td>
+                  <td>{{config.loan_repayment_percentage}}</td>
+                  <td>{{config.installment_date}}</td>
+                  <td>{{config.laptop_status}}</td>
+                  <td>{{config.lb_amount}}</td>
+                  <td>{{config.ls_amount}}</td>
+                  <td>{{config.ls_max_limit}}</td>
+                  <td>{{config.rp_starting_period}}</td>
+                  <td>{{config.rp_starting_amount}}</td>
+                  <td>{{config.rp_increment_percentage}}</td>
+                  <td>{{config.rp_increment_max_percentage}}</td>
+                  <td>{{config.holiday_pay}}</td>
+                  <td>{{config.night_bonus}}</td>
+                  <td>{{config.computer_maintenance}}</td>
+                  <td>{{config.food_accommodation}}</td>
+                  <td>{{config.health}}</td>
+                  <td>{{config.kra}}</td>
+                  <td>{{config.eom_bonus}}</td>
+                  <td>{{config.eoq_bonus}}</td>
+                  <td>{{config.eoy_bonus}}</td>
+                  <td>{{ config.user.tenure|floatformat:2 }}</td>
+                  <td>{{config.web_pay_hour}}</td>
+                  <td>{{config.web_delta}}</td>
+                  {% if user.is_admin or user.is_superuser %}
+                  <td> <a class="article-title" href="{% url 'finance:paymentconfigs-update' config.id %}">Edit</a></td>
+                  {% endif %}
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

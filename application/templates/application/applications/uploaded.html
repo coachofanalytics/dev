@@ -1,0 +1,28 @@
+{%extends "professional_services/basedata.html"%} {% block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>All Applicants</h2>
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>username</th>
+          <th>Powerpoint</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for upload in uploads %}
+        <tr>
+          as
+          <td>{{upload.username}}</td>
+          <td>
+            <a href="{{upload.ppt.url}}" class="btn btn-secondary btn-sm"
+              >Download Resume
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

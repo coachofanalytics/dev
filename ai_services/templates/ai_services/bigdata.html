@@ -1,0 +1,90 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% load static %}
+{% block title %}
+{% if heading %}{{ heading }}{% else %}CODA-Big Data{% endif %}
+{% endblock %}
+{% block content %}
+<!--------------------------Slider Section--------------------------------->
+<section id="data_training">
+  <h3 class="title text-center">BIG DATA</h3>
+  <div class="row text-center">
+    <div class="col-md-10 mx-auto mb-4" id="gi">
+        <div class="card">
+            <!-- <img src="\media\home\project2.jpg" class="card-img-top">--->
+            <div class="card-body">
+                <p class="gi">
+                  Big data refers to extremely large and complex sets of data that exceed the capabilities of 
+                  traditional data processing methods to efficiently capture, store, manage, and analyze. 
+                  These datasets are typically characterized by the "3Vs": volume, velocity, and variety.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <div class="row padding mb-4">
+            <div class="col-md-4 text-center" id="bada">
+              <div class="card-group">
+                <div class="card">
+                  <div class="">
+                    <p class="display-5 text-center"><b>VOLUME</b></p>
+                    <hr>
+                    CODA deals with massive volumes of data, often ranging from terabytes to 
+                    petabytes and beyond. Data can come from various sources,social media, transactions, and more.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-center" id="bada">
+              <div class="card-group">
+                <div class="card">
+                  <div class="">
+                    <p class="display-5 text-center"><b>VELOCITY</b></p>
+                    <hr>
+                      Our company's data is generated, collected, and processed at unprecedented speeds. 
+                      This can be real-time or near-real-time data streaming from sources like 
+                      social media feeds, and financial markets.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-center" id="bada">
+              <div class="card-group">
+                <div class="card">
+                  <div class="">
+                    <p class="display-5 text-center"><b>VARIETY</b></p>
+                    <hr>
+                    We have data in diverse formats, including structured data(databases), 
+                      semi-structured data (JSON, XML), and unstructured data (text, images, videos). 
+                      Managing and analyzing such diverse data types is a challenge.
+                  </div>
+                </div>
+              </div>
+            </div>
+    </div>
+
+    <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+    <section id="data_training">
+  <div class="data_training text-center">
+    <h3 class="title">Automation Version_2: AI</h3>
+        <div class="row text-center">
+            {% for value in Automation %}
+            <div class="col-md-3" id="gi">
+                {% include 'main/snippets_templates/cards/card.html' with instance=value %}
+          </div>
+          {% endfor%}
+          </div>
+    </div>
+  <div class="data_training text-center">
+    <h3 class="title">Automation V_1: AI</h3>
+        <div class="row text-center">
+            {% for value in General %}
+            <div class="col-md-3" id="gi">
+                {% include 'main/snippets_templates/cards/card.html' with instance=value %}
+          </div>
+          {% endfor%}
+          </div>
+    </div>
+    </div>
+</section>
+{% endblock content %}

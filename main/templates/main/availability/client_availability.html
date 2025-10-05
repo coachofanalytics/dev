@@ -1,0 +1,86 @@
+{%extends "main/base_templates/analysis_index.html"%} 
+{%block content %}
+<style type="text/css">
+  .signature
+  {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #000000;
+  }
+    #down_payment,#bonus
+  {
+    background:transparent;
+    border:none;
+    width: 12%;
+  }
+
+  td{
+        border: solid 1px;
+        padding: 5px;
+    }
+
+
+</style>
+<div class="content-section">
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <!--<h3 class="text-center">Feel Your Available Time</h3>-->
+            </div>
+            <form method="POST" action="" class="form-group">
+                {% csrf_token %}
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p>Select Client: {{ form.client }} <button class="btn btn-outline-info text-center" type="submit">Filter</button></p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </form>
+
+            <div class="col-12">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table>
+                                <tr>
+                                    <td>Date</td>
+                                    <td>Day</td>
+                                    <td>Start Time</td>
+                                    <td>End Time</td>
+                                    <td>Time Standard</td>
+                                    <td>Client</td>
+                                    <td>Topic</td>
+                                </tr>
+                                {% for ob, val in context.obj.items %}
+                                    <tr>
+                                        <td>{{ val.date.date }} </td>
+                                        <td>{{ val.day }} </td>
+                                        <td>{{ ob.start_time }}</td>
+                                        <td>{{ ob.end_time }}</td>
+                                        <td>{{ ob.time_standards }}</td>
+                                        <td>{{ ob.client }}</td>
+                                        <td>{% if ob.topic %}{{ ob.topic }}{% endif %}</td>
+                                    </tr>
+                               {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+{% endblock content%}
+
+
+
+
+

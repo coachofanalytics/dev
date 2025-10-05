@@ -1,0 +1,60 @@
+{%extends "main/base_templates/analysis_index.html"%} {% block content %}
+
+<section id="data_training">
+    <div class="data_training text-center">
+        <h3 class="title">COMPANY POLICIES</h3>
+        <div class="row">
+          <div class="col-md-6">
+            <p><a href="{% url 'management:policy'%}" class="btn btn-primary btn-sm"
+              >ADD POLICY
+            </a></p>
+
+          </div>
+          <div class="col-md-6">
+            <p><a href="#" class="btn btn-primary btn-sm"
+              >ACTIVE POLICIES
+            </a></p>
+          </div>
+        </div>
+
+        <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+        <p class="p text-center"> </p>
+        
+        <p class="gi">
+          Today is <b>{{day_name}}</b>,<b>{{reporting_date}}</b>.We will focus our attention on the following policies.
+      </p>
+        <div class="row text-center">
+          {% for policy in  policies  %}
+            <div class="col-md-6" id="gi">
+                <div class="card">
+                  <!-- <img src="\media\home\project2.jpg" class="card-img-top">--->
+                    <div class="card-body">
+                      <b> ID:CODA000{{policy.id}} |Updated On: {{policy.day|date:"F d, Y"}}|By: {{policy.staff}}|Review Day: {{policy.day}}</b>
+                        <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                        <h5 class="gi">
+                          {{policy.type}}
+                        </h5>
+                        <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                        <p class="gi">
+                          {{policy.description}}
+                          {% if policy.link %}
+                          <a class="article-title" href="{{policy.link}}">Link</a>
+                          {% endif %}
+                        </p>
+                        <hr/>
+                        <div class="row">
+                          <div class="col-md-12">
+                            <p> <a class="article-title" href="{% url 'management:policy-update' policy.id %}">EDIT</a></p>
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+               </div>
+              {%endfor%}
+        </div>
+    </div>
+    </section>
+{% endblock content %}
+
+
+

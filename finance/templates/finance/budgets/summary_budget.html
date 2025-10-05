@@ -1,0 +1,120 @@
+  {%extends "main/base_templates/new_base.html"%}
+  {% load mathfilters %}
+  {% block content %}
+  
+  {% include 'main/snippets_templates/styles/styles.html' %} 
+ <section id="rating">
+    <div class="rating text-center">
+          <div class="row text-center">
+            <div class="col-md-2 amount_msg" id="bada">
+                <div class="card">
+                  <div class="card-body">
+                    <h5><b>WELCOME BACK</b></h5>
+                    <hr/>
+                    <i><h6>{{request.user.first_name}}</h6></i>
+                  </div>
+                </div>
+             </div>
+      
+             <div class="col-md-8" id="bada">
+              <div class="card">
+                <div class="card-body">
+                  <h5><b>CODA BUDGET</b></h5>
+                  <font size="-1"
+                  <a class="btn btn-primary" href="#"  style="background-color: #5b67a2; border-color: #4CAF50;"> Ksh.{{total_amt_ksh|floatformat:2}} | USD. {{total_amt|floatformat:2}}</a>
+                </font> 
+                  <hr/>
+                  <i><h6 class="text-center">Filters</h6></i>
+                  <hr/>
+                  <div class="row text-center">
+                        <div class="col-md-12">
+                            <div class="card">
+                                  <form method="POST"  class="form-group">
+                                    {% csrf_token %}
+                                        <label for="id_name">Company:</label>
+                                          {{ form.company }}
+                                        <label for="id_name">Department:</label>
+                                          {{ form.name }}
+                                          <label for="id_year">Year:</label>
+                                        {{ form.year }}
+                                        <label for="id_month">Month (Optional):</label>
+                                        {{ form.month }}
+                                      <button type="submit">Filter</button>
+                                    </form> 
+                                    <hr/>
+                            </div>
+                        </div>
+                </div>
+                  <hr/>
+                </div>
+              </div>
+            </div>
+              <div class="col-md-2" id="bada">
+                <div class="card">
+                  <div class="card-body">
+                    <h5><b>ACTIONS</b></h5>
+                    <hr/>
+                    <div class="col-md-12" id="gi">
+                      <p><a href="{%url 'finance:budget_projection' subtitle='summary' %}" class="btn btn-secondary btn-sm"
+                          >All
+                      </a></p>
+                  </div>
+                  <hr/>
+                    <div class="col-md-12" id="gi">
+                      <p><a href="{%url 'finance:budget_projection' subtitle='detailed'%}" class="btn btn-secondary btn-sm"
+                          >Detailed Budget
+                      </a></p>
+                  </div>
+                    <hr/>
+                    <div class="col-md-12" id="gi">
+                      <p><a href="#" class="btn btn-secondary btn-sm"
+                          >Add Budget Item
+                      </a></p>
+                  </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <table class="table table-border" style="width: 100%">
+              <thead class="border-bottom font-weight-bold">
+                  <tr>
+                      <th>Category</th>
+                      <th>Item</th>
+                      <th>Date</th>
+                      <th>Quantity</th>
+                      <th>Amount</th>
+                      <th>Edit</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for category in categories %}
+                      <tr>
+                          <td class="font-weight-bold text-left" colspan="5">
+                              {% if category %}
+                                  {{ category }}
+                              {% else %}
+                                  <i>Uncategorized</i>  {# Display something meaningful for None #}
+                              {% endif %}
+                          </td>
+                      </tr>
+                      {% for item in budget_items %}
+                          {% if item.category.name == category %}
+                              <tr>
+                                  <td></td>
+                                  <td>{{ item.subcategory }}</td>
+                                  <td>{{ item.start_date }}</td>
+                                  <td>{{ item.qty }}</td>
+                                  <td>{{ item.amount }}</td>
+                                  <td><a class="article-title" href="{% url 'finance:budget_projection_summary-update' item.id %}">Edit</a></td>
+                              </tr>
+                          {% endif %}
+                      {% endfor %}
+                  {% endfor %}
+              </tbody>
+          </table>
+          
+
+    </div>
+  </section>
+  {% endblock content %}

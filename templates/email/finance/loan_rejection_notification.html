@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+    {% load static %}
+<head>
+    <title>Loan Application Rejected - {{ user.get_full_name }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'main/css/payment.css' %}" />
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 top-coloumn">
+                <p class="title-sub-head">
+                    CODA-CROWN DATA ANALYSIS AND CONSULTANCY LLC
+                </p>
+                <p class="title-para">
+                   <i>Loan Management System - Finance Team Notification</i> 
+                </p>
+            </div>
+            <div class="col-md-4 top-coloumn text-white">
+                <div style="padding:2rem">
+                    <center>
+                        <a href="{{ admin_dashboard_url }}" class="btn btn-md btn-bc">View in Dashboard</a>
+                    </center>
+                </div>
+            </div>
+        </div>
+
+        <div class="row bottom-coloumn">
+            <div class="col-md-12 top-coloumn bottom-coloumn">
+                <p class="title-sub-pay text-center">
+                    🚫 LOAN APPLICATION REJECTED
+                </p>
+                
+                <!-- Applicant Details Section -->
+                <div style="background-color:#f8f8f8; border:1px solid #ccc; padding:20px; margin-bottom:20px;">
+                    <h3 style="margin-top:0; color:#dc3545;">
+                        <i class="fa fa-user"></i> Applicant Details
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ user.get_full_name }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>Phone:</strong> {{ user.phone|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Category:</strong> {{ user.get_category_display }}</p>
+                            <p><strong>Country:</strong> {{ user.country.name|default:"Not specified" }}</p>
+                            <p><strong>Application ID:</strong> #{{ application_data.id|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rejection Details Section -->
+                <div style="background-color:#fff3cd; border:1px solid #ffeaa7; padding:20px; margin-bottom:20px;">
+                    <h3 style="margin-top:0; color:#856404;">
+                        <i class="fa fa-exclamation-triangle"></i> Rejection Details
+                    </h3>
+                    <p><strong>Reason:</strong> {{ rejection_reason.title|default:"Not specified" }}</p>
+                    <p><strong>Category:</strong> 
+                        <span style="padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; 
+                        {% if rejection_reason.category == 'temporary' %}
+                            background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;
+                        {% elif rejection_reason.category == 'permanent' %}
+                            background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+                        {% else %}
+                            background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;
+                        {% endif %}">
+                            {{ rejection_reason.category|title|default:"Unknown" }}
+                        </span>
+                    </p>
+                    <p><strong>Timestamp:</strong> {{ timestamp|date:"F j, Y, g:i a" }}</p>
+                    {% if rejection_reason.description %}
+                    <p><strong>Details:</strong> {{ rejection_reason.description }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Action Required Section -->
+                <div style="background-color:#d1ecf1; border:1px solid #bee5eb; padding:20px; margin-bottom:20px;">
+                    <h3 style="margin-top:0; color:#0c5460;">
+                        <i class="fa fa-tasks"></i> Action Required
+                    </h3>
+                    {% if rejection_reason.category == 'temporary' %}
+                    <p><strong>Status:</strong> <span style="color: #856404;">User should wait for resolution</span></p>
+                    <p><strong>Action:</strong> Monitor guarantor availability and notify user when ready</p>
+                    <ul>
+                        <li>Check staff guarantor availability daily</li>
+                        <li>Send notification email when guarantors become available</li>
+                        <li>Update application status to 'pending_guarantor'</li>
+                    </ul>
+                    {% else %}
+                    <p><strong>Status:</strong> <span style="color: #721c24;">User permanently disqualified</span></p>
+                    <p><strong>Action:</strong> No further action needed</p>
+                    <ul>
+                        <li>Application marked as permanently rejected</li>
+                        <li>User must start fresh application if circumstances change</li>
+                        <li>Monitor for any policy changes that might affect eligibility</li>
+                    </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Quick Metrics Section -->
+                <div style="background-color:#e2e3e5; border:1px solid #d6d8db; padding:20px; margin-bottom:20px;">
+                    <h3 style="margin-top:0; color:#383d41;">
+                        <i class="fa fa-chart-bar"></i> Quick Metrics
+                    </h3>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div style="background:white; padding:15px; border-radius:5px;">
+                                <h4 style="color:#dc3545; margin:0;">{{ metrics.today_rejections|default:"0" }}</h4>
+                                <small>Today's Rejections</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div style="background:white; padding:15px; border-radius:5px;">
+                                <h4 style="color:#ffc107; margin:0;">{{ metrics.week_rejections|default:"0" }}</h4>
+                                <small>This Week</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div style="background:white; padding:15px; border-radius:5px;">
+                                <h4 style="color:#17a2b8; margin:0;">{{ metrics.month_rejections|default:"0" }}</h4>
+                                <small>This Month</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 top-coloumn bg-white">
+                        <p class="font-weight-bold text-uppercase follow-text">
+                            Need Assistance?
+                        </p>
+                        <p>This is an automated notification from the CODA Loan Management System.</p>
+                        <p><strong>Sent on:</strong> {{ timestamp|date:"F j, Y, g:i a" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

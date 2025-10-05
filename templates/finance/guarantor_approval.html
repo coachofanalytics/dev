@@ -1,0 +1,251 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Guarantor Approval - {{ loan_app.application_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-handshake"></i> Guarantor Approval Request
+                    </h4>
+                    <p class="mb-0">Application #{{ loan_app.application_number }}</p>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Status Alert -->
+                    {% if loan_app.guarantor_email_verified %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> 
+                        <strong>Email Verified:</strong> Your email address has been verified. You can now review and approve this loan application.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <strong>Email Verification Required:</strong> Please verify your email address before proceeding.
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <!-- Borrower Information -->
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user"></i> Borrower Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Name:</strong></td>
+                                            <td>{{ borrower.get_full_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email:</strong></td>
+                                            <td>{{ borrower.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Phone:</strong></td>
+                                            <td>{{ borrower.phone|default:"Not provided" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Relationship:</strong></td>
+                                            <td>{{ loan_app.guarantor_relationship|default:"Not specified" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loan Details -->
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-dollar-sign"></i> Loan Details
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Product:</strong></td>
+                                            <td>{{ loan_product.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Amount:</strong></td>
+                                            <td>${{ loan_app.amount_requested }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Interest Rate:</strong></td>
+                                            <td>{{ loan_product.interest_rate }}%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Term:</strong></td>
+                                            <td>{{ loan_product.term_months }} months</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Purpose:</strong></td>
+                                            <td>{{ loan_app.purpose|default:"Not specified" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card mb-4">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calculator"></i> Financial Summary
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <h3 class="text-primary">${{ loan_app.amount_requested }}</h3>
+                                                <p class="text-muted">Principal Amount</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <h3 class="text-info">{{ loan_product.interest_rate }}%</h3>
+                                                <p class="text-muted">Interest Rate</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <h3 class="text-success">${{ loan_app.total_payable|default:"TBD" }}</h3>
+                                                <p class="text-muted">Total Payable</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-card">
+                                                <h3 class="text-warning">${{ loan_app.monthly_payment|default:"TBD" }}</h3>
+                                                <p class="text-muted">Monthly Payment</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guarantor Responsibilities -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card mb-4">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-exclamation-triangle"></i> Your Responsibilities as Guarantor
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning">
+                                        <h6><strong>Important:</strong> By approving this loan, you agree to the following:</h6>
+                                        <ul class="mb-0">
+                                            <li><strong>Financial Responsibility:</strong> You will be responsible for repaying the loan if the borrower defaults</li>
+                                            <li><strong>Credit Impact:</strong> This guarantee may affect your credit score and borrowing capacity</li>
+                                            <li><strong>Legal Obligation:</strong> This is a legally binding agreement</li>
+                                            <li><strong>Communication:</strong> You will be notified of any payment issues or defaults</li>
+                                            <li><strong>Collection Rights:</strong> The lender may pursue collection from you if the borrower fails to pay</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Approval Form -->
+                    {% if loan_app.guarantor_email_verified and loan_app.guarantor_approval_status == 'pending' %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-gavel"></i> Make Your Decision
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post" action="{% url 'finance:guarantor-process-approval' loan_id=loan_app.id %}">
+                                        {% csrf_token %}
+                                        
+                                        <div class="form-group">
+                                            <label for="notes">Additional Notes (Optional):</label>
+                                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                                      placeholder="Add any comments or concerns about this loan application..."></textarea>
+                                        </div>
+
+                                        <div class="text-center">
+                                            <button type="submit" name="decision" value="approve" 
+                                                    class="btn btn-success btn-lg mr-3"
+                                                    onclick="return confirm('Are you sure you want to approve this loan? This is a legally binding agreement.')">
+                                                <i class="fas fa-check"></i> Approve Loan
+                                            </button>
+                                            
+                                            <button type="submit" name="decision" value="reject" 
+                                                    class="btn btn-danger btn-lg"
+                                                    onclick="return confirm('Are you sure you want to reject this loan application?')">
+                                                <i class="fas fa-times"></i> Reject Loan
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif loan_app.guarantor_approval_status != 'pending' %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-info text-center">
+                                <h5><i class="fas fa-info-circle"></i> Decision Already Made</h5>
+                                <p>This loan application has already been <strong>{{ loan_app.guarantor_approval_status }}</strong>.</p>
+                                {% if loan_app.guarantor_consent_date %}
+                                <p><strong>Decision Date:</strong> {{ loan_app.guarantor_consent_date|date:"F j, Y, g:i a" }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Contact Information -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h6><i class="fas fa-phone"></i> Need Help?</h6>
+                                    <p class="mb-0">
+                                        <strong>Email:</strong> finance@codanalytics.net | 
+                                        <strong>Phone:</strong> +1(816)745-2510
+                                    </p>
+                                    <small class="text-muted">Monday - Friday, 9:00 AM - 5:00 PM</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.metric-card {
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.metric-card h3 {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}

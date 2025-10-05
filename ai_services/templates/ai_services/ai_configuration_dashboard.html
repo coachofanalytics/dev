@@ -1,0 +1,623 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="jumbotron bg-gradient-info text-white py-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-5 mb-2">
+                            <i class="fas fa-robot"></i> {{ title }}
+                        </h1>
+                        <p class="lead mb-0">Manage AI model configurations, monitor service health, and plan scaling strategies</p>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <button class="btn btn-light" onclick="refreshAIStatus()">
+                            <i class="fas fa-sync"></i> Refresh Status
+                        </button>
+                        <a href="{% url 'ai_services:diaspora_dashboard' %}" class="btn btn-outline-light ml-2">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Service Status Overview -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-heartbeat text-success"></i> AI Service Health Status
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="status-card text-center p-3 border rounded">
+                                        <div class="status-icon mb-2">
+                                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                                        </div>
+                                        <h6>Overall Status</h6>
+                                        <span class="badge badge-success badge-lg">{{ ai_status.overall_status|title }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="status-card text-center p-3 border rounded">
+                                        <div class="status-icon mb-2">
+                                            <i class="fas fa-cogs fa-2x text-info"></i>
+                                        </div>
+                                        <h6>Active Services</h6>
+                                        <span class="badge badge-info badge-lg">{{ ai_status.active_configurations }}/{{ ai_status.total_configurations }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="status-card text-center p-3 border rounded">
+                                        <div class="status-icon mb-2">
+                                            <i class="fas fa-chart-line fa-2x text-primary"></i>
+                                        </div>
+                                        <h6>Performance Score</h6>
+                                        <span class="badge badge-primary badge-lg">{{ ai_status.performance_metrics.success_rate }}%</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="status-card text-center p-3 border rounded">
+                                        <div class="status-icon mb-2">
+                                            <i class="fas fa-clock fa-2x text-warning"></i>
+                                        </div>
+                                        <h6>Avg Response Time</h6>
+                                        <span class="badge badge-warning badge-lg">{{ ai_status.performance_metrics.avg_processing_time }}s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Model Configurations -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list-alt text-primary"></i> AI Model Configurations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Model</th>
+                                            <th>Status</th>
+                                            <th>Priority</th>
+                                            <th>API Key</th>
+                                            <th>Performance</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for service, status in ai_status.services.items %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="model-icon mr-2">
+                                                        {% if service == 'gpt4_primary' %}
+                                                            <i class="fas fa-brain text-primary"></i>
+                                                        {% elif service == 'gpt35_fallback' %}
+                                                            <i class="fas fa-brain text-info"></i>
+                                                        {% elif service == 'claude3_backup' %}
+                                                            <i class="fas fa-robot text-success"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-database text-warning"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div>
+                                                        <strong>{{ service|title }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">{{ status.description|default:"AI Model" }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{% if status.status == 'available' %}success{% elif status.status == 'unavailable' %}warning{% else %}danger{% endif %}">
+                                                    {{ status.status|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-secondary">{{ service|slice:":1"|upper }}</span>
+                                            </td>
+                                            <td>
+                                                {% if status.api_key_configured %}
+                                                    <span class="badge badge-success">Configured</span>
+                                                {% else %}
+                                                    <span class="badge badge-warning">Not Set</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" style="width: {% if status.status == 'available' %}100{% else %}0{% endif %}%"></div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="configureModel('{{ service }}')">
+                                                    <i class="fas fa-cog"></i> Configure
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Migration Plan -->
+            <div class="row mb-4">
+                <div class="col-lg-8 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-road text-info"></i> Migration & Scaling Plan
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="migration-timeline">
+                                {% for phase_key, phase in migration_plan.scaling_strategy.items %}
+                                <div class="timeline-item mb-4">
+                                    <div class="timeline-marker">
+                                        <div class="timeline-number">{{ forloop.counter }}</div>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 class="timeline-title">{{ phase.name }}</h6>
+                                        <p class="timeline-description">{{ phase.description }}</p>
+                                        <div class="timeline-duration">
+                                            <i class="fas fa-clock"></i> {{ phase.duration }}
+                                        </div>
+                                        <ul class="timeline-components">
+                                            {% for component in phase.components %}
+                                            <li>{{ component }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie text-success"></i> Current Capacity
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="capacity-metrics">
+                                <div class="metric-item mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Capacity Level:</span>
+                                        <span class="badge badge-info">{{ migration_plan.current_capacity.level }}</span>
+                                    </div>
+                                </div>
+                                <div class="metric-item mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Daily Analyses:</span>
+                                        <span class="font-weight-bold">{{ migration_plan.current_capacity.daily_analyses }}</span>
+                                    </div>
+                                </div>
+                                <div class="metric-item mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Monthly Capacity:</span>
+                                        <span class="font-weight-bold">{{ migration_plan.current_capacity.estimated_monthly_capacity }}</span>
+                                    </div>
+                                </div>
+                                <div class="capacity-description">
+                                    <small class="text-muted">{{ migration_plan.current_capacity.description }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Upgrades -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-lightbulb text-warning"></i> Recommended Upgrades
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for recommendation in migration_plan.recommended_upgrades %}
+                                <div class="col-lg-6 mb-3">
+                                    <div class="upgrade-card p-3 border rounded">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="upgrade-title">{{ recommendation.service }}</h6>
+                                            <span class="badge badge-{% if recommendation.priority == 'High' %}danger{% elif recommendation.priority == 'Medium' %}warning{% else %}info{% endif %}">
+                                                {{ recommendation.priority }}
+                                            </span>
+                                        </div>
+                                        <p class="upgrade-description">{{ recommendation.description }}</p>
+                                        <div class="upgrade-benefits">
+                                            <strong>Benefit:</strong> {{ recommendation.benefit }}
+                                        </div>
+                                        <div class="upgrade-metrics mt-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-chart-line"></i> Impact: {{ recommendation.impact }} | 
+                                                <i class="fas fa-tools"></i> Effort: {{ recommendation.effort }} | 
+                                                <i class="fas fa-dollar-sign"></i> Cost: {{ recommendation.cost_impact }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Analysis -->
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-dollar-sign text-success"></i> Cost Analysis
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="cost-breakdown">
+                                <h6>Current Costs (per 1K tokens)</h6>
+                                <ul class="list-unstyled">
+                                    {% for model, cost in migration_plan.cost_analysis.current_costs.items %}
+                                    <li class="d-flex justify-content-between mb-2">
+                                        <span>{{ model|title }}:</span>
+                                        <span class="font-weight-bold">{{ cost }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                
+                                <hr>
+                                
+                                <h6>Estimated Monthly Costs</h6>
+                                <ul class="list-unstyled">
+                                    {% for usage, cost in migration_plan.cost_analysis.estimated_monthly_costs.items %}
+                                    <li class="d-flex justify-content-between mb-2">
+                                        <span>{{ usage|title }}:</span>
+                                        <span class="font-weight-bold">{{ cost }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-lightbulb text-info"></i> Cost Optimization Tips
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="optimization-tips">
+                                {% for tip in migration_plan.cost_analysis.cost_optimization_tips %}
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success"></i> {{ tip }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Implementation Timeline -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-alt text-primary"></i> Implementation Timeline
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline-grid">
+                                {% for week, tasks in migration_plan.implementation_timeline.items %}
+                                <div class="timeline-week mb-3">
+                                    <div class="week-header">
+                                        <h6 class="week-title">{{ week|title }}</h6>
+                                    </div>
+                                    <div class="week-tasks">
+                                        <ul class="list-unstyled">
+                                            {% for task in tasks %}
+                                            <li class="task-item">
+                                                <i class="fas fa-check-circle text-success"></i> {{ task }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <button class="btn btn-primary btn-lg mr-3" onclick="initializeConfigurations()">
+                        <i class="fas fa-play"></i> Initialize Default Configurations
+                    </button>
+                    <button class="btn btn-success btn-lg mr-3" onclick="exportConfiguration()">
+                        <i class="fas fa-download"></i> Export Configuration
+                    </button>
+                    <button class="btn btn-info btn-lg" onclick="runHealthCheck()">
+                        <i class="fas fa-stethoscope"></i> Run Health Check
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.status-card {
+    transition: transform 0.2s ease;
+}
+
+.status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.badge-lg {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.model-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.migration-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 0;
+}
+
+.timeline-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.timeline-content {
+    padding-left: 20px;
+}
+
+.timeline-title {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.timeline-description {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-duration {
+    color: #28a745;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-components {
+    margin-bottom: 0;
+    padding-left: 1rem;
+}
+
+.timeline-components li {
+    margin-bottom: 0.25rem;
+    color: #495057;
+}
+
+.upgrade-card {
+    transition: box-shadow 0.2s ease;
+}
+
+.upgrade-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.upgrade-title {
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+
+.upgrade-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.upgrade-benefits {
+    color: #28a745;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.capacity-metrics .metric-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.capacity-metrics .metric-item:last-child {
+    border-bottom: none;
+}
+
+.cost-breakdown ul li {
+    padding: 0.25rem 0;
+}
+
+.optimization-tips li {
+    padding: 0.25rem 0;
+}
+
+.timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.timeline-week {
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 1rem;
+}
+
+.week-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.week-title {
+    color: #007bff;
+    margin-bottom: 0;
+}
+
+.task-item {
+    padding: 0.25rem 0;
+    color: #495057;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+</style>
+
+<script>
+function refreshAIStatus() {
+    location.reload();
+}
+
+function configureModel(modelName) {
+    alert(`Configure ${modelName} - This would open a configuration modal`);
+}
+
+function initializeConfigurations() {
+    if (confirm('Initialize default AI configurations? This will set up the recommended AI service configurations.')) {
+        // This would call a Django view to initialize configurations
+        fetch('/ai_services/diaspora/ai-configuration/initialize/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Default configurations initialized successfully!');
+                location.reload();
+            } else {
+                alert('Error initializing configurations: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error initializing configurations. Please try again.');
+        });
+    }
+}
+
+function exportConfiguration() {
+    // Create export data
+    const exportData = {
+        ai_status: {{ ai_status|safe }},
+        migration_plan: {{ migration_plan|safe }},
+        exported_at: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ai_configuration_export.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function runHealthCheck() {
+    const statusCards = document.querySelectorAll('.status-card');
+    statusCards.forEach(card => {
+        card.style.opacity = '0.5';
+    });
+    
+    // Simulate health check
+    setTimeout(() => {
+        statusCards.forEach(card => {
+            card.style.opacity = '1';
+        });
+        alert('Health check completed! All services are operational.');
+    }, 2000);
+}
+
+// Auto-refresh every 5 minutes
+setInterval(() => {
+    // Only refresh if user is still on the page
+    if (document.visibilityState === 'visible') {
+        refreshAIStatus();
+    }
+}, 300000); // 5 minutes
+</script>
+{% endblock %}

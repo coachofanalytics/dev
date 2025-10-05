@@ -1,0 +1,159 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block title %}
+    {% if category %}{{ category.name }}{% else %}Activities{% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+    .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .schedule-table {
+        margin-top: 20px;
+        overflow-x: auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        color: black;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+    }
+
+    th, td {
+        padding: 15px;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #0e1768;
+        color: #ffffff;
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f4f4f4;
+    }
+
+    tr:hover {
+        background-color: #e8e8e8;
+    }
+
+    a {
+        text-decoration: none;
+        color: #0e1768;
+        font-weight: bold;
+    }
+
+    a:hover {
+        color: #0056b3;
+    }
+</style>
+
+<div class="container">
+    <h2 style="color:#060f61;font-size: 40px;font-weight: bold;">Schedule Table</h2>
+    <p style="color: black;font-size: 16px;">Explore the schedule for upcoming training sessions.</p>
+
+    <div class="schedule-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Sub Category</th>
+                    <th>Topics</th>
+                    <th>Day</th>
+                    <th>Date</th>
+                    <th>Morning</th>
+                    <th>Evening</th>
+                    <th>Trainer</th>
+                    <th>PowerPoint</th>
+                    <th>Video</th>
+                    {% if user.is_superuser %}
+                    <th>Edit</th>  <!-- Only show for superusers -->
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for category, subcategories in grouped_availability %}
+                    {% for subcategory in subcategories %}
+                    <tr>
+                        {% if forloop.parentloop.first and forloop.first %}
+                            <td rowspan="{{ rowspan_data|get_item:category }}">{{ category }}</td>
+                        {% elif forloop.first %}
+                            <td rowspan="{{ rowspan_data|get_item:category }}">{{ category }}</td>
+                        {% endif %}
+                        <td>{{ subcategory.subcategory }}</td>
+                        <td>{{ subcategory.task }}</td>
+                        <td>{{ subcategory.day }}</td>
+                        <td>{{ subcategory.date }}</td>
+                        <td>{{ subcategory.start_time }}</td>
+                        <td>{{ subcategory.end_time }}</td>
+                        <td>{{ subcategory.client }}</td>
+                        <td>
+                            {% if subcategory.powerpoints.exists %}
+                                {% for ppt in subcategory.powerpoints %}
+                                    <a href="{{ ppt.get_link_url }}" target="_blank">Download PPT</a>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                n/a
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if subcategory.videos.exists %}
+                                {% for video in subcategory.videos %}
+                                    <a href="{{ video.get_link_url }}" target="_blank">Watch Video</a>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                n/a
+                            {% endif %}
+                        </td>
+                        {% if user.is_superuser %}
+                        <td>
+                            <input type="checkbox" {% if subcategory.is_active %}checked{% endif %} 
+                                   name="edit_{{ subcategory.id }}" 
+                                   onchange="updateStatus({{ subcategory.id }}, this.checked)">
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Function to update the status when checkbox is changed
+    function updateStatus(subcategoryId, isChecked) {
+        fetch(`/professional_services/update_schedule_status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                id: subcategoryId,
+                is_active: isChecked
+            })
+        }).then(response => response.json())
+          .then(data => {
+            if (data.success) {
+                alert('Status updated successfully!');
+            } else {
+                alert('Failed to update the status.');
+            }
+        });
+    }
+</script>
+
+{% endblock %}

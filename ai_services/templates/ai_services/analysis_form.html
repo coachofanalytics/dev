@@ -1,0 +1,528 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="jumbotron bg-primary text-white py-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-5 mb-2">
+                            <i class="fas fa-chart-line"></i> {{ analysis_name }}
+                        </h1>
+                        <p class="lead mb-0">AI-powered analysis for Kenyan diaspora empowerment</p>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <a href="{% url 'ai_services:diaspora_dashboard' %}" class="btn btn-light">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button class="btn btn-outline-light ml-2" onclick="exitPresentationMode()" id="exitPresentationBtn" style="display: none;">
+                            <i class="fas fa-times"></i> Exit Presentation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="progress-steps">
+                                <div class="step active">
+                                    <div class="step-number">1</div>
+                                    <div class="step-label">Input Data</div>
+                                </div>
+                                <div class="step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-label">AI Analysis</div>
+                                </div>
+                                <div class="step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-label">Results</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h4 class="mb-0">
+                                <i class="fas fa-edit"></i> {{ analysis_name }} - Data Input
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="analysisForm" method="post">
+                                {% csrf_token %}
+                                
+                                <!-- Dynamic form fields based on analysis type -->
+                                {% if analysis_type == 'remittance_analysis' %}
+                                    <div class="form-group">
+                                        <label for="{{ form.amount.id_for_label }}">Monthly Remittance Amount (USD)</label>
+                                        {{ form.amount }}
+                                        <small class="form-text text-muted">Enter the amount you typically send per month</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.frequency.id_for_label }}">Remittance Frequency</label>
+                                        {{ form.frequency }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.destination.id_for_label }}">Destination Country</label>
+                                        {{ form.destination }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.purpose.id_for_label }}">Purpose of Remittance</label>
+                                        {{ form.purpose }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.experience_years.id_for_label }}">Years of Remitting Experience</label>
+                                        {{ form.experience_years }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.method.id_for_label }}">Preferred Remittance Method</label>
+                                        {{ form.method }}
+                                    </div>
+
+                                {% elif analysis_type == 'trade_facilitation' %}
+                                    <div class="form-group">
+                                        <label for="{{ form.business_type.id_for_label }}">Business Type</label>
+                                        {{ form.business_type }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.product_categories.id_for_label }}">Product Categories</label>
+                                        <div class="row">
+                                            {% for choice in form.product_categories %}
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        {{ choice.tag }}
+                                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                            {{ choice.choice_label }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.annual_volume.id_for_label }}">Annual Trade Volume (USD)</label>
+                                        {{ form.annual_volume }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.target_markets.id_for_label }}">Target Markets</label>
+                                        <div class="row">
+                                            {% for choice in form.target_markets %}
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        {{ choice.tag }}
+                                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                            {{ choice.choice_label }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.business_years.id_for_label }}">Years in Business</label>
+                                        {{ form.business_years }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.challenges.id_for_label }}">Current Challenges</label>
+                                        <div class="row">
+                                            {% for choice in form.challenges %}
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        {{ choice.tag }}
+                                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                            {{ choice.choice_label }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                {% elif analysis_type == 'investment_opportunities' %}
+                                    <div class="form-group">
+                                        <label for="{{ form.investment_amount.id_for_label }}">Investment Amount (USD)</label>
+                                        {{ form.investment_amount }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.risk_tolerance.id_for_label }}">Risk Tolerance</label>
+                                        {{ form.risk_tolerance }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.investment_horizon.id_for_label }}">Investment Horizon</label>
+                                        {{ form.investment_horizon }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.sector_interest.id_for_label }}">Sector Interest</label>
+                                        <div class="row">
+                                            {% for choice in form.sector_interest %}
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        {{ choice.tag }}
+                                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                            {{ choice.choice_label }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.location_preference.id_for_label }}">Location Preference</label>
+                                        {{ form.location_preference }}
+                                    </div>
+
+                                {% elif analysis_type == 'education_pathways' %}
+                                    <div class="form-group">
+                                        <label for="{{ form.education_level.id_for_label }}">Current Education Level</label>
+                                        {{ form.education_level }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.field_interest.id_for_label }}">Field of Interest</label>
+                                        {{ form.field_interest }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.budget.id_for_label }}">Education Budget (USD)</label>
+                                        {{ form.budget }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.location_preference.id_for_label }}">Location Preference</label>
+                                        {{ form.location_preference }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.time_commitment.id_for_label }}">Time Commitment</label>
+                                        {{ form.time_commitment }}
+                                    </div>
+
+                                {% elif analysis_type == 'healthcare_access' %}
+                                    <div class="form-group">
+                                        <label for="{{ form.age_group.id_for_label }}">Age Group</label>
+                                        {{ form.age_group }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.health_conditions.id_for_label }}">Health Conditions (Optional)</label>
+                                        <div class="row">
+                                            {% for choice in form.health_conditions %}
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        {{ choice.tag }}
+                                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                            {{ choice.choice_label }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.insurance_status.id_for_label }}">Insurance Status</label>
+                                        {{ form.insurance_status }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.location.id_for_label }}">Location</label>
+                                        {{ form.location }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="{{ form.budget.id_for_label }}">Healthcare Budget (USD)</label>
+                                        {{ form.budget }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="form-group mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg btn-block" id="submitBtn">
+                                        <i class="fas fa-brain"></i> Analyze with AI
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Modal -->
+<div class="modal fade" id="processingModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="sr-only">Processing...</span>
+                </div>
+                <h5>AI Analysis in Progress...</h5>
+                <p>Our AI is analyzing your data and generating personalized recommendations.</p>
+                <div class="progress mt-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+                <small class="text-muted mt-2 d-block">This may take a few moments...</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 20px;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.step.active {
+    opacity: 1;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.step.active .step-number {
+    background-color: #007bff;
+}
+
+.step-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-check {
+    margin-bottom: 10px;
+}
+
+.form-check-input {
+    margin-top: 0.25rem;
+}
+
+.btn-block {
+    padding: 12px;
+    font-size: 16px;
+}
+
+.jumbotron {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Analysis form JavaScript loaded');
+    
+    const form = document.getElementById('analysisForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const processingModal = document.getElementById('processingModal');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+            
+            // Show processing modal
+            if (processingModal) {
+                if (typeof $ !== 'undefined' && $.fn.modal) {
+                    $('#processingModal').modal('show');
+                } else {
+                    // Fallback: show processing message
+                    const processingDiv = document.createElement('div');
+                    processingDiv.innerHTML = '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px; z-index: 9999;">Processing Analysis...</div>';
+                    document.body.appendChild(processingDiv);
+                }
+            }
+            
+            // Simulate progress
+            let progress = 0;
+            const progressBar = document.querySelector('.progress-bar');
+            let interval;
+            
+            if (progressBar) {
+                interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 90) progress = 90;
+                    progressBar.style.width = progress + '%';
+                }, 500);
+            }
+            
+            // Submit form data
+            const formData = new FormData(form);
+            
+            fetch('{% url "ai_services:process_analysis" analysis_type %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            })
+            .then(response => {
+                console.log('Analysis response:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Analysis data:', data);
+                
+                if (interval) {
+                    clearInterval(interval);
+                }
+                if (progressBar) {
+                    progressBar.style.width = '100%';
+                }
+                
+                setTimeout(() => {
+                    if (typeof $ !== 'undefined' && $.fn.modal) {
+                        $('#processingModal').modal('hide');
+                    }
+                    
+                    if (data.success) {
+                        // Redirect to results
+                        const url = `{% url "ai_services:analysis_results" 0 %}`.replace('0', data.analysis_id);
+                        console.log('Redirecting to results:', url);
+                        window.location.href = url;
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                    }
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (interval) {
+                    clearInterval(interval);
+                }
+                if (typeof $ !== 'undefined' && $.fn.modal) {
+                    $('#processingModal').modal('hide');
+                }
+                alert('Error processing analysis. Please try again.');
+            });
+        });
+    } else {
+        console.error('Analysis form not found');
+    }
+
+    // Check for presentation mode
+    checkPresentationMode();
+});
+
+// Presentation Mode Detection
+function checkPresentationMode() {
+    // Check if we're in presentation mode by looking at the session
+    fetch('/ai_services/diaspora/create-session/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.presentation_mode) {
+                // Show presentation mode controls
+                const exitBtn = document.getElementById('exitPresentationBtn');
+                if (exitBtn) {
+                    exitBtn.style.display = 'inline-block';
+                }
+                
+                // Add presentation mode styling
+                document.body.classList.add('presentation-mode');
+            }
+        })
+        .catch(error => {
+            console.log('Could not check presentation mode:', error);
+        });
+}
+
+// Exit presentation mode
+function exitPresentationMode() {
+    if (confirm('Exit presentation mode?')) {
+        // Create new session without presentation mode
+        fetch('/ai_services/diaspora/create-session/?presentation_mode=false')
+            .then(() => {
+                // Redirect to normal dashboard
+                window.location.href = '/ai_services/diaspora/';
+            });
+    }
+}
+</script>
+
+<style>
+/* Presentation mode styling */
+.presentation-mode {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.presentation-mode .jumbotron {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.presentation-mode .card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.presentation-mode .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.presentation-mode .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.presentation-mode .btn-primary {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.presentation-mode .btn-primary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+</style>
+{% endblock %}

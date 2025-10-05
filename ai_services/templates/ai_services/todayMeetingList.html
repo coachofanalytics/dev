@@ -1,0 +1,81 @@
+<!-- templates/ai_services/todayMeetingList.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Today's Meetings</title>
+    <!-- Include any CSS or JS libraries as needed, e.g., Chart.js for graphs -->
+</head>
+<body>
+    <h1>Today's Meetings - {{ date }}</h1>
+    <p>{{ message }}</p>
+
+    {% if data %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Meeting Topic</th>
+                    <th>Meeting ID</th>
+                    <th>Type</th>
+                    <th>Recording</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Duration (minutes)</th>
+                    <th>Email</th>
+                    <th>Attendee Name</th>
+                    <th>Attendee Email</th>
+                    <th>Attendee Duration (minutes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for meeting in data %}
+                    <tr>
+                        <td>{{ meeting.meeting_topic }}</td>
+                        <td>{{ meeting.meeting_id }}</td>
+                        <td>{{ meeting.meeting_type }}</td>
+                        <td>{{ meeting.recording }}</td>
+                        <td>{{ meeting.meeting_start_time }}</td>
+                        <td>{{ meeting.meeting_end_time }}</td>
+                        <td>{{ meeting.meeting_duration }}</td>
+                        <td>{{ meeting.meeting_email }}</td>
+                        <td>{{ meeting.attendee_name }}</td>
+                        <td>{{ meeting.attendee_email }}</td>
+                        <td>{{ meeting.attendee_duration }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Optional: Display a chart using Chart.js -->
+        <canvas id="durationChart" width="400" height="200"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            var ctx = document.getElementById('durationChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ chart_data.labels|safe }},
+                    datasets: [{
+                        label: 'Total Duration (Minutes)',
+                        data: {{ chart_data.values|safe }},
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    {% else %}
+        <p>No meeting data available for today.</p>
+    {% endif %}
+
+    <a href="{% url 'ai_services:meetingFormView' %}">Back to Meeting Form</a>
+</body>
+</html>

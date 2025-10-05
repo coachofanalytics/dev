@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company_name }} Application Feedback</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5; /* Light Gray Background */
+            margin: 0;
+            padding: 0;
+        }
+
+        .outer-container {
+            background-color: #f5f5f5; /* Light Gray Background */
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4285f4; /* Google Blue */
+            text-decoration: none;
+        }
+
+        .logo-text:hover {
+            text-decoration: underline;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4285f4; /* Google Blue */
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #3367d6; /* Darker Google Blue */
+        }
+
+        ul {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        li {
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer-container">
+        <div class="email-container">
+        <div class="logo-container">
+            <a class="navbar-brand logo-text" href="https://www.codanalytics.net/">CODA</a>
+        </div>
+        <div class="feedback-container">
+            <h2>{{ company_name }} Application Feedback</h2>
+            <p>Dear {{ name }},</p>
+            <p>Thank you for your interest in {{ company_name }}. We appreciate the time and effort you invested in your application, specifically for the "{{ topic }}" position. After thorough review, we wanted to provide you with some constructive feedback.</p>
+            <p>While your application showed promise, we believe there are areas where you can further enhance your candidacy for the "{{ topic }}" position:</p>
+            <ul>
+                {% for improvement in improvement_area%}
+                <li>{{ improvement }}</li>
+                {% endfor %}
+            </ul>
+            <p>We encourage you to continue developing your skills in these areas. Your dedication to personal and professional growth is commendable, and we welcome you to reapply in the future once you feel confident in these aspects.</p>
+            <p><strong>{{ company_name }}</strong></p>
+            <p>Thank you.</p>
+            <p><strong>Human Resource</strong></p>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
