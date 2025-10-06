@@ -5,10 +5,10 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 import logging
-from .models import Payment_Information, Payment_History
-from .services import PaymentService
+from finance.models import Payment_Information, Payment_History
+from finance.services import PaymentProcessingService
 from accounts.models import CustomerUser
-from .utils import validate_amount, save_payment_history, validate_user_payment_eligibility
+from finance.utils import validate_amount, save_payment_history, validate_user_payment_eligibility
 # In finance/payment_views.py:
 from core.utils import generate_and_send_otp
 logger = logging.getLogger(__name__)

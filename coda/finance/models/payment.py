@@ -1,520 +1,237 @@
 # -*- coding: utf-8 -*-
 """
-Payment-specific models for payment methods, transactions, and gateways.
+Finance Payment Models
+
+Payment-related models including Payment, PaymentMethod, PaymentTransaction, and related models.
 """
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-from django.utils import timezone
-from decimal import Decimal
-import uuid
+from django.core.exceptions import ValidationError
 
 # Get the User model
 User = get_user_model()
 
-# Import models from other apps
-try:
-    from main.models import Company
-except ImportError:
-    Company = None
+
+# =============================================================================
+# PAYMENT MODELS
+# =============================================================================
+
+class Payment(models.Model):
+    """Payment model for loan repayments"""
+    
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    PAYMENT_METHOD_CHOICES = [
+        ('bank_transfer', 'Bank Transfer'),
+        ('mpesa', 'M-Pesa'),
+        ('cash', 'Cash'),
+        ('check', 'Check'),
+        ('other', 'Other'),
+    ]
+    
+    loan = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, related_name="payments")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    payment_date = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    reference_number = models.CharField(max_length=100, blank=True, null=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'finance_payment'
+        verbose_name = 'Payment'
+        verbose_name_plural = 'Payments'
+        ordering = ['-payment_date']
+    
+    def __str__(self):
+        return f"Payment {self.id} - {self.amount} for Loan {self.loan.id}"
+    
+    def clean(self):
+        """Validate payment data"""
+        if self.amount <= 0:
+            raise ValidationError('Payment amount must be greater than zero')
+        
+        if self.payment_date > timezone.now():
+            raise ValidationError('Payment date cannot be in the future')
+    
+    def save(self, *args, **kwargs):
+        """Custom save method with validation"""
+        self.clean()
+        super().save(*args, **kwargs)
 
 
 class PaymentMethod(models.Model):
-    """Payment methods available for transactions."""
+    """Available payment methods configuration"""
     
-    # Payment method types
     METHOD_TYPE_CHOICES = [
-        ('Cash', 'Cash'),
-        ('Bank Transfer', 'Bank Transfer'),
-        ('Mobile Money', 'Mobile Money'),
-        ('Credit Card', 'Credit Card'),
-        ('Debit Card', 'Debit Card'),
-        ('Check', 'Check'),
-        ('PayPal', 'PayPal'),
-        ('M-Pesa', 'M-Pesa'),
-        ('Other', 'Other'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('mobile_money', 'Mobile Money'),
+        ('cash', 'Cash'),
+        ('check', 'Check'),
+        ('card', 'Card'),
+        ('crypto', 'Cryptocurrency'),
+        ('other', 'Other'),
     ]
     
-    # Payment method status
-    STATUS_CHOICES = [
-        ('Active', 'Active'),
-        ('Inactive', 'Inactive'),
-        ('Suspended', 'Suspended'),
-    ]
-    
-    company = models.ForeignKey(
-        'main.Company',
-        on_delete=models.CASCADE,
-        related_name='payment_methods',
-        help_text="Company this payment method belongs to"
-    )
-    
-    # Payment method details
-    name = models.CharField(
-        max_length=100,
-        help_text="Name of the payment method"
-    )
-    method_type = models.CharField(
-        max_length=20,
-        choices=METHOD_TYPE_CHOICES,
-        help_text="Type of payment method"
-    )
-    description = models.TextField(
-        blank=True,
-        help_text="Description of the payment method"
-    )
-    
-    # Payment method settings
-    is_default = models.BooleanField(
-        default=False,
-        help_text="Whether this is the default payment method"
-    )
-    requires_verification = models.BooleanField(
-        default=False,
-        help_text="Whether this method requires verification"
-    )
-    supports_refunds = models.BooleanField(
-        default=True,
-        help_text="Whether this method supports refunds"
-    )
-    
-    # Fees and limits
-    processing_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        help_text="Processing fee for this method"
-    )
-    fee_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        help_text="Fee percentage for this method"
-    )
-    min_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Minimum transaction amount"
-    )
-    max_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Maximum transaction amount"
-    )
-    
-    # Status
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='Active',
-        help_text="Payment method status"
-    )
+    name = models.CharField(max_length=50, unique=True)
+    method_type = models.CharField(max_length=20, choices=METHOD_TYPE_CHOICES)
+    description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     
     # Configuration
-    configuration = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text="Payment method configuration"
-    )
+    requires_verification = models.BooleanField(default=True)
+    processing_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    processing_fee_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    min_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    max_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
-    # Timestamps
+    # Integration settings
+    api_endpoint = models.URLField(blank=True, null=True)
+    api_key = models.CharField(max_length=200, blank=True, null=True)
+    webhook_url = models.URLField(blank=True, null=True)
+    
+    # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = _("Payment Method")
-        verbose_name_plural = _("Payment Methods")
         ordering = ['name']
-        indexes = [
-            models.Index(fields=['company', 'status']),
-            models.Index(fields=['method_type']),
-        ]
+        verbose_name = 'Payment Method'
+        verbose_name_plural = 'Payment Methods'
     
     def __str__(self):
-        return f"{self.name} ({self.method_type})"
+        return self.name
     
-    @property
-    def is_active(self):
-        """Check if payment method is active."""
-        return self.status == 'Active'
-    
-    def calculate_fee(self, amount):
-        """Calculate processing fee for given amount."""
-        fee = self.processing_fee
-        if self.fee_percentage > 0:
-            fee += (amount * self.fee_percentage) / 100
-        return fee
-    
-    def is_amount_valid(self, amount):
-        """Check if amount is within limits."""
-        if self.min_amount and amount < self.min_amount:
-            return False
-        if self.max_amount and amount > self.max_amount:
-            return False
-        return True
-
-
-class PaymentGateway(models.Model):
-    """Payment gateway configurations."""
-    
-    # Gateway types
-    GATEWAY_TYPE_CHOICES = [
-        ('Bank', 'Bank Gateway'),
-        ('Mobile', 'Mobile Money Gateway'),
-        ('Card', 'Card Processing Gateway'),
-        ('Digital', 'Digital Wallet Gateway'),
-        ('Other', 'Other Gateway'),
-    ]
-    
-    # Gateway status
-    STATUS_CHOICES = [
-        ('Active', 'Active'),
-        ('Inactive', 'Inactive'),
-        ('Testing', 'Testing'),
-        ('Suspended', 'Suspended'),
-    ]
-    
-    company = models.ForeignKey(
-        'main.Company',
-        on_delete=models.CASCADE,
-        related_name='payment_gateways',
-        help_text="Company this gateway belongs to"
-    )
-    
-    # Gateway details
-    name = models.CharField(
-        max_length=100,
-        help_text="Name of the payment gateway"
-    )
-    gateway_type = models.CharField(
-        max_length=20,
-        choices=GATEWAY_TYPE_CHOICES,
-        help_text="Type of payment gateway"
-    )
-    provider = models.CharField(
-        max_length=100,
-        help_text="Gateway provider name"
-    )
-    description = models.TextField(
-        blank=True,
-        help_text="Description of the gateway"
-    )
-    
-    # Gateway configuration
-    api_endpoint = models.URLField(
-        blank=True,
-        help_text="API endpoint URL"
-    )
-    api_key = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="API key for gateway"
-    )
-    secret_key = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Secret key for gateway"
-    )
-    webhook_url = models.URLField(
-        blank=True,
-        help_text="Webhook URL for notifications"
-    )
-    
-    # Gateway settings
-    is_default = models.BooleanField(
-        default=False,
-        help_text="Whether this is the default gateway"
-    )
-    supports_refunds = models.BooleanField(
-        default=True,
-        help_text="Whether gateway supports refunds"
-    )
-    supports_partial_refunds = models.BooleanField(
-        default=False,
-        help_text="Whether gateway supports partial refunds"
-    )
-    
-    # Status
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='Testing',
-        help_text="Gateway status"
-    )
-    
-    # Additional configuration
-    configuration = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text="Additional gateway configuration"
-    )
-    
-    # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = _("Payment Gateway")
-        verbose_name_plural = _("Payment Gateways")
-        ordering = ['name']
-        indexes = [
-            models.Index(fields=['company', 'status']),
-            models.Index(fields=['gateway_type']),
-        ]
-    
-    def __str__(self):
-        return f"{self.name} ({self.provider})"
-    
-    @property
-    def is_active(self):
-        """Check if gateway is active."""
-        return self.status == 'Active'
-    
-    @property
-    def is_testing(self):
-        """Check if gateway is in testing mode."""
-        return self.status == 'Testing'
+    def calculate_processing_fee(self, amount):
+        """Calculate processing fee for a given amount"""
+        fixed_fee = self.processing_fee
+        percentage_fee = amount * (self.processing_fee_percentage / 100)
+        return fixed_fee + percentage_fee
 
 
 class PaymentTransaction(models.Model):
-    """Payment transactions processed through the system."""
+    """Individual payment transactions"""
     
-    # Transaction types
-    TRANSACTION_TYPE_CHOICES = [
-        ('Payment', 'Payment'),
-        ('Refund', 'Refund'),
-        ('Chargeback', 'Chargeback'),
-        ('Adjustment', 'Adjustment'),
+    TRANSACTION_STATUS_CHOICES = [
+        ('initiated', 'Initiated'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+        ('refunded', 'Refunded'),
     ]
     
-    # Transaction status
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Processing', 'Processing'),
-        ('Completed', 'Completed'),
-        ('Failed', 'Failed'),
-        ('Cancelled', 'Cancelled'),
-        ('Refunded', 'Refunded'),
+    # Core transaction data
+    transaction_id = models.CharField(max_length=100, unique=True)
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    currency = models.CharField(max_length=3, default='KES')
+    processing_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    
+    # Status and timing
+    status = models.CharField(max_length=20, choices=TRANSACTION_STATUS_CHOICES, default='initiated')
+    initiated_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # External references
+    external_transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    gateway_response = models.JSONField(default=dict, blank=True)
+    
+    # User and context
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_transactions')
+    description = models.TextField(blank=True, null=True)
+    
+    # Metadata
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-initiated_at']
+        verbose_name = 'Payment Transaction'
+        verbose_name_plural = 'Payment Transactions'
+    
+    def __str__(self):
+        return f"{self.transaction_id} - {self.amount} {self.currency} - {self.get_status_display()}"
+    
+    def mark_as_processing(self):
+        """Mark transaction as processing"""
+        self.status = 'processing'
+        self.processed_at = timezone.now()
+        self.save(update_fields=['status', 'processed_at'])
+    
+    def mark_as_completed(self, external_id=None):
+        """Mark transaction as completed"""
+        self.status = 'completed'
+        self.completed_at = timezone.now()
+        if external_id:
+            self.external_transaction_id = external_id
+        self.save(update_fields=['status', 'completed_at', 'external_transaction_id'])
+    
+    def mark_as_failed(self, error_message=None):
+        """Mark transaction as failed"""
+        self.status = 'failed'
+        if error_message:
+            self.gateway_response['error'] = error_message
+        self.save(update_fields=['status', 'gateway_response'])
+
+
+class PaymentGateway(models.Model):
+    """Payment gateway configuration"""
+    
+    GATEWAY_TYPE_CHOICES = [
+        ('mpesa', 'M-Pesa'),
+        ('stripe', 'Stripe'),
+        ('paypal', 'PayPal'),
+        ('bank', 'Bank Transfer'),
+        ('custom', 'Custom Gateway'),
     ]
     
-    # Unique identifier
-    transaction_id = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True,
-        help_text="Unique transaction identifier"
-    )
+    name = models.CharField(max_length=100, unique=True)
+    gateway_type = models.CharField(max_length=20, choices=GATEWAY_TYPE_CHOICES)
+    is_active = models.BooleanField(default=True)
     
-    company = models.ForeignKey(
-        'main.Company',
-        on_delete=models.CASCADE,
-        related_name='payment_transactions',
-        help_text="Company this transaction belongs to"
-    )
+    # Configuration
+    api_url = models.URLField()
+    api_key = models.CharField(max_length=200)
+    secret_key = models.CharField(max_length=200, blank=True, null=True)
+    webhook_secret = models.CharField(max_length=200, blank=True, null=True)
     
-    # Transaction details
-    transaction_type = models.CharField(
-        max_length=20,
-        choices=TRANSACTION_TYPE_CHOICES,
-        help_text="Type of transaction"
-    )
-    amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        help_text="Transaction amount"
-    )
-    currency = models.CharField(
-        max_length=3,
-        default='USD',
-        help_text="Transaction currency"
-    )
+    # Settings
+    test_mode = models.BooleanField(default=True)
+    supported_currencies = models.JSONField(default=list)
+    supported_countries = models.JSONField(default=list)
     
-    # Payment method and gateway
-    payment_method = models.ForeignKey(
-        PaymentMethod,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='transactions',
-        help_text="Payment method used"
-    )
-    payment_gateway = models.ForeignKey(
-        PaymentGateway,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='transactions',
-        help_text="Payment gateway used"
-    )
+    # Limits
+    min_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    max_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
-    # Transaction metadata
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='Pending',
-        help_text="Transaction status"
-    )
-    reference = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Transaction reference"
-    )
-    external_reference = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="External system reference"
-    )
-    
-    # Parties involved
-    payer = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='payment_transactions',
-        help_text="User making the payment"
-    )
-    payee_name = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Name of payee"
-    )
-    payee_account = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Payee account details"
-    )
-    
-    # Transaction details
-    description = models.TextField(
-        blank=True,
-        help_text="Transaction description"
-    )
-    notes = models.TextField(
-        blank=True,
-        help_text="Additional notes"
-    )
-    
-    # Fees
-    processing_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        help_text="Processing fee charged"
-    )
-    gateway_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        help_text="Gateway fee charged"
-    )
-    
-    # Dates
-    initiated_at = models.DateTimeField(
-        default=timezone.now,
-        help_text="When transaction was initiated"
-    )
-    completed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="When transaction was completed"
-    )
-    
-    # Gateway response
-    gateway_response = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text="Response from payment gateway"
-    )
-    gateway_status = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="Status from payment gateway"
-    )
-    
-    # Timestamps
+    # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = _("Payment Transaction")
-        verbose_name_plural = _("Payment Transactions")
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['company', 'status']),
-            models.Index(fields=['transaction_type']),
-            models.Index(fields=['transaction_id']),
-            models.Index(fields=['initiated_at']),
-        ]
+        ordering = ['name']
+        verbose_name = 'Payment Gateway'
+        verbose_name_plural = 'Payment Gateways'
     
     def __str__(self):
-        return f"{self.transaction_type} - {self.amount} {self.currency} ({self.status})"
+        return f"{self.name} ({'Test' if self.test_mode else 'Live'})"
     
-    @property
-    def is_pending(self):
-        """Check if transaction is pending."""
-        return self.status in ['Pending', 'Processing']
+    def is_currency_supported(self, currency):
+        """Check if currency is supported"""
+        return currency in self.supported_currencies
     
-    @property
-    def is_completed(self):
-        """Check if transaction is completed."""
-        return self.status == 'Completed'
-    
-    @property
-    def is_failed(self):
-        """Check if transaction failed."""
-        return self.status == 'Failed'
-    
-    @property
-    def net_amount(self):
-        """Calculate net amount after fees."""
-        return self.amount - self.processing_fee - self.gateway_fee
-    
-    def mark_completed(self, gateway_response=None):
-        """Mark transaction as completed."""
-        self.status = 'Completed'
-        self.completed_at = timezone.now()
-        if gateway_response:
-            self.gateway_response = gateway_response
-        self.save(update_fields=['status', 'completed_at', 'gateway_response'])
-    
-    def mark_failed(self, reason=None):
-        """Mark transaction as failed."""
-        self.status = 'Failed'
-        if reason:
-            self.notes = f"Failed: {reason}"
-        self.save(update_fields=['status', 'notes'])
-    
-    def process_refund(self, refund_amount=None):
-        """Process refund for this transaction."""
-        if not self.payment_gateway or not self.payment_gateway.supports_refunds:
-            raise ValueError("Refunds not supported for this transaction")
-        
-        refund_amount = refund_amount or self.amount
-        if refund_amount > self.amount:
-            raise ValueError("Refund amount cannot exceed original amount")
-        
-        # Create refund transaction
-        refund = PaymentTransaction.objects.create(
-            company=self.company,
-            transaction_type='Refund',
-            amount=refund_amount,
-            currency=self.currency,
-            payment_method=self.payment_method,
-            payment_gateway=self.payment_gateway,
-            payer=self.payer,
-            payee_name=self.payee_name,
-            payee_account=self.payee_account,
-            description=f"Refund for transaction {self.transaction_id}",
-            reference=f"REF-{self.reference}",
-        )
-        
-        # Update original transaction
-        self.status = 'Refunded'
-        self.save(update_fields=['status'])
-        
-        return refund
+    def is_country_supported(self, country):
+        """Check if country is supported"""
+        return country in self.supported_countries

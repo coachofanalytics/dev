@@ -113,50 +113,36 @@ class BudgetRequestForm(forms.ModelForm):
     class Meta:
         model = BudgetRequest
         fields = [
-            'title', 'description', 'category', 'subcategory',
-            'requested_amount', 'currency', 'priority',
-            'justification', 'business_case'
+            'amount', 'currency', 'purpose', 'department',
+            'required_date', 'priority'
         ]
         widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter request title'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 4,
-                'placeholder': 'Describe the budget request'
-            }),
-            'category': forms.Select(attrs={
-                'class': 'form-control',
-                'id': 'id_category'
-            }),
-            'subcategory': forms.Select(attrs={
-                'class': 'form-control',
-                'id': 'id_subcategory'
-            }),
-            'requested_amount': forms.NumberInput(attrs={
+            'amount': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
                 'min': '0',
-                'placeholder': '0.00'
+                'placeholder': 'Enter requested amount'
+            }),
+            'purpose': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Describe the purpose of the budget request'
             }),
             'currency': forms.Select(attrs={
                 'class': 'form-control',
                 'id': 'id_currency'
             }),
+            'department': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_department'
+            }),
+            'required_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
             'priority': forms.Select(attrs={
-                'class': 'form-control'
-            }),
-            'justification': forms.Textarea(attrs={
                 'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Justify why this budget is needed'
-            }),
-            'business_case': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Explain the business case'
+                'id': 'id_priority'
             }),
         }
     

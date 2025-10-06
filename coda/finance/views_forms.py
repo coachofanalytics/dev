@@ -12,9 +12,9 @@ from django.db import transaction
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from .models import BudgetRequest, BudgetCategory, ApprovalPolicy
+from finance.models import BudgetRequest, BudgetCategory, ApprovalPolicy
 from .forms import BudgetRequestForm
-from .services.automation_service import BudgetRequestService, ApprovalEngineService
+from finance.services.automation_service import BudgetRequestService, ApprovalEngineService
 from accounts.models import Department
 
 

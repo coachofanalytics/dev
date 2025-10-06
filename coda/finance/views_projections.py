@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 
-from .models import BudgetEstimateProjection
+from finance.models import BudgetEstimateProjection
 
 
 @login_required

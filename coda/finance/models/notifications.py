@@ -1,386 +1,392 @@
 # -*- coding: utf-8 -*-
 """
-Notification models for finance-related alerts and communications.
+Finance Notification Models
+
+Notification-related models including FinanceNotification, BudgetAlert, LoanNotification, and related models.
 """
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-from django.utils import timezone
-from decimal import Decimal
 
 # Get the User model
 User = get_user_model()
 
-# Import models from other apps
-try:
-    from main.models import Company
-except ImportError:
-    Company = None
 
-# Import core models
-from .core import Budget, Transaction
-from .budget import BudgetRequest
-from .loan import LoanApplication
-
+# =============================================================================
+# NOTIFICATION MODELS
+# =============================================================================
 
 class FinanceNotification(models.Model):
-    """General finance notifications."""
+    """General finance notifications"""
     
-    # Notification types
     NOTIFICATION_TYPE_CHOICES = [
-        ('Budget', 'Budget Notification'),
-        ('Transaction', 'Transaction Notification'),
-        ('Loan', 'Loan Notification'),
-        ('Payment', 'Payment Notification'),
-        ('System', 'System Notification'),
-        ('Alert', 'Alert'),
-        ('Reminder', 'Reminder'),
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('success', 'Success'),
+        ('error', 'Error'),
+        ('reminder', 'Reminder'),
     ]
     
-    # Notification priority
     PRIORITY_CHOICES = [
-        ('Low', 'Low'),
-        ('Medium', 'Medium'),
-        ('High', 'High'),
-        ('Urgent', 'Urgent'),
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
     ]
     
-    # Notification status
-    STATUS_CHOICES = [
-        ('Unread', 'Unread'),
-        ('Read', 'Read'),
-        ('Archived', 'Archived'),
-    ]
+    # Core notification data
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE_CHOICES, default='info')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
     
-    company = models.ForeignKey(
-        'main.Company',
-        on_delete=models.CASCADE,
-        related_name='finance_notifications',
-        help_text="Company this notification belongs to"
-    )
+    # Targeting
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='finance_notifications')
+    is_read = models.BooleanField(default=False)
     
-    # Recipient
-    recipient = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='finance_notifications',
-        help_text="User receiving the notification"
-    )
+    # Action
+    action_url = models.URLField(blank=True, null=True)
+    action_text = models.CharField(max_length=100, blank=True)
     
-    # Notification details
-    notification_type = models.CharField(
-        max_length=20,
-        choices=NOTIFICATION_TYPE_CHOICES,
-        help_text="Type of notification"
-    )
-    title = models.CharField(
-        max_length=200,
-        help_text="Notification title"
-    )
-    message = models.TextField(
-        help_text="Notification message"
-    )
-    
-    # Priority and status
-    priority = models.CharField(
-        max_length=10,
-        choices=PRIORITY_CHOICES,
-        default='Medium',
-        help_text="Notification priority"
-    )
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='Unread',
-        help_text="Notification status"
-    )
-    
-    # Related objects (generic foreign key approach)
-    related_object_type = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="Type of related object"
-    )
-    related_object_id = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="ID of related object"
-    )
-    
-    # Action required
-    requires_action = models.BooleanField(
-        default=False,
-        help_text="Whether notification requires action"
-    )
-    action_url = models.URLField(
-        blank=True,
-        help_text="URL for required action"
-    )
-    action_text = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Text for action button"
-    )
-    
-    # Timestamps
+    # Timing
     created_at = models.DateTimeField(auto_now_add=True)
-    read_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="When notification was read"
-    )
-    archived_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="When notification was archived"
-    )
+    read_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    
+    # Metadata
+    related_object_type = models.CharField(max_length=50, blank=True, null=True)
+    related_object_id = models.PositiveIntegerField(null=True, blank=True)
     
     class Meta:
-        verbose_name = _("Finance Notification")
-        verbose_name_plural = _("Finance Notifications")
         ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['company', 'recipient']),
-            models.Index(fields=['notification_type', 'status']),
-            models.Index(fields=['priority', 'status']),
-        ]
+        verbose_name = 'Finance Notification'
+        verbose_name_plural = 'Finance Notifications'
     
     def __str__(self):
-        return f"{self.title} - {self.recipient.get_full_name()}"
+        return f"{self.title} - {self.user.username}"
     
-    @property
-    def is_unread(self):
-        """Check if notification is unread."""
-        return self.status == 'Unread'
-    
-    @property
-    def is_urgent(self):
-        """Check if notification is urgent."""
-        return self.priority == 'Urgent'
-    
-    def mark_read(self):
-        """Mark notification as read."""
-        self.status = 'Read'
+    def mark_as_read(self):
+        """Mark notification as read"""
+        self.is_read = True
         self.read_at = timezone.now()
-        self.save(update_fields=['status', 'read_at'])
+        self.save(update_fields=['is_read', 'read_at'])
     
-    def mark_archived(self):
-        """Mark notification as archived."""
-        self.status = 'Archived'
-        self.archived_at = timezone.now()
-        self.save(update_fields=['status', 'archived_at'])
-    
-    def get_related_object(self):
-        """Get the related object if it exists."""
-        if not self.related_object_type or not self.related_object_id:
-            return None
-        
-        try:
-            if self.related_object_type == 'Budget':
-                return Budget.objects.get(id=self.related_object_id)
-            elif self.related_object_type == 'Transaction':
-                return Transaction.objects.get(id=self.related_object_id)
-            elif self.related_object_type == 'BudgetRequest':
-                return BudgetRequest.objects.get(id=self.related_object_id)
-            elif self.related_object_type == 'LoanApplication':
-                return LoanApplication.objects.get(id=self.related_object_id)
-        except:
-            return None
-        
-        return None
+    @property
+    def is_expired(self):
+        """Check if notification is expired"""
+        if self.expires_at:
+            return timezone.now() > self.expires_at
+        return False
 
 
 class BudgetAlert(models.Model):
-    """Budget-specific alerts and warnings."""
+    """Budget-related alerts and notifications"""
     
-    # Alert types
     ALERT_TYPE_CHOICES = [
-        ('Over Budget', 'Over Budget'),
-        ('Approaching Limit', 'Approaching Limit'),
-        ('Variance', 'Variance Alert'),
-        ('Approval Required', 'Approval Required'),
-        ('Deadline', 'Deadline Alert'),
-        ('Threshold', 'Threshold Alert'),
+        ('budget_exceeded', 'Budget Exceeded'),
+        ('budget_warning', 'Budget Warning'),
+        ('budget_approved', 'Budget Approved'),
+        ('budget_rejected', 'Budget Rejected'),
+        ('budget_due', 'Budget Due'),
+        ('variance_high', 'High Variance'),
+        ('variance_low', 'Low Variance'),
     ]
     
-    # Alert severity
     SEVERITY_CHOICES = [
-        ('Info', 'Information'),
-        ('Warning', 'Warning'),
-        ('Critical', 'Critical'),
-        ('Emergency', 'Emergency'),
+        ('info', 'Info'),
+        ('warning', 'Warning'),
+        ('critical', 'Critical'),
     ]
     
-    # Alert status
-    STATUS_CHOICES = [
-        ('Active', 'Active'),
-        ('Acknowledged', 'Acknowledged'),
-        ('Resolved', 'Resolved'),
-        ('Dismissed', 'Dismissed'),
-    ]
-    
-    company = models.ForeignKey(
-        'main.Company',
-        on_delete=models.CASCADE,
-        related_name='budget_alerts',
-        help_text="Company this alert belongs to"
-    )
+    # Alert data
+    alert_type = models.CharField(max_length=20, choices=ALERT_TYPE_CHOICES)
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, default='info')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
     
     # Related budget
-    budget = models.ForeignKey(
-        Budget,
-        on_delete=models.CASCADE,
-        related_name='alerts',
-        help_text="Budget this alert relates to"
-    )
+    budget = models.ForeignKey('Budget', on_delete=models.CASCADE, related_name='alerts')
+    budget_category = models.ForeignKey('BudgetCategory', on_delete=models.CASCADE, null=True, blank=True)
     
-    # Alert details
-    alert_type = models.CharField(
-        max_length=20,
-        choices=ALERT_TYPE_CHOICES,
-        help_text="Type of alert"
-    )
-    severity = models.CharField(
-        max_length=20,
-        choices=SEVERITY_CHOICES,
-        default='Warning',
-        help_text="Alert severity"
-    )
-    title = models.CharField(
-        max_length=200,
-        help_text="Alert title"
-    )
-    message = models.TextField(
-        help_text="Alert message"
-    )
+    # Thresholds
+    threshold_percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    threshold_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     
-    # Alert thresholds
-    threshold_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Threshold amount that triggered alert"
-    )
-    threshold_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Threshold percentage that triggered alert"
-    )
+    # Status
+    is_active = models.BooleanField(default=True)
+    is_acknowledged = models.BooleanField(default=False)
+    acknowledged_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='acknowledged_budget_alerts')
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
     
-    # Alert status
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='Active',
-        help_text="Alert status"
-    )
+    # Timing
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
     
-    # Recipients
-    recipients = models.ManyToManyField(
-        User,
-        related_name='budget_alerts',
-        help_text="Users who should receive this alert"
-    )
+    # Metadata
+    metadata = models.JSONField(default=dict, blank=True)
     
-    # Acknowledgment
-    acknowledged_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='acknowledged_budget_alerts',
-        help_text="User who acknowledged the alert"
-    )
-    acknowledged_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="When alert was acknowledged"
-    )
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Budget Alert'
+        verbose_name_plural = 'Budget Alerts'
     
-    # Resolution
-    resolved_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='resolved_budget_alerts',
-        help_text="User who resolved the alert"
-    )
-    resolved_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="When alert was resolved"
-    )
-    resolution_notes = models.TextField(
-        blank=True,
-        help_text="Notes about how alert was resolved"
-    )
+    def __str__(self):
+        return f"{self.get_alert_type_display()} - {self.budget.item_name}"
     
-    # Timestamps
+    def acknowledge(self, user):
+        """Acknowledge the alert"""
+        self.is_acknowledged = True
+        self.acknowledged_by = user
+        self.acknowledged_at = timezone.now()
+        self.save(update_fields=['is_acknowledged', 'acknowledged_by', 'acknowledged_at'])
+    
+    def resolve(self):
+        """Resolve the alert"""
+        self.is_active = False
+        self.resolved_at = timezone.now()
+        self.save(update_fields=['is_active', 'resolved_at'])
+
+
+class LoanNotification(models.Model):
+    """Loan-related notifications"""
+    
+    NOTIFICATION_TYPE_CHOICES = [
+        ('application_submitted', 'Application Submitted'),
+        ('application_approved', 'Application Approved'),
+        ('application_rejected', 'Application Rejected'),
+        ('payment_due', 'Payment Due'),
+        ('payment_overdue', 'Payment Overdue'),
+        ('payment_received', 'Payment Received'),
+        ('loan_disbursed', 'Loan Disbursed'),
+        ('loan_completed', 'Loan Completed'),
+        ('guarantor_request', 'Guarantor Request'),
+        ('guarantor_approved', 'Guarantor Approved'),
+        ('guarantor_rejected', 'Guarantor Rejected'),
+    ]
+    
+    # Notification data
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    
+    # Related loan
+    loan_application = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, related_name='notifications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loan_notifications')
+    
+    # Status
+    is_read = models.BooleanField(default=False)
+    is_sent = models.BooleanField(default=False)
+    
+    # Delivery
+    email_sent = models.BooleanField(default=False)
+    sms_sent = models.BooleanField(default=False)
+    push_sent = models.BooleanField(default=False)
+    
+    # Timing
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    
+    # Action
+    action_url = models.URLField(blank=True, null=True)
+    action_text = models.CharField(max_length=100, blank=True)
+    
+    # Metadata
+    metadata = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Loan Notification'
+        verbose_name_plural = 'Loan Notifications'
+    
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.loan_application.application_number}"
+    
+    def mark_as_read(self):
+        """Mark notification as read"""
+        self.is_read = True
+        self.read_at = timezone.now()
+        self.save(update_fields=['is_read', 'read_at'])
+    
+    def mark_as_sent(self, delivery_method=None):
+        """Mark notification as sent"""
+        self.is_sent = True
+        self.sent_at = timezone.now()
+        
+        if delivery_method == 'email':
+            self.email_sent = True
+        elif delivery_method == 'sms':
+            self.sms_sent = True
+        elif delivery_method == 'push':
+            self.push_sent = True
+        
+        self.save(update_fields=['is_sent', 'sent_at', 'email_sent', 'sms_sent', 'push_sent'])
+
+
+class DepartmentNotification(models.Model):
+    """
+    Model for department-specific notifications
+    """
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+    
+    NOTIFICATION_TYPE_CHOICES = [
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('success', 'Success'),
+        ('error', 'Error'),
+    ]
+    
+    department = models.CharField(max_length=50)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
+    notification_type = models.CharField(max_length=10, choices=NOTIFICATION_TYPE_CHOICES, default='info')
+    
+    # Targeting
+    target_users = models.ManyToManyField(User, blank=True, help_text="Specific users to notify")
+    target_roles = models.JSONField(default=list, blank=True, help_text="Roles to target (admin, staff, etc.)")
+    
+    # Timing
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    # Action
+    action_url = models.URLField(blank=True, null=True)
+    action_text = models.CharField(max_length=100, blank=True)
+    
+    # Tracking
+    viewed_by = models.ManyToManyField(User, related_name='viewed_notifications', blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_notifications')
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Department Notification'
+        verbose_name_plural = 'Department Notifications'
+    
+    def __str__(self):
+        return f"{self.department}: {self.title}"
+    
+    @property
+    def is_expired(self):
+        if self.expires_at:
+            return timezone.now() > self.expires_at
+        return False
+    
+    @property
+    def is_visible(self):
+        return self.is_active and not self.is_expired
+    
+    def mark_as_viewed(self, user):
+        """Mark notification as viewed by user"""
+        self.viewed_by.add(user)
+
+
+class DepartmentAnnouncement(models.Model):
+    """
+    Model for department-wide announcements
+    """
+    department = models.CharField(max_length=50)
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    
+    # Display settings
+    is_featured = models.BooleanField(default=False)
+    show_on_dashboard = models.BooleanField(default=True)
+    
+    # Timing
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    # Author
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Department Announcement'
+        verbose_name_plural = 'Department Announcements'
+    
+    def __str__(self):
+        return f"{self.department}: {self.title}"
+    
+    @property
+    def is_expired(self):
+        if self.expires_at:
+            return timezone.now() > self.expires_at
+        return False
+    
+    @property
+    def is_visible(self):
+        return self.is_active and not self.is_expired
+
+
+class UserDashboardPreferences(models.Model):
+    """
+    Model for user dashboard preferences
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
+    # Notification preferences
+    email_notifications = models.BooleanField(default=True)
+    push_notifications = models.BooleanField(default=True)
+    department_notifications = models.JSONField(default=list, help_text="List of departments to receive notifications for")
+    
+    # Display preferences
+    theme = models.CharField(max_length=20, default='light', choices=[
+        ('light', 'Light'),
+        ('dark', 'Dark'),
+        ('auto', 'Auto'),
+    ])
+    layout = models.CharField(max_length=20, default='grid', choices=[
+        ('grid', 'Grid'),
+        ('list', 'List'),
+        ('compact', 'Compact'),
+    ])
+    
+    # Auto-refresh settings
+    auto_refresh = models.BooleanField(default=True)
+    refresh_interval = models.IntegerField(default=300, help_text="Refresh interval in seconds")
+    
+    # Search preferences
+    search_history = models.JSONField(default=list, blank=True)
+    favorite_links = models.JSONField(default=list, blank=True)
+    
+    # Analytics
+    last_accessed = models.DateTimeField(auto_now=True)
+    access_count = models.IntegerField(default=0)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = _("Budget Alert")
-        verbose_name_plural = _("Budget Alerts")
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['company', 'status']),
-            models.Index(fields=['budget', 'alert_type']),
-            models.Index(fields=['severity', 'status']),
-        ]
+        verbose_name = 'User Dashboard Preferences'
+        verbose_name_plural = 'User Dashboard Preferences'
     
     def __str__(self):
-        return f"{self.alert_type} - {self.budget.item_name} ({self.severity})"
+        return f"Preferences for {self.user.username}"
     
-    @property
-    def is_active(self):
-        """Check if alert is active."""
-        return self.status == 'Active'
+    def increment_access(self):
+        """Increment access count"""
+        self.access_count += 1
+        self.save(update_fields=['access_count', 'last_accessed'])
     
-    @property
-    def is_critical(self):
-        """Check if alert is critical."""
-        return self.severity in ['Critical', 'Emergency']
+    def add_to_favorites(self, link_data):
+        """Add link to favorites"""
+        if link_data not in self.favorite_links:
+            self.favorite_links.append(link_data)
+            self.save(update_fields=['favorite_links'])
     
-    @property
-    def is_acknowledged(self):
-        """Check if alert is acknowledged."""
-        return self.status == 'Acknowledged'
-    
-    @property
-    def is_resolved(self):
-        """Check if alert is resolved."""
-        return self.status == 'Resolved'
-    
-    def acknowledge(self, user):
-        """Acknowledge the alert."""
-        self.status = 'Acknowledged'
-        self.acknowledged_by = user
-        self.acknowledged_at = timezone.now()
-        self.save(update_fields=['status', 'acknowledged_by', 'acknowledged_at'])
-    
-    def resolve(self, user, notes=None):
-        """Resolve the alert."""
-        self.status = 'Resolved'
-        self.resolved_by = user
-        self.resolved_at = timezone.now()
-        if notes:
-            self.resolution_notes = notes
-        self.save(update_fields=['status', 'resolved_by', 'resolved_at', 'resolution_notes'])
-    
-    def dismiss(self, user):
-        """Dismiss the alert."""
-        self.status = 'Dismissed'
-        self.acknowledged_by = user
-        self.acknowledged_at = timezone.now()
-        self.save(update_fields=['status', 'acknowledged_by', 'acknowledged_at'])
-    
-    def get_absolute_url(self):
-        """Get URL for budget alert detail view."""
-        from django.urls import reverse
-        return reverse('finance:budget-alert-detail', kwargs={'pk': self.pk})
+    def remove_from_favorites(self, link_data):
+        """Remove link from favorites"""
+        if link_data in self.favorite_links:
+            self.favorite_links.remove(link_data)
+            self.save(update_fields=['favorite_links'])

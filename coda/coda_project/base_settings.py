@@ -87,6 +87,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'Middleware.MiddlewareFile.MailMiddleware',
+    'Middleware.payment_control.PaymentControlMiddleware',  # Payment control middleware
     "allauth.account.middleware.AccountMiddleware",
 ]
 

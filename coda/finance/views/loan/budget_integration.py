@@ -14,12 +14,12 @@ from django.db.models import Sum, Count, Q, F
 from decimal import Decimal
 import json
 
-from ...models import (
+from finance.models import (
     BudgetCategory, BudgetSubCategory, Budget,
     LoanApplication, LoanProduct, BudgetRequest
 )
-from ...services.loan_service import LoanService
-from ...services.automation_service import BudgetRequestService
+from finance.services.loan.eligibility import LoanEligibilityService
+from finance.services.automation_service import BudgetRequestService
 
 
 @login_required
@@ -101,13 +101,13 @@ def loan_application_with_budget(request, company_slug):
                 
                 if loan_amount > max_loan_amount:
                     return JsonResponse({
-                        'error': f'Loan amount exceeds budget availability. Maximum: ${max_loan_amount:,.2f}',
+                        'error': 'Loan amount exceeds budget availability. Maximum: ${:,.2f}'.format(max_loan_amount),
                         'max_amount': float(max_loan_amount),
                         'budget_availability': budget_availability
                     }, status=400)
                 
                 # Create loan application
-                loan_service = LoanService()
+                loan_service = LoanEligibilityService()
                 loan_data = {
                     'loan_amount': float(loan_amount),
                     'loan_product_id': loan_product_id,
@@ -127,7 +127,7 @@ def loan_application_with_budget(request, company_slug):
                     
                     messages.success(
                         request, 
-                        f'Loan application submitted successfully. Application #: {result["loan_application"]["application_number"]}'
+                        'Loan application submitted successfully. Application #: {}'.format(result["loan_application"]["application_number"])
                     )
                     
                     return JsonResponse({
@@ -348,7 +348,7 @@ def check_loan_eligibility(user, loan_amount, purpose, budget_availability):
     
     if loan_amount > max_loan_amount:
         eligibility['recommendations'].append(
-            f"Reduce loan amount to ${max_loan_amount:,.2f} or less"
+            "Reduce loan amount to ${:,.2f} or less".format(max_loan_amount)
         )
     
     # Check if user has existing loans
@@ -363,7 +363,7 @@ def check_loan_eligibility(user, loan_amount, purpose, budget_availability):
         )
         eligibility['existing_loan_payments'] = float(total_existing_payments)
         eligibility['recommendations'].append(
-            f"You have existing loan payments of ${total_existing_payments:,.2f}/month"
+            "You have existing loan payments of ${:,.2f}/month".format(total_existing_payments)
         )
     
     # Calculate debt-to-income ratio (simplified)
@@ -430,12 +430,12 @@ def create_loan_budget_allocation(company, department, loan_amount, loan_product
         department=department,
         category=loan_category,
         subcategory=loan_subcategory,
-        item_name=f'Loan #{loan_application["application_number"]} - {loan_product.name}',
+        item_name='Loan #{} - {}'.format(loan_application["application_number"], loan_product.name),
         estimated_amount=loan_amount,
         actual_spent=Decimal('0.00'),
         currency='USD',
         fiscal_year=timezone.now().year,
         status='active',
         requires_approval=False,
-        description=f'Budget allocation for loan application #{loan_application["application_number"]}'
+        description='Budget allocation for loan application #{}'.format(loan_application["application_number"])
     )

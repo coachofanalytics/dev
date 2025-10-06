@@ -15,9 +15,9 @@ import json
 import logging
 
 from main.models import Company
-from ..core.base import BaseFinanceView, login_required_finance, company_required, json_response, error_json_response
-from ...models import Budget, BudgetCategory, BudgetSubCategory, BudgetRequest, ApprovalPolicy
-from ...forms import legacy_forms
+from finance.views.core.base import BaseFinanceView, login_required_finance, company_required, json_response, error_json_response
+from finance.models import Budget, BudgetCategory, BudgetSubCategory, BudgetRequest, ApprovalPolicy
+from finance.forms import forms as legacy_forms
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -83,7 +83,7 @@ def _handle_budget_edit_post(self, request, company, category, budgets):
         
         for budget in budgets:
             budget_id = str(budget.id)
-            estimated_amount = request.POST.get(f'estimated_amount_{budget_id}')
+            estimated_amount = request.POST.get('estimated_amount_{}'.format(budget_id))
             
             if estimated_amount:
                 try:
@@ -91,7 +91,7 @@ def _handle_budget_edit_post(self, request, company, category, budgets):
                     budget.save(update_fields=['estimated_amount'])
                     updated_budgets.append(budget)
                 except (ValueError, TypeError):
-                    self.log_error(f"Invalid amount for budget {budget.id}: {estimated_amount}")
+                    self.log_error("Invalid amount for budget {}: {}".format(budget.id, estimated_amount))
         
         # Create budget request if required
         if updated_budgets and request.POST.get('submit_for_approval'):
@@ -102,11 +102,11 @@ def _handle_budget_edit_post(self, request, company, category, budgets):
             if budget_request:
                 messages.success(
                     request, 
-                    f"Budget changes submitted for approval. Request ID: {budget_request.id}"
+                    "Budget changes submitted for approval. Request ID: {}".format(budget_request.id)
                 )
                 return redirect('finance:budget-requests-list', company_slug=company.slug)
         
-        messages.success(request, f"Updated {len(updated_budgets)} budget items.")
+        messages.success(request, "Updated {} budget items.".format(len(updated_budgets)))
         return redirect('finance:budget-category-edit', 
                        company_slug=company.slug, category_id=category.id)
     
@@ -125,8 +125,8 @@ def _create_budget_request(self, request, company, category, updated_budgets):
         # Create budget request
         budget_request = BudgetRequest.objects.create(
             company=company,
-            title=f"Budget Update - {category.name}",
-            description=f"Updated budget estimates for {category.name} category",
+            title="Budget Update - {}".format(category.name),
+            description="Updated budget estimates for {} category".format(category.name),
             category=category,
             subcategory=updated_budgets[0].subcategory,  # Use first budget's subcategory
             requested_amount=total_amount,
@@ -185,11 +185,11 @@ def save_budget_estimates(request, company_slug, category_id, company=None):
                 budget.save(update_fields=['estimated_amount'])
                 updated_count += 1
             except (Budget.DoesNotExist, ValueError, KeyError) as e:
-                view.log_error(f"Error updating budget {budget_data.get('id')}", e)
+                view.log_error("Error updating budget {}".format(budget_data.get('id')), e)
         
         return json_response({
             'success': True,
-            'message': f'Updated {updated_count} budget items',
+            'message': 'Updated {} budget items'.format(updated_count),
             'updated_count': updated_count
         })
     
@@ -300,7 +300,7 @@ def approve_budget_request(request, company_slug, request_id, company=None):
         # Approve the request
         budget_request.approve(request.user)
         
-        messages.success(request, f"Budget request '{budget_request.title}' has been approved.")
+        messages.success(request, "Budget request '{}' has been approved.".format(budget_request.title))
         return redirect('finance:budget-request-detail', 
                        company_slug=company.slug, request_id=request_id)
     
@@ -342,7 +342,7 @@ def reject_budget_request(request, company_slug, request_id, company=None):
         # Reject the request
         budget_request.reject(request.user, reason)
         
-        messages.success(request, f"Budget request '{budget_request.title}' has been rejected.")
+        messages.success(request, "Budget request '{}' has been rejected.".format(budget_request.title))
         return redirect('finance:budget-request-detail', 
                        company_slug=company.slug, request_id=request_id)
     

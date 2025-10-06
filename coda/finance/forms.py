@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 from datetime import timedelta
-from .models import BudgetRequest, Transaction, Inflow, FoodHistory, Budget
+from finance.models import BudgetRequest, Transaction, Inflow, FoodHistory, Budget
 
 class BudgetRequestForm(forms.ModelForm):
     """Form for creating budget requests by regular users"""

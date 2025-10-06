@@ -27,6 +27,92 @@ class BudgetDrillDownView(BaseFinanceView):
     
     def __init__(self):
         super().__init__()
+    
+    def _get_budget_comparison_data(self, company, category, comparison_type, period_count):
+        """Get budget comparison data for different periods."""
+        try:
+            from datetime import datetime, timedelta
+            from dateutil.relativedelta import relativedelta
+            
+            comparison_data = []
+            current_date = timezone.now().date()
+            
+            for i in range(period_count):
+                if comparison_type == 'monthly':
+                    period_start = current_date - relativedelta(months=i+1)
+                    period_end = current_date - relativedelta(months=i)
+                    period_name = period_start.strftime('%B %Y')
+                elif comparison_type == 'quarterly':
+                    quarter_start = (current_date.month - 1) // 3 * 3 + 1
+                    period_start = current_date.replace(month=quarter_start, day=1) - relativedelta(months=3*i+3)
+                    period_end = current_date.replace(month=quarter_start, day=1) - relativedelta(months=3*i)
+                    period_name = "Q{} {}".format(((period_start.month - 1) // 3) + 1, period_start.year)
+                else:  # yearly
+                    period_start = current_date.replace(month=1, day=1) - relativedelta(years=i+1)
+                    period_end = current_date.replace(month=1, day=1) - relativedelta(years=i)
+                    period_name = str(period_start.year)
+                
+                # Get budgets for this period
+                budgets = Budget.objects.filter(
+                    company=company,
+                    category=category,
+                    start_date__gte=period_start,
+                    end_date__lte=period_end
+                )
+                
+                # Calculate totals
+                total_estimated = sum(budget.estimated_amount for budget in budgets)
+                total_actual = sum(budget.actual_spent for budget in budgets)
+                total_variance = total_actual - total_estimated
+                
+                comparison_data.append({
+                    'period_name': period_name,
+                    'period_start': period_start,
+                    'period_end': period_end,
+                    'total_estimated': total_estimated,
+                    'total_actual': total_actual,
+                    'total_variance': total_variance,
+                    'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
+                    'budget_count': budgets.count(),
+                })
+            
+            return comparison_data
+        
+        except Exception as e:
+            self.log_error("Error getting budget comparison data", e)
+            return []
+    
+    def _handle_budget_item_edit_post(self, request, company, budget):
+        """Handle POST request for budget item editing."""
+        try:
+            # Update budget fields
+            budget.item_name = request.POST.get('item_name', budget.item_name)
+            budget.description = request.POST.get('description', budget.description)
+            budget.estimated_amount = Decimal(request.POST.get('estimated_amount', budget.estimated_amount))
+            budget.quantity = Decimal(request.POST.get('quantity', budget.quantity))
+            budget.unit_price = Decimal(request.POST.get('unit_price', budget.unit_price))
+            budget.cases = int(request.POST.get('cases', budget.cases))
+            budget.notes = request.POST.get('notes', budget.notes)
+            
+            # Update dates if provided
+            start_date = request.POST.get('start_date')
+            end_date = request.POST.get('end_date')
+            
+            if start_date:
+                budget.start_date = start_date
+            if end_date:
+                budget.end_date = end_date
+            
+            budget.save()
+            
+            messages.success(request, "Budget item '{}' updated successfully.".format(budget.item_name))
+            return redirect('finance:budget-item-edit', 
+                           company_slug=company.slug, item_id=budget.id)
+        
+        except Exception as e:
+            self.handle_error(request, e, "Error updating budget item")
+            return redirect('finance:budget-item-edit', 
+                           company_slug=company.slug, item_id=budget.id)
 
 
 @login_required_finance
@@ -46,6 +132,9 @@ def budget_category_detail(request, company_slug, category_id, company=None):
         # Get category
         category = get_object_or_404(BudgetCategory, id=category_id)
         
+        # Get user department for filtering transactions
+        user_department = view.get_user_department(request, company)
+        
         # Get subcategories with budget data
         subcategories = BudgetSubCategory.objects.filter(
             category=category
@@ -64,10 +153,13 @@ def budget_category_detail(request, company_slug, category_id, company=None):
             total_actual = sum(budget.actual_spent for budget in budgets)
             total_variance = total_actual - total_estimated
             
-            # Get recent transactions
+            # Get recent transactions - filter by department since Transaction doesn't have company field
+            transaction_filter = {'budget_subcategory': subcategory}
+            if user_department:
+                transaction_filter['department'] = user_department
+            
             recent_transactions = Transaction.objects.filter(
-                company=company,
-                budget_subcategory=subcategory
+                **transaction_filter
             ).order_by('-transaction_date')[:5]
             
             subcategory_data.append({
@@ -150,65 +242,6 @@ def budget_comparison_view(request, company_slug, category_id, company=None):
                        company_slug=company_slug, category_id=category_id)
 
 
-def _get_budget_comparison_data(self, company, category, comparison_type, period_count):
-    """Get budget comparison data for different periods."""
-    try:
-        from datetime import datetime, timedelta
-        from dateutil.relativedelta import relativedelta
-        
-        comparison_data = []
-        current_date = timezone.now().date()
-        
-        for i in range(period_count):
-            if comparison_type == 'monthly':
-                period_start = current_date - relativedelta(months=i+1)
-                period_end = current_date - relativedelta(months=i)
-                period_name = period_start.strftime('%B %Y')
-            elif comparison_type == 'quarterly':
-                quarter_start = (current_date.month - 1) // 3 * 3 + 1
-                period_start = current_date.replace(month=quarter_start, day=1) - relativedelta(months=3*i+3)
-                period_end = current_date.replace(month=quarter_start, day=1) - relativedelta(months=3*i)
-                period_name = f"Q{((period_start.month - 1) // 3) + 1} {period_start.year}"
-            else:  # yearly
-                period_start = current_date.replace(month=1, day=1) - relativedelta(years=i+1)
-                period_end = current_date.replace(month=1, day=1) - relativedelta(years=i)
-                period_name = str(period_start.year)
-            
-            # Get budgets for this period
-            budgets = Budget.objects.filter(
-                company=company,
-                category=category,
-                start_date__gte=period_start,
-                end_date__lte=period_end
-            )
-            
-            # Calculate totals
-            total_estimated = sum(budget.estimated_amount for budget in budgets)
-            total_actual = sum(budget.actual_spent for budget in budgets)
-            total_variance = total_actual - total_estimated
-            
-            comparison_data.append({
-                'period_name': period_name,
-                'period_start': period_start,
-                'period_end': period_end,
-                'total_estimated': total_estimated,
-                'total_actual': total_actual,
-                'total_variance': total_variance,
-                'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
-                'budget_count': budgets.count(),
-            })
-        
-        return comparison_data
-    
-    except Exception as e:
-        self.log_error("Error getting budget comparison data", e)
-        return []
-
-
-# Add method to the class
-BudgetDrillDownView._get_budget_comparison_data = _get_budget_comparison_data
-
-
 @login_required_finance
 @company_required
 def budget_item_edit(request, company_slug, item_id, company=None):
@@ -234,11 +267,19 @@ def budget_item_edit(request, company_slug, item_id, company=None):
         if request.method == 'POST':
             return view._handle_budget_item_edit_post(request, company, budget)
         
-        # Get related data
+        # Get user department for filtering transactions
+        user_department = view.get_user_department(request, company)
+        
+        # Get related data - filter by department since Transaction doesn't have company field
+        transaction_filter = {
+            'budget_category': budget.category,
+            'budget_subcategory': budget.subcategory
+        }
+        if user_department:
+            transaction_filter['department'] = user_department
+            
         recent_transactions = Transaction.objects.filter(
-            company=company,
-            budget_category=budget.category,
-            budget_subcategory=budget.subcategory
+            **transaction_filter
         ).order_by('-transaction_date')[:10]
         
         context = {
@@ -255,41 +296,6 @@ def budget_item_edit(request, company_slug, item_id, company=None):
                        company_slug=company_slug, category_id=budget.category.id)
 
 
-def _handle_budget_item_edit_post(self, request, company, budget):
-    """Handle POST request for budget item editing."""
-    try:
-        # Update budget fields
-        budget.item_name = request.POST.get('item_name', budget.item_name)
-        budget.description = request.POST.get('description', budget.description)
-        budget.estimated_amount = Decimal(request.POST.get('estimated_amount', budget.estimated_amount))
-        budget.quantity = Decimal(request.POST.get('quantity', budget.quantity))
-        budget.unit_price = Decimal(request.POST.get('unit_price', budget.unit_price))
-        budget.cases = int(request.POST.get('cases', budget.cases))
-        budget.notes = request.POST.get('notes', budget.notes)
-        
-        # Update dates if provided
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        
-        if start_date:
-            budget.start_date = start_date
-        if end_date:
-            budget.end_date = end_date
-        
-        budget.save()
-        
-        messages.success(request, f"Budget item '{budget.item_name}' updated successfully.")
-        return redirect('finance:budget-item-edit', 
-                       company_slug=company.slug, item_id=budget.id)
-    
-    except Exception as e:
-        self.handle_error(request, e, "Error updating budget item")
-        return redirect('finance:budget-item-edit', 
-                       company_slug=company.slug, item_id=budget.id)
-
-
-# Add method to the class
-BudgetDrillDownView._handle_budget_item_edit_post = _handle_budget_item_edit_post
 
 
 @require_http_methods(["GET"])

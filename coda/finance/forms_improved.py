@@ -13,7 +13,7 @@ Key Improvements:
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
-from finance.models import Transaction, BudgetCategory
+from .models import Transaction, BudgetCategory
 from accounts.models import Department
 from decimal import Decimal
 import re
@@ -161,9 +161,9 @@ class SmartTransactionForm(forms.ModelForm):
         for keyword in location_keywords:
             if keyword in receiver_lower:
                 raise ValidationError(
-                    f"'{receiver}' looks like a location. "
-                    f"Please use the 'Location' field for office locations "
-                    f"and enter the actual person's name in 'Receiver'."
+                    "'{}' looks like a location. "
+                    "Please use the 'Location' field for office locations "
+                    "and enter the actual person's name in 'Receiver'.".format(receiver)
                 )
         
         # Standardize capitalization (Title Case)
@@ -220,9 +220,9 @@ class SmartTransactionForm(forms.ModelForm):
                     # In the template, we'll show this as a warning message
                     self.add_warning = True
                     self.warning_message = (
-                        f"This amount (${amount:,.2f}) is unusually high for "
-                        f"{category.name}. Average is ${avg_amount:,.2f}. "
-                        f"Please verify this is correct."
+                        "This amount (${:,.2f}) is unusually high for "
+                        "{}. Average is ${:,.2f}. "
+                        "Please verify this is correct.".format(amount, category.name, avg_amount)
                     )
         
         # Flag large transactions (>$10,000) for review
@@ -258,7 +258,7 @@ class SmartTransactionForm(forms.ModelForm):
             if vendor in receiver:
                 try:
                     cat = BudgetCategory.objects.get(name=category)
-                    return {'category': cat, 'confidence': 'high', 'reason': f'Known vendor: {vendor}'}
+                    return {'category': cat, 'confidence': 'high', 'reason': 'Known vendor: {}'.format(vendor)}
                 except BudgetCategory.DoesNotExist:
                     pass
         
@@ -326,5 +326,3 @@ class TransactionBulkUploadForm(forms.Form):
         label="Auto-categorize transactions",
         help_text="Attempt to automatically assign categories based on patterns"
     )
-
-

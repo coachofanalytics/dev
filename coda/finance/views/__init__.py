@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Finance Views Package
-Imports all views from organized structure and legacy files
+Clean organized structure without circular imports
 """
 
-# Import from organized structure
+# Import organized views directly (avoiding circular imports)
 from .budget.dashboard import unified_budget_dashboard
 from .budget.editing import (
     budget_category_edit, save_budget_estimates, budget_requests_list,
@@ -23,15 +23,29 @@ from .transaction.smart_entry import (
     api_receiver_suggestions
 )
 
-# Import from legacy views file (to be migrated gradually)
-import sys
+# Import legacy views directly from the legacy views file
+import importlib.util
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from views import (
-    finance_index, openai_balancesheet, StatementsUpdateView, send_invoice,
-    send_notification, finance_report, site_budget, WebBudgetUpdateView,
-    investment_report, transact, inflow, cashflows
-)
+
+# Load legacy views module directly
+legacy_views_path = os.path.join(os.path.dirname(__file__), '..', 'views.py')
+spec = importlib.util.spec_from_file_location("legacy_views", legacy_views_path)
+legacy_views = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(legacy_views)
+
+# Make legacy views available
+finance_index = legacy_views.finance_index
+openai_balancesheet = legacy_views.openai_balancesheet
+StatementsUpdateView = legacy_views.StatementsUpdateView
+send_invoice = legacy_views.send_invoice
+send_notification = legacy_views.send_notification
+finance_report = legacy_views.finance_report
+site_budget = legacy_views.site_budget
+WebBudgetUpdateView = legacy_views.WebBudgetUpdateView
+investment_report = legacy_views.investment_report
+transact = legacy_views.transact
+inflow = legacy_views.inflow
+cashflows = legacy_views.cashflows
 
 # Import other view modules
 from .. import (
@@ -41,9 +55,6 @@ from .. import (
     views_enhanced_approvals, views_salary_dashboard, views_realtime_compliance,
     views_admin_controls, views_unified_budget, views_forms
 )
-
-# Import organized views as modules
-from . import budget, loan, transaction
 
 __all__ = [
     # Organized views
@@ -58,7 +69,9 @@ __all__ = [
     'api_receiver_suggestions',
     
     # Legacy views
-    'legacy_views',
+    'finance_index', 'openai_balancesheet', 'StatementsUpdateView',
+    'send_invoice', 'send_notification', 'finance_report', 'site_budget',
+    'WebBudgetUpdateView', 'investment_report', 'transact', 'inflow', 'cashflows',
     
     # View modules
     'payment_views', 'views_automation', 'views_enhanced_budget',
@@ -66,5 +79,4 @@ __all__ = [
     'views_projections', 'views_estimates', 'views_approvals', 'views_detailed_budget',
     'views_enhanced_approvals', 'views_salary_dashboard', 'views_realtime_compliance',
     'views_admin_controls', 'views_unified_budget', 'views_forms',
-    'budget', 'loan', 'transaction',
 ]

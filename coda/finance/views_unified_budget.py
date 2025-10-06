@@ -29,14 +29,14 @@ import logging
 
 from main.models import Company
 from accounts.models import Department
-from .models import (
+from finance.models import (
     Budget, BudgetCategory, BudgetSubCategory, 
     BudgetEstimateProjection, MultiYearBudgetPlan,
     BudgetRequest, DisbursementRequest, Transaction
 )
-from .services.unified_budget_estimation_service import UnifiedBudgetEstimationService
-from .services.budget_consolidation_service import BudgetConsolidationService
-from .services.data_quality_service import DataQualityService
+from finance.services.unified_budget_estimation_service import UnifiedBudgetEstimationService
+from finance.services.budget.consolidation import BudgetConsolidationService
+from finance.services.data_quality_service import DataQualityService
 from .utils.calculation_utils import CalculationUtils
 from .utils.filter_utils import FilterUtils
 

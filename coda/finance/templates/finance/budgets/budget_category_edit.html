@@ -77,7 +77,7 @@
                     <p class="text-muted">{{ company.name }} - {{ user_department.name|default:"All Departments" }}</p>
                 </div>
                 <div>
-                    <a href="{% url 'unified-budget-dashboard' company.slug %}" class="btn btn-secondary">
+                    <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back to Dashboard
                     </a>
                 </div>
@@ -268,7 +268,7 @@ $(document).ready(function() {
 
         // Submit form
         $.ajax({
-            url: '{% url "save-budget-estimates" company.slug category.id %}',
+            url: '{% url "finance:save-budget-estimates" company.slug category.id %}',
             method: 'POST',
             headers: {
                 'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
@@ -282,7 +282,7 @@ $(document).ready(function() {
                 $('#loadingModal').modal('hide');
                 if (response.success) {
                     alert('Budget estimates saved successfully!');
-                    window.location.href = '{% url "budget-requests-list" company.slug %}';
+                    window.location.href = '{% url "finance:budget-requests-list" company.slug %}';
                 } else {
                     alert('Error: ' + response.error);
                 }

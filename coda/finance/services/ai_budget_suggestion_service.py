@@ -15,7 +15,7 @@ import statistics
 import json
 
 from ..models import Transaction, BudgetCategory, BudgetEstimateProjection
-from .budget_estimation_service import BudgetEstimationService
+from .budget.estimation import BudgetEstimationService
 from .data_quality_service import DataQualityService
 from ai_services.ai_integration_service import RealAIService
 from ai_services.models import DiasporaAnalysisData, AIModelTypes

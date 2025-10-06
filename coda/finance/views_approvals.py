@@ -14,8 +14,8 @@ from django.utils import timezone
 from django.db import transaction
 from django.core.paginator import Paginator
 
-from .models import BudgetEstimateProjection, ApprovalPolicy
-from .services.automation_service import ApprovalEngineService
+from finance.models import BudgetEstimateProjection, ApprovalPolicy
+from finance.services.automation_service import ApprovalEngineService
 from .utils.filter_utils import FilterUtils
 
 
@@ -97,7 +97,7 @@ def approve_budget_projection(request, projection_id):
                     
                     # Send notification email (if email service is available)
                     try:
-                        from .services.email_service import EmailService
+                        from finance.services.email_service import EmailService
                         email_service = EmailService()
                         email_service.send_approval_notification(
                             projection.created_by,
@@ -120,7 +120,7 @@ def approve_budget_projection(request, projection_id):
                     
                     # Send notification email
                     try:
-                        from .services.email_service import EmailService
+                        from finance.services.email_service import EmailService
                         email_service = EmailService()
                         email_service.send_approval_notification(
                             projection.created_by,

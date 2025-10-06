@@ -1,102 +1,83 @@
+# -*- coding: utf-8 -*-
 """
-Finance models package.
-Organized by domain for better maintainability.
+Finance Models Package
+
+Organized models for the finance app:
+- core: Core models (Transaction, Inflow, Payment_Information, etc.)
+- budget: Budget-specific models (Budget, BudgetCategory, BudgetRequest, etc.)
+- loan: Loan-specific models (LoanApplication, LoanProduct, LoanPayment, etc.)
+- payment: Payment-specific models (PaymentMethod, PaymentTransaction, etc.)
+- notifications: Notification models (FinanceNotification, BudgetAlert, etc.)
 """
 
-# Core models
-from .core import (
-    Transaction,
-    Inflow,
-    Budget,
-    BudgetCategory,
-    BudgetSubCategory,
-    BudgetItemLibrary,
-    BudgetEstimateProjection,
-    BudgetEstimationTemplate,
-    MultiYearBudgetPlan,
-    Supplier,
-    Food,
-    FoodHistory,
-    Payment_Information,
-    Payment_History,
-    WebCategory,
-    WebSubCategory,
-    PayslipConfig,
-    CodaBudget,
-    BalanceSheetCategory,
-)
+# Import all models from organized structure
+from .core import *
+from .budget import *
+from .loan import *
+from .payment import *
+from .notifications import *
 
-# Budget models
-from .budget import (
-    BudgetRequest,
-    ApprovalPolicy,
-    BudgetVariance,
-    DisbursementRequest,
-    AutomationAuditLog,
-)
-
-# Loan models
-from .loan import (
-    LoanApplication,
-    LoanProduct,
-    LoanPayment,
-    LoanCollateral,
-)
-
-# Payment models
-from .payment import (
-    PaymentMethod,
-    PaymentTransaction,
-    PaymentGateway,
-)
-
-# Notification models
-from .notifications import (
-    FinanceNotification,
-    BudgetAlert,
-)
+# Import model modules
+from . import core, budget, loan, payment, notifications
 
 __all__ = [
-    # Core
-    'Transaction',
+    # Core models
+    'PaymentBase',
+    'Payment_Information',
+    'Payment_History',
+    'DeletedPaymentHistory',
+    'Default_Payment_Fees',
+    'PayslipConfig',
     'Inflow',
-    'Budget',
-    'BudgetCategory',
-    'BudgetSubCategory',
-    'BudgetItemLibrary',
-    'BudgetEstimateProjection',
-    'BudgetEstimationTemplate',
-    'MultiYearBudgetPlan',
+    'DC48_Inflow',
+    'Transaction',
+    'CodaBudget',
+    'Field_Expense',
+    'BalanceSheetCategory',
+    'WebCategory',
+    'WebSubCategory',
+    'web_budget',
     'Supplier',
     'Food',
     'FoodHistory',
-    'Payment_Information',
-    'Payment_History',
-    'WebCategory',
-    'WebSubCategory',
-    'PayslipConfig',
-    'CodaBudget',
-    'BalanceSheetCategory',
     
-    # Budget
+    # Budget models
+    'BudgetCategory',
+    'BudgetSubCategory',
+    'BudgetItemLibrary',
+    'Budget',
+    'BudgetEstimationTemplate',
+    'BudgetEstimateProjection',
+    'MultiYearBudgetPlan',
     'BudgetRequest',
     'ApprovalPolicy',
-    'BudgetVariance',
     'DisbursementRequest',
     'AutomationAuditLog',
     
-    # Loan
-    'LoanApplication',
+    # Loan models
     'LoanProduct',
+    'LoanApplication',
     'LoanPayment',
     'LoanCollateral',
+    'LoanRollover',
+    'LoanConfiguration',
+    'LoanDecisionAudit',
+    'LoanPerformance',
     
-    # Payment
+    # Payment models
+    'Payment',
     'PaymentMethod',
     'PaymentTransaction',
     'PaymentGateway',
     
-    # Notifications
+    # Notification models
     'FinanceNotification',
     'BudgetAlert',
+    'LoanNotification',
+    'DepartmentNotification',
+    'DepartmentAnnouncement',
+    'UserDashboardPreferences',
+    
+    # Model modules
+    'core', 'budget', 'loan', 'payment', 'notifications',
 ]

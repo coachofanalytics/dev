@@ -13,8 +13,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 import logging
 
-from ..models import Transaction, BudgetCategory
-from .budget_estimation_service import BudgetEstimationService
+from finance.models import Transaction, BudgetCategory
+from .budget.estimation import BudgetEstimationService
 
 logger = logging.getLogger(__name__)
 

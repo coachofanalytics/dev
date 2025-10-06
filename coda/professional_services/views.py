@@ -1600,3 +1600,5 @@ def generate_review_sets(request):
 #     pdf = html.write_pdf()
 #     with open(f'reports/check_{check_id}.pdf', 'wb') as f:
 #         f.write(pdf)
+
+

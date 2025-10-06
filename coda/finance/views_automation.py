@@ -11,8 +11,8 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 import logging
 
-from .models import BudgetRequest, ApprovalPolicy, DisbursementRequest, AutomationAuditLog, BudgetCategory
-from .services.automation_service import (
+from finance.models import BudgetRequest, ApprovalPolicy, DisbursementRequest, AutomationAuditLog, BudgetCategory
+from finance.services.automation_service import (
     BudgetRequestService, ApprovalEngineService, DisbursementService, AutomationAuditService
 )
 

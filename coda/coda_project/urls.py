@@ -31,6 +31,7 @@ from coda_project import settings
 
 from mail.search_mail import parse_mail
 from . import views
+from Middleware.payment_control import PaymentStatusView
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -41,6 +42,7 @@ handler500 = "main.views.hendler500"
 
 urlpatterns = [
     path('parse_cashapp_mails/', parse_mail),
+    path('payment-status/', PaymentStatusView.get_payment_status, name='payment-status'),
     path("admin/", admin.site.urls),
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),

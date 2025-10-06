@@ -28,8 +28,8 @@ from .views.transaction import smart_entry as views_smart_transaction
 # Import user-friendly form views
 from . import views_forms
 
-# Import smart transaction views (Phase 1 Data Cleanup)
-from . import views_smart_transaction
+# Import smart transaction views (Phase 1 Data Cleanup) - now using organized views
+# from . import views_smart_transaction  # Legacy import removed
 
 # Import cascading form API
 from . import api_cascading
@@ -41,7 +41,7 @@ from . import api_auto_predict
 # views_budget_editing now imported above
 
 # Import loan-budget integration views (Phase 3)
-from . import views_loan_budget_integration
+# from . import views_loan_budget_integration  # Legacy import removed - using organized views
 
 app_name = 'finance'
 urlpatterns = [
@@ -54,7 +54,7 @@ urlpatterns = [
     path('send_invoice/<str:type>/', views.send_invoice, name='send_invoice'),
     path('send_notification/<int:payment_id>/', views.send_notification, name='send_notification'),
     path('finance_report/', views.finance_report, name='finance_report'),
-    path('save-and-upload/', save_and_upload_to_drive, name='save_and_upload_to_drive'),
+    path('save-and-upload/', views.save_and_upload_to_drive, name='save_and_upload_to_drive'),
     path('category_budget/<str:category>/', views.site_budget, name='site_budget'),
     path('category_budget/<str:company_slug>/<str:category>/<str:subcategory>/', views.site_budget, name='site_budget_with_subcategory'),
     path('web_budget/<int:pk>/update/', views.WebBudgetUpdateView.as_view(), name='web-update'),
@@ -76,16 +76,16 @@ urlpatterns = [
     path('api/predict-all/', api_auto_predict.api_predict_all_fields, name='api-predict-all'),
     
     # path('transaction/<str:transaction_type>', views.outflows, name='transaction-list'),
-    path('transaction/<int:pk>/', TransanctionDetailView.as_view(), name='transaction-detail'),
-    path('transaction/<int:pk>/update/', TransactionUpdateView.as_view(template_name="finance/payments/transaction_form.html"), name='transaction-update'),
-    path('transaction/<int:pk>/delete/', TransactionUpdateView.as_view(template_name="finance/payments/transaction_confirm_delete.html"), name='transaction-delete'),
+    path('transaction/<int:pk>/', views.TransanctionDetailView.as_view(), name='transaction-detail'),
+    path('transaction/<int:pk>/update/', views.TransactionUpdateView.as_view(template_name="finance/payments/transaction_form.html"), name='transaction-update'),
+    path('transaction/<int:pk>/delete/', views.TransactionUpdateView.as_view(template_name="finance/payments/transaction_confirm_delete.html"), name='transaction-delete'),
      #-----------CASHINFLOW---------------------------------------
     path('inflow_entry/', views.inflow, name='entry_inflow'),
     path('cashflows/<str:type>/', views.cashflows, name='cashflows-list'),
-    path('user_inflow/', UserInflowListView.as_view(), name='user-list'),
-    path('inflow/<int:pk>/', InflowDetailView.as_view(), name='inflow-detail'),
-    path('inflow/<int:pk>/delete/', InflowDetailView.as_view(), name='inflow-delete'),
-    path('inflow/<int:pk>/update/', InflowUpdateView.as_view(template_name="finance/cashflows/inflow_form.html"), name='inflow-update'),
+    path('user_inflow/', views.UserInflowListView.as_view(), name='user-list'),
+    path('inflow/<int:pk>/', views.InflowDetailView.as_view(), name='inflow-detail'),
+    path('inflow/<int:pk>/delete/', views.InflowDetailView.as_view(), name='inflow-delete'),
+    path('inflow/<int:pk>/update/', views.InflowUpdateView.as_view(template_name="finance/cashflows/inflow_form.html"), name='inflow-update'),
     #=============================CLIENT CASHFLOW=====================================
     path('clientinflows/<str:username>/', views.clientinflows, name='userclientinflows'),
     #=============================CLIENT CONTRACT FORM SUBMISSIONS=====================================
@@ -132,7 +132,7 @@ urlpatterns = [
     path('loan-home/', views.loan_application_home, name='loan-home'),
     # path('apply-for-loan/', views.apply_for_loan, name='apply-for-loan'),
     path('loan-rejection/', views.loan_rejection, name='loan-rejection'),
-    path('loans/', LoanListView.as_view(template_name='finance/payments/loans.html'), name='trainingloans'),
+    path('loans/', views.LoanListView.as_view(template_name='finance/payments/loans.html'), name='trainingloans'),
     path('loan-confirmation/', views.loan_application_confirmation, name='loan-confirmation'),
     # Aliases to support template/test reverse names
     path('loan-application-confirmation/', views.loan_application_confirmation, name='loan-application-confirmation'),

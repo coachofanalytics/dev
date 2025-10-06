@@ -4,11 +4,11 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 
-from .models import (
+from finance.models import (
     BudgetEstimationTemplate,
     BudgetEstimateProjection,
 )
-from .services.budget_estimation_service import BudgetEstimationService
+from finance.services.budget.estimation import BudgetEstimationService
 
 
 @login_required

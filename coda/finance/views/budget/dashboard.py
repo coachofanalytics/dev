@@ -32,6 +32,117 @@ class BudgetDashboardView(BaseFinanceView):
         super().__init__()
         self.estimation_service = BudgetEstimationService()
         self.consolidation_service = BudgetConsolidationService()
+    
+    def _get_overview_tab_data(self, company, department, estimation_service, consolidation_service):
+        """Get data for Overview tab."""
+        try:
+            # Build budget filter
+            budget_filter = Q(company=company)
+            if department:
+                budget_filter &= Q(department=department)
+            
+            # Get budget summary by category
+            category_summary = {}
+            categories = BudgetCategory.objects.all()
+            
+            for category in categories:
+                cat_budgets = Budget.objects.filter(
+                    budget_filter, category=category
+                )
+                if cat_budgets.exists():
+                    category_summary[category.name] = {
+                        'count': cat_budgets.count(),
+                        'total': sum(
+                            b.total_amount for b in cat_budgets 
+                            if hasattr(b, 'total_amount')
+                        ),
+                        'category_id': category.id
+                    }
+            
+            # Recent budgets
+            recent_budgets = Budget.objects.filter(budget_filter).order_by('-created_at')[:10]
+            
+            # Budget statistics
+            total_budgets = Budget.objects.filter(budget_filter).count()
+            total_estimated = Budget.objects.filter(budget_filter).aggregate(
+                total=Sum(F('unit_price') * F('quantity') * Coalesce(F('cases'), 1), output_field=DecimalField())
+            )['total'] or Decimal('0.00')
+            
+            total_actual = Budget.objects.filter(budget_filter).aggregate(
+                total=Sum('actual_spent')
+            )['total'] or Decimal('0.00')
+            
+            total_variance = total_actual - total_estimated
+            
+            return {
+                'overview_data': {
+                    'category_summary': category_summary,
+                    'recent_budgets': recent_budgets,
+                    'statistics': {
+                        'total_budgets': total_budgets,
+                        'total_estimated': total_estimated,
+                        'total_actual': total_actual,
+                        'total_variance': total_variance,
+                        'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
+                    }
+                }
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting overview data", e)
+            return {'overview_data': {'error': str(e)}}
+    
+    def _get_planning_tab_data(self, company, department, estimation_service):
+        """Get data for Planning tab."""
+        try:
+            # Get budget categories for planning
+            categories = BudgetCategory.objects.all()
+            
+            # Get recent projections
+            recent_projections = BudgetEstimateProjection.objects.filter(
+                company=company
+            ).order_by('-created_at')[:5]
+            
+            return {
+                'planning_data': {
+                    'categories': categories,
+                    'recent_projections': recent_projections,
+                }
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting planning data", e)
+            return {'planning_data': {'error': str(e)}}
+    
+    def _get_analytics_tab_data(self, company, department, consolidation_service):
+        """Get data for Analytics tab."""
+        try:
+            # Get budget analytics
+            analytics_data = consolidation_service.get_budget_analytics(company, department)
+            
+            return {
+                'analytics_data': analytics_data
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting analytics data", e)
+            return {'analytics_data': {'error': str(e)}}
+    
+    def _get_estimation_tab_data(self, company, department, estimation_service):
+        """Get data for Estimation tab."""
+        try:
+            # Get estimation options
+            estimation_options = estimation_service.get_estimation_options(company)
+            
+            return {
+                'estimation_data': {
+                    'options': estimation_options,
+                }
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting estimation data", e)
+            return {'estimation_data': {'error': str(e)}}
 
 
 @login_required_finance
@@ -98,126 +209,6 @@ def unified_budget_dashboard(request, company_slug, company=None):
     return render(request, 'finance/budgets/unified_dashboard.html', context)
 
 
-def _get_overview_tab_data(self, company, department, estimation_service, consolidation_service):
-    """Get data for Overview tab."""
-    try:
-        # Build budget filter
-        budget_filter = Q(company=company)
-        if department:
-            budget_filter &= Q(department=department)
-        
-        # Get budget summary by category
-        category_summary = {}
-        categories = BudgetCategory.objects.all()
-        
-        for category in categories:
-            cat_budgets = Budget.objects.filter(
-                budget_filter, category=category
-            )
-            if cat_budgets.exists():
-                category_summary[category.name] = {
-                    'count': cat_budgets.count(),
-                    'total': sum(
-                        b.total_amount for b in cat_budgets 
-                        if hasattr(b, 'total_amount')
-                    ),
-                    'category_id': category.id
-                }
-        
-        # Recent budgets
-        recent_budgets = Budget.objects.filter(budget_filter).order_by('-created_at')[:10]
-        
-        # Budget statistics
-        total_budgets = Budget.objects.filter(budget_filter).count()
-        total_estimated = Budget.objects.filter(budget_filter).aggregate(
-            total=Sum(F('unit_price') * F('quantity') * Coalesce(F('cases'), 1), output_field=DecimalField())
-        )['total'] or Decimal('0.00')
-        
-        total_actual = Budget.objects.filter(budget_filter).aggregate(
-            total=Sum('actual_spent')
-        )['total'] or Decimal('0.00')
-        
-        total_variance = total_actual - total_estimated
-        
-        return {
-            'overview_data': {
-                'category_summary': category_summary,
-                'recent_budgets': recent_budgets,
-                'statistics': {
-                    'total_budgets': total_budgets,
-                    'total_estimated': total_estimated,
-                    'total_actual': total_actual,
-                    'total_variance': total_variance,
-                    'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
-                }
-            }
-        }
-    
-    except Exception as e:
-        self.log_error("Error getting overview data", e)
-        return {'overview_data': {'error': str(e)}}
-
-
-def _get_planning_tab_data(self, company, department, estimation_service):
-    """Get data for Planning tab."""
-    try:
-        # Get budget categories for planning
-        categories = BudgetCategory.objects.all()
-        
-        # Get recent projections
-        recent_projections = BudgetEstimateProjection.objects.filter(
-            company=company
-        ).order_by('-created_at')[:5]
-        
-        return {
-            'planning_data': {
-                'categories': categories,
-                'recent_projections': recent_projections,
-            }
-        }
-    
-    except Exception as e:
-        self.log_error("Error getting planning data", e)
-        return {'planning_data': {'error': str(e)}}
-
-
-def _get_analytics_tab_data(self, company, department, consolidation_service):
-    """Get data for Analytics tab."""
-    try:
-        # Get budget analytics
-        analytics_data = consolidation_service.get_budget_analytics(company, department)
-        
-        return {
-            'analytics_data': analytics_data
-        }
-    
-    except Exception as e:
-        self.log_error("Error getting analytics data", e)
-        return {'analytics_data': {'error': str(e)}}
-
-
-def _get_estimation_tab_data(self, company, department, estimation_service):
-    """Get data for Estimation tab."""
-    try:
-        # Get estimation options
-        estimation_options = estimation_service.get_estimation_options(company)
-        
-        return {
-            'estimation_data': {
-                'options': estimation_options,
-            }
-        }
-    
-    except Exception as e:
-        self.log_error("Error getting estimation data", e)
-        return {'estimation_data': {'error': str(e)}}
-
-
-# Add methods to the class
-BudgetDashboardView._get_overview_tab_data = _get_overview_tab_data
-BudgetDashboardView._get_planning_tab_data = _get_planning_tab_data
-BudgetDashboardView._get_analytics_tab_data = _get_analytics_tab_data
-BudgetDashboardView._get_estimation_tab_data = _get_estimation_tab_data
 
 
 @login_required_finance
@@ -245,8 +236,8 @@ def budget_planning_view(request, company_slug, company=None):
             'company': company,
             'departments': company.departments.all() if hasattr(company, 'departments') else [],
             'selected_department': user_department,
-            **planning_data
         }
+        context.update(planning_data)
         
         return render(request, 'finance/budgets/unified_planning.html', context)
     

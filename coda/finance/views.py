@@ -30,7 +30,7 @@ from django.views.generic import (
 from accounts.models import CustomerUser, Department
 from finance.services.eligibility_service import EligibilityService
 from accounts.choices import UserCategory as CategoryChoices
-from .models import (
+from finance.models import (
     Payment_Information,
     Payment_History,
     LoanProduct,
@@ -50,11 +50,11 @@ from .models import (
     BalanceSheetCategory,
     web_budget,
 )
-from .utils.calculation_utils import CalculationUtils
-from .utils.filter_utils import FilterUtils
-from .services.budget_estimation_service import BudgetEstimationService
-from .services.budget_consolidation_service import BudgetConsolidationService
-from .forms import (
+from finance.utils.calculation_utils import CalculationUtils
+from finance.utils.filter_utils import FilterUtils
+from finance.services.budget.estimation import BudgetEstimationService
+from finance.services.budget.consolidation import BudgetConsolidationService
+from finance.forms import (
     TransactionForm,
     InflowForm,
     DepartmentFilterForm,
@@ -71,7 +71,7 @@ from investing.models import Investment_rates, Investor_Information
 from investing.utils import calculate_investor_returns
 from management.utils import paytime
 from management.models import Requirement
-from .utils import *
+from finance.utils import *
 from django.apps import apps
 from ai_services.models import Editable
 from django.core.exceptions import MultipleObjectsReturned
@@ -86,14 +86,14 @@ from accounts.mixins import FilteredListViewMixin
 
 # Import service layer (OUR ARCHITECTURE!)
 from finance.services import (
-    LoanService,
-    PaymentService,
-    BudgetService,
+    LoanEligibilityService,
+    PaymentProcessingService,
+    BudgetEstimationService,
     FinancialAnalyticsService,
 )
 
 # Import analytics services
-from .analytics import get_all_analytics_services
+from finance.analytics import get_all_analytics_services
 
 User = get_user_model()
 
@@ -2807,7 +2807,7 @@ SUBMITTED: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
         
         # Create smart collateral system integration
         try:
-            from .services.smart_collateral_service import SmartCollateralService
+            from finance.services.smart_collateral_service import SmartCollateralService
             
             smart_collateral_service = SmartCollateralService()
             
@@ -3376,7 +3376,7 @@ def clientinflows(request, user=None, *args, **kwargs):
 # views.py
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import LoanApplication
+from finance.models import LoanApplication
 from decimal import Decimal
 import logging
 

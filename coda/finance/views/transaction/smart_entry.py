@@ -193,7 +193,7 @@ def api_suggest_category(request):
                         'name': category.name
                     },
                     'confidence': 'high',
-                    'reason': f'Known vendor: {vendor}'
+                    'reason': 'Known vendor: {}'.format(vendor)
                 })
             except BudgetCategory.DoesNotExist:
                 pass
@@ -269,8 +269,7 @@ def api_validate_amount(request):
             'average': float(avg_amount),
             'category_name': category.name,
             'message': (
-                f'This amount (${amount}) is unusually high for {category.name}. '
-                f'Average is ${avg_amount:.2f}.'
+                'This amount (${}) is unusually high for {}. Average is ${:.2f}.'.format(amount, category.name, avg_amount)
             ) if is_unusual else 'Amount looks normal for this category'
         })
         
@@ -327,3 +326,5 @@ def api_receiver_suggestions(request):
         })
     
     return JsonResponse({'suggestions': suggestions})
+
+
