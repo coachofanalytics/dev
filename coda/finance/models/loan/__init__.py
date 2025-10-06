@@ -6,7 +6,7 @@ Loan-related models including LoanProduct, LoanApplication, LoanPayment, and rel
 """
 
 # Import all models from the loan.py file
-from .loan import *
+from ..loan import *
 
 __all__ = [
     'LoanProduct',

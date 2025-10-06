@@ -6,7 +6,7 @@ Budget-related models including Budget, BudgetCategory, BudgetRequest, and relat
 """
 
 # Import all models from the budget.py file
-from .budget import *
+from ..budget import *
 
 __all__ = [
     'BudgetCategory',

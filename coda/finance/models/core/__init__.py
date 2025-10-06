@@ -6,7 +6,7 @@ Core models for the finance app including Transaction, Inflow, and basic payment
 """
 
 # Import all models from the core.py file
-from .core import *
+from ..core import *
 
 __all__ = [
     'PaymentBase',

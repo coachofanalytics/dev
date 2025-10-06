@@ -6,7 +6,7 @@ Payment-related models including Payment, PaymentMethod, PaymentTransaction, and
 """
 
 # Import all models from the payment.py file
-from .payment import *
+from ..payment import *
 
 __all__ = [
     'Payment',

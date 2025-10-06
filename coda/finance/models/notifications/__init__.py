@@ -6,7 +6,7 @@ Notification-related models including FinanceNotification, BudgetAlert, LoanNoti
 """
 
 # Import all models from the notifications.py file
-from .notifications import *
+from ..notifications import *
 
 __all__ = [
     'FinanceNotification',
