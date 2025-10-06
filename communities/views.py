@@ -174,9 +174,41 @@ def contact_view(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
-            # Save or send the message here (e.g., save it to the database or email)
-            form.save()
-            return redirect('home')  # Redirect back to the home page after form submission
+            contact = form.save()  # Save the form data to DB
+
+            # Prepare email context
+            context = {
+                'name': contact.name,
+                'email': contact.email,
+                'message': contact.message,
+            }
+
+            # Email details
+            subject = f"Hello {contact.name}, thank you for contacting us!"
+            recipient_list = [contact.email]
+
+            # Send confirmation email
+            send_email(
+                subject=subject,
+                recipient_list=recipient_list,
+                context=context,
+                html_template='contact_response.html',  # HTML version
+                plain_template='contact_response.txt'   # Plain-text version
+            )
+
+            # Optionally, send a notification to admin too:
+            admin_subject = f"New Contact Message from {contact.name}"
+            admin_recipient = ['info@gcicrwanda.com']  # or settings.DEFAULT_FROM_EMAIL
+            send_email(
+                subject=admin_subject,
+                recipient_list=admin_recipient,
+                context=context,
+                html_template='emails/admin_contact_notification.html',
+                plain_template='emails/admin_contact_notification.txt'
+            )
+
+            return redirect('home')  # Redirect after success
+
     else:
         form = ContactForm()
 
