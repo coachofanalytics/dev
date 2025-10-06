@@ -124,7 +124,7 @@ class PaymentBase(ContractBase):
         ordering = ['-payment_date']
     
     def __str__(self):
-        return f"{self.amount} {self.currency} - {self.get_status_display()}"
+        return "{} {} - {}".format(self.amount, self.currency, self.get_status_display())
 
 
 class Payment_Information(PaymentBase):
@@ -144,7 +144,7 @@ class Payment_Information(PaymentBase):
     client_signature = models.CharField(max_length=1000)
 
     def __str__(self):
-        return f"Payment Info for {self.customer.username} - Plan {self.plan}"
+        return "Payment Info for {} - Plan {}".format(self.customer.username, self.plan)
 
 
 class Payment_History(PaymentBase):
@@ -163,7 +163,7 @@ class Payment_History(PaymentBase):
     pricing_plan = models.IntegerField(null=True)
 
     def __str__(self):
-        return f"Payment History for {self.customer.username} - Plan {self.plan}"
+        return "Payment History for {} - Plan {}".format(self.customer.username, self.plan)
 
 
 class DeletedPaymentHistory(models.Model):
@@ -185,7 +185,7 @@ class DeletedPaymentHistory(models.Model):
     client_signature = models.CharField(max_length=1000)
 
     def __str__(self):
-        return f"Deleted Payment for {self.customer.username} - Plan {self.plan}"
+        return "Deleted Payment for {} - Plan {}".format(self.customer.username, self.plan)
 
 
 class Default_Payment_Fees(models.Model):
@@ -196,7 +196,7 @@ class Default_Payment_Fees(models.Model):
     down_payment = models.IntegerField(default=500)
 
     def __str__(self):
-        return f"Plan {self.plan} - Fees: {self.payment_fees}"
+        return "Plan {} - Fees: {}".format(self.plan, self.payment_fees)
 
 
 class PayslipConfig(models.Model):
@@ -239,7 +239,7 @@ class PayslipConfig(models.Model):
     health = models.DecimalField(max_digits=10, decimal_places=2, default=500.00)
 
     def __str__(self):
-        return f"Payslip Config for {self.user.username if self.user else 'N/A'}"
+        return "Payslip Config for {}".format(self.user.username if self.user else 'N/A')
 
 
 class Inflow(models.Model):
@@ -279,7 +279,7 @@ class Inflow(models.Model):
         verbose_name_plural = "Cash Inflows"
     
     def __str__(self):
-        return f"{self.amount} {self.currency} - {self.get_inflow_type_display()} ({self.user.username})"
+        return "{} {} - {} ({})".format(self.amount, self.currency, self.get_inflow_type_display(), self.user.username)
 
 
 class DC48_Inflow(models.Model):
@@ -300,7 +300,7 @@ class DC48_Inflow(models.Model):
         verbose_name_plural = "DC48 Inflows"
     
     def __str__(self):
-        return f"DC48: {self.amount} {self.currency} - {self.user.username}"
+        return "DC48: {} {} - {}".format(self.amount, self.currency, self.user.username)
 
 
 class Transaction(models.Model):
@@ -353,7 +353,7 @@ class Transaction(models.Model):
         verbose_name_plural = "Transactions"
     
     def __str__(self):
-        return f"{self.amount} {self.currency} - {self.get_transaction_type_display()} ({self.user.username})"
+        return "{} {} - {} ({})".format(self.amount, self.currency, self.get_transaction_type_display(), self.user.username)
 
 
 class CodaBudget(TimeStampedModel):
@@ -387,7 +387,7 @@ class CodaBudget(TimeStampedModel):
         verbose_name_plural = "Coda Budgets"
     
     def __str__(self):
-        return f"{self.name} - {self.total_amount} {self.currency}"
+        return "{} - {} {}".format(self.name, self.total_amount, self.currency)
 
 
 class Field_Expense(models.Model):
@@ -409,7 +409,7 @@ class Field_Expense(models.Model):
         verbose_name_plural = "Field Expenses"
     
     def __str__(self):
-        return f"Field Expense: {self.amount} {self.currency} - {self.user.username}"
+        return "Field Expense: {} {} - {}".format(self.amount, self.currency, self.user.username)
 
 
 class BalanceSheetCategory(models.Model):
@@ -468,7 +468,7 @@ class WebSubCategory(models.Model):
         verbose_name_plural = "Web Subcategories"
     
     def __str__(self):
-        return f"{self.category.name} - {self.name}"
+        return "{} - {}".format(self.category.name, self.name)
 
 
 class web_budget(TimeStampedModel):
@@ -492,7 +492,7 @@ class web_budget(TimeStampedModel):
         verbose_name_plural = "Web Budgets"
     
     def __str__(self):
-        return f"{self.name} - {self.total_amount} {self.currency}"
+        return "{} - {} {}".format(self.name, self.total_amount, self.currency)
 
 
 class Supplier(models.Model):
@@ -531,7 +531,7 @@ class Food(models.Model):
         verbose_name_plural = "Food Items"
     
     def __str__(self):
-        return f"{self.name} - {self.unit_price} {self.currency}"
+        return "{} - {} {}".format(self.name, self.unit_price, self.currency)
 
 
 class FoodHistory(models.Model):
@@ -551,7 +551,7 @@ class FoodHistory(models.Model):
         verbose_name_plural = "Food Purchase History"
     
     def __str__(self):
-        return f"{self.food.name} - {self.quantity} units - {self.total_amount}"
+        return "{} - {} units - {}".format(self.food.name, self.quantity, self.total_amount)
     
     def save(self, *args, **kwargs):
         self.total_amount = self.quantity * self.unit_price

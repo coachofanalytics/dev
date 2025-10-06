@@ -557,7 +557,7 @@ class ClientAvailability(models.Model):
     )
 
     def __str__(self):
-        return f"{self.client.username} - {self.get_day_display()} {self.start_time} to {self.end_time}"
+        return "{} - {} {} to {}".format(self.client.username, self.get_day_display(), self.start_time, self.end_time)
 
     def clean(self):
         """Validate ClientAvailability model data"""
