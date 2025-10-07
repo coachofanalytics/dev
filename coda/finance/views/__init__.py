@@ -115,14 +115,16 @@ foodlist = legacy_views.foodlist
 CodaBudgetUpdateView = legacy_views.CodaBudgetUpdateView
 BudgetSummaryUpdateView = legacy_views.BudgetSummaryUpdateView
 
-# Import other view modules
-from .. import (
-    payment_views, views_automation, views_enhanced_budget,
-    views_finance_dashboard, views_legacy_dashboard, views_unified_department,
-    views_projections, views_estimates, views_approvals, views_detailed_budget,
-    views_enhanced_approvals, views_salary_dashboard, views_realtime_compliance,
-    views_admin_controls, views_unified_budget, views_forms
+# Import other view modules from organized structure
+from .._deprecated.legacy_views import payment_views
+from .budget import (
+    views_automation, views_enhanced_budget, views_projections, views_estimates,
+    views_approvals, views_detailed_budget, views_enhanced_approvals,
+    views_salary_dashboard, views_realtime_compliance, views_admin_controls,
+    views_unified_budget, views_forms
 )
+from .core import views_finance_dashboard
+from .legacy import views_legacy_dashboard, views_unified_department
 
 __all__ = [
     # Organized views
