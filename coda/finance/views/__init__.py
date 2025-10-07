@@ -14,6 +14,9 @@ from .budget.editing import (
 from .budget.drilldown import (
     budget_category_detail, budget_comparison_view, budget_item_edit
 )
+from .budget import drilldown as views_budget_drilldown
+from .budget import editing as views_budget_editing
+
 from .loan.budget_integration import (
     loan_eligibility_check, loan_application_with_budget,
     loan_budget_dashboard, budget_loan_impact_analysis
