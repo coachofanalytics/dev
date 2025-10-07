@@ -112,8 +112,12 @@ BudgetUpdateView = legacy_views.BudgetUpdateView
 LoanUpdateView = legacy_views.LoanUpdateView
 FoodListView = legacy_views.FoodListView
 foodlist = legacy_views.foodlist
+determine_rejection_reason = legacy_views.determine_rejection_reason
 CodaBudgetUpdateView = legacy_views.CodaBudgetUpdateView
 BudgetSummaryUpdateView = legacy_views.BudgetSummaryUpdateView
+budget_projection = legacy_views.budget_projection
+automated_budget_estimation = legacy_views.automated_budget_estimation
+budget_consolidation_dashboard = legacy_views.budget_consolidation_dashboard
 
 # Import other view modules from organized structure
 # payment_views is imported in urls.py from _deprecated.legacy_views
@@ -144,7 +148,7 @@ __all__ = [
     'WebBudgetUpdateView', 'investment_report', 'transact', 'inflow', 'cashflows',
     
     # View modules
-    'payment_views', 'views_automation', 'views_enhanced_budget',
+    'views_automation', 'views_enhanced_budget',
     'views_finance_dashboard', 'views_legacy_dashboard', 'views_unified_department',
     'views_projections', 'views_estimates', 'views_approvals', 'views_detailed_budget',
     'views_enhanced_approvals', 'views_salary_dashboard', 'views_realtime_compliance',

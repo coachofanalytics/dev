@@ -16,7 +16,7 @@ import json
 from main.models import Company
 from accounts.models import Department
 from finance.models import BudgetCategory, BudgetEstimateProjection
-from .models_detailed_budget import BudgetItemDetail, BudgetEstimateItem
+from finance.models import BudgetItemDetail, BudgetEstimateItem
 from finance.services.data_quality_service import DataQualityService
 from finance.services.ai_budget_suggestion_service import AIBudgetSuggestionService
 from finance.services.smart_data_correction_service import SmartDataCorrectionService

@@ -37,8 +37,8 @@ from finance.models import (
 from finance.services.unified_budget_estimation_service import UnifiedBudgetEstimationService
 from finance.services.budget.consolidation import BudgetConsolidationService
 from finance.services.data_quality_service import DataQualityService
-from .utils.calculation_utils import CalculationUtils
-from .utils.filter_utils import FilterUtils
+from finance.utils.calculation_utils import CalculationUtils
+from finance.utils.filter_utils import FilterUtils
 
 User = get_user_model()
 logger = logging.getLogger(__name__)

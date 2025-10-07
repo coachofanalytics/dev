@@ -17,6 +17,13 @@ from .loan import *
 from .payment import *
 from .notifications import *
 
+# Import extra models
+try:
+    from .extra.models_detailed_budget import BudgetItemDetail, BudgetEstimateItem
+except ImportError:
+    BudgetItemDetail = None
+    BudgetEstimateItem = None
+
 __all__ = [
     # Core models
     'DeletedPaymentHistory',
@@ -41,6 +48,8 @@ __all__ = [
     'BudgetEstimationTemplate',
     'BudgetEstimateProjection',
     'MultiYearBudgetPlan',
+    'BudgetItemDetail',
+    'BudgetEstimateItem',
     
     # Loan models
     'LoanProduct',
