@@ -811,7 +811,7 @@ class DisbursementRequest(TimeStampedModel, StatusMixin):
     )
     
     class Meta:
-        ordering = ['-created']
+        ordering = ['-created_at']
         indexes = [
             models.Index(fields=['status']),
             models.Index(fields=['budget_request']),
