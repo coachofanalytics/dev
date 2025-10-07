@@ -228,7 +228,6 @@ def get_user_notifications(user):
 
 
 @login_required
-@login_required
 def unified_dashboard(request):
     """Main unified dashboard view"""
     try:
