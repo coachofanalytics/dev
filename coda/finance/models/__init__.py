@@ -10,15 +10,12 @@ Organized models for the finance app:
 - notifications: Notification models (FinanceNotification, BudgetAlert, etc.)
 """
 
-# Import all models from organized structure
+# Import all models from organized structure (direct imports from .py files)
 from .core import *
 from .budget import *
 from .loan import *
 from .payment import *
 from .notifications import *
-
-# Import model modules
-from . import core, budget, loan, payment, notifications
 
 __all__ = [
     # Core models
