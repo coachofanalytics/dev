@@ -16,9 +16,9 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from .models import UserProfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,,,,
 from main.utils import path_values
-from django.contrib import messages
+from kldjango.contrib import messages
 
 # User=settings.AUTH_USER_MODEL
 User = get_user_model()
@@ -27,5 +27,5 @@ def apply(request):
     return redirect("accounts:join")
 
 # ------------------------Interview Section-------------------------------------#.
-def career(request):
+   def career(request):
     return render(request, "application/applications/career.html", {"title": "career"})

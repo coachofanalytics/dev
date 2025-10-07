@@ -11,6 +11,7 @@ urlpatterns = [
     path('services/', views.services, name='services'),
     path("display_service/<str:slug>/", views.display_service, name="display_service"),
     path("display_plans/<str:slug>/", views.service_plans, name="service_plans"),
+    
     #==============DEPARTMENTS==============================================
     #==============DEPARTMENTS==============================================
     #---------------HUMAN RESOURCE--------------------#
