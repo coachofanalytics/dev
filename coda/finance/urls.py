@@ -1,23 +1,23 @@
 from django.urls import path
 from . import views
 from .views import legacy_views
-# Import new unified payment views
+# Import new unified payment views (TODO: move to organized structure)
 from . import payment_views
-
-# Import automation dashboard views
-from . import views_automation
-
-# Import enhanced budget views
-from . import views_enhanced_budget, views_finance_dashboard, views_legacy_dashboard, views_unified_department
-from . import views_projections, views_estimates, views_approvals, views_detailed_budget, views_enhanced_approvals, views_salary_dashboard, views_realtime_compliance, views_admin_controls
-
-# Import unified budget views (Phase 3)
-from . import views_unified_budget
 
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
 from .views.budget import editing as views_budget_editing
 from .views.budget import dashboard as views_budget_dashboard
+from .views.budget import views_unified_budget, views_enhanced_budget, views_projections
+from .views.budget import views_estimates, views_approvals, views_detailed_budget
+from .views.budget import views_forms, views_enhanced_approvals, views_salary_dashboard
+from .views.budget import views_automation, views_admin_controls, views_realtime_compliance
+
+# Import organized core views  
+from .views.core import views_finance_dashboard
+
+# Import organized legacy views (for backward compatibility)
+from .views.legacy import views_legacy_dashboard, views_unified_department
 
 # Import organized loan views
 from .views.loan import budget_integration as views_loan_budget_integration
@@ -25,17 +25,14 @@ from .views.loan import budget_integration as views_loan_budget_integration
 # Import organized transaction views
 from .views.transaction import smart_entry as views_smart_transaction
 
-# Import user-friendly form views
-from . import views_forms
-
 # Import smart transaction views (Phase 1 Data Cleanup) - now using organized views
 # from . import views_smart_transaction  # Legacy import removed
 
 # Import cascading form API
-from . import api_cascading
+from .views.api import api_cascading
 
 # Import auto-prediction API
-from . import api_auto_predict
+from .views.api import api_auto_predict
 
 # Import budget editing views (Phase 2)
 # views_budget_editing now imported above

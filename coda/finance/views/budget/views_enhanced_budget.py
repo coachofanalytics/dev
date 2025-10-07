@@ -27,10 +27,10 @@ import json
 from main.models import Company
 from accounts.models import Department
 from finance.models import Budget, CodaBudget, BudgetCategory, BudgetSubCategory
-from finance.services.budget.estimation import BudgetEstimationService
+from finance.services.budget.estimation import EnhancedBudgetEstimationService
 from finance.services.budget.consolidation import BudgetConsolidationService
-from finance.utils.calculation_utils import CalculationUtils
-from finance.utils.filter_utils import FilterUtils
+from .utils.calculation_utils import CalculationUtils
+from .utils.filter_utils import FilterUtils
 
 User = get_user_model()
 
