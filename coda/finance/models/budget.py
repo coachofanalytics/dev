@@ -894,14 +894,14 @@ class AutomationAuditLog(TimeStampedModel):
     )
     
     class Meta:
-        ordering = ['-created']
+        ordering = ['-created_at']
         indexes = [
             models.Index(fields=['action']),
             models.Index(fields=['user']),
-            models.Index(fields=['created']),
+            models.Index(fields=['created_at']),
         ]
         verbose_name = "Automation Audit Log"
         verbose_name_plural = "Automation Audit Logs"
     
     def __str__(self):
-        return "{} - {} - {}".format(self.get_action_display(), self.user.username, self.created.strftime('%Y-%m-%d %H:%M'))
+        return "{} - {} - {}".format(self.get_action_display(), self.user.username, self.created_at.strftime('%Y-%m-%d %H:%M'))
