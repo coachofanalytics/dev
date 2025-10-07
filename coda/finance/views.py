@@ -3189,7 +3189,7 @@ class userLoanListView(ListView):
 class FoodCreateView(LoginRequiredMixin, CreateView):
     model = Food
     success_url = "/finance/food"
-    fields = "__all__"
+    fields = ['name', 'description', 'unit_price', 'currency', 'supplier', 'is_active']
 
     def form_valid(self, form):
         if self.request.user:
@@ -3230,7 +3230,7 @@ class SupplierUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class FoodUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Food
     success_url = "/finance/food"
-    fields = "__all__"
+    fields = ['name', 'description', 'unit_price', 'currency', 'supplier', 'is_active']
 
     def form_valid(self, form):
         # form.instance.author=self.request.user
