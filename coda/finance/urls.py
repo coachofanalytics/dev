@@ -76,7 +76,7 @@ urlpatterns = [
     path('api/predict-all/', api_auto_predict.api_predict_all_fields, name='api-predict-all'),
     
     # path('transaction/<str:transaction_type>', views.outflows, name='transaction-list'),
-    path('transaction/<int:pk>/', views.TransanctionDetailView.as_view(), name='transaction-detail'),
+    path('transaction/<int:pk>/', views.TransactionDetailView.as_view(), name='transaction-detail'),
     path('transaction/<int:pk>/update/', views.TransactionUpdateView.as_view(template_name="finance/payments/transaction_form.html"), name='transaction-update'),
     path('transaction/<int:pk>/delete/', views.TransactionUpdateView.as_view(template_name="finance/payments/transaction_confirm_delete.html"), name='transaction-delete'),
      #-----------CASHINFLOW---------------------------------------
