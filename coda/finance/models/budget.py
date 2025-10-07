@@ -58,7 +58,7 @@ class BudgetSubCategory(models.Model):
         ordering = ['category', 'name']
 
     def __str__(self):
-        return f"{self.name}"
+        return "{}".format(self.name)
 
 
 class BudgetItemLibrary(models.Model):
@@ -118,7 +118,7 @@ class BudgetItemLibrary(models.Model):
         unique_together = ['category', 'subcategory', 'item_name']
     
     def __str__(self):
-        return f"{self.category.name} → {self.subcategory.name} → {self.item_name}"
+        return "{} → {} → {}".format(self.category.name, self.subcategory.name, self.item_name)
     
     def increment_usage(self):
         """Increment usage count when item is selected"""
@@ -295,7 +295,7 @@ class Budget(models.Model):
         ordering = ["-start_date"]
 
     def __str__(self):
-        return self.item_name or f"Budget {self.id}"
+        return self.item_name or "Budget {}".format(self.id)
     
     def get_absolute_url(self):
         from django.urls import reverse
@@ -421,7 +421,7 @@ class BudgetEstimateProjection(models.Model):
         verbose_name_plural = "Budget Estimate Projections"
     
     def __str__(self):
-        return f"{self.budget.item_name} - {self.projection_date} - {self.projected_amount}"
+        return "{} - {} - {}".format(self.budget.item_name, self.projection_date, self.projected_amount)
 
 
 class MultiYearBudgetPlan(models.Model):
@@ -443,7 +443,7 @@ class MultiYearBudgetPlan(models.Model):
         verbose_name_plural = "Multi-Year Budget Plans"
     
     def __str__(self):
-        return f"{self.name} ({self.start_year}-{self.end_year})"
+        return "{} ({}-{})".format(self.name, self.start_year, self.end_year)
 
 
 class BudgetRequest(TimeStampedModel, StatusMixin):
@@ -588,11 +588,11 @@ class BudgetRequest(TimeStampedModel, StatusMixin):
         verbose_name_plural = "Budget Requests"
     
     def __str__(self):
-        return f"Budget Request #{self.id} - {self.requester.username} - ${self.amount}"
+        return "Budget Request #{} - {} - ${}".format(self.id, self.requester.username, self.amount)
     
     def get_approval_chain_display(self):
         """Get human-readable approval chain"""
-        return [f"{approver['role']}: {approver['user']}" for approver in self.approval_chain]
+        return ["{}: {}".format(approver['role'], approver['user']) for approver in self.approval_chain]
     
     def is_overdue(self):
         """Check if request is overdue"""
@@ -687,7 +687,7 @@ class ApprovalPolicy(TimeStampedModel):
         verbose_name_plural = "Approval Policies"
     
     def __str__(self):
-        return f"{self.name} (${self.min_amount} - ${self.max_amount or '∞'})"
+        return "{} (${} - ${})".format(self.name, self.min_amount, self.max_amount or '∞')
     
     def is_applicable(self, request):
         """Check if this policy applies to a request"""
@@ -821,7 +821,7 @@ class DisbursementRequest(TimeStampedModel, StatusMixin):
         verbose_name_plural = "Disbursement Requests"
     
     def __str__(self):
-        return f"Disbursement #{self.id} - {self.budget_request.requester.username} - ${self.requested_amount}"
+        return "Disbursement #{} - {} - ${}".format(self.id, self.budget_request.requester.username, self.requested_amount)
     
     def approve(self, approved_by_user):
         """Approve the disbursement request"""
@@ -904,4 +904,4 @@ class AutomationAuditLog(TimeStampedModel):
         verbose_name_plural = "Automation Audit Logs"
     
     def __str__(self):
-        return f"{self.get_action_display()} - {self.user.username} - {self.created.strftime('%Y-%m-%d %H:%M')}"
+        return "{} - {} - {}".format(self.get_action_display(), self.user.username, self.created.strftime('%Y-%m-%d %H:%M'))

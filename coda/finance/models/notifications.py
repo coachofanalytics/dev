@@ -65,7 +65,7 @@ class FinanceNotification(models.Model):
         verbose_name_plural = 'Finance Notifications'
     
     def __str__(self):
-        return f"{self.title} - {self.user.username}"
+        return "{} - {}".format(self.title, self.user.username)
     
     def mark_as_read(self):
         """Mark notification as read"""
@@ -133,7 +133,7 @@ class BudgetAlert(models.Model):
         verbose_name_plural = 'Budget Alerts'
     
     def __str__(self):
-        return f"{self.get_alert_type_display()} - {self.budget.item_name}"
+        return "{} - {}".format(self.get_alert_type_display(), self.budget.item_name)
     
     def acknowledge(self, user):
         """Acknowledge the alert"""
@@ -202,7 +202,7 @@ class LoanNotification(models.Model):
         verbose_name_plural = 'Loan Notifications'
     
     def __str__(self):
-        return f"{self.get_notification_type_display()} - {self.loan_application.application_number}"
+        return "{} - {}".format(self.get_notification_type_display(), self.loan_application.application_number)
     
     def mark_as_read(self):
         """Mark notification as read"""
@@ -272,7 +272,7 @@ class DepartmentNotification(models.Model):
         verbose_name_plural = 'Department Notifications'
     
     def __str__(self):
-        return f"{self.department}: {self.title}"
+        return "{}: {}".format(self.department, self.title)
     
     @property
     def is_expired(self):
@@ -316,7 +316,7 @@ class DepartmentAnnouncement(models.Model):
         verbose_name_plural = 'Department Announcements'
     
     def __str__(self):
-        return f"{self.department}: {self.title}"
+        return "{}: {}".format(self.department, self.title)
     
     @property
     def is_expired(self):
@@ -372,7 +372,7 @@ class UserDashboardPreferences(models.Model):
         verbose_name_plural = 'User Dashboard Preferences'
     
     def __str__(self):
-        return f"Preferences for {self.user.username}"
+        return "Preferences for {}".format(self.user.username)
     
     def increment_access(self):
         """Increment access count"""

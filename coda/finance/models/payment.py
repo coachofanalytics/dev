@@ -54,7 +54,7 @@ class Payment(models.Model):
         ordering = ['-payment_date']
     
     def __str__(self):
-        return f"Payment {self.id} - {self.amount} for Loan {self.loan.id}"
+        return "Payment {} - {} for Loan {}".format(self.id, self.amount, self.loan.id)
     
     def clean(self):
         """Validate payment data"""
@@ -162,7 +162,7 @@ class PaymentTransaction(models.Model):
         verbose_name_plural = 'Payment Transactions'
     
     def __str__(self):
-        return f"{self.transaction_id} - {self.amount} {self.currency} - {self.get_status_display()}"
+        return "{} - {} {} - {}".format(self.transaction_id, self.amount, self.currency, self.get_status_display())
     
     def mark_as_processing(self):
         """Mark transaction as processing"""
@@ -226,7 +226,7 @@ class PaymentGateway(models.Model):
         verbose_name_plural = 'Payment Gateways'
     
     def __str__(self):
-        return f"{self.name} ({'Test' if self.test_mode else 'Live'})"
+        return "{} ({})".format(self.name, 'Test' if self.test_mode else 'Live')
     
     def is_currency_supported(self, currency):
         """Check if currency is supported"""

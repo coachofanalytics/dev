@@ -64,7 +64,7 @@ class LoanProduct(models.Model):
         verbose_name_plural = 'Loan Products'
     
     def __str__(self):
-        return f"{self.name} ({self.interest_rate}% for {self.min_term_months}-{self.max_term_months} months)"
+        return "{} ({}% for {}-{} months)".format(self.name, self.interest_rate, self.min_term_months, self.max_term_months)
     
     def calculate_monthly_payment(self, principal, term_months):
         """Calculate monthly payment using simple interest formula"""
@@ -212,7 +212,7 @@ class LoanApplication(models.Model):
         if not self.application_number:
             today = timezone.now().strftime('%Y%m%d')
             last_app = LoanApplication.objects.filter(
-                application_number__startswith=f'LA-{today}'
+                application_number__startswith='LA-{}'.format(today)
             ).order_by('-application_number').first()
             
             if last_app:
@@ -221,7 +221,7 @@ class LoanApplication(models.Model):
             else:
                 new_num = 1
             
-            self.application_number = f'LA-{today}-{new_num:04d}'
+            self.application_number = 'LA-{}-{:04d}'.format(today, new_num)
         
         # Calculate financial terms
         if not self.total_payable and self.loan_product:
@@ -234,7 +234,7 @@ class LoanApplication(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.application_number} - {self.borrower.username} - {self.amount_requested}"
+        return "{} - {} - {}".format(self.application_number, self.borrower.username, self.amount_requested)
     
     @property
     def term_months(self):
@@ -333,11 +333,11 @@ class LoanPayment(models.Model):
     def save(self, *args, **kwargs):
         """Auto-generate reference number"""
         if not self.reference_number:
-            self.reference_number = f"PAY-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+            self.reference_number = "PAY-{}".format(timezone.now().strftime('%Y%m%d%H%M%S'))
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.reference_number} - {self.loan_application.application_number} - {self.amount}"
+        return "{} - {} - {}".format(self.reference_number, self.loan_application.application_number, self.amount)
 
 
 class LoanCollateral(models.Model):
@@ -453,7 +453,7 @@ class LoanCollateral(models.Model):
         verbose_name_plural = 'Loan Collaterals'
     
     def __str__(self):
-        return f"{self.get_collateral_type_display()} - {self.loan_application.borrower.username} - ${self.estimated_value}"
+        return "{} - {} - ${}".format(self.get_collateral_type_display(), self.loan_application.borrower.username, self.estimated_value)
     
     def enable_gps_tracking(self, device_id, install_date=None):
         """Enable GPS tracking for vehicle collateral"""
@@ -589,7 +589,7 @@ class LoanRollover(models.Model):
         unique_together = ['original_loan', 'rollover_number']
     
     def __str__(self):
-        return f"{self.original_loan.id} - Rollover #{self.rollover_number}"
+        return "{} - Rollover #{}".format(self.original_loan.id, self.rollover_number)
     
     @property
     def is_max_rollovers_reached(self):
@@ -693,7 +693,7 @@ class LoanConfiguration(models.Model):
         ordering = ['name']
     
     def __str__(self):
-        return f"{self.name} ({self.get_loan_type_display()})"
+        return "{} ({})".format(self.name, self.get_loan_type_display())
     
     def get_limits_for_user(self, user, user_profile=None):
         """Get loan limits for a specific user with all modifiers applied"""
@@ -845,7 +845,7 @@ class LoanPerformance(models.Model):
         db_table = 'finance_loanperformance'
     
     def __str__(self):
-        return f"{self.user.username} - Loan {self.loan_application.id} - {self.payment_timing}"
+        return "{} - Loan {} - {}".format(self.user.username, self.loan_application.id, self.payment_timing)
     
     # SIMPLE COMPUTED PROPERTIES ONLY (no business logic)
     @property
