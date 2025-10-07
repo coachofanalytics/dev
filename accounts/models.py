@@ -151,7 +151,16 @@ class TeamMember(models.Model):  # 🔄 Renamed to singular (best practice)
 
 
 
-        
+
+class CredentialCategory(models.Model):
+    description = models.TextField(max_length=100)
+    verbose_name = models.CharField(max_length=255, null=True, blank=True)
+    entry_date = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(null=True, blank=True)
+
+    def __str__(self):
+        return self.verbose_name or f"Credential Category {self.id}"
 
 
 
