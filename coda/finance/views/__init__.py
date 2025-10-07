@@ -116,7 +116,7 @@ CodaBudgetUpdateView = legacy_views.CodaBudgetUpdateView
 BudgetSummaryUpdateView = legacy_views.BudgetSummaryUpdateView
 
 # Import other view modules from organized structure
-from .._deprecated.legacy_views import payment_views
+# payment_views is imported in urls.py from _deprecated.legacy_views
 from .budget import (
     views_automation, views_enhanced_budget, views_projections, views_estimates,
     views_approvals, views_detailed_budget, views_enhanced_approvals,
