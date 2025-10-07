@@ -8,9 +8,10 @@ from ._deprecated.legacy_views import payment_views
 from .views.budget import drilldown as views_budget_drilldown
 from .views.budget import editing as views_budget_editing
 from .views.budget import dashboard as views_budget_dashboard
+from .views.budget import approvals  # CONSOLIDATED: approval.py + views_approvals.py + views_enhanced_approvals.py
 from .views.budget import views_unified_budget, views_enhanced_budget, views_projections
-from .views.budget import views_estimates, views_approvals, views_detailed_budget
-from .views.budget import views_forms, views_enhanced_approvals, views_salary_dashboard
+from .views.budget import views_estimates, views_detailed_budget
+from .views.budget import views_forms, views_salary_dashboard
 from .views.budget import views_automation, views_admin_controls, views_realtime_compliance
 
 # Import organized core views  
@@ -279,19 +280,19 @@ urlpatterns = [
     path('estimates/', views_estimates.estimate_wizard, name='estimates-wizard'),
     
         # Budget Projection Approvals
-        path('approvals/projections/', views_approvals.budget_projection_approvals, name='budget-projection-approvals'),
-        path('approvals/projections/<int:projection_id>/', views_approvals.approve_budget_projection, name='approve-projection'),
-        path('approvals/projections/<int:projection_id>/detail/', views_approvals.budget_projection_detail, name='projection-detail'),
-        path('my-projections/', views_approvals.my_budget_projections, name='my-projections'),
+        path('approvals/projections/', approvals.budget_projection_approvals, name='budget-projection-approvals'),
+        path('approvals/projections/<int:projection_id>/', approvals.approve_budget_projection, name='approve-projection'),
+        path('approvals/projections/<int:projection_id>/detail/', approvals.budget_projection_detail, name='projection-detail'),
+        path('my-projections/', approvals.my_budget_projections, name='my-projections'),
         
         # Enhanced Budget Approvals with 33% Compliance
-        path('approvals/enhanced/', views_enhanced_approvals.enhanced_budget_projection_approvals, name='enhanced-budget-approvals'),
-        path('approvals/compliance/', views_enhanced_approvals.compliance_report_dashboard, name='compliance-dashboard'),
-        path('approvals/compliance/export/', views_enhanced_approvals.compliance_export, name='compliance-export'),
-        path('approvals/compliance/employee/<int:employee_id>/', views_enhanced_approvals.individual_compliance_detail, name='individual-compliance'),
-        path('approvals/compliance/department/<int:department_id>/', views_enhanced_approvals.department_compliance_detail, name='department-compliance'),
-        path('approvals/budget/<int:budget_id>/compliance/', views_enhanced_approvals.budget_compliance_integration, name='budget-compliance'),
-        path('api/send-compliance-notifications/', views_enhanced_approvals.send_compliance_notifications, name='send-compliance-notifications'),
+        path('approvals/enhanced/', approvals.enhanced_budget_projection_approvals, name='enhanced-budget-approvals'),
+        path('approvals/compliance/', approvals.compliance_report_dashboard, name='compliance-dashboard'),
+        path('approvals/compliance/export/', approvals.compliance_export, name='compliance-export'),
+        path('approvals/compliance/employee/<int:employee_id>/', approvals.individual_compliance_detail, name='individual-compliance'),
+        path('approvals/compliance/department/<int:department_id>/', approvals.department_compliance_detail, name='department-compliance'),
+        path('approvals/budget/<int:budget_id>/compliance/', approvals.budget_compliance_integration, name='budget-compliance'),
+        path('api/send-compliance-notifications/', approvals.send_compliance_notifications, name='send-compliance-notifications'),
         
         # Detailed Budget Breakdown
         path('detailed-breakdown/<int:projection_id>/', views_detailed_budget.detailed_budget_breakdown, name='detailed-budget-breakdown'),
