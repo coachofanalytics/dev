@@ -52,7 +52,7 @@ kombu==5.2.4
 lazy-object-proxy==1.4.3
 MarkupSafe==2.1.2
 MouseInfo==0.1.3
-numpy==2.1.1
+#numpy==2.1.1
 oauthlib==3.2.2
 packaging==23.0
 pandas==1.5.3
