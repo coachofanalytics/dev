@@ -28,7 +28,7 @@ from finance.models import (
     BudgetCategory, BudgetSubCategory, BudgetEstimationTemplate, 
     MultiYearBudgetPlan, BudgetRequest, DisbursementRequest
 )
-from finance.services.budget.estimation import EnhancedBudgetEstimationService
+from finance.services.budget.estimation import BudgetEstimationService as EnhancedBudgetEstimationService
 from finance.services.budget.consolidation import BudgetConsolidationService
 from .utils.calculation_utils import CalculationUtils
 from .utils.filter_utils import FilterUtils
