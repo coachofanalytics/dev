@@ -1,8 +1,8 @@
 from django.urls import path
 from . import views
 from .views import legacy_views
-# Import new unified payment views (TODO: move to organized structure)
-from . import payment_views
+# Import new unified payment views
+from ._deprecated.legacy_views import payment_views
 
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
