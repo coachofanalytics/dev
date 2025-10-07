@@ -51,40 +51,24 @@ class SmartTransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
         fields = [
-            'sender', 'vendor_supplier', 'receiver', 'phone',
-            'department', 'category', 'subcategory', 'type',
-            'transaction_date', 'qty', 'amount', 'currency',
-            'transaction_cost', 'description', 'payment_method',
-            'receipt_link'
+            'amount', 'currency', 'transaction_type', 'status',
+            'description', 'category', 'subcategory', 'vendor',
+            'transaction_date', 'reference_number', 'notes'
         ]
         
         widgets = {
-            'receiver': forms.TextInput(attrs={
+            'vendor': forms.TextInput(attrs={
                 'class': 'form-control',
-                'id': 'id_receiver',
-                'placeholder': 'Enter receiver name...',
-                'autocomplete': 'off',
-                'data-provide': 'typeahead',  # Bootstrap typeahead
+                'id': 'id_vendor',
+                'placeholder': 'Enter vendor name...',
             }),
-            'category': forms.Select(attrs={
+            'category': forms.TextInput(attrs={
                 'class': 'form-control',
                 'id': 'id_category',
-                'required': 'required',  # Make it visually required
             }),
-            'department': forms.Select(attrs={
-                'class': 'form-control',
-                'id': 'id_department',
-                'required': 'required',
-            }),
-            'subcategory': forms.Select(attrs={
+            'subcategory': forms.TextInput(attrs={
                 'class': 'form-control',
                 'id': 'id_subcategory',
-            }),
-            'type': forms.TextInput(attrs={
-                'class': 'form-control',
-                'id': 'id_type',
-                'placeholder': 'Enter item/type...',
-                'list': 'type_suggestions'
             }),
             'amount': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -97,99 +81,55 @@ class SmartTransactionForm(forms.ModelForm):
                 'class': 'form-control',
                 'id': 'id_description',
                 'rows': 3,
-                'placeholder': 'Provide detailed description (minimum 10 characters)...',
-                'required': 'required',
+                'placeholder': 'Provide detailed description...',
             }),
-            'currency': forms.Select(attrs={
+            'currency': forms.TextInput(attrs={
                 'class': 'form-control',
                 'id': 'id_currency',
+                'value': 'KES',
             }),
-            'qty': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'transaction_type': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_transaction_type',
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_status',
+            }),
             'transaction_date': forms.DateTimeInput(attrs={
                 'class': 'form-control',
                 'type': 'datetime-local'
             }),
-            'payment_method': forms.Select(attrs={'class': 'form-control'}),
-            'receipt_link': forms.URLInput(attrs={'class': 'form-control'}),
+            'reference_number': forms.TextInput(attrs={
+                'class': 'form-control',
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+            }),
         }
     
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # Make category required
-        self.fields['category'].required = True
-        self.fields['category'].empty_label = "-- Select Category (Required) --"
-        
-        # Make department required
-        self.fields['department'].required = True
-        
         # Make description required with minimum length
         self.fields['description'].required = True
         
-        # Set currency default and enable
-        self.fields['currency'].initial = 'USD'
-        self.fields['currency'].required = False
-        self.fields['currency'].disabled = False
+        # Set currency default
+        self.fields['currency'].initial = 'KES'
         
-        # Add help text based on learnings
-        self.fields['receiver'].help_text = (
-            "Enter recipient name. Start typing for suggestions. "
-            "Do NOT enter location names here (use Location field)."
-        )
-        
-        self.fields['category'].help_text = (
-            "Will auto-suggest based on receiver and amount. "
-            "This field is REQUIRED."
-        )
-        
-        self.fields['amount'].help_text = (
-            "Will show warning if amount is unusual for selected category."
-        )
-    
-    def clean_receiver(self):
-        """Validate receiver field"""
-        receiver = self.cleaned_data.get('receiver', '')
-        
-        if not receiver:
-            raise ValidationError("Receiver name is required")
-        
-        # Check for location keywords that shouldn't be in receiver
-        location_keywords = ['matunda', 'makutano', 'office', 'coda hq']
-        receiver_lower = receiver.lower()
-        
-        for keyword in location_keywords:
-            if keyword in receiver_lower:
-                raise ValidationError(
-                    "'{}' looks like a location. "
-                    "Please use the 'Location' field for office locations "
-                    "and enter the actual person's name in 'Receiver'.".format(receiver)
-                )
-        
-        # Standardize capitalization (Title Case)
-        receiver = receiver.title()
-        
-        return receiver
-    
-    def clean_category(self):
-        """Ensure category is selected"""
-        category = self.cleaned_data.get('category')
-        
-        if not category:
-            raise ValidationError(
-                "Category is required. This helps us track spending accurately."
-            )
-        
-        return category
+        # Add help text
+        self.fields['category'].help_text = "Select or enter transaction category"
+        self.fields['amount'].help_text = "Enter transaction amount"
     
     def clean_description(self):
         """Validate description has meaningful content"""
         description = self.cleaned_data.get('description', '')
         
-        if len(description.strip()) < 10:
+        if len(description.strip()) < 5:
             raise ValidationError(
-                "Description must be at least 10 characters. "
-                "Please provide detailed information about this transaction."
+                "Description must be at least 5 characters."
             )
         
         return description
@@ -199,35 +139,10 @@ class SmartTransactionForm(forms.ModelForm):
         cleaned_data = super().clean()
         
         amount = cleaned_data.get('amount')
-        category = cleaned_data.get('category')
-        department = cleaned_data.get('department')
         
         # Validate amount is positive
         if amount and amount <= 0:
             self.add_error('amount', "Amount must be greater than zero")
-        
-        # Check if amount is unusual for this category
-        if amount and category:
-            # Get average amount for this category
-            avg_amount = Transaction.objects.filter(
-                category=category
-            ).aggregate(avg=Avg('amount'))['avg']
-            
-            if avg_amount:
-                # If amount is more than 3x the average, add warning
-                if amount > avg_amount * 3:
-                    # This is a warning, not an error - allow but flag
-                    # In the template, we'll show this as a warning message
-                    self.add_warning = True
-                    self.warning_message = (
-                        "This amount (${:,.2f}) is unusually high for "
-                        "{}. Average is ${:,.2f}. "
-                        "Please verify this is correct.".format(amount, category.name, avg_amount)
-                    )
-        
-        # Flag large transactions (>$10,000) for review
-        if amount and amount > 10000:
-            cleaned_data['requires_approval'] = True
         
         return cleaned_data
     
