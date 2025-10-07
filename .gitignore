@@ -4,3 +4,9 @@ coda/finance/_deprecated/
 
 # Phase 0 Consolidation - Deprecated Components
 coda/management/deprecated/
+
+# Finance app deprecated/backup files (keep for now, will delete after testing)
+coda/finance/_deprecated/
+coda/finance/views/legacy/*_backup.py
+coda/finance/views/legacy/*_fixed.py
+coda/finance/models/extra/
