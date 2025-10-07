@@ -30,8 +30,8 @@ from finance.models import (
 )
 from finance.services.budget.estimation import BudgetEstimationService as EnhancedBudgetEstimationService
 from finance.services.budget.consolidation import BudgetConsolidationService
-from .utils.calculation_utils import CalculationUtils
-from .utils.filter_utils import FilterUtils
+from finance.utils.calculation_utils import CalculationUtils
+from finance.utils.filter_utils import FilterUtils
 
 User = get_user_model()
 
