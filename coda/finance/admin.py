@@ -32,12 +32,12 @@ class LoanProductAdmin(admin.ModelAdmin):
     ]
     
     list_filter = [
-        'product_type', 'status', 'requires_collateral', 'auto_approve'
+        'product_type', 'is_active'
     ]
     
     search_fields = ['name', 'description']
     
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = []  # No timestamp fields in this model
     
     fieldsets = (
         ('Basic Information', {
@@ -68,20 +68,20 @@ class LoanApplicationAdmin(admin.ModelAdmin):
     """Admin interface for loan applications"""
     
     list_display = [
-        'application_id', 'applicant', 'loan_product', 'requested_amount',
-        'status', 'priority', 'created_at'
+        'application_number', 'borrower', 'loan_product', 'amount_requested',
+        'status', 'created_at'
     ]
     
     list_filter = [
-        'status', 'priority', 'loan_product', 'created_at'
+        'status', 'loan_product', 'created_at'
     ]
     
     search_fields = [
-        'application_id', 'applicant__first_name', 'applicant__last_name',
+        'application_number', 'borrower__first_name', 'borrower__last_name',
         'purpose'
     ]
     
-    readonly_fields = ['application_id', 'created_at', 'updated_at', 'submitted_at']
+    readonly_fields = ['application_number', 'created_at', 'updated_at', 'submitted_at']
     
     fieldsets = (
         ('Application Details', {
@@ -117,20 +117,20 @@ class BudgetRequestAdmin(admin.ModelAdmin):
     """Admin interface for budget requests"""
     
     list_display = [
-        'title', 'category', 'requested_amount', 'status', 
-        'priority', 'requested_by', 'created_at'
+        'purpose', 'budget_category', 'amount', 'status', 
+        'priority', 'requester', 'created_at'
     ]
     
     list_filter = [
-        'status', 'priority', 'category', 'created_at'
+        'status', 'priority', 'budget_category', 'created_at'
     ]
     
     search_fields = [
-        'title', 'description', 'requested_by__first_name', 
-        'requested_by__last_name'
+        'purpose', 'requester__first_name', 
+        'requester__last_name'
     ]
     
-    readonly_fields = ['created_at', 'updated_at', 'submitted_at']
+    readonly_fields = ['created_at', 'updated_at', 'request_date']
     
     fieldsets = (
         ('Request Details', {
@@ -163,12 +163,12 @@ class ApprovalPolicyAdmin(admin.ModelAdmin):
     """Admin interface for approval policies"""
     
     list_display = [
-        'name', 'policy_type', 'approval_level', 'min_amount', 
-        'max_amount', 'is_active'
+        'name', 'min_amount', 'max_amount', 'auto_approve',
+        'requires_otp', 'is_active'
     ]
     
     list_filter = [
-        'policy_type', 'approval_level', 'is_active'
+        'is_active', 'auto_approve', 'requires_otp'
     ]
     
     search_fields = ['name', 'description']
@@ -250,17 +250,17 @@ class BudgetEstimateProjectionAdmin(admin.ModelAdmin):
     """Admin interface for budget estimate projections"""
     
     list_display = [
-        'projection_name', 'estimation_method', 'total_estimated_amount',
-        'estimation_confidence', 'status', 'created_at'
+        'budget', 'projection_method', 'projected_amount',
+        'confidence_score', 'projection_date', 'created_at'
     ]
     
     list_filter = [
-        'status', 'estimation_method', 'created_at'
+        'projection_method', 'projection_date', 'created_at'
     ]
     
-    search_fields = ['projection_name', 'description']
+    search_fields = ['notes']
     
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at']
     
     fieldsets = (
         ('Projection Details', {
@@ -284,12 +284,12 @@ class TransactionAdmin(admin.ModelAdmin):
     """Admin interface for transactions"""
     
     list_display = [
-        'receiver', 'amount', 'currency', 'category', 'type',
+        'vendor', 'amount', 'currency', 'category', 'transaction_type',
         'status', 'transaction_date', 'created_at'
     ]
     
     list_filter = [
-        'category', 'type', 'status', 'currency', 'transaction_date'
+        'category', 'transaction_type', 'status', 'currency', 'transaction_date'
     ]
     
     search_fields = [
@@ -323,20 +323,20 @@ class TransactionAdmin(admin.ModelAdmin):
 class BudgetCategoryAdmin(admin.ModelAdmin):
     """Admin interface for budget categories"""
     
-    list_display = ['name', 'description', 'created_at']
-    list_filter = ['created_at']
+    list_display = ['name', 'description', 'category_type']
+    list_filter = ['category_type']
     search_fields = ['name', 'description']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = []  # No timestamp fields in this model
 
 
 @admin.register(BudgetSubCategory)
 class BudgetSubCategoryAdmin(admin.ModelAdmin):
     """Admin interface for budget subcategories"""
     
-    list_display = ['name', 'category', 'description', 'created_at']
-    list_filter = ['category', 'created_at']
-    search_fields = ['name', 'description']
-    readonly_fields = ['created_at', 'updated_at']
+    list_display = ['name', 'category', 'sub_category_type']
+    list_filter = ['category', 'sub_category_type']
+    search_fields = ['name']
+    readonly_fields = []  # No timestamp fields in this model
 
 
 @admin.register(BudgetItemLibrary)
