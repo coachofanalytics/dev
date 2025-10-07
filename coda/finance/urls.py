@@ -189,14 +189,14 @@ urlpatterns = [
     # path("coda_budget_estimation/<str:app>/",views.coda_budget_estimation, name="coda_budget_estimation"),  # View not found - commented out
     # path("budget/<str:subtitle>/<str:duration>/", views.budget_projection, name="budget_projection"),
     path("budget_projection/<str:subtitle>/", views.budget_projection, name="budget_projection"),
-    path('delete_payment_history/', views.delete_bad_entry_in_payment_history, name="delete_bad_entry_in_payment_history"),
+    # path('delete_payment_history/', views.delete_bad_entry_in_payment_history, name="delete_bad_entry_in_payment_history"),  # View not found
     
     #=============================ANALYTICS DASHBOARD=====================================
-    path('analytics/', views.analytics_dashboard, name='analytics-dashboard'),
-    path('analytics/loan-performance/', views.loan_performance_analytics, name='loan-performance-analytics'),
-    path('analytics/kcc-optimization/', views.kcc_optimization_analytics, name='kcc-optimization-analytics'),
-    path('analytics/export/', views.analytics_export, name='analytics-export'),
-    path('analytics/api/', views.analytics_api, name='analytics-api'),
+    # path('analytics/', views.analytics_dashboard, name='analytics-dashboard'),  # View not found
+    # path('analytics/loan-performance/', views.loan_performance_analytics, name='loan-performance-analytics'),  # View not found
+    # path('analytics/kcc-optimization/', views.kcc_optimization_analytics, name='kcc-optimization-analytics'),  # View not found
+    # path('analytics/export/', views.analytics_export, name='analytics-export'),  # View not found
+    # path('analytics/api/', views.analytics_api, name='analytics-api'),  # View not found
     
     #=============================AUTOMATION DASHBOARD=====================================
     path('automation/', views_automation.automation_dashboard, name='automation-dashboard'),
