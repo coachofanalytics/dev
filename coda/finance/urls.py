@@ -151,7 +151,7 @@ urlpatterns = [
     path('get-guarantor-eligibility-scores/', views.get_guarantor_eligibility_scores, name='get-guarantor-eligibility-scores'),
     # path('newpay/', LoanCreateView.as_view(template_name='finance/payments/payment_form.html'), name='newpay'),
     # path('loanuser/', views.userLoanListView.as_view(), name='loanuser'),
-    path('loan/<int:pk>/update/', LoanUpdateView.as_view(template_name='finance/payments/payment_form.html'), name='loan-update'),
+    path('loan/<int:pk>/update/', views.LoanUpdateView.as_view(template_name='finance/payments/payment_form.html'), name='loan-update'),
     #Admin Loan Management
     path('admin/loan-applications/', views.admin_loan_applications, name='admin-loan-applications'),
     path('admin/loan-applications/<int:pk>/approve/', views.approve_loan_application, name='approve-loan-application'),
@@ -180,7 +180,7 @@ urlpatterns = [
     path("supplier/update/<int:pk>/",views.SupplierUpdateView.as_view(template_name='main/snippets_templates/generalform.html'),name="update-supplier"),
     path("food/<int:pk>/update",views.FoodUpdateView.as_view(template_name='main/snippets_templates/generalform.html'),name="update-food"),
     path("suppliers/",views.SupplierListView.as_view(),name="suppliers"),    
-    path("food/", FoodListView.as_view(), name="supplies"),
+    path("food/", views.FoodListView.as_view(), name="supplies"),
     path("foodhistory/",views.food_history_view,name="foodhistory"),
     path("foodhistoryupdate/<int:pk>/",views.food_history_update,name="foodhistoryupdate"),
     path('add_budget_item/', views.add_budget_item, name='add_budget_item'),
