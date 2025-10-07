@@ -113,7 +113,7 @@ urlpatterns = [
     path('social_accounts/login/', account_views.login_view, name='social_accounts_login'),
     path('accounts/login/', RedirectView.as_view(url='/social_accounts/login/', permanent=True)),
     path('social_accounts/social/signup/', account_views.login_view),
-    # path('social_accounts/', include('allauth.urls')),
+    path('accounts/', include('allauth.urls')),  # Uncommented for authentication
 
 ]
 
