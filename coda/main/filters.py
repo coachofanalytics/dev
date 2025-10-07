@@ -80,14 +80,16 @@ class RequirementFilter(django_filters.FilterSet):
         }
     
 class FoodFilter(django_filters.FilterSet):
-    office_location = django_filters.CharFilter(label='Location', lookup_expr='icontains')
-    supplier = django_filters.CharFilter(label='Supplier', lookup_expr='icontains')
-    item = django_filters.CharFilter(label='Item', lookup_expr='icontains')
-
+    name = django_filters.CharFilter(label='Food Item', lookup_expr='icontains')
+    
     class Meta:
         model=Food
         # fields='__all__'
-        fields ={'office_location','supplier','item','created_at'}
+        fields = {
+            'name': ['icontains'],
+            'supplier': ['exact'],
+            'is_active': ['exact'],
+        }
     
 # ==================================INVESTING MODELS==================================================
 
