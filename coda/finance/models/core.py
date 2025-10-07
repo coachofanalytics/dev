@@ -382,7 +382,7 @@ class CodaBudget(TimeStampedModel):
     updated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_budgets', null=True, blank=True)
     
     class Meta:
-        ordering = ['-created']
+        ordering = ['-created_at']
         verbose_name = "Coda Budget"
         verbose_name_plural = "Coda Budgets"
     
@@ -487,7 +487,7 @@ class web_budget(TimeStampedModel):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_web_budgets')
     
     class Meta:
-        ordering = ['-created']
+        ordering = ['-created_at']
         verbose_name = "Web Budget"
         verbose_name_plural = "Web Budgets"
     
