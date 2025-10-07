@@ -23,7 +23,10 @@ from finance.services.enhanced_budget_service import EnhancedBudgetService
 from finance.services.automation_service import ApprovalEngineService
 from finance.services.integrated_budget_service import IntegratedBudgetService
 from finance.utils.filter_utils import FilterUtils
-from management.services.employee_compliance_service import EmployeeComplianceService
+try:
+    from management.services.employee_compliance_service import EmployeeComplianceService
+except ImportError:
+    EmployeeComplianceService = None
 
 
 @login_required

@@ -16,7 +16,7 @@ from django.core.paginator import Paginator
 
 from finance.models import BudgetEstimateProjection, ApprovalPolicy
 from finance.services.automation_service import ApprovalEngineService
-from .utils.filter_utils import FilterUtils
+from finance.utils.filter_utils import FilterUtils
 
 
 @login_required
