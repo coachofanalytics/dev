@@ -8,7 +8,7 @@ from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberFo
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory
+from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory,Sprintplanning
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -461,6 +461,14 @@ def CredentialCategory_detail_view(request,pk):
         category = get_object_or_404(CredentialCategory, pk=pk)
         return render(request, "",{"category": category}
                   )
+from django.shortcuts import render
+from .models import Sprintplanning
+
+def Sprintplanning_list(request):
+    reports = Sprintplanning.objects.all()
+    return render(request, "accounts/sprintplanning_list.html", {"sprintplannings": reports})
+
+
 
 
 
