@@ -1,0 +1,23 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">Credential Category Details</h2>
+
+  <div class="card shadow-lg border-0 rounded-3">
+    <div class="card-body">
+      <p><strong>Description:</strong> {{ credential.description }}</p>
+      <p><strong>Verbose Name:</strong> {{ credential.verbose_name }}</p>
+      <p><strong>Entry Date:</strong> {{ credential.entry_date }}</p>
+      <p><strong>Is Active:</strong> {{ credential.is_active|yesno:"Yes,No" }}</p>
+      <p><strong>Is Featured:</strong> {{ credential.is_featured|yesno:"Yes,No" }}</p>
+    </div>
+  </div>
+
+  <div class="mt-4 text-center">
+    <a href="{% url 'accounts:credentialcategory_list' %}" class="btn btn-secondary">Back to List</a>
+    <a href="{% url 'accounts:credentialcategory_update' credential.pk %}" class="btn btn-primary">Edit</a>
+  </div>
+</div>
+
+{% endblock %}

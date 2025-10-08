@@ -458,3 +458,7 @@ def credentialcategory_delete(request, pk):
 
     return render(request, "accounts/registration/delete.html", {'credential': credential})
 
+
+def credentialcategory_detail(request, pk):
+    credential = get_object_or_404(CredentialCategory, pk=pk)
+    return render(request, "accounts/registration/detail.html", {"credential": credential})

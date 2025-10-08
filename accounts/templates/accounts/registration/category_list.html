@@ -1,41 +1,137 @@
 {% extends "main/base_templates/accounts_base.html" %}
-
 {% block content %}
-<div class="container mt-5">
 
-   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">Credential Categories</h2>
-            <a href="{% url 'accounts:credentialcategory_create' %}" class="btn btn-success">
-              <i class="bi bi-plus-circle"></i> Create New CredentialCategory
-            </a>
-          </div>
+<style>
+  body {
+    background-color: #f7f9fc;
+    font-family: 'Poppins', sans-serif;
+  }
+  .card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .card-header {
+    background: linear-gradient(90deg, #0066ff, #0099cc);
+    color: white;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 25px;
+  }
+  .btn-add {
+    background: linear-gradient(90deg, #ff512f, #f09819);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  }
+  .btn-add:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+  }
+  table {
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 15px;
+  }
+  th {
+    background-color: #eef1f5;
+    font-weight: 600;
+    color: #444;
+  }
+  tr:hover {
+    background-color: #f8f9fa;
+  }
+  .btn-custom {
+    border-radius: 25px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    transition: 0.3s ease;
+  }
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+  .table td, .table th {
+    vertical-align: middle;
+  }
+</style>
 
-  {% if CredentialCategory %}
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Description</th>
-        <th>Verbose Name</th>
-        <th>Entry Date</th>
-        <th>Is Active</th>
-        <th>Is Featured</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for credential in CredentialCategory %}
-      <tr>
-        <td>{{ credential.description }}</td>
-        <td>{{ credential.verbose_name }}</td>
-        <td>{{ credential.entry_date }}</td>
-        <td>{{ credential.is_active }}</td>
-        <td>{{ credential.is_featured }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-    
-  </table>
-  {% else %}
-  <div class="alert alert-info">No Credential Categories available.</div>
-  {% endif %}
+<div class="container mt-5 mb-5">
+  <div class="card">
+    <div class="card-header">
+      <span><i class="bi bi-award me-2"></i>Credential Categories</span>
+      <a href="{% url 'accounts:credentialcategory_create' %}" class="btn btn-add">
+        <i class="bi bi-plus-circle"></i> Add New
+      </a>
+    </div>
+
+    <div class="card-body p-4">
+      {% if CredentialCategory %}
+      <div class="table-responsive">
+        <table class="table align-middle table-hover">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Verbose Name</th>
+              <th>Entry Date</th>
+              <th>Active</th>
+              <th>Featured</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for credential in CredentialCategory %}
+            <tr>
+              <td>{{ credential.description }}</td>
+              <td>{{ credential.verbose_name }}</td>
+              <td>{{ credential.entry_date|date:"Y-m-d H:i" }}</td>
+              <td>
+                {% if credential.is_active %}
+                  <span class="badge bg-success px-3 py-2">Yes</span>
+                {% else %}
+                  <span class="badge bg-danger px-3 py-2">No</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if credential.is_featured %}
+                  <span class="badge bg-primary px-3 py-2">Yes</span>
+                {% else %}
+                  <span class="badge bg-secondary px-3 py-2">No</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <a href="{% url 'accounts:credentialcategory_detail' credential.pk %}" class="btn btn-sm btn-info btn-custom text-white">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'accounts:credentialcategory_update' credential.pk %}" class="btn btn-sm btn-warning btn-custom text-white">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'accounts:credentialcategory_delete' credential.pk %}" class="btn btn-sm btn-danger btn-custom">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info text-center m-3">
+        No Credential Categories available.
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
+
 {% endblock %}
