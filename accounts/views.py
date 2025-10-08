@@ -505,6 +505,15 @@ def Sprintplanning_Details(request, pk):
     sprint = get_object_or_404(Sprintplanning, pk=pk)
     return render(request, "accounts/sprintpanning_detail.html", {"sprint": sprint})
 
+def Sprintplanning_Delete_view(request, pk):
+    sprint = get_object_or_404(Sprintplanning, pk=pk)
+    if request.method == "POST":
+        sprint.delete()
+        return redirect("accounts:Sprintplanning_list") 
+    return render(request, "accounts/sprintplanning_delete.html", {"sprint": sprint})
+
+
+
 
             
 

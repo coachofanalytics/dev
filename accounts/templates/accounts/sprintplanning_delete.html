@@ -1,0 +1,21 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-danger">⚠️ Confirm Delete Sprint Planning</h2>
+
+  <div class="card shadow-sm p-4">
+    <p>Are you sure you want to delete the sprint planning: <strong>{{ sprint.title }} - {{ sprint.team }}</strong>?</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">
+        <i class="fa fa-trash"></i> Delete
+      </button>
+      <a href="{% url 'accounts:Sprintplanning_list' %}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Cancel
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}
