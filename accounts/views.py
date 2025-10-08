@@ -482,6 +482,27 @@ def Sprintplanning_create(request):
 
     return render(request, "accounts/sprintplanning_creat.html", {"form": form})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Sprintplanning
+from .forms import SprintplanningForm
+
+def Sprintplanning_update(request, pk):
+    # Fetch the Sprintplanning object by primary key
+    sprint = get_object_or_404(Sprintplanning, pk=pk)
+
+    if request.method == "POST":
+        form = SprintplanningForm(request.POST, request.FILES, instance=sprint)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:Sprintplanning_list")  # Redirect to your list view
+    else:
+        form = SprintplanningForm(instance=sprint)
+
+    # Always return a response
+    return render(request, "accounts/sprintplanning_update.html", {"form": form})
+
+            
+
 
 
 
