@@ -448,4 +448,13 @@ def credentialcategory_update(request, pk):
 
 
 
+def credentialcategory_delete(request, pk):
+   
+    credential = get_object_or_404(CredentialCategory, pk=pk)
+
+    if request.method == "POST":
+        credential.delete()
+        return redirect("accounts:credentialcategory_list")  # Replace with your list view name
+
+    return render(request, "accounts/registration/delete.html", {'credential': credential})
 
