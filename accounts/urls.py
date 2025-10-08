@@ -28,4 +28,9 @@ urlpatterns = [
     path('teammember/update/<int:pk>/', views.teammember_update_view, name='teammember_update'),
     path('teammember/detail/<int:pk>/', views.teammember_detail_view, name='teammember_detail'),
     path('teammember/delete/<int:pk>/', views.teammember_delete_view, name='teammember_delete'),
+
+
+    path('credentialcategory_list/', views.credentialcategory_list, name='credentialcategory_list'),
 ]
+
+
