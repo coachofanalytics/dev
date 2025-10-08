@@ -433,5 +433,19 @@ def credentialcategory_create(request):
     return render(request, 'accounts/registration/coda/credentia_category_create.html', {'form': form})
 
 
+def credentialcategory_update(request, pk):
+    credential = get_object_or_404(CredentialCategory, pk=pk)
+    
+    if request.method == 'POST':
+        form = credentialcategoryForm(request.POST, instance=credential)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:credentialcategory_list')  
+    else:
+        form = credentialcategoryForm(instance=credential)
+    
+    return render(request, "accounts/registration/credential_category_update.html", {'form': form})
+
+
 
 

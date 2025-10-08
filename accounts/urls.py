@@ -32,6 +32,7 @@ urlpatterns = [
 
     path('credentialcategory_list/', views.credentialcategory_list, name='credentialcategory_list'),
     path('credentialcategory_create/', views.credentialcategory_create, name='credentialcategory_create'),
+    path('category_update/update/<int:pk>/', views.credentialcategory_update, name='credentialcategory_update'),
 ]
 
 

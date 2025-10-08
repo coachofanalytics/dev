@@ -2,7 +2,13 @@
 
 {% block content %}
 <div class="container mt-5">
-  <h2 class="mb-4">Credential Categories</h2>
+
+   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Credential Categories</h2>
+            <a href="{% url 'accounts:credentialcategory_create' %}" class="btn btn-success">
+              <i class="bi bi-plus-circle"></i> Create New CredentialCategory
+            </a>
+          </div>
 
   {% if CredentialCategory %}
   <table class="table table-striped">
@@ -26,6 +32,7 @@
       </tr>
       {% endfor %}
     </tbody>
+    
   </table>
   {% else %}
   <div class="alert alert-info">No Credential Categories available.</div>
