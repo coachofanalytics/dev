@@ -30,6 +30,7 @@ urlpatterns = [
     path('Sprintplanning_list/', views.Sprintplanning_list, name='Sprintplanning_list'),
     path('Sprintplanning_creat/', views.Sprintplanning_create, name='Sprintplanning_creat'),
     path('Sprintplanning_update/<int:pk>/', views.Sprintplanning_update, name='Sprintplanning_update'),
+    path('Sprintplanning_Details/<int:pk>/', views.Sprintplanning_Details, name='Sprintplanning_Details'),
 
     
 

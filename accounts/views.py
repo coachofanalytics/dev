@@ -501,6 +501,11 @@ def Sprintplanning_update(request, pk):
     # Always return a response
     return render(request, "accounts/sprintplanning_update.html", {"form": form})
 
+def Sprintplanning_Details(request, pk):
+    sprint = get_object_or_404(Sprintplanning, pk=pk)
+    return render(request, "accounts/sprintpanning_detail.html", {"sprint": sprint})
+
+
             
 
 

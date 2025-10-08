@@ -1,0 +1,71 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">📋 Sprint Planning Details</h2>
+
+  <div class="card shadow-sm p-4">
+    <dl class="row">
+      <dt class="col-sm-3">ID</dt>
+      <dd class="col-sm-9">{{ sprint.id }}</dd>
+
+      <dt class="col-sm-3">Title</dt>
+      <dd class="col-sm-9">{{ sprint.title }}</dd>
+
+      <dt class="col-sm-3">Team</dt>
+      <dd class="col-sm-9">{{ sprint.team }}</dd>
+
+      <dt class="col-sm-3">Sprint Days</dt>
+      <dd class="col-sm-9">{{ sprint.sprint_dayS }}</dd>
+
+      <dt class="col-sm-3">Available Days</dt>
+      <dd class="col-sm-9">
+        {% if sprint.available_days %}
+          <img src="{{ sprint.available_days.url }}" alt="Available Days" width="50">
+        {% else %}
+          N/A
+        {% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Hours/Day</dt>
+      <dd class="col-sm-9">{{ sprint.hour_per_days }}</dd>
+
+      <dt class="col-sm-3">Total Hours</dt>
+      <dd class="col-sm-9">{{ sprint.total_hours }}</dd>
+
+      <dt class="col-sm-3">DSU Standup</dt>
+      <dd class="col-sm-9">{{ sprint.dsu_standup }}</dd>
+
+      <dt class="col-sm-3">Prod Support</dt>
+      <dd class="col-sm-9">{{ sprint.prod_support }}</dd>
+
+      <dt class="col-sm-3">Sprint Planning</dt>
+      <dd class="col-sm-9">{{ sprint.sprint_planning }}</dd>
+
+      <dt class="col-sm-3">Meeting Coordination</dt>
+      <dd class="col-sm-9">{{ sprint.meeting_coordination }}</dd>
+
+      <dt class="col-sm-3">KT Session</dt>
+      <dd class="col-sm-9">{{ sprint.kt_session }}</dd>
+
+      <dt class="col-sm-3">Defects Dev</dt>
+      <dd class="col-sm-9">{{ sprint.defects_dev }}</dd>
+
+      <dt class="col-sm-3">Sprint Env Support</dt>
+      <dd class="col-sm-9">{{ sprint.sprint_env_support }}</dd>
+    </dl>
+
+    <div class="mt-3">
+      <a href="{% url 'accounts:Sprintplanning_update' sprint.id %}" class="btn btn-primary">
+        <i class="fa fa-edit"></i> Edit
+      </a>
+      <a href="#" class="btn btn-danger">
+        <i class="fa fa-trash"></i> Delete
+      </a>
+      <a href="{% url 'accounts:Sprintplanning_list' %}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
