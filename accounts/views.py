@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,credentialcategoryForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -422,7 +422,15 @@ def credentialcategory_list(request):
     return render(request, "accounts/registration/category_list.html", {"CredentialCategory": categories})
 
 
-    
+def credentialcategory_create(request):
+    if request.method == "POST":
+        form = credentialcategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:credentialcategory_list')  
+    else:
+        form = credentialcategoryForm()
+    return render(request, 'accounts/registration/coda/credentia_category_create.html', {'form': form})
 
 
 
