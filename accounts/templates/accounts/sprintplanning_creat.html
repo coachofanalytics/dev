@@ -1,0 +1,23 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="text-center mb-4">📝 Add New Sprint Planning</h2>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <div class="mt-4 d-flex gap-3">
+        <button type="submit" class="btn btn-success">
+          <i class="fa fa-save"></i> Save
+        </button>
+        <a href="#" class="btn btn-secondary">
+          <i class="fa fa-arrow-left"></i> Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

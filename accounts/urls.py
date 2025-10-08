@@ -28,6 +28,8 @@ urlpatterns = [
     path('CredentialCategory_create/', views.CredentialCategory_create_view, name='CredentialCategory_create'),
     path('CredentialCategory_update/<int:pk>/', views.CredentialCategory_update_view, name='CredentialCategory_update'),
     path('Sprintplanning_list/', views.Sprintplanning_list, name='Sprintplanning_list'),
+    path('Sprintplanning_creat/', views.Sprintplanning_create, name='Sprintplanning_creat'),
+
     
 
 

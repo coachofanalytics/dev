@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,CredentialCategoryForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,CredentialCategoryForm,SprintplanningForm
 
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
@@ -467,6 +467,22 @@ from .models import Sprintplanning
 def Sprintplanning_list(request):
     reports = Sprintplanning.objects.all()
     return render(request, "accounts/sprintplanning_list.html", {"sprintplannings": reports})
+
+from django.shortcuts import render, redirect
+from .forms import SprintplanningForm
+
+def Sprintplanning_create(request):
+    if request.method == "POST":
+        form = SprintplanningForm(request.POST, request.FILES)  # Include request.FILES if handling image uploads
+        if form.is_valid():  # Correct method is is_valid(), not valid()
+            form.save()
+            return redirect("accounts:Sprintplanning_list")  # Redirect to your list view
+    else:
+        form = SprintplanningForm()  # Load empty form for GET requests
+
+    return render(request, "accounts/sprintplanning_creat.html", {"form": form})
+
+
 
 
 
