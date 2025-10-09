@@ -3,12 +3,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,CredentialCategoryForm,SprintplanningForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,CredentialCategoryForm,SprintplanningForm,CapacityBuildingForm
 
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory,Sprintplanning
+from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory,Sprintplanning,CapacityBuilding
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -465,8 +465,9 @@ from django.shortcuts import render
 from .models import Sprintplanning
 
 def Sprintplanning_list(request):
-    reports = Sprintplanning.objects.all()
-    return render(request, "accounts/sprintplanning_list.html", {"sprintplannings": reports})
+    sprintplannings = Sprintplanning.objects.all()
+    return render(request, 'accounts/Sprintplanning_list.html', {'sprintplannings': sprintplannings})
+
 
 from django.shortcuts import render, redirect
 from .forms import SprintplanningForm
@@ -476,7 +477,7 @@ def Sprintplanning_create(request):
         form = SprintplanningForm(request.POST, request.FILES)  # Include request.FILES if handling image uploads
         if form.is_valid():  # Correct method is is_valid(), not valid()
             form.save()
-            return redirect("accounts:Sprintplanning_list")  # Redirect to your list view
+            return redirect("accounts:accounts-Sprintplanning_list")  # Redirect to your list view
     else:
         form = SprintplanningForm()  # Load empty form for GET requests
 
@@ -494,7 +495,7 @@ def Sprintplanning_update(request, pk):
         form = SprintplanningForm(request.POST, request.FILES, instance=sprint)
         if form.is_valid():
             form.save()
-            return redirect("accounts:Sprintplanning_list")  # Redirect to your list view
+            return redirect("accounts:accounts-Sprintplanning_list")  # Redirect to your list view
     else:
         form = SprintplanningForm(instance=sprint)
 
@@ -509,8 +510,63 @@ def Sprintplanning_Delete_view(request, pk):
     sprint = get_object_or_404(Sprintplanning, pk=pk)
     if request.method == "POST":
         sprint.delete()
-        return redirect("accounts:Sprintplanning_list") 
+        return redirect("accounts:accounts-Sprintplanning_list") 
     return render(request, "accounts/sprintplanning_delete.html", {"sprint": sprint})
+
+from django.shortcuts import render
+from .models import CapacityBuilding
+
+def CapacityBuilding_list_view(request):
+    capacity_buildings = CapacityBuilding.objects.all()
+    return render(request, 'accounts/capacitybuilding_list.html', {'capacity_buildings': capacity_buildings})
+
+from django.shortcuts import render, redirect
+from .models import CapacityBuilding
+from .forms import CapacityBuildingForm
+
+def CapacityBuilding_create_view(request):
+    if request.method == 'POST':
+        form = CapacityBuildingForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:accounts-capacity_building_list')
+    else:
+        form = CapacityBuildingForm()
+    return render(request, 'accounts/capacitybuilding_create.html', {'form': form})
+
+
+
+def CapacityBuilding_update_view(request, pk):
+    capacity_building = get_object_or_404(CapacityBuilding, pk=pk)
+    if request.method == 'POST':
+        form = CapacityBuildingForm(request.POST, instance=capacity_building)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:accounts-capacity_building_list')
+    else:
+        form = CapacityBuildingForm(instance=capacity_building)
+    return render(request, 'accounts/capacitybuilding_update.html', {'form': form})
+
+
+
+def CapacityBuildingDetailView(request, pk):
+    capacity_building = get_object_or_404(CapacityBuilding, pk=pk)
+    return render(request, 'accounts/capacitybuilding_detail.html', {'capacity_building': capacity_building})
+
+
+
+def CapacityBuilding_delete_view(request, pk):
+    capacity = get_object_or_404(CapacityBuilding, pk=pk)
+    if request.method == "POST":
+        capacity.delete()
+        return redirect("accounts:accounts-capacity_building_list")
+    return render(request, "accounts/capacitybuilding_delete.html", {'capacity': capacity})
+
+
+
+
+
+
 
 
 

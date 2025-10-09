@@ -1,0 +1,77 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">📋 Capacity Building List</h2>
+
+  <!-- Create Button -->
+  <div class="mb-3">
+    <a href="{% url 'accounts:CapacityBuilding_create' %}" class="btn btn-success">
+      <i class="fa fa-plus-circle"></i> Add New Capacity Building
+    </a>
+  </div>
+
+  {% if capacity_buildings %}
+  <div class="table-responsive shadow-sm">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-light text-center">
+        <tr>
+          <th>Title</th>
+          <th>Team</th>
+          <th>Counties</th>
+          <th>Sprint Days</th>
+          <th>Hours/Day</th>
+          <th>Total Hours</th>
+          <th>DSU Standup</th>
+          <th>Prod Support</th>
+          <th>KT Session</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        {% for building in capacity_buildings %}
+        <tr>
+          <td>{{ building.title }}</td>
+          <td>{{ building.team }}</td>
+          <td>{{ building.counties }}</td>
+          <td>{{ building.sprint_dayS }}</td>
+          <td>{{ building.hour_per_days }}</td>
+          <td>{{ building.total_hours }}</td>
+          <td>{{ building.dsu_standup }}</td>
+          <td>{{ building.prod_support }}</td>
+          <td>{{ building.kt_session }}</td>
+          <td>
+            <div class="btn-group" role="group">
+              <!-- View -->
+              <a href="{% url 'accounts:CapacityBuilding_detail' building.id %}" 
+                 class="btn btn-info btn-sm" title="View">
+                <i class="fa fa-eye"></i>
+              </a>
+              <!-- Edit -->
+              <a href="{% url 'accounts:CapacityBuilding_update' building.id %}" 
+                 class="btn btn-primary btn-sm" title="Edit">
+                <i class="fa fa-edit"></i>
+              </a>
+              <!-- Delete -->
+              <a href="{% url 'accounts:CapacityBuilding_delete' building.id %}" 
+                 class="btn btn-danger btn-sm" title="Delete">
+                <i class="fa fa-trash"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" class="text-center text-muted">No Capacity Building records found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-info text-center">
+    <i class="fa fa-info-circle"></i> No Capacity Building records found.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

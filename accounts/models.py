@@ -178,9 +178,9 @@ class Sprintplanning(models.Model):
     
 class CapacityBuilding(models.Model):
     title = models.CharField(max_length=100, null=False)
+    counties = models.CharField(max_length=100, null=False)  # Add max_length here
     team = models.CharField(max_length=200, null=False)
     sprint_dayS = models.IntegerField(null=False)
-    counties = models.CharField(max_length=100, null=False)  # Add max_length here
     hour_per_days = models.IntegerField(null=False)
     total_hours = models.FloatField(null=False)
     dsu_standup = models.FloatField(null=False)

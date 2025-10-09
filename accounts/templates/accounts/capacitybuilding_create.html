@@ -1,0 +1,64 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">📋 Add New Capacity Building</h2>
+
+    <div class="card shadow-sm p-4">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Title Field -->
+            <div class="mb-3">
+                <label for="id_title" class="form-label">Title</label>
+                {{ form.title }}
+            </div>
+
+            <!-- Team Field -->
+            <div class="mb-3">
+                <label for="id_team" class="form-label">Team</label>
+                {{ form.team }}
+            </div>
+
+            <!-- Sprint Days Field -->
+            <div class="mb-3">
+                <label for="id_sprint_dayS" class="form-label">Sprint Days</label>
+                {{ form.sprint_dayS }}
+            </div>
+
+            <!-- Hour per Day Field -->
+            <div class="mb-3">
+                <label for="id_hour_per_days" class="form-label">Hours per Day</label>
+                {{ form.hour_per_days }}
+            </div>
+
+            <!-- Total Hours Field -->
+            <div class="mb-3">
+                <label for="id_total_hours" class="form-label">Total Hours</label>
+                {{ form.total_hours }}
+            </div>
+
+            <!-- DSU Standup Field -->
+            <div class="mb-3">
+                <label for="id_dsu_standup" class="form-label">DSU Standup</label>
+                {{ form.dsu_standup }}
+            </div>
+
+            <!-- Prod Support Field -->
+            <div class="mb-3">
+                <label for="id_prod_support" class="form-label">Prod Support</label>
+                {{ form.prod_support }}
+            </div>
+
+            <!-- KT Session Field -->
+            <div class="mb-3">
+                <label for="id_kt_session" class="form-label">KT Session</label>
+                {{ form.kt_session }}
+            </div>
+
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'accounts:capacity_building_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

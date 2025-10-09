@@ -27,11 +27,22 @@ urlpatterns = [
     path('credentialcategoryy_list/', views.CredentialCategory_list_view, name='credentialcategoryy_list'),
     path('CredentialCategory_create/', views.CredentialCategory_create_view, name='CredentialCategory_create'),
     path('CredentialCategory_update/<int:pk>/', views.CredentialCategory_update_view, name='CredentialCategory_update'),
-    path('Sprintplanning_list/', views.Sprintplanning_list, name='Sprintplanning_list'),
-    path('Sprintplanning_creat/', views.Sprintplanning_create, name='Sprintplanning_creat'),
+
+
+    path('accounts:Sprintplanning_lis/', views.Sprintplanning_list, name='accounts_Sprintplanning_list'),
+    path('Sprintplanning_create/', views.Sprintplanning_create, name='Sprintplanning_create'),
     path('Sprintplanning_update/<int:pk>/', views.Sprintplanning_update, name='Sprintplanning_update'),
     path('Sprintplanning_Details/<int:pk>/', views.Sprintplanning_Details, name='Sprintplanning_Details'),
     path('Sprintplanning_Delete/<int:pk>/', views.Sprintplanning_Delete_view, name='Sprintplanning_Delete'),
+    path('account:CapacityBuilding_list/', views.CapacityBuilding_list_view, name='accounts-capacity_building_list'),
+    path('CapacityBuilding_create/', views.CapacityBuilding_list_view, name='CapacityBuilding_create'),
+    path('CapacityBuilding_update/<int:pk>/', views.CapacityBuilding_update_view, name='CapacityBuilding_update'),
+    path('CapacityBuilding_detail/<int:pk>/', views.CapacityBuildingDetailView, name='CapacityBuilding_detail'),
+
+    path('CapacityBuilding_delete/<int:pk>/', views.CapacityBuilding_delete_view, name='CapacityBuilding_delete'),
+
+
+
 
 
     

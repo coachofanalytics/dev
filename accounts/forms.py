@@ -188,7 +188,6 @@ class CredentialCategoryForm(forms.ModelForm):
             "is_featured": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
-        
 from django import forms
 from .models import Sprintplanning
 
@@ -199,14 +198,27 @@ class SprintplanningForm(forms.ModelForm):
             'title',
             'team',
             'sprint_dayS',
-            'available_days',
+            # 'country',  # Ensure this field is included
             'hour_per_days',
             'total_hours',
             'dsu_standup',
             'prod_support',
-            'sprint_planning',
-            'meeting_coordination',
             'kt_session',
-            'defects_dev',
-            'sprint_env_support',
         ]
+
+        from django import forms
+# forms.py
+from django import forms
+from .models import CapacityBuilding
+
+class CapacityBuildingForm(forms.ModelForm):
+    class Meta:
+        model = CapacityBuilding
+        fields = [
+            'title', 'team', 'sprint_dayS', 'counties', 'hour_per_days', 
+            'total_hours', 'dsu_standup', 'prod_support', 'kt_session'
+        ]
+
+
+
+

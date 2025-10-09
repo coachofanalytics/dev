@@ -1,0 +1,52 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">📋 Capacity Building Details</h2>
+
+    <div class="card shadow-sm p-4">
+        <dl class="row">
+            <dt class="col-sm-3">Title</dt>
+            <dd class="col-sm-9">{{ capacity_building.title }}</dd>
+
+            <dt class="col-sm-3">County</dt>
+            <dd class="col-sm-9">{{ capacity_building.counties }}</dd>
+
+            <dt class="col-sm-3">Team</dt>
+            <dd class="col-sm-9">{{ capacity_building.team }}</dd>
+
+            <dt class="col-sm-3">Sprint Days</dt>
+            <dd class="col-sm-9">{{ capacity_building.sprint_dayS }}</dd>
+
+            <dt class="col-sm-3">Hours/Day</dt>
+            <dd class="col-sm-9">{{ capacity_building.hour_per_days }}</dd>
+
+            <dt class="col-sm-3">Total Hours</dt>
+            <dd class="col-sm-9">{{ capacity_building.total_hours }}</dd>
+
+            <dt class="col-sm-3">DSU Standup</dt>
+            <dd class="col-sm-9">{{ capacity_building.dsu_standup }}</dd>
+
+            <dt class="col-sm-3">Prod Support</dt>
+            <dd class="col-sm-9">{{ capacity_building.prod_support }}</dd>
+
+            <dt class="col-sm-3">KT Session</dt>
+            <dd class="col-sm-9">{{ capacity_building.kt_session }}</dd>
+        </dl>
+
+        <div class="mt-3">
+            <a href="{% url 'accounts:CapacityBuilding_update' capacity_building.id %}" class="btn btn-primary">
+                <i class="fa fa-edit"></i> Edit
+            </a>
+
+            <a href="{% url 'accounts:CapacityBuilding_delete' capacity_building.id %}" class="btn btn-danger">
+                <i class="fa fa-trash"></i> Delete
+            </a>
+
+            <a href="{% url 'accounts:accounts-capacity_building_list' %}" class="btn btn-secondary">
+                <i class="fa fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

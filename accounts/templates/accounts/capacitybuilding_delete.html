@@ -1,0 +1,14 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Confirm Delete</h2>
+    <p>Are you sure you want to delete "{{ capacity.title }}" for team "{{ capacity.team }}"?</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="{% url 'accounts:accounts-capacity_building_list %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
