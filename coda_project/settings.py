@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #'users.apps.UsersConfig',
     "accounts.apps.AccountsConfig",
     "finance.apps.FinanceConfig",
+    "consular.apps.ConsularConfig",
     "crispy_forms",
     "django.contrib.admin",
     "django.contrib.auth",
