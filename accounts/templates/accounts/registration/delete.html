@@ -1,16 +1,31 @@
 {% extends "main/base_templates/accounts_base.html" %}
 
+{% block title %}Delete Credential Category{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <h2>Delete Credential category</h2>
-  <p>Are you sure you want to delete the credential category: <strong>{{ credential.name }}</strong>?</p>
-  
-  <form method="post">
-    {% csrf_token %}
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-danger">Yes, Delete</button>
-      <a href="{% url 'accounts:credentialcategory_list' %}" class="btn btn-secondary">Cancel</a>
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg border-0 w-50">
+        <div class="card-header bg-danger text-white text-center rounded-top">
+            <h3 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Delete Credential Category</h3>
+        </div>
+
+        <div class="card-body text-center bg-light p-4">
+            <p class="fs-5">
+                Are you sure you want to delete the credential category:
+                <strong class="text-danger">{{ credential.name }}</strong>?
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="fas fa-check-circle"></i> Yes, Delete
+                    </button>
+                    <a href="{% url 'accounts:credentialcategory_list' %}" class="btn btn-secondary px-4">
+                        <i class="fas fa-times-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-  </form>
 </div>
 {% endblock %}

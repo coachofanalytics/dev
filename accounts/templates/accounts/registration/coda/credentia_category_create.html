@@ -1,18 +1,30 @@
 {% extends "main/base_templates/accounts_base.html" %}
 {% load crispy_forms_tags %}
 
+{% block title %}Add Credential Category{% endblock %}
+
 {% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg border-0 w-75">
+        <div class="card-header bg-success text-white text-center rounded-top">
+            <h3 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add Credential Category</h3>
+        </div>
 
-<div class="container">
-    <h2>Add a CredentialCategory</h2>
+        <div class="card-body bg-light p-4">
+            <form method="POST" class="p-2">
+                {% csrf_token %}
+                {{ form|crispy }}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-
-        <button type="submit" class="btn btn-success">Save Credential</button>
-        <a href="{% url 'accounts:credentialcategory_list' %}" class="btn btn-secondary">Cancel</a>
-
-    </form>
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-success me-2">
+                        <i class="fas fa-save"></i> Save Credential
+                    </button>
+                    <a href="{% url 'accounts:credentialcategory_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

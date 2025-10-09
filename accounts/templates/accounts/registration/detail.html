@@ -1,23 +1,65 @@
 {% extends "main/base_templates/accounts_base.html" %}
+
+{% block title %}Credential Category Details{% endblock %}
+
 {% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg border-0 w-75">
+        <div class="card-header bg-primary text-white text-center rounded-top">
+            <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i>Credential Category Details</h3>
+        </div>
 
-<div class="container mt-5">
-  <h2 class="mb-4 text-center">Credential Category Details</h2>
+        <div class="card-body bg-light p-4">
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <p class="fw-bold mb-1 text-secondary">Description</p>
+                    <p class="border-bottom pb-2">{{ credential.description }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="fw-bold mb-1 text-secondary">Verbose Name</p>
+                    <p class="border-bottom pb-2">{{ credential.verbose_name }}</p>
+                </div>
+            </div>
 
-  <div class="card shadow-lg border-0 rounded-3">
-    <div class="card-body">
-      <p><strong>Description:</strong> {{ credential.description }}</p>
-      <p><strong>Verbose Name:</strong> {{ credential.verbose_name }}</p>
-      <p><strong>Entry Date:</strong> {{ credential.entry_date }}</p>
-      <p><strong>Is Active:</strong> {{ credential.is_active|yesno:"Yes,No" }}</p>
-      <p><strong>Is Featured:</strong> {{ credential.is_featured|yesno:"Yes,No" }}</p>
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <p class="fw-bold mb-1 text-secondary">Entry Date</p>
+                    <p class="border-bottom pb-2">{{ credential.entry_date }}</p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <p class="fw-bold mb-1 text-secondary">Is Active</p>
+                    <p class="border-bottom pb-2">
+                        {% if credential.is_active %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-danger">No</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <p class="fw-bold mb-1 text-secondary">Is Featured</p>
+                    <p class="border-bottom pb-2">
+                        {% if credential.is_featured %}
+                            <span class="badge bg-info text-dark">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white text-center py-3">
+            <a href="{% url 'accounts:credentialcategory_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+            <a href="{% url 'accounts:credentialcategory_update' credential.pk %}" class="btn btn-primary me-2">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'accounts:credentialcategory_delete' credential.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </div>
     </div>
-  </div>
-
-  <div class="mt-4 text-center">
-    <a href="{% url 'accounts:credentialcategory_list' %}" class="btn btn-secondary">Back to List</a>
-    <a href="{% url 'accounts:credentialcategory_update' credential.pk %}" class="btn btn-primary">Edit</a>
-  </div>
 </div>
-
 {% endblock %}

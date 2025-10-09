@@ -6,12 +6,14 @@
     background-color: #f7f9fc;
     font-family: 'Poppins', sans-serif;
   }
+
   .card {
     border: none;
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     overflow: hidden;
   }
+
   .card-header {
     background: linear-gradient(90deg, #0066ff, #0099cc);
     color: white;
@@ -23,6 +25,7 @@
     align-items: center;
     padding: 18px 25px;
   }
+
   .btn-add {
     background: linear-gradient(90deg, #ff512f, #f09819);
     color: white;
@@ -34,35 +37,46 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
   }
+
   .btn-add:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 15px rgba(0,0,0,0.25);
   }
-  table {
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 15px;
-  }
+
   th {
     background-color: #eef1f5;
     font-weight: 600;
     color: #444;
   }
+
   tr:hover {
     background-color: #f8f9fa;
   }
+
   .btn-custom {
     border-radius: 25px;
     padding: 6px 14px;
     font-size: 0.9rem;
     transition: 0.3s ease;
   }
+
   .btn-custom:hover {
     transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0,0,0,0.2);
   }
+
   .table td, .table th {
     vertical-align: middle;
+  }
+
+  .badge {
+    border-radius: 30px;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+
+  .alert {
+    border-radius: 10px;
   }
 </style>
 
@@ -97,27 +111,30 @@
               <td>{{ credential.entry_date|date:"Y-m-d H:i" }}</td>
               <td>
                 {% if credential.is_active %}
-                  <span class="badge bg-success px-3 py-2">Yes</span>
+                  <span class="badge bg-success">Yes</span>
                 {% else %}
-                  <span class="badge bg-danger px-3 py-2">No</span>
+                  <span class="badge bg-danger">No</span>
                 {% endif %}
               </td>
               <td>
                 {% if credential.is_featured %}
-                  <span class="badge bg-primary px-3 py-2">Yes</span>
+                  <span class="badge bg-primary">Yes</span>
                 {% else %}
-                  <span class="badge bg-secondary px-3 py-2">No</span>
+                  <span class="badge bg-secondary">No</span>
                 {% endif %}
               </td>
               <td class="text-center">
-                <a href="{% url 'accounts:credentialcategory_detail' credential.pk %}" class="btn btn-sm btn-info btn-custom text-white">
-                  <i class="bi bi-eye"></i>
+                <a href="{% url 'accounts:credentialcategory_detail' credential.pk %}" 
+                   class="btn btn-sm btn-info btn-custom text-white">
+                  <i class="bi bi-eye"></i> View
                 </a>
-                <a href="{% url 'accounts:credentialcategory_update' credential.pk %}" class="btn btn-sm btn-warning btn-custom text-white">
-                  <i class="bi bi-pencil"></i>
+                <a href="{% url 'accounts:credentialcategory_update' credential.pk %}" 
+                   class="btn btn-sm btn-warning btn-custom text-white">
+                  <i class="bi bi-pencil"></i> Edit
                 </a>
-                <a href="{% url 'accounts:credentialcategory_delete' credential.pk %}" class="btn btn-sm btn-danger btn-custom">
-                  <i class="bi bi-trash"></i>
+                <a href="{% url 'accounts:credentialcategory_delete' credential.pk %}" 
+                   class="btn btn-sm btn-danger btn-custom">
+                  <i class="bi bi-trash"></i> Delete
                 </a>
               </td>
             </tr>
@@ -127,7 +144,7 @@
       </div>
       {% else %}
       <div class="alert alert-info text-center m-3">
-        No Credential Categories available.
+        <i class="bi bi-info-circle"></i> No Credential Categories available.
       </div>
       {% endif %}
     </div>
