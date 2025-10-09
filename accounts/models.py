@@ -159,23 +159,40 @@ class CredentialCategory(models.Model):
 
     def __str__(self):
         return self.verbose_name or self.categoryclass
+from django.db import models
 class Sprintplanning(models.Model):
     title = models.CharField(max_length=100, null=False)
     team = models.CharField(max_length=200, null=False)
     sprint_dayS = models.IntegerField(null=False)
-    available_days = models.ImageField(null=False)
+    # country = models.CharField(max_length=100, null=False)  # Add max_length here
     hour_per_days = models.IntegerField(null=False)
     total_hours = models.FloatField(null=False)
     dsu_standup = models.FloatField(null=False)
     prod_support = models.FloatField(null=False)
-    sprint_planning = models.FloatField(null=False)
-    meeting_coordination = models.FloatField(null=False)
     kt_session = models.FloatField(null=False)
-    defects_dev = models.FloatField(null=False)
-    sprint_env_support = models.FloatField(null=False)
 
     def __str__(self):
         return f"{self.title}-{self.team}"
+    
+
+    
+class CapacityBuilding(models.Model):
+    title = models.CharField(max_length=100, null=False)
+    team = models.CharField(max_length=200, null=False)
+    sprint_dayS = models.IntegerField(null=False)
+    counties = models.CharField(max_length=100, null=False)  # Add max_length here
+    hour_per_days = models.IntegerField(null=False)
+    total_hours = models.FloatField(null=False)
+    dsu_standup = models.FloatField(null=False)
+    prod_support = models.FloatField(null=False)
+    kt_session = models.FloatField(null=False)
+
+    def __str__(self):
+        return f"{self.title}-{self.team}"
+
+
+
+
 
 
 

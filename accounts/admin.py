@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser, Department, Credential, TaskGroup, TeamMember, CredentialCategory, Sprintplanning
+from .models import CustomerUser, Department, Credential, TaskGroup, TeamMember, CredentialCategory,Sprintplanning,CapacityBuilding
 
 
 
@@ -81,4 +81,5 @@ admin.site.register(Credential)
 admin.site.register(TaskGroup)
 admin.site.register(TeamMember)
 admin.site.register(CredentialCategory)
-admin.site.register(Sprintplanning  )
+admin.site.register(Sprintplanning)
+admin.site.register(CapacityBuilding)
