@@ -154,13 +154,11 @@ def budget_category_detail(request, company_slug, category_id, company=None):
             total_variance = total_actual - total_estimated
             
             # Get recent transactions - filter by subcategory name
-            transaction_filter = {'subcategory': subcategory.name}
-            if user_department:
-                transaction_filter['department'] = user_department
-            
+            # Note: Transaction.subcategory is CharField, not ForeignKey
             recent_transactions = Transaction.objects.filter(
-                **transaction_filter
+                subcategory=subcategory.name
             ).order_by('-transaction_date')[:5]
+            
             
             subcategory_data.append({
                 'subcategory': subcategory,
