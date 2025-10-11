@@ -322,18 +322,25 @@ class Transaction(models.Model):
         ('failed', 'Failed'),
     ]
     
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_transactions', db_column='sender_id', blank=True, null=True)
+    sender = models.CharField(max_length=200, blank=True, null=True)
     receiver = models.CharField(max_length=200, blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='expense')
+    transaction_date = models.DateTimeField(default=timezone.now)
+    receipt_link = models.URLField(blank=True, null=True)
+    qty = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    currency = models.CharField(max_length=3, default='KES')
-    transaction_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='expense')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    
-    # Transaction details
+    transaction_cost = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    category = models.ForeignKey('BudgetCategory', on_delete=models.SET_NULL, blank=True, null=True, db_column='category_id')
-    subcategory = models.ForeignKey('BudgetSubCategory', on_delete=models.SET_NULL, blank=True, null=True, db_column='subcategory_id')
-    vendor = models.CharField(max_length=200, blank=True, null=True)
+    payment_method = models.CharField(max_length=50, blank=True, null=True)
+    sender_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_transactions', blank=True, null=True)
+    department_id = models.ForeignKey('accounts.Department', on_delete=models.SET_NULL, blank=True, null=True)
+    subcategory_id = models.ForeignKey('BudgetSubCategory', on_delete=models.SET_NULL, blank=True, null=True)
+    category_id = models.ForeignKey('BudgetCategory', on_delete=models.SET_NULL, blank=True, null=True)
+    vendor_supplier_id = models.CharField(max_length=200, blank=True, null=True)
+    amount_usd = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    currency = models.CharField(max_length=3, default='KES')
+    exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
     location = models.CharField(max_length=200, blank=True, null=True)
     
     # Dates
