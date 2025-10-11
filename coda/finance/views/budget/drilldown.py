@@ -138,7 +138,7 @@ def budget_category_detail(request, company_slug, category_id, company=None):
         # Get subcategories with budget data
         subcategories = BudgetSubCategory.objects.filter(
             category=category
-        ).prefetch_related('budgets', 'items')
+        ).prefetch_related('items', 'sub_category_type')
         
         # Get budget data for each subcategory
         subcategory_data = []

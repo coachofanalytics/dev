@@ -1,0 +1,150 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Category Details - {{ category.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'finance/css/budget-common.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="budget-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="fas fa-tag me-2"></i>
+                            Budget Category: {{ category.name }}
+                        </h2>
+                        <p class="mb-0">{{ category.description|default:"No description available" }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ category_stats.total_budgets }}</div>
+                <div class="metric-label">Total Budgets</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ category_stats.total_estimated|floatformat:2 }}</div>
+                <div class="metric-label">Estimated Amount</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ category_stats.total_actual|floatformat:2 }}</div>
+                <div class="metric-label">Actual Spent</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ category_stats.average_amount|floatformat:2 }}</div>
+                <div class="metric-label">Average Amount</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subcategories -->
+    {% if subcategory_data %}
+    <div class="row">
+        <div class="col-12">
+            <h4>Subcategories</h4>
+            {% for data in subcategory_data %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-folder me-2"></i>
+                        {{ data.subcategory.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Budget Count:</strong> {{ data.budget_count }}</p>
+                            <p><strong>Estimated:</strong> ${{ data.total_estimated|floatformat:2 }}</p>
+                            <p><strong>Actual:</strong> ${{ data.total_actual|floatformat:2 }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Variance:</strong> 
+                                <span class="{% if data.total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ data.total_variance|floatformat:2 }}
+                                </span>
+                            </p>
+                            <p><strong>Variance %:</strong> 
+                                <span class="{% if data.total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ data.variance_percentage|floatformat:1 }}%
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Transactions -->
+                    {% if data.recent_transactions %}
+                    <h6>Recent Transactions</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Vendor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in data.recent_transactions %}
+                                <tr>
+                                    <td>{{ transaction.transaction_date|date:"M d, Y" }}</td>
+                                    <td>${{ transaction.amount|floatformat:2 }}</td>
+                                    <td>{{ transaction.description|truncatewords:10 }}</td>
+                                    <td>{{ transaction.vendor|default:"N/A" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                No subcategories found for this category.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'finance/js/budget-common.js' %}"></script>
+<script>
+$(document).ready(function() {
+    console.log('Budget Category Detail loaded successfully');
+    console.log('Category: {{ category.name }}');
+    console.log('Total budgets: {{ category_stats.total_budgets }}');
+});
+</script>
+{% endblock %}
