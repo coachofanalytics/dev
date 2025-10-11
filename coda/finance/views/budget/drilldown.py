@@ -157,7 +157,7 @@ def budget_category_detail(request, company_slug, category_id, company=None):
             # Note: Transaction.subcategory is CharField, not ForeignKey
             recent_transactions = Transaction.objects.filter(
                 subcategory=subcategory
-            ).select_related('sender', 'receiver').order_by('-transaction_date')[:5]
+            ).select_related('sender').order_by('-transaction_date')[:5]
             
             
             subcategory_data.append({
