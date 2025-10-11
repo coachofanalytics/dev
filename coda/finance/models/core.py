@@ -343,10 +343,6 @@ class Transaction(models.Model):
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
     location = models.CharField(max_length=200, blank=True, null=True)
     
-    # Metadata
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
     class Meta:
         ordering = ['-transaction_date']
         verbose_name = "Transaction"
