@@ -65,7 +65,7 @@
             <td>{{ t.employee }}</td>
             <td>{{ t.login_date|date:"Y-m-d H:i" }}</td>
             <td class="text-center">
-              <a href="#" class="btn btn-sm btn-outline-warning">Edit</a>
+              <a href="{% url 'accounts:Trackers_update'   t.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
               <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
             </td>
           </tr>

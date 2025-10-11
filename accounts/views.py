@@ -521,4 +521,18 @@ def   Trackers_create(request):
             return redirect('accounts:tracker_list')
     else:
         form =TrackerForm() 
-    return render(request,'accounts/registration/tracker_create.html',{'form':form})          
+    return render(request,'accounts/registration/tracker_create.html',{'form':form})  
+
+
+
+def   Trackers_update(request,pk):
+    trackers=get_object_or_404(Tracker, pk=pk)
+    if request.method == 'POST':
+        form=TrackerForm(request.POST,instance=trackers)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:tracker_list')
+    else:
+        form =TrackerForm()
+    return render(request,'accounts/registration/tracker_update.html',{'form':form})           
+
