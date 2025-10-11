@@ -115,7 +115,7 @@
                                     <td>${{ transaction.amount|floatformat:2 }}</td>
                                     <td>{{ transaction.description|truncatewords:10 }}</td>
                                     <td>{{ transaction.vendor|default:"N/A" }}</td>
-                                    <td>{{ transaction.user.username|default:"N/A" }}</td>
+                                    <td>{{ transaction.sender.username|default:transaction.receiver.username|default:"N/A" }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

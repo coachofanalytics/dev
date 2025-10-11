@@ -330,8 +330,8 @@ class Transaction(models.Model):
     
     # Transaction details
     description = models.TextField(blank=True, null=True)
-    category = models.CharField(max_length=100, blank=True, null=True)
-    subcategory = models.CharField(max_length=100, blank=True, null=True)
+    category = models.ForeignKey('BudgetCategory', on_delete=models.SET_NULL, blank=True, null=True, db_column='category_id')
+    subcategory = models.ForeignKey('BudgetSubCategory', on_delete=models.SET_NULL, blank=True, null=True, db_column='subcategory_id')
     vendor = models.CharField(max_length=200, blank=True, null=True)
     location = models.CharField(max_length=200, blank=True, null=True)
     
