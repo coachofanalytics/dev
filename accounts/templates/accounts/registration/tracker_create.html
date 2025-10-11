@@ -1,0 +1,14 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-primary">Add New Tracker</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-success">Save Tracker</button>
+    <a href="{% url 'accounts:tracker_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

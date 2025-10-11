@@ -5,7 +5,7 @@
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-primary">Tracker Records</h2>
-    <a href="#" class="btn btn-success">
+    <a href="{% url 'accounts:Trackers_create' %}" class="btn btn-success">
       <i class="bi bi-plus-circle"></i> Add New Tracker
     </a>
   </div>
@@ -34,7 +34,7 @@
     </div>
     <div class="col-md-3 d-flex gap-2">
       <button type="submit" class="btn btn-primary w-50">Filter</button>
-      <a href="#" class="btn btn-secondary w-50">Reset</a>
+      <a href="{% url 'accounts:tracker_list' %}" class="btn btn-secondary w-50">Reset</a>
     </div>
   </form>
 

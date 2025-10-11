@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,credentialcategoryForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,credentialcategoryForm,TrackerForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -508,3 +508,17 @@ def tracker_list(request):
     }
 
     return render(request, 'accounts/registration/tracker_list.html', context)
+
+
+
+
+
+def   Trackers_create(request):
+    if request.method == 'POST':
+        form=TrackerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:tracker_list')
+    else:
+        form =TrackerForm() 
+    return render(request,'accounts/registration/tracker_create.html',{'form':form})          

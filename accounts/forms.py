@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 import re
 
-from .models import CustomerUser, Department, Credential, TaskGroup,CredentialCategory
+from .models import CustomerUser, Department, Credential, TaskGroup,CredentialCategory,Tracker
 
 # ------------------------------
 # Helpers
@@ -180,3 +180,9 @@ class credentialcategoryForm(forms.ModelForm):
     class Meta:
         model = CredentialCategory
         fields = ['description','verbose_name','entry_date','is_active','is_featured']
+
+
+class TrackerForm(forms.ModelForm)  :
+    class Meta:
+        model=Tracker
+        fields =['category',"sub_category",'task','plan','author','employee','login_date','start_time','duration','time']      
