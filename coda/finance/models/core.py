@@ -343,11 +343,7 @@ class Transaction(models.Model):
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
     location = models.CharField(max_length=200, blank=True, null=True)
     
-    # Dates
-    transaction_date = models.DateTimeField(default=timezone.now)
-    processed_date = models.DateTimeField(null=True, blank=True)
-    
-    # Additional fields
+    # Additional fields (only those that exist in actual database)
     reference_number = models.CharField(max_length=100, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     
