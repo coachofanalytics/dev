@@ -35,6 +35,11 @@ urlpatterns = [
     path('category_update/update/<int:pk>/', views.credentialcategory_update, name='credentialcategory_update'),
     path('category_delete/delete/<int:pk>/', views.credentialcategory_delete, name='credentialcategory_delete'),
     path('credentialcategory_detail/<int:pk>/', views.credentialcategory_detail, name='credentialcategory_detail'),
+
+
+
+
+    path('tracker_list/', views.tracker_list, name='tracker_list'),
 ]
 
 

@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberFo
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory
+from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory,Tracker
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -19,6 +19,7 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
+from django.db.models import Sum, Q
 # Create your views here..
 
 # @allowed_users(allowed_roles=['admin'])
@@ -462,3 +463,48 @@ def credentialcategory_delete(request, pk):
 def credentialcategory_detail(request, pk):
     credential = get_object_or_404(CredentialCategory, pk=pk)
     return render(request, "accounts/registration/detail.html", {"credential": credential})
+
+
+
+
+
+def tracker_list(request):
+    search_query = request.GET.get('search', '')
+    category_filter = request.GET.get('category', '')
+    employee_filter = request.GET.get('employee', '')
+
+    trackers = Tracker.objects.all().order_by('-login_date')
+
+    if search_query:
+        trackers = trackers.filter(
+            Q(task__icontains=search_query) |
+            Q(plan__icontains=search_query)
+        )
+
+    if category_filter:
+        trackers = trackers.filter(category__icontains=category_filter)
+
+    if employee_filter:
+        trackers = trackers.filter(employee__icontains=employee_filter)
+
+    total_tasks = trackers.count()
+    total_duration = trackers.aggregate(Sum('duration'))['duration__sum'] or 0
+    total_time = trackers.aggregate(Sum('time'))['time__sum'] or 0
+
+  
+    categories = Tracker.objects.values_list('category', flat=True).distinct()
+    employees = Tracker.objects.values_list('employee', flat=True).distinct()
+
+    context = {
+        'trackers': trackers,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'employee_filter': employee_filter,
+        'categories': categories,
+        'employees': employees,
+        'total_tasks': total_tasks,
+        'total_duration': total_duration,
+        'total_time': total_time,
+    }
+
+    return render(request, 'accounts/registration/tracker_list.html', context)
