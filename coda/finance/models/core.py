@@ -323,7 +323,7 @@ class Transaction(models.Model):
     ]
     
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_transactions', db_column='sender_id', blank=True, null=True)
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_transactions', db_column='receiver_id', blank=True, null=True)
+    receiver = models.CharField(max_length=200, blank=True, null=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     currency = models.CharField(max_length=3, default='KES')
     transaction_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='expense')
