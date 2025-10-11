@@ -153,8 +153,8 @@ def budget_category_detail(request, company_slug, category_id, company=None):
             total_actual = sum(budget.actual_spent or 0 for budget in budgets)
             total_variance = total_actual - total_estimated
             
-            # Get recent transactions - filter by subcategory
-            transaction_filter = {'subcategory': subcategory}
+            # Get recent transactions - filter by subcategory_id
+            transaction_filter = {'subcategory_id': subcategory.id}
             if user_department:
                 transaction_filter['department'] = user_department
             
