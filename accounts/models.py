@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User  
 
 from django_countries.fields import CountryField
 from accounts.choices import CategoryChoices,SubCategoryChoices
@@ -163,5 +164,23 @@ class CredentialCategory(models.Model):
         return self.verbose_name or f"Credential Category {self.id}"
 
 
+from django.conf import settings 
+
+
+class Tracker(models.Model):
+    category = models.CharField(max_length=25)
+    sub_category = models.ForeignKey('CredentialCategory', on_delete=models.CASCADE, related_name='trackers')
+    task = models.CharField(max_length=25)
+    plan = models.CharField(max_length=255)
+    # empname = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='employee_tracker')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='trackers')
+    employee = models.CharField(max_length=255)
+    login_date = models.DateTimeField()
+    start_time = models.TimeField(null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)
+    time = models.PositiveIntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.task} - {self.category}"
 
 
