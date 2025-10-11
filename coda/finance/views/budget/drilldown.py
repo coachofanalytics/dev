@@ -148,9 +148,9 @@ def budget_category_detail(request, company_slug, category_id, company=None):
                 subcategory=subcategory
             ).select_related('budget_lead')
             
-            # Calculate totals
-            total_estimated = sum(budget.estimated_amount for budget in budgets)
-            total_actual = sum(budget.actual_spent for budget in budgets)
+            # Calculate totals (handle None values)
+            total_estimated = sum(budget.estimated_amount or 0 for budget in budgets)
+            total_actual = sum(budget.actual_spent or 0 for budget in budgets)
             total_variance = total_actual - total_estimated
             
             # Get recent transactions - filter by subcategory
@@ -181,9 +181,9 @@ def budget_category_detail(request, company_slug, category_id, company=None):
         
         category_stats = {
             'total_budgets': category_budgets.count(),
-            'total_estimated': sum(budget.estimated_amount for budget in category_budgets),
-            'total_actual': sum(budget.actual_spent for budget in category_budgets),
-            'avg_variance': sum(budget.variance for budget in category_budgets) / category_budgets.count() if category_budgets.count() > 0 else 0,
+            'total_estimated': sum(budget.estimated_amount or 0 for budget in category_budgets),
+            'total_actual': sum(budget.actual_spent or 0 for budget in category_budgets),
+            'average_amount': sum(budget.estimated_amount or 0 for budget in category_budgets) / category_budgets.count() if category_budgets.count() > 0 else 0,
         }
         
         context = {
