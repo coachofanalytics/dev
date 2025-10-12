@@ -365,21 +365,19 @@ def budget_approval_dashboard(request, company_slug, company=None):
             if not company:
                 return redirect('main:dashboard')
         
-        # Get pending requests
+        # Get pending requests (BudgetRequest doesn't have company field)
         pending_requests = BudgetRequest.objects.filter(
-            company=company,
-            status__in=['Submitted', 'Under Review']
+            status__in=['submitted', 'under_review']
         ).select_related(
-            'category', 'subcategory', 'requested_by'
+            'budget_category', 'department', 'requester'
         ).order_by('-created_at')
         
         # Get recent approvals
         recent_approvals = BudgetRequest.objects.filter(
-            company=company,
-            status='Approved'
+            status='approved'
         ).select_related(
-            'category', 'subcategory', 'requested_by', 'approved_by'
-        ).order_by('-approved_at')[:10]
+            'budget_category', 'department', 'requester'
+        ).order_by('-updated_at')[:10]
         
         context = {
             'company': company,

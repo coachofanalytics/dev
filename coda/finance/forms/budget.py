@@ -110,6 +110,36 @@ class BudgetEditForm(forms.ModelForm):
 class BudgetRequestForm(forms.ModelForm):
     """Form for creating budget requests."""
     
+    # Override currency as ChoiceField to ensure it's editable
+    currency = forms.ChoiceField(
+        choices=[
+            ('KES', 'KES - Kenyan Shilling'),
+            ('USD', 'USD - US Dollar'),
+            ('EUR', 'EUR - Euro'),
+            ('GBP', 'GBP - British Pound'),
+        ],
+        initial='KES',
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'id_currency'
+        })
+    )
+    
+    # Override priority as ChoiceField
+    priority = forms.ChoiceField(
+        choices=[
+            ('low', 'Low'),
+            ('medium', 'Medium'),
+            ('high', 'High'),
+            ('urgent', 'Urgent'),
+        ],
+        initial='medium',
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'id_priority'
+        })
+    )
+    
     class Meta:
         model = BudgetRequest
         fields = [
@@ -128,10 +158,6 @@ class BudgetRequestForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'Describe the purpose of the budget request'
             }),
-            'currency': forms.Select(attrs={
-                'class': 'form-control',
-                'id': 'id_currency'
-            }),
             'department': forms.Select(attrs={
                 'class': 'form-control',
                 'id': 'id_department'
@@ -143,10 +169,6 @@ class BudgetRequestForm(forms.ModelForm):
             'required_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
-            }),
-            'priority': forms.Select(attrs={
-                'class': 'form-control',
-                'id': 'id_priority'
             }),
             'cost_center': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -161,22 +183,6 @@ class BudgetRequestForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # Set currency choices
-        self.fields['currency'].choices = [
-            ('USD', 'USD - US Dollar'),
-            ('KES', 'KES - Kenyan Shilling'),
-            ('EUR', 'EUR - Euro'),
-            ('GBP', 'GBP - British Pound'),
-        ]
-        
-        # Set priority choices
-        self.fields['priority'].choices = [
-            ('Low', 'Low'),
-            ('Medium', 'Medium'),
-            ('High', 'High'),
-            ('Urgent', 'Urgent'),
-        ]
     
     def clean_requested_amount(self):
         """Validate requested amount."""

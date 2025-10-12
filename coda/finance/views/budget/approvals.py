@@ -72,24 +72,22 @@ def budget_approval_dashboard(request, company_slug, company=None):
         
         user_department = view.get_user_department(request, company)
         
-        # Get pending approvals
+        # Get pending approvals (BudgetRequest doesn't have company field)
         pending_requests = BudgetRequest.objects.filter(
-            company=company,
-            status='pending'
-        ).select_related('requested_by', 'category', 'subcategory')
+            status__in=['submitted', 'under_review']
+        ).select_related('requester', 'budget_category', 'department')
         
         # Get recent approvals
         recent_approvals = BudgetRequest.objects.filter(
-            company=company,
             status__in=['approved', 'rejected']
-        ).select_related('requested_by', 'category', 'subcategory').order_by('-updated_at')[:10]
+        ).select_related('requester', 'budget_category', 'department').order_by('-updated_at')[:10]
         
         # Get approval statistics
         approval_stats = {
             'pending_count': pending_requests.count(),
-            'approved_count': BudgetRequest.objects.filter(company=company, status='approved').count(),
-            'rejected_count': BudgetRequest.objects.filter(company=company, status='rejected').count(),
-            'total_requests': BudgetRequest.objects.filter(company=company).count(),
+            'approved_count': BudgetRequest.objects.filter(status='approved').count(),
+            'rejected_count': BudgetRequest.objects.filter(status='rejected').count(),
+            'total_requests': BudgetRequest.objects.count(),
         }
         
         context = {
