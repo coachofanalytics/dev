@@ -94,24 +94,18 @@ urlpatterns = [
     path('', home, name='home'),  # 👈 homepage
     path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
 ]
-
-from django.urls import path
-from .views import home, WCAGStandardWebsiteListView, WCAGStandardWebsiteCreateView
-from django.urls import path
-from .views import (
-    WCAGStandardWebsiteListView,
-    WCAGStandardWebsiteDetailView,
-    WCAGStandardWebsiteCreateView,
-    WCAGStandardWebsiteUpdateView,
-    WCAGStandardWebsiteDeleteView,
-)# main/urls.py
 from django.urls import path
 from . import views
 
-app_name = 'main'  # keep this here only once
+urlpatterns = [
+    path('client/availability/', views.client_availability_list, name='client-availability-list'),
+]
+from django.urls import path
+from . import views
 
 urlpatterns = [
     path('client/availability/', views.client_availability_list, name='client-availability-list'),
+    path('client/availability/add/', views.add_client_availability, name='add-client-availability'),  # ✅ new route
 ]
 
 

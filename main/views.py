@@ -393,40 +393,23 @@ from django.http import HttpResponse
 
 def home(request):
     return HttpResponse("Welcome to the homepage.")
-
-from django.views.generic import ListView
-from django.shortcuts import redirect
-from .models import ClientAvailability
-from .forms import ClientAvailabilityForm
-
-class ClientAvailabilityListView(ListView):
-    model = ClientAvailability
-    template_name = 'client_availability_list.html'
-    context_object_name = 'availabilities'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = ClientAvailabilityForm()
-        return context
-
-    def post(self, request, *args, **kwargs):
-        form = ClientAvailabilityForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('client-availability-list')
-        else:
-            context = self.get_context_data()
-            context['form'] = form
-            return self.render_to_response(context)
-from django.shortcuts import render
-
-def home(request):
-    return render(request, 'home.html')
-
 from django.shortcuts import render
 from .models import ClientAvailability
 
 def client_availability_list(request):
-    availabilities = ClientAvailability.objects.all().order_by('day', 'start_time')
+    availabilities = ClientAvailability.objects.all()
     return render(request, 'main/client_availability_list.html', {'availabilities': availabilities})
 
+from django.shortcuts import render, redirect
+from .models import ClientAvailability
+from .forms import ClientAvailabilityForm
+
+def add_client_availability(request):
+    if request.method == 'POST':
+        form = ClientAvailabilityForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('client-availability-list')  # redirects to your list page
+    else:
+        form = ClientAvailabilityForm()
+    return render(request, 'main/add_client_availability.html', {'form': form})

@@ -29,3 +29,18 @@ class ClientAvailabilityForm(forms.ModelForm):
         model = ClientAvailability
         fields = ['client', 'day', 'start_time', 'end_time', 'time_standards', 'topic', 'recurring_weekly']
 
+from django import forms
+from .models import ClientAvailability
+
+class ClientAvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = ClientAvailability
+        fields = ['client', 'day', 'start_time', 'end_time', 'topic', 'recurring_weekly']
+        widgets = {
+            'day': forms.Select(attrs={'class': 'form-select'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'topic': forms.TextInput(attrs={'class': 'form-control'}),
+            'client': forms.TextInput(attrs={'class': 'form-control'}),
+            'recurring_weekly': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
