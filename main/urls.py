@@ -104,27 +104,16 @@ from .views import (
     WCAGStandardWebsiteCreateView,
     WCAGStandardWebsiteUpdateView,
     WCAGStandardWebsiteDeleteView,
-)
+)# main/urls.py
+from django.urls import path
+from . import views
+
+app_name = 'main'  # keep this here only once
 
 urlpatterns = [
-    path('websites/', WCAGStandardWebsiteListView.as_view(), name='website-list'),
-    path('websites/add/', WCAGStandardWebsiteCreateView.as_view(), name='website-add'),
-    path('websites/<int:pk>/', WCAGStandardWebsiteDetailView.as_view(), name='website-detail'),
-    path('websites/<int:pk>/edit/', WCAGStandardWebsiteUpdateView.as_view(), name='website-edit'),
-    path('websites/<int:pk>/delete/', WCAGStandardWebsiteDeleteView.as_view(), name='website-delete'),
+    path('client/availability/', views.client_availability_list, name='client-availability-list'),
 ]
-from .views import WCAGStandardWebsiteCreateView, WCAGStandardWebsiteUpdateView
 
-urlpatterns = [
-    path('websites/add/', WCAGStandardWebsiteCreateView.as_view(), name='website-add'),
-    path('websites/<int:pk>/edit/', WCAGStandardWebsiteUpdateView.as_view(), name='website-edit'),
-]
-from django.contrib import admin
-from django.urls import path, include
-from django.views.generic import RedirectView
 
-urlpatterns = [
-    path('', RedirectView.as_view(url='/admin/')),  # Redirect root to admin
-    path('admin/', admin.site.urls),
-    # other paths...
-]
+
+
