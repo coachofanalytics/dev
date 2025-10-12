@@ -173,7 +173,8 @@ class Tracker(models.Model):
     task = models.CharField(max_length=25)
     plan = models.CharField(max_length=255)
     # empname = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='employee_tracker')
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='trackers')
+    author = models.ForeignKey(CustomerUser, on_delete=models.CASCADE)
+
     employee = models.CharField(max_length=255)
     login_date = models.DateTimeField()
     start_time = models.TimeField(null=True, blank=True)
