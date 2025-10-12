@@ -143,3 +143,19 @@ urlpatterns = [
     path('', include('main.urls')),  # <-- include your app's URLs
 ]
 
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('main.urls')),  # if your app is 'main'
+]
+# coda_project/urls.py
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('main/', include('main.urls')),  # ✅ Do NOT add namespace again
+    path('accounts/', include('accounts.urls')),
+]

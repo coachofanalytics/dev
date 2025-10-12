@@ -12,7 +12,7 @@ AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend
 
 # Application definition
 INSTALLED_APPS = [
-    "main.apps.MainConfig",
+    'main.apps.MainConfig',  # ✅ Also OK (but not both)
     "accounts.apps.AccountsConfig",
     "application.apps.ApplicationConfig",   # ✅ keep this
     "crispy_forms",
@@ -65,8 +65,8 @@ ROOT_URLCONF = "coda_project.urls"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Add custom template dirs here if any
-        'APP_DIRS': True,  # This enables Django to find templates inside app folders
+        'DIRS': [],  # or ['templates'] if you use a global templates folder
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
