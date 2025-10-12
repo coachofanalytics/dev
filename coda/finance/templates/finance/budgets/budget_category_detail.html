@@ -94,6 +94,43 @@
                         </div>
                     </div>
                     
+                    <!-- Budget Items List with Edit Buttons -->
+                    {% if data.budgets %}
+                    <h6>Budget Items:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th>Cases</th>
+                                    <th>Total</th>
+                                    <th>Actual Spent</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for budget in data.budgets %}
+                                <tr>
+                                    <td>{{ budget.item_name }}</td>
+                                    <td>${{ budget.unit_price|floatformat:2 }}</td>
+                                    <td>{{ budget.quantity|floatformat:2 }}</td>
+                                    <td>{{ budget.cases }}</td>
+                                    <td>${{ budget.estimated_amount|default:budget.unit_price|add:0|mul:budget.quantity|mul:budget.cases|floatformat:2 }}</td>
+                                    <td>${{ budget.actual_spent|floatformat:2 }}</td>
+                                    <td>
+                                        <a href="{% url 'finance:budget-edit' company.slug budget.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                    
                     <!-- Recent Transactions -->
                     {% if data.recent_transactions %}
                     <h6>Recent Transactions</h6>
