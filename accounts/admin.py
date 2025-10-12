@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser, Department, Credential, TaskGroup, TeamMember, CredentialCategory,Sprintplanning,CapacityBuilding
+from .models import CustomerUser,  Credential, TaskGroup, TeamMember, CredentialCategory,Sprintplanning,CapacityBuilding,Evidence
 
 
 
@@ -75,11 +75,12 @@ admin.site.register(CustomerUser, CustomerAdmin)
 
 # Register your models here.
 # admin.site.register(LoginHistory)
-admin.site.register(Department
-                    )
+# admin.site.register(Department
+#                     )
 admin.site.register(Credential)
 admin.site.register(TaskGroup)
 admin.site.register(TeamMember)
 admin.site.register(CredentialCategory)
 admin.site.register(Sprintplanning)
 admin.site.register(CapacityBuilding)
+admin.site.register(Evidence)

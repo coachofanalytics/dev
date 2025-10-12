@@ -94,20 +94,23 @@ class LoginHistory (models.Model):
 from django.db import models
 from django.utils.text import slugify
 
-class Department(models.Model):
-    description = models.CharField(max_length=500, null=True, blank=True)
-    slug = models.SlugField(unique=True, null=False)
-    is_featured = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+# class Department(models.Model):
+#     description = models.CharField(max_length=500, null=True, blank=True)
+#     slug = models.SlugField(unique=True, null=False)
+#     is_featured = models.BooleanField(default=False)
+#     is_active = models.BooleanField(default=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.description[:50])  # auto-generate slug
-        super().save(*args, **kwargs)
+#     def save(self, *args, **kwargs):
+#         if not self.slug:
+#             self.slug = slugify(self.description[:50])  # auto-generate slug
+#         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.description
-    
+#     def __str__(self):
+#         return self.description
+# class Department(models.Model):
+#     # title = models.CharField(max_length=100, null=False)
+#     slug = models.SlugField(null=True)
+
 
 
 from django.db import models
@@ -189,6 +192,22 @@ class CapacityBuilding(models.Model):
 
     def __str__(self):
         return f"{self.title}-{self.team}"
+    
+from django.db import models
+from accounts.models import CustomerUser  # adjust the import path as needed
+
+class Evidence(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to="evidence/")  # fixed the syntax
+    uploaded_by = models.ForeignKey(
+        CustomerUser, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    upload_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
 
 
 
