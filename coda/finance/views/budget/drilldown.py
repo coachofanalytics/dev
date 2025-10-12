@@ -109,9 +109,11 @@ class BudgetDrillDownView(BaseFinanceView):
             end_date = request.POST.get('end_date')
             
             if start_date:
-                budget.start_date = start_date
+                from datetime import datetime
+                budget.start_date = timezone.make_aware(datetime.strptime(start_date, '%Y-%m-%d'))
             if end_date:
-                budget.end_date = end_date
+                from datetime import datetime
+                budget.end_date = timezone.make_aware(datetime.strptime(end_date, '%Y-%m-%d'))
             
             budget.save()
             
