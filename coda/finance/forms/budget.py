@@ -113,8 +113,8 @@ class BudgetRequestForm(forms.ModelForm):
     class Meta:
         model = BudgetRequest
         fields = [
-            'amount', 'currency', 'purpose', 'department',
-            'required_date', 'priority'
+            'amount', 'currency', 'purpose', 'department', 'budget_category',
+            'required_date', 'priority', 'cost_center', 'attachments'
         ]
         widgets = {
             'amount': forms.NumberInput(attrs={
@@ -136,6 +136,10 @@ class BudgetRequestForm(forms.ModelForm):
                 'class': 'form-control',
                 'id': 'id_department'
             }),
+            'budget_category': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'id_budget_category'
+            }),
             'required_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
@@ -143,6 +147,15 @@ class BudgetRequestForm(forms.ModelForm):
             'priority': forms.Select(attrs={
                 'class': 'form-control',
                 'id': 'id_priority'
+            }),
+            'cost_center': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., PROJ-2024-Q1'
+            }),
+            'attachments': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'List supporting documents (comma-separated)'
             }),
         }
     

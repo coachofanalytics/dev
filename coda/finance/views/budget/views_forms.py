@@ -22,11 +22,15 @@ from accounts.models import Department
 def budget_request_form(request):
     """User-friendly budget request form"""
     if request.method == 'POST':
-        form = BudgetRequestForm(request.POST, user=request.user)
+        form = BudgetRequestForm(request.POST)
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    budget_request = form.save()
+                    budget_request = form.save(commit=False)
+                    budget_request.requester = request.user
+                    budget_request.created_by = request.user
+                    budget_request.last_modified_by = request.user
+                    budget_request.save()
                     
                     # Auto-submit for approval if user chooses
                     if request.POST.get('submit_for_approval') == 'on':
@@ -50,7 +54,7 @@ def budget_request_form(request):
             except Exception as e:
                 messages.error(request, f'Error creating budget request: {str(e)}')
     else:
-        form = BudgetRequestForm(user=request.user)
+        form = BudgetRequestForm()
     
     # Get available departments and categories
     departments = Department.objects.filter(is_active=True)
@@ -165,11 +169,11 @@ def budget_request_edit(request, pk):
         return redirect('finance:budget_request_detail', pk=pk)
     
     if request.method == 'POST':
-        form = BudgetRequestForm(request.POST, instance=budget_request, user=request.user)
+        form = BudgetRequestForm(request.POST, instance=budget_request)
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    budget_request = form.save()
+                    budget_request = form.save(commit=False)
                     budget_request.last_modified_by = request.user
                     budget_request.save()
                     
