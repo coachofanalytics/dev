@@ -42,19 +42,19 @@
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                <div class="metric-value">${{ category_stats.total_estimated|floatformat:2 }}</div>
+                       <div class="metric-value">KES {{ category_stats.total_estimated|floatformat:2 }}</div>
                 <div class="metric-label">Estimated Amount</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                <div class="metric-value">${{ category_stats.total_actual|floatformat:2 }}</div>
+                       <div class="metric-value">KES {{ category_stats.total_actual|floatformat:2 }}</div>
                 <div class="metric-label">Actual Spent</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                <div class="metric-value">${{ category_stats.average_amount|floatformat:2 }}</div>
+                       <div class="metric-value">KES {{ category_stats.average_amount|floatformat:2 }}</div>
                 <div class="metric-label">Average Amount</div>
             </div>
         </div>
@@ -77,13 +77,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Budget Count:</strong> {{ data.budget_count }}</p>
-                            <p><strong>Estimated:</strong> ${{ data.total_estimated|floatformat:2 }}</p>
-                            <p><strong>Actual:</strong> ${{ data.total_actual|floatformat:2 }}</p>
+                                           <p><strong>Estimated:</strong> KES {{ data.total_estimated|floatformat:2 }}</p>
+                                           <p><strong>Actual:</strong> KES {{ data.total_actual|floatformat:2 }}</p>
                         </div>
                         <div class="col-md-6">
                             <p><strong>Variance:</strong> 
                                 <span class="{% if data.total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                    ${{ data.total_variance|floatformat:2 }}
+                                    KES {{ data.total_variance|floatformat:2 }}
                                 </span>
                             </p>
                             <p><strong>Variance %:</strong> 
@@ -114,13 +114,13 @@
                                 {% for budget in data.budgets %}
                                 <tr>
                                     <td>{{ budget.item_name }}</td>
-                                    <td>${{ budget.unit_price|floatformat:2 }}</td>
-                                    <td>{{ budget.quantity|floatformat:2 }}</td>
-                                    <td>{{ budget.cases }}</td>
-                                    <td>${{ budget.calculated_total|floatformat:2 }}</td>
-                                    <td>${{ budget.actual_spent|floatformat:2 }}</td>
+                                   <td>KES {{ budget.unit_price|floatformat:2 }}</td>
+                                   <td>{{ budget.quantity|floatformat:2 }}</td>
+                                   <td>{{ budget.cases }}</td>
+                                   <td>KES {{ budget.calculated_total|floatformat:2 }}</td>
+                                   <td>KES {{ budget.actual_spent|floatformat:2 }}</td>
                                     <td>
-                                        <a href="{% url 'finance:budget-item-edit' budget.id %}" class="btn btn-sm btn-primary">
+                                        <a href="{% url 'finance:budget-item-edit' company.slug budget.id %}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
                                     </td>
@@ -149,7 +149,7 @@
                                 {% for transaction in data.recent_transactions %}
                                                <tr>
                                                    <td>{{ transaction.transaction_date|date:"M d, Y" }}</td>
-                                                   <td>${{ transaction.amount|floatformat:2 }}</td>
+                                                   <td>KES {{ transaction.amount|floatformat:2 }}</td>
                                                    <td>{{ transaction.description|truncatewords:10 }}</td>
                                                    <td>{{ transaction.vendor_supplier.username|default:transaction.receiver|default:"N/A" }}</td>
                                                    <td>{{ transaction.sender.username|default:"N/A" }}</td>

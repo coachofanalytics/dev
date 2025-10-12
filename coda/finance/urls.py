@@ -238,7 +238,7 @@ urlpatterns = [
     # Budget drill-down views (User perspective - Phase 2)
     path('budget/<str:company_slug>/category/<int:category_id>/', views_budget_drilldown.budget_category_detail, name='budget-category-detail'),
     path('budget/<str:company_slug>/category/<int:category_id>/compare/', views_budget_drilldown.budget_comparison_view, name='budget-category-compare'),
-    path('budget/item/<int:item_id>/edit/', views_budget_drilldown.budget_item_edit, name='budget-item-edit'),
+    path('budget/<str:company_slug>/item/<int:item_id>/edit/', views_budget_drilldown.budget_item_edit, name='budget-item-edit'),
     
     #=============================ENHANCED BUDGET SYSTEM (DEPRECATED - PHASE 3)=====================================
     # OLD URLs - Redirect to new unified dashboard
