@@ -385,7 +385,7 @@ def budget_approval_dashboard(request, company_slug, company=None):
             'recent_approvals': recent_approvals,
         }
         
-        return render(request, 'finance/budgets/budget_approval_dashboard.html', context)
+        return render(request, 'finance/budgets/approval_dashboard.html', context)
     
     except Exception as e:
         view.handle_error(request, e, "Error loading budget approval dashboard")
