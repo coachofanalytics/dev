@@ -304,52 +304,158 @@ class DC48_Inflow(models.Model):
 
 
 class Transaction(models.Model):
-    """Core transaction model for all financial transactions"""
+    """
+    Production-ready Transaction model with proper relationships.
+    Maps to existing database columns using db_column parameter.
+    """
     
-    # Transaction Type Choices
-    TYPE_CHOICES = [
-        ('expense', 'Expense'),
-        ('income', 'Income'),
-        ('transfer', 'Transfer'),
-        ('adjustment', 'Adjustment'),
+    # Category Choices
+    CAT_CHOICES = [
+        ("Salary", "Salary"),
+        ("Health", "Health"),
+        ("Transport", "Transport"),
+        ("Food_Accomodation", "Food & Accomodation"),
+        ("Internet_Airtime", "Internet & Airtime"),
+        ("Recruitment", "Recruitment"),
+        ("Labour", "Labour"),
+        ("Management", "Management"),
+        ("Electricity", "Electricity"),
+        ("Construction", "Construction"),
+        ("Other", "Other"),
     ]
     
-    # Transaction Status Choices
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
-        ('failed', 'Failed'),
+    # Payment Method Choices
+    PAY_CHOICES = [
+        ("Cash", "Cash"),
+        ("Mpesa", "Mpesa"),
+        ("Check", "Check"),
+        ("Other", "Other"),
     ]
     
-    sender = models.CharField(max_length=200, blank=True, null=True)
-    receiver = models.CharField(max_length=200, blank=True, null=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='expense')
+    # User Relationships - Map to existing sender_id column
+    sender = models.ForeignKey(
+        User,
+        verbose_name=_("sender"),
+        related_name="sent_transactions",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        db_column='sender_id',
+        limit_choices_to={"is_staff": True, "is_active": True},
+    )
+    
+    # Vendor/Supplier - Map to existing vendor_supplier_id column
+    vendor_supplier = models.ForeignKey(
+        User,
+        verbose_name=_("vendor_supplier"),
+        related_name="vendor_transactions",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        db_column='vendor_supplier_id',
+        limit_choices_to=Q(is_active=True) & (Q(is_staff=True) | Q(category=6)),
+    )
+    
+    # Basic Fields (no db_column needed - names match)
+    receiver = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    
+    # Department & Category Relationships - Map to existing columns
+    department = models.ForeignKey(
+        'accounts.Department',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        db_column='department_id'
+    )
+    
+    category = models.ForeignKey(
+        'BudgetCategory',
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        blank=True,
+        null=True,
+        db_column='category_id'
+    )
+    
+    subcategory = models.ForeignKey(
+        'BudgetSubCategory',
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        blank=True,
+        null=True,
+        db_column='subcategory_id'
+    )
+    
+    # Transaction Details
+    type = models.CharField(
+        max_length=100,
+        choices=CAT_CHOICES,
+        default="Other",
+    )
+    
     transaction_date = models.DateTimeField(default=timezone.now)
-    receipt_link = models.URLField(blank=True, null=True)
-    qty = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    amount = models.DecimalField(max_digits=15, decimal_places=2)
-    transaction_cost = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    payment_method = models.CharField(max_length=50, blank=True, null=True)
-    sender_id = models.CharField(max_length=20, blank=True, null=True)
-    department_id = models.CharField(max_length=20, blank=True, null=True)
-    subcategory_id = models.CharField(max_length=20, blank=True, null=True)
-    category_id = models.CharField(max_length=20, blank=True, null=True)
-    vendor_supplier_id = models.CharField(max_length=200, blank=True, null=True)
+    receipt_link = models.CharField(max_length=100, blank=True, null=True)
+    
+    qty = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        default=1
+    )
+    
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    
+    transaction_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        default=0
+    )
+    
+    description = models.TextField(
+        max_length=1000,
+        blank=True,
+        null=True
+    )
+    
+    payment_method = models.CharField(
+        max_length=25,
+        choices=PAY_CHOICES,
+        default="Other",
+    )
+    
+    # Additional Fields (keeping from existing schema)
     amount_usd = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
     currency = models.CharField(max_length=3, default='KES')
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
     location = models.CharField(max_length=200, blank=True, null=True)
     
+    # Computed Property
+    @property
+    def total_payment(self):
+        """Calculate total payment amount"""
+        if self.amount and self.qty:
+            return self.amount * self.qty
+        return self.amount or 0
+    
+    def get_absolute_url(self):
+        return reverse("finance:transaction-detail", kwargs={"pk": self.pk})
+    
     class Meta:
-        ordering = ['-transaction_date']
         verbose_name = "Transaction"
         verbose_name_plural = "Transactions"
+        ordering = ["-transaction_date"]
     
     def __str__(self):
-        return "{} {} - {} ({})".format(self.amount, self.currency, self.get_transaction_type_display(), self.user.username)
+        return f"Transaction #{self.id} - {self.type}"
 
 
 class CodaBudget(TimeStampedModel):
