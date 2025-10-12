@@ -167,13 +167,25 @@ class CredentialCategory(models.Model):
 from django.conf import settings 
 
 
+from django.db import models
+from django.conf import settings  # for referencing user model safely
+from accounts.models import CustomerUser  # adjust if it's in another app
+
+
 class Tracker(models.Model):
     category = models.CharField(max_length=25)
-    # sub_categorys = models.ForeignKey('SubCategoryChoices', on_delete=models.CASCADE)
+    sub_category = models.CharField(max_length=50, null=True, blank=True)
     task = models.CharField(max_length=25)
     plan = models.CharField(max_length=255)
-    # empname = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='employee_tracker')
-    author = models.ForeignKey(CustomerUser, on_delete=models.CASCADE)
+
+    # Safely reference user (CustomerUser) as author
+    author = models.ForeignKey(
+        CustomerUser,
+        on_delete=models.CASCADE,
+        related_name='trackers',
+        null=True,
+        blank=True
+    )
 
     employee = models.CharField(max_length=255)
     login_date = models.DateTimeField()
@@ -181,7 +193,13 @@ class Tracker(models.Model):
     duration = models.IntegerField(null=True, blank=True)
     time = models.PositiveIntegerField(null=True, blank=True)
 
+    class Meta:
+        ordering = ['-login_date']
+        verbose_name = "Tracker"
+        verbose_name_plural = "Trackers"
+
     def __str__(self):
         return f"{self.task} - {self.category}"
+
 
 
