@@ -117,7 +117,7 @@
                                     <td>${{ budget.unit_price|floatformat:2 }}</td>
                                     <td>{{ budget.quantity|floatformat:2 }}</td>
                                     <td>{{ budget.cases }}</td>
-                                    <td>${{ budget.estimated_amount|default:budget.unit_price|add:0|mul:budget.quantity|mul:budget.cases|floatformat:2 }}</td>
+                                    <td>${{ budget.calculated_total|floatformat:2 }}</td>
                                     <td>${{ budget.actual_spent|floatformat:2 }}</td>
                                     <td>
                                         <a href="{% url 'finance:budget-edit' company.slug budget.id %}" class="btn btn-sm btn-primary">

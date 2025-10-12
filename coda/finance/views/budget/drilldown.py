@@ -174,9 +174,24 @@ def budget_category_detail(request, company_slug, category_id, company=None):
             ).select_related('sender', 'category', 'department').order_by('-transaction_date')[:5]
             
             
+            # Add calculated totals to each budget for template display
+            budgets_with_totals = []
+            for budget in budgets:
+                budget_dict = budget.__dict__.copy()
+                # Calculate total for this budget item
+                if budget.estimated_amount is not None:
+                    budget_dict['calculated_total'] = budget.estimated_amount
+                elif budget.unit_price and budget.quantity and budget.cases:
+                    budget_dict['calculated_total'] = budget.unit_price * budget.quantity * budget.cases
+                elif budget.unit_price and budget.quantity:
+                    budget_dict['calculated_total'] = budget.unit_price * budget.quantity
+                else:
+                    budget_dict['calculated_total'] = 0
+                budgets_with_totals.append(budget_dict)
+            
             subcategory_data.append({
                 'subcategory': subcategory,
-                'budgets': budgets,
+                'budgets': budgets_with_totals,
                 'total_estimated': total_estimated,
                 'total_actual': total_actual,
                 'total_variance': total_variance,
