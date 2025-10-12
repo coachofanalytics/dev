@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% if object %}Edit{% else %}Add{% endif %} Website</title>
+</head>
+<body>
+    <h1>{% if object %}Edit{% else %}Add{% endif %} Website</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+        <a href="{% url 'website-list' %}">Cancel</a>
+    </form>
+</body>
+</html>

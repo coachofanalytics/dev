@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib import admin
 from django.contrib import admin
-from .models import ServiceCategory
+from .models import ServiceCategory,ClientAvailability
 from django.contrib import admin
 from .models import WCAGStandardWebsite
 
@@ -32,6 +32,4 @@ from .models import ClientAvailability
 
 @admin.register(ClientAvailability)
 class ClientAvailabilityAdmin(admin.ModelAdmin):
-    list_display = ('client', 'day', 'start_time', 'end_time', 'time_standards', 'topic')
-    list_filter = ('day', 'time_standards')
-    search_fields = ('client', 'topic')
+    ...

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client Availability</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f9f9f9; }
+        form { max-width: 600px; }
+        .errorlist { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Client Availabilities</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Day</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Timezone</th>
+                <th>Topic</th>
+                <th>Recurring</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for availability in availabilities %}
+                <tr>
+                    <td>{{ availability.client }}</td>
+                    <td>{{ availability.day }}</td>
+                    <td>{{ availability.start_time }}</td>
+                    <td>{{ availability.end_time }}</td>
+                    <td>{{ availability.time_standards }}</td>
+                    <td>{{ availability.topic }}</td>
+                    <td>{{ availability.recurring_weekly|yesno:"Yes,No" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">No availability records yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Add Availability</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+<h1>Welcome to the Client Availability App</h1>
+<p><a href="{% url 'client-availability-list' %}">View or Add Availability</a></p>
+<a href="{% url 'client-availability-list' %}">View or Add Availability</a>

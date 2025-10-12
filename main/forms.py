@@ -20,3 +20,12 @@ class LocationForm(forms.ModelForm):
     class Meta:
         model = Location
         fields = ['zipcode', 'city', 'state', 'country']
+
+        from django import forms
+from .models import ClientAvailability
+
+class ClientAvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = ClientAvailability
+        fields = ['client', 'day', 'start_time', 'end_time', 'time_standards', 'topic', 'recurring_weekly']
+
