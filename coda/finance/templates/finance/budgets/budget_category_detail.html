@@ -120,7 +120,7 @@
                                     <td>${{ budget.calculated_total|floatformat:2 }}</td>
                                     <td>${{ budget.actual_spent|floatformat:2 }}</td>
                                     <td>
-                                        <a href="{% url 'finance:budget-edit' company.slug budget.id %}" class="btn btn-sm btn-primary">
+                                        <a href="{% url 'finance:budget-item-edit' budget.id %}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
                                     </td>
