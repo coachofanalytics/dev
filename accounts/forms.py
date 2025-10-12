@@ -182,7 +182,12 @@ class credentialcategoryForm(forms.ModelForm):
         fields = ['description','verbose_name','entry_date','is_active','is_featured']
 
 
-class TrackerForm(forms.ModelForm)  :
+class TrackerForm(forms.ModelForm):
     class Meta:
-        model=Tracker
-        fields =['category',"sub_category",'task','plan','author','employee','login_date','start_time','duration','time']      
+        model = Tracker
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control rounded-3'})

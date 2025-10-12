@@ -169,7 +169,7 @@ from django.conf import settings
 
 class Tracker(models.Model):
     category = models.CharField(max_length=25)
-    sub_category = models.ForeignKey('CredentialCategory', on_delete=models.CASCADE, related_name='trackers')
+    # sub_categorys = models.ForeignKey('SubCategoryChoices', on_delete=models.CASCADE)
     task = models.CharField(max_length=25)
     plan = models.CharField(max_length=255)
     # empname = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='employee_tracker')

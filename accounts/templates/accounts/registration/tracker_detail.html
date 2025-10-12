@@ -1,0 +1,55 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<div class="container mt-5">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+    <h2 class="fw-bold text-primary">
+      <i class="bi bi-journal-text"></i> Tracker Details
+    </h2>
+    <a href="{% url 'accounts:tracker_list' %}" class="btn btn-outline-secondary rounded-pill">
+      <i class="bi bi-arrow-left-circle"></i> Back to List
+    </a>
+  </div>
+
+  <!-- Tracker Info Card -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white fw-semibold">
+      <i class="bi bi-person-workspace"></i> {{ tracker.task }}
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p><strong>Category:</strong> {{ tracker.category }}</p>
+          <p><strong>Sub-category:</strong> {{ tracker.sub_category }}</p>
+          <p><strong>Plan:</strong> {{ tracker.plan }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Employee:</strong> {{ tracker.employee }}</p>
+          <p><strong>Author:</strong> {{ tracker.author }}</p>
+          <p><strong>Login Date:</strong> {{ tracker.login_date|date:"Y-m-d H:i" }}</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Start Time:</strong> {{ tracker.start_time }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Duration:</strong> {{ tracker.duration }} minutes</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="mt-4 text-center">
+    <a href="{% url 'accounts:Trackers_update' trackers.pk %}" class="btn btn-warning rounded-pill shadow-sm me-2">
+      <i class="bi bi-pencil-square"></i> Edit
+    </a>
+    <a href="{% url 'accounts:Trackers_delete' trackers.pk %}" class="btn btn-danger rounded-pill shadow-sm">
+      <i class="bi bi-trash"></i> Delete
+    </a>
+  </div>
+
+</div>
+{% endblock %}

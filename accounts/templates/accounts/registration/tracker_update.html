@@ -1,37 +1,86 @@
 {% extends "main/base_templates/accounts_base.html" %}
-{% load crispy_forms_tags %}
-
-{% block title %}Update Trackers{% endblock %}
-
 {% block content %}
 <div class="container mt-5">
 
-    <!-- Header Section -->
-    <div class="card shadow-lg border-0 mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top">
-            <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Update Trackers</h3>
-            <a href="{% url 'accounts:tracker_list' %}" class="btn btn-light btn-sm">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </a>
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+    <h2 class="fw-bold text-warning">
+      <i class="bi bi-pencil-square"></i> Update Tracker
+    </h2>
+    <a href="{% url 'accounts:tracker_list' %}" class="btn btn-outline-secondary rounded-pill">
+      <i class="bi bi-arrow-left-circle"></i> Back to List
+    </a>
+  </div>
+
+  <!-- Update Form Card -->
+  <div class="card shadow-lg border-0">
+    <div class="card-body">
+      <form method="POST" class="p-3">
+        {% csrf_token %}
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Category</label>
+            {{ form.category }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Sub-Category</label>
+            {{ form.sub_category }}
+          </div>
         </div>
 
-        <!-- Form Body -->
-        <div class="card-body bg-light">
-            <form method="POST" class="p-3">
-                {% csrf_token %}
-                {{ form|crispy }}
-
-                <div class="d-flex justify-content-end mt-4">
-                    <button type="submit" class="btn btn-success me-2">
-                        <i class="fas fa-save"></i> Update
-                    </button>
-                    <a href="{% url 'accounts:tracker_list' %}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Cancel
-                    </a>
-                </div>
-            </form>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Task</label>
+            {{ form.task }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Plan</label>
+            {{ form.plan }}
+          </div>
         </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Employee</label>
+            {{ form.employee }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Author</label>
+            {{ form.author }}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Login Date</label>
+            {{ form.login_date }}
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-semibold">Start Time</label>
+            {{ form.start_time }}
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-semibold">Duration</label>
+            {{ form.duration }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Total Time</label>
+          {{ form.time }}
+        </div>
+
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-warning px-4 rounded-pill shadow-sm me-2">
+            <i class="bi bi-save"></i> Save Changes
+          </button>
+          <a href="{% url 'accounts:tracker_list' %}" class="btn btn-outline-secondary px-4 rounded-pill shadow-sm">
+            <i class="bi bi-x-circle"></i> Cancel
+          </a>
+        </div>
+      </form>
     </div>
-
+  </div>
 </div>
 {% endblock %}

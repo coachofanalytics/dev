@@ -536,3 +536,15 @@ def   Trackers_update(request,pk):
         form =TrackerForm()
     return render(request,'accounts/registration/tracker_update.html',{'form':form})           
 
+
+def Trackers_delete(request,pk):
+    trackers=get_object_or_404(Tracker, pk=pk)
+    if request.method == 'POST':
+        trackers.delete()
+        return redirect('accounts:tracker_list')
+    return render(request,'accounts/registration/tracker_delete.html',{'trackers':trackers})    
+
+
+def Trackers_detail(request,pk):
+    trackers=get_object_or_404(Tracker, pk=pk)
+    return render(request,'accounts/registration/tracker_detail.html',{'trackers':trackers}) 

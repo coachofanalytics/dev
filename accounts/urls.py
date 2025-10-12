@@ -42,6 +42,9 @@ urlpatterns = [
     path('tracker_list/', views.tracker_list, name='tracker_list'),
     path('Trackers_create/', views.Trackers_create, name='Trackers_create'),
     path('Trackers_update/update/<int:pk>/', views.Trackers_update, name='Trackers_update'),
+    path('Trackers_delete/delete/<int:pk>/', views.Trackers_delete, name='Trackers_delete'),
+    path('Trackers_detail/<int:pk>/', views.Trackers_detail, name='Trackers_detail'),
+
 ]
 
 
