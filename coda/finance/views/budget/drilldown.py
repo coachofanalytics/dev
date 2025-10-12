@@ -88,11 +88,21 @@ class BudgetDrillDownView(BaseFinanceView):
             # Update budget fields
             budget.item_name = request.POST.get('item_name', budget.item_name)
             budget.description = request.POST.get('description', budget.description)
-            budget.estimated_amount = Decimal(request.POST.get('estimated_amount', budget.estimated_amount))
+            
+            # Update quantity, unit_price, and cases
             budget.quantity = Decimal(request.POST.get('quantity', budget.quantity))
             budget.unit_price = Decimal(request.POST.get('unit_price', budget.unit_price))
             budget.cases = int(request.POST.get('cases', budget.cases))
-            budget.notes = request.POST.get('notes', budget.notes)
+            
+            # Calculate estimated_amount from unit_price × quantity × cases
+            budget.estimated_amount = budget.unit_price * budget.quantity * budget.cases
+            
+            # Update other fields
+            budget.budget_type = request.POST.get('budget_type', budget.budget_type)
+            budget.timeframe = request.POST.get('timeframe', budget.timeframe)
+            budget.project_name = request.POST.get('project_name', budget.project_name)
+            budget.project_description = request.POST.get('project_description', budget.project_description)
+            budget.is_active = request.POST.get('is_active') == 'on'
             
             # Update dates if provided
             start_date = request.POST.get('start_date')

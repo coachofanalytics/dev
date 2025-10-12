@@ -179,8 +179,8 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label" for="estimated_amount">Estimated Amount (KES)</label>
-                        <input type="number" class="form-control" id="estimated_amount" name="estimated_amount" 
-                               value="{{ budget.estimated_amount }}" step="0.01">
+                        <input type="text" class="form-control" id="estimated_amount" 
+                               value="{{ budget.estimated_amount|floatformat:2 }}" readonly>
                         <small class="text-muted">Auto-calculated from unit price × quantity × cases</small>
                     </div>
                 </div>
