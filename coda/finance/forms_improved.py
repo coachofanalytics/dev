@@ -51,9 +51,23 @@ class SmartTransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
         fields = [
-            'amount', 'currency', 'transaction_type', 'status',
-            'description', 'category', 'subcategory', 'vendor',
-            'transaction_date', 'reference_number', 'notes'
+            'sender',
+            'vendor_supplier',
+            'receiver',
+            'phone',
+            'department',
+            'category',
+            'subcategory',
+            'type',
+            'transaction_date',
+            'receipt_link',
+            'qty',
+            'amount',
+            'transaction_cost',
+            'description',
+            'payment_method',
+            'currency',
+            'location'
         ]
         
         widgets = {
