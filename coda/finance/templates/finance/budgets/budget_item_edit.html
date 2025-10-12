@@ -1,0 +1,314 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Edit Budget Item - {{ budget.item_name }} - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.budget-item-edit {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.budget-header {
+    background: #007bff;
+    color: white;
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+}
+.budget-form {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0 0 8px 8px;
+    padding: 30px;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+}
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.form-control:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+.btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.btn-primary:hover {
+    background: #0056b3;
+}
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 10px;
+}
+.btn-secondary:hover {
+    background: #545b62;
+    color: white;
+    text-decoration: none;
+}
+.transactions-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+}
+.transaction-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+.transaction-date {
+    font-weight: 600;
+    color: #007bff;
+}
+.transaction-amount {
+    font-weight: 600;
+    color: #28a745;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="budget-item-edit">
+    <div class="budget-header">
+        <h2><i class="fas fa-edit me-2"></i>Edit Budget Item</h2>
+        <p class="mb-0">{{ budget.item_name }} - {{ budget.category.name }}</p>
+    </div>
+    
+    <div class="budget-form">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="item_name">Item Name</label>
+                        <input type="text" class="form-control" id="item_name" name="item_name" 
+                               value="{{ budget.item_name }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="category">Category</label>
+                        <select class="form-control" id="category" name="category" disabled>
+                            <option value="{{ budget.category.id }}">{{ budget.category.name }}</option>
+                        </select>
+                        <small class="text-muted">Category cannot be changed</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="subcategory">Subcategory</label>
+                        <select class="form-control" id="subcategory" name="subcategory" disabled>
+                            <option value="{{ budget.subcategory.id }}">{{ budget.subcategory.name }}</option>
+                        </select>
+                        <small class="text-muted">Subcategory cannot be changed</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="budget_type">Budget Type</label>
+                        <select class="form-control" id="budget_type" name="budget_type">
+                            <option value="general" {% if budget.budget_type == 'general' %}selected{% endif %}>General Budget</option>
+                            <option value="website_development" {% if budget.budget_type == 'website_development' %}selected{% endif %}>Website Development</option>
+                            <option value="operations" {% if budget.budget_type == 'operations' %}selected{% endif %}>Operations</option>
+                            <option value="marketing" {% if budget.budget_type == 'marketing' %}selected{% endif %}>Marketing</option>
+                            <option value="infrastructure" {% if budget.budget_type == 'infrastructure' %}selected{% endif %}>Infrastructure</option>
+                            <option value="investment" {% if budget.budget_type == 'investment' %}selected{% endif %}>Investment</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label" for="unit_price">Unit Price (KES)</label>
+                        <input type="number" class="form-control" id="unit_price" name="unit_price" 
+                               value="{{ budget.unit_price }}" step="0.01" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label" for="quantity">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" 
+                               value="{{ budget.quantity }}" step="0.01" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label" for="cases">Cases</label>
+                        <input type="number" class="form-control" id="cases" name="cases" 
+                               value="{{ budget.cases }}" min="1" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="estimated_amount">Estimated Amount (KES)</label>
+                        <input type="number" class="form-control" id="estimated_amount" name="estimated_amount" 
+                               value="{{ budget.estimated_amount }}" step="0.01">
+                        <small class="text-muted">Auto-calculated from unit price × quantity × cases</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="timeframe">Timeframe</label>
+                        <select class="form-control" id="timeframe" name="timeframe">
+                            <option value="weekly" {% if budget.timeframe == 'weekly' %}selected{% endif %}>Weekly</option>
+                            <option value="monthly" {% if budget.timeframe == 'monthly' %}selected{% endif %}>Monthly</option>
+                            <option value="quarterly" {% if budget.timeframe == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                            <option value="yearly" {% if budget.timeframe == 'yearly' %}selected{% endif %}>Yearly</option>
+                            <option value="multi_year" {% if budget.timeframe == 'multi_year' %}selected{% endif %}>Multi-Year</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="4">{{ budget.description }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="project_name">Project Name (Optional)</label>
+                <input type="text" class="form-control" id="project_name" name="project_name" 
+                       value="{{ budget.project_name }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="project_description">Project Description (Optional)</label>
+                <textarea class="form-control" id="project_description" name="project_description" rows="3">{{ budget.project_description }}</textarea>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="start_date">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" 
+                               value="{{ budget.start_date|date:'Y-m-d' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label" for="end_date">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" 
+                               value="{{ budget.end_date|date:'Y-m-d' }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active" 
+                           {% if budget.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="is_active">
+                        Active Budget
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'finance:budget-category-detail' company.slug budget.category.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Category
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    {% if recent_transactions %}
+    <div class="transactions-section">
+        <h4><i class="fas fa-history me-2"></i>Recent Related Transactions</h4>
+        <p class="text-muted">Recent transactions in this category/subcategory:</p>
+        
+        {% for transaction in recent_transactions %}
+        <div class="transaction-item">
+            <div class="row">
+                <div class="col-md-3">
+                    <span class="transaction-date">{{ transaction.transaction_date|date:"M d, Y" }}</span>
+                </div>
+                <div class="col-md-2">
+                    <span class="transaction-amount">KES {{ transaction.amount|floatformat:2 }}</span>
+                </div>
+                <div class="col-md-4">
+                    <span>{{ transaction.description|truncatewords:8 }}</span>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">
+                        {% if transaction.sender %}
+                            User: {{ transaction.sender.username }}
+                        {% else %}
+                            Vendor: {{ transaction.receiver|default:"N/A" }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if recent_transactions|length == 10 %}
+        <p class="text-muted"><small>Showing last 10 transactions. More may be available.</small></p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-calculate estimated amount when unit price, quantity, or cases change
+    function calculateEstimatedAmount() {
+        var unitPrice = parseFloat($('#unit_price').val()) || 0;
+        var quantity = parseFloat($('#quantity').val()) || 0;
+        var cases = parseInt($('#cases').val()) || 1;
+        
+        var estimatedAmount = unitPrice * quantity * cases;
+        $('#estimated_amount').val(estimatedAmount.toFixed(2));
+    }
+    
+    $('#unit_price, #quantity, #cases').on('input', calculateEstimatedAmount);
+    
+    // Calculate initial amount
+    calculateEstimatedAmount();
+    
+    console.log('Budget item edit form loaded for: {{ budget.item_name }}');
+});
+</script>
+{% endblock %}
