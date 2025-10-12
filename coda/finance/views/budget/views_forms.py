@@ -17,6 +17,8 @@ from finance.forms.budget import BudgetRequestForm
 from finance.services.automation_service import BudgetRequestService, ApprovalEngineService
 from accounts.models import Department
 
+from finance.services.smart_approval_service import SmartApprovalService
+
 
 @login_required
 def budget_request_form(request):
@@ -32,22 +34,19 @@ def budget_request_form(request):
                     budget_request.last_modified_by = request.user
                     budget_request.save()
                     
-                    # Auto-submit for approval if user chooses
-                    if request.POST.get('submit_for_approval') == 'on':
-                        service = BudgetRequestService()
-                        budget_request = service.submit_for_approval(
-                            budget_request.id, 
-                            request.user, 
-                            request
-                        )
+                    # Use smart approval service to determine approval
+                    smart_service = SmartApprovalService()
+                    was_auto_approved = smart_service.process_budget_request(budget_request)
+                    
+                    if was_auto_approved:
                         messages.success(
                             request, 
-                            f'Budget request #{budget_request.id} created and submitted for approval!'
+                            f'Budget request #{budget_request.id} created and AUTO-APPROVED! (Known expense category)'
                         )
                     else:
                         messages.success(
                             request, 
-                            f'Budget request #{budget_request.id} created and saved as draft.'
+                            f'Budget request #{budget_request.id} created and submitted for approval!'
                         )
                     
                     return redirect('finance:budget_request_detail', pk=budget_request.id)

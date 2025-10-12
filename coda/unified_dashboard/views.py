@@ -253,8 +253,8 @@ def unified_dashboard(request):
         
     except Exception as e:
         logger.error("Error in unified dashboard: " + str(e))
-        # Don't use messages.error to avoid middleware issues
-        return redirect('main:layout')
+        # Redirect to dashboard overview instead of main layout
+        return redirect('dashboard:dashboard_overview')
 
 
 @login_required

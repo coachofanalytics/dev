@@ -54,6 +54,7 @@
                         <div class="form-group mb-3">
                             <label for="{{ form.purpose.id_for_label }}" class="form-label">
                                 <i class="fas fa-align-left"></i> Purpose & Justification *
+                                <small class="text-muted">(AI will suggest category and amount based on your description)</small>
                             </label>
                             {{ form.purpose }}
                             {% if form.purpose.errors %}
@@ -62,6 +63,16 @@
                             <small class="form-text text-muted">
                                 Provide a detailed description of what this budget is for and why it's needed.
                             </small>
+                            <!-- Smart suggestions will appear here -->
+                            <div id="smart-suggestions" class="mt-2" style="display: none;">
+                                <div class="alert alert-info">
+                                    <strong>💡 Smart Suggestions:</strong>
+                                    <div id="suggestion-content"></div>
+                                    <button type="button" class="btn btn-sm btn-primary mt-2" id="apply-suggestions">
+                                        <i class="fas fa-magic"></i> Apply Suggestions
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="row">
@@ -207,6 +218,121 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Smart form suggestions
+    const purposeField = document.getElementById('{{ form.purpose.id_for_label }}');
+    const departmentField = document.getElementById('{{ form.department.id_for_label }}');
+    const categoryField = document.getElementById('{{ form.budget_category.id_for_label }}');
+    const amountField = document.getElementById('{{ form.amount.id_for_label }}');
+    const suggestionsDiv = document.getElementById('smart-suggestions');
+    const suggestionContent = document.getElementById('suggestion-content');
+    const applyButton = document.getElementById('apply-suggestions');
+    
+    let currentSuggestions = null;
+    let suggestionTimeout = null;
+    
+    // Debounced function to get suggestions
+    function getSuggestions() {
+        if (suggestionTimeout) {
+            clearTimeout(suggestionTimeout);
+        }
+        
+        suggestionTimeout = setTimeout(async () => {
+            const purpose = purposeField.value.trim();
+            const department = departmentField.value;
+            
+            if (purpose.length < 10) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/finance/api/smart-form/suggestions/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        purpose: purpose,
+                        department: department
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.suggestions.confidence > 0.5) {
+                    currentSuggestions = data.suggestions;
+                    displaySuggestions(data.suggestions);
+                } else {
+                    suggestionsDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.log('Error getting suggestions:', error);
+                suggestionsDiv.style.display = 'none';
+            }
+        }, 1000); // Wait 1 second after user stops typing
+    }
+    
+    function displaySuggestions(suggestions) {
+        let content = `<div class="suggestion-item">`;
+        
+        if (suggestions.category) {
+            content += `<div><strong>Category:</strong> ${suggestions.category}</div>`;
+        }
+        
+        if (suggestions.subcategory) {
+            content += `<div><strong>Subcategory:</strong> ${suggestions.subcategory}</div>`;
+        }
+        
+        if (suggestions.suggested_amount) {
+            content += `<div><strong>Suggested Amount:</strong> KES ${suggestions.suggested_amount.toLocaleString()}</div>`;
+        }
+        
+        if (suggestions.reasoning.length > 0) {
+            content += `<div><small class="text-muted">${suggestions.reasoning.join(', ')}</small></div>`;
+        }
+        
+        content += `</div>`;
+        suggestionContent.innerHTML = content;
+        suggestionsDiv.style.display = 'block';
+    }
+    
+    // Apply suggestions when button is clicked
+    applyButton.addEventListener('click', function() {
+        if (currentSuggestions) {
+            if (currentSuggestions.category && categoryField) {
+                // Find and select the matching category option
+                const categoryOptions = categoryField.querySelectorAll('option');
+                for (let option of categoryOptions) {
+                    if (option.textContent.trim() === currentSuggestions.category) {
+                        categoryField.value = option.value;
+                        break;
+                    }
+                }
+            }
+            
+            if (currentSuggestions.suggested_amount && amountField) {
+                amountField.value = currentSuggestions.suggested_amount;
+            }
+            
+            suggestionsDiv.style.display = 'none';
+            
+            // Show success message
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success mt-2';
+            successAlert.innerHTML = '<i class="fas fa-check-circle"></i> Suggestions applied successfully!';
+            purposeField.parentNode.appendChild(successAlert);
+            
+            setTimeout(() => {
+                successAlert.remove();
+            }, 3000);
+        }
+    });
+    
+    // Listen for changes in purpose and department fields
+    purposeField.addEventListener('input', getSuggestions);
+    departmentField.addEventListener('change', getSuggestions);
+
     // Form submission
     form.addEventListener('submit', function(e) {
         const submitForApproval = document.getElementById('submit_for_approval').checked;

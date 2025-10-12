@@ -279,14 +279,13 @@ def budget_approval_api(request, company_slug):
         
         # Get approval data
         pending_requests = BudgetRequest.objects.filter(
-            company=company,
-            status='pending'
-        ).values('id', 'title', 'amount', 'category__name', 'requested_by__username', 'created_at')
+            status__in=['submitted', 'under_review']
+        ).values('id', 'purpose', 'amount', 'budget_category__name', 'requester__username', 'created_at')
         
         approval_stats = {
-            'pending_count': BudgetRequest.objects.filter(company=company, status='pending').count(),
-            'approved_count': BudgetRequest.objects.filter(company=company, status='approved').count(),
-            'rejected_count': BudgetRequest.objects.filter(company=company, status='rejected').count(),
+            'pending_count': BudgetRequest.objects.filter(status__in=['submitted', 'under_review']).count(),
+            'approved_count': BudgetRequest.objects.filter(status='approved').count(),
+            'rejected_count': BudgetRequest.objects.filter(status='rejected').count(),
         }
         
         data = {

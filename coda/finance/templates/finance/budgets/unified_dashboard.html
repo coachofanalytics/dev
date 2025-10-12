@@ -5,6 +5,32 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'finance/css/budget-common.css' %}">
+<style>
+    /* Fix dashboard layout skew */
+    .container-fluid[data-budget-dashboard="true"] {
+        max-width: 100%;
+        margin: 0 auto;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* Ensure proper centering */
+    .budget-header {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    /* Fix any left skew */
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .col-12, .col-md-8, .col-md-4 {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}

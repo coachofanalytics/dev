@@ -7,6 +7,7 @@ from ._deprecated.legacy_views import payment_views
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
 from .views.budget import editing as views_budget_editing
+from .views.api import smart_form_api as views_api_smart_form
 from .views.budget import dashboard as views_budget_dashboard
 from .views.budget import approvals  # CONSOLIDATED: approval.py + views_approvals.py + views_enhanced_approvals.py
 from .views.budget import views_unified_budget, views_enhanced_budget, views_projections
@@ -192,7 +193,7 @@ urlpatterns = [
     # path('delete_payment_history/', views.delete_bad_entry_in_payment_history, name="delete_bad_entry_in_payment_history"),  # View not found
     
     #=============================ANALYTICS DASHBOARD=====================================
-    # path('analytics/', views.analytics_dashboard, name='analytics-dashboard'),  # View not found
+    path('analytics/', lambda request: redirect('finance:unified-budget-dashboard', company_slug='coda', permanent=False) + '?tab=analytics', name='analytics-dashboard'),
     # path('analytics/loan-performance/', views.loan_performance_analytics, name='loan-performance-analytics'),  # View not found
     # path('analytics/kcc-optimization/', views.kcc_optimization_analytics, name='kcc-optimization-analytics'),  # View not found
     # path('analytics/export/', views.analytics_export, name='analytics-export'),  # View not found
@@ -229,6 +230,10 @@ urlpatterns = [
     # Enhanced Legacy Dashboard
     path('legacy-dashboard/<str:company_slug>/', views_legacy_dashboard.enhanced_legacy_dashboard, name='enhanced-legacy-dashboard'),
     path('legacy-dashboard/', views_legacy_dashboard.legacy_dashboard_redirect, name='legacy-dashboard-redirect'),
+    
+    #=============================SMART FORM API=====================================
+    path('api/smart-form/suggestions/', views_api_smart_form.get_form_suggestions, name='smart-form-suggestions'),
+    path('api/smart-form/defaults/', views_api_smart_form.get_department_defaults, name='smart-form-defaults'),
     
     #=============================UNIFIED BUDGET SYSTEM (PHASE 3)=====================================
     # New unified dashboard - consolidates all budget views

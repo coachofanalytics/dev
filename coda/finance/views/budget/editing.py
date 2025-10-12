@@ -49,7 +49,6 @@ def budget_category_edit(request, company_slug, category_id, company=None):
         
         # Get budgets for this category
         budgets = Budget.objects.filter(
-            company=company,
             category=category
         ).select_related('subcategory', 'budget_lead')
         
@@ -104,16 +103,14 @@ def _handle_budget_edit_post(self, request, company, category, budgets):
                     request, 
                     "Budget changes submitted for approval. Request ID: {}".format(budget_request.id)
                 )
-                return redirect('finance:budget-requests-list', company_slug=company.slug)
+                return redirect('finance:budget-requests-list', company_slug=company_slug)
         
         messages.success(request, "Updated {} budget items.".format(len(updated_budgets)))
-        return redirect('finance:budget-category-edit', 
-                       company_slug=company.slug, category_id=category.id)
+        return redirect('finance:budget-category-edit', company_slug=company_slug, category_id=category.id)
     
     except Exception as e:
         self.handle_error(request, e, "Error updating budgets")
-        return redirect('finance:budget-category-edit', 
-                       company_slug=company.slug, category_id=category.id)
+        return redirect('finance:budget-category-edit', company_slug=company_slug, category_id=category.id)
 
 
 def _create_budget_request(self, request, company, category, updated_budgets):
@@ -124,19 +121,18 @@ def _create_budget_request(self, request, company, category, updated_budgets):
         
         # Create budget request
         budget_request = BudgetRequest.objects.create(
-            company=company,
-            title="Budget Update - {}".format(category.name),
-            description="Updated budget estimates for {} category".format(category.name),
-            category=category,
-            subcategory=updated_budgets[0].subcategory,  # Use first budget's subcategory
-            requested_amount=total_amount,
-            requested_by=request.user,
-            justification=request.POST.get('justification', ''),
-            business_case=request.POST.get('business_case', ''),
+            purpose="Budget Update - {}".format(category.name),
+            budget_category=category,
+            amount=total_amount,
+            requester=request.user,
+            department=request.user.userprofile.department if hasattr(request.user, 'userprofile') and request.user.userprofile.department else None,
+            required_date=timezone.now().date(),
+            priority='medium'
         )
         
-        # Submit for approval
-        budget_request.submit_for_approval()
+        # Submit for approval (set status to submitted)
+        budget_request.status = 'submitted'
+        budget_request.save(update_fields=['status'])
         
         return budget_request
     
@@ -178,7 +174,6 @@ def save_budget_estimates(request, company_slug, category_id, company=None):
             try:
                 budget = Budget.objects.get(
                     id=budget_data['id'],
-                    company=company,
                     category=category
                 )
                 budget.estimated_amount = Decimal(budget_data['estimated_amount'])
@@ -213,10 +208,8 @@ def budget_requests_list(request, company_slug, company=None):
                 return redirect('main:dashboard')
         
         # Get budget requests
-        budget_requests = BudgetRequest.objects.filter(
-            company=company
-        ).select_related(
-            'category', 'subcategory', 'requested_by', 'approved_by'
+        budget_requests = BudgetRequest.objects.all().select_related(
+            'budget_category', 'requester', 'approved_by'
         ).order_by('-created_at')
         
         # Filter by status if provided
@@ -255,7 +248,6 @@ def budget_request_detail(request, company_slug, request_id, company=None):
         budget_request = get_object_or_404(
             BudgetRequest,
             id=request_id,
-            company=company
         )
         
         context = {
@@ -288,21 +280,20 @@ def approve_budget_request(request, company_slug, request_id, company=None):
         budget_request = get_object_or_404(
             BudgetRequest,
             id=request_id,
-            company=company
         )
         
         # Check if user can approve
         if not view._can_approve_request(request.user, budget_request):
             messages.error(request, "You don't have permission to approve this request.")
-            return redirect('finance:budget-request-detail', 
-                           company_slug=company.slug, request_id=request_id)
+            return redirect('finance:budget-request-detail', company_slug=company_slug, request_id=request_id)
         
         # Approve the request
-        budget_request.approve(request.user)
+        budget_request.status = 'approved'
+        budget_request.last_modified_by = request.user
+        budget_request.save(update_fields=['status', 'last_modified_by'])
         
-        messages.success(request, "Budget request '{}' has been approved.".format(budget_request.title))
-        return redirect('finance:budget-request-detail', 
-                       company_slug=company.slug, request_id=request_id)
+        messages.success(request, "Budget request '{}' has been approved.".format(budget_request.purpose))
+        return redirect('finance:budget-request-detail', company_slug=company_slug, request_id=request_id)
     
     except Exception as e:
         view.handle_error(request, e, "Error approving budget request")
@@ -327,24 +318,24 @@ def reject_budget_request(request, company_slug, request_id, company=None):
         budget_request = get_object_or_404(
             BudgetRequest,
             id=request_id,
-            company=company
         )
         
         # Check if user can approve
         if not view._can_approve_request(request.user, budget_request):
             messages.error(request, "You don't have permission to reject this request.")
-            return redirect('finance:budget-request-detail', 
-                           company_slug=company.slug, request_id=request_id)
+            return redirect('finance:budget-request-detail', company_slug=company_slug, request_id=request_id)
         
         # Get rejection reason
         reason = request.POST.get('rejection_reason', 'No reason provided')
         
         # Reject the request
-        budget_request.reject(request.user, reason)
+        budget_request.status = 'rejected'
+        budget_request.rejection_reason = reason
+        budget_request.last_modified_by = request.user
+        budget_request.save(update_fields=['status', 'rejection_reason', 'last_modified_by'])
         
-        messages.success(request, "Budget request '{}' has been rejected.".format(budget_request.title))
-        return redirect('finance:budget-request-detail', 
-                       company_slug=company.slug, request_id=request_id)
+        messages.success(request, "Budget request '{}' has been rejected.".format(budget_request.purpose))
+        return redirect('finance:budget-request-detail', company_slug=company_slug, request_id=request_id)
     
     except Exception as e:
         view.handle_error(request, e, "Error rejecting budget request")
@@ -379,10 +370,19 @@ def budget_approval_dashboard(request, company_slug, company=None):
             'budget_category', 'department', 'requester'
         ).order_by('-updated_at')[:10]
         
+        # Calculate approval statistics
+        approval_stats = {
+            'pending_count': pending_requests.count(),
+            'approved_count': BudgetRequest.objects.filter(status='approved').count(),
+            'rejected_count': BudgetRequest.objects.filter(status='rejected').count(),
+            'total_requests': BudgetRequest.objects.count(),
+        }
+        
         context = {
             'company': company,
             'pending_requests': pending_requests,
             'recent_approvals': recent_approvals,
+            'approval_stats': approval_stats,
         }
         
         return render(request, 'finance/budgets/approval_dashboard.html', context)

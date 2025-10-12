@@ -184,6 +184,24 @@ class BudgetRequestForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     
+    def clean_attachments(self):
+        """Convert comma-separated string to JSON list."""
+        attachments = self.cleaned_data.get('attachments', '')
+        
+        # Handle different input types
+        if isinstance(attachments, list):
+            # Already a list, just clean it
+            return [doc.strip() for doc in attachments if doc and doc.strip()]
+        elif isinstance(attachments, str):
+            # String input, split by comma
+            if attachments:
+                attachment_list = [doc.strip() for doc in attachments.split(',') if doc.strip()]
+                return attachment_list
+        elif attachments is None:
+            return []
+        
+        return []
+    
     def clean_requested_amount(self):
         """Validate requested amount."""
         amount = self.cleaned_data.get('requested_amount')

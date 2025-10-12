@@ -60,9 +60,9 @@ def budget_approval_dashboard(request, company_slug, company=None):
         # Get approval statistics
         approval_stats = {
             'pending_count': pending_requests.count(),
-            'approved_count': BudgetRequest.objects.filter(company=company, status='approved').count(),
-            'rejected_count': BudgetRequest.objects.filter(company=company, status='rejected').count(),
-            'total_requests': BudgetRequest.objects.filter(company=company).count(),
+            'approved_count': BudgetRequest.objects.filter(status='approved').count(),
+            'rejected_count': BudgetRequest.objects.filter(status='rejected').count(),
+            'total_requests': BudgetRequest.objects.count(),
         }
         
         context = {
@@ -259,9 +259,9 @@ def budget_approval_api(request, company_slug):
         ).values('id', 'title', 'amount', 'category__name', 'requested_by__username', 'created_at')
         
         approval_stats = {
-            'pending_count': BudgetRequest.objects.filter(company=company, status='pending').count(),
-            'approved_count': BudgetRequest.objects.filter(company=company, status='approved').count(),
-            'rejected_count': BudgetRequest.objects.filter(company=company, status='rejected').count(),
+            'pending_count': BudgetRequest.objects.filter(status='pending').count(),
+            'approved_count': BudgetRequest.objects.filter(status='approved').count(),
+            'rejected_count': BudgetRequest.objects.filter(status='rejected').count(),
         }
         
         data = {
