@@ -143,14 +143,28 @@ def budget_category_detail(request, company_slug, category_id, company=None):
         # Get budget data for each subcategory
         subcategory_data = []
         for subcategory in subcategories:
+            # Fix: Budget model may have different field relationships
+            # Try multiple possible relationships
             budgets = Budget.objects.filter(
                 company=company,
+                category=category,
                 subcategory=subcategory
             ).select_related('budget_lead')
             
             # Calculate totals (handle None values)
-            total_estimated = sum(budget.estimated_amount or 0 for budget in budgets)
+            # If estimated_amount is None, calculate from unit_price * quantity * cases
+            total_estimated = 0
             total_actual = sum(budget.actual_spent or 0 for budget in budgets)
+            
+            for budget in budgets:
+                if budget.estimated_amount is not None:
+                    total_estimated += budget.estimated_amount
+                elif budget.unit_price and budget.quantity and budget.cases:
+                    # Calculate from unit components
+                    total_estimated += budget.unit_price * budget.quantity * budget.cases
+                elif budget.unit_price and budget.quantity:
+                    # Fallback calculation
+                    total_estimated += budget.unit_price * budget.quantity
             total_variance = total_actual - total_estimated
             
             # Get recent transactions - filter by subcategory name
@@ -171,17 +185,31 @@ def budget_category_detail(request, company_slug, category_id, company=None):
                 'budget_count': budgets.count(),
             })
         
-        # Get category-level statistics
+        # Get category-level statistics - Fix the filtering
         category_budgets = Budget.objects.filter(
             company=company,
             category=category
         )
         
+        # Calculate category totals with proper fallback calculations
+        total_estimated = 0
+        total_actual = sum(budget.actual_spent or 0 for budget in category_budgets)
+        
+        for budget in category_budgets:
+            if budget.estimated_amount is not None:
+                total_estimated += budget.estimated_amount
+            elif budget.unit_price and budget.quantity and budget.cases:
+                # Calculate from unit components
+                total_estimated += budget.unit_price * budget.quantity * budget.cases
+            elif budget.unit_price and budget.quantity:
+                # Fallback calculation
+                total_estimated += budget.unit_price * budget.quantity
+        
         category_stats = {
             'total_budgets': category_budgets.count(),
-            'total_estimated': sum(budget.estimated_amount or 0 for budget in category_budgets),
-            'total_actual': sum(budget.actual_spent or 0 for budget in category_budgets),
-            'average_amount': sum(budget.estimated_amount or 0 for budget in category_budgets) / category_budgets.count() if category_budgets.count() > 0 else 0,
+            'total_estimated': total_estimated,
+            'total_actual': total_actual,
+            'average_amount': total_estimated / category_budgets.count() if category_budgets.count() > 0 else 0,
         }
         
         context = {
