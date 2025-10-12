@@ -284,20 +284,21 @@ class TransactionAdmin(admin.ModelAdmin):
     """Admin interface for transactions"""
     
     list_display = [
-        'vendor', 'amount', 'currency', 'category', 'transaction_type',
-        'status', 'transaction_date', 'created_at'
+        'id', 'sender', 'receiver', 'amount', 'currency', 'type',
+        'payment_method', 'transaction_date'
     ]
     
     list_filter = [
-        'category', 'transaction_type', 'status', 'currency', 'transaction_date'
+        'category', 'type', 'payment_method', 'currency', 'transaction_date',
+        'department'
     ]
     
     search_fields = [
-        'receiver', 'description', 'reference', 'created_by__first_name',
-        'created_by__last_name'
+        'receiver', 'description', 'phone'
     ]
     
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = []  # No timestamp fields in current model
+    autocomplete_fields = ['sender', 'vendor_supplier', 'department', 'category', 'subcategory']
     
     fieldsets = (
         ('Transaction Details', {
