@@ -313,8 +313,8 @@ def budget_item_edit(request, company_slug, item_id, company=None):
         
         # Get related data - filter by department since Transaction doesn't have company field
         transaction_filter = {
-            'budget_category': budget.category,
-            'budget_subcategory': budget.subcategory
+            'category': budget.category,
+            'subcategory': budget.subcategory
         }
         if user_department:
             transaction_filter['department'] = user_department
