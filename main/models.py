@@ -93,3 +93,9 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
 
+class location(models.Model):
+    zipcode=models.CharField(max_length=10,blank=True, null=True)
+    city=models.CharField(max_length=100,blank=True,null=True)
+    state=models.CharField(max_length=100,blank=True,null=True)
+    county=models.CharField(max_length=100, blank=True,null=True)
+    
