@@ -1,0 +1,48 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<h2>Evidence Management</h2>
+
+<!-- Add Evidence Button -->
+<a href="#" class="btn btn-success mb-3">Add Evidence</a>
+
+{% if evidence_items %}
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Description</th>
+      <th>File</th>
+      <th>Uploaded By</th>
+      <th>Upload Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in evidence_items %}
+    <tr>
+      <td>{{ item.title }}</td>
+      <td>{{ item.description }}</td>
+      <td><a href="{{ item.file.url }}">View</a></td>
+      <td>{% if item.uploaded_by %}{{ item.uploaded_by }}{% else %}N/A{% endif %}</td>
+      <td>{{ item.upload_date|date:"M d, Y" }}</td>
+      <td>
+        <a href="#">Detail</a> |
+        <a href="#">Edit</a> |
+        <a href="#">Delete</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6" class="text-center text-muted">
+        No Evidence uploaded found.
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="alert alert-info text-center">
+  <i class="fa fa-info-circle"></i> No Evidence uploaded found.
+</div>
+{% endif %}
+{% endblock %}

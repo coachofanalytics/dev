@@ -8,11 +8,11 @@ from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberFo
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,Department,Credential,TaskGroup,TeamMember,CredentialCategory,Sprintplanning,CapacityBuilding
+from .models import CustomerUser,Credential,TaskGroup,TeamMember,CredentialCategory,Sprintplanning,CapacityBuilding,Evidence
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
-from .forms import DepartmentForm
+# from .forms import DepartmentForm
 
 from django.urls import reverse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
@@ -261,19 +261,19 @@ def custom_social_login(request):
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
     
 
-def Department_list_view(request):
-    departments = Department.objects.all()
+# def Department_list_view(request):
+#     departments = Department.objects.all()
 
-    return render(request, 'accounts/Departmentlist.html', {'departments': departments})
-def DepartmentCreateView(request):
-    if request.method == "POST":
-        form = DepartmentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('accounts:departments')  # Redirect to list view
-    else:
-        form = DepartmentForm()
-    return render(request, 'accounts/dpcreate.html', {'form': form})
+#     return render(request, 'accounts/Departmentlist.html', {'departments': departments})
+# def DepartmentCreateView(request):
+#     if request.method == "POST":
+#         form = DepartmentForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('accounts:departments')  # Redirect to list view
+#     else:
+#         form = DepartmentForm()
+#     return render(request, 'accounts/dpcreate.html', {'form': form})
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Credential
@@ -560,7 +560,13 @@ def CapacityBuilding_delete_view(request, pk):
     if request.method == "POST":
         capacity.delete()
         return redirect("accounts:accounts-capacity_building_list")
-    return render(request, "accounts/capacitybuilding_delete.html", {'capacity': capacity})
+        
+
+
+def Evidence_list_view(request):
+     evidence_items= Evidence.objects.all().order_by('-upload_date')
+     return render(request,"accounts/Evidence_list.html",{"evidence_items":evidence_items})
+
 
 
 

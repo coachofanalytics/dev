@@ -8,8 +8,8 @@ urlpatterns = [
     path('join/', views.join, name='join'),
     path('login/', views.login_view, name='account-login'),
     path('profile/', views.profile, name='account-profile'),
-    path('Departments/', views.Department_list_view, name='department_create'),
-    path("department_create/", views.DepartmentCreateView, name="department_create"),
+    # path('Departments/', views.Department_list_view, name='department_create'),
+    # path("department_create/", views.DepartmentCreateView, name="department_create"),
     path('Credential/', views.credential_list_view, name='credential'),
     path('create/', views.Credential_CreateView, name='create'),
     path('update/<int:pk>/', views.CredentialUpdateView, name='update'),
@@ -35,11 +35,13 @@ urlpatterns = [
     path('Sprintplanning_Details/<int:pk>/', views.Sprintplanning_Details, name='Sprintplanning_Details'),
     path('Sprintplanning_Delete/<int:pk>/', views.Sprintplanning_Delete_view, name='Sprintplanning_Delete'),
     path('account:CapacityBuilding_list/', views.CapacityBuilding_list_view, name='accounts-capacity_building_list'),
-    path('CapacityBuilding_create/', views.CapacityBuilding_list_view, name='CapacityBuilding_create'),
+    path('CapacityBuilding_create/', views.CapacityBuilding_list_view, name='accounts-CapacityBuilding_create'),
     path('CapacityBuilding_update/<int:pk>/', views.CapacityBuilding_update_view, name='CapacityBuilding_update'),
     path('CapacityBuilding_detail/<int:pk>/', views.CapacityBuildingDetailView, name='CapacityBuilding_detail'),
 
     path('CapacityBuilding_delete/<int:pk>/', views.CapacityBuilding_delete_view, name='CapacityBuilding_delete'),
+
+    path('Evidence_list/', views.Evidence_list_view, name='Evidence_list'),
 
 
 
