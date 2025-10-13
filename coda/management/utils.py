@@ -800,7 +800,7 @@ def defined_links(request):
         'My Responses': reverse('professional_services:student_feedback'),
         'Edit Profile': reverse('main:update_profile', args=[request.user.profile.id]),
         'Apply for Loan': reverse('finance:loan-home'),
-        'Make a Payment': reverse('finance:unified_method_selection'),
+        # 'Make a Payment': reverse('finance:unified_method_selection'),  # TEMPORARILY DISABLED - URL not available
     }
 
     # Conditional links based on user category

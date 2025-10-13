@@ -1,8 +1,11 @@
 from django.urls import path
 from . import views
 from .views import legacy_views
-# Import new unified payment views
-from ._deprecated.legacy_views import payment_views
+# Import new unified payment views (gracefully handle if _deprecated directory not deployed)
+try:
+    from ._deprecated.legacy_views import payment_views
+except ImportError:
+    payment_views = None  # Will skip payment-related URLs if not available
 
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
@@ -106,16 +109,17 @@ urlpatterns = [
     path('pay/<int:pk>/', views.UserPayUpdateView.as_view(), name='updatepay'),
     
     #=============================UNIFIED PAYMENT SYSTEM=====================================
-    # New unified payment URLs
-    path('unified/methods/', payment_views.payment_method_selection, name='unified_method_selection'),
-    path('unified/process/<str:method>/', payment_views.payment_processing, name='unified_processing'),
-    path('unified/success/', payment_views.payment_success, name='unified_success'),
-    path('unified/failed/', payment_views.payment_failed, name='unified_failed'),
+    # New unified payment URLs - TEMPORARILY DISABLED until _deprecated module is deployed
+    # TODO: Re-enable these URLs once finance._deprecated.legacy_views is available
+    # path('unified/methods/', payment_views.payment_method_selection, name='unified_method_selection'),
+    # path('unified/process/<str:method>/', payment_views.payment_processing, name='unified_processing'),
+    # path('unified/success/', payment_views.payment_success, name='unified_success'),
+    # path('unified/failed/', payment_views.payment_failed, name='unified_failed'),
     # path('visitor/<str:method>/', payment_views.process_visitor_payment, name='visitor_payment'),
     
-    # MPESA OTP verification
-    path('mpesa-otp-confirmation/', payment_views.mpesa_otp_confirmation, name='mpesa_otp_confirmation'),
-    path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
+    # MPESA OTP verification - TEMPORARILY DISABLED
+    # path('mpesa-otp-confirmation/', payment_views.mpesa_otp_confirmation, name='mpesa_otp_confirmation'),
+    # path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
     
     # Legacy payment URLs (maintained for backward compatibility)
     path('defaultpayments/', legacy_views.DefaultPaymentListView.as_view(template_name='finance/payments/defaultpayments.html'), name='defaultpayments'),

@@ -512,7 +512,7 @@ def get_role_based_links(request):
     
     links = {
         'Edit Profile': reverse('main:update_profile', args=[user.profile.id]),
-        'Make a Payment': reverse('finance:unified_method_selection'),
+        # 'Make a Payment': reverse('finance:unified_method_selection'),  # TEMPORARILY DISABLED - URL not available
     }
     # Staff users get management-specific links (prioritize staff status over category)
     if user.is_staff:
