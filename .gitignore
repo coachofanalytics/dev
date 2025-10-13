@@ -1,12 +1,61 @@
-# CODA Project .gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/static/
+/media/
+local_settings.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CODA Project Specific
 # Budget consolidation - deprecated code
 coda/finance/_deprecated/
 
 # Phase 0 Consolidation - Deprecated Components
 coda/management/deprecated/
 
-# Finance app deprecated/backup files (keep for now, will delete after testing)
-coda/finance/_deprecated/
+# Finance app deprecated/backup files
 coda/finance/views/legacy/*_backup.py
 coda/finance/views/legacy/*_fixed.py
 coda/finance/models/extra/
+
+# Documentation archives (don't deploy to production)
+archive/
+docs/_archive/
+
+# Backups
+backups/
+
+# Test files
+tests/
+*.test.py
+
+# Environment variables (if you have local .env files)
+.env
+.env.local
