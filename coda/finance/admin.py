@@ -28,7 +28,7 @@ class LoanProductAdmin(admin.ModelAdmin):
     
     list_display = [
         'name', 'product_type', 'min_amount', 'max_amount', 
-        'interest_rate', 'min_term_months', 'max_term_months', 'is_active'
+        'interest_rate', 'term_months', 'is_active'
     ]
     
     list_filter = [
