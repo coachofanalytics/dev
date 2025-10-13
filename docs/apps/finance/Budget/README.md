@@ -134,6 +134,43 @@ Complete budget management system for CODA including budget request creation, ap
 - **Sept 30:** Project planning, tier system design
 - Transaction analysis framework established ($1.49M dataset)
 
+## Budget Categories
+
+**25 Total Categories, 77 Subcategories**
+
+**Top 5 Active Categories:**
+1. Salaries and Wages (181 transactions, $939K)
+2. Operational Expenses (67 transactions, $183K)
+3. Human Resources (25 transactions, $88K)
+4. IT and Software (21 transactions, $116K)
+5. Utilities (16 transactions, $52K)
+
+**Dormant Categories (0 transactions):**
+- Marketing, Sales Commissions, Insurance, Training, R&D, Inventory, Logistics, Customer Service, Security, Compliance, Taxes (12 total)
+
+**See:** [REQUIREMENTS.md](REQUIREMENTS.md) for complete category breakdown
+
+---
+
+## Key URLs
+
+### User-Facing:
+- **Main Dashboard:** `/finance/budget-dashboard/{company}/`
+- **Approval Dashboard:** `/finance/budget/{company}/approvals/`
+- **Request List:** `/finance/budget-requests/`
+- **Create Request:** `/finance/budget/request/new/`
+- **Request Detail:** `/finance/budget/request/{id}/`
+- **Category Detail:** `/finance/budget/{company}/category/{id}/`
+
+### API Endpoints:
+- **Budget by Category:** `GET /finance/api/budget-category/{id}/`
+- **Budget Projections:** `GET /finance/api/budget-projections/`
+- **Generate Projection:** `POST /finance/api/generate-projection/`
+- **Approve Request:** `POST /finance/api/budget/approve/`
+- **Reject Request:** `POST /finance/api/budget/reject/`
+
+---
+
 ## Next Steps
 
 1. **Export production transaction data** (for tier classification)

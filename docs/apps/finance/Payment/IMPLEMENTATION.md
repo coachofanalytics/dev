@@ -216,12 +216,29 @@ git push heroku ...
 ## M-Pesa Integration (When Re-Enabled)
 
 ### STK Push Flow
-1. User enters phone number, amount
-2. Backend calls Safaricom API
-3. User receives payment prompt on phone
-4. User enters M-Pesa PIN
-5. Callback received
-6. Payment status updated
+```
+1. User selects M-Pesa payment method
+   ↓
+2. User enters phone number (254XXXXXXXXX format)
+   ↓
+3. User enters amount (min KES 10, max KES 150,000)
+   ↓
+4. Backend generates transaction reference
+   ↓
+5. Backend calls Safaricom API (STK Push)
+   ↓
+6. User receives payment prompt on phone
+   ↓
+7. User enters M-Pesa PIN on phone
+   ↓
+8. M-Pesa processes payment
+   ↓
+9. Callback received at /finance/mpesa/callback/
+   ↓
+10. Payment status updated (completed/failed)
+   ↓
+11. User redirected to confirmation page
+```
 
 ### Configuration
 ```python
@@ -230,19 +247,144 @@ MPESA_CONSUMER_KEY = env('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = env('MPESA_CONSUMER_SECRET')
 MPESA_SHORTCODE = env('MPESA_SHORTCODE')
 MPESA_PASSKEY = env('MPESA_PASSKEY')
+MPESA_CALLBACK_URL = env('MPESA_CALLBACK_URL')  # https://yourapp.com/finance/mpesa/callback/
 ```
+
+### API Endpoints
+```python
+# Initiate STK Push
+POST /finance/mpesa/initiate/
+Body: {
+    "phone": "254712345678",
+    "amount": 1000,
+    "account_reference": "ACC123"
+}
+Response: {
+    "status": "pending",
+    "checkout_request_id": "ws_CO_13102025123456",
+    "message": "Check your phone for M-Pesa prompt"
+}
+
+# Callback (Safaricom calls this)
+POST /finance/mpesa/callback/
+Body: {
+    "ResultCode": 0,  # 0 = success
+    "ResultDesc": "The service request is processed successfully",
+    "CheckoutRequestID": "ws_CO_13102025123456",
+    "MpesaReceiptNumber": "OEI2AK4Q16"
+}
+```
+
+### Error Handling
+- **Timeout:** User didn't enter PIN (30 seconds)
+- **Insufficient Funds:** User has insufficient M-Pesa balance
+- **Invalid Phone:** Phone number format incorrect
+- **API Error:** Safaricom API unavailable
+
+---
 
 ## Stripe Integration (When Re-Enabled)
 
 ### Payment Intent Flow
-1. Frontend creates payment intent
-2. Stripe Elements collects card details
-3. 3D Secure authentication (if required)
-4. Payment confirmed
-5. Webhook updates database
+```
+1. User selects Stripe (card) payment
+   ↓
+2. Frontend creates payment intent via API
+   ↓
+3. Stripe Elements renders card input form
+   ↓
+4. User enters card details (number, expiry, CVC)
+   ↓
+5. Stripe validates card
+   ↓
+6. 3D Secure authentication (if required)
+   ↓
+7. Payment processed
+   ↓
+8. Webhook received at /finance/stripe/webhook/
+   ↓
+9. Payment status updated
+   ↓
+10. User redirected to confirmation
+```
+
+### Configuration
+```python
+# settings.py
+STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET')
+```
+
+### API Endpoints
+```python
+# Create payment intent
+POST /finance/stripe/create-intent/
+Body: {
+    "amount": 10000,  # Amount in cents
+    "currency": "usd",
+    "account_id": 123
+}
+Response: {
+    "client_secret": "pi_xxx_secret_xxx",
+    "payment_intent_id": "pi_xxx"
+}
+
+# Webhook (Stripe calls this)
+POST /finance/stripe/webhook/
+Headers: {
+    "Stripe-Signature": "t=xxx,v1=xxx"
+}
+Body: {
+    "type": "payment_intent.succeeded",
+    "data": {
+        "object": {
+            "id": "pi_xxx",
+            "amount": 10000,
+            "status": "succeeded"
+        }
+    }
+}
+```
+
+### Error Handling
+- **Card Declined:** Insufficient funds, card blocked
+- **Invalid Card:** Card number invalid
+- **3D Secure Failed:** Authentication failed
+- **Network Error:** Stripe API unavailable
+
+---
+
+## Bank Transfer Integration
+
+### Flow
+```
+1. User selects Bank Transfer
+   ↓
+2. System displays bank account details
+   ↓
+3. User makes transfer manually
+   ↓
+4. User uploads proof of payment
+   ↓
+5. Admin verifies payment
+   ↓
+6. Payment marked as completed
+```
+
+### Bank Details Display
+```
+Bank: Example Bank
+Account Name: CODA Training
+Account Number: 1234567890
+Reference: [Auto-generated - e.g., PAY-2025-001]
+Amount: $XXX.XX
+```
+
+**Source:** PAYMENT_SYSTEM_MANUAL_TESTING_GUIDE.md
 
 ---
 
 **Last Updated:** October 13, 2025  
-**Status:** Documentation only - system disabled
+**Status:** Architecture complete, implementation pending
 

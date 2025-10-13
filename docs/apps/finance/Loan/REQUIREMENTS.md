@@ -90,5 +90,90 @@ Admin dashboard showing:
 
 ---
 
+## Guarantor & Collateral Requirements
+
+### Staff Members (Category 2)
+**Guarantor Requirements:**
+- Must be current/active staff member (`is_staff=True`)
+- Employment duration: **3+ months minimum**
+- Active status required (`is_active=True`)
+- Must be category 2 (staff)
+- Superusers excluded from guarantor list
+
+**Validation Flow:**
+```
+1. Is guarantor provided? → YES
+2. Is guarantor category 2 (staff)? → YES
+3. Is guarantor active staff? → YES
+4. Has guarantor been employed 3+ months? → YES
+5. ✅ VALID
+```
+
+### KCC Members
+**Guarantor Requirements:**
+- Must be KCC member with active membership
+- Membership status: `is_karen_country_club_member=True`
+- Membership not expired: `kcc_membership_expiry >= today`
+- Non-staff categories (1, 3, 4, 5)
+
+**Credit Score Tiers:**
+- **Tier 1 (Basic):** Credit score 300-499
+- **Tier 2 (Standard):** Credit score 500-699
+- **Tier 3 (Premium):** Credit score 700+
+
+**Validation Flow:**
+```
+1. Is guarantor provided? → YES
+2. Is borrower KCC member with active membership? → YES
+3. Is guarantor KCC member? → YES
+4. Is guarantor's KCC membership active? → YES
+5. ✅ VALID
+```
+
+### External Users (Non-Staff, Non-KCC)
+**Requirements:**
+- **Guarantor:** Always required (manual entry)
+- **Collateral:** Always required (minimum 10 characters description)
+
+**Validation Flow:**
+```
+1. Is guarantor provided? → YES
+2. Is collateral provided (10+ chars)? → YES
+3. ✅ VALID
+```
+
+**Source:** GUARANTOR_COLLATERAL_REQUIREMENTS.md
+
+---
+
+## Future: Smart Collateral System (Phase 5)
+
+### Vision
+Advanced collateral management using IoT, blockchain, and AI for maximum security.
+
+**Components:**
+1. **IoT Device Network**
+   - GPS trackers (real-time location, geofencing)
+   - Smart cameras (AI analysis, motion detection)
+   - Environmental sensors (temperature, humidity, damage detection)
+   - Smart locks (biometric, remote control)
+
+2. **Blockchain Integration**
+   - Smart contracts (Ethereum/Polygon)
+   - Immutable collateral liens
+   - Automated repossession triggers
+   - Payment enforcement
+
+3. **AI-Powered Risk Engine**
+   - Behavior analysis (payment patterns)
+   - Market prediction (price trends, volatility)
+   - Collateral valuation (real-time value, condition)
+   - Early warning system
+
+**Status:** Future feature (Phase 5)  
+**Source:** SMART_COLLATERAL_SYSTEM_DESIGN.md
+
+---
+
 **Last Updated:** October 13, 2025
 
