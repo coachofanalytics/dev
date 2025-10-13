@@ -719,7 +719,7 @@ def loan_analytics(request):
         messages.error(request, "Error generating analytics report")
         context = {"report": {}}
 
-    return render(request, "finance/loan_analytics.html", context)
+    return render(request, "finance/admin/loan_analytics.html", context)
 
 
 @login_required

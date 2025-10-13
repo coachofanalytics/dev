@@ -20,6 +20,7 @@ from .loan.eligibility import LoanEligibilityService
 from .loan.performance import LoanPerformanceService
 from .payment.processing import PaymentProcessingService
 from .financial_analytics_service import FinancialAnalyticsService
+from .loan_service import LoanService
 
 # Import service modules
 from . import core, budget, loan, payment
@@ -32,5 +33,6 @@ __all__ = [
     'LoanPerformanceService',
     'PaymentProcessingService',
     'FinancialAnalyticsService',
+    'LoanService',
     'core', 'budget', 'loan', 'payment',
 ]
