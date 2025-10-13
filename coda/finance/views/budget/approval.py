@@ -201,33 +201,15 @@ def reject_budget_request(request, company_slug, request_id, company=None):
 
 
 def _can_approve_budget(self, user, budget_request):
-    """Check if user can approve this budget request."""
-    try:
-        # Check if user is in the same department or is a manager
-        if hasattr(user, 'profile') and user.profile.department:
-            user_department = user.profile.department
-            if budget_request.department == user_department:
-                return True
-        
-        # Check if user is a manager or admin
-        if user.is_staff or user.is_superuser:
-            return True
-        
-        # Check approval policies
-        approval_policies = ApprovalPolicy.objects.filter(
-            company=budget_request.company,
-            category=budget_request.category
-        )
-        
-        for policy in approval_policies:
-            if policy.can_approve(user, budget_request.amount):
-                return True
-        
-        return False
+    """
+    Check if user can approve this budget request.
     
-    except Exception as e:
-        self.log_error("Error checking approval permissions", e)
-        return False
+    TEMPORARY SIMPLE LOGIC: Staff can approve
+    TODO: Implement tier-based approval after transaction data analysis
+    """
+    # Simple logic for now: Staff and superusers can approve
+    # Future: Will implement tier-based system (A/B/C) based on actual CODA data
+    return user.is_staff or user.is_superuser
 
 
 # Add method to the class

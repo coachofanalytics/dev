@@ -393,13 +393,15 @@ def budget_approval_dashboard(request, company_slug, company=None):
 
 
 def _can_approve_request(self, user, budget_request):
-    """Check if user can approve the budget request."""
-    # Check if user is in approval policy
-    if budget_request.approval_policy:
-        return budget_request.approval_policy.approvers.filter(id=user.id).exists()
+    """
+    Check if user can approve the budget request.
     
-    # Default: allow if user is staff
-    return user.is_staff
+    TEMPORARY SIMPLE LOGIC: Staff can approve
+    TODO: Implement proper tier-based approval system based on transaction data analysis
+    """
+    # For now: Staff and superusers can approve
+    # Future: Will be replaced with tier-based system (A/B/C) after data analysis
+    return user.is_staff or user.is_superuser
 
 
 # Add method to the class

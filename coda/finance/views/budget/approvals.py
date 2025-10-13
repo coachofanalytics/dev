@@ -160,25 +160,26 @@ def approve_budget_request(request, company_slug, request_id, company=None):
             if not company:
                 return error_json_response("Company not found", 404)
         
-        # Get budget request
-        budget_request = get_object_or_404(
-            BudgetRequest,
-            id=request_id,
-            company=company
-        )
+        # Get budget request (BudgetRequest doesn't have company field)
+        budget_request = get_object_or_404(BudgetRequest, id=request_id)
         
         # Check if user has permission to approve
         if not view._can_approve_budget(request.user, budget_request):
             return error_json_response("Insufficient permissions to approve this request", 403)
         
-        # Approve the request
-        budget_request.approve(request.user)
+        # Approve the request and set audit fields
+        budget_request.status = 'approved'
+        budget_request.approved_by = request.user
+        from django.utils import timezone as _tz
+        budget_request.approved_at = _tz.now()
+        budget_request.save(update_fields=['status', 'approved_by', 'approved_at'])
         
         return json_response({
             'success': True,
             'message': 'Budget request approved successfully',
             'request_id': budget_request.id,
-            'status': budget_request.status
+            'status': budget_request.status,
+            'approved_by': request.user.username,
         })
     
     except Exception as e:
@@ -201,12 +202,8 @@ def reject_budget_request(request, company_slug, request_id, company=None):
             if not company:
                 return error_json_response("Company not found", 404)
         
-        # Get budget request
-        budget_request = get_object_or_404(
-            BudgetRequest,
-            id=request_id,
-            company=company
-        )
+        # Get budget request (BudgetRequest doesn't have company field)
+        budget_request = get_object_or_404(BudgetRequest, id=request_id)
         
         # Check if user has permission to reject
         if not view._can_approve_budget(request.user, budget_request):
@@ -215,14 +212,20 @@ def reject_budget_request(request, company_slug, request_id, company=None):
         # Get rejection reason
         rejection_reason = request.POST.get('rejection_reason', 'No reason provided')
         
-        # Reject the request
-        budget_request.reject(request.user, rejection_reason)
-        
+        # Reject the request and set audit fields
+        budget_request.status = 'rejected'
+        budget_request.rejection_reason = rejection_reason
+        budget_request.rejected_by = request.user
+        from django.utils import timezone as _tz
+        budget_request.rejected_at = _tz.now()
+        budget_request.save(update_fields=['status', 'rejection_reason', 'rejected_by', 'rejected_at'])
+         
         return json_response({
             'success': True,
             'message': 'Budget request rejected successfully',
             'request_id': budget_request.id,
-            'status': budget_request.status
+            'status': budget_request.status,
+            'rejected_by': request.user.username,
         })
     
     except Exception as e:
@@ -231,33 +234,15 @@ def reject_budget_request(request, company_slug, request_id, company=None):
 
 
 def _can_approve_budget(self, user, budget_request):
-    """Check if user can approve this budget request."""
-    try:
-        # Check if user is in the same department or is a manager
-        if hasattr(user, 'profile') and user.profile.department:
-            user_department = user.profile.department
-            if budget_request.department == user_department:
-                return True
-        
-        # Check if user is a manager or admin
-        if user.is_staff or user.is_superuser:
-            return True
-        
-        # Check approval policies
-        approval_policies = ApprovalPolicy.objects.filter(
-            company=budget_request.company,
-            category=budget_request.category
-        )
-        
-        for policy in approval_policies:
-            if policy.can_approve(user, budget_request.amount):
-                return True
-        
-        return False
+    """
+    Check if user can approve this budget request.
     
-    except Exception as e:
-        self.log_error("Error checking approval permissions", e)
-        return False
+    TEMPORARY SIMPLE LOGIC: Staff can approve
+    TODO: Implement tier-based approval after transaction data analysis
+    """
+    # Simple logic for now: Staff and superusers can approve
+    # Future: Will implement tier-based system (A/B/C) based on actual CODA data
+    return user.is_staff or user.is_superuser
 
 
 # Add method to the class
