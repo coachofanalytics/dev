@@ -27,8 +27,7 @@ class LoanProduct(models.Model):
     min_amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Minimum loan amount")
     max_amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Maximum loan amount")
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Interest rate percentage")
-    min_term_months = models.PositiveIntegerField(help_text="Minimum loan term in months")
-    max_term_months = models.PositiveIntegerField(help_text="Maximum loan term in months")
+    term_months = models.PositiveIntegerField(help_text="Loan term in months")
     fees = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Additional fees")
     is_active = models.BooleanField(default=True, help_text="Whether this product is available")
     min_credit_score = models.PositiveIntegerField(blank=True, null=True, help_text="Minimum credit score required")
@@ -64,7 +63,7 @@ class LoanProduct(models.Model):
         verbose_name_plural = 'Loan Products'
     
     def __str__(self):
-        return "{} ({}% for {}-{} months)".format(self.name, self.interest_rate, self.min_term_months, self.max_term_months)
+        return f"{self.name} ({self.interest_rate}% for {self.term_months} months)"
     
     def calculate_monthly_payment(self, principal, term_months):
         """Calculate monthly payment using simple interest formula"""
