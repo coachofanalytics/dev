@@ -9,7 +9,7 @@ dist/
 build/
 *.egg
 
-# Virtual Environment
+# Virtual Environment - DO NOT DEPLOY
 venv/
 env/
 ENV/
@@ -33,29 +33,31 @@ local_settings.py
 .DS_Store
 Thumbs.db
 
-# CODA Project Specific
-# Budget consolidation - deprecated code
+# CODA Project Specific - Deprecated Code
 coda/finance/_deprecated/
-
-# Phase 0 Consolidation - Deprecated Components
 coda/management/deprecated/
-
-# Finance app deprecated/backup files
 coda/finance/views/legacy/*_backup.py
 coda/finance/views/legacy/*_fixed.py
 coda/finance/models/extra/
 
-# Documentation archives (don't deploy to production)
+# Documentation - DO NOT DEPLOY TO HEROKU
+docs/
 archive/
-docs/_archive/
+*.md
+README.md
+!coda/**/README.md
 
-# Backups
+# Backups - DO NOT DEPLOY
 backups/
 
-# Test files
+# Tests - DO NOT DEPLOY
 tests/
 *.test.py
+test_*.py
 
-# Environment variables (if you have local .env files)
+# Scripts - DO NOT DEPLOY (run locally only)
+scripts/
+
+# Environment variables
 .env
 .env.local
