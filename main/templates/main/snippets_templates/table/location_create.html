@@ -1,0 +1,34 @@
+{% include 'main/navbar_templates/home_navbar.html' %} 
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">➕ Add New Location</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label for="zipcode">Zip Code:</label>
+                    {{ form.zipcode }}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="city">City:</label>
+                    {{ form.city }}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="state">State:</label>
+                    {{ form.state }}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="county">County:</label>
+                    {{ form.county }}
+                </div>
+
+                <button type="submit" class="btn btn-success">Save</button>
+                <a href="#" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

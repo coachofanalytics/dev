@@ -11,6 +11,10 @@ urlpatterns = [
     path('services/', views.services, name='services'),
     path("display_service/<str:slug>/", views.display_service, name="display_service"),
     path("display_plans/<str:slug>/", views.service_plans, name="service_plans"),
+
+    #==============location==============================================
+    path("location_list", views.location_list, name="account-location_list"),
+    path("location_create", views.location_create, name="location_create"),
     
     #==============DEPARTMENTS==============================================
     #==============DEPARTMENTS==============================================

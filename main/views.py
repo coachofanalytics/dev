@@ -9,7 +9,7 @@ from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 import openai
 from django.db.models import Sum
-from .models import Service,Assets,Readme
+from .models import Service,Assets,Readme,Location
 from .utils import *
 from coda_project import settings
 from application.models import UserProfile
@@ -269,5 +269,23 @@ def general_errors(request):
     # return render(request, "main/errors/noresult.html")
     context={'message':'message'}
     return render(request,'main/errors/generalerrors.html',context)
+
+
+
+
+def location_list(request):
+    locations = Location.objects.all()
+    return render(request, 'main/snippets_templates/table/location_list.html', {'locations': locations})
+
+
+def location_create(request):
+    if request.method == 'POST':
+        form=locationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:account-location_list")
+    else:
+        form= locationForm()
+    return render (request,"main/snippets_templates/table/location_create.html",{'form':form})           
 
 
