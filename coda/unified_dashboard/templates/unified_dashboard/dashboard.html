@@ -5,10 +5,35 @@
 
 {% block content %}
 <style>
+/* Theme Variables */
+:root {
+    --theme-primary-start: #243865;
+    --theme-primary-end: #001f3f;
+    --theme-accent: #E7AD4A;
+    --theme-card-start: #243865;
+    --theme-card-end: #001f3f;
+    --theme-border: rgba(231, 173, 74, 0.3);
+    --theme-hover-start: #764ba2;
+    --theme-hover-end: #667eea;
+}
+
+/* Purple Theme */
+.unified-dashboard[data-theme="purple"] {
+    --theme-primary-start: #667eea;
+    --theme-primary-end: #764ba2;
+    --theme-accent: #667eea;
+    --theme-card-start: #667eea;
+    --theme-card-end: #764ba2;
+    --theme-border: rgba(255, 255, 255, 0.2);
+    --theme-hover-start: #243865;
+    --theme-hover-end: #001f3f;
+}
+
 .unified-dashboard {
     min-height: 100vh;
-    background: linear-gradient(135deg, #243865 0%, #001f3f 100%);
+    background: linear-gradient(135deg, var(--theme-primary-start) 0%, var(--theme-primary-end) 100%);
     padding: 2rem 0;
+    transition: background 0.5s ease;
 }
 
 .dashboard-header {
@@ -35,7 +60,7 @@
 }
 
 .role-badge {
-    background: linear-gradient(45deg, #243865, #E7AD4A);
+    background: linear-gradient(45deg, var(--theme-card-start), var(--theme-accent));
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 20px;
@@ -43,6 +68,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    transition: background 0.5s ease;
 }
 
 .quick-actions {
@@ -53,7 +79,7 @@
 }
 
 .unified-dashboard .quick-action-card {
-    background: linear-gradient(135deg, #243865 0%, #001f3f 100%) !important;
+    background: linear-gradient(135deg, var(--theme-card-start) 0%, var(--theme-card-end) 100%) !important;
     border-radius: 15px !important;
     padding: 1.5rem !important;
     text-decoration: none !important;
@@ -61,7 +87,7 @@
     transition: all 0.3s ease !important;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
     backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(231, 173, 74, 0.3) !important;
+    border: 1px solid var(--theme-border) !important;
     text-align: center !important;
     display: flex !important;
     flex-direction: column !important;
@@ -75,7 +101,7 @@
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
     color: white !important;
     text-decoration: none !important;
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    background: linear-gradient(135deg, var(--theme-hover-start) 0%, var(--theme-hover-end) 100%) !important;
 }
 
 .unified-dashboard .quick-action-card i {
@@ -168,6 +194,60 @@
     transform: scale(1.1);
 }
 
+/* Theme Switcher */
+.theme-switcher {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: flex-end;
+}
+
+.theme-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid #2c3e50;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.theme-btn.active {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-btn.navy-gold {
+    border-color: #243865;
+    color: #243865;
+}
+
+.theme-btn.navy-gold.active {
+    background: linear-gradient(45deg, #243865, #E7AD4A);
+    color: white;
+    border-color: #E7AD4A;
+}
+
+.theme-btn.purple {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.theme-btn.purple.active {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border-color: #764ba2;
+}
+
+.theme-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
 @media (max-width: 768px) {
     .dashboard-header h1 {
         font-size: 2rem;
@@ -183,6 +263,11 @@
     
     .dashboard-iframe {
         height: 400px;
+    }
+    
+    .theme-switcher {
+        justify-content: center;
+        margin-top: 1rem;
     }
 }
 </style>
@@ -201,6 +286,17 @@
                     <div class="user-info">
                         <span><strong>Welcome, {{ user.get_full_name|default:user.username }}</strong></span>
                         <span class="role-badge">{{ user_role|title }}</span>
+                    </div>
+                    <!-- Theme Switcher -->
+                    <div class="theme-switcher">
+                        <button class="theme-btn navy-gold active" onclick="switchTheme('navy-gold')" id="navy-btn">
+                            <i class="fas fa-anchor"></i>
+                            <span>Navy & Gold</span>
+                        </button>
+                        <button class="theme-btn purple" onclick="switchTheme('purple')" id="purple-btn">
+                            <i class="fas fa-gem"></i>
+                            <span>Purple</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -427,30 +523,56 @@ setInterval(function() {
 
 // Theme switching
 function switchTheme(theme) {
-    document.body.className = document.body.className.replace(/theme-\w+/, '');
-    document.body.classList.add(`theme-${theme}`);
+    const dashboard = document.querySelector('.unified-dashboard');
     
-    // Save preference
-    fetch('/dashboard/settings/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: `theme=${theme}`
+    // Update dashboard theme attribute
+    if (theme === 'purple') {
+        dashboard.setAttribute('data-theme', 'purple');
+    } else {
+        dashboard.removeAttribute('data-theme');
+    }
+    
+    // Update button states
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('active');
     });
+    
+    if (theme === 'purple') {
+        document.getElementById('purple-btn').classList.add('active');
+    } else {
+        document.getElementById('navy-btn').classList.add('active');
+    }
+    
+    // Save preference to localStorage
+    localStorage.setItem('dashboardTheme', theme);
+    
+    // Optional: Save to server
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        fetch('/dashboard/settings/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken.value
+            },
+            body: `theme=${theme}`
+        }).catch(err => console.log('Theme save skipped:', err));
+    }
 }
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    // Apply user preferences
-    document.body.classList.add(`theme-{{ preferences.theme }}`);
+    // Load saved theme from localStorage
+    const savedTheme = localStorage.getItem('dashboardTheme') || 'navy-gold';
+    switchTheme(savedTheme);
     
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    // Initialize tooltips if Bootstrap is available
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
 });
 </script>
 {% endblock %}
