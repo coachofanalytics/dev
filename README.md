@@ -1,20 +1,31 @@
-# CODA Budget System
+# CODA Development Project
 
-**Status:** Phase 3 - User Experience (IN PROGRESS)  
-**Last Updated:** October 11, 2025
+**Status:** Active Development  
+**Last Updated:** October 13, 2025
+
+## 📚 Documentation
+
+**Complete documentation is available in:** [`coda/docs/`](coda/docs/)
+
+### Quick Links:
+- **[Master Documentation Index](coda/docs/README.md)** - Start here
+- **[Finance App](coda/docs/apps/finance/)** - Budget, Transaction, Loan, Payment systems
+- **[Deployment Guide](coda/docs/05_DEPLOYMENT/)** - Deployment instructions and logs
+- **[Getting Started](coda/docs/01_GETTING_STARTED/)** - Setup guide
 
 ## 🎯 Current Status
 
-### ✅ COMPLETED
-- **Phase 1:** Data cleanup (95.6% categorized)
-- **Phase 2:** Smart forms with AI predictions
-- **Code Organization:** Fixed circular imports, organized views/models
-- **Critical Fixes:** Login redirect, budget buttons, admin errors
+### ✅ COMPLETED (Oct 2025)
+- **Phase 1:** Data cleanup (95.6% categorized, $1.49M dataset)
+- **Phase 2:** Smart forms with AI predictions, cascading dropdowns
+- **Budget System:** Phase 1 approval workflow complete
+- **Documentation:** Restructured into feature-based organization (4 docs per feature)
+- **Critical Fixes:** Dashboard aggregation, schema alignment, approval workflow
 
 ### 🔄 IN PROGRESS
-- **Phase 3:** User experience improvements
-- **Button Testing:** View Details buttons fixed, testing Edit buttons
-- **Workflow Testing:** Complete user journeys
+- **Budget System Phase 2:** Data-driven tier-based approval system
+- **Transaction Analytics:** Enhanced reporting and insights
+- **Code Quality:** Continued refactoring and optimization
 
 ## 🚀 Quick Start
 
@@ -25,6 +36,17 @@ source venv/bin/activate
 cd coda
 python manage.py runserver 0.0.0.0:8000
 ```
+
+### Run Tests
+```bash
+# Run all tests
+./tests/run_tests.sh
+
+# Run regression tests only (before deployment)
+./tests/run_tests.sh --regression
+```
+
+See [`tests/README.md`](tests/README.md) for complete testing guide.
 
 ### Test Users
 - **budget_manager** / test123 (Budget Dashboard)
@@ -62,5 +84,35 @@ python manage.py runserver 0.0.0.0:8000
 3. Test complete workflows
 4. Deploy to UAT
 
+## 📖 Project Structure
+
+```
+CODA/
+├── coda/                   # Django project
+│   ├── docs/              # All documentation
+│   ├── finance/           # Finance app
+│   ├── accounts/          # User management
+│   └── ...
+│
+├── tests/                 # All test scripts
+│   ├── run_tests.sh      # Main test runner
+│   └── README.md         # Testing guide
+│
+├── scripts/               # Helper scripts
+│   └── README.md         # Scripts guide
+│
+└── venv/                  # Virtual environment
+```
+
+### Documentation Structure
+
+All documentation follows a **4-doc standard per feature**:
+1. **README.md** - Overview and current status
+2. **REQUIREMENTS.md** - Business requirements (historical + current + future)
+3. **IMPLEMENTATION.md** - Technical details and code locations
+4. **TESTING.md** - Test scenarios and validation
+
+See [`coda/docs/README.md`](coda/docs/README.md) for complete navigation guide.
+
 ## 📞 Support
-For issues, check the logs or contact development team.
+For detailed information, see the [comprehensive documentation](coda/docs/) or check deployment logs in [`coda/docs/05_DEPLOYMENT/`](coda/docs/05_DEPLOYMENT/).
