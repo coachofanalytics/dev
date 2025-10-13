@@ -1,5 +1,6 @@
 {% extends "main/base_templates/new_base.html" %}
 {% load static %}
+{% load finance_extras %}
 
 {% block title %}Budget Requests - {{ company.name }}{% endblock %}
 
@@ -168,11 +169,11 @@
                                     <small class="text-muted">Requested Amount</small>
                                 </div>
                                 {% if request.current_approver %}
-                                <div class="mb-2">
-                                    <small class="text-muted">Current Approver:</small><br>
-                                    <strong>{{ request.current_approver.get_full_name|default:request.current_approver.username }}</strong>
-                                </div>
-                                {% endif %}
+                            <div class="mb-2">
+                                <small class="text-muted">Current Approver:</small><br>
+                                <strong>{{ request.current_approver|safe_username }}</strong>
+                            </div>
+                            {% endif %}
                                 <div>
                                     <a href="{% url 'finance:budget-request-detail' company.slug request.id %}" 
                                        class="btn btn-sm btn-outline-primary">

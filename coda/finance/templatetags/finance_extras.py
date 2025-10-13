@@ -69,3 +69,48 @@ def percentage_format(value, decimals=1):
         return f'{value:.{decimals}f}%'
     except (ValueError, TypeError):
         return '0.0%'
+
+
+@register.filter
+def safe_username(user):
+    """
+    Safely get username from user object, handling None/null values
+    Usage: {{ user|safe_username }}
+    """
+    if user is None:
+        return 'N/A'
+    
+    try:
+        # Try to get full name first
+        full_name = user.get_full_name() if hasattr(user, 'get_full_name') else None
+        if full_name and full_name.strip():
+            return full_name
+        
+        # Fallback to username
+        if hasattr(user, 'username'):
+            return user.username
+        
+        # Fallback to email
+        if hasattr(user, 'email') and user.email:
+            return user.email
+        
+        return 'Unknown User'
+    except (AttributeError, TypeError):
+        return 'N/A'
+
+
+@register.filter
+def safe_email(user):
+    """
+    Safely get email from user object, handling None/null values
+    Usage: {{ user|safe_email }}
+    """
+    if user is None:
+        return ''
+    
+    try:
+        if hasattr(user, 'email'):
+            return user.email or ''
+        return ''
+    except (AttributeError, TypeError):
+        return ''

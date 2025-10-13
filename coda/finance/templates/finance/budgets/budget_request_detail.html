@@ -1,5 +1,6 @@
 {% extends "main/base_templates/new_base.html" %}
 {% load static %}
+{% load finance_extras %}
 
 {% block title %}Budget Request Details - {{ company.name }}{% endblock %}
 
@@ -101,10 +102,10 @@
                                         </span>
                                     </p>
                                     {% if budget_request.current_approver %}
-                                    <p><strong>Current Approver:</strong> {{ budget_request.current_approver.get_full_name|default:budget_request.current_approver.username }}</p>
+                                    <p><strong>Current Approver:</strong> {{ budget_request.current_approver|safe_username }}</p>
                                     {% endif %}
                                     {% if budget_request.approved_by %}
-                                    <p><strong>Approved By:</strong> {{ budget_request.approved_by.get_full_name|default:budget_request.approved_by.username }}</p>
+                                    <p><strong>Approved By:</strong> {{ budget_request.approved_by|safe_username }}</p>
                                     <p><strong>Approved At:</strong> {{ budget_request.approved_at|date:"M d, Y H:i" }}</p>
                                     {% endif %}
                                 </div>
