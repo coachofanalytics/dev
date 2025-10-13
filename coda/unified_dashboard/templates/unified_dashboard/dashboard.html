@@ -462,6 +462,7 @@
 <button class="sidebar-toggle" onclick="toggleSidebar()">
     <i class="fas fa-bars"></i>
 </button>
+{% csrf_token %}
 {% endblock %}
 
 {% block extra_js %}
@@ -469,17 +470,20 @@
 // Track service access
 function trackServiceAccess(serviceName) {
     // Send analytics data
-    fetch('/dashboard/services/access/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            service_name: serviceName,
-            timestamp: new Date().toISOString()
-        })
-    });
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        fetch('/dashboard/services/access/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken.value
+            },
+            body: JSON.stringify({
+                service_name: serviceName,
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Analytics tracking skipped:', err));
+    }
 }
 
 // Track iframe loads
@@ -490,20 +494,27 @@ function trackIframeLoad(sectionTitle) {
 // Remove widget
 function removeWidget(widgetId) {
     if (confirm('Are you sure you want to remove this widget?')) {
-        fetch(`/dashboard/widgets/${widgetId}/remove/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            fetch(`/dashboard/widgets/${widgetId}/remove/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error removing widget');
+                }
+            })
+            .catch(err => {
+                console.error('Error removing widget:', err);
                 alert('Error removing widget');
-            }
-        });
+            });
+        }
     }
 }
 
@@ -523,28 +534,53 @@ setInterval(function() {
 
 // Theme switching
 function switchTheme(theme) {
+    console.log('Switching theme to:', theme);
     const dashboard = document.querySelector('.unified-dashboard');
+    
+    if (!dashboard) {
+        console.error('Dashboard element not found!');
+        return;
+    }
     
     // Update dashboard theme attribute
     if (theme === 'purple') {
         dashboard.setAttribute('data-theme', 'purple');
+        console.log('Applied purple theme');
     } else {
         dashboard.removeAttribute('data-theme');
+        console.log('Applied navy-gold theme (default)');
     }
     
     // Update button states
-    document.querySelectorAll('.theme-btn').forEach(btn => {
+    const buttons = document.querySelectorAll('.theme-btn');
+    console.log('Found', buttons.length, 'theme buttons');
+    
+    buttons.forEach(btn => {
         btn.classList.remove('active');
     });
     
+    const purpleBtn = document.getElementById('purple-btn');
+    const navyBtn = document.getElementById('navy-btn');
+    
     if (theme === 'purple') {
-        document.getElementById('purple-btn').classList.add('active');
+        if (purpleBtn) {
+            purpleBtn.classList.add('active');
+            console.log('Activated purple button');
+        } else {
+            console.error('Purple button not found!');
+        }
     } else {
-        document.getElementById('navy-btn').classList.add('active');
+        if (navyBtn) {
+            navyBtn.classList.add('active');
+            console.log('Activated navy button');
+        } else {
+            console.error('Navy button not found!');
+        }
     }
     
     // Save preference to localStorage
     localStorage.setItem('dashboardTheme', theme);
+    console.log('Saved theme to localStorage:', theme);
     
     // Optional: Save to server
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
@@ -556,14 +592,23 @@ function switchTheme(theme) {
                 'X-CSRFToken': csrfToken.value
             },
             body: `theme=${theme}`
-        }).catch(err => console.log('Theme save skipped:', err));
+        }).then(() => {
+            console.log('Theme saved to server');
+        }).catch(err => {
+            console.log('Theme save to server skipped:', err);
+        });
+    } else {
+        console.log('CSRF token not found, skipping server save');
     }
 }
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== Dashboard Initializing ===');
+    
     // Load saved theme from localStorage
     const savedTheme = localStorage.getItem('dashboardTheme') || 'navy-gold';
+    console.log('Loading saved theme:', savedTheme);
     switchTheme(savedTheme);
     
     // Initialize tooltips if Bootstrap is available
@@ -572,7 +617,10 @@ document.addEventListener('DOMContentLoaded', function() {
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+        console.log('Bootstrap tooltips initialized');
     }
+    
+    console.log('=== Dashboard Initialization Complete ===');
 });
 </script>
 {% endblock %}
