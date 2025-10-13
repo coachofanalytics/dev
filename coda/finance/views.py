@@ -86,7 +86,6 @@ from accounts.mixins import FilteredListViewMixin
 
 # Import service layer (OUR ARCHITECTURE!)
 from finance.services import (
-    LoanEligibilityService,
     PaymentProcessingService,
     BudgetEstimationService,
     FinancialAnalyticsService,
