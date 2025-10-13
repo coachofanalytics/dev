@@ -110,17 +110,8 @@ urlpatterns = [
     path('pay/<int:pk>/', views.UserPayUpdateView.as_view(), name='updatepay'),
     
     #=============================UNIFIED PAYMENT SYSTEM=====================================
-    # New unified payment URLs - TEMPORARILY DISABLED until _deprecated module is deployed
-    # TODO: Re-enable these URLs once finance._deprecated.legacy_views is available
-    # path('unified/methods/', payment_views.payment_method_selection, name='unified_method_selection'),
-    # path('unified/process/<str:method>/', payment_views.payment_processing, name='unified_processing'),
-    # path('unified/success/', payment_views.payment_success, name='unified_success'),
-    # path('unified/failed/', payment_views.payment_failed, name='unified_failed'),
-    # path('visitor/<str:method>/', payment_views.process_visitor_payment, name='visitor_payment'),
-    
-    # MPESA OTP verification - TEMPORARILY DISABLED
-    # path('mpesa-otp-confirmation/', payment_views.mpesa_otp_confirmation, name='mpesa_otp_confirmation'),
-    # path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
+    # New unified payment URLs - Conditionally loaded if payment_views is available
+    # If not available, unified_method_selection redirects to legacy pay page
     
     # Legacy payment URLs (maintained for backward compatibility)
     path('defaultpayments/', legacy_views.DefaultPaymentListView.as_view(template_name='finance/payments/defaultpayments.html'), name='defaultpayments'),
@@ -371,3 +362,22 @@ urlpatterns = [
     path('api/admin/audit-log/', views_admin_controls.get_audit_log, name='audit-log'),
     path('api/admin/export-report/', views_admin_controls.export_admin_report, name='export-admin-report'),
 ]
+
+# Conditionally add unified payment URLs if payment_views module is available
+if payment_views is not None:
+    urlpatterns += [
+        path('unified/methods/', payment_views.payment_method_selection, name='unified_method_selection'),
+        path('unified/process/<str:method>/', payment_views.payment_processing, name='unified_processing'),
+        path('unified/success/', payment_views.payment_success, name='unified_success'),
+        path('unified/failed/', payment_views.payment_failed, name='unified_failed'),
+        path('visitor/<str:method>/', payment_views.process_visitor_payment, name='visitor_payment'),
+        
+        # MPESA OTP verification
+        path('mpesa-otp-confirmation/', payment_views.mpesa_otp_confirmation, name='mpesa_otp_confirmation'),
+        path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
+    ]
+else:
+    # Fallback: redirect unified payment URLs to legacy payment page
+    urlpatterns += [
+        path('unified/methods/', lambda request: redirect('finance:pay'), name='unified_method_selection'),
+    ]
