@@ -585,6 +585,19 @@ def Evidence_create_view(request):
 
     return render(request, "accounts/Evidence_create.html", {"form": form, "action": "Create"})
 
+def Evidence_update_view(request, pk):
+    evidence = get_object_or_404(Evidence, pk=pk)
+    if request.method == "POST":
+        form = EvidenceForm(request.POST, request.FILES, instance=evidence)
+        if form.is_valid():
+            form.save()
+                        
+            return redirect("accounts:accounts-Evidence_list")  # <- include namespace
+    else:
+        form = EvidenceForm()
+
+    return render(request, "accounts/Evidence_update.html", {"form": form, "action": "update"})
+
 
 
 

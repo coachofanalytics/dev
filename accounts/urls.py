@@ -41,6 +41,7 @@ urlpatterns = [
     path('CapacityBuilding_delete/<int:pk>/', views.CapacityBuilding_delete_view, name='CapacityBuilding_delete'),
     path('Evidence_list/', views.Evidence_list_view, name='accounts-Evidence_list'),
     path('Evidence_create/', views.Evidence_create_view, name='Evidence_create'),
+    path('Evidence_update/<int:pk>/', views.Evidence_update_view, name='Evidence_update'),
 
 
 
