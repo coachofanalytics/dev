@@ -1,0 +1,26 @@
+# Heroku Slug Ignore
+# Files and directories in this file will be excluded from Heroku deployments
+# but will still be tracked in Git
+
+# Documentation - not needed on Heroku
+docs/
+*.md
+README.md
+
+# Tests - not needed on Heroku
+tests/
+*.test.py
+test_*.py
+
+# Scripts - run locally only
+scripts/
+
+# Archives and backups - never deploy
+archive/
+backups/
+
+# Development files
+.git/
+.gitignore
+.gitattributes
+
