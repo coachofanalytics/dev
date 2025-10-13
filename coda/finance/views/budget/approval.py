@@ -45,17 +45,15 @@ def budget_approval_dashboard(request, company_slug, company=None):
         
         user_department = view.get_user_department(request, company)
         
-        # Get pending approvals
+        # Get pending approvals (BudgetRequest doesn't have company field)
         pending_requests = BudgetRequest.objects.filter(
-            company=company,
             status='pending'
-        ).select_related('requested_by', 'category', 'subcategory')
+        ).select_related('requester', 'budget_category', 'department')
         
         # Get recent approvals
         recent_approvals = BudgetRequest.objects.filter(
-            company=company,
             status__in=['approved', 'rejected']
-        ).select_related('requested_by', 'category', 'subcategory').order_by('-updated_at')[:10]
+        ).select_related('requester', 'budget_category', 'department').order_by('-updated_at')[:10]
         
         # Get approval statistics
         approval_stats = {
@@ -94,17 +92,16 @@ def budget_approval_detail(request, company_slug, request_id, company=None):
             if not company:
                 return redirect('main:dashboard')
         
-        # Get budget request
+        # Get budget request (BudgetRequest doesn't have company field)
         budget_request = get_object_or_404(
             BudgetRequest,
-            id=request_id,
-            company=company
+            id=request_id
         )
         
         # Get related budgets
         related_budgets = Budget.objects.filter(
             company=company,
-            category=budget_request.category
+            category=budget_request.budget_category
         ).select_related('subcategory', 'budget_lead')
         
         context = {
@@ -135,11 +132,10 @@ def approve_budget_request(request, company_slug, request_id, company=None):
             if not company:
                 return error_json_response("Company not found", 404)
         
-        # Get budget request
+        # Get budget request (BudgetRequest doesn't have company field)
         budget_request = get_object_or_404(
             BudgetRequest,
-            id=request_id,
-            company=company
+            id=request_id
         )
         
         # Check if user has permission to approve
@@ -176,11 +172,10 @@ def reject_budget_request(request, company_slug, request_id, company=None):
             if not company:
                 return error_json_response("Company not found", 404)
         
-        # Get budget request
+        # Get budget request (BudgetRequest doesn't have company field)
         budget_request = get_object_or_404(
             BudgetRequest,
-            id=request_id,
-            company=company
+            id=request_id
         )
         
         # Check if user has permission to reject
@@ -252,11 +247,10 @@ def budget_approval_api(request, company_slug):
         if not company:
             return error_json_response("Company not found", 404)
         
-        # Get approval data
+        # Get approval data (BudgetRequest doesn't have company field)
         pending_requests = BudgetRequest.objects.filter(
-            company=company,
             status='pending'
-        ).values('id', 'title', 'amount', 'category__name', 'requested_by__username', 'created_at')
+        ).values('id', 'purpose', 'amount', 'budget_category__name', 'requester__username', 'created_at')
         
         approval_stats = {
             'pending_count': BudgetRequest.objects.filter(status='pending').count(),
