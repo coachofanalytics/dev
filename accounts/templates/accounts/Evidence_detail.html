@@ -1,0 +1,13 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<h2>Evidence Detail</h2>
+<p><strong>Title:</strong> {{ evidence.title }}</p>
+<p><strong>County:</strong> {{ evidence.description }}</p>
+<p><strong>Uploaded By:</strong> {{ evidence.uploaded_by }}</p>
+<p><strong>Date:</strong> {{ evidence.upload_date|date:"M d, Y" }}</p>
+<p><strong>File:</strong> <a href="{{ evidence.file.url }}">View</a></p>
+
+<a href="%url 'accounts:Evidence_update' item.id  %">Edit</a> |
+<a href="#">Delete</a> |
+<a href="{% url 'accounts:accounts-Evidence_list' %}">Back to list</a>
+{% endblock %}

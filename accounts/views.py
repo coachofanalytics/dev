@@ -598,6 +598,14 @@ def Evidence_update_view(request, pk):
 
     return render(request, "accounts/Evidence_update.html", {"form": form, "action": "update"})
 
+from django.shortcuts import render, get_object_or_404
+from .models import Evidence
+
+def Evidence_detail_view(request, pk):
+    evidence = get_object_or_404(Evidence, pk=pk)
+    return render(request, "accounts/Evidence_detail.html", {'evidence': evidence})
+
+
 
 
 
