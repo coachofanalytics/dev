@@ -44,6 +44,7 @@ urlpatterns = [
     path('Evidence_create/', views.Evidence_create_view, name='Evidence_create'),
     path('Evidence_update/<int:pk>/', views.Evidence_update_view, name='Evidence_update'),
     path('Evidence_detail/<int:pk>/', views.Evidence_detail_view, name='Evidence_detail'),
+    path('Evidence_delete/<int:pk>/', views.Evidence_delete_view, name='Evidence_delete'),
 
 
 

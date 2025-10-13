@@ -606,6 +606,19 @@ def Evidence_detail_view(request, pk):
     return render(request, "accounts/Evidence_detail.html", {'evidence': evidence})
 
 
+def Evidence_delete_view(request, pk):
+    evidence = get_object_or_404(Evidence, pk=pk)
+    if request.method == "POST":  
+            evidence.delete()           
+                        
+            return redirect("accounts:accounts-Evidence_list")  # <- include namespace
+    else:
+        form = EvidenceForm()
+
+    return render(request, "accounts/Evidence_delete.html", {'evidence':evidence})
+
+
+
 
 
 

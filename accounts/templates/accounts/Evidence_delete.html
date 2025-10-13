@@ -1,0 +1,10 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<h2>Confirm Delete</h2>
+<p>Are you sure you want to delete "{{ evidence.title }}"?</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Yes, Delete</button>
+  <a href="{%  url 'accounts:accounts-Evidence_list' %}">Cancel</a>
+</form>
+{% endblock %}
