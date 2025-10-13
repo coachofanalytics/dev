@@ -619,6 +619,81 @@ cd coda && coverage report
 
 ---
 
+## 🚨 CRITICAL RULE: NO .MD FILES IN PROJECT ROOT OR DOCS ROOT
+
+### ❌ NEVER Create Files In:
+- `/` (project root) - Only `README.md` allowed
+- `/docs/` (docs root) - Only `README.md` allowed
+
+### ✅ ALWAYS Create Progress/Summary Files In:
+**`docs/_temp_summaries/`** - Temporary working folder
+
+**Why?**
+- Keeps root clean
+- User can review summaries
+- Then move information to appropriate feature docs
+- Delete temp files after integration
+
+### Examples:
+
+**DON'T:** ❌
+```bash
+# Creating files in wrong locations
+/INTEGRATION_PROGRESS.md          # ROOT - Wrong!
+/docs/SESSION_SUMMARY.md           # DOCS ROOT - Wrong!
+/DEPLOYMENT_STRATEGY.md            # ROOT - Wrong!
+```
+
+**DO:** ✅
+```bash
+# Create in temp folder
+/docs/_temp_summaries/INTEGRATION_PROGRESS.md          # Correct!
+/docs/_temp_summaries/SESSION_SUMMARY.md               # Correct!
+/docs/_temp_summaries/DEPLOYMENT_STRATEGY.md           # Correct!
+
+# Then user reviews and you move info to:
+docs/apps/finance/Budget/IMPLEMENTATION.md             # Permanent
+docs/apps/finance/Budget/REQUIREMENTS.md               # Permanent
+docs/05_DEPLOYMENT/OCT13_SESSION.md                    # Permanent
+```
+
+### Workflow:
+
+**Step 1: Create Summary (During Work)**
+```bash
+# You're working on budget feature
+# Create progress summary
+→ docs/_temp_summaries/BUDGET_WORK_PROGRESS.md
+```
+
+**Step 2: User Reviews**
+```
+User reads your summary in _temp_summaries/
+User says: "Good, integrate this into Budget/IMPLEMENTATION.md"
+```
+
+**Step 3: Integrate & Delete**
+```bash
+# You extract key info and add to:
+→ docs/apps/finance/Budget/IMPLEMENTATION.md (Change History)
+→ docs/apps/finance/Budget/REQUIREMENTS.md (if new requirement)
+
+# Then delete temp file
+rm docs/_temp_summaries/BUDGET_WORK_PROGRESS.md
+```
+
+### File Naming in _temp_summaries/:
+```
+✅ BUDGET_WORK_PROGRESS.md        (feature-specific)
+✅ SESSION_OCT13_SUMMARY.md        (session summary)
+✅ INTEGRATION_STATUS.md           (progress update)
+✅ DEPLOYMENT_PLAN.md              (planning)
+```
+
+**All temp files get reviewed and integrated, then deleted!**
+
+---
+
 ## 🚀 DEPLOYMENT CHECKLIST
 
 ### Pre-Deployment (MANDATORY):
