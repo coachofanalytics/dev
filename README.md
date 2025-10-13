@@ -27,6 +27,15 @@
 - **Transaction Analytics:** Enhanced reporting and insights
 - **Code Quality:** Continued refactoring and optimization
 
+## ⚙️ Configuration Files
+
+**Heroku Deployment Files (Root Level):**
+- `Procfile` - Heroku process definition (tells Heroku to run from `/coda/`)
+- `requirements.txt` - Python dependencies
+- `runtime.txt` - Python version
+
+⚠️ **These files MUST stay in the root directory for Heroku deployment.**
+
 ## 🚀 Quick Start
 
 ### Local Development
