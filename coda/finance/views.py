@@ -90,6 +90,7 @@ from finance.services import (
     PaymentProcessingService,
     BudgetEstimationService,
     FinancialAnalyticsService,
+    LoanService,
 )
 
 # Import analytics services
