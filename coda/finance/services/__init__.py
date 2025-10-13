@@ -19,7 +19,7 @@ from .budget.consolidation import BudgetConsolidationService
 from .loan.eligibility import LoanEligibilityService
 from .loan.performance import LoanPerformanceService
 from .payment.processing import PaymentProcessingService
-from .analytics_service import FinancialAnalyticsService
+from .financial_analytics_service import FinancialAnalyticsService
 
 # Import service modules
 from . import core, budget, loan, payment
