@@ -5,19 +5,55 @@
 ### Transaction Model
 **Location:** `coda/finance/models/core.py`
 
+**Complete Schema:**
 ```python
 class Transaction(models.Model):
-    transaction_date = models.DateField()
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    description = models.TextField()
+    """
+    Source of truth for all financial transactions
+    
+    Philosophy: "Transactions are the source of truth" - all budget 
+    decisions flow from real spending data, not guesses.
+    """
+    # Parties
+    sender = models.CharField(max_length=255)  # Payer
+    receiver = models.CharField(max_length=255)  # Vendor/recipient
     vendor_supplier = models.ForeignKey(User, related_name='transactions_as_vendor')
+    phone = models.CharField(max_length=20)
+    
+    # Organization
+    department = models.ForeignKey('Department', null=True)
+    company = models.ForeignKey('Company')
+    
+    # Categorization (Hierarchical)
     category = models.ForeignKey('BudgetCategory', null=True)
     subcategory = models.ForeignKey('BudgetSubcategory', null=True)
-    type = models.CharField(max_length=100, blank=True)
+    type = models.CharField(max_length=100, blank=True)  # Item/service type
+    
+    # Financial Details
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=3, default='USD')
+    qty = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    transaction_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    # Transaction Details
+    transaction_date = models.DateTimeField()
     payment_method = models.CharField(max_length=50)
-    company = models.ForeignKey('Company')
-    department = models.ForeignKey('Department', null=True)
+    description = models.TextField()
+    receipt_link = models.URLField(blank=True)
+    location = models.CharField(max_length=100, blank=True)  # Office location
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 ```
+
+**Historical Data (July 2022 - Oct 2024):**
+- **Total Records:** 366 transactions
+- **Total Value:** $1,458,482
+- **Time Period:** 27 months
+- **Data Quality:** 95.6% categorized (350/366)
+
+**Source:** MASTER_REFERENCE.md
 
 ## AI Prediction Service
 

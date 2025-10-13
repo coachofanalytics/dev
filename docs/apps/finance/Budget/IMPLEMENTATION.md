@@ -913,14 +913,54 @@ else:
 
 ---
 
+## Critical Bug Fixes
+
+### Dashboard Aggregation Bug (Oct 1, 2025) ⚠️ CRITICAL
+
+**Problem:** Budget totals inflated by 177x  
+**Example:** $837K actual → displayed as $148M
+
+**Root Cause:**
+```python
+# WRONG (what we had)
+total = Sum('quantity') * Sum('unit_price')
+# This does: (2+3) * (100+50) = 750 ❌
+# Multiplies sum of ALL quantities by sum of ALL prices
+```
+
+**Correct Solution:**
+```python
+# CORRECT (what we fixed)
+total = Sum(F('unit_price') * F('quantity') * Coalesce(F('cases'), 1), 
+            output_field=DecimalField())
+# This does: (2*100) + (3*50) = 350 ✅
+# Multiplies EACH item's quantity by ITS price, then sums
+```
+
+**Impact:**
+- Dashboard now shows accurate totals
+- Budget calculations correct
+- Reporting reliable
+
+**File:** `views_unified_budget.py` lines 164-174  
+**Deployed:** October 1, 2025  
+**Regression Test:** Added to `test_regressions.py`
+
+**⚠️ IMPORTANT:** Always use `F()` expressions for row-level calculations before aggregation!
+
+**Source:** MASTER_REFERENCE.md Section: Critical Fixes
+
+---
+
 ## Change History
 
-| Date | Change | Developer | Reason |
-|------|--------|-----------|--------|
-| Oct 13, 2025 | Added approval fields (Migration 0099) | CM | Support Phase 1 workflow |
-| Oct 13, 2025 | Fixed permission logic (simple staff approval) | CM | Unblock development |
-| Oct 2, 2025 | Dashboard bug fix (aggregation formula) | CM | Fix 177x inflation error |
-| Oct 1, 2025 | Created BudgetRequest model | CM | Initial implementation |
+| Date | Change | Developer | Reason | Reference |
+|------|--------|-----------|--------|-----------|
+| Oct 13, 2025 | Added approval fields (Migration 0099) | CM | Support Phase 1 workflow | This session |
+| Oct 13, 2025 | Fixed permission logic (simple staff approval) | CM | Unblock development | This session |
+| Oct 2, 2025 | Dashboard bug fix (aggregation formula) | CM | Fix 177x inflation error | MASTER_REFERENCE.md |
+| Oct 1, 2025 | Created BudgetRequest model | CM | Initial implementation | Phase 3 start |
+| Sept 30, 2025 | Data quality analysis | CM | Foundation for improvements | DATA_QUALITY_ANALYSIS.md |
 
 ---
 
