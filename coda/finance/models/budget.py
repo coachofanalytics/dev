@@ -574,6 +574,32 @@ class BudgetRequest(TimeStampedModel, StatusMixin):
         related_name='modified_budget_requests',
         help_text="User who last modified the request"
     )
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_budget_requests',
+        help_text="User who approved the request"
+    )
+    approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of approval"
+    )
+    rejected_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='rejected_budget_requests',
+        help_text="User who rejected the request"
+    )
+    rejected_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of rejection"
+    )
     
     class Meta:
         ordering = ['-request_date']
