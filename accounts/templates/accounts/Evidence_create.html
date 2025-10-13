@@ -1,0 +1,13 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block content %}
+<h2>{{ action }} Evidence</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{{ action }}</button>
+</form>
+
+<a href="{% url 'accounts:accounts-Evidence_list' %}">Back to list</a>
+{% endblock %}

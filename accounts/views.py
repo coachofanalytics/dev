@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,CredentialCategoryForm,SprintplanningForm,CapacityBuildingForm
+from .forms import UserForm, LoginForm,CredentialForm,TaskGroupForm,TeamMemberForm,CredentialCategoryForm,SprintplanningForm,CapacityBuildingForm,EvidenceForm
 
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
@@ -566,6 +566,25 @@ def CapacityBuilding_delete_view(request, pk):
 def Evidence_list_view(request):
      evidence_items= Evidence.objects.all().order_by('-upload_date')
      return render(request,"accounts/Evidence_list.html",{"evidence_items":evidence_items})
+from django.shortcuts import render, redirect
+from .forms import EvidenceForm
+
+from django.shortcuts import render, redirect
+from .forms import EvidenceForm
+
+def Evidence_create_view(request):
+    if request.method == "POST":
+        form = EvidenceForm(request.POST, request.FILES)
+        if form.is_valid():
+            evidence = form.save(commit=False)
+            evidence.uploaded_by = request.user
+            evidence.save()
+            return redirect("accounts:accounts-Evidence_list")  # <- include namespace
+    else:
+        form = EvidenceForm()
+
+    return render(request, "accounts/Evidence_create.html", {"form": form, "action": "Create"})
+
 
 
 
