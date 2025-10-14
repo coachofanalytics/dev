@@ -6,6 +6,7 @@ import logging
 from decimal import *
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
@@ -72,6 +73,7 @@ from investing.utils import calculate_investor_returns
 from management.utils import paytime
 from management.models import Requirement
 from finance.utils import *
+from finance.utils import calculate_paypal_charges
 from django.apps import apps
 from ai_services.models import Editable
 from django.core.exceptions import MultipleObjectsReturned
@@ -2100,27 +2102,34 @@ def send_invoice(request, type="collection"):
 
 @login_required
 def pay(request, *args, **kwargs):
+    """
+    Payment page - shows payment methods for users with outstanding balances.
+    Checks for: active loans, payment info, or investment obligations.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     contract_url = reverse("finance:newcontract", args=[request.user.username])
     payment_info = None
+    paypal_charges = 0
+    payment_source = None  # Track what payment is for: 'service', 'loan', or 'investment'
 
+    # Handle POST: Create new payment info
     if request.method == "POST" and request.POST.get("fees"):
         total_fee = float(request.POST.get("fees"))
         if not request.POST.get("is_direct", False):
             downpayment = total_fee * 0.30
         else:
             downpayment = total_fee
-        fee_balance = total_fee - downpayment
+        
         payment_info = Payment_Information.objects.create(
             customer_id=request.user,
             payment_fees=total_fee,
             down_payment=downpayment,
             student_bonus=0,
-            plan=request.POST.get(
-                "service_category_id", 999
-            ),  # added service_category id
+            plan=request.POST.get("service_category_id", 999),
             subplan=request.POST.get("subplan_id", None),
             pricing_plan=request.POST.get("pricing_serial", None),
-            # fee_balance=fee_balance,
             payment_method="mpesa",
             contract_submitted_date=date.today(),
             client_signature="client",
@@ -2128,42 +2137,93 @@ def pay(request, *args, **kwargs):
             client_date=date.today(),
             rep_date=date.today(),
         )
-        paypal_charges = (
-            calculate_paypal_charges(payment_info.down_payment) if payment_info else 0
-        )
+        paypal_charges = calculate_paypal_charges(payment_info.down_payment) if payment_info else 0
+        payment_source = 'service'
+    
+    # Handle GET: Check if user has outstanding payments
     else:
-        try:
-            payment_info = (
-                Payment_Information.objects.filter(customer_id=request.user.id)
-                .order_by("-contract_submitted_date")
-                .first()
-            )
-            print(payment_info.payment_fees)
-            paypal_charges = (
-                calculate_paypal_charges(payment_info.payment_fees)
-                if payment_info
-                else 0
-            )
-        except:
-            payment_info = (
-                Investor_Information.objects.filter(investor=request.user.id)
-                .order_by("-contract_date")
-                .first()
-            )
-            # Need modification to take the user to the interested page.
-            return redirect("main:layout")
-            paypal_charges = (
-                calculate_paypal_charges(payment_info.amount_invested)
-                if payment_info
-                else 0
-            )
+        # 1. Check for active loans first (highest priority)
+        active_loans = LoanApplication.objects.filter(
+            borrower=request.user,
+            status__in=['active', 'approved', 'disbursed']
+        ).first()
+        
+        if active_loans:
+            # User has active loan - show payment page for loan repayment
+            # Use total_payable if available, otherwise amount_requested
+            loan_amount = active_loans.total_payable or active_loans.amount_requested
+            payment_info = type('obj', (object,), {
+                'id': active_loans.id,  # Add id for URL generation
+                'payment_fees': loan_amount,
+                'down_payment': loan_amount,
+                'loan_application': active_loans
+            })()
+            paypal_charges = calculate_paypal_charges(payment_info.payment_fees)
+            payment_source = 'loan'
+            logger.info(f"User {request.user.username} has active loan: {active_loans.id}")
+        
+        # 2. Check for service payment info
+        else:
+            try:
+                payment_info = (
+                    Payment_Information.objects.filter(customer_id=request.user.id)
+                    .order_by("-contract_submitted_date")
+                    .first()
+                )
+                if payment_info:
+                    paypal_charges = calculate_paypal_charges(payment_info.payment_fees)
+                    payment_source = 'service'
+                    logger.info(f"User {request.user.username} has payment info: {payment_info.id}")
+            except Exception as e:
+                logger.error(f"Payment info lookup failed for user {request.user.id}: {str(e)}")
+                payment_info = None
+        
+        # 3. If still no payment info, check Payment_History for unpaid items
+        if not payment_info:
+            unpaid_history = Payment_History.objects.filter(
+                customer=request.user,
+                status__in=['pending', 'incomplete']
+            ).first()
+            
+            if unpaid_history:
+                payment_info = type('obj', (object,), {
+                    'id': unpaid_history.id,  # Add id for URL generation
+                    'payment_fees': unpaid_history.payment_fees,
+                    'down_payment': unpaid_history.payment_fees,
+                    'payment_history': unpaid_history
+                })()
+                paypal_charges = calculate_paypal_charges(payment_info.payment_fees)
+                payment_source = 'history'
+                logger.info(f"User {request.user.username} has unpaid history: {unpaid_history.id}")
+        
+        # 4. No outstanding payments found - but user may want to pay for new service
+        if not payment_info:
+            logger.info(f"User {request.user.username} accessing payment page without existing payment info")
+            # Create a placeholder payment info for general payments
+            # User can select amount and service on the payment page
+            payment_info = type('obj', (object,), {
+                'id': None,  # No id for new payments
+                'payment_fees': 0,  # Will be entered on payment page
+                'down_payment': 0,
+                'is_new_payment': True  # Flag to show this is a new payment
+            })()
+            payment_source = 'new_service'
+            paypal_charges = 0
+            
+            # Add message to help user understand they can pay for services
+            messages.info(request, "Welcome! You can make a payment for training, services, or other CODA offerings.")
 
-    total_amount = amount_due = payment_info.payment_fees + paypal_charges
-    amount_due = payment_info.down_payment + paypal_charges
+    # Calculate payment amounts
+    if hasattr(payment_info, 'payment_fees'):
+        total_amount = payment_info.payment_fees + paypal_charges
+        amount_due = payment_info.down_payment + paypal_charges if hasattr(payment_info, 'down_payment') else total_amount
+    else:
+        total_amount = amount_due = 0
 
     context = {
         "title": "PAYMENT",
         "payments": payment_info,
+        "payment_source": payment_source,
         "total_amount": total_amount,
         "amount_due": amount_due,
         "paypal_charges": paypal_charges,
