@@ -141,42 +141,38 @@
                                         {% if basic_staff_list %}
                                         <div class="alert alert-info mb-3">
                                             <h6><i class="fas fa-lightbulb"></i> Select a Staff Guarantor</h6>
-                                            <p class="mb-2">Here are the top 3 most eligible staff members based on tenure and salary. Click on a card to select:</p>
+                                            <p class="mb-2">Here are staff members who can act as your guarantor. Click on a card to select:</p>
                                             <div class="row" id="guarantor-selection">
-                                                {% for staff_data in basic_staff_list %}
+                                                {% for staff in basic_staff_list %}
                                                 <div class="col-md-4 mb-2">
                                                     <div class="card border-info guarantor-option" 
-                                                         data-guarantor-id="{{ staff_data.staff.id }}"
-                                                         data-first-name="{{ staff_data.staff.first_name }}"
-                                                         data-last-name="{{ staff_data.staff.last_name }}"
-                                                         data-phone="{{ staff_data.staff.phone|default:'' }}"
-                                                         data-email="{{ staff_data.staff.email }}"
+                                                         data-guarantor-id="{{ staff.id }}"
+                                                         data-first-name="{{ staff.first_name }}"
+                                                         data-last-name="{{ staff.last_name }}"
+                                                         data-phone="{{ staff.phone|default:'' }}"
+                                                         data-email="{{ staff.email }}"
                                                          data-relationship="colleague"
                                                          style="cursor: pointer;">
                                                         <div class="card-body p-3 text-center">
                                                             <div class="form-check">
                                                                 <input class="form-check-input" type="radio" 
                                                                        name="selected_guarantor" 
-                                                                       id="guarantor_{{ staff_data.staff.id }}" 
-                                                                       value="{{ staff_data.staff.id }}"
+                                                                       id="guarantor_{{ staff.id }}" 
+                                                                       value="{{ staff.id }}"
                                                                        required>
-                                                                <label class="form-check-label" for="guarantor_{{ staff_data.staff.id }}">
+                                                                <label class="form-check-label" for="guarantor_{{ staff.id }}">
                                                                     <div class="mb-2">
                                                                         <i class="fas fa-user-circle fa-2x text-primary"></i>
                                                                     </div>
-                                                                    <strong>{{ staff_data.staff.get_full_name }}</strong><br>
+                                                                    <strong>{{ staff.get_full_name }}</strong><br>
                                                                     <small class="text-muted">
-                                                                        <i class="fas fa-envelope"></i> {{ staff_data.staff.email }}<br>
-                                                                        {% if staff_data.staff.phone %}
-                                                                        <i class="fas fa-phone"></i> {{ staff_data.staff.phone }}<br>
+                                                                        <i class="fas fa-envelope"></i> {{ staff.email }}<br>
+                                                                        {% if staff.phone %}
+                                                                        <i class="fas fa-phone"></i> {{ staff.phone }}<br>
                                                                         {% endif %}
-                                                                        <div class="mt-2">
-                                                                            <span class="badge badge-success">Score: {{ staff_data.combined_score|floatformat:1 }}</span><br>
-                                                                            <small>
-                                                                                <i class="fas fa-dollar-sign"></i> ${{ staff_data.avg_earnings|floatformat:0 }}/month<br>
-                                                                                <i class="fas fa-calendar"></i> {{ staff_data.tenure_days }} days tenure
-                                                                            </small>
-                                                                        </div>
+                                                                        <span class="eligibility-info" id="eligibility_{{ staff.id }}">
+                                                                            <i class="fas fa-spinner fa-spin"></i> Loading eligibility...
+                                                                        </span>
                                                                     </small>
                                                                 </label>
                                                             </div>

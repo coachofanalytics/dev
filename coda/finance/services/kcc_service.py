@@ -58,12 +58,7 @@ class KCCOptimizationService(ModelService):
         """Get KCC-specific loan limits based on performance tier"""
         try:
             eligibility = self.get_kcc_eligibility(user)
-            
-            # Check if eligibility check failed
-            if eligibility.get('status') == 'error':
-                return eligibility
-            
-            if not eligibility.get('is_kcc_member', False):
+            if not eligibility['is_kcc_member']:
                 return {
                     'status': 'error',
                     'message': 'User is not a KCC member'

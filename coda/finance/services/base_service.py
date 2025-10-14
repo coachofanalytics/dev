@@ -80,7 +80,6 @@ class BaseFinanceService:
     def create_success_response(self, data: Any, message: str = "Operation successful") -> Dict[str, Any]:
         """Create standardized success response."""
         return {
-            'status': 'success',
             'success': True,
             'message': message,
             'data': data
@@ -89,7 +88,6 @@ class BaseFinanceService:
     def create_error_response(self, error: str, details: Dict[str, Any] = None) -> Dict[str, Any]:
         """Create standardized error response."""
         return {
-            'status': 'error',
             'success': False,
             'error': error,
             'details': details or {}

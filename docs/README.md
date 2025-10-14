@@ -7,27 +7,66 @@
 
 ## 🎯 START HERE
 
-### For Developers:
-1. Pick your app: [Finance](#finance-app) | Marketing | Management | Core
+### For New Developers:
+1. ⭐ **READ:** [01_GETTING_STARTED/CURSOR_AI_GUIDE.md](01_GETTING_STARTED/CURSOR_AI_GUIDE.md)
+2. **Understand:** [02_ARCHITECTURE/](02_ARCHITECTURE/) - System overview
+3. **Review:** [03_PROJECT_MANAGEMENT/PROJECT_HISTORY_TIMELINE.md](03_PROJECT_MANAGEMENT/PROJECT_HISTORY_TIMELINE.md)
+4. **Then:** Pick your app/feature below
+
+### For Cursor AI (Every Session):
+1. ⭐ **ALWAYS READ:** [01_GETTING_STARTED/CURSOR_AI_GUIDE.md](01_GETTING_STARTED/CURSOR_AI_GUIDE.md)
+2. **Then Read:** Feature-specific docs in [apps/finance/](#finance-app)
+3. **Follow:** Development workflow in the guide
+4. **Remember:** Never deploy to production without user permission!
+
+### For Feature Work:
+1. Pick your app: [Finance](#finance-app) | Investing | Management
 2. Pick your feature within that app
 3. Read feature README → IMPLEMENTATION → TESTING
 
-### For Product/Business:
-1. Pick your feature
-2. Read feature README → REQUIREMENTS
-
-### For QA:
-1. Pick your feature
-2. Go straight to TESTING docs
+### For Deployment:
+1. ⚠️ **Check:** [05_DEPLOYMENT/KNOWN_ISSUES.md](05_DEPLOYMENT/KNOWN_ISSUES.md)
+2. **Follow:** [05_DEPLOYMENT/README.md](05_DEPLOYMENT/README.md)
+3. **Remember:** Production requires user permission!
 
 ---
 
 ## 📁 DOCUMENTATION STRUCTURE
 
 ```
-coda/docs/
-├── apps/
-│   └── finance/                    ⭐ Finance App (Complete)
+docs/
+├── README.md                       ⭐ You are here
+│
+├── 01_GETTING_STARTED/            🚀 Start here
+│   ├── CURSOR_AI_GUIDE.md         ⭐ AI development guide
+│   ├── WORKING_WITH_AI.md
+│   └── setup_development_environment.py
+│
+├── 02_ARCHITECTURE/               🏗️ System architecture
+│   ├── README.md
+│   └── TECHNICAL_DOCS.md
+│
+├── 03_PROJECT_MANAGEMENT/         📊 History & roadmap
+│   ├── README.md
+│   └── PROJECT_HISTORY_TIMELINE.md
+│
+├── 04_TESTING/                    🧪 Testing strategy
+│   ├── README.md
+│   └── COMPREHENSIVE_TESTING_STRATEGY.md
+│
+├── 05_DEPLOYMENT/                 🚀 Deployment
+│   ├── README.md
+│   ├── KNOWN_ISSUES.md           ⚠️ Read before deploying
+│   └── Session summaries
+│
+├── 06_INTEGRATION/                🔌 External integrations
+│
+├── 07_MAINTENANCE/                🔧 Operations
+│   ├── README.md
+│   └── SHARING_FINANCE_APP.md
+│
+├── apps/                          📱 App-specific docs
+│   └── finance/                   ⭐ Finance App (Complete)
 │       ├── README.md               Master index for finance
 │       ├── Budget/                 💰 4 docs
 │       │   ├── README.md

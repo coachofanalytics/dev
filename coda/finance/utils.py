@@ -294,38 +294,41 @@ def get_kcc_tier_by_credit_score(user):
         return 1  # Default to Tier 1
 
 
-def get_eligible_staff_guarantors(limit=3):
+def get_eligible_staff_guarantors(limit=5):
     """
-    Get top eligible staff members who can act as guarantors.
-    Returns top 3 staff members based on tenure (date_joined) and salary (monthly earnings).
-    Only returns staff members (category 2) who are active.
-    
-    Scoring Algorithm:
-    - Combined score = 60% salary score + 40% tenure score
-    - Salary score: 0-100 based on monthly earnings (max $5000/month = 100)
-    - Tenure score: 0-100 based on days employed (max 5 years = 100)
+    Get eligible staff members who can act as guarantors.
+    Requirements:
+    - Must be current/active staff members (category 2, is_staff=True)
+    - Must have been employed for more than 3 months
+    - Must be active users
     """
     try:
         from accounts.models import CustomerUser
+        from datetime import date, timedelta
         from django.utils import timezone
 
-        # Get active staff members (category 2) who can be guarantors
+        # Calculate 3 months ago date
+        three_months_ago = timezone.now().date() - timedelta(days=90)
+
+        # Get active staff members who have been employed for more than 3 months
         eligible_guarantors = (
             CustomerUser.objects.filter(
                 category=2,           # Staff members only
                 is_active=True,       # Must be active
-                is_staff=True         # Must be current staff
+                is_staff=True,        # Must be current staff
+                date_joined__lte=three_months_ago  # Must have been employed for 3+ months
             )
             .exclude(
-                # Exclude superusers
+                # Exclude superusers from guarantor list
                 is_superuser=True
             )
+            .order_by("first_name", "last_name")[:limit]
         )
 
         # Calculate eligibility scores and earnings for each guarantor
         guarantor_data = []
         for staff in eligible_guarantors:
-            # Calculate eligibility score
+            # Calculate eligibility score based on employment duration and earnings
             eligibility_score = calculate_staff_guarantor_eligibility_score(staff)
 
             # Calculate average earnings
@@ -333,31 +336,21 @@ def get_eligible_staff_guarantors(limit=3):
             if avg_earnings is None:
                 avg_earnings = Decimal("0.00")
 
-            # Calculate tenure score (days since joined)
-            tenure_days = (timezone.now().date() - staff.date_joined.date()).days if staff.date_joined else 0
-            
-            # Combined score: 60% salary + 40% tenure (normalized)
-            # Salary score: 0-100 based on earnings (assuming max $5000/month)
-            salary_score = min(100, (avg_earnings / Decimal('5000')) * 100)
-            # Tenure score: 0-100 based on days (assuming max 5 years = 1825 days)
-            tenure_score = min(100, (tenure_days / 1825) * 100)
-            
-            combined_score = (salary_score * Decimal('0.6')) + (tenure_score * Decimal('0.4'))
+            # Calculate employment duration in months
+            employment_months = (timezone.now().date() - staff.date_joined.date()).days // 30
 
             guarantor_data.append(
                 {
                     "staff": staff,
-                    "eligibility_score": int(eligibility_score),
+                    "eligibility_score": eligibility_score,
                     "avg_earnings": avg_earnings,
                     "monthly_earnings": avg_earnings,
-                    "tenure_days": tenure_days,
-                    "combined_score": float(combined_score),
+                    "employment_months": employment_months,
+                    "employment_duration": f"{employment_months} months",
                 }
             )
 
-        # Sort by combined score (salary + tenure) and return top 3
-        guarantor_data.sort(key=lambda x: x['combined_score'], reverse=True)
-        return guarantor_data[:limit]
+        return guarantor_data
 
     except Exception as e:
         logger.error(f"Error getting eligible staff guarantors: {e}")
@@ -939,81 +932,6 @@ def send_guarantor_approval_email(loan_application):
 
     except Exception as e:
         logger.error(f"Error sending guarantor approval email: {str(e)}")
-        return False
-
-
-def send_loan_approved_notification(loan_application):
-    """Send notification to borrower when loan is approved by guarantor"""
-    try:
-        if not loan_application.borrower or not loan_application.borrower.email:
-            logger.error(f"No borrower or email for loan application {loan_application.id}")
-            return False
-
-        context = {
-            "loan_app": loan_application,
-            "borrower": loan_application.borrower,
-            "guarantor": loan_application.guarantor,
-            "purpose": "finance",
-        }
-
-        result = send_email(
-            category=0,
-            to_email=[loan_application.borrower.email],
-            subject=f"Loan Approved - Loan #{loan_application.application_number}",
-            html_template="finance/emails/loan_approved_notification.html",
-            context=context,
-        )
-
-        if result:
-            logger.info(f"Loan approval notification sent successfully to {loan_application.borrower.email}")
-            return True
-        else:
-            logger.error(f"Failed to send loan approval notification to {loan_application.borrower.email}")
-            return False
-
-    except Exception as e:
-        logger.error(f"Error sending loan approval notification: {str(e)}")
-        return False
-
-
-def send_guarantor_rejection_notification(loan_application):
-    """Send notification to borrower when guarantor rejects the loan"""
-    try:
-        if not loan_application.borrower or not loan_application.borrower.email:
-            logger.error(f"No borrower or email for loan application {loan_application.id}")
-            return False
-
-        # Get suggested guarantors for the borrower
-        suggested_guarantors = []
-        if loan_application.borrower.category == 2:  # Staff member
-            suggested_guarantors = get_eligible_staff_guarantors(limit=3)
-
-        context = {
-            "loan_app": loan_application,
-            "borrower": loan_application.borrower,
-            "guarantor": loan_application.guarantor,
-            "suggested_guarantors": suggested_guarantors,
-            "edit_loan_url": f"/finance/apply-for-loan/{loan_application.loan_product.id}/",
-            "purpose": "finance",
-        }
-
-        result = send_email(
-            category=0,
-            to_email=[loan_application.borrower.email],
-            subject=f"Guarantor Rejected - Please Update Your Loan Application #{loan_application.application_number}",
-            html_template="finance/emails/guarantor_rejection_notification.html",
-            context=context,
-        )
-
-        if result:
-            logger.info(f"Guarantor rejection notification sent successfully to {loan_application.borrower.email}")
-            return True
-        else:
-            logger.error(f"Failed to send guarantor rejection notification to {loan_application.borrower.email}")
-            return False
-
-    except Exception as e:
-        logger.error(f"Error sending guarantor rejection notification: {str(e)}")
         return False
 
 

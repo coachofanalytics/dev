@@ -5,30 +5,28 @@ This is the main settings file that imports from base_settings.py
 
 import os
 
-# Determine environment - use 'local' as default for development
-ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+# Determine environment
+# ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+ENVIRONMENT = 'staging'
 
-print(f"🚀 Loading Django settings for environment: {ENVIRONMENT}")
+print(f"Loading settings for environment: {ENVIRONMENT}")
+
 
 # First, import all base settings
-from .coda_settings.base_settings import *
+from .base_settings import *
 
 # Then, import environment-specific overrides
 if ENVIRONMENT == 'local':
-    print(f"📁 Loading local development settings...")
-    from .coda_settings.local_settings import *
+    from .local_settings import *
 elif ENVIRONMENT == 'staging':
-    print(f"🌐 Loading staging/Heroku settings...")
-    from .coda_settings.heroku_settings import *
+    print(f"Loading settings_staging for environment: {ENVIRONMENT}")
+    from .testing_settings import *
 elif ENVIRONMENT == 'production':
-    print(f"🔒 Loading production settings...")
-    from .coda_settings.prod_settings import *
+    from .prod_settings import *
 elif ENVIRONMENT == 'heroku2':
-    print(f"🌐 Loading Heroku settings...")
-    from .coda_settings.heroku_settings import *
+    from .heroku_settings import *
 else:
     # Default to local settings
-    print(f"📁 Loading default local settings...")
-    from .coda_settings.local_settings import *
+    from .local_settings import *
 
-print(f"✅ Settings loaded successfully for {ENVIRONMENT} environment")
+print(f"Settings loaded successfully for {ENVIRONMENT} environment")

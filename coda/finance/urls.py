@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, reverse
+from django.shortcuts import redirect
 from . import views
 from .views import legacy_views
 # Import new unified payment views (gracefully handle if _deprecated directory not deployed)
@@ -109,17 +110,8 @@ urlpatterns = [
     path('pay/<int:pk>/', views.UserPayUpdateView.as_view(), name='updatepay'),
     
     #=============================UNIFIED PAYMENT SYSTEM=====================================
-    # New unified payment URLs - TEMPORARILY DISABLED until _deprecated module is deployed
-    # TODO: Re-enable these URLs once finance._deprecated.legacy_views is available
-    # path('unified/methods/', payment_views.payment_method_selection, name='unified_method_selection'),
-    # path('unified/process/<str:method>/', payment_views.payment_processing, name='unified_processing'),
-    # path('unified/success/', payment_views.payment_success, name='unified_success'),
-    # path('unified/failed/', payment_views.payment_failed, name='unified_failed'),
-    # path('visitor/<str:method>/', payment_views.process_visitor_payment, name='visitor_payment'),
-    
-    # MPESA OTP verification - TEMPORARILY DISABLED
-    # path('mpesa-otp-confirmation/', payment_views.mpesa_otp_confirmation, name='mpesa_otp_confirmation'),
-    # path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
+    # New unified payment URLs - Conditionally loaded if payment_views is available
+    # If not available, unified_method_selection redirects to legacy pay page
     
     # Legacy payment URLs (maintained for backward compatibility)
     path('defaultpayments/', legacy_views.DefaultPaymentListView.as_view(template_name='finance/payments/defaultpayments.html'), name='defaultpayments'),
@@ -197,7 +189,7 @@ urlpatterns = [
     # path('delete_payment_history/', views.delete_bad_entry_in_payment_history, name="delete_bad_entry_in_payment_history"),  # View not found
     
     #=============================ANALYTICS DASHBOARD=====================================
-    path('analytics/', lambda request: redirect('finance:unified-budget-dashboard', company_slug='coda', permanent=False) + '?tab=analytics', name='analytics-dashboard'),
+    path('analytics/', lambda request: redirect(reverse('finance:unified-budget-dashboard', kwargs={'company_slug': 'coda'}) + '?tab=analytics'), name='analytics-dashboard'),
     # path('analytics/loan-performance/', views.loan_performance_analytics, name='loan-performance-analytics'),  # View not found
     # path('analytics/kcc-optimization/', views.kcc_optimization_analytics, name='kcc-optimization-analytics'),  # View not found
     # path('analytics/export/', views.analytics_export, name='analytics-export'),  # View not found
@@ -214,16 +206,16 @@ urlpatterns = [
     #=============================AUTOMATED BUDGET ESTIMATION (DEPRECATED - PHASE 3)=====================================
     # OLD URLs - Redirect to unified dashboard
     path('automated-budget-estimation/', 
-         lambda request: redirect('finance:unified-budget-dashboard', company_slug='coda', permanent=False) + '?tab=estimation',
+         lambda request: redirect(reverse('finance:unified-budget-dashboard', kwargs={'company_slug': 'coda'}) + '?tab=estimation'),
          name='automated-budget-estimation'),
     path('budget-consolidation/', 
-         lambda request: redirect('finance:unified-budget-dashboard', company_slug='coda', permanent=False) + '?tab=overview',
+         lambda request: redirect(reverse('finance:unified-budget-dashboard', kwargs={'company_slug': 'coda'}) + '?tab=overview'),
          name='budget-consolidation-dashboard'),
     path('consolidation-dashboard/<str:company_slug>/', 
-         lambda request, company_slug: redirect('finance:unified-budget-dashboard', company_slug=company_slug, permanent=False) + '?tab=overview',
+         lambda request, company_slug: redirect(reverse('finance:unified-budget-dashboard', kwargs={'company_slug': company_slug}) + '?tab=overview'),
          name='consolidation-dashboard'),
     path('budget-projection/<str:company_slug>/', 
-         lambda request, company_slug: redirect('finance:unified-budget-dashboard', company_slug=company_slug, permanent=False) + '?tab=analytics',
+         lambda request, company_slug: redirect(reverse('finance:unified-budget-dashboard', kwargs={'company_slug': company_slug}) + '?tab=analytics'),
          name='budget-projection-redirect'),
     
     #=============================FINANCE DASHBOARD=====================================
@@ -253,21 +245,21 @@ urlpatterns = [
     # OLD URLs - Redirect to new unified dashboard
     # Enhanced budget dashboard → unified dashboard (planning tab)
     path('enhanced-budget-dashboard/<str:company_slug>/', 
-         lambda request, company_slug: redirect('finance:unified-budget-dashboard', company_slug=company_slug, permanent=False) + '?tab=planning',
+         lambda request, company_slug: redirect(reverse('finance:unified-budget-dashboard', kwargs={'company_slug': company_slug}) + '?tab=planning'),
          name='enhanced-budget-dashboard'),
     
     # Multi-timeframe planning → unified planning with timeframe parameter
     path('weekly-planning/<str:company_slug>/', 
-         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=weekly',
+         lambda request, company_slug: redirect(reverse('finance:unified-budget-planning', kwargs={'company_slug': company_slug}) + '?timeframe=weekly'),
          name='weekly-budget-planning'),
     path('monthly-planning/<str:company_slug>/', 
-         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=monthly',
+         lambda request, company_slug: redirect(reverse('finance:unified-budget-planning', kwargs={'company_slug': company_slug}) + '?timeframe=monthly'),
          name='monthly-budget-planning'),
     path('yearly-planning/<str:company_slug>/', 
-         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=yearly',
+         lambda request, company_slug: redirect(reverse('finance:unified-budget-planning', kwargs={'company_slug': company_slug}) + '?timeframe=yearly'),
          name='yearly-budget-planning'),
     path('multi-year-planning/<str:company_slug>/', 
-         lambda request, company_slug: redirect('finance:unified-budget-planning', company_slug=company_slug, permanent=False) + '?timeframe=multi_year&periods=2',
+         lambda request, company_slug: redirect(reverse('finance:unified-budget-planning', kwargs={'company_slug': company_slug}) + '?timeframe=multi_year&periods=2'),
          name='multi-year-planning'),
     
     # CODA development estimation
@@ -370,3 +362,22 @@ urlpatterns = [
     path('api/admin/audit-log/', views_admin_controls.get_audit_log, name='audit-log'),
     path('api/admin/export-report/', views_admin_controls.export_admin_report, name='export-admin-report'),
 ]
+
+# Conditionally add unified payment URLs if payment_views module is available
+if payment_views is not None:
+    urlpatterns += [
+        path('unified/methods/', payment_views.payment_method_selection, name='unified_method_selection'),
+        path('unified/process/<str:method>/', payment_views.payment_processing, name='unified_processing'),
+        path('unified/success/', payment_views.payment_success, name='unified_success'),
+        path('unified/failed/', payment_views.payment_failed, name='unified_failed'),
+        path('visitor/<str:method>/', payment_views.process_visitor_payment, name='visitor_payment'),
+        
+        # MPESA OTP verification
+        path('mpesa-otp-confirmation/', payment_views.mpesa_otp_confirmation, name='mpesa_otp_confirmation'),
+        path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
+    ]
+else:
+    # Fallback: redirect unified payment URLs to legacy payment page
+    urlpatterns += [
+        path('unified/methods/', lambda request: redirect('finance:pay'), name='unified_method_selection'),
+    ]

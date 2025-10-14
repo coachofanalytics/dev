@@ -1,5 +1,6 @@
 {% extends "finance/base_dashboard.html" %}
 {% load static %}
+{% load finance_extras %}
 
 {% block title %}Budget Request #{{ budget_request.id }}{% endblock %}
 
@@ -242,8 +243,8 @@
                 </div>
                 <div class="card-body">
                     <p>
-                        <strong>{{ budget_request.current_approver.get_full_name|default:budget_request.current_approver.username }}</strong>
-                        <br><small class="text-muted">{{ budget_request.current_approver.email }}</small>
+                        <strong>{{ budget_request.current_approver|safe_username }}</strong>
+                        <br><small class="text-muted">{{ budget_request.current_approver|safe_email }}</small>
                     </p>
                 </div>
             </div>

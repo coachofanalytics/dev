@@ -91,27 +91,15 @@
                                                 <button type="button" class="btn btn-sm btn-outline-primary js-view-app" data-app-id="{{ app.id }}">
                                                     <i class="fas fa-eye"></i> View
                                                 </button>
-                                                {% if app.status in 'draft,submitted,pending_guarantor' %}
-                                                <a href="{% url 'finance:apply-for-loan' app.loan_product.id %}?edit={{ app.id }}" class="btn btn-sm btn-outline-warning">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
-                                                {% endif %}
                                                 <button type="button" class="btn btn-sm btn-outline-secondary js-recompute-app" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:recompute-loan-application' app.id %}">
                                                     <i class="fas fa-sync"></i> Recompute
                                                 </button>
-                                                {% if app.status in 'submitted,pending_guarantor,under_review' %}
                                                 <button type="button" class="btn btn-sm btn-outline-success js-approve-app" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:approve-loan-application' app.id %}">
                                                     <i class="fas fa-check"></i> Approve
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-outline-danger js-reject-app" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:reject-loan-application' app.id %}">
                                                     <i class="fas fa-times"></i> Reject
                                                 </button>
-                                                {% endif %}
-                                                {% if app.status == 'pending_guarantor' and app.guarantor %}
-                                                <button type="button" class="btn btn-sm btn-outline-info js-notify-guarantor" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:notify-guarantor-available' app.id %}">
-                                                    <i class="fas fa-envelope"></i> Notify
-                                                </button>
-                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>
