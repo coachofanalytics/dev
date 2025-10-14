@@ -41,24 +41,16 @@ class LoanProductAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'product_type', 'status')
+            'fields': ('name', 'description', 'product_type')
         }),
         ('Financial Terms', {
-            'fields': ('min_amount', 'max_amount', 'interest_rate', 'interest_type', 
-                      'min_term_months', 'max_term_months')
-        }),
-        ('Fees', {
-            'fields': ('processing_fee', 'late_fee')
+            'fields': ('min_amount', 'max_amount', 'interest_rate', 'term_months', 'fees')
         }),
         ('Eligibility', {
-            'fields': ('min_credit_score', 'min_income', 'employment_required')
+            'fields': ('min_credit_score', 'requirements')
         }),
         ('Settings', {
-            'fields': ('requires_collateral', 'auto_approve')
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
+            'fields': ('is_active',)
         }),
     )
 
