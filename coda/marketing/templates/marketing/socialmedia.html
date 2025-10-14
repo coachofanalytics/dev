@@ -1,0 +1,271 @@
+{% extends "main/base_templates/analysis_index.html" %}
+{% load static %}
+{% block title %}
+{% if department %}{{ department.name }}{% else %}Activities{% endif %}
+{% endblock %}
+
+{% block content %}
+<link
+rel="stylesheet"
+type="text/css"
+href="{% static 'admin/css/socialmedia.css' %}"
+/>
+<section id="data_training">
+    {% if messages %}
+    <div id="message-container">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="data_training container">
+        <!-- Social Media Section -->
+        <h3 class="title">Social Media</h3>
+        <div class="row">
+            {% for card in social_media_cards %}
+                <div class="col-md-4">
+                    <div class="card social-media-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ card.title }}</h5>
+                            <p class="card-text">{{ card.description }}</p>
+                            <ul class="list-group list-group-flush">
+                                {% for item in card.menu_items %}
+                                    <li class="list-group-item"><a href="{{ item.url }}">{{ item.text }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Groups Sections -->
+        <h3 class="title">EMAILING USERS</h3>
+        <div class="row groups-section">
+            <div class="col-md-4">
+                <div class="card group-card">
+                    <div class="card-header">Job Applicant Groups</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for group in job_applicant_groups %}
+                              {% if group.is_featured %}   
+                              <li class="list-group-item"><a class="item" href="{% url 'marketing:email_training' %}">{{ group }} ({{ group.users.count }})</a></li>
+                              {% else %}
+                              <a href="#" style="color: grey; pointer-events: none;">{{group}}  ({{ group.users.count }})</a>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card group-card">
+                    <div class="card-header">Coda Staff Member Groups</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for group in coda_staff_member_groups %}
+                              {% if group.is_featured %}   
+                              <li class="list-group-item"><a class="item" href="{% url 'marketing:email_training' %}">{{ group }} ({{ group.users.count }})</a></li>
+                              {% else %}
+                              <a href="#" style="color: grey; pointer-events: none;">{{group}}  ({{ group.users.count }})</a>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card group-card">
+                    <div class="card-header">Job Support Groups</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for group in jobsupport_groups %}
+                               {% if group.is_featured %}   
+                                <li class="list-group-item"><a class="item" href="{% url 'marketing:email_training' %}">{{ group }} ({{ group.users.count }})</a></li>
+                                {% else %}
+                                <a href="#" style="color: grey; pointer-events: none;">{{group}} ({{ group.users.count }})</a>
+                                {% endif %}
+            
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card group-card">
+                    <div class="card-header">Student Groups</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for group in student_groups %}
+                              {% if group.is_featured %}   
+                              <li class="list-group-item"><a class="item" href="{% url 'marketing:email_training' %}">{{ group }} ({{ group.users.count }})</a></li>
+                              {% else %}
+                              <a href="#" style="color: grey; pointer-events: none;">{{group}}  ({{ group.users.count }})</a>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card group-card">
+                    <div class="card-header">Investor Groups</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for group in investor_groups %}
+                              {% if group.is_featured %}   
+                              <li class="list-group-item"><a class="item" href="{% url 'marketing:email_training' %}">{{ group }} ({{ group.users.count }})</a></li>
+                              {% else %}
+                              <a href="#" style="color: grey; pointer-events: none;">{{group}}  ({{ group.users.count }})</a>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card group-card">
+                    <div class="card-header">General User Groups</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for group in general_user_groups %}
+                              {% if group.is_featured %}   
+                              <li class="list-group-item"><a class="item" href="{% url 'marketing:email_training' %}">{{ group }} ({{ group.users.count }})</a></li>
+                              {% else %}
+                              <a href="#" style="color: grey; pointer-events: none;">{{group}}  ({{ group.users.count }})</a>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card group-card">
+                    <div class="card-header">Vendor Groups</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for group in vendor_groups %}
+                              {% if group.is_featured %}   
+                              <li class="list-group-item"><a class="item" href="{% url 'marketing:email_training' %}">{{ group }} ({{ group.users.count }})</a></li>
+                              {% else %}
+                              <a href="#" style="color: grey; pointer-events: none;">{{group}}  ({{ group.users.count }})</a>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h3 class="title mt-5">Assign Category to User</h3>
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Search User and Assign Category</h5>
+                        <form method="post" action="{% url 'marketing:update_user_category' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="user">Select User</label>
+                                {{ form.user }}
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Select Category</label>
+                                {{ form.category }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Category</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart Section -->
+        <h3 class="title mt-5">Group Distribution</h3>
+        <div id="piechart" style="width: 900px; height: 500px;" class="mx-auto"></div>
+    </div>
+</section>
+<!-- Include Select2 library -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.select2').select2({
+            ajax: {
+                url: "{% url 'marketing:search_users' %}",
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        q: params.term, // search term
+                        page: params.page
+                    };
+                },
+                processResults: function(data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: data.results,
+                        pagination: {
+                            more: (params.page * 10) < data.total_count
+                        }
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 1,
+            placeholder: 'Search for a user by username or email',
+        });
+    });
+</script>
+<style>
+  /* General Styles */
+
+
+</style>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Group Type', 'Number of Users'],
+            {% for key, value in pie_chart_data.items %}
+            ['{{ key }}', {{ value }}],
+            {% endfor %}
+        ]);
+
+        var options = {
+            title: 'User Distribution by Group Type',
+            is3D: true,
+            colors: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        chart.draw(data, options);
+    }
+</script>
+<script>
+    // Wait for the DOM to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+        // Select the message container
+        var messageContainer = document.getElementById("message-container");
+
+        // If the message container exists, set a timeout to hide it after 5 seconds
+        if (messageContainer) {
+            setTimeout(function() {
+                // Fade out the messages gradually
+                messageContainer.style.transition = "opacity 0.5s ease";
+                messageContainer.style.opacity = "0";
+
+                // After the fade out transition, set display to none
+                setTimeout(function() {
+                    messageContainer.style.display = "none";
+                }, 500);  // Match this time with the fade-out duration
+            }, 4000); // 5000 milliseconds = 5 seconds
+        }
+    });
+</script>
+{% endblock content %}

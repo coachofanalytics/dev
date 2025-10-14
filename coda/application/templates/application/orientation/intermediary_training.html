@@ -1,0 +1,115 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% block content %}
+    <section id="career">
+      <div class="career text-center">
+        <div class="row text-center">
+          <div class="col-md-3 amount_msg" id="bada">
+              <div class="card">
+                <div class="card-body">
+                  <h5><b>WELCOME {{employeename}}</b></h5>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  <h5><b>FILTERS</b></h5>
+                  <div class="content-section">
+                    {% include 'main/snippets_templates/cardfilter.html' with instance=data%}
+                </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7" id="bada">
+              <div class="card">
+                <div class="card-body">
+                  <h5><b>{{title}}</b></h5>
+                  <hr/>
+                  <div class="row text-center">
+                    <div class="col-md-12">
+                      <a class="btn btn-primary" href="#"  style="background-color: #4CAF50; border-color: #4CAF50;">Total Score</br> <i>{{user_total_score}}</i></a>
+                  </div>
+                    <!-- <div class="col-md-3">
+                      <a class="btn btn-primary" href="#"  style="background-color: #4CAF50; border-color: #4CAF50;">Exam</br> <i>{{transactions|floatformat:2}}</i></a>
+                    </div>
+                    <div class="col-md-3">
+                      <a class="btn btn-primary" href="#"  style="background-color: #4CAF50; border-color: #4CAF50;">Other</br> <i>{{duration}} months</i></a>
+                    </div>
+                    <div class="col-md-3">
+                      <a class="btn btn-primary" href="#"  style="background-color: #4CAF50; border-color: #4CAF50;">Other</br> <i>{{wash_amount}}</i></a>
+                    </div> -->
+                </div>
+                
+                  </b></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2" id="bada">
+              <div class="card">
+                <div class="card-body">
+                  <h5><b>ACTIONS</b></h5>
+                  <hr/>
+                  <i><h6>{{payday}}</h6></i>
+                  <hr/>
+                  <div class="col-md-12" id="gi">
+                    <p><a href="{% url 'application:enter_score' %}" class="btn btn-secondary btn-sm"
+                      >Add Score
+                  </a></p>
+                  </div>
+                  <div class="col-md-12" id="gi">
+                    <p><a href="{% url 'management:score_report' %}" class="btn btn-secondary btn-sm"
+                      >Score Report
+                  </a></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      <p class="lead">{{message}}</p>
+        <div class="table-responsive">
+          <table class="table table-striped table-bordered" style="width: 100%">
+          <thead class="border-bottom font-weight-bold">
+            <tr>
+              <th>Date</th>
+              <th>username</th>
+              <th>type</th>
+              <th>Topic</th>
+              <th>Score</th>
+              <th>Edit</th>
+            </tr>
+          </thead>
+                  {% for rating in user_ratings %}
+                    <tr>
+                      <td>{{rating.rating_date|date:"F d, Y"}}</td>
+                      <td>
+                        <a href="{%url 'application:userscores' rating.employeename %}" 
+                          class="px-0"
+                        >{{rating.employeename}}
+                        </a>
+                      </td>
+                      <td>{{rating.type}}</td>
+                      <td>
+                        <a href="{{rating.uploadlinkurl}}" 
+                          class=""
+                        >{{rating.topic}}
+                        </a>
+                      </td>
+                      <td>{{rating.totalpoints}}</td>
+                          <td>
+                            {% if rating.id %}
+                            <a href="{%url 'application:score-update' rating.id %}" 
+                            class="btn text-secondary px-0"
+                            ><h4><b>☑</b></h4> 
+                          </a>
+                          {% else %}
+                              <span>No Score Available</span>
+                          {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+          </tbody>
+          
+        </table>
+      </div>
+      </div>
+    </section>
+{% endblock content %}

@@ -1,0 +1,196 @@
+<nav class="navbar navbar-expand-sm bg-light navbar-light sticky-top">
+  <div class="container-fluid">
+      <a class="navbar-brand logo-text" href="{% url 'dashboard:unified_dashboard'%}">CODA</a>
+      <a id="skip-link" class="sr-only sr-only-focusable" href="#main-content">Skip to main content</a>
+      <button class="navbar-toggler nav-btn" type="button" data-bs-toggle="coll apse"
+          data-bs-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+    <ul class="navbar-nav mr-auto w-100 justify-content-end">
+      <li class="nav-item active">
+        <a class="nav-link" href="{% url 'dashboard:unified_dashboard' %}"
+          >Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item dropdown">
+        <a
+          class="nav-link dropdown-toggle"
+          href="#"
+          id="navbarDropdown"
+          role="button"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          About
+          
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+          <a class="dropdown-item" href="{% url 'main:members' title='board' %}"
+            >Leadership</a
+          >
+          <a class="dropdown-item" href="{% url 'main:members' title='team_profiles' %}"
+          >Our Team</a
+          >
+          <a class="dropdown-item" href="{% url 'main:members' title='future_talents' %}"
+          >Future Talent</a
+          >
+          <a class="dropdown-item" href="{% url 'main:members' title='client_profiles' %}"
+          >Looking For Talent?</a
+          >
+          <a class="dropdown-item" href="{% url 'application:career' %}"
+          >Career</a 
+        >
+      </div>
+    </li>
+    <!-- <a class="dropdown-item" href="{% url 'main:appointment_letter' %}"
+    >Letter</a
+  > -->
+  <!-- <a class="dropdown-item" href="{%url 'main:success'%}"
+  >Success Stories</a
+> -->
+
+      <li class="nav-item dropdown">
+        <a
+          class="nav-link dropdown-toggle"
+          href="#"
+          id="navbarDropdown"
+          role="button"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          Services
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+
+          {% for service in main_services %}
+            {% if service.slug == "investing" %}
+            <a class="dropdown-item" href="{% url 'investing:InvestmentPlatformOverview' %}">{{service.title}}</a>
+            <div class="dropdown-divider"></div>
+            {% else %}
+              <a class="dropdown-item"  href="{% url 'main:display_service' slug=service.slug %}">{{service.title}}</a>
+              <div class="dropdown-divider"></div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </li>
+      {% if user.is_authenticated %}
+      {% if user.is_admin or  user.is_staff or  user.is_superuser%}
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#"  id="navbarDropDown" role="button" data-toggle="dropdown"
+          >Departments</a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+                <ul>
+                  {% for department in departments %}
+                  {% if department.slug %}
+                  <a class="dropdown-item" href="{% url 'dashboard:unified_department' department.slug %}" 
+                  target="" >{{ department.name }}</a>
+                   <div class="dropdown-divider"></div>
+                  {% endif %}
+                  {% endfor %}
+              </ul>
+              <a class="dropdown-item" href="{% url 'management:assess' %}"
+              target="" >Weekly Assessment </a>
+            </div>
+      </li>
+      {% endif %}
+      {% endif %}
+    </ul>
+
+    <div class="navbar-nav">
+      {% if user.is_authenticated %}
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#"  id="navbarDropDown" role="button" data-toggle="dropdown"
+          >Account</a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+                  {% if user.is_admin or user.is_superuser %}
+                        <a class="dropdown-item" onclick="triggerEmailSending()" href="{% url 'dashboard:unified_dashboard' %}" target="" >My Account</a >
+                          <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'accounts:accounts-users'%}" target="" >Users</a>
+                          <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'account-logout' %}" target="" >Logout</a>
+                  {% else %}
+                    <a class="dropdown-item" onclick="triggerEmailSending()" href="{% url 'dashboard:unified_dashboard'%}" target="" >My Account</a >
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'account-logout'%}" target="" >Logout</a>
+                      <div class="dropdown-divider"></div>
+                  {% endif %}
+            </div>
+      </li>
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#"  id="navbarDropDown" role="button" data-toggle="dropdown"
+          >Support</a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+                  {% if user.is_admin or  user.is_staff or  user.is_superuser %}
+                        <a class="dropdown-item"href="{% url 'main:help' %}" target="" >Help?</a >
+                          <div class="dropdown-divider"></div>
+                          <!-- <a class="dropdown-item" href="{% url 'management:requirements-active' %}" target="" >Active Requirements</a>
+                            <div class="dropdown-divider"></div> -->
+                            <!-- <a class="dropdown-item" href="https://docs.google.com/spreadsheets/d/1gTia0pMaLGDW7bBBTxTDcqnCA8sqCcrzKrKZEItWmH4/edit#gid=1318432858" target="_blank" >Internal Justification </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="https://docs.google.com/spreadsheets/d/1gTia0pMaLGDW7bBBTxTDcqnCA8sqCcrzKrKZEItWmH4/edit#gid=1318432858" target="_blank" >Clients Justfication</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="https://docs.google.com/spreadsheets/d/1TsCcmsebLOONpiJRnyruG9iRS6sxzpxBFaSL_QnR3tU/edit#gid=965191431" target="_blank" >Justfication(Excel)</a> -->
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'ai_services:upload-data'%}" target="" >Data/Assets</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'ai_services:generate-data'%}" target="" >Big Data</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'ai_services:all_logs'%}" target="" >Logs</a>
+                            <div class="dropdown-divider"></div>
+                            {% else %}
+                            <a class="dropdown-item" href="{% url 'main:help' %}" target="" >Help?</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'ai_services:upload-data'%}" target="" >Data/Assets</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'ai_services:generate-data'%}" target="" >Big Data</a>
+                            <div class="dropdown-divider"></div>
+                            <!-- <a class="dropdown-item" href="{% url 'management:requirements-active' %}" target="" >Active Requirements</a> -->
+                            <!-- <div class="dropdown-divider"></div> -->
+                            <!-- <a class="dropdown-item" href="https://docs.google.com/spreadsheets/d/1TsCcmsebLOONpiJRnyruG9iRS6sxzpxBFaSL_QnR3tU/edit#gid=965191431" target="_blank" >Clients Justfication</a> -->
+                            <!-- <div class="dropdown-divider"></div> -->
+                  {% endif %}
+            </div>
+      </li>
+            {% else %}
+            <ul class="navbar-nav mr-auto w-100 justify-content-end">
+                <li class="nav-item" id="nav" >
+                    <a class="nav-link" href="{% url 'accounts:account-login' %}">Login</a>
+                </li>
+                <li class="nav-item" id="nav">
+                    <a class="nav-link" href="{% url 'accounts:join' %}">Register</a>
+                </li>
+            </ul>
+            {% endif %} 
+
+    </div>
+      </div>
+  </div>
+</nav>
+<script>
+  function triggerEmailSending() {
+      // Check if meeting_id is 4
+     
+          // Trigger the email sending process via AJAX
+          fetch("{% url 'ai_services:add_today_meetings' %}", {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: JSON.stringify({ trigger: true })  // Sending some data if needed
+          })
+          .then(response => response.json())
+          .then(data => {
+              console.log('Goto meeting  process triggered:', data);
+             
+              
+          })
+          .catch(error => {
+              console.error('Error in email process:', error);
+          });
+     
+  }
+</script>

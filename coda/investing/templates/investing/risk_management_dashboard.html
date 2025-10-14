@@ -1,0 +1,444 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load mathfilters %}
+
+{% block title %}Risk Management Dashboard - CODA Investing{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/risk-management.css' %}" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-shield-alt text-primary"></i>
+                    Risk Management Dashboard
+                </h1>
+                <p class="page-subtitle">Comprehensive risk analysis and monitoring for your investments</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card risk-summary-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-chart-pie text-info fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title">Total Investments</h6>
+                            <h3 class="mb-0">{{ risk_summary.total_investments }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card risk-summary-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-warning fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title">High Risk</h6>
+                            <h3 class="mb-0">{{ risk_summary.high_risk_investments }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card risk-summary-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-bell text-danger fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title">Active Alerts</h6>
+                            <h3 class="mb-0">{{ risk_summary.active_alerts }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card risk-summary-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clipboard-check text-success fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title">Compliance Issues</h6>
+                            <h3 class="mb-0">{{ risk_summary.compliance_issues }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Distribution Chart -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-donut text-primary"></i>
+                        Risk Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="riskDistributionChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-line text-primary"></i>
+                        Risk Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="riskTrendChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Alerts and Recent Assessments -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bell text-danger"></i>
+                        Active Risk Alerts
+                    </h5>
+                    <span class="badge bg-danger">{{ active_alerts|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if active_alerts %}
+                        <div class="alert-list">
+                            {% for alert in active_alerts %}
+                                <div class="alert-item">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-shrink-0">
+                                            {% if alert.severity == 'critical' %}
+                                                <i class="fas fa-exclamation-circle text-danger"></i>
+                                            {% elif alert.severity == 'high' %}
+                                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                            {% else %}
+                                                <i class="fas fa-info-circle text-info"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="alert-title">{{ alert.get_alert_type_display }}</h6>
+                                            <p class="alert-message">{{ alert.message|truncatewords:20 }}</p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock"></i>
+                                                {{ alert.created_at|timesince }} ago
+                                            </small>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <span class="badge bg-{{ alert.severity }}">
+                                                {{ alert.get_severity_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if not forloop.last %}<hr>{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                            <p class="text-muted">No active risk alerts</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar text-primary"></i>
+                        Recent Risk Assessments
+                    </h5>
+                    <a href="{% url 'investing:risk-assessment-create' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> New Assessment
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_assessments %}
+                        <div class="assessment-list">
+                            {% for assessment in recent_assessments %}
+                                <div class="assessment-item">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h6 class="assessment-title">
+                                                {{ assessment.investment.investor.username }}
+                                            </h6>
+                                            <p class="assessment-date text-muted mb-0">
+                                                {{ assessment.assessment_date }}
+                                            </p>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-{{ assessment.overall_risk_rating }}">
+                                                {{ assessment.get_overall_risk_rating_display }}
+                                            </span>
+                                            <div class="assessment-score">
+                                                {{ assessment.average_risk_score|floatformat:1 }}/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if not forloop.last %}<hr>{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line text-muted fa-3x mb-3"></i>
+                            <p class="text-muted">No recent risk assessments</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-clipboard-list text-primary"></i>
+                        Compliance Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if compliance_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Requirement</th>
+                                        <th>Status</th>
+                                        <th>Due Date</th>
+                                        <th>Progress</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in compliance_records %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ record.get_requirement_type_display }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ record.investment.investor.username }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ record.status }}">
+                                                    {{ record.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {{ record.due_date }}
+                                                {% if record.is_overdue %}
+                                                    <br><small class="text-danger">Overdue</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-{{ record.status }}" 
+                                                         style="width: {% if record.status == 'approved' %}100{% elif record.status == 'in_progress' %}50{% else %}25{% endif %}%">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clipboard-check text-success fa-3x mb-3"></i>
+                            <p class="text-muted">No compliance records found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-bolt text-warning"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'investing:risk-assessment-create' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i> New Risk Assessment
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'investing:compliance-tracking' %}" class="btn btn-info w-100">
+                                <i class="fas fa-clipboard-list"></i> Compliance Tracking
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'investing:risk-alerts' %}" class="btn btn-warning w-100">
+                                <i class="fas fa-bell"></i> Risk Alerts
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button onclick="autoRiskAssessment()" class="btn btn-success w-100">
+                                <i class="fas fa-robot"></i> Auto Assessment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+// Risk Distribution Chart
+const riskDistributionCtx = document.getElementById('riskDistributionChart').getContext('2d');
+const riskDistributionChart = new Chart(riskDistributionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+        datasets: [{
+            data: [
+                {{ risk_summary.low_risk_investments }},
+                {{ risk_summary.medium_risk_investments }},
+                {{ risk_summary.high_risk_investments }}
+            ],
+            backgroundColor: [
+                '#28a745',
+                '#ffc107',
+                '#dc3545'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Risk Trend Chart
+const riskTrendCtx = document.getElementById('riskTrendChart').getContext('2d');
+const riskTrendChart = new Chart(riskTrendCtx, {
+    type: 'line',
+    data: {
+        labels: [{% for trend in risk_trend_data %}'{{ trend.date|date:"M d" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Average Risk Score',
+            data: [{% for trend in risk_trend_data %}{{ trend.average_risk }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 10
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Auto Risk Assessment Function
+function autoRiskAssessment() {
+    if (confirm('This will create automated risk assessments for all your investments. Continue?')) {
+        // Get user's investments
+        fetch('/investing/api/investments/')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(investment => {
+                    fetch(`/investing/auto-risk-assessment/${investment.id}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                });
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creating automated assessments');
+            });
+    }
+}
+
+// Real-time updates
+setInterval(function() {
+    fetch('/investing/api/risk-analytics/')
+        .then(response => response.json())
+        .then(data => {
+            // Update dashboard with fresh data
+            document.querySelector('.risk-summary-card:nth-child(1) h3').textContent = data.total_investments;
+            document.querySelector('.risk-summary-card:nth-child(2) h3').textContent = data.risk_distribution.high;
+            document.querySelector('.risk-summary-card:nth-child(3) h3').textContent = data.active_alerts;
+        })
+        .catch(error => console.error('Error updating dashboard:', error));
+}, 30000); // Update every 30 seconds
+</script>
+{% endblock %}

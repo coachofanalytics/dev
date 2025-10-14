@@ -1,0 +1,177 @@
+{% load static %}
+
+<div class="section">
+  {% for category, members in team_categories.items %}
+  <div class="row">
+      <div class="col-md-3" id="categorySection{{ forloop.counter }}">
+        <div class="emp border-light">
+          <h1 class="display-6" style="font-size: 24px;">{{ category }}</h1>
+          <p class="descriptionside" style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.8;">
+            {% for team_member in team_members %}
+              {% if team_member.title == category %}
+                {{ team_member.description }}
+
+              {% endif %}
+            {% endfor %}
+          </p>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <div class="emp"data-original-height="{{ original_height }}" >
+          <div class="row text-center commit">
+            {% for member in members %}
+                {% if member.description %}
+                    <div class="col-md-4">
+                        <div class="img-div p-3">
+                            <img src="{{ googledriveurl }}{{ member.img_url }}" onerror="handleImageError(this, '{{member.user.first_name}}')" class="team-img rounded-circle" width="120px" height="120px" alt="Team Member Image">
+                        </div>
+                        <div class="member-info">
+                          <a href="#" class="member-link">
+                            <h3 class="display-6" style="font-size: 18px;">{{ member.user.first_name|capfirst }}, {{ member.user.last_name|capfirst }}</h3>
+                            <h5  style="font-size: 18px;">{{ member.position }}
+
+                              
+                              {% if request.user.is_admin or request.user.is_superuser or request.user.is_staff %}
+                              {{ member.total_points }}
+                              {% endif %}
+                            </h5>
+                            {% if member.linkedin %}
+                            <h5  style="font-size: 18px;">
+                              <a href="{{member.linkedin}}">Linkedln Profile</a>
+                            </h5>
+                            {% endif %}
+                          </a>
+                          <div class="responsive">
+                            <p class="description" id="description{{ forloop.counter }}">
+                              {% if member.description|length > 220 %}
+                                <span class="me-lg-5 truncated-text" id="truncatedText{{ forloop.counter }}">
+                                  {{ member.description|safe|truncatechars:220 }}
+                                </span>
+                                <span class="me-lg-5 remaining-text" id="remainingText{{ forloop.counter }}" style="display: none;">
+                                  {{ member.description|safe }}
+                                </span>
+                                <a class="read-more-button" data-index="{{ forloop.counter }}" >
+                                  Read more
+                                </a>
+                                <a class="read-less-button" data-index="{{ forloop.counter }}" style="display: none;">
+                                  Read less
+                                </a>
+                              {% else %}
+                                {{ member.description|safe }}
+                                {% endif %}
+                            </p>
+                          </div>                        
+                        </div>
+                        {% if member.is_admin or member.is_superuser or member == member.user %}
+                            <a href="{% url 'main:update_profile' member.user.id %}">Update Profile</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+  </div>
+    <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+  {% endfor %}
+</div>
+<style>
+  .read-more-button,
+  .read-less-button {
+    cursor: pointer;
+    color: blue; 
+    text-decoration: none;
+  }
+
+  .read-more-button:hover,
+  .read-less-button:hover {
+    text-decoration: none;
+  }
+</style>
+
+<script>
+let currentlyOpenEmpSection = null;
+
+const applyReadLess = (empSection) => {
+  const prevTruncatedText = empSection.querySelector('.truncated-text');
+  const prevRemainingText = empSection.querySelector('.remaining-text');
+  prevTruncatedText.style.display = 'inline';
+  prevRemainingText.style.display = 'none';
+};
+
+document.querySelectorAll('.read-more-button, .read-less-button').forEach(button => {
+  button.addEventListener('click', () => {
+    const index = button.dataset.index;
+    const truncatedText = document.getElementById(`truncatedText${index}`);
+    const remainingText = document.getElementById(`remainingText${index}`);
+    const readMoreButton = document.querySelector(`.read-more-button[data-index="${index}"]`);
+    const readLessButton = document.querySelector(`.read-less-button[data-index="${index}"]`);
+
+    const empSection = button.closest('.member-info');
+    const contentBelow = empSection.nextElementSibling; 
+    let originalHeight = parseInt(empSection.getAttribute('data-original-height'));
+
+    if (!originalHeight) {
+      originalHeight = empSection.scrollHeight;
+      empSection.setAttribute('data-original-height', originalHeight);
+    }
+    if (currentlyOpenEmpSection && currentlyOpenEmpSection !== empSection) {
+      currentlyOpenEmpSection.classList.remove('show-description');
+      currentlyOpenEmpSection.style.height = ''; 
+      currentlyOpenEmpSection.querySelector('.description').style.opacity = '0';
+
+      applyReadLess(currentlyOpenEmpSection);
+    }
+
+    if (truncatedText.style.display === 'none') {
+      truncatedText.style.display = 'inline';
+      remainingText.style.display = 'none';
+      readMoreButton.style.display = 'inline';
+      readLessButton.style.display = 'none';
+      empSection.style.height = `${originalHeight}px`;
+      document.body.style.marginBottom = '0';
+    } else {
+      truncatedText.style.display = 'none';
+      remainingText.style.display = 'inline';
+      readMoreButton.style.display = 'none';
+      readLessButton.style.display = 'inline';
+      const newHeight = empSection.scrollHeight;
+      empSection.style.height = `${newHeight}px`;
+      if (window.innerWidth <= 767) {
+        document.body.style.marginBottom = `${remainingText.scrollHeight}px`;
+      }
+    }
+    currentlyOpenEmpSection = empSection;
+    if (contentBelow) {
+      contentBelow.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+document.querySelectorAll('.member-link').forEach(link => {
+  link.addEventListener('click', () => {
+    if (currentlyOpenEmpSection) {
+      applyReadLess(currentlyOpenEmpSection);
+      currentlyOpenEmpSection = null;
+      document.body.style.marginBottom = '0';
+    }
+  });
+});
+</script>
+
+
+
+<script>
+  function handleImageError(img, name) {
+    img.style.height = '120px'; // Set the desired height in pixels
+    img.style.width = '120px';  // Set the desired width in pixels
+    // img.remove(); // Remove the grandparent div
+    console.log(name)
+    if (img.src.includes('/static/')){
+      img.src = "{% static 'main/img/service-1.jpg' %}" //"{% static '/main/img/profile/profile.jpeg' %}"
+    }
+    else{
+      img.src = "{% static 'main/img/profile/' %}"+ name.toLowerCase() +".jpeg"
+      // img.src = "{% static '/main/img/service-1.jpg' %}"
+    }
+  }
+</script>

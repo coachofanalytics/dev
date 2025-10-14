@@ -1,0 +1,206 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% block title %}{{title }}{% endblock %}
+{% load static %}
+{% block content %}
+<div class="banner-div">
+<!-- {% if base64_data_dict.services == Training %}
+  <img src="data:image/jpeg;base64,{{ base64_data_dict.services }}" alt="Services Image">
+{% else %}
+  <img src="data:image/jpeg;base64,{{ base64_data_dict.services }}" alt="Services Image">
+{% endif %}   -->
+
+  <div class="container-md" >
+      <h2 id="truncatedTitle">{{title }}</h2>
+      <p style="font-size: 50px;">{{sub_titles}}</p>
+  </div>
+</div>
+<div class="stripdiv">
+  <div class="container">
+    <p class="me-lg-5">
+      {{ service_desc|safe|truncatechars:380 }}
+    </p>
+  </div>
+</div>
+<div id="main-content">
+  <div class="services-div">
+    <div class="container-lg">
+      <div class="row flex-column-reverse flex-md-row">
+        <div class="col-md-6 pe-lg-5">
+          <h2 class="mt-4 mt-md-0" style="text-align: left;"> About Coda</h2>
+          <hr style="width: 36%; height: 4px; background-color: #E7AD4A;">
+            <div class="text-content" id="readMoreContent">
+              {% if title == "Training & Professional Support" %}
+                <p class="me-lg-5" id="truncatedText">
+                  {{ content|safe|truncatechars:380 }}
+                </p>
+                <p class="me-lg-5" id="remainingText" style="display: none;">
+                  {{ content|safe }}
+              </p>
+              {%else%}
+                <p class="me-lg-5" id="truncatedText">
+                  {{ description|safe|truncatechars:380 }}
+                </p>
+                <p class="me-lg-5" id="remainingText" style="display: none;">
+                  {{ description|safe }}
+                </p>
+              {%endif%}
+              <a onclick="toggleReadMore()" class="btn btn-primary" id="readMoreButton" tabindex="0">
+                Read more
+              </a>
+            </div>
+        </div>
+        <div class="col-md-6">
+        
+        {% if title == "Training & Professional Support" %}
+        <div class="videocontainers">
+          <div class="videocontainer">
+            <iframe src="https://drive.google.com/file/d/1rPpzS-_ag2m28korWkWrTemJQbKJ_5uX/preview" title="About Coda" width="100%" height="auto"  controls crossorigin playsinline class="plyr"></iframe>
+          </div>
+        </div> 
+        {%else%}
+        <div class="videocontainers">
+          <div class="videocontainer">
+            <img class="img-fluid ps-lg-5" 
+            src="{% static 'main/image/marketing.jpg' %}"alt="about coda" >
+          </div>
+        </div>  
+        {%endif%}
+        </div>
+      </div>
+    </div> 
+  </div>
+</div>
+{% include 'main/services/course.html'%}
+{% if title == "Training & Professional Support" %}
+  <div class="count-section">
+    <div class="count-card">
+      <img src="{% static 'main/image/studenticon.jpg' %}" alt="Student Icon" class="icon">
+      <h3>HAPPY STUDENTS</h3>
+      <p class="count">{{ students_count }}</p>
+    </div>
+
+    <div class="count-card">
+      <img src="{% static 'main/image/teacher.jpg' %}" alt="Teacher Icon" class="icon">
+      <h3>OUR TEACHERS</h3>
+      <p class="count">{{ teachers_count }}</p>
+    </div>
+
+    <div class="count-card">
+      <img src="{% static 'main/image/courseicon.jpg' %}" alt="Course Icon" class="icon">
+      <h3>OUR COURSES</h3>
+      <p class="count">{{ total_courses_count }}</p>
+    </div>
+  </div>
+
+  <div class="testimonials-div">
+    <div class="container">
+        <h1>CLIENT SUCCESS STORIES</h1>
+        <div class="owl-carousel">
+        <div class="row text-center commit"> 
+          {% for post in posts %}
+              <div class="{{ selected_class }}">
+                <div class="carousel-card">
+                  <div class="img-div p-3">
+                    <span>
+                      <img onerror="handleImageErrorInsucessStory(this)" {%if post.writer.profile.img_url%} src="{{googledriveurl}}{{post.writer.profile.img_url}}" {%else%} src="{% static '/main/img/service-1.jpg' %}" {%endif%}class="team-img" width="115px" height="110px" style="border-radius: 50%;"/>
+                    </span>
+                  </div>
+                    <h3> 
+                      <a href="{% url 'main:post-detail' post.id %}">
+                        {{ post.writer.first_name }},{{post.writer.last_name}}
+                      </a>
+                    </h3>
+                    <h3 style="font-size: 16px;">{{ post.title }} {{ count_to_class.post.count }}</h3>
+
+                    <!-- <h3>{{post.title}} {{ count_to_class.post.count }}</h3> -->
+                    <font size="2">
+                        {{post.content|truncatewords:70}}
+                      </font>
+                </div>
+              </div>
+          {% endfor %}
+        </div>
+        </div>
+    </div>
+  </div>
+  {%else%} 
+  <div class="container-lg">
+    <h2 class="mt-4 mt-md-0" style="text-align: left;color: #243865;font-weight: 700;">Our previous projects</h2>
+    <hr style="width: 32%; height: 4px; background-color: #E7AD4A;">
+    {% for project in projects %}
+    <div class="project-card">
+      <h3 class="project-title">{{ project.title }}</h3>
+      <p class="project-description">{{ project.description }}</p>
+    </div>
+    {% endfor %}
+  </div>
+{%endif%}
+ <div class="row text-center">
+
+  <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
+    <a href="{% url 'main:post-create' %}">Share Your Experiences</a>
+  </div>
+  <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
+    <a href="">back to top</a>
+  </div>
+  </div> 
+
+  <script>
+    function handleImageError(img) {
+     img.src = "{% static 'main/img/home/project2.jpg' %}"
+    }
+    function handleImageErrorInsucessStory(img) {
+
+      img.src = "{% static '/main/img/service-1.jpg' %}"
+      // parentDiv.remove(); // Remove the grandparent div
+    }
+    function toggleContent(message_type, service_description, index) {
+        
+        var descriptionDiv = document.getElementById("description"+index)
+        // console.log(descriptionDiv)
+        if (message_type == 'more-content') {
+          var message = 'eleborate this content:' + service_description
+          // console.log(message)
+        }
+        else{
+          var message = 'short this content:' + service_description
+        }
+        var url = "{% url 'main:get_respos' %}?userMessage="+message+"&generalUse=True"
+        fetch(url, {
+          method:'GET',
+          headers:{
+            'Content-type':'application/json',
+          },
+        }).then(response => response.json())
+          .then(data => {
+              var newParagraph = document.createElement('p');
+
+              newParagraph.textContent = data['response'];
+
+              descriptionDiv.innerHTML = '';  // Remove existing content
+              descriptionDiv.appendChild(newParagraph);
+
+          })
+          .catch(error => {
+              
+              console.error('Error:', error);
+          });
+    }
+  </script>
+
+<script>
+  
+  function toggleReadMore() {
+    
+  }
+  document.getElementById("readMoreButton").addEventListener("keypress", function(event) {
+      if (event.key === "Enter" || event.keyCode === 13) {
+          event.preventDefault();
+          toggleReadMore();
+      }
+  });
+</script>
+  {% include 'main/snippets_templates/chat.html'%}
+
+  </div> 
+{% endblock %}

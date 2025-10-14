@@ -1,0 +1,580 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Real-time Compliance Dashboard - CODA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .realtime-indicator {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+    .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+        margin-bottom: 20px;
+        transition: transform 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .metric-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .live-updates {
+        background: #e8f5e8;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 0 8px 8px 0;
+    }
+    .notification-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    .status-compliant { background-color: #28a745; }
+    .status-non-compliant { background-color: #dc3545; }
+    .status-improved { background-color: #ffc107; }
+    .auto-refresh {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+    }
+    .btn-realtime {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s ease;
+    }
+    .btn-realtime:hover {
+        background: #0056b3;
+    }
+    .btn-realtime:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+    }
+    .compliance-chart {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 20px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-broadcast-tower text-primary"></i>
+                        Real-time Compliance Dashboard
+                    </h1>
+                    <p class="text-muted">Live monitoring of employee compliance and salary status</p>
+                </div>
+                <div>
+                    <span class="realtime-indicator">
+                        <i class="fas fa-circle"></i> LIVE
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-refresh Status -->
+    <div class="auto-refresh">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-sync-alt text-primary me-2"></i>
+                    <span>Auto-refresh: <strong id="refresh-status">Enabled</strong></span>
+                    <span class="ms-3">Last updated: <strong id="last-updated">{{ current_date|date:"M d, Y H:i:s" }}</strong></span>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-sm btn-outline-secondary" onclick="toggleAutoRefresh()">
+                    <i class="fas fa-pause" id="refresh-toggle-icon"></i>
+                    <span id="refresh-toggle-text">Pause</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <button class="btn-realtime" onclick="triggerComplianceMonitoring()">
+            <i class="fas fa-search"></i> Check All Compliance
+        </button>
+        <button class="btn-realtime" onclick="sendReminderNotifications()">
+            <i class="fas fa-envelope"></i> Send Reminders
+        </button>
+        <button class="btn-realtime" onclick="refreshDashboardData()">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+        <button class="btn-realtime" onclick="exportComplianceReport()">
+            <i class="fas fa-download"></i> Export Report
+        </button>
+    </div>
+
+    <!-- Real-time Metrics -->
+    <div class="row" id="metrics-container">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-primary" id="total-employees">-</div>
+                <div class="metric-label">Total Employees</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-success" id="compliant-employees">-</div>
+                <div class="metric-label">Compliant (≥33%)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-warning" id="non-compliant-employees">-</div>
+                <div class="metric-label">Non-Compliant</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-info" id="total-salary">$0.00</div>
+                <div class="metric-label">Total Salary</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Updates Section -->
+    <div class="live-updates">
+        <h5><i class="fas fa-bell"></i> Live Updates</h5>
+        <div id="live-updates-container">
+            <p class="text-muted">No recent updates. Click "Check All Compliance" to start monitoring.</p>
+        </div>
+    </div>
+
+    <!-- Compliance Statistics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="compliance-chart">
+                <h5><i class="fas fa-chart-pie"></i> Compliance Distribution</h5>
+                <div id="compliance-distribution">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="compliance-chart">
+                <h5><i class="fas fa-clock"></i> Recent Activity</h5>
+                <div id="recent-activity">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Status Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-users"></i>
+                Employee Compliance Status
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="employee-status-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Status</th>
+                            <th>Compliance Rate</th>
+                            <th>Tasks</th>
+                            <th>Salary</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Loading employee data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let autoRefreshInterval;
+let isAutoRefreshEnabled = true;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    startAutoRefresh();
+});
+
+// Auto-refresh functionality
+function startAutoRefresh() {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    
+    autoRefreshInterval = setInterval(function() {
+        if (isAutoRefreshEnabled) {
+            refreshDashboardData();
+        }
+    }, 30000); // Refresh every 30 seconds
+}
+
+function toggleAutoRefresh() {
+    isAutoRefreshEnabled = !isAutoRefreshEnabled;
+    const icon = document.getElementById('refresh-toggle-icon');
+    const text = document.getElementById('refresh-toggle-text');
+    const status = document.getElementById('refresh-status');
+    
+    if (isAutoRefreshEnabled) {
+        icon.className = 'fas fa-pause';
+        text.textContent = 'Pause';
+        status.textContent = 'Enabled';
+        startAutoRefresh();
+    } else {
+        icon.className = 'fas fa-play';
+        text.textContent = 'Resume';
+        status.textContent = 'Paused';
+        clearInterval(autoRefreshInterval);
+    }
+}
+
+// Load dashboard data
+function loadDashboardData() {
+    fetch('/finance/api/realtime/dashboard-data/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateDashboard(data.data);
+            } else {
+                console.error('Error loading dashboard data:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading dashboard data:', error);
+        });
+}
+
+// Refresh dashboard data
+function refreshDashboardData() {
+    loadDashboardData();
+    updateLastUpdatedTime();
+}
+
+// Update dashboard with new data
+function updateDashboard(data) {
+    // Update metrics
+    document.getElementById('total-employees').textContent = data.salary_data.total_employees || 0;
+    document.getElementById('compliant-employees').textContent = data.salary_data.compliant_count || 0;
+    document.getElementById('non-compliant-employees').textContent = data.salary_data.non_compliant_count || 0;
+    document.getElementById('total-salary').textContent = '$' + (data.salary_data.total_amount || 0).toFixed(2);
+    
+    // Update employee table
+    updateEmployeeTable(data.salary_data);
+    
+    // Update compliance distribution
+    updateComplianceDistribution(data);
+    
+    // Update recent activity
+    updateRecentActivity(data.recent_changes);
+}
+
+// Update employee status table
+function updateEmployeeTable(salaryData) {
+    const tbody = document.querySelector('#employee-status-table tbody');
+    tbody.innerHTML = '';
+    
+    // Add compliant employees
+    if (salaryData.compliant_employees) {
+        salaryData.compliant_employees.forEach(emp => {
+            const row = createEmployeeRow(emp, 'compliant');
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Add non-compliant employees
+    if (salaryData.non_compliant_employees) {
+        salaryData.non_compliant_employees.forEach(emp => {
+            const row = createEmployeeRow(emp, 'non-compliant');
+            tbody.appendChild(row);
+        });
+    }
+    
+    if (tbody.children.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No employee data available</td></tr>';
+    }
+}
+
+// Create employee row
+function createEmployeeRow(emp, status) {
+    const row = document.createElement('tr');
+    const statusClass = status === 'compliant' ? 'status-compliant' : 'status-non-compliant';
+    const statusText = status === 'compliant' ? 'Compliant' : 'Non-Compliant';
+    
+    row.innerHTML = `
+        <td>
+            <div>
+                <strong>${emp.full_name || emp.username}</strong><br>
+                <small class="text-muted">${emp.username}</small>
+            </div>
+        </td>
+        <td>
+            <span class="status-indicator ${statusClass}"></span>
+            ${statusText}
+        </td>
+        <td>
+            <strong>${emp.compliance_rate}%</strong>
+        </td>
+        <td>${emp.task_count}</td>
+        <td>
+            <strong class="${status === 'compliant' ? 'text-success' : 'text-muted'}">
+                $${emp.salary_amount.toFixed(2)}
+            </strong>
+        </td>
+        <td>${new Date().toLocaleTimeString()}</td>
+        <td>
+            <button class="btn btn-sm btn-outline-primary" onclick="checkEmployeeCompliance(${emp.employee_id})">
+                <i class="fas fa-search"></i>
+            </button>
+        </td>
+    `;
+    
+    return row;
+}
+
+// Update compliance distribution chart
+function updateComplianceDistribution(data) {
+    // This would be implemented with a charting library like Chart.js
+    // For now, we'll show a simple text representation
+    const container = document.getElementById('compliance-distribution');
+    container.innerHTML = '<p class="text-muted">Chart visualization would be implemented here</p>';
+}
+
+// Update recent activity
+function updateRecentActivity(recentChanges) {
+    const container = document.getElementById('recent-activity');
+    
+    if (!recentChanges || recentChanges.length === 0) {
+        container.innerHTML = '<p class="text-muted">No recent activity</p>';
+        return;
+    }
+    
+    let html = '';
+    recentChanges.forEach(change => {
+        html += `
+            <div class="notification-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>${change.employee_name}</strong>
+                        <span class="badge badge-${change.type === 'achievement' ? 'success' : 'warning'}">
+                            ${change.type}
+                        </span>
+                    </div>
+                    <small class="text-muted">${change.timestamp}</small>
+                </div>
+                <p class="mb-0">${change.message}</p>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Action functions
+function triggerComplianceMonitoring() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    btn.disabled = true;
+    
+    fetch('/finance/api/realtime/trigger-monitoring/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            month: {{ target_month }},
+            year: {{ target_year }}
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addLiveUpdate('Compliance monitoring completed', 'success');
+            refreshDashboardData();
+        } else {
+            addLiveUpdate('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLiveUpdate('Error: ' + error.message, 'error');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function sendReminderNotifications() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    btn.disabled = true;
+    
+    fetch('/finance/api/realtime/send-reminders/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            month: {{ target_month }},
+            year: {{ target_year }}
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const sent = data.reminder_result.notifications_sent;
+            addLiveUpdate(`Sent ${sent} reminder notifications`, 'success');
+        } else {
+            addLiveUpdate('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLiveUpdate('Error: ' + error.message, 'error');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function checkEmployeeCompliance(employeeId) {
+    fetch(`/finance/api/realtime/check-employee/${employeeId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const result = data.compliance_result;
+                const message = result.threshold_reached ? 
+                    'Employee reached compliance threshold!' : 
+                    `Employee compliance: ${result.compliance_rate}%`;
+                addLiveUpdate(message, result.is_compliant ? 'success' : 'warning');
+            }
+        })
+        .catch(error => {
+            addLiveUpdate('Error checking employee: ' + error.message, 'error');
+        });
+}
+
+function exportComplianceReport() {
+    window.open('/finance/api/realtime/compliance-statistics/', '_blank');
+}
+
+// Utility functions
+function addLiveUpdate(message, type) {
+    const container = document.getElementById('live-updates-container');
+    const update = document.createElement('div');
+    update.className = 'notification-card';
+    update.innerHTML = `
+        <div class="d-flex justify-content-between">
+            <div>
+                <span class="badge badge-${type}">${type}</span>
+                ${message}
+            </div>
+            <small class="text-muted">${new Date().toLocaleTimeString()}</small>
+        </div>
+    `;
+    
+    container.insertBefore(update, container.firstChild);
+    
+    // Keep only last 5 updates
+    while (container.children.length > 5) {
+        container.removeChild(container.lastChild);
+    }
+}
+
+function updateLastUpdatedTime() {
+    document.getElementById('last-updated').textContent = new Date().toLocaleString();
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

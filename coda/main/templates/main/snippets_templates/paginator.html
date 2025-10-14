@@ -1,0 +1,43 @@
+
+
+<style>
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1em 0;
+    }
+  
+    .step-links {
+      display: flex;
+    }
+  
+    .step-links a {
+      color: #337ab7;
+      text-decoration: none;
+      margin: 0 1em;
+    }
+  
+    .current-page {
+      color: #333;
+      margin: 0 1em;
+    }
+  </style>
+
+<div class="pagination">
+    <span class="step-links">
+      {% if objects.has_previous %}
+          <a href="?page=1">&laquo; first</a>
+          <a href="?page={{ objects.previous_page_number }}">previous</a>
+      {% endif %}
+  
+      <span class="current-page">
+          {{ objects.number }}
+      </span>
+  
+      {% if objects.has_next %}
+          <a href="?page={{ objects.next_page_number }}">next</a>
+          <a href="?page={{ objects.paginator.num_pages }}">last &raquo;</a>
+      {% endif %}
+    </span>
+  </div>

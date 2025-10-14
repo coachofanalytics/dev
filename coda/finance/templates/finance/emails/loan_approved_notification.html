@@ -1,0 +1,61 @@
+{% extends "main/base_templates/email_base.html" %}
+{% block content %}
+<div style="width: 100%; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="background-color: #002f5b; color: #ffcc00; padding: 20px; text-align: center;">
+        <p style="margin: 0; font-size: 24px; font-weight: bold;">CODA-CROWN DATA ANALYSIS AND CONSULTANCY LLC</p>
+        <p style="margin: 5px 0 0; font-size: 16px;">
+            <a href="http://www.codanalytics.net/" style="color: #ffcc00; text-decoration: none; font-size: 16px;font-weight: bold; background-color: #0a4976; padding: 10px 20px; border-radius: 5px;">Visit Our Website</a>
+        </p>
+    </div>
+
+    <div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 20px; text-align: center;">
+        <h2 style="color: #155724; margin: 0;">🎉 Loan Application Approved!</h2>
+        <p style="color: #155724; margin: 10px 0 0;">Your guarantor has approved your loan application</p>
+    </div>
+
+    <div style="background-color: #fff; border: 1px solid #ccc; padding: 20px; margin-top: 20px;">
+        <h3 style="color: #002f5b;">Dear {{ borrower.get_full_name|default:borrower.username }},</h3>
+
+        <p>Great news! Your loan application has been approved by your guarantor and is now moving to the next stage.</p>
+
+        <div style="background-color: #f8f9fa; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0;">
+            <h4 style="margin-top: 0; color: #28a745;">Loan Details:</h4>
+            <p><strong>Application Number:</strong> #{{ loan_app.application_number }}</p>
+            <p><strong>Loan Amount:</strong> ${{ loan_app.amount_requested|floatformat:2 }}</p>
+            <p><strong>Purpose:</strong> {{ loan_app.purpose|title }}</p>
+            <p><strong>Guarantor:</strong> {{ guarantor.get_full_name|default:guarantor.username }}</p>
+            <p><strong>Approval Date:</strong> {{ loan_app.guarantor_consent_date|date:"F d, Y" }}</p>
+        </div>
+
+        <h4 style="color: #002f5b;">What Happens Next?</h4>
+        <ol>
+            <li><strong>Review Process:</strong> Your application will now be reviewed by our finance team</li>
+            <li><strong>Final Approval:</strong> We'll verify all details and provide final approval</li>
+            <li><strong>Disbursement:</strong> Once approved, funds will be disbursed to your account</li>
+            <li><strong>Payment Schedule:</strong> You'll receive a payment schedule and terms</li>
+        </ol>
+
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0;">
+            <h4 style="color: #856404; margin-top: 0;">⏰ Timeline:</h4>
+            <p style="margin: 5px 0;"><strong>Review:</strong> 24-48 hours</p>
+            <p style="margin: 5px 0;"><strong>Final Approval:</strong> 1-2 days</p>
+            <p style="margin: 5px 0;"><strong>Disbursement:</strong> 1-2 days after approval</p>
+        </div>
+
+        <p>We'll keep you updated throughout the process. If you have any questions, please don't hesitate to contact us.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://www.codanalytics.net/finance/loan-home/" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Your Loan Status</a>
+        </div>
+
+        <p style="margin-top: 30px;">
+            Best regards,<br><br>
+            <strong>Finance Team</strong><br>
+            Crown Data Analysis and Consultancy LLC (CODA)<br>
+            <span style="color: #007bff;">finance@codanalytics.net</span><br>
+            <span style="color: #007bff;">+1(816)745-2510</span>
+        </p>
+    </div>
+</div>
+{% endblock content %}
+

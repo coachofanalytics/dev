@@ -1,0 +1,21 @@
+{% extends "main/base_templates/analysis_index.html" %}
+{% block title %}
+    Email Sent Status
+{% endblock %}
+
+{% block content %}
+    <h3>Email Sending Results:</h3>
+    <ul>
+        {% for email_status in email_statuses %}
+            <li>
+                {{ email_status.email }} - 
+                {% if email_status.status == 'Success' %}
+                    <span style="color: green;">{{ email_status.status }}</span>
+                {% else %}
+                    <span style="color: red;">{{ email_status.status }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'marketing:marketing' %}" class="btn btn-primary mt-3">Back to Marketing</a>
+{% endblock %}

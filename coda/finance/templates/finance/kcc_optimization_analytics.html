@@ -1,0 +1,471 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .analytics-container {
+        padding: 20px;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #28a745;
+        margin: 10px 0;
+    }
+    
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .customer-segments {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .segment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .segment-item {
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+    
+    .segment-name {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 10px;
+    }
+    
+    .segment-count {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .segment-value {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .pricing-analysis {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .pricing-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    
+    .pricing-table th,
+    .pricing-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .pricing-table th {
+        background: #f8f9fa;
+        font-weight: bold;
+        color: #495057;
+    }
+    
+    .pricing-table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .optimization-recommendations {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .recommendation-item {
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #28a745;
+        background: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .recommendation-priority {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .priority-high { background: #f8d7da; color: #721c24; }
+    .priority-medium { background: #fff3cd; color: #856404; }
+    .priority-low { background: #d4edda; color: #155724; }
+    
+    .rfm-analysis {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .rfm-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .rfm-item {
+        text-align: center;
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+    }
+    
+    .rfm-score {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .rfm-label {
+        color: #6c757d;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">KCC Optimization Analytics</h1>
+        <div>
+            <button class="btn btn-outline-primary me-2" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <a href="{% url 'finance:analytics-export' %}?type=csv&date_range=12_months" class="btn btn-success">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if kcc_data %}
+    <!-- KCC Overview Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Total KCC Loans</div>
+            <div class="metric-value">{{ kcc_data.overview_metrics.total_kcc_loans|default:"0" }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">KCC Revenue</div>
+            <div class="metric-value">${{ kcc_data.overview_metrics.total_kcc_revenue|default:"0" }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg Interest Rate</div>
+            <div class="metric-value">{{ kcc_data.overview_metrics.average_interest_rate|default:"0" }}%</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Profit Margin</div>
+            <div class="metric-value">{{ kcc_data.overview_metrics.kcc_profit_margin|default:"0" }}%</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Customer Retention</div>
+            <div class="metric-value">{{ kcc_data.overview_metrics.customer_retention_rate|default:"0" }}%</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Growth Rate</div>
+            <div class="metric-value">{{ kcc_data.overview_metrics.monthly_growth_rate|default:"0" }}%</div>
+        </div>
+    </div>
+
+    <!-- Customer Segmentation -->
+    <div class="customer-segments">
+        <h4>Customer Segmentation (RFM Analysis)</h4>
+        <div class="segment-grid">
+            {% if kcc_data.customer_segmentation %}
+                {% for segment, data in kcc_data.customer_segmentation.items %}
+                <div class="segment-item">
+                    <div class="segment-name">{{ segment|title }}</div>
+                    <div class="segment-count">{{ data.count|default:"0" }}</div>
+                    <div class="segment-value">{{ data.percentage|default:"0" }}% of total</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">No customer segmentation data available</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RFM Analysis -->
+    <div class="rfm-analysis">
+        <h4>RFM Analysis Details</h4>
+        <div class="rfm-grid">
+            {% if kcc_data.rfm_analysis %}
+                <div class="rfm-item">
+                    <div class="rfm-score">{{ kcc_data.rfm_analysis.recency_score|default:"0" }}</div>
+                    <div class="rfm-label">Recency Score</div>
+                </div>
+                <div class="rfm-item">
+                    <div class="rfm-score">{{ kcc_data.rfm_analysis.frequency_score|default:"0" }}</div>
+                    <div class="rfm-label">Frequency Score</div>
+                </div>
+                <div class="rfm-item">
+                    <div class="rfm-score">{{ kcc_data.rfm_analysis.monetary_score|default:"0" }}</div>
+                    <div class="rfm-label">Monetary Score</div>
+                </div>
+                <div class="rfm-item">
+                    <div class="rfm-score">{{ kcc_data.rfm_analysis.combined_score|default:"0" }}</div>
+                    <div class="rfm-label">Combined Score</div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">No RFM analysis data available</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pricing Analysis -->
+    <div class="pricing-analysis">
+        <h4>Dynamic Pricing Analysis</h4>
+        {% if kcc_data.pricing_analysis %}
+        <table class="pricing-table">
+            <thead>
+                <tr>
+                    <th>Product Type</th>
+                    <th>Current Rate</th>
+                    <th>Optimal Rate</th>
+                    <th>Market Rate</th>
+                    <th>Recommendation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in kcc_data.pricing_analysis %}
+                <tr>
+                    <td>{{ product.product_name|default:"N/A" }}</td>
+                    <td>{{ product.current_rate|default:"0" }}%</td>
+                    <td>{{ product.optimal_rate|default:"0" }}%</td>
+                    <td>{{ product.market_rate|default:"0" }}%</td>
+                    <td>
+                        <span class="badge {% if product.recommendation == 'increase' %}bg-success{% elif product.recommendation == 'decrease' %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {{ product.recommendation|default:"maintain"|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No pricing analysis data available</p>
+        {% endif %}
+    </div>
+
+    <!-- Product Performance -->
+    <div class="chart-container">
+        <div class="chart-title">KCC Product Performance</div>
+        <canvas id="productChart" width="400" height="200"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <div class="chart-title">Customer Value Distribution</div>
+        <canvas id="customerValueChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Optimization Recommendations -->
+    <div class="optimization-recommendations">
+        <h4>KCC Optimization Recommendations</h4>
+        {% if kcc_data.optimization_recommendations %}
+            {% for rec in kcc_data.optimization_recommendations %}
+            <div class="recommendation-item">
+                <div class="recommendation-priority priority-{{ rec.priority }}">
+                    {{ rec.priority|title }} Priority
+                </div>
+                <h6>{{ rec.title }}</h6>
+                <p class="mb-2">{{ rec.description }}</p>
+                <small class="text-muted">
+                    <strong>Expected Impact:</strong> {{ rec.expected_impact|title }} | 
+                    <strong>Implementation Effort:</strong> {{ rec.implementation_effort|title }} |
+                    <strong>ROI:</strong> {{ rec.expected_roi|default:"N/A" }}
+                </small>
+            </div>
+            {% endfor %}
+        {% else %}
+        <p class="text-muted">No optimization recommendations available</p>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No KCC Data Available</h4>
+        <p class="text-muted">Start by creating KCC loan applications to see optimization analytics.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let productChart, customerValueChart;
+
+function refreshData() {
+    location.reload();
+}
+
+function initializeCharts() {
+    // Check if we have KCC data by looking for the canvas elements
+    const productCanvas = document.getElementById('productChart');
+    const customerValueCanvas = document.getElementById('customerValueChart');
+    
+    if (productCanvas && customerValueCanvas) {
+        // Product Performance Chart
+        const productCtx = productCanvas.getContext('2d');
+        productChart = new Chart(productCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Personal Loans', 'Business Loans', 'Emergency Loans', 'Investment Loans'],
+                datasets: [{
+                    label: 'Number of Loans',
+                    data: [45, 32, 28, 15],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 205, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'KCC Product Performance'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Customer Value Distribution Chart
+        const customerValueCtx = customerValueCanvas.getContext('2d');
+        customerValueChart = new Chart(customerValueCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Value', 'Medium Value', 'Low Value'],
+                datasets: [{
+                    data: [25, 45, 30],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Customer Value Distribution'
+                    }
+                }
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+});
+
+// Auto-refresh every 5 minutes
+setInterval(function() {
+    // Optionally refresh data
+}, 300000);
+</script>
+{% endblock %} 

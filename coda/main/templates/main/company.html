@@ -1,0 +1,76 @@
+{% extends "main/base_templates/analysis_index.html" %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6 top-coloumn">
+                <p class="title-sub-head">
+                   {{company}}
+                </p>
+                <p class="title-para">
+                   <i>
+                    {{ad_title}}
+                </i> 
+                </p>
+            </div>
+            <div class="col-md-3 top-coloumn text-white">
+                <div style="padding:2rem">
+                    <center>
+                        <a href="{{company_website}}" class="btn btn-md btn-bc">Company Site</a>
+                    </center>
+                </div>
+            </div>
+            <div class="col-md-3 top-coloumn text-white">
+                <div style="padding:2rem">
+                    <center>
+                        <a href="{% url 'main:service_plans' slug='full-course' %}" class="btn btn-md btn-bc">Edit Information</a>
+                    </center>
+                </div>
+            </div>
+        </div>
+        <div class="row bottom-coloumn">
+            <div class="col-md-12 top-coloumn bottom-coloumn">
+                    <div class="row">
+                        <div class="col-md-12 top-coloumn bg-white">
+                            <div class="col-md-12" id="gi">
+                                <h3 class="text-center">Who We Are</h3>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="gi">
+                                            {{ company_description }}<br>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    </div>
+                    <h3 class="text-center">Professional Services</h3>
+                            <div class="row">
+                                {% for service in services %}
+                                <div class="col-md-6" id="gi">
+                                    <div class="card">
+                                        <div class="card-body">
+                                           <h4>{{ service.title }}</h4> 
+                                            <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                                            <p class="gi">
+                                                {{ service.description }}<br>
+                                            </p>
+                                            <ul>
+                                                {% for category in service.servicecategory_set.all %}
+                                                <li>{{ category.name }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                            <hr/>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                    </div>
+            </div>
+            <div class="col-md-5 bottom-left-coloumn">
+                <div style="padding-top: 2.2rem;">
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock content %}

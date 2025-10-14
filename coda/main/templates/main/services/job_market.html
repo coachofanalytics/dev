@@ -1,0 +1,114 @@
+{% extends "main/base_templates/new_base.html"%}
+{% block content %}
+
+<section id="job_market">
+  <div class="job_market text-center">
+  <h3 class="title">Getting into the Job Market</h3>
+  <div class="row text-center">
+    <div class="col-md-6 services">
+      <!-- <img src="static/img/services/service1.png" class="service-img" >-->
+      <h5>Application Process</h5>
+      <p>
+        We do offer tremendous assistance in the application process. Join and
+        learn how experts do it.
+      </p>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href=""
+            id="navbarDropDown"
+            role="button"
+            data-toggle="dropdown"
+          >
+            <button type="btn" class="btn-primary">Select</button>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+             <!--<a class="dropdown-item" target="_blank" href="https://drive.google.com/file/d/1y8bMA01KNAykHiAaF8LIrzWI_JSAIeHN/view?usp=sharing">Resume Preparation Video</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://docs.google.com/document/d/18acgFSw3bvQiIDqatgwK4eQkPbEyWwzgB_m8aSBnbTk/edit">Resume Preparation</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://docs.google.com/document/d/17RxXz8c5bjX9OrdbWR97qpoM4P-zqVgweOpNY4-CsnA/edit">Sample Resume 1</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href=" https://docs.google.com/document/d/1PPAnIhGYMW62wXuihT0UiPKBAmWNZK-xAebK4pSm9Ko/edit">Sample Resume 2</a> -->
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="">Salary Negotiation(C2C/W2s)</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="{% url 'professional_services:userjoblist' request.user %} ">Job Tracker(Recruiters)</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  
+    <div class="col-md-6 services">
+      <!-- <img src="static/img/services/service1.png" class="service-img" >-->
+      <h5>Networking</h5>
+      <p>
+        Work within a network,build a team and meet experienced professionals
+        working in the field to respond to your questions.
+      </p>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href=""
+            id="navbarDropDown"
+            role="button"
+            data-toggle="dropdown"
+          >
+            <button type="btn" class="btn-primary">Select</button>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+            <a class="dropdown-item" target="_blank" href="https://transcripts.gotomeeting.com/?utm_source=recordingReadyNotification&utm_medium=email#/s/2fffdd47b8bfd8f75447b76446a58475680b364d0d10c5e4c78ff46f155d6f22"><b>Guest Speaker:</b> VP Francis Umude</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://transcripts.gotomeeting.com/?utm_source=recordingReadyNotification&utm_medium=email#/s/fab36e736f62941d738b0f739d6be19ec0ed31bc08cefe63b5ea3fbf0dce5e9b"><b>Guest Speaker:</b> Data Analyst James Kontoh</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="#"><b>Guest Speaker:</b> Business Analyst Gladys Mwongo</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  
+    <!-- <div class="col-md-4 services">
+      <h5>Interview Strategy</h5>
+      <p>
+        We will offer training in Job Interview. Please Join and get access to
+        past audio interviews and questions
+      </p>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href=""
+            id="navbarDropDown"
+            role="button"
+            data-toggle="dropdown"
+          >
+            <button type="btn" class="btn-primary">Select</button>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropDown">
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://docs.google.com/document/d/1GZZ_6ME1QI-4zeHt0cQ1lNrztSTKKp5-D7K0ytOXgh8/edit#heading=h.gjdgxs">1. Introduction</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://drive.google.com/file/d/15-82jaqBrXW21SoLJ5QNvGmltOrekv8F/view">Video. Introduction</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://drive.google.com/file/d/1fTt6e8pyeBI_VhlJAQAiqrAXYNHfLMwC/view?usp=sharing">2. Project Story</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://drive.google.com/file/d/1sLfe5IPeOLuZaWYtMc0MLJb9So5F5P6T/view?usp=sharing">3. Performance  Tuning</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://drive.google.com/file/d/1-EtnAyjv9jcf0SghL74i9AKG3lTOpHaK/view?usp=sharing">3. Agile vs Waterfall</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="https://drive.google.com/file/d/1aTig-f-1CNIdPNnIfYX2aSEoDjbmQg8o/view?usp=sharing">4.SDLC</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="#">5. Mock Interview</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" target="_blank" href="#">6. Sample Interviews</a>
+          </div>
+        </li>
+      </ul>
+    </div> -->
+  </div>
+  </div>
+  </section>
+
+  {% endblock content %}

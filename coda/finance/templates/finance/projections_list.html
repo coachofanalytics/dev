@@ -1,0 +1,85 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Projections - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+      <h1 class="mb-3">Budget Projections</h1>
+
+      <form method="get" class="row g-2 mb-4">
+        <div class="col-auto">
+          <select name="company_id" class="form-select">
+            <option value="">All Companies</option>
+            {% for c in companies %}
+              <option value="{{ c.id }}" {% if selected_company_id == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <select name="department_id" class="form-select">
+            <option value="">All Departments</option>
+            {% for d in departments %}
+              <option value="{{ d.id }}" {% if selected_department_id == d.id|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary">Filter</button>
+        </div>
+      </form>
+
+      {% if messages %}
+        {% for m in messages %}
+          <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Company</th>
+            <th>Department</th>
+            <th>Horizon</th>
+            <th>Method</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in projections %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.company.name }}</td>
+            <td>{{ p.department.name }}</td>
+            <td>{{ p.get_horizon_display }}</td>
+            <td>{{ p.method }}</td>
+            <td>{{ p.total_estimate }}</td>
+            <td>{{ p.status }}</td>
+            <td>{{ p.created_at|date:"Y-m-d H:i" }}</td>
+            <td>
+              {% if p.status == 'draft' %}
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="projection_id" value="{{ p.id }}" />
+                <input type="hidden" name="action" value="submit" />
+                <button class="btn btn-sm btn-success">Submit</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-center">No projections.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

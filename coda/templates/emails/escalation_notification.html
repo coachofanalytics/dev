@@ -1,0 +1,144 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Budget Request Escalated - {{ site_name }}{% endblock %}
+
+{% block header_title %}Request Escalated{% endblock %}
+{% block header_subtitle %}Budget Request #{{ request.id }} has been escalated{% endblock %}
+
+{% block content_title %}Budget Request Escalated{% endblock %}
+
+{% block content_message %}
+A budget request has been escalated due to delayed approval. Please review and take appropriate action.
+{% endblock %}
+
+{% block additional_content %}
+<div class="warning-box">
+    <h3>⚠️ Request Escalated</h3>
+    <p>This budget request has been escalated due to delayed approval. Immediate action is required.</p>
+</div>
+
+<div class="info-box">
+    <h3>Request Details</h3>
+    <p><strong>Request ID:</strong> #{{ request.id }}</p>
+    <p><strong>Requester:</strong> {{ request.requester.get_full_name }} ({{ request.requester.email }})</p>
+    <p><strong>Amount:</strong> {{ request.currency }} {{ request.amount|floatformat:2 }}</p>
+    <p><strong>Purpose:</strong> {{ request.purpose }}</p>
+    <p><strong>Department:</strong> {{ request.department.name }}</p>
+    <p><strong>Budget Category:</strong> {{ request.budget_category.name }}</p>
+    <p><strong>Priority:</strong> {{ request.priority|title }}</p>
+    <p><strong>Required Date:</strong> {{ request.required_date|date:"F d, Y" }}</p>
+    <p><strong>Submitted Date:</strong> {{ request.request_date|date:"F d, Y \a\t g:i A" }}</p>
+    <p><strong>Days Since Submission:</strong> {{ request.request_date|timesince }}</p>
+</div>
+
+<div class="error-box">
+    <h3>Escalation Reason</h3>
+    <p><strong>Escalation Level:</strong> {{ escalation_level|title }}</p>
+    <p><strong>Reason:</strong> Request has exceeded the maximum approval time</p>
+    <p><strong>Policy Limit:</strong> {{ request.approval_policy.max_approval_days }} days</p>
+    <p><strong>Escalation Threshold:</strong> {{ request.approval_policy.escalation_days }} days</p>
+</div>
+
+{% if request.approval_policy %}
+<div class="info-box">
+    <h3>Approval Policy Information</h3>
+    <p><strong>Policy:</strong> {{ request.approval_policy.name }}</p>
+    <p><strong>Description:</strong> {{ request.approval_policy.description }}</p>
+    <p><strong>Max Approval Days:</strong> {{ request.approval_policy.max_approval_days }} days</p>
+    <p><strong>Escalation Days:</strong> {{ request.approval_policy.escalation_days }} days</p>
+</div>
+{% endif %}
+
+{% if request.approval_chain %}
+<div class="info-box">
+    <h3>Approval Chain Status</h3>
+    <p>The following approvers have reviewed this request:</p>
+    <ul>
+        {% for approver in request.approval_chain %}
+        <li>
+            <strong>{{ approver.role }}:</strong> {{ approver.user_name }}
+            <span style="color: {% if approver.status == 'approved' %}#28a745{% elif approver.status == 'rejected' %}#dc3545{% else %}#ffc107{% endif %};">
+                ({{ approver.status|title }})
+            </span>
+            {% if approver.comments %}
+            <br><em>{{ approver.comments }}</em>
+            {% endif %}
+            {% if approver.decided_at %}
+            <br><small>Decided: {{ approver.decided_at|date:"F d, Y \a\t g:i A" }}</small>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="warning-box">
+    <h3>Urgent Action Required</h3>
+    <ul>
+        <li>This request requires immediate attention</li>
+        <li>Please review and make a decision promptly</li>
+        <li>Consider the business impact of further delays</li>
+        <li>Contact the requester if additional information is needed</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Escalation Impact</h3>
+    <ul>
+        <li>Request has exceeded normal approval timeline</li>
+        <li>May impact business operations and deadlines</li>
+        <li>Requester may be experiencing delays in their work</li>
+        <li>Further delays may require additional approvals</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin/finance/budgetrequest/{{ request.id }}/change/" class="action-button" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); margin-right: 10px;">
+        Approve Request
+    </a>
+    <a href="{{ site_url }}/admin/finance/budgetrequest/{{ request.id }}/change/" class="action-button" style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);">
+        Reject Request
+    </a>
+</div>
+
+<div class="info-box">
+    <h3>Contact Information</h3>
+    <p><strong>Requester:</strong> {{ request.requester.get_full_name }}</p>
+    <p><strong>Email:</strong> {{ request.requester.email }}</p>
+    {% if request.requester.phone_number %}
+    <p><strong>Phone:</strong> {{ request.requester.phone_number }}</p>
+    {% endif %}
+    <p><strong>Department:</strong> {{ request.department.name }}</p>
+</div>
+
+<div class="error-box">
+    <h3>Escalation Consequences</h3>
+    <ul>
+        <li>This escalation has been logged in the audit trail</li>
+        <li>Management has been notified of the delay</li>
+        <li>Further delays may result in additional escalations</li>
+        <li>Consider the impact on team productivity and deadlines</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Recommended Actions</h3>
+    <ol>
+        <li>Review the request details immediately</li>
+        <li>Contact the requester if clarification is needed</li>
+        <li>Make a decision within 24 hours</li>
+        <li>Document your decision and reasoning</li>
+        <li>Notify the requester of your decision</li>
+    </ol>
+</div>
+
+<div class="warning-box">
+    <h3>Important Reminders</h3>
+    <ul>
+        <li>This is an escalated request requiring urgent attention</li>
+        <li>Your response time will be tracked and reported</li>
+        <li>Consider the business impact of your decision</li>
+        <li>Contact management if you need guidance</li>
+    </ul>
+</div>
+{% endblock %}

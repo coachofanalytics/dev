@@ -1,0 +1,124 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Disbursement Failed - {{ site_name }}{% endblock %}
+
+{% block header_title %}Disbursement Failed{% endblock %}
+{% block header_subtitle %}Your disbursement could not be completed{% endblock %}
+
+{% block content_title %}Disbursement Processing Failed{% endblock %}
+
+{% block content_message %}
+Unfortunately, your disbursement could not be completed due to an error. Please find the details below and contact support for assistance.
+{% endblock %}
+
+{% block additional_content %}
+<div class="error-box">
+    <h3>❌ Disbursement Failed</h3>
+    <p>Your disbursement could not be completed due to a technical error. Please contact support for assistance.</p>
+</div>
+
+<div class="info-box">
+    <h3>Disbursement Details</h3>
+    <p><strong>Disbursement ID:</strong> #{{ disbursement.id }}</p>
+    <p><strong>Amount:</strong> {{ disbursement.currency }} {{ disbursement.amount|floatformat:2 }}</p>
+    <p><strong>Recipient:</strong> {{ disbursement.recipient_name }}</p>
+    <p><strong>Method:</strong> {{ disbursement.disbursement_method|title }}</p>
+    {% if disbursement.payment_reference %}
+    <p><strong>Payment Reference:</strong> {{ disbursement.payment_reference }}</p>
+    {% endif %}
+    {% if disbursement.transaction_id %}
+    <p><strong>Transaction ID:</strong> {{ disbursement.transaction_id }}</p>
+    {% endif %}
+    <p><strong>Failed Date:</strong> {{ disbursement.updated_at|date:"F d, Y \a\t g:i A" }}</p>
+</div>
+
+{% if disbursement.budget_request %}
+<div class="info-box">
+    <h3>Original Request Details</h3>
+    <p><strong>Request ID:</strong> #{{ disbursement.budget_request.id }}</p>
+    <p><strong>Purpose:</strong> {{ disbursement.budget_request.purpose }}</p>
+    <p><strong>Department:</strong> {{ disbursement.budget_request.department.name }}</p>
+    <p><strong>Budget Category:</strong> {{ disbursement.budget_request.budget_category.name }}</p>
+    <p><strong>Requested By:</strong> {{ disbursement.budget_request.requester.get_full_name }}</p>
+</div>
+{% endif %}
+
+<div class="error-box">
+    <h3>Possible Reasons for Failure</h3>
+    <ul>
+        <li>Invalid recipient information (phone number, email, or account number)</li>
+        <li>Payment provider service temporarily unavailable</li>
+        <li>Insufficient funds in the disbursement account</li>
+        <li>Network connectivity issues</li>
+        <li>Payment provider API errors</li>
+        <li>Invalid or expired payment credentials</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>What You Can Do Next</h3>
+    <ul>
+        <li><strong>Contact Support:</strong> Reach out to our support team for assistance</li>
+        <li><strong>Verify Information:</strong> Check that all recipient details are correct</li>
+        <li><strong>Retry Disbursement:</strong> Support can help you retry the disbursement</li>
+        <li><strong>Alternative Method:</strong> Consider using a different payment method</li>
+        <li><strong>Manual Processing:</strong> Request manual processing if needed</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin/finance/disbursementrequest/{{ disbursement.id }}/change/" class="action-button">
+        View Disbursement Details
+    </a>
+</div>
+
+<div class="warning-box">
+    <h3>Important Notes</h3>
+    <ul>
+        <li>Your budget request remains approved and valid</li>
+        <li>No funds have been deducted from your account</li>
+        <li>You can retry the disbursement once the issue is resolved</li>
+        <li>Contact support immediately if you need urgent assistance</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Support Contact Information</h3>
+    <p>For immediate assistance with this failed disbursement:</p>
+    <ul>
+        <li><strong>Email:</strong> support@{{ site_url|cut:"https://"|cut:"http://" }}</li>
+        <li><strong>Phone:</strong> +1 (555) 123-4567</li>
+        <li><strong>Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</li>
+        <li><strong>Emergency:</strong> +1 (555) 123-4568 (24/7)</li>
+        <li><strong>Reference:</strong> Include Disbursement ID #{{ disbursement.id }} in all communications</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>Technical Details</h3>
+    <p>For technical support, please provide the following information:</p>
+    <ul>
+        <li>Disbursement ID: #{{ disbursement.id }}</li>
+        <li>Error occurred at: {{ disbursement.updated_at|date:"F d, Y \a\t g:i A" }}</li>
+        <li>Payment method: {{ disbursement.disbursement_method|title }}</li>
+        <li>Amount: {{ disbursement.currency }} {{ disbursement.amount|floatformat:2 }}</li>
+        <li>Recipient: {{ disbursement.recipient_name }}</li>
+    </ul>
+</div>
+
+<div class="error-box">
+    <h3>Next Steps</h3>
+    <ol>
+        <li>Contact support with the disbursement ID and error details</li>
+        <li>Verify all recipient information is correct</li>
+        <li>Wait for support to investigate and resolve the issue</li>
+        <li>Retry the disbursement once the problem is fixed</li>
+        <li>Consider alternative payment methods if needed</li>
+    </ol>
+</div>
+
+<div class="info-box">
+    <h3>We Apologize for the Inconvenience</h3>
+    <p>We understand that failed disbursements can be frustrating. Our support team is committed to resolving this issue quickly and ensuring you receive your funds as soon as possible.</p>
+</div>
+{% endblock %}

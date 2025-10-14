@@ -1,0 +1,344 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Budget Request Details - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.status-badge {
+    font-size: 1em;
+    padding: 8px 16px;
+}
+.detail-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+.line-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+}
+.line-item:hover {
+    background: #e9ecef;
+}
+.approval-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+}
+.timeline-item {
+    border-left: 3px solid #007bff;
+    padding-left: 20px;
+    margin-bottom: 20px;
+    position: relative;
+}
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 0;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #007bff;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Budget Request Details</h2>
+                    <p class="text-muted">{{ company.name }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'finance:budget-requests-list' company.slug %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Requests
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-md-8">
+                    <!-- Request Information -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-invoice-dollar"></i> 
+                                {{ budget_request.budget_category.name }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><strong>Request Information</strong></h6>
+                                    <p><strong>Amount:</strong> ${{ budget_request.amount|floatformat:2 }}</p>
+                                    <p><strong>Category:</strong> {{ budget_request.budget_category.name }}</p>
+                                    <p><strong>Department:</strong> {{ budget_request.department.name|default:"All Departments" }}</p>
+                                    <p><strong>Request Date:</strong> {{ budget_request.request_date|date:"M d, Y" }}</p>
+                                    <p><strong>Required Date:</strong> {{ budget_request.required_date|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><strong>Status & Approval</strong></h6>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge status-badge 
+                                            {% if budget_request.status == 'draft' %}badge-secondary
+                                            {% elif budget_request.status == 'submitted' %}badge-info
+                                            {% elif budget_request.status == 'under_review' %}badge-warning
+                                            {% elif budget_request.status == 'approved' %}badge-success
+                                            {% elif budget_request.status == 'rejected' %}badge-danger
+                                            {% endif %}">
+                                            {{ budget_request.get_status_display }}
+                                        </span>
+                                    </p>
+                                    {% if budget_request.current_approver %}
+                                    <p><strong>Current Approver:</strong> {{ budget_request.current_approver.get_full_name|default:budget_request.current_approver.username }}</p>
+                                    {% endif %}
+                                    {% if budget_request.approved_by %}
+                                    <p><strong>Approved By:</strong> {{ budget_request.approved_by.get_full_name|default:budget_request.approved_by.username }}</p>
+                                    <p><strong>Approved At:</strong> {{ budget_request.approved_at|date:"M d, Y H:i" }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if budget_request.justification %}
+                            <hr>
+                            <h6><strong>Justification</strong></h6>
+                            <p class="text-muted">{{ budget_request.justification }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Line Items -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list"></i> Budget Line Items
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if line_items %}
+                                {% for item in line_items %}
+                                <div class="line-item">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">{{ item.item_name }}</h6>
+                                            <small class="text-muted">{{ item.subcategory_name }}</small>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <h5 class="text-primary mb-0">${{ item.amount|floatformat:2 }}</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5><strong>Total Requested Amount</strong></h5>
+                                    </div>
+                                    <div class="col-md-4 text-right">
+                                        <h4 class="text-primary">${{ budget_request.amount|floatformat:2 }}</h4>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No line items available for this request.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Approval Actions -->
+                    {% if can_approve %}
+                    <div class="approval-section">
+                        <h5><i class="fas fa-gavel"></i> Approval Actions</h5>
+                        <p>You are the current approver for this budget request. Please review and take action.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-success btn-lg btn-block" onclick="approveRequest()">
+                                    <i class="fas fa-check"></i> Approve Request
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-danger btn-lg btn-block" onclick="showRejectModal()">
+                                    <i class="fas fa-times"></i> Reject Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-md-4">
+                    <!-- Request Timeline -->
+                    <div class="card detail-card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-history"></i> Request Timeline</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline-item">
+                                <h6><strong>Request Created</strong></h6>
+                                <p class="text-muted mb-1">{{ budget_request.request_date|date:"M d, Y H:i" }}</p>
+                                <small>by {{ budget_request.created_by.get_full_name|default:budget_request.created_by.username }}</small>
+                            </div>
+                            
+                            {% if budget_request.status != 'draft' %}
+                            <div class="timeline-item">
+                                <h6><strong>Submitted for Approval</strong></h6>
+                                <p class="text-muted mb-1">{{ budget_request.updated_at|date:"M d, Y H:i" }}</p>
+                                <small>by {{ budget_request.last_modified_by.get_full_name|default:budget_request.last_modified_by.username }}</small>
+                            </div>
+                            {% endif %}
+                            
+                            {% if budget_request.status == 'approved' %}
+                            <div class="timeline-item">
+                                <h6><strong>Approved</strong></h6>
+                                <p class="text-muted mb-1">{{ budget_request.approved_at|date:"M d, Y H:i" }}</p>
+                                <small>by {{ budget_request.approved_by.get_full_name|default:budget_request.approved_by.username }}</small>
+                            </div>
+                            {% elif budget_request.status == 'rejected' %}
+                            <div class="timeline-item">
+                                <h6><strong>Rejected</strong></h6>
+                                <p class="text-muted mb-1">{{ budget_request.updated_at|date:"M d, Y H:i" }}</p>
+                                {% if budget_request.rejection_reason %}
+                                <small>{{ budget_request.rejection_reason }}</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Approval Chain -->
+                    {% if budget_request.approval_chain %}
+                    <div class="card detail-card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-users"></i> Approval Chain</h6>
+                        </div>
+                        <div class="card-body">
+                            {% for approver in budget_request.approval_chain %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>{{ approver.name }}</strong><br>
+                                    <small class="text-muted">{{ approver.role }}</small>
+                                </div>
+                                <div>
+                                    {% if approver.status == 'pending' %}
+                                    <span class="badge badge-warning">Pending</span>
+                                    {% elif approver.status == 'approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                    {% elif approver.status == 'rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Budget Request</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rejectionReason">Reason for Rejection</label>
+                    <textarea id="rejectionReason" class="form-control" rows="4" 
+                              placeholder="Please provide a reason for rejecting this budget request..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="rejectRequest()">Reject Request</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function approveRequest() {
+    if (confirm('Are you sure you want to approve this budget request?')) {
+        $.ajax({
+            url: '{% url "approve-budget-request" company.slug budget_request.id %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+                'Content-Type': 'application/json',
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Budget request approved successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function(xhr) {
+                const response = JSON.parse(xhr.responseText);
+                alert('Error: ' + (response.error || 'Unknown error occurred'));
+            }
+        });
+    }
+}
+
+function showRejectModal() {
+    $('#rejectModal').modal('show');
+}
+
+function rejectRequest() {
+    const reason = $('#rejectionReason').val().trim();
+    if (!reason) {
+        alert('Please provide a reason for rejection.');
+        return;
+    }
+
+    $.ajax({
+        url: '{% url "reject-budget-request" company.slug budget_request.id %}',
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+            'Content-Type': 'application/json',
+        },
+        data: JSON.stringify({
+            rejection_reason: reason
+        }),
+        success: function(response) {
+            if (response.success) {
+                $('#rejectModal').modal('hide');
+                alert('Budget request rejected.');
+                location.reload();
+            } else {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function(xhr) {
+            const response = JSON.parse(xhr.responseText);
+            alert('Error: ' + (response.error || 'Unknown error occurred'));
+        }
+    });
+}
+</script>
+{% endblock %}

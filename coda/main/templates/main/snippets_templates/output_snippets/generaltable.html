@@ -1,0 +1,49 @@
+<tr>
+    <td>
+        <a class=" article-title target="_blank" 
+        data-toggle="tooltip" title="{{ row.comment }}"
+        href="{% url 'investing:overboughtsold' row.symbol %}?industry={{ row.industry }}">
+        {{ row.symbol }}
+        </a>
+    </td>
+    <td>{{ row.industry }}</td>
+    {% if subtitle == 'credit_spread' %} 
+        <td>{{ row.strategy }}</td>
+        <td>{{ row.price }}</td>
+        <td>{{ row.type }}</td>
+        <td>{{ row.sell_strike }}</td>
+        <td>{{ row.premium }}</td>
+        <td>{{ row.rank }}</td>
+        <td>{{ row.expiry }}</td>
+    {% else %}
+        <td>{{ row.action }}</td>
+        <td>{{ row.stock_price }}</td>
+        <td>{{ row.strike_price }}</td>
+        <td>{{ row.raw_return }}</td>
+        <td>{{ row.days_of_expiration }}</td>
+        <td>{{ row.annualized_return }}</td>
+        <td>{{ row.implied_volatility_rank }}</td>
+        <td>{{ row.expiry|date:"n/d/Y" }}</td>
+    {% endif %}
+    
+    <td>{{ row.earnings_date }}</td>
+    <!-- <td>
+        <input type="checkbox" {% if row.is_featured %}checked{% endif %}>
+    </td> -->
+    <td>
+        <a class=" article-title target="_blank" 
+        data-toggle="tooltip" title="{{ row.comment }}"
+        href="https://finance.yahoo.com/quote/{{ row.symbol }}/financials?p={{ row.symbol }}">
+        More 
+        </a>
+    </td>
+    <td>
+        <a class=" article-title target="_blank" 
+        data-toggle="tooltip" title="{{ row.comment }}"
+        href="https://finance.yahoo.com/chart/{{row.symbol}}?">
+        Chart 
+        </a>
+    </td>
+    <td><a class="article-title" href="{% url 'investing:portfolioupdate' row.symbol %}?model={{subtitle}}">Edit</a></td>
+  
+</tr>

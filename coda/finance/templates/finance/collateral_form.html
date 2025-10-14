@@ -1,0 +1,362 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Collateral Information - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4><i class="fas fa-shield-alt"></i> Collateral Information Required</h4>
+                    <p class="mb-0">External users must provide collateral details to complete their loan application</p>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Information Alert -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Why is collateral required?</strong> As an external user, collateral helps secure your loan and may result in better terms.
+                    </div>
+
+                    <!-- Smart Collateral Notice -->
+                    <div class="alert alert-success">
+                        <i class="fas fa-shield-alt"></i>
+                        <strong>Smart Collateral System:</strong> Your collateral will be monitored 24/7 using IoT devices, blockchain verification, and AI-powered risk assessment for maximum security.
+                    </div>
+
+                    <!-- Smart Collateral Notice -->
+                    {% if loan_amount > 1000 %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-car"></i>
+                        <strong>Smart Collateral Required:</strong> For loans over $1,000, we require smart collateral features:
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Vehicle:</strong> GPS tracking enabled</li>
+                            <li><strong>Land:</strong> Verified title deed with government registry</li>
+                            <li><strong>Equipment:</strong> Serial number and condition report</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'finance:submit-collateral' loan_id %}">
+                        {% csrf_token %}
+                        
+                        <!-- Collateral Type -->
+                        <div class="mb-3">
+                            <label for="collateral_type" class="form-label">Type of Collateral</label>
+                            <select class="form-control" id="collateral_type" name="collateral_type" required onchange="showCollateralFields()">
+                                <option value="">Select collateral type...</option>
+                                <option value="vehicle">Vehicle (Car, Motorcycle, etc.)</option>
+                                <option value="land">Land/Property</option>
+                                <option value="equipment">Equipment/Machinery</option>
+                                <option value="jewelry">Jewelry/Precious Metals</option>
+                                <option value="savings">Savings Account/CD</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Dynamic Fields Container -->
+                        <div id="dynamic-fields" style="display: none;">
+                            <!-- Vehicle Fields -->
+                            <div id="vehicle-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="vehicle_make" class="form-label">Make</label>
+                                            <input type="text" class="form-control" id="vehicle_make" name="vehicle_make" placeholder="e.g., Toyota, Honda">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="vehicle_model" class="form-label">Model</label>
+                                            <input type="text" class="form-control" id="vehicle_model" name="vehicle_model" placeholder="e.g., Camry, Civic">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="vehicle_year" class="form-label">Year</label>
+                                            <input type="number" class="form-control" id="vehicle_year" name="vehicle_year" placeholder="2020">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="vehicle_mileage" class="form-label">Mileage</label>
+                                            <input type="number" class="form-control" id="vehicle_mileage" name="vehicle_mileage" placeholder="45000">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="vehicle_condition" class="form-label">Condition</label>
+                                            <select class="form-control" id="vehicle_condition" name="vehicle_condition">
+                                                <option value="">Select condition...</option>
+                                                <option value="excellent">Excellent</option>
+                                                <option value="good">Good</option>
+                                                <option value="fair">Fair</option>
+                                                <option value="poor">Poor</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="vehicle_vin" class="form-label">VIN Number</label>
+                                    <input type="text" class="form-control" id="vehicle_vin" name="vehicle_vin" placeholder="Vehicle Identification Number">
+                                </div>
+                            </div>
+
+                            <!-- Land/Property Fields -->
+                            <div id="land-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="property_type" class="form-label">Property Type</label>
+                                            <select class="form-control" id="property_type" name="property_type">
+                                                <option value="">Select type...</option>
+                                                <option value="residential">Residential</option>
+                                                <option value="commercial">Commercial</option>
+                                                <option value="agricultural">Agricultural</option>
+                                                <option value="industrial">Industrial</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="property_size" class="form-label">Size (acres/hectares)</label>
+                                            <input type="number" class="form-control" id="property_size" name="property_size" placeholder="0.5">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="title_deed_number" class="form-label">Title Deed Number</label>
+                                            <input type="text" class="form-control" id="title_deed_number" name="title_deed_number" placeholder="Title deed reference">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="property_condition" class="form-label">Property Condition</label>
+                                            <select class="form-control" id="property_condition" name="property_condition">
+                                                <option value="">Select condition...</option>
+                                                <option value="developed">Fully Developed</option>
+                                                <option value="partially_developed">Partially Developed</option>
+                                                <option value="undeveloped">Undeveloped</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Equipment Fields -->
+                            <div id="equipment-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_type" class="form-label">Equipment Type</label>
+                                            <select class="form-control" id="equipment_type" name="equipment_type">
+                                                <option value="">Select type...</option>
+                                                <option value="construction">Construction Equipment</option>
+                                                <option value="agricultural">Agricultural Equipment</option>
+                                                <option value="manufacturing">Manufacturing Equipment</option>
+                                                <option value="medical">Medical Equipment</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_serial" class="form-label">Serial Number</label>
+                                            <input type="text" class="form-control" id="equipment_serial" name="equipment_serial" placeholder="Equipment serial number">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_year" class="form-label">Year of Manufacture</label>
+                                            <input type="number" class="form-control" id="equipment_year" name="equipment_year" placeholder="2020">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="equipment_condition" class="form-label">Condition</label>
+                                            <select class="form-control" id="equipment_condition" name="equipment_condition">
+                                                <option value="">Select condition...</option>
+                                                <option value="excellent">Excellent</option>
+                                                <option value="good">Good</option>
+                                                <option value="fair">Fair</option>
+                                                <option value="poor">Poor</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Jewelry Fields -->
+                            <div id="jewelry-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="jewelry_type" class="form-label">Jewelry Type</label>
+                                            <select class="form-control" id="jewelry_type" name="jewelry_type">
+                                                <option value="">Select type...</option>
+                                                <option value="gold">Gold</option>
+                                                <option value="diamond">Diamond</option>
+                                                <option value="silver">Silver</option>
+                                                <option value="platinum">Platinum</option>
+                                                <option value="other">Other Precious Metal</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="jewelry_weight" class="form-label">Weight (grams)</label>
+                                            <input type="number" class="form-control" id="jewelry_weight" name="jewelry_weight" placeholder="50">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="jewelry_certification" class="form-label">Certification</label>
+                                    <input type="text" class="form-control" id="jewelry_certification" name="jewelry_certification" placeholder="Gemological certification number">
+                                </div>
+                            </div>
+
+                            <!-- Savings Account Fields -->
+                            <div id="savings-fields" class="collateral-type-fields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="bank_name" class="form-label">Bank Name</label>
+                                            <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="Bank name">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="account_number" class="form-label">Account Number</label>
+                                            <input type="text" class="form-control" id="account_number" name="account_number" placeholder="Account number">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="account_type" class="form-label">Account Type</label>
+                                    <select class="form-control" id="account_type" name="account_type">
+                                        <option value="">Select type...</option>
+                                        <option value="savings">Savings Account</option>
+                                        <option value="fixed_deposit">Fixed Deposit</option>
+                                        <option value="certificate_deposit">Certificate of Deposit</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collateral Description -->
+                        <div class="mb-3">
+                            <label for="collateral_description" class="form-label">Detailed Description</label>
+                            <textarea class="form-control" id="collateral_description" name="collateral_description" rows="4" 
+                                      placeholder="Please provide detailed information about your collateral including make, model, condition, estimated value, etc." required></textarea>
+                            <div class="form-text">Minimum 50 characters required. Be as detailed as possible.</div>
+                        </div>
+
+                        <!-- Estimated Value -->
+                        <div class="mb-3">
+                            <label for="estimated_value" class="form-label">Estimated Value ({{ currency_symbol }})</label>
+                            <input type="number" class="form-control" id="estimated_value" name="estimated_value" 
+                                   step="0.01" min="0" placeholder="Enter estimated value of collateral" required>
+                        </div>
+
+                        <!-- Documentation -->
+                        <div class="mb-3">
+                            <label for="documentation" class="form-label">Documentation Available</label>
+                            <textarea class="form-control" id="documentation" name="documentation" rows="3" 
+                                      placeholder="List any documentation you have (title deeds, registration papers, receipts, etc.)"></textarea>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="mb-3">
+                            <label for="collateral_location" class="form-label">Collateral Location</label>
+                            <input type="text" class="form-control" id="collateral_location" name="collateral_location" 
+                                   placeholder="Where is the collateral currently located?" required>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="mb-3">
+                            <label for="additional_info" class="form-label">Additional Information</label>
+                            <textarea class="form-control" id="additional_info" name="additional_info" rows="3" 
+                                      placeholder="Any additional information that might be relevant for collateral assessment"></textarea>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="collateral_terms" name="collateral_terms" required>
+                                <label class="form-check-label" for="collateral_terms">
+                                    I understand that providing false information about collateral may result in loan rejection and legal consequences.
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{% url 'finance:apply-for-loan' plan_id %}" class="btn btn-secondary w-100">
+                                    <i class="fas fa-arrow-left"></i> Back to Application
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-check"></i> Submit Collateral Information
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Function to show/hide collateral type specific fields
+function showCollateralFields() {
+    const collateralType = document.getElementById('collateral_type').value;
+    const dynamicFields = document.getElementById('dynamic-fields');
+    const allTypeFields = document.querySelectorAll('.collateral-type-fields');
+    
+    // Hide all type-specific fields first
+    allTypeFields.forEach(field => {
+        field.style.display = 'none';
+    });
+    
+    // Show dynamic fields container if a type is selected
+    if (collateralType && collateralType !== 'other') {
+        dynamicFields.style.display = 'block';
+        
+        // Show the specific fields for the selected type
+        const specificFields = document.getElementById(collateralType + '-fields');
+        if (specificFields) {
+            specificFields.style.display = 'block';
+        }
+    } else {
+        dynamicFields.style.display = 'none';
+    }
+}
+
+// Auto-expand textarea based on content
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+    
+    // Initialize collateral fields on page load
+    showCollateralFields();
+});
+</script>
+{% endblock %}

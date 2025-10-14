@@ -1,0 +1,281 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Loan-Budget Dashboard - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+.budget-overview {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 25px;
+}
+.loan-card {
+    border-left: 4px solid #007bff;
+    transition: all 0.3s ease;
+}
+.loan-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+.loan-card.active { border-left-color: #28a745; }
+.loan-card.pending { border-left-color: #ffc107; }
+.loan-card.rejected { border-left-color: #dc3545; }
+.status-badge {
+    font-size: 0.8em;
+    padding: 4px 8px;
+}
+.category-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+}
+.category-item:hover {
+    background: #e9ecef;
+}
+.btn-action {
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-chart-line"></i> Loan-Budget Dashboard</h2>
+                    <p class="text-muted">{{ company.name }} - {{ user_department.name|default:"All Departments" }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'finance:loan-eligibility-check' company.slug %}" class="btn btn-primary">
+                        <i class="fas fa-calculator"></i> Check Eligibility
+                    </a>
+                </div>
+            </div>
+
+            <!-- Budget Overview -->
+            <div class="budget-overview mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6>Total Budget</h6>
+                        <h3>${{ budget_summary.total_estimated|floatformat:2 }}</h3>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Total Spent</h6>
+                        <h3>${{ budget_summary.total_actual|floatformat:2 }}</h3>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Available</h6>
+                        <h3>${{ budget_summary.available|floatformat:2 }}</h3>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Utilization</h6>
+                        <h3>{{ budget_summary.utilization_percentage|floatformat:1 }}%</h3>
+                        <div class="progress mt-2" style="height: 6px;">
+                            <div class="progress-bar bg-light" 
+                                 style="width: {{ budget_summary.utilization_percentage }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Active Loans -->
+                <div class="col-md-6">
+                    <div class="card dashboard-card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-check-circle"></i> Active Loans
+                                <span class="badge badge-light ml-2">{{ active_loans.count }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if active_loans %}
+                                {% for loan in active_loans %}
+                                <div class="loan-card active mb-3">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="card-title">{{ loan.loan_product.name }}</h6>
+                                                <p class="text-muted mb-1">
+                                                    <i class="fas fa-calendar"></i> Approved: {{ loan.approved_at|date:"M d, Y" }}
+                                                </p>
+                                                <p class="text-muted mb-0">
+                                                    <i class="fas fa-clock"></i> Duration: {{ loan.duration }} months
+                                                </p>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <h5 class="text-success mb-1">${{ loan.amount_requested|floatformat:2 }}</h5>
+                                                {% if loan.monthly_payment %}
+                                                <small class="text-muted">${{ loan.monthly_payment|floatformat:2 }}/month</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                <div class="text-center mt-3">
+                                    <div class="alert alert-info">
+                                        <strong>Total Monthly Payments:</strong> ${{ total_monthly_loan_payments|floatformat:2 }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No Active Loans</h5>
+                                    <p class="text-muted">You don't have any active loans at the moment.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Loans -->
+                <div class="col-md-6">
+                    <div class="card dashboard-card">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-hourglass-half"></i> Pending Applications
+                                <span class="badge badge-light ml-2">{{ pending_loans.count }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if pending_loans %}
+                                {% for loan in pending_loans %}
+                                <div class="loan-card pending mb-3">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="card-title">{{ loan.loan_product.name }}</h6>
+                                                <p class="text-muted mb-1">
+                                                    <i class="fas fa-calendar"></i> Submitted: {{ loan.submitted_at|date:"M d, Y" }}
+                                                </p>
+                                                <p class="text-muted mb-0">
+                                                    <span class="badge status-badge 
+                                                        {% if loan.status == 'submitted' %}badge-info
+                                                        {% elif loan.status == 'under_review' %}badge-warning
+                                                        {% elif loan.status == 'pending_guarantor' %}badge-secondary
+                                                        {% endif %}">
+                                                        {{ loan.get_status_display }}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <h5 class="text-warning mb-1">${{ loan.amount_requested|floatformat:2 }}</h5>
+                                                <small class="text-muted">{{ loan.purpose|truncatewords:3 }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No Pending Applications</h5>
+                                    <p class="text-muted">You don't have any pending loan applications.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Categories with Loan Impact -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card dashboard-card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie"></i> Budget Categories & Loan Impact
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for category in category_details %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="category-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">
+                                                    {{ category.category.name }}
+                                                    {% if category.has_loan_items %}
+                                                    <i class="fas fa-link text-primary" title="Has loan-related items"></i>
+                                                    {% endif %}
+                                                </h6>
+                                                <small class="text-muted">
+                                                    Estimated: ${{ category.total_estimated|floatformat:2 }} | 
+                                                    Actual: ${{ category.total_actual|floatformat:2 }}
+                                                </small>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="{% if category.variance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                                    ${{ category.variance|floatformat:2 }}
+                                                </div>
+                                                <small class="text-muted">Variance</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card dashboard-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a href="{% url 'finance:loan-eligibility-check' company.slug %}" class="btn btn-primary btn-action btn-block">
+                                        <i class="fas fa-calculator"></i> Check Eligibility
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'finance:loan-application-with-budget' company.slug %}" class="btn btn-success btn-action btn-block">
+                                        <i class="fas fa-plus"></i> Apply for Loan
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'finance:budget-requests-list' company.slug %}" class="btn btn-info btn-action btn-block">
+                                        <i class="fas fa-list"></i> Budget Requests
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" class="btn btn-secondary btn-action btn-block">
+                                        <i class="fas fa-chart-bar"></i> Budget Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}PayPal Payment - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid payment-form-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <!-- Payment Header -->
+            <div class="payment-header text-center mb-4">
+                <h1 class="display-5 mb-3">
+                    <i class="fa fa-paypal text-primary mr-3"></i>
+                    PayPal Payment
+                </h1>
+                <p class="lead text-muted">Complete your payment using PayPal</p>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="payment-summary mb-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">Payment Summary</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Total Amount</small>
+                                <div class="fw-bold">${{ payment_info.payment_fees }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Available Balance</small>
+                                <div class="fw-bold">${{ payment_info.fee_balance }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <div class="payment-form">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fa fa-paypal mr-2"></i>
+                            PayPal Payment Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="paypalPaymentForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Payment Amount *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="amount" 
+                                           name="amount" 
+                                           step="0.01" 
+                                           min="1" 
+                                           max="{{ payment_info.fee_balance }}"
+                                           value="{{ payment_info.down_payment }}"
+                                           required>
+                                </div>
+                                <div class="form-text">Maximum: ${{ payment_info.fee_balance }}</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">PayPal Email Address *</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       placeholder="your-email@example.com"
+                                       required>
+                                <div class="form-text">Enter the email associated with your PayPal account</div>
+                            </div>
+
+                            <div class="payment-info mb-4">
+                                <div class="alert alert-info">
+                                    <h6><i class="fa fa-info-circle mr-2"></i>Payment Information</h6>
+                                    <ul class="mb-0 small">
+                                        <li>Processing Time: 2-3 business days</li>
+                                        <li>Fees: 3.5% of payment amount</li>
+                                        <li>You will receive a confirmation email after payment</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fa fa-paypal mr-2"></i>
+                                    Pay with PayPal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-4">
+                <a href="{% url 'finance:unified_method_selection' %}" class="btn btn-outline-secondary">
+                    <i class="fa fa-arrow-left mr-2"></i>
+                    Back to Payment Methods
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('paypalPaymentForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const maxAmount = {{ payment_info.fee_balance }};
+    
+    if (amount > maxAmount) {
+        e.preventDefault();
+        alert('Payment amount cannot exceed available balance of $' + maxAmount);
+        return false;
+    }
+    
+    if (amount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid payment amount');
+        return false;
+    }
+});
+</script>
+{% endblock %}
+

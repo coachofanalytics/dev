@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Upgrade Confirmed</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .upgrade-summary {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .upgrade-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .detail-item {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        .detail-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #495057;
+        }
+        .benefits {
+            background-color: #e7f3ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .benefits h3 {
+            color: #0066cc;
+            margin-top: 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Investment Upgrade Confirmed!</h1>
+            <p>Your investment has been successfully upgraded</p>
+        </div>
+        
+        <div class="content">
+            <h2>Dear {{ investor.get_full_name }},</h2>
+            
+            <p>Congratulations! Your investment upgrade has been successfully processed. We're excited to have you as an even more valued investor in CODA.</p>
+            
+            <div class="upgrade-summary">
+                <h3>✅ Upgrade Confirmation</h3>
+                <div class="upgrade-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Additional Investment</div>
+                        <div class="detail-value">${{ additional_amount|floatformat:2 }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">New Total Investment</div>
+                        <div class="detail-value">${{ investment.investment_amount|floatformat:2 }}</div>
+                    </div>
+                    {% if offer.bonus_rate %}
+                    <div class="detail-item">
+                        <div class="detail-label">Bonus Interest Rate</div>
+                        <div class="detail-value">+{{ offer.bonus_rate }}%</div>
+                    </div>
+                    {% endif %}
+                    {% if offer.bonus_equity %}
+                    <div class="detail-item">
+                        <div class="detail-label">Bonus Equity</div>
+                        <div class="detail-value">+{{ offer.bonus_equity }}%</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="benefits">
+                <h3>🚀 Your New Benefits</h3>
+                <ul>
+                    <li><strong>Higher Returns:</strong> Your upgraded investment will earn better returns</li>
+                    <li><strong>Priority Support:</strong> Access to our premium investor support team</li>
+                    <li><strong>Exclusive Updates:</strong> Early access to new investment opportunities</li>
+                    <li><strong>Enhanced Reporting:</strong> More detailed monthly reports and analytics</li>
+                    <li><strong>VIP Events:</strong> Invitations to exclusive CODA investor events</li>
+                </ul>
+            </div>
+            
+            <p><strong>Offer Details:</strong> {{ offer.title }}</p>
+            <p><strong>Description:</strong> {{ offer.description }}</p>
+            
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3>📊 Updated Investment Summary</h3>
+                <ul>
+                    <li><strong>Total Investment Amount:</strong> ${{ investment.investment_amount|floatformat:2 }}</li>
+                    <li><strong>Expected Return Rate:</strong> {{ investment.expected_return_rate }}%</li>
+                    <li><strong>Investment Type:</strong> {{ investment.get_investment_type_display }}</li>
+                    <li><strong>Maturity Date:</strong> {{ investment.maturity_date|date:"M d, Y" }}</li>
+                    <li><strong>Status:</strong> {{ investment.get_status_display }}</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="https://www.codanalytics.net/investing/dashboard/" class="cta-button">
+                    View Updated Dashboard
+                </a>
+            </div>
+            
+            <p>Thank you for your continued trust and increased investment in CODA. We're committed to delivering exceptional returns and maintaining complete transparency about how your money is working for you.</p>
+            
+            <p>If you have any questions about your upgraded investment or would like to discuss further opportunities, please don't hesitate to contact our investment team.</p>
+            
+            <p>Best regards,<br>
+            <strong>The CODA Investment Team</strong><br>
+            <a href="mailto:upgrades@codanalytics.net">upgrades@codanalytics.net</a></p>
+        </div>
+        
+        <div class="footer">
+            <p>This confirmation was sent to {{ investor.email }} on {{ "now"|date:"F d, Y" }}</p>
+            <p>&copy; 2024 CODA Analytics. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

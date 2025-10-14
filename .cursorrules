@@ -1,0 +1,285 @@
+# CURSOR AI RULES FOR CODA DEVELOPMENT PROJECT
+
+## PROJECT CONTEXT
+
+You are working on the **CODA Budget System**, a Django-based data-driven budget management platform.
+
+### Core Principles:
+1. **Transactions are the source of truth** - All budget decisions flow from real spending data
+2. **Data quality first** - Clean data enables accurate predictions
+3. **User experience matters** - Smart forms prevent bad data at entry
+4. **Incremental improvement** - Phase-by-phase enhancement
+
+### Current Status (October 2025):
+- **Phase 1 Complete**: Data cleanup (95.6% categorized), dashboard bug fixed (177x inflation → accurate)
+- **Phase 2 Complete**: Smart forms with AI predictions, cascading dropdowns
+- **Phase 3 In Progress**: User drill-down views, category detail pages
+
+## ESSENTIAL READING (Always Check These First)
+
+Before responding to ANY request, check if these files exist and read them:
+
+1. **MASTER_REFERENCE.md** (`coda/docs/apps/finance/Budgeting/MASTER_REFERENCE.md`)
+   - Complete technical documentation
+   - System architecture, data models, APIs
+   - Debugging guides, critical fixes
+   - Read sections relevant to the question
+
+2. **CURRENT_STATE_AND_ROADMAP.md** (`coda/docs/apps/finance/Budgeting/CURRENT_STATE_AND_ROADMAP.md`)
+   - What's done, what's in progress, what's next
+   - Known issues and blockers
+   - Metrics and trends
+   - Always check before suggesting features (might already exist!)
+
+3. **GETTING_STARTED_PROMPTS.md** (`coda/docs/GETTING_STARTED_PROMPTS.md`)
+   - User's guide to asking you good questions
+   - Reference when user asks vague questions
+
+## CODE BEHAVIOR RULES
+
+### 1. Django Development
+- Use Django ORM efficiently (select_related, prefetch_related)
+- Follow existing patterns in `coda/finance/`
+- Always add docstrings to functions/classes
+- Use management commands for data operations
+
+### 2. Database Changes
+- Always suggest migrations for model changes
+- Consider backward compatibility
+- Test migrations in dev before UAT
+- Document data migrations in MASTER_REFERENCE.md
+
+### 3. Frontend (jQuery + Django Templates)
+- Use jQuery 3.6.0 (already loaded)
+- AJAX calls to `/finance/api/` endpoints
+- Always include console.log for debugging
+- Test in browser console (F12) before deployment
+
+### 4. Forms
+- Extend existing forms in `forms_improved.py`
+- Add validation in both form and view
+- Use widgets dict for field customization
+- Test cascading dropdowns thoroughly
+
+### 5. API Endpoints
+- RESTful design in `views_api_*.py`
+- Return JSON with clear structure
+- Include error handling and logging
+- Document new endpoints in MASTER_REFERENCE.md
+
+## CRITICAL FIXES TO REMEMBER
+
+### 1. Dashboard Aggregation (Fixed Oct 2, 2025)
+**WRONG:**
+```python
+Sum('quantity') * Sum('unit_price')  # Causes 177x inflation
+```
+
+**CORRECT:**
+```python
+Sum(F('unit_price') * F('quantity') * Coalesce(F('cases'), 1), output_field=DecimalField())
+```
+**Always use this pattern for budget totals!**
+
+### 2. Form Field Widgets (Fixed Oct 2, 2025)
+All form fields need explicit widgets with IDs:
+```python
+'subcategory': forms.Select(attrs={'class': 'form-control', 'id': 'id_subcategory'}),
+'type': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_type'}),
+'currency': forms.Select(attrs={'class': 'form-control', 'id': 'id_currency'}),
+```
+
+### 3. Transaction Categorization (Ongoing)
+Use intelligent categorization engine in `management/commands/categorize_transactions.py`.
+Current rules: KPLC→Utilities, Safaricom→IT, "boda"→Travel, etc.
+Don't hardcode category IDs - always lookup by name.
+
+## RESPONSE GUIDELINES
+
+### When User Asks a Question:
+
+1. **Check Documentation First**
+   - Read MASTER_REFERENCE.md relevant sections
+   - Check CURRENT_STATE_AND_ROADMAP.md for current status
+   - See if feature/fix already exists
+
+2. **Understand the Phase**
+   - Phase 1: Data foundation (DONE)
+   - Phase 2: Smart forms (DONE)
+   - Phase 3: User experience (IN PROGRESS)
+   - Don't suggest features from future phases unless asked
+
+3. **Provide Context**
+   - Reference which file/section of docs you checked
+   - Explain why you're suggesting this approach
+   - Link to existing code patterns
+
+4. **Be Specific**
+   - Provide file paths: `coda/finance/views_unified_budget.py`
+   - Give line numbers when referencing code
+   - Include exact commands to run
+
+### When User Reports a Bug:
+
+1. **Ask for Details** (if not provided):
+   - Browser console logs (F12)
+   - URL where error occurs
+   - Expected vs actual behavior
+   - Recent changes that might be related
+
+2. **Check Known Issues**
+   - Read CURRENT_STATE_AND_ROADMAP.md "KNOWN ISSUES" section
+   - Might already be documented with solution
+
+3. **Reference Debugging Guide**
+   - MASTER_REFERENCE.md has "DEBUGGING GUIDE" section
+   - Common issues and solutions documented
+
+4. **Suggest Verification Steps**
+   - How to test the fix
+   - What to look for in logs
+   - URLs to test in UAT
+
+### When User Asks for New Feature:
+
+1. **Check if It Exists**
+   - Search MASTER_REFERENCE.md
+   - Check CURRENT_STATE_AND_ROADMAP.md
+   - Don't reinvent the wheel
+
+2. **Consider the Phase**
+   - Is it in scope for current phase?
+   - Should it wait for future phase?
+   - What's the priority?
+
+3. **Follow Development Workflow**
+   - MASTER_REFERENCE.md has "DEVELOPMENT WORKFLOW" section
+   - Model → Service → View → URL → Template → Test → Deploy → Document
+
+4. **Impact Analysis**
+   - Database changes needed?
+   - Backward compatibility?
+   - User training required?
+   - Documentation updates?
+
+## DEPLOYMENT RULES
+
+### Before Suggesting Deployment:
+
+1. **Testing Required**
+   - Management command for backend changes
+   - Browser testing for UI changes
+   - Check linter errors
+   - Verify URLs work
+
+2. **Deployment Command**
+```bash
+git add -A
+git commit -m "Clear description"
+git push heroku 25.10_CODA_DEV_CM:main
+```
+
+3. **Post-Deployment**
+```bash
+# Verify URLs
+heroku run "cd coda && python manage.py show_urls | grep finance" --app codamakutano
+
+# Test critical paths
+curl https://codamakutano.herokuapp.com/finance/budget-dashboard/coda/
+```
+
+4. **Update Documentation**
+   - Update CURRENT_STATE_AND_ROADMAP.md if phase progress
+   - Update MASTER_REFERENCE.md if technical changes
+   - Note deployment version (Heroku shows vXXX)
+
+## COMMUNICATION STYLE
+
+### Be:
+- **Clear**: Use bullet points, code blocks, step-by-step instructions
+- **Thorough**: Explain why, not just what
+- **Practical**: Provide copy-paste commands and code
+- **Honest**: If you don't know, say so; if it's risky, warn
+
+### Don't:
+- **Assume**: Always verify against docs
+- **Guess**: Check files before answering
+- **Repeat**: Reference docs instead of duplicating content
+- **Overwhelm**: Break complex tasks into phases
+
+## FILE ORGANIZATION
+
+### Key Directories:
+```
+coda/finance/
+├── models.py                      # All models (Transaction, Budget, etc.)
+├── admin.py                       # Admin registrations
+├── forms_improved.py              # Smart forms
+├── views_unified_budget.py        # Main dashboard
+├── views_budget_drilldown.py      # Category detail views
+├── views_smart_transaction.py     # Transaction entry
+├── views_api_cascading.py         # API endpoints
+├── urls.py                        # URL routing
+├── services/
+│   └── ai_prediction_service.py   # AI predictions
+├── management/commands/
+│   ├── analyze_transaction_data.py
+│   ├── categorize_transactions.py
+│   └── generate_budget_projections.py
+└── templates/finance/
+    ├── budgets/                    # Budget templates
+    └── payments/                   # Transaction templates
+```
+
+### Documentation:
+```
+coda/docs/apps/finance/Budgeting/
+├── MASTER_REFERENCE.md            # Technical docs
+├── CURRENT_STATE_AND_ROADMAP.md   # Status & plan
+└── (20+ other docs - being consolidated)
+
+coda/docs/
+└── GETTING_STARTED_PROMPTS.md     # User guide for talking to you
+```
+
+## SPECIAL REMINDERS
+
+### Environment:
+- **Local Dev**: `python manage.py runserver` (port 8000)
+- **UAT**: `codamakutano.herokuapp.com`
+- **Production**: `codatrainingapp.herokuapp.com` (not yet deployed)
+
+### Technologies:
+- Django 4.x
+- PostgreSQL (Heroku)
+- jQuery 3.6.0
+- Bootstrap (for styling)
+- No React/Vue (keep it simple)
+
+### Data Sensitivity:
+- Real financial data ($1.49M in transactions)
+- Be careful with data migrations
+- Always backup before major changes
+- Test in dev/UAT before production
+
+## WHEN IN DOUBT
+
+1. **Read MASTER_REFERENCE.md** - It has the answer 90% of the time
+2. **Check CURRENT_STATE_AND_ROADMAP.md** - Know what's done vs in progress
+3. **Ask User for Clarification** - Better to ask than guess
+4. **Suggest Testing First** - Better to test in dev than break UAT
+
+## VERSION HISTORY
+
+- **Oct 2, 2025**: Created comprehensive rules + documentation consolidation
+- **Oct 1, 2025**: Phase 1 & 2 complete, Phase 3 started
+- **Sept 30, 2025**: Project baseline (60% data quality, dashboard bug)
+
+---
+
+**This file helps you help the user effectively.**  
+**Always refer to the documentation first.**  
+**Be thorough, be accurate, be helpful.**
+
+*Part of CODA Development Project*
+

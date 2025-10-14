@@ -1,0 +1,61 @@
+{%extends "main/base_templates/new_base.html"%} {%load crispy_forms_tags%}
+{%block content %}
+<section id="career">
+  <div class="career text-center">
+    <h5>Tracking Jobs By Our Qualified Trainees</h5>
+    <a href="{% url 'professional_services:job-create'%}" class="btn btn-primary btn-sm"
+    >job Assignment
+  </a>
+  <hr>
+    <table style="width: 100%">
+      <thead>
+        <tr>
+    		<th>Username</th>
+            <th>Name</th>
+    		<th>Position</th>
+    		<th>Recruiter</th>
+    		<th>Phone</th>
+    		<th>Primary</th>
+    		<th>Secondary</th>
+    		<th>Location</th>
+    		<th>Negotiated Offer</th>
+         <th>Status</th>
+    		<th>Updated_at</th>
+            <th>Resume</th>
+        </tr>
+      </thead>
+      {% for job in  object_list   %}
+      <tr>
+        <td> <a class="mr-2" href="{% url 'professional_services:userjoblist' job.created_by %}">{{job.created_by}}</a></td>
+        {% if job.created_by.first_name == "" or  job.created_by.last_name == "" %}
+             <td>{{job.created_by}}</td>
+        {% else %}
+             <td>{{job.created_by.first_name}},{{job.created_by.last_name}}</td>
+        {% endif %}
+        <td>
+          <a class="text-dark  text-decoration-none" 
+          data-toggle="tooltip" title="{{  job.description  }}"
+          href="{% url 'professional_services:userjoblist' job.created_by %}">
+          {{  job.position  }}
+          </a>
+      </td>
+        <td>{{job.recruiter}}</td>
+        <td>{{job.vendor_phone}}</td>
+        <td>{{job.primary_tool}}</td>
+        <td>{{job.secondary_tool}}</td>
+        <td>{{job.job_location}}</td>
+        <td>{{job.offer}}</td>
+        <td>{{job.status}}</td>
+        <td>{{job.updated_at|date:"n/d/Y"}}</td>
+        <td>
+            <a href="{{job.updated_resume.url}}" class="btn btn-secondary btn-sm"
+              >Resume
+            </a>
+          </td>
+
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</section>
+{% endblock content %}

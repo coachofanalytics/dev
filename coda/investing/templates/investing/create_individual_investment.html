@@ -1,0 +1,184 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Create New Investment{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-plus-circle"></i> Create New Investment
+                </h1>
+                <div>
+                    <a href="{% url 'investing:individual_investments' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Investments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-form"></i> Investment Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="amount_invested">
+                                        <i class="fas fa-dollar-sign"></i> Investment Amount *
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="amount_invested" 
+                                           name="amount_invested" 
+                                           step="0.01" 
+                                           min="1000" 
+                                           required>
+                                    <small class="form-text text-muted">
+                                        Minimum investment: $1,000
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="investment_type">
+                                        <i class="fas fa-briefcase"></i> Investment Type *
+                                    </label>
+                                    <select class="form-control" id="investment_type" name="investment_type" required>
+                                        <option value="">Select Investment Type</option>
+                                        <option value="equity">Equity</option>
+                                        <option value="debt">Debt</option>
+                                        <option value="hybrid">Hybrid</option>
+                                        <option value="real_estate">Real Estate</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="maturity_months">
+                                        <i class="fas fa-calendar"></i> Maturity Period (Months) *
+                                    </label>
+                                    <select class="form-control" id="maturity_months" name="maturity_months" required>
+                                        <option value="">Select Maturity Period</option>
+                                        <option value="6">6 Months</option>
+                                        <option value="12" selected>12 Months</option>
+                                        <option value="18">18 Months</option>
+                                        <option value="24">24 Months</option>
+                                        <option value="36">36 Months</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="expected_return_rate">
+                                        <i class="fas fa-percentage"></i> Expected Return Rate (%) *
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="expected_return_rate" 
+                                           name="expected_return_rate" 
+                                           step="0.01" 
+                                           min="0" 
+                                           max="100" 
+                                           value="8.00"
+                                           required>
+                                    <small class="form-text text-muted">
+                                        Annual expected return rate (default: 8%)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="investment_purpose">
+                                        <i class="fas fa-file-alt"></i> Investment Purpose
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="investment_purpose" 
+                                              name="investment_purpose" 
+                                              rows="3" 
+                                              placeholder="Describe the purpose of this investment (optional)"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           id="monthly_reports" 
+                                           name="monthly_reports" 
+                                           checked>
+                                    <label class="form-check-label" for="monthly_reports">
+                                        <i class="fas fa-chart-line"></i> Subscribe to monthly performance reports
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save"></i> Create Investment
+                                </button>
+                                <a href="{% url 'investing:individual_investments' %}" class="btn btn-secondary btn-lg ml-2">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Investment Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb"></i> Investment Tips:</h6>
+                        <ul class="mb-0">
+                            <li>Start with a minimum of $1,000</li>
+                            <li>Choose the investment type that matches your risk tolerance</li>
+                            <li>Consider the maturity period based on your financial goals</li>
+                            <li>Review expected returns before committing</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Important Notes:</h6>
+                        <ul class="mb-0">
+                            <li>All investments are subject to market risks</li>
+                            <li>Past performance does not guarantee future results</li>
+                            <li>Please read all terms and conditions carefully</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

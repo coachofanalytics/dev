@@ -1,0 +1,222 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with Analytics Link -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary">
+                <i class="fas fa-file-invoice-dollar"></i> Loan Applications Administration
+            </h2>
+            <p class="text-muted">Review and manage loan applications</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'finance:loan-analytics' %}" class="btn btn-info btn-lg">
+                <i class="fas fa-chart-line"></i> View Analytics Dashboard
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list"></i> 
+                        Loan Applications - Admin Dashboard
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-primary">{{ total_pending }} Pending</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if applications %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Application #</th>
+                                        <th>Applicant</th>
+                                        <th>Amount</th>
+                                        <th>Product</th>
+                                        <th>Status</th>
+                                        <th>Monthly Income</th>
+                                        <th>Staff Cap</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in applications %}
+                                    <tr data-row-app-id="{{ app.id }}">
+                                        <td>
+                                            <strong>{{ app.application_number }}</strong>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ app.borrower.get_full_name|default:app.borrower.username }}</strong><br>
+                                                <small class="text-muted">{{ app.borrower.email }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info">${{ app.amount_requested }}</span>
+                                        </td>
+                                        <td>
+                                            {{ app.loan_product.name }}<br>
+                                            <small class="text-muted">{{ app.loan_product.interest_rate }}% for {{ app.loan_product.term_months }} months</small>
+                                        </td>
+                                        <td class="js-status-cell">
+                                            {% if app.status == 'submitted' %}
+                                                <span class="badge badge-warning">Submitted</span>
+                                            {% elif app.status == 'under_review' %}
+                                                <span class="badge badge-info">Under Review</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">{{ app.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="js-income-cell">{% if app.monthly_income %}${{ app.monthly_income }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                                        <td class="js-cap-cell">{% if app.staff_cap %}${{ app.staff_cap }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                                        <td>
+                                            {% if app.submitted_at %}
+                                                {{ app.submitted_at|date:"M d, Y" }}<br>
+                                                <small class="text-muted">{{ app.submitted_at|time:"H:i" }}</small>
+                                            {% else %}
+                                                <span class="text-muted">Not submitted</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary js-view-app" data-app-id="{{ app.id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                                {% if app.status in 'draft,submitted,pending_guarantor' %}
+                                                <a href="{% url 'finance:apply-for-loan' app.loan_product.id %}?edit={{ app.id }}" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary js-recompute-app" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:recompute-loan-application' app.id %}">
+                                                    <i class="fas fa-sync"></i> Recompute
+                                                </button>
+                                                {% if app.status in 'submitted,pending_guarantor,under_review' %}
+                                                <button type="button" class="btn btn-sm btn-outline-success js-approve-app" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:approve-loan-application' app.id %}">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger js-reject-app" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:reject-loan-application' app.id %}">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                                {% endif %}
+                                                {% if app.status == 'pending_guarantor' and app.guarantor %}
+                                                <button type="button" class="btn btn-sm btn-outline-info js-notify-guarantor" data-app-id="{{ app.id }}" data-action-url="{% url 'finance:notify-guarantor-available' app.id %}">
+                                                    <i class="fas fa-envelope"></i> Notify
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Pending Applications</h4>
+                            <p class="text-muted">All loan applications have been processed.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ensure CSRF token is available in DOM -->
+<form id="csrf-form" style="display:none;">{% csrf_token %}</form>
+<script>
+(function() {
+  function getCsrfToken() {
+    const domToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (domToken && domToken.value) return domToken.value;
+    const name = 'csrftoken=';
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+      c = c.trim();
+      if (c.startsWith(name)) return decodeURIComponent(c.substring(name.length));
+    }
+    return '';
+  }
+  function updateRowStatus(appId, statusText, badgeClass) {
+    const row = document.querySelector(`[data-row-app-id="${appId}"]`);
+    if (!row) return;
+    const statusCell = row.querySelector('.js-status-cell');
+    if (statusCell) statusCell.innerHTML = `<span class="badge ${badgeClass}">${statusText}</span>`;
+  }
+  async function postAction(url) {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrfToken() },
+      credentials: 'same-origin'
+    });
+    return resp.json();
+  }
+  function initHandlers() {
+    document.querySelectorAll('.js-view-app').forEach(function(btn){
+      btn.addEventListener('click', function(){ alert('View application ' + this.dataset.appId + ' - Feature coming soon!'); });
+    });
+    document.querySelectorAll('.js-approve-app').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        const id = this.dataset.appId;
+        if (!confirm('Approve this application?')) return;
+        const url = this.dataset.actionUrl;
+        try {
+          const data = await postAction(url);
+          if (data.success) {
+            updateRowStatus(id, 'Approved', 'badge-success');
+          } else { alert(data.error || 'Failed to approve'); }
+        } catch(e){ alert('Network error'); }
+      });
+    });
+    document.querySelectorAll('.js-reject-app').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        const id = this.dataset.appId;
+        if (!confirm('Reject this application?')) return;
+        const url = this.dataset.actionUrl;
+        try {
+          const data = await postAction(url);
+          if (data.success) {
+            updateRowStatus(id, 'Rejected', 'badge-danger');
+          } else { alert(data.error || 'Failed to reject'); }
+        } catch(e){ alert('Network error'); }
+      });
+    });
+    document.querySelectorAll('.js-recompute-app').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        const id = this.dataset.appId;
+        const url = this.dataset.actionUrl;
+        try {
+          const data = await postAction(url);
+          if (data.success) {
+            // Update status
+            if (data.status === 'approved') updateRowStatus(id, 'Approved', 'badge-success');
+            else if (data.status === 'under_review') updateRowStatus(id, 'Under Review', 'badge-info');
+            else updateRowStatus(id, (data.status || 'Unknown'), 'badge-secondary');
+            // Update income and cap
+            const row = document.querySelector(`[data-row-app-id="${id}"]`);
+            if (row) {
+              const incomeCell = row.querySelector('.js-income-cell');
+              const capCell = row.querySelector('.js-cap-cell');
+              if (incomeCell) incomeCell.innerHTML = data.monthly_income ? `$${data.monthly_income}` : '<span class="text-muted">—</span>';
+              if (capCell) capCell.innerHTML = data.cap ? `$${data.cap}` : '<span class="text-muted">—</span>';
+            }
+            if (data.reason) console.log('Recompute:', data.reason);
+          } else { alert(data.error || 'Failed to recompute'); }
+        } catch(e){ alert('Network error'); }
+      });
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initHandlers);
+})();
+</script>
+{% endblock %} 

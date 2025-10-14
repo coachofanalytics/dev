@@ -1,0 +1,113 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .small-button { padding: 5px 10px; font-size: 0.8rem; background-color: green; color: white; border: none; }
+    .small-button:hover { background-color: darkgreen; }
+</style>
+
+<section id="career text-center">
+    <h3 class="title text-center">FOOD/SUPPLIER LIST</h3>
+      <div class="row text-center">
+        <div class="col-md-3" id="bada">
+          <div class="card">          
+            <div class="card-body">
+              <h5><b>FILTERS</b></h5>
+              <div class="content-section">
+                <form method="get">
+                  {% csrf_token %}
+                  <fieldset class="form-group">
+                      <legend class="border-bottom mb-4">{{ message }}</legend>
+                      <div class="form-field">
+                          {{ supplies_Fs.form.office_location.label_tag }}
+                          {{ supplies_Fs.form.office_location }}
+                      </div>
+                      <div class="form-field">
+                          {{ supplies_Fs.form.item.label_tag }}
+                          {{ supplies_Fs.form.item }}
+                      </div>
+                      <div class="form-field">
+                          {{ supplies_Fs.form.created_at.label_tag }}
+                          {{ supplies_Fs.form.created_at }}
+                      </div>
+                  </fieldset>
+                  <div class="form-group">
+                      <button class="btn btn-outline-info" type="submit">Submit</button>
+                  </div>
+              </form>
+            </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3" id="bada">
+          <div class="card">          
+            <div class="card-body">
+              <h5><b>Total Supplies</b></h5>
+              <hr/>
+              <i><h6>{{total_amt}}</h6></i>          
+              <hr/>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3" id="bada">
+          <div class="card">                  
+            <div class="card-body">
+              <h5><b>Additional Supplies</b></h5>
+              <hr/>
+              <i><h6>{{total_add_amount}}</h6></i>                      
+              <hr/>
+            </div>                    
+          </div>
+        </div>
+
+          <div class="col-md-3 point_msg" id="bada" data-toggle="tooltip">
+            <div class="card">
+                {% if request.path == '/finance/suppliers/' %}
+                    <p><a href="{% url 'finance:newsupplier'%}" class="btn btn-primary btn-sm">NEW SUPPLIER</a></p>
+                    <p><a href="{% url 'finance:supplies'%}" class="btn btn-primary btn-sm">GO TO FOOD LIST</a></p>
+                {% elif request.path == '/finance/food/' %}
+                  <p><a href="{% url 'finance:newsupplies'%}" class="btn btn-primary btn-sm">NEW FOOD ITEM</a></p>
+                  <p><a href="{% url 'finance:suppliers'%}" class="btn btn-primary btn-sm">GO TO SUPPLIERS</a></p>
+                {% endif %}
+            </div>
+          </div>
+
+    <div class="col-md-12">
+        {% if request.path == '/finance/suppliers/' %}
+        <div class="career text-center">
+          <table class="table table-borderless" style="width: 100%">
+            <thead class="border-bottom font-weight-bold">  
+              <tr>
+                <th>staff</th>
+                <th>supplier</th>
+                <th>phone</th>
+                <th>office_location</th>
+                <th>created_at</th>
+                <th>featured</th>
+                <th>update</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for supplier in  suppliers  %}
+                  <tr>
+                    <td>{{supplier.added_by}}</td>
+                    <td>{{supplier.supplier}}</td>
+                    <td>{{supplier.phone}}</td>
+                    <td>{{supplier.office_location}}</td>
+                    <td>{{supplier.created_at|date:"n-d-Y"}}</td>
+                    <td>{{supplier.featured}}</td>
+                    <td> <a class="article-title" href="{% url 'finance:update-supplier' supplier.id %}">Edit</a></td>
+                  </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% elif request.path == '/finance/food/' %}
+          {% include 'components/table.html' with table_header='Food Supplies' objects=supplies_Fs.qs table_headers='Supplier,Office,Item,Qty,Bal Qty,Budgeted,U_Price,Additional,Total,Created,Update' object_fields='supplier,office_location,item,qty,bal_qty,budgeted_items,unit_amt,additional_amount,total_amount,created_at,actions' summary_enabled=True %}
+        {% endif %}
+    </div>
+</div>
+  <hr>
+  </section>
+{% endblock content %}

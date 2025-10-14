@@ -1,0 +1,332 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Compliance Dashboard - 33% Rule{% endblock %}
+
+{% block extra_css %}
+<style>
+    .compliance-card {
+        border-left: 4px solid #007bff;
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    .compliance-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        text-align: center;
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid;
+    }
+    .stat-card.total {
+        background-color: #e3f2fd;
+        border-color: #2196f3;
+        color: #0d47a1;
+    }
+    .stat-card.compliant {
+        background-color: #e8f5e8;
+        border-color: #4caf50;
+        color: #1b5e20;
+    }
+    .stat-card.non-compliant {
+        background-color: #ffebee;
+        border-color: #f44336;
+        color: #b71c1c;
+    }
+    .stat-card.rate {
+        background-color: #fff3e0;
+        border-color: #ff9800;
+        color: #e65100;
+    }
+    .progress-bar-custom {
+        height: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .department-card {
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+    .department-header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: bold;
+    }
+    .employee-row {
+        padding: 10px 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .employee-row:last-child {
+        border-bottom: none;
+    }
+    .employee-row.compliant {
+        background-color: #f8fff8;
+    }
+    .employee-row.non-compliant {
+        background-color: #fff8f8;
+    }
+    .completion-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .completion-badge.high {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .completion-badge.medium {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .completion-badge.low {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📊 Compliance Dashboard - 33% Rule</h2>
+                <div class="text-muted">
+                    Target Month: <strong>{{ target_month }}/{{ target_year }}</strong>
+                    | Current Date: <strong>{{ current_date|date:"M d, Y" }}</strong>
+                </div>
+            </div>
+
+            <!-- Overall Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <h3>{{ company_report.total_employees }}</h3>
+                    <p>Total Employees</p>
+                </div>
+                <div class="stat-card compliant">
+                    <h3>{{ company_report.total_compliant }}</h3>
+                    <p>Compliant (≥33%)</p>
+                </div>
+                <div class="stat-card non-compliant">
+                    <h3>{{ company_report.total_non_compliant }}</h3>
+                    <p>Non-Compliant</p>
+                </div>
+                <div class="stat-card rate">
+                    <h3>{{ company_report.company_compliance_rate }}%</h3>
+                    <p>Overall Rate</p>
+                </div>
+            </div>
+
+            <!-- Overall Progress Bar -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>📈 Overall Compliance Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress progress-bar-custom mb-3">
+                        <div class="progress-bar {% if company_report.company_compliance_rate >= 80 %}bg-success{% elif company_report.company_compliance_rate >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             style="width: {{ company_report.company_compliance_rate }}%">
+                            {{ company_report.company_compliance_rate }}%
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <strong>{{ company_report.total_compliant }}</strong><br>
+                            <small class="text-success">Compliant</small>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>{{ company_report.total_non_compliant }}</strong><br>
+                            <small class="text-danger">Non-Compliant</small>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>{{ company_report.average_completion_rate }}%</strong><br>
+                            <small class="text-info">Avg Completion</small>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>33%</strong><br>
+                            <small class="text-muted">Threshold</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rule Status -->
+            <div class="alert {% if is_rule_active %}alert-warning{% else %}alert-info{% endif %} mb-4">
+                <h5>{% if is_rule_active %}🚨 Rule Active{% else %}ℹ️ Rule Inactive{% endif %}</h5>
+                {% if is_rule_active %}
+                    <p>The 33% compliance rule is currently <strong>ACTIVE</strong> (after 15th of month). 
+                    Only compliant employees will be included in budget submissions.</p>
+                {% else %}
+                    <p>The 33% compliance rule is currently <strong>INACTIVE</strong> (before 15th of month). 
+                    All employees will be included in budget submissions.</p>
+                {% endif %}
+            </div>
+
+            <!-- Department Breakdown -->
+            <div class="row">
+                <div class="col-12">
+                    <h4>🏢 Department Breakdown</h4>
+                    {% for dept_report in company_report.department_reports %}
+                        <div class="department-card">
+                            <div class="department-header">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h6 class="mb-0">{{ dept_report.department_name }}</h6>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <span class="badge badge-{% if dept_report.department_compliance_rate >= 80 %}success{% elif dept_report.department_compliance_rate >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ dept_report.department_compliance_rate }}% Compliant
+                                        </span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">
+                                            {{ dept_report.compliant_employees }}/{{ dept_report.total_employees }} employees
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Department Progress Bar -->
+                                <div class="progress mb-3">
+                                    <div class="progress-bar {% if dept_report.department_compliance_rate >= 80 %}bg-success{% elif dept_report.department_compliance_rate >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         style="width: {{ dept_report.department_compliance_rate }}%">
+                                        {{ dept_report.department_compliance_rate }}%
+                                    </div>
+                                </div>
+
+                                <!-- Employee List -->
+                                <div class="row">
+                                    {% for emp_data in dept_report.employee_data %}
+                                        <div class="col-md-6">
+                                            <div class="employee-row {% if emp_data.compliance.is_compliant %}compliant{% else %}non-compliant{% endif %}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ emp_data.compliance.employee_name }}</strong><br>
+                                                        <small class="text-muted">{{ emp_data.compliance.employee_username }}</small>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <span class="completion-badge {% if emp_data.compliance.completion_rate >= 50 %}high{% elif emp_data.compliance.completion_rate >= 25 %}medium{% else %}low{% endif %}">
+                                                            {{ emp_data.compliance.completion_rate }}%
+                                                        </span><br>
+                                                        <small class="text-muted">
+                                                            {{ emp_data.compliance.completed_tasks }}/{{ emp_data.compliance.total_tasks }} tasks
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4 mb-4">
+                <a href="{% url 'finance:enhanced-budget-approvals' %}" class="btn btn-primary">
+                    📋 Back to Budget Approvals
+                </a>
+                <a href="{% url 'finance:compliance-export' %}" class="btn btn-success">
+                    📁 Export Report
+                </a>
+                {% if is_rule_active %}
+                    <button class="btn btn-warning" onclick="sendBulkNotifications()">
+                        📧 Send Bulk Notifications
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Quick Stats Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>📊 Quick Stats Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Top Performing Departments</h6>
+                            <ul class="list-unstyled">
+                                {% for dept_report in company_report.department_reports %}
+                                    {% if dept_report.department_compliance_rate >= 80 %}
+                                        <li>✅ {{ dept_report.department_name }}: {{ dept_report.department_compliance_rate }}%</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Departments Needing Attention</h6>
+                            <ul class="list-unstyled">
+                                {% for dept_report in company_report.department_reports %}
+                                    {% if dept_report.department_compliance_rate < 50 %}
+                                        <li>⚠️ {{ dept_report.department_name }}: {{ dept_report.department_compliance_rate }}%</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Non-Compliant Employees</h6>
+                            <p><strong>{{ company_report.total_non_compliant }}</strong> employees need to complete more tasks.</p>
+                            {% if company_report.total_non_compliant > 0 %}
+                                <small class="text-muted">
+                                    These employees will not be included in budget submissions 
+                                    until they meet the 33% threshold.
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sendBulkNotifications() {
+    if (confirm('Send email notifications to all {{ company_report.total_non_compliant }} non-compliant employees?')) {
+        fetch('{% url "finance:send-compliance-notifications" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({action: 'send_notifications'})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✅ ${data.message}`);
+            } else {
+                alert(`❌ Error: ${data.error || data.message}`);
+            }
+        })
+        .catch(error => {
+            alert(`❌ Error: ${error.message}`);
+        });
+    }
+}
+
+// Auto-refresh every 10 minutes
+setInterval(function() {
+    if ({% if is_rule_active %}true{% else %}false{% endif %}) {
+        console.log('Auto-refreshing compliance dashboard...');
+        // You could add auto-refresh logic here if needed
+    }
+}, 600000); // 10 minutes
+</script>
+{% endblock %}

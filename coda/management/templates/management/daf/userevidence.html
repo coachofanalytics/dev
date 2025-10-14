@@ -1,0 +1,78 @@
+{%extends "main/base_templates/new_base.html"%} {% block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>DAF EVIDENCE</h2>
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Date</th>
+          <th>added_by</th>
+          <th>task </th>
+          <th>link_name</th>
+          <th>link</th>
+          <th>doc</th>
+          <th>is_featured</th>
+          <th>Update</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for link in userlinks %}
+        <tr>
+            <td>{{link.created_at}}</td>
+           <td>
+            <a href="{% url 'management:user_evidence' %}?username={{ username }}">{{ link.added_by }}</a>
+        </td>
+        
+            <td>
+              {% for task in link.task.all %}
+                 <p>{{ task.activity_name }}</p>
+              {% endfor %}
+          </td>
+            <td>
+              {% if link.link %}
+                <a class="text-dark  text-decoration-none" 
+                data-toggle="tooltip" title="{{  link.description  }}"
+                href="{{ link.link}}">
+                {{  link.link_name}}
+                </a>
+              {% else %}
+                <a class="text-dark  text-decoration-none" 
+                data-toggle="tooltip" title="{{  link.description  }}"
+                href="{{ link.drive_link}}">
+                {{  link.link_name}}
+                </a>
+              {% endif %} 
+            </td>
+            <td>
+              {% if link.link %}
+                <a class="text-dark  text-decoration-none" 
+                data-toggle="tooltip" title="{{  link.description  }}"
+                href="{{ link.link}}">
+                Watch/Download
+                </a>
+              {% else %} 
+              <a class="text-dark  text-decoration-none" 
+                data-toggle="tooltip" title="{{  link.description  }}"
+                href="{{ link.drive_link}}">
+                Watch/Download
+              </a> 
+              {% endif %}
+          </td>
+        <!-- <td>{{link.doc.url}}</td> -->
+        <td>
+          <a class="text-dark  text-decoration-none" 
+          href="{{ link.doc.url}}">
+          Download
+          </a>
+      </td>
+        <td>{{link.is_featured}}</td>
+            <td> <a class="article-title" href="{%url 'management:evidence_update' link.id %}">Edit</a></td>
+            <td> <a class="article-title" href="#">Delete</a></td>
+        </tr>   
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

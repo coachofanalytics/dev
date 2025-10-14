@@ -1,0 +1,106 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Test Email - {{ site_name }}{% endblock %}
+
+{% block header_title %}Test Email{% endblock %}
+{% block header_subtitle %}Email system is working correctly{% endblock %}
+
+{% block content_title %}Email System Test{% endblock %}
+
+{% block content_message %}
+This is a test email to verify that the email system is working correctly. If you received this email, the system is functioning properly.
+{% endblock %}
+
+{% block additional_content %}
+<div class="success-box">
+    <h3>✅ Email System Working</h3>
+    <p>Congratulations! The email system is functioning correctly and can send emails successfully.</p>
+</div>
+
+<div class="info-box">
+    <h3>Test Details</h3>
+    <p><strong>Test Time:</strong> {{ timestamp|date:"F d, Y \a\t g:i A" }}</p>
+    <p><strong>Site Name:</strong> {{ site_name }}</p>
+    <p><strong>Site URL:</strong> {{ site_url }}</p>
+    <p><strong>Email Template:</strong> test_email.html</p>
+    <p><strong>Status:</strong> Successfully Delivered</p>
+</div>
+
+<div class="info-box">
+    <h3>Email Features Tested</h3>
+    <ul>
+        <li>HTML email rendering</li>
+        <li>CSS styling and responsive design</li>
+        <li>Template inheritance</li>
+        <li>Variable substitution</li>
+        <li>Email delivery</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <h3>System Information</h3>
+    <p><strong>Django Version:</strong> {{ django_version|default:"Unknown" }}</p>
+    <p><strong>Python Version:</strong> {{ python_version|default:"Unknown" }}</p>
+    <p><strong>Server Time:</strong> {{ timestamp|date:"c" }}</p>
+    <p><strong>Timezone:</strong> {{ timezone|default:"UTC" }}</p>
+</div>
+
+<div class="warning-box">
+    <h3>Next Steps</h3>
+    <ul>
+        <li>If you received this email, the system is working correctly</li>
+        <li>You can now use the automation system with confidence</li>
+        <li>All notification emails will be delivered properly</li>
+        <li>Contact support if you have any issues</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin/" class="action-button">
+        Go to Admin Panel
+    </a>
+</div>
+
+<div class="info-box">
+    <h3>Email Templates Available</h3>
+    <p>The following email templates are available in the system:</p>
+    <ul>
+        <li>Budget Request Submitted</li>
+        <li>Approval Required</li>
+        <li>Approval Decision</li>
+        <li>OTP Verification</li>
+        <li>Disbursement Completed</li>
+        <li>Disbursement Failed</li>
+        <li>Escalation Notification</li>
+        <li>Test Email (this one)</li>
+    </ul>
+</div>
+
+<div class="success-box">
+    <h3>System Status</h3>
+    <p><strong>Email System:</strong> ✅ Working</p>
+    <p><strong>Template Engine:</strong> ✅ Working</p>
+    <p><strong>SMTP Configuration:</strong> ✅ Working</p>
+    <p><strong>Automation System:</strong> ✅ Ready</p>
+</div>
+
+<div class="info-box">
+    <h3>Support Information</h3>
+    <p>If you have any questions about the email system:</p>
+    <ul>
+        <li><strong>Email:</strong> support@{{ site_url|cut:"https://"|cut:"http://" }}</li>
+        <li><strong>Phone:</strong> +1 (555) 123-4567</li>
+        <li><strong>Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</li>
+    </ul>
+</div>
+
+<div class="warning-box">
+    <h3>Important Notes</h3>
+    <ul>
+        <li>This is a test email and can be safely deleted</li>
+        <li>Do not reply to this email</li>
+        <li>Keep this email as proof that the system is working</li>
+        <li>Contact support if you have any concerns</li>
+    </ul>
+</div>
+{% endblock %}

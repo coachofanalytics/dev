@@ -1,0 +1,184 @@
+{% load static %}
+{% block content %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const cards = document.querySelectorAll(".same");
+
+  cards.forEach((card) => {
+    const heading = card.querySelector(".heading");
+    const description = card.querySelector(".descriptions");
+
+
+    card.addEventListener("mouseenter", function () {
+        description.style.opacity = "1";
+        const descriptionHeight = description.offsetHeight;
+
+        // Set the height of the card equal to the description height
+        card.style.height = `${descriptionHeight}px`;
+
+        // Hide the heading by setting its opacity to 0
+        heading.style.opacity = "0";
+      });
+
+    card.addEventListener("mouseleave", function () {
+      description.style.opacity = "0";
+      heading.style.opacity = "1";
+      // Reset height to the initial fixed value (250px)
+      card.style.height = "250px";
+
+      // Reset heading position to the bottom
+      heading.style.position = "absolute";
+      heading.style.bottom = "10px";
+      heading.style.top = ""; // Clear top property
+    });
+  });
+}); 
+</script>
+
+<h2 style="text-align: center;" class="mt-4 mt-md-0">Why Choose Us ? </h2>
+<!-- First Row -->
+<div class="card-container">
+  <div class="same">
+    <div class="icon">
+      <img src="{% static 'investing/img/card/safe.png' %}" alt="Icon 1">
+    </div>
+    <div class="heading">Safe Investments</div>
+    <div class="descriptions">
+      <div  ><h2 style="font-size: 26px;">Safe Investments</h2></div>
+      <div class="text">Since 2016, we have built and marketed financial services to the nation’s
+         underserved segments, Now, as a regulated NBFC and P2P financing platform, Coda has been
+        providing purpose-build, closed-loop financing options to the supply chain of different 
+        industries, including FMCG, Logistics & Agriculture and has created a sustainable financing book
+        with negligible default rate</div>
+    </div>
+  </div>
+
+  <div class="same">
+    <div class="icon">
+      <img src="{% static 'main/image/earn.png' %}" alt="Icon 2">
+    </div>
+    <div class="heading">Earn Higher Returns</div>
+    <div class="descriptions">
+      <div><h2 style="font-size: 24px;">Earn Higher Returns</h2></div>
+      <div class="text">
+        Investing with Coda Invest can allow you to earn higher returns relative
+         to other traditional investment opportunities across the whole world.
+      </div>
+    </div>
+  </div>
+
+  <div class="same">
+    <div class="icon">
+      <img src="{% static 'investing/img/card/handpicked.png' %}" alt="Icon 3">
+    </div>
+    <div class="heading">Handpicked borrowers</div>
+    <div class="descriptions">
+      <div ><h2 style="font-size: 26px;">Handpicked borrowers</h2></div>
+      <div class="text">
+        Our Data tracking and Risk Assessment is built on top of advanced 
+        Artificial Intelligence (AI) and Machine Learning (ML) algorithms that
+        consider over 100+ data points allowing you to access our prime borrowers 
+        that have a satisfactory repayment history.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Second Row -->
+<div class="card-container">
+  <div class="same">
+    <div class="icon">
+      <img src="{% static 'investing/img/card/diversified.png' %}" alt="Icon 4">
+    </div>
+    <div class="heading">Diversified Investments</div>
+    <div class="descriptions">
+      <div><h2 style="font-size: 26px;">Diversified Investments</h2></div>
+      <div class="text">
+        Your funds can be split into multiple investments in one click,
+        COda Invest will invest your capital in multiple borrowers within the supply chains of multiple industries.
+      </div>
+    </div>
+  </div>
+
+  <div class="same">
+    <div class="icon">
+      <img src="{% static 'investing/img/card/transparency.png' %}" alt="Icon 5">
+    </div>
+    <div class="heading">Transparency to the Core</div>
+    <div class="descriptions">
+      <div><h2 style="font-size: 24px;">Transparency</h2></div>
+      <div class="text" style="font-size: 14px;">
+        We have made our process as straightforward and transparent as possible,so that you are always aware of your money
+      </div>
+    </div>
+  </div>
+
+  <div class="same">
+    <div class="icon">
+      <img src="{% static 'investing/img/card/stock.png' %}" alt="Icon 6">
+    </div>
+    <div class="heading">Stock Financing</div>
+    <div class="descriptions">
+      <div ><h2 style="font-size: 26px;">Stock Financing</h2></div>
+      <div class="text">
+        <p>
+          Your investment is never credited directly to the borrower,
+          instead, the invested amount is paid against the stock the borrower purchases.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- This section is for the types -->
+<div class="coontainer">
+<div class="left-side">
+  <!-- Your image goes here -->
+  <img src="{% static 'investing/img/card/product.png' %}" alt="Your Image Alt Text">
+</div>
+<div class="right-side">
+  <h1>RapidGrow</h1>
+  <div style="justify-content: center; margin-top: 20px;">
+    <div class="sub-heading">
+      <span class="check-icon">&#10003;</span><p> Up to 36% Annual Returns</p>
+    </div>
+    <div class="sub-heading">
+        <span class="check-icon">&#10003;</span><p> Minimum Risk </p>
+    </div>
+    <div class="sub-heading">
+        <span class="check-icon">&#10003;</span><p>Monthly Returns</p> 
+    </div>
+    <div class="sub-heading">
+        <span class="check-icon">&#10003;</span> <p>Short-term Investments </p>
+    </div>
+  </div>
+  <div class="readmore">Read More</div>
+</div>
+</div>
+<div class="coontainer">
+<div class="left-side">
+  <!-- Your image goes here -->
+  <h1>SecureGrow</h1>
+  <div style="justify-content: center; margin-top: 20px;">
+    <div class="sub-heading">
+      <span class="check-icon">&#10003;</span><p> Up to 26% Annual Returns</p>
+    </div>
+    <div class="sub-heading">
+        <span class="check-icon">&#10003;</span><p> Capital Protection </p>
+    </div>
+    <div class="sub-heading">
+        <span class="check-icon">&#10003;</span><p> No Risk</p> 
+    </div>
+    <div class="sub-heading">
+        <span class="check-icon">&#10003;</span> <p>Fixed Term Investments </p>
+    </div>
+    <div class="sub-heading">
+        <span class="check-icon">&#10003;</span> <p>Option to Select Payouts</p>
+    </div>
+  </div>
+  <div class="readmore">Read More</div>
+</div>
+<div class="right-side">
+  <img src="{% static 'investing/img/card/product2.png' %}" alt="Your Image Alt Text">
+</div>
+</div>
+{% endblock %}

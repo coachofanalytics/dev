@@ -1,0 +1,267 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Budget Comparison - {{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-chart-bar"></i> Budget Comparison: {{ category.name }}</h2>
+                    <p class="text-muted">Compare budget performance across {{ comparison_type }} periods</p>
+                </div>
+                <div>
+                    <a href="{% url 'finance:budget-category-detail' company.slug category.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comparison Options -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="type" class="form-label">Comparison Type</label>
+                            <select name="type" id="type" class="form-select">
+                                <option value="monthly" {% if comparison_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                                <option value="quarterly" {% if comparison_type == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                                <option value="yearly" {% if comparison_type == 'yearly' %}selected{% endif %}>Yearly</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="periods" class="form-label">Number of Periods</label>
+                            <select name="periods" id="periods" class="form-select">
+                                <option value="3" {% if period_count == 3 %}selected{% endif %}>3</option>
+                                <option value="6" {% if period_count == 6 %}selected{% endif %}>6</option>
+                                <option value="12" {% if period_count == 12 %}selected{% endif %}>12</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-sync"></i> Update Comparison
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comparison Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title"><i class="fas fa-chart-line"></i> Budget vs Actual Trend</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="comparisonChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comparison Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title"><i class="fas fa-table"></i> Detailed Comparison</h4>
+                </div>
+                <div class="card-body">
+                    {% if comparison_data %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Budgeted</th>
+                                        <th>Actual</th>
+                                        <th>Variance</th>
+                                        <th>Variance %</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for period in comparison_data %}
+                                        <tr>
+                                            <td><strong>{{ period.period_name }}</strong></td>
+                                            <td>KES {{ period.budgeted|floatformat:2 }}</td>
+                                            <td>KES {{ period.actual|floatformat:2 }}</td>
+                                            <td>
+                                                <span class="{% if period.variance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    KES {{ period.variance|floatformat:2 }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="{% if period.variance_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    {{ period.variance_percentage|floatformat:1 }}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if period.variance_percentage >= -5 and period.variance_percentage <= 5 %}
+                                                    <span class="badge bg-success">On Track</span>
+                                                {% elif period.variance_percentage < -5 and period.variance_percentage >= -15 %}
+                                                    <span class="badge bg-warning">Caution</span>
+                                                {% elif period.variance_percentage < -15 %}
+                                                    <span class="badge bg-danger">Over Budget</span>
+                                                {% else %}
+                                                    <span class="badge bg-info">Under Budget</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th>Total</th>
+                                        <th>KES {{ comparison_data|sum_field:'budgeted'|floatformat:2 }}</th>
+                                        <th>KES {{ comparison_data|sum_field:'actual'|floatformat:2 }}</th>
+                                        <th colspan="3"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Comparison Data Available</h5>
+                            <p class="text-muted">There is not enough data to perform a comparison for this category.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-bullseye fa-2x text-primary mb-2"></i>
+                    <h5>Average Accuracy</h5>
+                    <p class="fs-4 mb-0">
+                        {% if comparison_data %}
+                            {{ comparison_data|avg_field:'accuracy'|floatformat:1 }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-arrow-up fa-2x text-success mb-2"></i>
+                    <h5>Total Budgeted</h5>
+                    <p class="fs-4 mb-0">
+                        {% if comparison_data %}
+                            KES {{ comparison_data|sum_field:'budgeted'|floatformat:2 }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-2x text-info mb-2"></i>
+                    <h5>Total Spent</h5>
+                    <p class="fs-4 mb-0">
+                        {% if comparison_data %}
+                            KES {{ comparison_data|sum_field:'actual'|floatformat:2 }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                    <h5>Total Variance</h5>
+                    <p class="fs-4 mb-0">
+                        {% if comparison_data %}
+                            KES {{ comparison_data|sum_field:'variance'|floatformat:2 }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if comparison_data %}
+    const ctx = document.getElementById('comparisonChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for period in comparison_data %}'{{ period.period_name }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Budgeted',
+                data: [{% for period in comparison_data %}{{ period.budgeted }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.3
+            }, {
+                label: 'Actual',
+                data: [{% for period in comparison_data %}{{ period.actual }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Budget vs Actual Spending Over Time'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'KES ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+
+<style>
+canvas {
+    max-height: 400px;
+}
+</style>
+{% endblock %}
+

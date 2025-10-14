@@ -1,0 +1,110 @@
+{%extends "main/base_templates/analysis_index.html"%}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-7 top-coloumn">
+            <div class="mt-4" style="width: 75px;height: 4px;background-color: #E7AD4A;"></div>
+            <!-- <h2 class="font-weight-bold" style="color : #E7AD4A">{{ object.featuredcategory.title|capfirst }}</h2> -->
+            <h3 class="font-weight-bold" style="color : #E7AD4A">{{ object.title|capfirst }}</h3>
+            <p class="font-weight-bold text-white"> {{object.description}}</p>
+            <p class="title-para">
+            </p>
+            {% for activity in object.subcategories_fetured.all%}
+            <div>
+                {% for link in activity.activity_featured.all %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="background-count-bullet">{{ forloop.counter }}</div>
+                    <a class="text-white" target="_blank" href="{{link.link}}">
+                        <p class="text-white ml-4 mb-0">{{activity.activity_name|capfirst }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col-md-5 top-left-coloumn" style="padding-left: 0px !important;padding-right: 0px !important;">
+            <img class="w-100" style="height: 100%;" src="{% static 'professional_services/img/project1.jpg' %}" />
+        </div>
+    </div>
+
+    <div class="row my-5">
+        <div class="col-md-12 top-coloumn bg-white">
+              <div class="content-section text-dark h6">
+                  <form action="{% if title_ %}{% url 'professional_services:subcategory-detail' title=title_ %}{% else %}{% url 'professional_services:course' %}{% endif %}"  method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <fieldset class="form-group">
+                    <div class="row text-center">
+                      <div class="col-md-12" id="bada">
+                        <div class="card">
+                        <!-- <img src="\media\home\project2.jpg" class="card-img-top">--->
+                          <div class="card-body">
+                            <h3 class="font-weight-bold" style="color : #E7AD4A">{{ object.title|capfirst }} Upload Section</h3>
+                            <hr/>
+                                <p class="text-dark">
+                                    {{ object.desc2 }}
+                                </p>
+                                <p class="text-dark">
+                                  <font size="-1">
+                                  Participate by responding to the following questions?
+                                </font>
+                              </p>
+                          </div>
+                        </div>
+                      </div>
+              </div>
+              <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+                    
+              <div class="row">
+                        <div class="col-md-6">
+                          {% for task in  tasks  %}
+                          {% if task.question %}
+                            <font size="1"><i> <b>{{task.activity_name}}</b> :{{task.guiding_question}}</i></font>
+                            <hr>
+                            <input type="hidden" name="training_question" value="{{ task.guiding_question }}">
+                          {% endif %}
+                          {% endfor %}
+                            <!-- <font size="1"><i> <b>{{task_name}}</b> :{{task_question}}</i></font>
+                            <hr> -->
+                        </div>
+                        <div class="col-md-6 ">
+                        {% for task in  tasks  %}
+                        {% if task.question  %}
+                          <div>{% if form.response %}{{ form.response|as_crispy_field }}{% else %}<p class="text-muted">No response field available</p>{% endif %}</div>
+                        {% endif %}
+                        {% endfor %}
+                      </div>
+                      <div class="text text-center">
+                        {% for task in  tasks  %}
+                         {% if task.interview_question %}
+                           <font size="2"><i> <b>Sample Interview Question:</b> :{{task.interview_question}}</i></font>
+                            <hr>
+                          {% endif %}
+                          {% endfor %}
+                          {% if form.comment %}{{ form.comment|as_crispy_field }}{% else %}<p class="text-muted">No comment field available</p>{% endif %}
+                        </div>
+                    </div>
+                    <hr style="height:3px;border:none;color:#666669;background-color:rgb(106, 106, 155);" />
+                  </fieldset>
+
+
+                  <div class="form-group text-center">
+                    <button class="btn btn-md btn-bc font-weight-bold" type="submit">
+                      Submit
+                    </button>
+                      <button class="btn btn-md btn-bc font-weight-bold" type="submit" onclick="history.back()">
+                      Back
+                    </button>
+                  </div>
+                </form>
+              </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+

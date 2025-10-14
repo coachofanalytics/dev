@@ -1,0 +1,179 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Unified Budget Planning - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'finance/css/budget-common.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="planning-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Budget Planning
+                        </h2>
+                        <p class="mb-0">Multi-timeframe budget planning and forecasting</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h4>{{ company.name }}</h4>
+                        <small>Timeframe: {{ timeframe|title }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeframe Selector -->
+    <div class="row">
+        <div class="col-12">
+            <div class="timeframe-selector">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="timeframe" class="form-label">Timeframe:</label>
+                        <select name="timeframe" id="timeframe" class="form-control">
+                            {% for tf in valid_timeframes %}
+                            <option value="{{ tf }}" {% if timeframe == tf %}selected{% endif %}>
+                                {{ tf|title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="periods" class="form-label">Periods:</label>
+                        <input type="number" name="periods" id="periods" class="form-control" 
+                               value="{{ periods }}" min="1" max="10">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="method" class="form-label">Method:</label>
+                        <select name="method" id="method" class="form-control">
+                            {% for m in valid_methods %}
+                            <option value="{{ m }}" {% if method == m %}selected{% endif %}>
+                                {{ m|title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary form-control">
+                            <i class="fas fa-calculator"></i> Calculate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estimate Results -->
+    <div class="row">
+        <div class="col-12">
+            <div class="estimate-card">
+                <h4>Estimate for {{ timeframe|title }} ({{ periods }} period{{ periods|pluralize }})</h4>
+                
+                {% if estimate.error %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> {{ estimate.error }}
+                </div>
+                {% else %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ estimate.total_estimate|default:"0"|floatformat:2 }}</div>
+                            <div class="metric-label">Total Estimate</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ estimate.confidence_score|default:"0"|floatformat:2 }}</div>
+                            <div class="metric-label">Confidence Score</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Category Breakdown -->
+                {% if estimate.category_estimates %}
+                <h5>Category Breakdown</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Confidence</th>
+                                <th>Transactions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category, data in estimate.category_estimates.items %}
+                            <tr>
+                                <td><i class="fas fa-tag"></i> {{ category }}</td>
+                                <td>${{ data.amount|floatformat:2 }}</td>
+                                <td>{{ data.method|title }}</td>
+                                <td>{{ data.confidence|floatformat:2 }}</td>
+                                <td>{{ data.transaction_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Estimates -->
+    {% if comparison_estimates %}
+    <div class="row">
+        <div class="col-12">
+            <h4>Compare with Other Timeframes</h4>
+            <div class="row">
+                {% for tf, est in comparison_estimates.items %}
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-label">{{ tf|title }}</div>
+                        <div class="metric-value small">${{ est.total_estimate|default:"0"|floatformat:2 }}</div>
+                        <a href="?timeframe={{ tf }}" class="btn btn-sm btn-outline-primary mt-2">Switch</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{% url 'finance:unified-budget-dashboard' company.slug %}?tab=planning" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'finance/js/budget-common.js' %}"></script>
+<script>
+$(document).ready(function() {
+    console.log('Unified Budget Planning loaded');
+    console.log('Current timeframe: {{ timeframe }}');
+    console.log('Periods: {{ periods }}');
+    
+    // Setup period adjuster
+    BudgetForms.setupPeriodAdjuster();
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,352 @@
+{% extends "main/base_templates/new_base.html" %} 
+{% load static %}
+{% block content %}
+
+<div class="container">
+    {% csrf_token %}
+    <div class="banner">
+        <form method="get" style="padding: 15px;">
+            <p class="sub-heading">Coda Help Center</p>
+            <h1 class="heading-brand">Resolution for your inquiries.</h1>
+            <p class="sub-heading">Choose the account type that suits you best!</p>
+            <div class="account-type">
+                <div id="common-search-container" class="common-search-container">
+                    <ul class="hoorizontal-list" id="account-type-list">
+                        <li><a href="#" onclick="changeCategoryOptions('students')">Students</a></li>
+                        <li><a href="#" onclick="changeCategoryOptions('investors')">Investors</a></li>
+                        <li><a href="#" onclick="changeCategoryOptions('staff')">Staff</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="seearch-container">
+                <select name="category" id="dropdown" class="seearch-dropdown">
+                    <option class="seearch-text" value="" disabled selected>Select a category</option>
+                </select>
+                <button type="submit" name="action" value="search" class="seearch-button">Search</button>
+            </div>
+        </form>
+        <img class="hero-banner" src="{% static 'main/image/help2.jpg' %}" alt=""/>
+    </div>
+
+    <div class="faq-container">
+        <ul class="list-group">
+            {% for question in questions %}
+                <li class="list-group-item faq-item" >
+                    <a class="question" href="#" onclick="getAnswer('{{ question.question }}', '{{ question.category }}', '{{ question.topic }}', '{{ question.id }}')">{{ question.question }}</a>
+                </li>
+                <div class="faq-answer" id="answer-{{question.id}}" style="display: none;"></div>
+                <div id="loading-spinner-{{question.id}}" class="text-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+    function getAnswer(question, category, topic, id) {
+        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        const url = "{% url 'main:help' %}"
+
+        const payload = {
+            question: question,
+            category: category,
+            topic: topic
+        };
+        const answerElement = document.getElementById('answer-' + id);
+        const spinnerElement = document.getElementById('loading-spinner-' + id);
+
+        if (answerElement.style.display === 'none') {
+            spinnerElement.style.display = 'block';
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(payload),
+            })
+            .then(response => response.json())
+            .then(data => {
+                spinnerElement.style.display = 'none';
+                console.log('Server response:', data);
+                answerElement.innerText = "answer: " + data['answer'];
+                answerElement.classList.add('faq-answer');
+                answerElement.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        } else {
+            answerElement.style.display = 'none';
+            spinnerElement.style.display = 'none';
+        }
+    }
+</script>
+<script>
+    function changeCategoryOptions(accountType) {
+        var categoryDropdown = document.getElementById('dropdown');
+        categoryDropdown.innerHTML = "";
+        var categoryOptions;
+
+        switch(accountType) {
+            case 'staff':
+                categoryOptions = [
+                    ["accounts", "Registration"],
+                    ["application", "Application"],
+                    ["data", "Data Analysis"],
+                    ["getdata", "Automation"],
+                    ["main", "General Information"]
+                    // ["projectmanagement", "Field Projects"]
+                ];
+                break;
+            case 'students':
+                categoryOptions = [
+                    ["application", "Application"],
+                    ["data", "Data Analysis"],
+                    ["getdata", "Automation"],
+                    ["main", "General Information"]
+                ];
+                break;
+            case 'investors':
+                categoryOptions = [
+                    ["finance", "Financial Information"],
+                    ["investing", "Investments"],
+                    ["main", "General Information"]
+                ];
+                break;
+            default:
+                categoryOptions = [];
+                break;
+        }
+
+        // Populate the dropdown with new options
+        for (var i = 0; i < categoryOptions.length; i++) {
+            var option = document.createElement("option");
+            option.value = categoryOptions[i][0];
+            option.text = categoryOptions[i][1];
+            categoryDropdown.add(option);
+        }
+    }
+</script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .faq-container {
+        --bs-gutter-x: 1.5rem;
+        --bs-gutter-y: 0;
+        flex-wrap: wrap;
+        margin-top: calc(-1 * var(--bs-gutter-y));
+        margin-right: calc(-0.5 * var(--bs-gutter-x));
+        margin-left: calc(-0.5 * var(--bs-gutter-x));
+    }
+    .question{
+        text-decoration: none;
+        color: #001f3f;
+        display: flex;
+
+    }
+    .question :hover{
+        color: #010b16;
+        text-decoration: none;
+
+    }
+
+
+    .faq-item {
+        height: 80px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: black 1px 2px;
+        padding: 10px;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .faq-answer {
+        display: none;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: black 1px 2px;
+        text-align: center;
+        padding: 10px;
+        background-color: #fff;
+        cursor: pointer;
+    }
+
+    #loading-spinner {
+        display: none;
+        margin-top: 20px;
+    }
+
+    .banner {
+        position: relative;
+        background-color: #001f3f; 
+        color: #fff; 
+        overflow: hidden; 
+        height: 370px; 
+        margin-top: 24px;
+        margin-bottom: 32px;
+        padding-top: 20px;
+        padding-right: 32px;
+        padding-left: 32px;
+        border-radius: 20px;
+    }
+
+    .banner h1 {
+        font-size: 47px;
+        line-height: 56px;
+        margin: 16px 0;
+    }
+
+    .banner p {
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 24px;
+        letter-spacing: 0.1px;
+    }
+
+    .hero-banner {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        max-width: 50%;
+        object-fit: cover;
+    }
+
+    .seearch-container {
+        display: flex;
+        align-items: center;
+        margin-top: 30px;
+    }
+
+    .seearch-text {
+        margin-right: 10px;
+    }
+
+    .seearch-dropdown {
+        width: 400px;
+        line-height: 20px;
+        height: 54px;
+        padding: 16px 50px 16px 24px;
+        letter-spacing: 0.32px;
+        border-radius: 44px;
+    }
+
+    .seearch-dropdown:hover,
+    .seearch-dropdown:focus {
+        background-color: #ffffff; 
+        color: #001f3f; 
+    }
+
+    .seearch-button {
+        margin-top: 2px;
+        margin-left: -50px;
+        display: flex;
+        width: 47px;
+        height: 46px;
+        padding: 15px;
+        z-index: 1;
+        color: transparent;
+        border: 0;
+        border-radius: 50%;
+        background-color: #108A00;
+        background-image: url(https://assets.static-upwork.com/helpcenter/air3/icons/white/search.svg);
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: 24px auto;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .seearch-button:hover {
+        background-color: #0d6e00;
+    }
+
+    .hoorizontal-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .hoorizontal-list li {
+        display: inline-block;
+        margin-right: 10px; /* Adjust the margin as needed to control the spacing between li elements */
+    }
+
+    .hoorizontal-list a {
+        text-decoration: none;
+        font-size: 18px;
+        background-color: gray;
+        padding: 2px;
+        color:white; 
+        border-radius: 30px;
+        transition: background-color 0.3s ease;
+    }
+
+    .hoorizontal-list a:hover {
+        border-radius: 30px;
+        background-color: green;
+    }
+    
+
+    .account-type {
+        padding-top: 10px;
+    }
+    @media only screen and (max-width: 768px) {
+        .banner {
+            height: auto;
+            padding: 20px;
+        }
+
+        .banner h1 {
+            font-size: 32px;
+            line-height: 40px;
+        }
+
+        .hero-banner {
+            display: none; /* Hide the image at smaller screens */
+        }
+        .hoorizontal-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .hoorizontal-list li {
+        display: inline-block;
+        margin-right: 10px; /* Adjust the margin as needed to control the spacing between li elements */
+    }
+
+    .hoorizontal-list a {
+        text-decoration: none;
+        font-size: 18px;
+        background-color: gray;
+        padding: 2px;
+        color:white; 
+        border-radius: 30px;
+        transition: background-color 0.3s ease;
+    }
+
+    .hoorizontal-list a:hover {
+        border-radius: 30px;
+        background-color: green;
+    }
+    
+
+    .account-type {
+        padding-top: 10px;
+    }
+
+    }  
+</style>
+{% endblock content %}

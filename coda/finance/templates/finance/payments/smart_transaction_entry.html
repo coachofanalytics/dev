@@ -1,0 +1,846 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Smart Transaction Entry - CODA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+<style>
+    .smart-form-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-header {
+        border-bottom: 3px solid #007bff;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .auto-suggest-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 4px;
+        margin-left: 0.5rem;
+    }
+    
+    .confidence-high { background: #d4edda; color: #155724; }
+    .confidence-medium { background: #fff3cd; color: #856404; }
+    .confidence-low { background: #f8d7da; color: #721c24; }
+    
+    .amount-warning {
+        display: none;
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+    }
+    
+    .suggestion-panel {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .receiver-suggestions {
+        position: absolute;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .receiver-suggestion-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .receiver-suggestion-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .suggestion-name {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .suggestion-meta {
+        font-size: 0.875rem;
+        color: #666;
+    }
+    
+    .quick-fill-btn {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="smart-form-container">
+    <div class="form-header">
+        <h2><i class="fas fa-receipt"></i> Smart Transaction Entry</h2>
+        <p class="text-muted">Intelligent form with auto-suggestions and validation</p>
+    </div>
+    
+    {% if last_transaction %}
+    <div class="suggestion-panel">
+        <h5><i class="fas fa-history"></i> Your Last Transaction</h5>
+        <p><strong>{{ last_transaction.receiver }}</strong> - {{ last_transaction.category }} - ${{ last_transaction.amount }}</p>
+        <button type="button" class="btn btn-sm btn-outline-primary quick-fill-btn" onclick="fillFromLast()">
+            <i class="fas fa-copy"></i> Use Similar Details
+        </button>
+    </div>
+    {% endif %}
+    
+    {% if suggestion %}
+    <div class="suggestion-panel" id="category-suggestion">
+        <h5><i class="fas fa-lightbulb"></i> Smart Suggestion</h5>
+        <p>
+            Based on the receiver and amount, we suggest: 
+            <strong>{{ suggestion.category.name }}</strong>
+            <span class="auto-suggest-badge confidence-{{ suggestion.confidence }}">
+                {{ suggestion.confidence|upper }} confidence
+            </span>
+        </p>
+        <small class="text-muted">Reason: {{ suggestion.reason }}</small>
+    </div>
+    {% endif %}
+    
+    <form method="POST" id="smart-transaction-form" autocomplete="off">
+        {% csrf_token %}
+        
+        <!-- Receiver & Contact Info -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Receiver Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group position-relative">
+                            <label for="id_receiver">Receiver Name * <span id="receiver-type-badge"></span></label>
+                            {{ form.receiver }}
+                            <small class="form-text text-muted">
+                                <strong>Person:</strong> John Doe | <strong>Company:</strong> KPLC, Safaricom<br>
+                                Start typing - we'll auto-fill everything!
+                            </small>
+                            <div class="receiver-suggestions" id="receiver-suggestions"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.phone|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.location|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.vendor_supplier|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Classification -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-tags"></i> Classification *</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ form.department|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="id_category">Category * <span id="suggestion-indicator"></span></label>
+                            {{ form.category }}
+                            <small class="form-text text-muted" id="category-hint">
+                                Required field. Will auto-suggest based on context.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.subcategory|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.type|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Financial Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Financial Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ form.amount|as_crispy_field }}
+                        <div class="amount-warning" id="amount-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="amount-warning-text"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.currency|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.qty|as_crispy_field }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.transaction_cost|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.transaction_date|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.payment_method|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Information -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Additional Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ form.description|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.receipt_link|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submit -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> Save Transaction
+            </button>
+            <a href="{% url 'finance:cashflows-list' type='operations' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+console.log('=== SMART FORM INITIALIZING ===');
+
+// Receiver auto-complete data (from backend)
+const knownReceivers = {{ known_receivers|safe }};
+const categoryAverages = {{ category_averages|safe }};
+
+// Debug: Check jQuery loaded
+if (typeof jQuery === 'undefined') {
+    console.error('jQuery not loaded!');
+} else {
+    console.log('jQuery loaded:', jQuery.fn.jquery);
+}
+
+// Auto-complete for receiver field
+$('#id_receiver').on('input', function() {
+    const query = $(this).val().toLowerCase();
+    if (query.length < 2) {
+        $('#receiver-suggestions').hide();
+        return;
+    }
+    
+    // Filter receivers
+    const matches = knownReceivers.filter(r => 
+        r.name.toLowerCase().includes(query)
+    );
+    
+    if (matches.length > 0) {
+        let html = '';
+        matches.slice(0, 5).forEach(match => {
+            html += `
+                <div class="receiver-suggestion-item" 
+                     data-name="${match.name}" 
+                     data-category="${match.suggested_category}"
+                     data-avg-amount="${match.avg_amount}">
+                    <div class="suggestion-name">${match.name}</div>
+                    <div class="suggestion-meta">
+                        Usual category: ${match.suggested_category} | 
+                        Avg: $${match.avg_amount.toFixed(2)}
+                    </div>
+                </div>
+            `;
+        });
+        $('#receiver-suggestions').html(html).show();
+    } else {
+        $('#receiver-suggestions').hide();
+    }
+});
+
+// Select receiver suggestion
+$(document).on('click', '.receiver-suggestion-item', function() {
+    const name = $(this).data('name');
+    
+    // Fill receiver
+    $('#id_receiver').val(name);
+    $('#receiver-suggestions').hide();
+    
+    // Trigger comprehensive auto-fill
+    triggerAutoFill(name);
+});
+
+// =============================
+// COMPREHENSIVE AUTO-FILL (NEW!)
+// =============================
+
+// Trigger auto-fill when receiver loses focus (blur)
+$('#id_receiver').on('blur', function() {
+    const receiver = $(this).val().trim();
+    if (receiver.length >= 3) {
+        triggerAutoFill(receiver);
+    }
+});
+
+function triggerAutoFill(receiver) {
+    console.log('=== triggerAutoFill called ===');
+    console.log('Receiver:', receiver);
+    
+    if (!receiver || receiver.length < 3) {
+        console.log('Receiver too short, skipping');
+        return;
+    }
+    
+    // Show loading indicator
+    $('#suggestion-indicator').html(`
+        <span class="auto-suggest-badge" style="background: #e3f2fd; color: #1976d2;">
+            <i class="fas fa-spinner fa-spin"></i> Predicting...
+        </span>
+    `);
+    
+    const departmentId = $('#id_department').val();
+    const amount = $('#id_amount').val();
+    
+    console.log('Calling API with:', { receiver, departmentId, amount });
+    
+    // Call comprehensive prediction API
+    $.ajax({
+        url: '/finance/api/predict-all/',
+        method: 'GET',
+        data: {
+            receiver: receiver,
+            department_id: departmentId,
+            amount: amount
+        },
+        success: function(data) {
+            console.log('=== API SUCCESS ===');
+            console.log('Response:', data);
+            
+            if (data.predictions) {
+                applyPredictions(data);
+            } else {
+                console.log('No predictions available');
+                // No predictions available
+                $('#suggestion-indicator').html(`
+                    <span class="auto-suggest-badge" style="background: #fff3cd; color: #856404;">
+                        <i class="fas fa-info-circle"></i> New receiver - enter manually
+                    </span>
+                `);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('=== API ERROR ===');
+            console.error('Status:', status);
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            $('#suggestion-indicator').html('');
+        }
+    });
+}
+
+function applyPredictions(data) {
+    console.log('=== applyPredictions called ===');
+    
+    const pred = data.predictions;
+    const conf = data.confidence;
+    const info = data.receiver_info;
+    
+    console.log('Predictions:', pred);
+    console.log('Confidence:', conf);
+    console.log('Receiver Info:', info);
+    
+    // Show receiver type badge
+    const typeBadge = info.type === 'company' ? 
+        '<span class="badge badge-primary">Company</span>' :
+        info.type === 'person' ?
+        '<span class="badge badge-success">Person</span>' :
+        '<span class="badge badge-secondary">Unknown</span>';
+    $('#receiver-type-badge').html(typeBadge);
+    console.log('Set receiver type badge:', info.type);
+    
+    // 1. Auto-fill Category (and trigger cascade)
+    if (pred.category_id) {
+        const currentCategory = $('#id_category').val();
+        console.log('Current category value:', currentCategory);
+        
+        if (!currentCategory) {
+            console.log('Setting category to:', pred.category_id);
+            $('#id_category').val(pred.category_id);
+            $('#id_category').trigger('change');  // Trigger cascade
+            console.log('Triggered category change event');
+            
+            // Wait for cascade, then fill subcategory
+            setTimeout(function() {
+                console.log('Timeout: Attempting to set subcategory');
+                if (pred.subcategory_id) {
+                    console.log('Setting subcategory to:', pred.subcategory_id);
+                    $('#id_subcategory').val(pred.subcategory_id);
+                    $('#id_subcategory').trigger('change');
+                    
+                    // Wait for items, then fill type
+                    setTimeout(function() {
+                        if (pred.type) {
+                            console.log('Setting type to:', pred.type);
+                            $('#id_type').val(pred.type);
+                        }
+                    }, 500);
+                }
+            }, 600);
+        } else {
+            console.log('Category already set, skipping');
+        }
+    }
+    
+    // 2. Auto-fill Department
+    if (pred.department_id && !$('#id_department').val()) {
+        console.log('Setting department to:', pred.department_id);
+        $('#id_department').val(pred.department_id);
+    }
+    
+    // 3. Auto-fill Amount (if not already entered)
+    const currentAmount = $('#id_amount').val();
+    if (pred.amount && (!currentAmount || currentAmount == '' || currentAmount == '0.00' || currentAmount == '0')) {
+        console.log('Setting amount to:', pred.amount);
+        $('#id_amount').val(pred.amount.toFixed(2));
+        
+        // Show amount range hint
+        if (pred.amount_range) {
+            $('#category-hint').html(`
+                <i class="fas fa-chart-line"></i>
+                Typical: $${pred.amount_range.min.toFixed(2)} - $${pred.amount_range.max.toFixed(2)} 
+                (avg: $${pred.amount_range.avg.toFixed(2)})
+            `);
+        }
+    } else {
+        console.log('Amount already set:', currentAmount);
+    }
+    
+    // 4. Auto-fill Description
+    if (pred.description && !$('#id_description').val()) {
+        console.log('Setting description');
+        $('#id_description').val(pred.description);
+    }
+    
+    // 5. Auto-fill Payment Method  
+    if (pred.payment_method && !$('#id_payment_method').val()) {
+        console.log('Setting payment method to:', pred.payment_method);
+        $('#id_payment_method').val(pred.payment_method);
+    }
+    
+    // Show success indicator
+    const confColor = conf.overall === 'high' ? '#d4edda' : 
+                      conf.overall === 'medium' ? '#fff3cd' : '#f8d7da';
+    const confTextColor = conf.overall === 'high' ? '#155724' : 
+                         conf.overall === 'medium' ? '#856404' : '#721c24';
+    
+    $('#suggestion-indicator').html(`
+        <span class="auto-suggest-badge" style="background: ${confColor}; color: ${confTextColor};">
+            <i class="fas fa-check-circle"></i> Auto-filled (${info.transaction_count}x, ${conf.overall} conf)
+        </span>
+    `);
+    
+    console.log('=== applyPredictions complete ===');
+    
+    // Show notification
+    showNotification(`✨ Auto-filled from ${info.transaction_count} previous transactions!`, 'success');
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const alertClass = type === 'success' ? 'alert-success' : 
+                       type === 'warning' ? 'alert-warning' : 'alert-info';
+    
+    const notification = $(`
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 80px; right: 20px; z-index: 9999; min-width: 300px;">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `);
+    
+    $('body').append(notification);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(function() {
+        notification.fadeOut(function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+// Hide suggestions when clicking outside
+$(document).on('click', function(e) {
+    if (!$(e.target).closest('#id_receiver, #receiver-suggestions').length) {
+        $('#receiver-suggestions').hide();
+    }
+});
+
+// Amount validation against category average
+$('#id_amount, #id_category').on('change', function() {
+    const amount = parseFloat($('#id_amount').val());
+    const categoryId = $('#id_category').val();
+    
+    if (!amount || !categoryId) return;
+    
+    const categoryName = $('#id_category option:selected').text();
+    const avgAmount = categoryAverages[categoryId];
+    
+    if (avgAmount && amount > avgAmount * 3) {
+        $('#amount-warning').show();
+        $('#amount-warning-text').html(`
+            This amount ($${amount.toFixed(2)}) is unusually high for 
+            <strong>${categoryName}</strong>. 
+            Average is $${avgAmount.toFixed(2)}. Please verify this is correct.
+        `);
+    } else {
+        $('#amount-warning').hide();
+    }
+});
+
+// Smart category suggestion based on department + amount
+$('#id_department, #id_amount').on('change', function() {
+    const dept = $('#id_department option:selected').text();
+    const amount = parseFloat($('#id_amount').val());
+    
+    if (!dept || !amount) return;
+    
+    // Pattern: HR Department + $1K-$50K = Likely salary
+    if (dept.includes('HR') && amount >= 1000 && amount <= 50000) {
+        const salaryOption = $('#id_category option').filter(function() {
+            return $(this).text().includes('Salaries');
+        });
+        
+        if (salaryOption.length && !$('#id_category').val()) {
+            salaryOption.prop('selected', true);
+            $('#suggestion-indicator').html(`
+                <span class="auto-suggest-badge confidence-high">
+                    ✓ Suggested (HR + Amount)
+                </span>
+            `);
+        }
+    }
+});
+
+// =============================
+// CASCADING DROPDOWNS (Phase 2)
+// =============================
+
+// When Category changes → Load Subcategories
+$('#id_category').on('change', function() {
+    console.log('=== CATEGORY CHANGE EVENT TRIGGERED ===');
+    
+    const categoryId = $(this).val();
+    const categoryName = $('#id_category option:selected').text();
+    console.log('Category ID:', categoryId, 'Name:', categoryName);
+    
+    const $subcategoryField = $('#id_subcategory');
+    const $typeField = $('#id_type');
+    
+    if (!categoryId) {
+        console.log('No category selected, clearing subcategory');
+        $subcategoryField.html('<option value="">Select category first</option>').prop('disabled', true);
+        $typeField.html('<option value="">Select category first</option>').prop('disabled', true);
+        return;
+    }
+    
+    // Show loading
+    $subcategoryField.html('<option value="">Loading subcategories...</option>').prop('disabled', true);
+    console.log('Loading subcategories for category:', categoryId);
+    
+    // Fetch subcategories via API
+    $.ajax({
+        url: '/finance/api/subcategories/',
+        method: 'GET',
+        data: { category_id: categoryId },
+        success: function(data) {
+            console.log('=== SUBCATEGORIES LOADED ===');
+            console.log('Count:', data.count);
+            console.log('Subcategories:', data.subcategories);
+            
+            let options = '<option value="">-- Select Subcategory --</option>';
+            data.subcategories.forEach(sub => {
+                options += `<option value="${sub.id}">${sub.name}</option>`;
+            });
+            $subcategoryField.html(options).prop('disabled', false);
+            console.log('Subcategory dropdown populated with', data.subcategories.length, 'options');
+            
+            // Auto-load items for this category
+            loadItems({ category_id: categoryId });
+        },
+        error: function(xhr, status, error) {
+            console.error('=== SUBCATEGORY LOAD ERROR ===');
+            console.error('Status:', status);
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            $subcategoryField.html('<option value="">Error loading - check console</option>');
+        }
+    });
+});
+
+console.log('Category change handler bound to #id_category');
+
+// When Subcategory changes → Load Items
+$('#id_subcategory').on('change', function() {
+    const categoryId = $('#id_category').val();
+    const subcategoryId = $(this).val();
+    const departmentId = $('#id_department').val();
+    
+    if (!categoryId) return;
+    
+    // Load items with filters
+    loadItems({
+        category_id: categoryId,
+        subcategory_id: subcategoryId,
+        department_id: departmentId
+    });
+});
+
+// Load items based on filters
+function loadItems(filters) {
+    const $typeField = $('#id_type');
+    
+    // Show loading
+    $typeField.html('<option value="">Loading items...</option>').prop('disabled', true);
+    
+    $.ajax({
+        url: '{% url "finance:api-get-items" %}',
+        data: filters,
+        success: function(data) {
+            let options = '<option value="">Select Item</option>';
+            
+            if (data.items.length > 0) {
+                // Add items from history (with frequency indicator)
+                options += '<optgroup label="Common Items (from history)">';
+                data.items.forEach(item => {
+                    const freq = item.frequency > 1 ? ` (${item.frequency}x)` : '';
+                    options += `<option value="${item.name}">${item.name}${freq}</option>`;
+                });
+                options += '</optgroup>';
+                
+                // Option to enter custom item
+                options += '<optgroup label="Other">';
+                options += '<option value="">-- Enter custom item --</option>';
+                options += '</optgroup>';
+            } else {
+                options = '<option value="">No items found. Type custom item below.</option>';
+            }
+            
+            $typeField.html(options).prop('disabled', false);
+            
+            // Convert to datalist for custom entry + suggestions
+            convertToDatalist($typeField, data.items);
+        },
+        error: function() {
+            $typeField.html('<option value="">Error loading items</option>');
+        }
+    });
+}
+
+// Convert dropdown to allow custom entry with suggestions
+function convertToDatalist($field, items) {
+    const fieldId = $field.attr('id');
+    const fieldValue = $field.val();
+    
+    // Replace select with input + datalist
+    const datalistId = fieldId + '_datalist';
+    let datalistOptions = '';
+    items.forEach(item => {
+        datalistOptions += `<option value="${item.name}">`;
+    });
+    
+    const newHtml = `
+        <input type="text" 
+               id="${fieldId}" 
+               name="${$field.attr('name')}" 
+               class="form-control" 
+               list="${datalistId}"
+               placeholder="Type or select an item..."
+               value="${fieldValue}">
+        <datalist id="${datalistId}">
+            ${datalistOptions}
+        </datalist>
+        <small class="form-text text-muted">
+            <i class="fas fa-lightbulb"></i> 
+            Select from common items or type a custom item
+        </small>
+    `;
+    
+    $field.replaceWith(newHtml);
+}
+
+// Smart defaults: When receiver/department changes → Suggest category
+$('#id_receiver, #id_department, #id_amount').on('change blur', function() {
+    const receiver = $('#id_receiver').val();
+    const departmentId = $('#id_department').val();
+    const amount = $('#id_amount').val();
+    
+    // Skip if category already selected
+    if ($('#id_category').val()) return;
+    
+    // Skip if not enough data
+    if (!receiver && !departmentId) return;
+    
+    // Fetch suggestions
+    $.ajax({
+        url: '{% url "finance:api-suggest-defaults" %}',
+        data: {
+            receiver: receiver,
+            department_id: departmentId,
+            amount: amount
+        },
+        success: function(data) {
+            if (data.suggested) {
+                const s = data.suggested;
+                
+                // Auto-fill category
+                if (s.category_id) {
+                    $('#id_category').val(s.category_id).trigger('change');
+                }
+                
+                // Wait for subcategories to load, then select
+                setTimeout(function() {
+                    if (s.subcategory_id) {
+                        $('#id_subcategory').val(s.subcategory_id).trigger('change');
+                    }
+                    
+                    // Wait for items to load, then select
+                    setTimeout(function() {
+                        if (s.item) {
+                            $('#id_type').val(s.item);
+                        }
+                    }, 300);
+                }, 300);
+                
+                // Show indicator
+                $('#suggestion-indicator').html(`
+                    <span class="auto-suggest-badge confidence-${s.confidence}">
+                        ✓ Auto-suggested (${s.match_count} similar)
+                    </span>
+                `);
+            }
+        }
+    });
+});
+
+// Fill from last transaction
+function fillFromLast() {
+    {% if last_transaction %}
+    $('#id_receiver').val('{{ last_transaction.receiver }}');
+    $('#id_category').val('{{ last_transaction.category.id }}').trigger('change');
+    $('#id_department').val('{{ last_transaction.department.id }}');
+    $('#id_payment_method').val('{{ last_transaction.payment_method }}');
+    
+    // Wait for cascading to load, then fill subcategory
+    setTimeout(function() {
+        {% if last_transaction.subcategory %}
+        $('#id_subcategory').val('{{ last_transaction.subcategory.id }}').trigger('change');
+        {% endif %}
+        
+        setTimeout(function() {
+            {% if last_transaction.type %}
+            $('#id_type').val('{{ last_transaction.type }}');
+            {% endif %}
+        }, 300);
+    }, 300);
+    
+    $('#suggestion-indicator').html(`
+        <span class="auto-suggest-badge confidence-medium">
+            ℹ From last transaction
+        </span>
+    `);
+    {% endif %}
+}
+
+// Form validation before submit
+$('#smart-transaction-form').on('submit', function(e) {
+    let errors = [];
+    
+    // Check required fields
+    if (!$('#id_category').val()) {
+        errors.push('Category is required');
+    }
+    
+    if (!$('#id_department').val()) {
+        errors.push('Department is required');
+    }
+    
+    if ($('#id_description').val().length < 10) {
+        errors.push('Description must be at least 10 characters');
+    }
+    
+    // Check for location keywords in receiver
+    const receiver = $('#id_receiver').val().toLowerCase();
+    const locationKeywords = ['matunda', 'makutano', 'office', 'coda hq'];
+    
+    for (let keyword of locationKeywords) {
+        if (receiver.includes(keyword)) {
+            errors.push(
+                `"${$('#id_receiver').val()}" looks like a location. ` +
+                `Please use the Location field and enter the actual person's name.`
+            );
+            break;
+        }
+    }
+    
+    if (errors.length > 0) {
+        e.preventDefault();
+        alert('Please fix the following errors:\n\n' + errors.join('\n'));
+        return false;
+    }
+    
+    return true;
+});
+
+// Initialize tooltips
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}
+
+

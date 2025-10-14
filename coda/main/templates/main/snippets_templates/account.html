@@ -1,0 +1,40 @@
+<div class="dropdown-menu" aria-labelledby="navbarDropDown">
+    {% if user.is_staff %}
+          <a class="dropdown-item"href="{% url 'dashboard:unified_dashboard' %}" target="" >My Account</a >
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'management:user_pay' %}?username={{request.user}}&pay_type=payslip" target="" >My DAF</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'management:user_pay' %}?username={{request.user}}&pay_type=task_payslip" target="" >Last DAF</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'accounts:user-list' request.user %}" target="" >My Time</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'application:internal' %}" target="" >Internal(1-1)</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'account-logout' %}" target="" >Logout</a>
+          
+    {% elif user.is_admin or user.is_superuser %}
+          <a class="dropdown-item"href="{% url 'dashboard:unified_dashboard' %}" target="" >My Account</a >
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'accounts:accounts-users'%}" target="" >Users</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'management:user_pay' %}?username={{request.user}}&pay_type=payslip" target="" >Current DAF</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'management:user_pay' %}?username={{request.user}}&pay_type=task_payslip" target="" >Last DAF</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'management:user_pay' %}?username=''&pay_type=tasks" target="" >Tasks</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'management:user_pay' %}?username=''&pay_type=taskhistory" target="" >History Tasks</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'accounts:user-list' request.user %}" target="" >My Time</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'application:internal' %}" target="" >Internal(1-1)</a>
+            <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'account-logout' %}" target="" >Logout</a>
+    {% elif user.category == 1 or user.category == 3 or user.category == 4 or user.category == 5 or user.category == 6 or user.category == 7 %}
+      <a class="dropdown-item" href="{% url 'accounts:user-list' request.user %}" target="" >My Time</a>
+          <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="{% url 'account-logout' %}" target="" >Logout</a>
+    {% else %}
+      <a class="dropdown-item" href="{% url 'account-logout' %}" target="" >Logout</a>
+    {% endif %}
+</div>

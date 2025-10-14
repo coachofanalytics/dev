@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Progress Update</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5; /* Light Gray Background */
+            margin: 0;
+            padding: 0;
+        }
+
+        .outer-container {
+            background-color: #f5f5f5; /* Light Gray Background */
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4285f4; /* Google Blue */
+            text-decoration: none;
+        }
+
+        .logo-text:hover {
+            text-decoration: underline;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4285f4; /* Google Blue */
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #3367d6; /* Darker Google Blue */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="outer-container">
+        <div class="email-container">
+            <div class="logo-container">
+                <a class="navbar-brand logo-text" href="https://www.codanalytics.net/">CODA</a>
+            </div>
+            <h3>Hi {{ user }},</h3>
+            <p>Greetings,</p>
+            <p>We hope you have successfully completed your interview section {{ previous_section }} with {{ company_name }}. Please be prepared to present your findings within the next 48 hours for the next interview section {{ next_section }}.</p>
+            <p>Ensure you have all the necessary materials for your presentation, including the PowerPoint presentation available on the website.</p>
+            <!-- <div class="button-container">
+                <a class="button" href="#">Access Presentation Materials</a>
+            </div> -->
+            <p><strong>CODA Team</strong></p>
+            <p>Thank you.</p>
+            <p><strong>Human Resource</strong></p>
+        </div>
+    </div>
+</body>
+
+</html>

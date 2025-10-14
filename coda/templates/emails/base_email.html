@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name }}{% endblock %}</title>
+    <style>
+        /* Reset styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .email-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .email-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .email-body {
+            padding: 40px 30px;
+        }
+        
+        .email-content {
+            margin-bottom: 30px;
+        }
+        
+        .email-content h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .email-content p {
+            margin-bottom: 15px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .email-content ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        
+        .email-content li {
+            margin-bottom: 8px;
+        }
+        
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .info-box h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .info-box p {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .info-box strong {
+            color: #2c3e50;
+        }
+        
+        .action-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            margin: 20px 0;
+            transition: transform 0.2s ease;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .warning-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .success-box {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .success-box h3 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .error-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .error-box h3 {
+            color: #721c24;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .otp-code {
+            background-color: #2c3e50;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            letter-spacing: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .email-footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .email-footer p {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .email-footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .email-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer-links {
+            margin-top: 20px;
+        }
+        
+        .footer-links a {
+            margin: 0 10px;
+            font-size: 12px;
+        }
+        
+        .timestamp {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .email-body {
+                padding: 20px 15px;
+            }
+            
+            .email-header {
+                padding: 20px 15px;
+            }
+            
+            .email-header h1 {
+                font-size: 24px;
+            }
+            
+            .email-content h2 {
+                font-size: 20px;
+            }
+            
+            .otp-code {
+                font-size: 24px;
+                letter-spacing: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>{% block header_title %}{{ site_name }}{% endblock %}</h1>
+            <p>{% block header_subtitle %}Automation System{% endblock %}</p>
+        </div>
+        
+        <div class="email-body">
+            <div class="email-content">
+                {% block content %}
+                <h2>{% block content_title %}Notification{% endblock %}</h2>
+                <p>{% block content_message %}This is a notification from the {{ site_name }} automation system.{% endblock %}</p>
+                {% endblock %}
+            </div>
+            
+            {% block additional_content %}{% endblock %}
+        </div>
+        
+        <div class="email-footer">
+            <p><strong>{{ site_name }}</strong></p>
+            <p>Automation System</p>
+            <p>Visit us at: <a href="{{ site_url }}">{{ site_url }}</a></p>
+            
+            <div class="footer-links">
+                <a href="{{ site_url }}/admin/">Admin Panel</a>
+                <a href="{{ site_url }}/api/">API Documentation</a>
+                <a href="{{ site_url }}/support/">Support</a>
+            </div>
+            
+            <div class="timestamp">
+                <p>This email was sent on {{ timestamp|date:"F d, Y \a\t g:i A" }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

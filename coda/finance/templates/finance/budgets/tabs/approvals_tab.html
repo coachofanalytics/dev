@@ -1,0 +1,108 @@
+{% load static %}
+
+<!-- Approvals Tab -->
+<div class="tab-card">
+    <h3 class="mb-4">
+        <i class="fas fa-check-circle"></i> Budget Approvals
+    </h3>
+    
+    {% if approvals_data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ approvals_data.error }}
+    </div>
+    {% else %}
+    
+    <!-- Approval Stats -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="metric-card">
+                <div class="metric-value">{{ approvals_data.total_pending|default:"0" }}</div>
+                <div class="metric-label">Total Pending Approvals</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="metric-card">
+                <div class="metric-value">{{ approvals_data.user_pending|default:"0" }}</div>
+                <div class="metric-label">Your Pending Requests</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Budget Requests -->
+    {% if approvals_data.pending_requests %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4>Pending Budget Requests</h4>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Requester</th>
+                            <th>Department</th>
+                            <th>Amount</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in approvals_data.pending_requests %}
+                        <tr>
+                            <td>{{ request.requester.get_full_name }}</td>
+                            <td>{{ request.department.name }}</td>
+                            <td>${{ request.amount|floatformat:2 }}</td>
+                            <td>{{ request.purpose|truncatewords:10 }}</td>
+                            <td><span class="badge badge-warning">{{ request.status }}</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-primary">Review</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No pending budget requests
+    </div>
+    {% endif %}
+    
+    <!-- Your Requests -->
+    {% if approvals_data.user_requests %}
+    <div class="row">
+        <div class="col-12">
+            <h4>Your Budget Requests</h4>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in approvals_data.user_requests %}
+                        <tr>
+                            <td>{{ request.created_at|date:"M d, Y" }}</td>
+                            <td>${{ request.amount|floatformat:2 }}</td>
+                            <td>{{ request.purpose|truncatewords:15 }}</td>
+                            <td><span class="badge badge-{{ request.status }}">{{ request.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% endif %}
+</div>
+
+
+
+

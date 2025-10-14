@@ -1,0 +1,44 @@
+{%extends "main/base_templates/new_base.html"%}  {% block content %}
+<section id="career">
+    {% for case_category in case_categories %}
+        <h3 class="title text-center">{{case_category.title}}</h3>
+        <div class="row text-center">
+          <div class="col-md-10 mx-auto mb-4" id="gi">
+              <div class="card">
+                  <div class="card-body">
+                      <p class="gi">
+                        {{case_category.description}}
+                      </p>
+                  </div>
+              </div>
+          </div>
+      </div>
+     
+        <div class="row padding mb-4">
+            {% for case in cases %}
+            {% if case_category.title == case.category.title %}
+                  <div class="col-md-4 text-center" id="bada">
+                    <div class="card-group">
+                      <div class="card">
+                        <div class="">
+                          <p class="display-5 text-center"><b>{{case.title}}</b></p>
+                          <hr>
+                          {{case.description}}
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6 text-center" id="bada">
+                                <a class="btn-primary" href="{{case.usage_link}}">Demo</a>
+                            </div>
+                            <div class="col-md-6 text-center" id="bada">
+                                <a class="btn-primary" href="{{case.usage_link}}">PPT</a>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+     {% endfor %}
+          </div>
+          {% endfor %}
+{% endblock content %}

@@ -1,0 +1,59 @@
+{%extends "main/base_templates/application_base.html"%}
+ {%load crispy_forms_tags%} 
+ {% load customfilters %}
+ {%block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>ROLES</h2>
+    <button>
+        <a href="{% url 'professional_services:jobrole' %}" class="btn btn-secondary btn-sm" target="_blank"
+        >ADD A ROLE
+      </a>
+      </button>
+    <div class="table-responsive">
+    <!-- <table id="bootstrapdatatable" class="table table-striped table-bordered" width="100%"> -->
+      <table class="table table-striped table-bordered" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>Date</th>
+          <th>Role</th>
+          <th>Question</th>
+          <th>Document</th>
+          <th>Link</th>
+          <th>Update</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for role in object_list %}
+        <tr>
+          <!-- <td>{{applicant.id}}</td> -->
+          <td>{{role.upload_date|date:"n/d/Y"}}</td>
+          <!--<td>{{role.date_joined|date:"F d, Y"}}</td>-->
+          <td>{{role.category}}</td>
+          <td>{{role.question_type}}</td>
+          <td>
+            <button>
+              <a href="{{role.uploaded_doc}}" class="btn btn-secondary btn-sm" target="_blank"
+              >Download
+            </a>
+            </button>
+          </td>
+          <td>
+            <button>
+              <a href="{{role.doclink}}" class="btn btn-secondary btn-sm" target="_blank"
+              >access
+            </a>
+            </button>
+          </td>
+          
+         <td><h4 ><a href="{% url 'professional_services:role-update' role.id %}">Edit</H4></a></p></td>  
+         <td><h4 ><a href="{% url 'professional_services:role-delete' role.id %}">Del</H4></a></p></td>  
+      </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  </div>
+</section>
+{%endblock content %}

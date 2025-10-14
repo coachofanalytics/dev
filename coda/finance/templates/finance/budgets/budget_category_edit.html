@@ -1,0 +1,323 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Edit Budget - {{ category.name }} - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.budget-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+}
+.budget-item:hover {
+    background: #f0f0f0;
+    border-color: #007bff;
+}
+.item-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.item-name {
+    font-weight: 600;
+    color: #333;
+}
+.amount-input {
+    width: 120px;
+    text-align: right;
+}
+.subcategory-section {
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background: white;
+}
+.subcategory-header {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+}
+.total-section {
+    background: #e8f4fd;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+}
+.btn-save {
+    background: #28a745;
+    border-color: #28a745;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+}
+.btn-save:hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Edit Budget: {{ category.name }}</h2>
+                    <p class="text-muted">{{ company.name }} - {{ user_department.name|default:"All Departments" }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Existing Budgets Summary -->
+            {% if existing_budgets %}
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Current Budget Status</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Total Estimated:</strong> ${{ total_estimated|floatformat:2 }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Total Actual:</strong> ${{ total_actual|floatformat:2 }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Variance:</strong> 
+                        <span class="{% if total_actual > total_estimated %}text-danger{% else %}text-success{% endif %}">
+                            ${{ total_actual|add:total_estimated|floatformat:2 }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Budget Editing Form -->
+            <form id="budgetEditForm">
+                {% csrf_token %}
+                
+                <!-- Justification -->
+                <div class="form-group mb-4">
+                    <label for="justification"><strong>Budget Justification</strong></label>
+                    <textarea 
+                        id="justification" 
+                        name="justification" 
+                        class="form-control" 
+                        rows="3" 
+                        placeholder="Explain the need for this budget allocation..."
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Budget Items by Subcategory -->
+                {% for subcategory_name, items in items_by_subcategory.items %}
+                <div class="subcategory-section">
+                    <div class="subcategory-header">
+                        <i class="fas fa-folder"></i> {{ subcategory_name }}
+                        <span class="float-right subcategory-total" data-subcategory="{{ subcategory_name }}">
+                            $0.00
+                        </span>
+                    </div>
+                    
+                    {% for item in items %}
+                    <div class="budget-item" data-item-id="{{ item.id }}">
+                        <div class="item-header">
+                            <div class="item-name">
+                                {{ item.item_name }}
+                                {% if item.description %}
+                                <small class="text-muted d-block">{{ item.description }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-0">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input 
+                                        type="number" 
+                                        class="form-control amount-input item-amount" 
+                                        data-item-id="{{ item.id }}"
+                                        data-subcategory="{{ subcategory_name }}"
+                                        data-typical-amount="{{ item.typical_amount|default:0 }}"
+                                        placeholder="0.00"
+                                        step="0.01"
+                                        min="0"
+                                    >
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">{{ item.unit_type }}</span>
+                                    </div>
+                                </div>
+                                {% if item.typical_amount %}
+                                <small class="text-muted">
+                                    Typical: ${{ item.typical_amount|floatformat:2 }}
+                                    <button type="button" class="btn btn-sm btn-outline-primary ml-2 use-typical" 
+                                            data-amount="{{ item.typical_amount }}">
+                                        Use Typical
+                                    </button>
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                <!-- Total Section -->
+                <div class="total-section">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4><i class="fas fa-calculator"></i> Budget Summary</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Total Budget Request:</strong>
+                                </div>
+                                <div class="col-md-6">
+                                    <span id="totalAmount" class="h4 text-primary">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save"></i> Save & Submit for Approval
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Saving budget estimates...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Use typical amount buttons
+    $('.use-typical').click(function() {
+        const amount = $(this).data('amount');
+        const input = $(this).closest('.budget-item').find('.item-amount');
+        input.val(amount);
+        updateTotals();
+    });
+
+    // Amount input changes
+    $('.item-amount').on('input', function() {
+        updateTotals();
+    });
+
+    // Form submission
+    $('#budgetEditForm').submit(function(e) {
+        e.preventDefault();
+        
+        const lineItems = [];
+        $('.budget-item').each(function() {
+            const amount = parseFloat($(this).find('.item-amount').val()) || 0;
+            if (amount > 0) {
+                const itemId = $(this).data('item-id');
+                const subcategoryName = $(this).find('.item-amount').data('subcategory');
+                
+                lineItems.push({
+                    item_id: itemId,
+                    subcategory_name: subcategoryName,
+                    item_name: $(this).find('.item-name').text().trim(),
+                    amount: amount
+                });
+            }
+        });
+
+        if (lineItems.length === 0) {
+            alert('Please enter at least one budget item amount.');
+            return;
+        }
+
+        const justification = $('#justification').val();
+        if (!justification.trim()) {
+            alert('Please provide a justification for this budget request.');
+            return;
+        }
+
+        // Show loading modal
+        $('#loadingModal').modal('show');
+
+        // Submit form
+        $.ajax({
+            url: '{% url "finance:save-budget-estimates" company.slug category.id %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+                'Content-Type': 'application/json',
+            },
+            data: JSON.stringify({
+                line_items: lineItems,
+                justification: justification
+            }),
+            success: function(response) {
+                $('#loadingModal').modal('hide');
+                if (response.success) {
+                    alert('Budget estimates saved successfully!');
+                    window.location.href = '{% url "finance:budget-requests-list" company.slug %}';
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function(xhr) {
+                $('#loadingModal').modal('hide');
+                const response = JSON.parse(xhr.responseText);
+                alert('Error: ' + (response.error || 'Unknown error occurred'));
+            }
+        });
+    });
+
+    function updateTotals() {
+        let total = 0;
+        
+        // Update subcategory totals
+        $('.subcategory-section').each(function() {
+            let subcategoryTotal = 0;
+            const subcategoryName = $(this).find('.subcategory-header').data('subcategory');
+            
+            $(this).find('.item-amount').each(function() {
+                const amount = parseFloat($(this).val()) || 0;
+                subcategoryTotal += amount;
+            });
+            
+            $(this).find('.subcategory-total').text('$' + subcategoryTotal.toFixed(2));
+            total += subcategoryTotal;
+        });
+        
+        // Update grand total
+        $('#totalAmount').text('$' + total.toFixed(2));
+    }
+
+    // Initialize totals
+    updateTotals();
+});
+</script>
+{% endblock %}

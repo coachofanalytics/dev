@@ -1,0 +1,529 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load mathfilters %}
+
+{% block title %}Finance Dashboard - {{ company.name }}{% endblock %}
+
+{% block content %}
+<style>
+.unified-dashboard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 0;
+}
+
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.dashboard-header h1 {
+    color: #2c3e50;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.role-badge {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.quick-action-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.quick-action-card i {
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.quick-action-card span {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.dashboard-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.dashboard-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-section h2 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #667eea;
+}
+
+.metric-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    border-left: 4px solid #667eea;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.health-score {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.health-score.poor {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+}
+
+.health-score.fair {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.health-score.good {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+}
+
+.health-score.excellent {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.health-score .score {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.health-score .status {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.recent-activity {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.activity-icon.budget {
+    background: #667eea;
+}
+
+.activity-icon.approval {
+    background: #28a745;
+}
+
+.activity-icon.payment {
+    background: #17a2b8;
+}
+
+.activity-icon.investment {
+    background: #ffc107;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.activity-meta {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.department-filter {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="unified-dashboard">
+    <div class="container-fluid">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>
+                        <i class="fas fa-chart-line"></i> Finance Dashboard
+                    </h1>
+                    <p class="lead mb-0">Comprehensive financial management and analytics for {{ company.name }}</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="user-info">
+                        <span><strong>Welcome, {{ user.get_full_name|default:user.username }}</strong></span>
+                        <span class="role-badge">Finance User</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Filter -->
+        <div class="department-filter">
+            <form method="GET" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="department_select" class="mr-2">Department:</label>
+                    <select name="department_id" id="department_select" class="form-control" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if selected_department and selected_department.id == dept.id %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <a href="{% url 'finance:finance-dashboard' company.slug %}" class="btn btn-outline-secondary">Reset</a>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{% url 'finance:enhanced-budget-dashboard' company.slug %}" class="quick-action-card">
+                <i class="fas fa-chart-bar"></i>
+                <span>Budget Planning</span>
+            </a>
+            <a href="{% url 'finance:investment-planning' company.slug %}" class="quick-action-card">
+                <i class="fas fa-chart-pie"></i>
+                <span>Investment Analysis</span>
+            </a>
+            <a href="{% url 'finance:multi-year-planning' company.slug %}" class="quick-action-card">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Multi-Year Planning</span>
+            </a>
+            <a href="{% url 'finance:automation-dashboard' %}" class="quick-action-card">
+                <i class="fas fa-robot"></i>
+                <span>Automation</span>
+            </a>
+            <a href="{% url 'finance:consolidation-report' company.slug %}" class="quick-action-card">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </a>
+            <a href="{% url 'finance:enhanced-legacy-dashboard' company.slug %}" class="quick-action-card">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Legacy Dashboard</span>
+            </a>
+        </div>
+
+        <!-- Dashboard Sections -->
+        <div class="dashboard-sections">
+            <!-- Financial Health Section -->
+            <div class="dashboard-section">
+                <h2>
+                    <i class="fas fa-heartbeat"></i>
+                    Financial Health
+                </h2>
+                <div class="health-score {{ financial_health.status|lower }}">
+                    <div class="score">{{ financial_health.score|floatformat:0 }}</div>
+                    <div class="status">{{ financial_health.status }}</div>
+                    <p class="mb-0 mt-2">Net Cash Flow: ${{ financial_health.net_cash_flow|floatformat:2 }}</p>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ financial_health.total_budget|floatformat:0 }}</div>
+                            <div class="metric-label">Total Budget</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ financial_health.total_inflow|floatformat:0 }}</div>
+                            <div class="metric-label">Total Inflow</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Overview Section -->
+            <div class="dashboard-section">
+                <h2>
+                    <i class="fas fa-wallet"></i>
+                    Budget Overview
+                </h2>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ budget_overview.total_budget|floatformat:0 }}</div>
+                            <div class="metric-label">Total Budget</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ budget_overview.actual_spent|floatformat:0 }}</div>
+                            <div class="metric-label">Actual Spent</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ budget_overview.active_budgets }}</div>
+                            <div class="metric-label">Active Budgets</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ budget_overview.over_budget_count }}</div>
+                            <div class="metric-label">Over Budget</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Opportunities Section -->
+            <div class="dashboard-section">
+                <h2>
+                    <i class="fas fa-chart-line"></i>
+                    Investment Opportunities
+                </h2>
+                {% if investment_analysis and investment_analysis.investment_opportunities %}
+                    <div class="recent-activity">
+                        {% for opportunity in investment_analysis.investment_opportunities|slice:":5" %}
+                        <div class="activity-item">
+                            <div class="activity-icon investment">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ opportunity.category }}</div>
+                                <div class="activity-meta">
+                                    ROI: {{ opportunity.roi_estimate }}% | 
+                                    Risk: {{ opportunity.risk_level|title }} | 
+                                    Potential: ${{ opportunity.investment_potential|floatformat:0 }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No investment opportunities identified</p>
+                {% endif %}
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="dashboard-section">
+                <h2>
+                    <i class="fas fa-clock"></i>
+                    Recent Activity
+                </h2>
+                <div class="recent-activity">
+                    {% if recent_activity.transactions %}
+                        {% for transaction in recent_activity.transactions|slice:":5" %}
+                        <div class="activity-item">
+                            <div class="activity-icon payment">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ transaction.receiver|default:"Transaction" }}</div>
+                                <div class="activity-meta">
+                                    ${{ transaction.amount|floatformat:2 }} | 
+                                    {{ transaction.transaction_date|date:"M d, Y" }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No recent transactions</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Category Performance Section -->
+            <div class="dashboard-section">
+                <h2>
+                    <i class="fas fa-chart-pie"></i>
+                    Category Performance
+                </h2>
+                {% if category_performance and category_performance.category_data %}
+                    <div class="recent-activity">
+                        {% for category in category_performance.category_data|slice:":5" %}
+                        <div class="activity-item">
+                            <div class="activity-icon budget">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ category.category_name }}</div>
+                                <div class="activity-meta">
+                                    Budget: ${{ category.total_budget|floatformat:0 }} | 
+                                    Spent: ${{ category.actual_spent|floatformat:0 }} | 
+                                    Utilization: {{ category.utilization_percentage|floatformat:1 }}%
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No category performance data available</p>
+                {% endif %}
+            </div>
+
+            <!-- Quick Access Section -->
+            <div class="dashboard-section">
+                <h2>
+                    <i class="fas fa-bolt"></i>
+                    Quick Access
+                </h2>
+                <div class="row">
+                    <div class="col-6 mb-2">
+                        <a href="{% url 'finance:weekly-budget-planning' company.slug %}" class="btn btn-outline-primary btn-block">
+                            <i class="fas fa-calendar-week"></i> Weekly Planning
+                        </a>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <a href="{% url 'finance:monthly-budget-planning' company.slug %}" class="btn btn-outline-primary btn-block">
+                            <i class="fas fa-calendar"></i> Monthly Planning
+                        </a>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <a href="{% url 'finance:yearly-budget-planning' company.slug %}" class="btn btn-outline-primary btn-block">
+                            <i class="fas fa-calendar-alt"></i> Yearly Planning
+                        </a>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <a href="{% url 'finance:coda-development-estimation' company.slug %}" class="btn btn-outline-primary btn-block">
+                            <i class="fas fa-code"></i> CODA Estimation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    console.log('Enhanced Finance Dashboard loaded');
+    
+    // Auto-refresh data every 5 minutes
+    setInterval(function() {
+        console.log('Refreshing dashboard data...');
+        // You can add AJAX calls here to refresh specific data
+    }, 300000);
+    
+    // Add smooth scrolling for better UX
+    $('a[href^="#"]').on('click', function(event) {
+        var target = $(this.getAttribute('href'));
+        if (target.length) {
+            event.preventDefault();
+            $('html, body').stop().animate({
+                scrollTop: target.offset().top - 100
+            }, 1000);
+        }
+    });
+});
+</script>
+{% endblock %}

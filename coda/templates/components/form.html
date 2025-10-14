@@ -1,0 +1,64 @@
+{% load crispy_forms_tags %}
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" class="{% block form_class %}{% endblock %}">
+        {% csrf_token %}
+        
+        {% block form_header %}{% endblock %}
+        
+        {% block form_fields %}
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field|as_crispy_field }}
+                </div>
+            {% endfor %}
+        {% endblock %}
+        
+        {% block form_actions %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% block submit_text %}Submit{% endblock %}
+                </button>
+                <a href="{% block cancel_url %}{% endblock %}" class="btn btn-secondary">
+                    {% block cancel_text %}Cancel{% endblock %}
+                </a>
+            </div>
+        {% endblock %}
+    </form>
+</div>
+
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.form-actions .btn {
+    margin: 0 10px;
+    min-width: 100px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+</style> 

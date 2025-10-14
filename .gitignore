@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment - DO NOT COMMIT
+venv/
+env/
+ENV/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/static/
+/media/
+local_settings.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CODA Project Specific - Deprecated Code
+coda/finance/_deprecated/
+coda/management/deprecated/
+coda/finance/views/legacy/*_backup.py
+coda/finance/views/legacy/*_fixed.py
+coda/finance/models/extra/
+
+# Archives and Backups - DO NOT COMMIT
+archive/
+backups/
+
+# Environment variables
+.env
+.env.local

@@ -1,0 +1,44 @@
+<div class="business_header">
+    <hr>
+    <h3 class="title text-center">FIRST INTERVIEW</h3>
+    <h4 class="title text-center">Section : {{variable_title}}</h4>
+</div>
+<div class="row text-left">
+  <!-- <img src="static/img/services/service1.png" class="service-img" >-->
+  <p class="text-center">
+      You are required to go through the following step by step interview process on the three
+      sections which covers ETL(Alteryx),Database(SQL) and Tableau, which are the most commonly
+      used tools in CODA.
+      Our assessment and evaluation in this section will be based on the following:
+  </p>
+</div>
+<table class="tg">
+  <thead>
+    <tr>
+      <th class="tg-8xdm">
+        <span style="text-decoration: none">Topic</span>
+      </th>
+      <th class="tg-xs21">
+        <span style="font-weight: 400; text-decoration: none"
+          >Description</span
+        >
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for desc in interview_description %}
+    <tr>
+      <td class="tg-7zrl">
+        <span style="font-weight: 400; text-decoration: none; color: black"
+          >{{desc.topic}}</span
+        >
+      </td>
+      <td class="tg-7zrl">
+        <span style="font-weight: 400; text-decoration: none; color: black"
+          >{{desc.description}}</span
+        >
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

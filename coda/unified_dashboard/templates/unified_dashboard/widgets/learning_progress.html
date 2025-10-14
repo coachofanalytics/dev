@@ -1,0 +1,204 @@
+{% load static %}
+
+<div class="widget learning-progress-widget">
+    <div class="widget-header">
+        <h3 class="widget-title">
+            <i class="fas fa-graduation-cap me-2"></i>
+            Learning Progress
+        </h3>
+    </div>
+    
+    <div class="widget-content">
+        {% if user.is_authenticated %}
+            {% if user.category == 4 %}  <!-- Student category -->
+                <div class="progress-section">
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Training Completion</span>
+                            <span class="progress-percentage">75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Course Progress</span>
+                            <span class="progress-percentage">60%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Assignments</span>
+                            <span class="progress-percentage">80%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="learning-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Courses Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Certificates Earned</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24</div>
+                        <div class="stat-label">Hours Studied</div>
+                    </div>
+                </div>
+                
+                <div class="widget-actions">
+                    <a href="{% url 'professional_services:training' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play me-1"></i>
+                        Continue Learning
+                    </a>
+                    <a href="{% url 'professional_services:course' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-list me-1"></i>
+                        View All Courses
+                    </a>
+                </div>
+            {% else %}
+                <div class="no-progress-message">
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle text-muted mb-3" style="font-size: 2rem;"></i>
+                        <p class="text-muted mb-3">Learning progress is available for students.</p>
+                        <a href="{% url 'main:contact' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-envelope me-1"></i>
+                            Contact Support
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="no-progress-message">
+                <div class="text-center py-4">
+                    <i class="fas fa-sign-in-alt text-muted mb-3" style="font-size: 2rem;"></i>
+                    <p class="text-muted mb-3">Please log in to view your learning progress.</p>
+                    <a href="{% url 'accounts:account-login' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sign-in-alt me-1"></i>
+                        Log In
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.learning-progress-widget {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.widget-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+}
+
+.widget-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.widget-content {
+    padding: 1.5rem;
+}
+
+.progress-section {
+    margin-bottom: 1.5rem;
+}
+
+.progress-item {
+    margin-bottom: 1rem;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.progress-percentage {
+    font-weight: 600;
+    color: #333;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.learning-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.widget-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.no-progress-message {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .learning-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .widget-actions {
+        flex-direction: column;
+    }
+}
+</style>

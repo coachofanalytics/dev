@@ -1,0 +1,40 @@
+{%extends "main/base_templates/new_base.html"%} {% block content %}
+<section id="career">
+  <div class="data_training text-center">
+    <h3 class="title">CHANGE DEFAULT PAYMENTS</h3>
+    <td> <a class="article-title" href="{% url 'finance:newpayment'%}">Make a Payment</a></td>
+  <div class="container-fluid mr-auto">
+        <div class="row text-center">
+        </div>
+      </div> 
+  </div> 
+<hr>
+  <div class="career text-center">
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">  
+        <tr>
+            <th>Job Support Down Payment</th>
+            <th>Plan</th>
+            <th>Student Down Payment</th>
+            <th>Bonus</th>
+            <th>Loan Amount</th>
+            <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for payment in  defaultpayments  %}
+            <tr>
+                <td>{{payment.job_down_payment_per_month}}</td>
+                <td>{{payment.job_plan_hours_per_mont}}</td>
+                <td>{{payment.student_down_payment_per_month}}</td>
+                <td>{{payment.student_bonus_payment_per_month}}</td>
+                <td>{{payment.loan_amount}}</td>
+              <td> <a class="article-title" href="{% url 'finance:payment-update' payment.id %}">Edit</a></td>
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock content %}

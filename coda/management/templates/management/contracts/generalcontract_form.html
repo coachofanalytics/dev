@@ -1,0 +1,156 @@
+{%extends "main/base_templates/analysis_index.html"%} 
+{%block content %}
+<style type="text/css">
+  .signature
+  {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #000000;
+  }
+    #down_payment,#bonus
+  {
+    background:transparent;
+    border:none;
+    width: 12%;
+  }
+</style>
+<div class="content-section">
+    <!-- <div>
+      <h3 class="lead  text-center hidden">CONTRACT</h3>
+    </div> -->
+<div>
+  <img 
+  {%for image in images%}
+      {% if image.name == "banner_page_v1"%}
+          src="{{googledriveurl}}={{image.image_url}}""
+      {%endif%}
+  {% endfor %}
+  class="d-block img-fluid"
+  width="1500px"
+  alt="banner"
+  >
+</div>
+
+  <form  method="POST" action="/finance/contract_form/" class="form-group">
+    {% csrf_token %}
+        <input type="hidden" name="usr_data" value="first_name={{student_data.first_name}}&last_name={{student_data.last_name}}&address={{student_data.addres}}&category={{student_data.category}}&sub_category={{student_data.sub_category}}&username={{student_data.username}}&password1={{student_data.password1}}&password2={{student_data.password2}}&email={{student_data.email}}&phone={{student_data.phone}}&gender={{student_data.gender}}&city={{student_data.city}}&state={{student_data.state}}&country={{student_data.country}}&resume_file={{student_data.resume_file}}">
+        <input type="hidden" name="student_contract" value="student_contract">
+    <fieldset class="form-group">
+      <div class="row">
+        <div class="col-md-6">
+          &emsp;Name: <br>
+          &emsp;Address: <br>
+          &emsp;Phone: <br>
+          &emsp;Email: 
+        </div>
+        <div class="col-md-6">
+            {{student_data.first_name}} {{student_data.last_name}} <br>
+            {%if student_data.address %}{{student_data.address}}{% else %} - {% endif %} <br>
+            {{student_data.phone}} <br>
+            {{student_data.email}}
+        </div>
+      </div>
+      <legend class="border-bottom  border-top text-center">
+        <p class="lead  text-center">
+            CONTRACT
+        </p>
+      </legend>
+      <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+      <p class="lead  text-center">
+        PAYMENT INFORMATION
+      </p>
+      <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+          <div class="row">
+            <div class="col-md-4">
+              <b>Contract Period</b> <br>
+                &emsp;<input type="radio" id="One_month" name="duration" value="1" required>
+                <label for="Training">Yearly</label><br>
+                <p class="" hidden>
+                &emsp;<input type="radio" id="two_month" name="duration" value="2">
+                <label for="Training"> Monthly</label><br>
+                &emsp;<input type="radio" id="three_month" name="duration" value="3">
+                <label for="Training"> Weekly</label>
+              </p>
+          </div>
+            <div class="col-md-4">
+                <font size="-1"> <b><i>Click on the figure to change dollar amount</i></b></font>
+                <p class="" hidden>Registration FEES: USD.<span class="fees">NULL</span></p> <br>
+                                  Registration Down payment: USD.<input type="text" name="down_payment" value="{{default_fee.student_down_payment_per_month}}" id="down_payment"> <br>
+                <p class="" hidden>Registration Fee Bonus: USD. <input type="text" name="bonus" value="{{default_fee.student_bonus_payment_per_month}}" id="bonus"></p><br>
+                <p class="" hidden>Registration Fee Balance: USD.  <span id="balance">NULL</span></p>
+            </div>
+            <div class="col-md-4">
+                <h8><b>Method of Payment:</b></h8> <br>
+                <input type="radio" name="payment_type" value="paypal" required>
+                Paypal 
+                <input type="radio" name="payment_type" value="cash_app">
+                Cash App 
+                <input type="radio" name="payment_type" value="Venmo">
+                Venmo
+            </div>
+          </div>
+      <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+      <p class="lead  text-center">
+        SIGNATORY
+      </p>
+      <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+          <div class="row" >
+            <div class="col-md-6">
+                signature:<input type="text" name="client_sign" class="signature" value="{{request.user}}" required><br>
+            </div>
+            <div class="col-md-6">
+                Company Rep:      <input type="text" name="rep_name" class="signature" value="coda" required><br>
+            </div>
+          </div>
+
+
+      <hr style="height:1px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+     <input type="checkbox" name="terms" required><b> I agree to the Terms of services</b>
+    </fieldset>
+    <div class="form-group">
+      <button class="btn btn-outline-info" type="submit">Submit</button>
+    </div>
+  </form>
+</div>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+<!-- <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/ui/1.11.2/jquery-ui.js"></script> -->
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('input[type=radio][name=duration]').change(function() {
+        var fee = $(this).val()
+        console.log("fees --->",fee)
+        var fees = 1000*fee;
+        var down_payment_amount= $("#down_payment").val()
+        var bonus = $("#bonus").val()
+        var balance = fees - (parseInt(down_payment_amount)+parseInt(bonus));
+        $(".fees").text(fees);
+        $("#balance").text(balance);
+
+
+    });
+    $('#down_payment').keyup(function() {
+        var down_payment_amount= $("#down_payment").val()
+        var bonus = $("#bonus").val()
+        var fee = $("input[name='duration']:checked").val();
+        var fees = 1000*fee;
+        var balance = fees - (parseInt(down_payment_amount)+parseInt(bonus));
+        $("#balance").text("USD. "+balance);
+    });
+    $('#bonus').keyup(function() {
+        var down_payment_amount= $("#down_payment").val()
+        var bonus = $("#bonus").val()
+        var fee = $("input[name='duration']:checked").val();
+        var fees = 1000*fee;
+        var balance = fees - (parseInt(down_payment_amount)+parseInt(bonus));
+        $("#balance").text("USD. "+balance);
+    });
+});
+</script>
+{% endblock content%}
+
+
+
+
+

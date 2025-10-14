@@ -1,0 +1,147 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}MPESA Payment - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid payment-form-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <!-- Payment Header -->
+            <div class="payment-header text-center mb-4">
+                <h1 class="display-5 mb-3">
+                    <i class="fa fa-mobile text-success mr-3"></i>
+                    MPESA Mobile Money Payment
+                </h1>
+                <p class="lead text-muted">Complete your payment using MPESA</p>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="payment-summary mb-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">Payment Summary</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Total Amount</small>
+                                <div class="fw-bold">${{ payment_info.payment_fees }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Available Balance</small>
+                                <div class="fw-bold">${{ payment_info.fee_balance }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <div class="payment-form">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fa fa-mobile mr-2"></i>
+                            MPESA Payment Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="mpesaPaymentForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Payment Amount *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="amount" 
+                                           name="amount" 
+                                           step="0.01" 
+                                           min="1" 
+                                           max="{{ payment_info.fee_balance }}"
+                                           value="{{ payment_info.down_payment }}"
+                                           required>
+                                </div>
+                                <div class="form-text">Maximum: ${{ payment_info.fee_balance }}</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone_number" class="form-label">Phone Number *</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone_number" 
+                                       name="phone_number" 
+                                       placeholder="+1234567890"
+                                       pattern="[+]?[0-9\s\-\(\)]+"
+                                       required>
+                                <div class="form-text">Enter your phone number (e.g., +1234567890)</div>
+                            </div>
+
+                            <div class="payment-info mb-4">
+                                <div class="alert alert-info">
+                                    <h6><i class="fa fa-info-circle mr-2"></i>Payment Information</h6>
+                                    <ul class="mb-0 small">
+                                        <li>Processing Time: Instant</li>
+                                        <li>Fees: 2.5% of payment amount</li>
+                                        <li>You will receive an OTP via email for verification</li>
+                                        <li>Enter the OTP to complete your payment</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="otp-info mb-4">
+                                <div class="alert alert-warning">
+                                    <h6><i class="fa fa-key mr-2"></i>OTP Verification</h6>
+                                    <p class="mb-0 small">After submitting this form, you will receive a One-Time Password (OTP) via email. You'll need to enter this OTP to complete your payment.</p>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fa fa-mobile mr-2"></i>
+                                    Pay with MPESA
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-4">
+                <a href="{% url 'finance:unified_method_selection' %}" class="btn btn-outline-secondary">
+                    <i class="fa fa-arrow-left mr-2"></i>
+                    Back to Payment Methods
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('mpesaPaymentForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const maxAmount = {{ payment_info.fee_balance }};
+    const phoneNumber = document.getElementById('phone_number').value;
+    
+    if (amount > maxAmount) {
+        e.preventDefault();
+        alert('Payment amount cannot exceed available balance of $' + maxAmount);
+        return false;
+    }
+    
+    if (amount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid payment amount');
+        return false;
+    }
+    
+    if (!phoneNumber || phoneNumber.length < 10) {
+        e.preventDefault();
+        alert('Please enter a valid phone number');
+        return false;
+    }
+});
+</script>
+{% endblock %}
+

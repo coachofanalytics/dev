@@ -1,0 +1,315 @@
+/**
+ * Budget System Common Styles
+ * Phase 4: Consolidated CSS for all budget templates
+ * 
+ * Extracted from:
+ * - automated_estimation.html
+ * - enhanced_budget_dashboard.html
+ * - consolidation_dashboard.html
+ * - unified_dashboard.html
+ */
+
+/* ===================================================================
+   BUDGET HEADERS
+   =================================================================== */
+
+.budget-header, .estimation-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.planning-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* ===================================================================
+   CARDS & CONTAINERS
+   =================================================================== */
+
+.tab-card, .analysis-card, .estimate-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-left: 4px solid #667eea;
+}
+
+.timeframe-selector {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* ===================================================================
+   METRICS & STATISTICS
+   =================================================================== */
+
+.metric-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    margin-bottom: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value.small {
+    font-size: 1.8rem;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===================================================================
+   NAVIGATION TABS
+   =================================================================== */
+
+.nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 2rem;
+}
+
+.nav-tabs .nav-link {
+    color: #667eea;
+    border: none;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: rgba(102, 126, 234, 0.1);
+    border-radius: 8px 8px 0 0;
+}
+
+.nav-tabs .nav-link.active {
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* ===================================================================
+   PROGRESS BARS
+   =================================================================== */
+
+.progress-bar-custom {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+}
+
+/* ===================================================================
+   RECOMMENDATIONS & ALERTS
+   =================================================================== */
+
+.recommendation-item {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.recommendation-item.warning {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.recommendation-item.success {
+    background: #d4edda;
+    border-left-color: #28a745;
+}
+
+/* ===================================================================
+   VARIANCE INDICATORS
+   =================================================================== */
+
+.variance-positive {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.variance-negative {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.variance-neutral {
+    color: #6c757d;
+    font-weight: bold;
+}
+
+/* ===================================================================
+   CATEGORY & DEPARTMENT BREAKDOWN
+   =================================================================== */
+
+.category-breakdown {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.category-breakdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.category-breakdown::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 3px;
+}
+
+/* ===================================================================
+   DEPRECATION NOTICES
+   =================================================================== */
+
+.deprecation-notice {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.deprecation-notice h4 {
+    color: #856404;
+    margin-bottom: 0.5rem;
+}
+
+.deprecation-notice p {
+    color: #856404;
+    margin-bottom: 0;
+}
+
+.deprecation-notice a {
+    color: #667eea;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+/* ===================================================================
+   RESPONSIVE DESIGN
+   =================================================================== */
+
+@media (max-width: 768px) {
+    .budget-header, .planning-header {
+        padding: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 1.8rem;
+    }
+    
+    .metric-card {
+        margin-bottom: 0.5rem;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .tab-card {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .metric-value {
+        font-size: 1.5rem;
+    }
+    
+    .nav-tabs .nav-link span {
+        display: none; /* Hide text, keep icons on mobile */
+    }
+    
+    .budget-header h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ===================================================================
+   UTILITY CLASSES
+   =================================================================== */
+
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+/* ===================================================================
+   PRINT STYLES
+   =================================================================== */
+
+@media print {
+    .budget-header,
+    .nav-tabs,
+    .btn,
+    .deprecation-notice {
+        display: none !important;
+    }
+    
+    .tab-card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+}
+
+
+
+

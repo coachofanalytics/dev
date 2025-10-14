@@ -1,0 +1,375 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Enhanced Budget Approvals - 33% Compliance{% endblock %}
+
+{% block extra_css %}
+<style>
+    .compliance-status {
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        margin: 5px 0;
+    }
+    .status-active {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    .status-inactive {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    .compliance-card {
+        border-left: 4px solid #007bff;
+        margin-bottom: 20px;
+    }
+    .stats-card {
+        text-align: center;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .stats-card.compliant {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+    }
+    .stats-card.non-compliant {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+    }
+    .stats-card.total {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+    }
+    .action-buttons {
+        margin: 20px 0;
+    }
+    .action-buttons .btn {
+        margin: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Enhanced Budget Approvals</h2>
+                <div class="compliance-status {% if is_rule_active %}status-active{% else %}status-inactive{% endif %}">
+                    {% if is_rule_active %}
+                        🟢 33% Compliance Rule: ACTIVE (After 15th)
+                    {% else %}
+                        🔴 33% Compliance Rule: INACTIVE (Before 15th)
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Compliance Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card stats-card total">
+                        <div class="card-body">
+                            <h5 class="card-title">Current Date</h5>
+                            <h3>{{ current_date|date:"M d, Y" }}</h3>
+                            <p class="card-text">
+                                {% if is_rule_active %}
+                                    Rule is active - compliance checking enabled
+                                {% else %}
+                                    Rule inactive - all employees included
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stats-card compliant">
+                        <div class="card-body">
+                            <h5 class="card-title">Compliance Threshold</h5>
+                            <h3>33%</h3>
+                            <p class="card-text">Minimum completion rate required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stats-card non-compliant">
+                        <div class="card-body">
+                            <h5 class="card-title">Target Month</h5>
+                            <h3>{{ compliance_summary.target_month }}/{{ compliance_summary.target_year }}</h3>
+                            <p class="card-text">Previous month being evaluated</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                {% if is_rule_active %}
+                    <button class="btn btn-primary" onclick="checkCompliance()">
+                        📊 Check Compliance Status
+                    </button>
+                    <button class="btn btn-success" onclick="submitCompliantOnly()">
+                        ✅ Submit Budget (Compliant Only)
+                    </button>
+                    <button class="btn btn-warning" onclick="sendNotifications()">
+                        📧 Send Notifications
+                    </button>
+                {% else %}
+                    <div class="alert alert-info">
+                        <strong>Info:</strong> The 33% compliance rule is not active yet. 
+                        All employees will be included in budget submissions until after the 15th of the month.
+                    </div>
+                {% endif %}
+                
+                <a href="{% url 'finance:compliance-dashboard' %}" class="btn btn-info">
+                    📈 View Compliance Dashboard
+                </a>
+                <a href="{% url 'finance:compliance-export' %}" class="btn btn-secondary">
+                    📁 Export Compliance Report
+                </a>
+            </div>
+
+            <!-- Monthly Budget Summary -->
+            {% if monthly_budget_summary %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie"></i>
+                                Monthly Budget Summary ({{ target_month }}/{{ target_year }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="stats-card total">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-success">${{ monthly_budget_summary.totals.total_salaries|floatformat:2 }}</h3>
+                                            <h5>Employee Salaries</h5>
+                                            <p class="text-muted">
+                                                {{ monthly_budget_summary.salary_data.compliant_count }} compliant employees
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stats-card compliant">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-primary">${{ monthly_budget_summary.totals.total_budget_items|floatformat:2 }}</h3>
+                                            <h5>Budget Items</h5>
+                                            <p class="text-muted">
+                                                {{ monthly_budget_summary.budget_items_data.item_count }} items
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stats-card non-compliant">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-info">${{ monthly_budget_summary.totals.grand_total|floatformat:2 }}</h3>
+                                            <h5>Grand Total</h5>
+                                            <p class="text-muted">
+                                                Total monthly budget
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <a href="{% url 'finance:salary-dashboard' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-money-bill-wave"></i> View Salary Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Budget Projections Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Pending Budget Approvals</h4>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Company</th>
+                                        <th>Department</th>
+                                        <th>Horizon</th>
+                                        <th>Total Estimate</th>
+                                        <th>Status</th>
+                                        <th>Submitted By</th>
+                                        <th>Submitted At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for projection in page_obj %}
+                                        <tr>
+                                            <td>{{ projection.id }}</td>
+                                            <td>{{ projection.company }}</td>
+                                            <td>{% if projection.department %}{{ projection.department.name }}{% else %}All{% endif %}</td>
+                                            <td>{{ projection.get_horizon_display }}</td>
+                                            <td>${{ projection.total_estimate|floatformat:2 }}</td>
+                                            <td>
+                                                <span class="badge badge-{% if projection.status == 'submitted' %}warning{% elif projection.status == 'approved' %}success{% else %}secondary{% endif %}">
+                                                    {{ projection.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{% if projection.created_by %}{{ projection.created_by.get_full_name|default:projection.created_by.username }}{% else %}Unknown User{% endif %}</td>
+                                            <td>{{ projection.submitted_at|date:"M d, Y H:i" }}</td>
+                                            <td>
+                                                <a href="{% url 'finance:budget-compliance' projection.id %}" class="btn btn-sm btn-info">
+                                                    📊 Compliance
+                                                </a>
+                                                <a href="{% url 'finance:approve-projection' projection.id %}" class="btn btn-sm btn-success">
+                                                    ✅ Approve
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                            <nav aria-label="Budget approvals pagination">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">No pending budget approvals found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Compliance Check Modal -->
+<div class="modal fade" id="complianceModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Compliance Status Report</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="complianceModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function checkCompliance() {
+    // Show loading
+    $('#complianceModalBody').html('<div class="text-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>');
+    $('#complianceModal').modal('show');
+    
+    // Submit form to check compliance
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.innerHTML = `
+        {% csrf_token %}
+        <input type="hidden" name="action" value="check_compliance">
+    `;
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function submitCompliantOnly() {
+    if (confirm('Are you sure you want to submit the budget with only compliant employees? Non-compliant employees will not be included in this month\'s payroll.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            {% csrf_token %}
+            <input type="hidden" name="action" value="submit_compliant_only">
+            <input type="hidden" name="company" value="1">
+            <input type="hidden" name="department" value="">
+            <input type="hidden" name="horizon" value="monthly">
+            <input type="hidden" name="method" value="average">
+            <input type="hidden" name="estimates" value="{}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function sendNotifications() {
+    if (confirm('Send email notifications to all non-compliant employees?')) {
+        fetch('{% url "finance:send-compliance-notifications" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({action: 'send_notifications'})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✅ ${data.message}`);
+            } else {
+                alert(`❌ Error: ${data.error || data.message}`);
+            }
+        })
+        .catch(error => {
+            alert(`❌ Error: ${error.message}`);
+        });
+    }
+}
+
+// Auto-refresh compliance status every 5 minutes
+setInterval(function() {
+    if ({% if is_rule_active %}true{% else %}false{% endif %}) {
+        // Only refresh if rule is active
+        console.log('Refreshing compliance status...');
+    }
+}, 300000); // 5 minutes
+</script>
+{% endblock %}

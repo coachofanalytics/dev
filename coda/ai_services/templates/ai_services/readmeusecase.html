@@ -1,0 +1,298 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% load static %}
+{% block content %}
+<!--------------------------Slider Section--------------------------------->
+<section id="data_training">
+  <div class="row text-center">
+
+    <div class="col-md-2" id="bada">
+        <div class="card">
+          <div class="card-body">
+            <h5><b>CASES</b></h5>
+            <hr/>
+            <div class="col-md-12" id="gi">
+              <p>
+                <a href="{% url 'ai_services:all_apps' app='all' %}" class="btn btn-secondary btn-sm"
+                  >ALL APPS
+                </a>
+            </p>
+            </div>
+            <hr/>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-8" id="bada">
+        {% if usecase_count > 1 %}
+        <h5><b>SELECTING A USE CASE</b></h5>
+        <div class="card">
+          <div class="card-body">
+            <hr/>
+                  <div class="row text-center">
+                            {% for usecase in usecases %}
+                            <div class="col-md-4 text-center" id="bada">
+                              <div class="card-group">
+                                <div class="card">
+                                  <div class="">
+                                    <p class="display-5 text-center"><b>
+                                      {{usecase.title}}
+                                    </b></p>
+                                    <button>
+                                      <a class="article-title" href="{% url 'ai_services:display_usecases' pk=usecase.id %}">Button</a>
+                                    </button>
+                                    <hr>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            {% endfor%}
+            {% else %}
+            <div class="card">
+              <div class="card-body">
+                      <div class="row text-center">
+                                {% for usecase in usecases %}
+                                <div class="col-md-12 text-center" id="bada">
+                                  <div class="card-group">
+                                    <div class="card">
+                                      <div class="">
+                                        <p class="display-5 text-center"><b>
+                                          <h5><b>{{usecase.title|upper}}</b></h5>
+                                        </b></p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                {% endfor%}
+              {% endif %}
+                </div>
+            <hr/>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2" id="bada">
+        <div class="card">
+          <div class="card-body">
+            <h5><b>ACTIONS</b></h5>
+            <hr/>
+            <i><h6>{{payday}}</h6></i>
+            <div class="col-md-12" id="gi">
+              <p><a href="{% url 'ai_services:newusecase'%}" class="btn btn-secondary btn-sm"
+                  >Add Use Case
+              </a></p>
+          </div>
+            <hr/>
+          </div>
+        </div>
+      </div>
+</div>
+       {% if usecase_count == 1 %}
+          <h5 class="text-center"><b>Description</b></h5>
+          <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+               {% for usecase in usecases %}
+                    <div class="col-md-12 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <p class="display-5 text-center">{{usecase.description}}</p>
+                            <hr>
+                            <!-- {{usecase.description}} -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+    <h5 class="text-center"><b>REQUIREMENTS</b></h5>
+     <p class="text-center">
+      To implement this requirement, we need to install/access the following :
+      </p>
+<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+  <div class="row padding mb-4">
+                    <div class="col-md-4 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <h3><b>Hardware/Software Requirements</b></h3>
+                            {% for req in Hardware_Software_Req %}
+                            <a class="article-title" href="{{req.link}}">{{req.topic}},</a>
+                            {% endfor %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    <div class="col-md-4 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <h3><b>Business/Technical Requirements</b></h3>
+                            <p class="display-5 text-center">Please click here 
+                              <td rowspan=8><a href="{% url 'management:requirements' %}?app__icontains={{usecase.app}}">{{usecase.app}}-requirements</a></td>
+                              <!-- <a class="article-title" href="{{usecase.requirements_link}}">Requirements</a> -->
+                              to access Requirements</p>
+                              <hr>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4 text-center" id="bada">
+                        <div class="card-group">
+                          <div class="card">
+                            <div class="">
+                              <h3><b>Prototype/Wireframe</b></h3>
+                              <p class="display-5 text-center"><b>
+                                We are going to create/develop a prototype that looks like this:<a class="article-title" href="{{usecase.usage_link}}">Prototype/Wireframe</a>
+                              </b></p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+    </div>
+    <h5 class="text-center"><b>Development</b></h5>
+     <p class="text-center">
+      To implement this requirement, we need to install/access the following :
+      </p>
+<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+  <div class="row padding mb-4">
+                    <div class="col-md-4 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <h3><b>Preparation</b></h3>
+                            <p class="display-5 text-center"><b>
+                             Open 3 Command Prompts for: Running Server, Github and Migrations.
+                            </b></p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    <div class="col-md-4 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <h3><b>Naming System</b></h3>
+                            <p class="display-5 text-center"><b>
+                              Implement each functional component by using specific names used in the prototype.
+                            </b></p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <div class="col-md-4 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <h3><b>Mode of Implementation:</b></h3>
+                            <p class="display-5 text-center"><b>
+                             a. Create a component b. Test the component c. Push Your Changes d. Deploy to Heroku Test Environment.
+                          </b></p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+    </div>
+                    <h5 class="text-center"><b>OVERVIEW</b></h5>
+<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+  <div class="row padding mb-4">
+                      <div class="col-md-6 text-center" id="bada">
+                        <div class="card-group">
+                          <div class="card">
+                            <div class="">
+                              <p>Version Control:Github</p>
+                              <p class="display-5 text-center"><b>
+                                Maintain CODA's Naming convention(YY.MM_COMPANY_REPOSITORY_APPNAME_YOUR-INITIALS).For e.g 24.05_CODA_DEV_ACCOUNTS_CM
+                            </b></p>
+                            <hr>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <p>Heroku Test Environment</p>
+                            <p class="display-5 text-center">{{usecase.deployment}}</p>
+                            <hr>
+                            <!-- {{usecase.description}} -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+     
+    </div>
+              {% endfor%}
+      {%endif%}
+      {% if usecase_count > 1 %}
+<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+<h5 class="text-center"><b>OVERVIEW</b></h5>
+<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+  <div class="row padding mb-4">
+            {% for content in table_contents %}
+                    <div class="col-md-3 text-center" id="bada">
+                      <div class="card-group">
+                        <div class="card">
+                          <div class="">
+                            <p class="display-5 text-center"><b>{{content.topic}}</b></p>
+                            <hr>
+                            {{content.description}}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+              {% endfor%}
+      {%endif%}
+    </div>
+<hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+  <div class="data_training">
+        <div class="row">
+    <table class="table table-borderless" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+         <th>title</th>
+          <!-- <th>description</th>  -->
+          <th>requirements</th>
+          <!-- <th>installation</th> -->
+          <!-- <th>usage</th> -->
+          <!-- <th>configuration</th> -->
+          <!-- <th>deployment</th> -->
+          <th>credits</th>
+          <th>license</th>
+          <!-- <th>contributing</th> -->
+          <th>Call for Help</th>
+          <!-- <th>additional_sections</th> -->
+          <th>links</th>
+          {% if request.user.is_superuser %}
+          <th>Update</th>
+          <!-- <th>Delete</th> -->
+          {% endif%}
+        </tr>
+      </thead>
+      <tbody>
+        {% for usecase in usecases %}
+        <tr>
+          <td>{{usecase.title}}</td>
+          <td>{{usecase.requirements_id}}</td> 
+          <!-- <td rowspan=8><a href="{% url 'management:requirements' %}?app__icontains={{usecase.app}}">{{usecase.app}}-requirements</a></td> -->
+          <!-- <td>{{usecase.description}}</td>  -->
+          <!-- <td>{{usecase.installation}}</td> -->
+            <!-- <td> <a class="article-title" href="{{usecase.usage}}">Usage</a></td> -->
+          <!-- <td>{{usecase.configuration}}</td> -->
+          <!-- <td>{{usecase.deployment}}</td> -->
+          <td>{{usecase.credits}}</td>
+          <td>{{usecase.license}}</td>
+          <!-- <td>{{usecase.contributing}}</td> -->
+          <td>{{usecase.contact}}</td>
+          <!-- <td>{{usecase.additional_sections}}</td> -->
+          <td> <a class="article-title" href="{{usecase.links}}">link</a></td>
+          <td> <a class="article-title" href="{% url 'ai_services:update_usecases' usecase.id %}">Edit</a></td>
+          <!-- <td> <a class="article-title" href="#">Delete</a></td> -->
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+ </div>
+</section>
+
+{% endblock content %}

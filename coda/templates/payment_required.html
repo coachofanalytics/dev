@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Required - {{ client_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+        }
+        
+        .icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+        
+        .message {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .message p {
+            margin-bottom: 15px;
+        }
+        
+        .client-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .payment-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .payment-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .payment-due {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .contact {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 40px;
+        }
+        
+        .contact h3 {
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .contact-item {
+            text-align: center;
+        }
+        
+        .contact-item strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .grace-period {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon pulse">🔒</div>
+        
+        <h1>Service Temporarily Unavailable</h1>
+        <div class="subtitle">Payment Required</div>
+        
+        <div class="message">
+            <p>Dear <span class="client-name">{{ client_name }}</span>,</p>
+            <p>Your website access has been temporarily suspended due to outstanding payment.</p>
+            
+            {% if payment_due %}
+            <div class="payment-due">
+                <strong>Payment Due Date:</strong> {{ payment_due }}
+            </div>
+            {% endif %}
+            
+            {% if grace_period_days > 0 %}
+            <div class="grace-period">
+                <strong>Grace Period:</strong> {{ grace_period_days }} day{{ grace_period_days|pluralize }} remaining
+            </div>
+            {% endif %}
+            
+            <p>Please contact your account manager or our support team immediately to restore access to your website.</p>
+        </div>
+        
+        <div class="status-badge">Access Suspended</div>
+        
+        <div class="payment-info">
+            <h3>Account Information</h3>
+            <p><strong>Client:</strong> {{ client_name }}</p>
+            <p><strong>Website:</strong> {{ site_url }}</p>
+            <p><strong>Status:</strong> Payment Required</p>
+            {% if payment_status %}
+            <p><strong>Payment Status:</strong> {{ payment_status|title }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="contact">
+            <h3>Need Immediate Assistance?</h3>
+            <p>Our support team is ready to help you restore access quickly.</p>
+            
+            <div class="contact-info">
+                <div class="contact-item">
+                    <strong>Email Support</strong>
+                    <div>support@codatrainingapp.com</div>
+                </div>
+                <div class="contact-item">
+                    <strong>Phone Support</strong>
+                    <div>+254 XXX XXX XXX</div>
+                </div>
+                <div class="contact-item">
+                    <strong>Emergency Line</strong>
+                    <div>+254 XXX XXX XXX</div>
+                </div>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.9;">
+                <strong>Response Time:</strong> Within 2 hours during business hours<br>
+                <strong>Business Hours:</strong> Monday - Friday, 8:00 AM - 6:00 PM EAT
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh page every 5 minutes to check if payment has been processed
+        setTimeout(function() {
+            window.location.reload();
+        }, 300000); // 5 minutes
+        
+        // Log access attempt for monitoring
+        console.log('Payment required page accessed:', new Date().toISOString());
+        
+        // Track page views (optional - for analytics)
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'payment_required_page_view', {
+                'client_name': '{{ client_name }}',
+                'site_url': '{{ site_url }}'
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

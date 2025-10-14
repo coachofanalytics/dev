@@ -1,0 +1,152 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if department %}{{ department.name }}{% else %}Activities{% endif %}
+{% endblock %}
+
+{% block content %}
+    <!--------------------------Slider Section--------------------------------->
+    <section id="data_training">
+        <h3 class="title text-center">WEB BUDGET FOR {{ institution }}</h3>
+    
+        <div class="row text-center">
+            <div class="col-md-2" id="bada">
+                <div class="card">
+                  <div class="card-body">
+                    <h5><b>COMPANY</b></h5>
+                    <hr/>
+                    {% for company in companies %}
+                    <div class="col-md-12" id="gi">
+                        {% if company.slug == 'coda' %}
+                        <p><a href="{% url 'finance:coda_budget_estimation' app='all' %}" class="btn btn-secondary btn-sm"
+                            >{{company}}
+                        </a></p>
+                        {% else %}
+                        <p><a href="{% url 'finance:site_budget_with_subcategory' company_slug=company.slug category='Web' subcategory='all' %}" class="btn btn-secondary btn-sm"
+                            >{{company}}
+                        </a></p>
+                        {% endif %}
+                  </div>
+                  {% endfor %}
+                    <hr/>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-8" id="bada">
+                <div class="card">
+                  <div class="card-body">
+                    <h5><b>BUDGETING</b></h5>
+                    <hr/>
+                    <div class="row text-center">
+                {% for category, total_amount in subcategory_totals %}
+                    <div class="col-md-3 text-center" id="bada">
+                    <div class="card-group">
+                        <div class="card">
+                            <div class="">
+                                    <a href="{% url 'finance:site_budget_with_subcategory' company_slug=institution_slug category=category subcategory='all' %}">
+                                    <p class="display-5 text-center" style="font-size: 24px;">{{ category}} </b></p></a>
+                                        <hr>
+                                        <!-- Display total amount for the subcategory -->
+                                        <p>$ {{ total_amount }}</p>
+                                        <!-- Link to filter the table -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                {% endfor %}
+                  </div>
+                    <hr/>
+                    <div class="row text-center">
+                  </div>
+                    </b></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2" id="bada">
+                <div class="card">
+                  <div class="card-body">
+                    <h5><b>ACTIONS</b></h5>
+                    <hr/>
+                    <i><h6>{{payday}}</h6></i>
+                    <div class="col-md-12" id="gi">
+                      <p><a href="{% url 'main:newcompany'%}" class="btn btn-secondary btn-sm"
+                          >Add Company
+                      </a></p>
+                  </div>
+                    <hr/>
+                    <div class="col-md-12" id="gi">
+                      <p><a href="https://www.codanalytics.net/admin/" class="btn btn-secondary btn-sm"
+                          >Add item
+                      </a></p>
+                  </div>
+                  <div class="col-md-12" id="gi">
+                    <p>
+                      <a href="#" class="btn btn-secondary btn-sm"
+                        >Finance Landing Page
+                      </a>
+                  </p>
+                  </div>
+                  </div>
+                </div>
+              </div>
+        </div>
+  
+        <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
+        <div class="data_training text-center">
+            <h3 class="title">{{subcat}} SITE COMPONENTS 
+                <p><a href="https://www.codanalytics.net/admin/" class="btn btn-secondary btn-sm">Add item</a></p>
+            </h3>
+            <div class="row text-center">
+                <div class="col-md-12" id="gi">
+                    <table class="table table-borderless" style="width: 100%">
+                        <thead class="border-bottom font-weight-bold">
+                            <tr>
+                                <!-- <th>Company</th> -->
+                                <th>Category</th> 
+                                <th>Section</th>
+                                <th>Task</th>
+                                <th>Cases</th>
+                                <th>Qty(Hours)</th>
+                                <th>Unit Price</th>
+                                <th>Amount(USD)</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Days</th>
+                                <th>Reference</th>
+                                {% if user.is_admin or user.is_superuser %}
+                                    <th>Edit</th>
+                                    <th>Delete</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for budget in site_budget %}
+                                <tr>
+                                    <!-- <td>{{ budget.company }}</td> -->
+                                    <td>{{ budget.category.name }}</td>
+                                    <td>{{ budget.subcategory.name }}</td>
+                                    <td>
+                                        <a class="text-dark text-decoration-none" data-toggle="tooltip" title="{{ budget.description }}" href="{{ category.get_absolute_url }}">{{ budget.name }}</a>
+                                    </td>
+                                    <td>{{ budget.cases }}</td>
+                                    <td>{{ budget.qty }}</td>
+                                    <td>{{ budget.unit_price }}</td>
+                                    <td>{{ budget.amount|floatformat:2 }}</td>
+                                    <td>{{ budget.start_date|date:"n/d/Y" }}</td>
+                                    <td>{{ budget.end_date|date:"n/d/Y" }}</td>
+                                    <td>{{ budget.number_days}}</td>
+                                    <td><a class="article-title" href="{{ receipt_url }}">View</a></td>
+                                    {% if user.is_admin or user.is_superuser %}
+                                        <td><a class="article-title" href="{% url 'finance:web-update' budget.id %}">Edit</a></td>
+                                        <td><a class="article-title" href="#">Delete</a></td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock content %}

@@ -1,0 +1,626 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+/* Theme Variables */
+:root {
+    --theme-primary-start: #243865;
+    --theme-primary-end: #001f3f;
+    --theme-accent: #E7AD4A;
+    --theme-card-start: #243865;
+    --theme-card-end: #001f3f;
+    --theme-border: rgba(231, 173, 74, 0.3);
+    --theme-hover-start: #764ba2;
+    --theme-hover-end: #667eea;
+}
+
+/* Purple Theme */
+.unified-dashboard[data-theme="purple"] {
+    --theme-primary-start: #667eea;
+    --theme-primary-end: #764ba2;
+    --theme-accent: #667eea;
+    --theme-card-start: #667eea;
+    --theme-card-end: #764ba2;
+    --theme-border: rgba(255, 255, 255, 0.2);
+    --theme-hover-start: #243865;
+    --theme-hover-end: #001f3f;
+}
+
+.unified-dashboard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--theme-primary-start) 0%, var(--theme-primary-end) 100%);
+    padding: 2rem 0;
+    transition: background 0.5s ease;
+}
+
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.dashboard-header h1 {
+    color: #2c3e50;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.role-badge {
+    background: linear-gradient(45deg, var(--theme-card-start), var(--theme-accent));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background 0.5s ease;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.unified-dashboard .quick-action-card {
+    background: linear-gradient(135deg, var(--theme-card-start) 0%, var(--theme-card-end) 100%) !important;
+    border-radius: 15px !important;
+    padding: 1.5rem !important;
+    text-decoration: none !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid var(--theme-border) !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 120px !important;
+}
+
+.unified-dashboard .quick-action-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+    color: white !important;
+    text-decoration: none !important;
+    background: linear-gradient(135deg, var(--theme-hover-start) 0%, var(--theme-hover-end) 100%) !important;
+}
+
+.unified-dashboard .quick-action-card i {
+    font-size: 2rem !important;
+    color: white !important;
+    margin-bottom: 1rem !important;
+    display: block !important;
+}
+
+.unified-dashboard .quick-action-card span {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: white !important;
+}
+
+.dashboard-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.dashboard-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-section h2 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #667eea;
+}
+
+.dashboard-iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.widget-container {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+/* Theme Switcher */
+.theme-switcher {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: flex-end;
+}
+
+.theme-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid #2c3e50;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.theme-btn.active {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-btn.navy-gold {
+    border-color: #243865;
+    color: #243865;
+}
+
+.theme-btn.navy-gold.active {
+    background: linear-gradient(45deg, #243865, #E7AD4A);
+    color: white;
+    border-color: #E7AD4A;
+}
+
+.theme-btn.purple {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.theme-btn.purple.active {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border-color: #764ba2;
+}
+
+.theme-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-iframe {
+        height: 400px;
+    }
+    
+    .theme-switcher {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+}
+</style>
+<div class="unified-dashboard">
+    <div class="container-fluid">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>
+                        <i class="fas fa-tachometer-alt"></i>Command Center
+                    </h1>
+                    <p class="lead mb-0">{{ dashboard_config.title }}</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="user-info">
+                        <span><strong>Welcome, {{ user.get_full_name|default:user.username }}</strong></span>
+                        <span class="role-badge">{{ user_role|title }}</span>
+                    </div>
+                    <!-- Theme Switcher -->
+                    <div class="theme-switcher">
+                        <button class="theme-btn navy-gold active" onclick="switchTheme('navy-gold')" id="navy-btn">
+                            <i class="fas fa-anchor"></i>
+                            <span>Navy & Gold</span>
+                        </button>
+                        <button class="theme-btn purple" onclick="switchTheme('purple')" id="purple-btn">
+                            <i class="fas fa-gem"></i>
+                            <span>Purple</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            {% for action in quick_actions %}
+            <a href="{{ action.url }}" class="quick-action-card" onclick="trackServiceAccess('{{ action.title }}')">
+                <i class="{{ action.icon }}"></i>
+                <span>{{ action.title }}</span>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Role-Based Links (from Management System) -->
+        {% if role_based_links %}
+        <div class="role-based-links">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-user-cog"></i> My Account Services</h2>
+                <p>Quick access to your personalized services based on your role</p>
+            </div>
+            <div class="quick-actions">
+                {% for link_name, link_url in role_based_links.items %}
+                <a href="{{ link_url }}" class="quick-action-card" target="_blank">
+                    {% if link_name == 'My Tasks' %}
+                        <i class="fas fa-tasks"></i>
+                    {% elif link_name == 'Task History' %}
+                        <i class="fas fa-history"></i>
+                    {% elif link_name == 'Edit Profile' %}
+                        <i class="fas fa-user-edit"></i>
+                    {% elif link_name == 'Make a Payment' %}
+                        <i class="fas fa-credit-card"></i>
+                    {% elif link_name == 'My Evidence' or link_name == 'Evidence' %}
+                        <i class="fas fa-file-alt"></i>
+                    {% elif link_name == 'My Sessions' %}
+                        <i class="fas fa-graduation-cap"></i>
+                    {% elif link_name == 'Job Placement' %}
+                        <i class="fas fa-briefcase"></i>
+                    {% elif link_name == 'My Time' %}
+                        <i class="fas fa-clock"></i>
+                    {% elif link_name == 'My Meetings' %}
+                        <i class="fas fa-calendar"></i>
+                    {% elif link_name == 'My Schedule' %}
+                        <i class="fas fa-calendar-alt"></i>
+                    {% elif link_name == 'My DAF' or link_name == 'Last DAF' %}
+                        <i class="fas fa-chart-pie"></i>
+                    {% elif link_name == 'Professional Services' %}
+                        <i class="fas fa-briefcase"></i>
+                    {% elif link_name == 'Job Tracking' %}
+                        <i class="fas fa-search"></i>
+                    {% elif link_name == 'Apply for Loan' %}
+                        <i class="fas fa-money-bill-wave"></i>
+                    {% elif 'Data Analysis' in link_name or 'Analytics' in link_name %}
+                        <i class="fas fa-chart-line"></i>
+                    {% elif 'Programming' in link_name or 'Code' in link_name %}
+                        <i class="fas fa-code"></i>
+                    {% elif 'Business' in link_name or 'General' in link_name %}
+                        <i class="fas fa-briefcase"></i>
+                    {% else %}
+                        <i class="fas fa-external-link-alt"></i>
+                    {% endif %}
+                    <span>{{ link_name }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Dashboard Sections -->
+        <div class="dashboard-sections">
+            {% for section in dashboard_config.sections %}
+            <div class="dashboard-section">
+                <h2>
+                    <i class="fas fa-{% if section.type == 'iframe' %}external-link-alt{% else %}cog{% endif %}"></i>
+                    {{ section.title }}
+                </h2>
+                <div class="section-content">
+                    {% if section.type == 'iframe' %}
+                        <iframe src="{{ section.url }}" class="dashboard-iframe" 
+                                onload="trackIframeLoad('{{ section.title }}')"></iframe>
+                    {% elif section.type == 'widget' %}
+                        <div class="widget-container">
+                            {% include section.template %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- User Widgets -->
+        {% if widgets %}
+        <div class="dashboard-section">
+            <h2><i class="fas fa-puzzle-piece"></i> My Widgets</h2>
+            <div class="row">
+                {% for widget in widgets %}
+                <div class="col-md-6 mb-3">
+                    <div class="widget-container">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>{{ widget.title }}</h5>
+                            <button class="btn btn-sm btn-outline-danger" 
+                                    onclick="removeWidget({{ widget.id }})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <p class="text-muted">{{ widget.description }}</p>
+                        <div class="widget-content">
+                            <!-- Widget content would be rendered here -->
+                            <p><em>Widget type: {{ widget.widget_type }}</em></p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Activities -->
+        {% if recent_activities %}
+        <div class="dashboard-section">
+            <h2><i class="fas fa-history"></i> Recent Activities</h2>
+            <div class="list-group">
+                {% for activity in recent_activities %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ activity.title }}</h5>
+                        <small>{{ activity.timestamp|timesince }} ago</small>
+                    </div>
+                    <p class="mb-1">{{ activity.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Notifications -->
+        {% if notifications %}
+        <div class="dashboard-section">
+            <h2>
+                <i class="fas fa-bell"></i> Notifications
+                {% if notifications|length > 0 %}
+                <span class="notification-badge">{{ notifications|length }}</span>
+                {% endif %}
+            </h2>
+            <div class="list-group">
+                {% for notification in notifications %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ notification.title }}</h5>
+                        <small>{{ notification.timestamp|timesince }} ago</small>
+                    </div>
+                    <p class="mb-1">{{ notification.message }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Sidebar Toggle Button -->
+<button class="sidebar-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Track service access
+function trackServiceAccess(serviceName) {
+    // Send analytics data
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        fetch('/dashboard/services/access/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken.value
+            },
+            body: JSON.stringify({
+                service_name: serviceName,
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Analytics tracking skipped:', err));
+    }
+}
+
+// Track iframe loads
+function trackIframeLoad(sectionTitle) {
+    console.log(`Loaded iframe: ${sectionTitle}`);
+}
+
+// Remove widget
+function removeWidget(widgetId) {
+    if (confirm('Are you sure you want to remove this widget?')) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            fetch(`/dashboard/widgets/${widgetId}/remove/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error removing widget');
+                }
+            })
+            .catch(err => {
+                console.error('Error removing widget:', err);
+                alert('Error removing widget');
+            });
+        }
+    }
+}
+
+// Toggle sidebar
+function toggleSidebar() {
+    // This would toggle a sidebar if implemented
+    console.log('Toggle sidebar');
+}
+
+// Auto-refresh functionality
+{% if preferences.auto_refresh %}
+setInterval(function() {
+    // Refresh dashboard data
+    location.reload();
+}, {{ preferences.refresh_interval }}000);
+{% endif %}
+
+// Theme switching
+function switchTheme(theme) {
+    console.log('Switching theme to:', theme);
+    const dashboard = document.querySelector('.unified-dashboard');
+    
+    if (!dashboard) {
+        console.error('Dashboard element not found!');
+        return;
+    }
+    
+    // Update dashboard theme attribute
+    if (theme === 'purple') {
+        dashboard.setAttribute('data-theme', 'purple');
+        console.log('Applied purple theme');
+    } else {
+        dashboard.removeAttribute('data-theme');
+        console.log('Applied navy-gold theme (default)');
+    }
+    
+    // Update button states
+    const buttons = document.querySelectorAll('.theme-btn');
+    console.log('Found', buttons.length, 'theme buttons');
+    
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const purpleBtn = document.getElementById('purple-btn');
+    const navyBtn = document.getElementById('navy-btn');
+    
+    if (theme === 'purple') {
+        if (purpleBtn) {
+            purpleBtn.classList.add('active');
+            console.log('Activated purple button');
+        } else {
+            console.error('Purple button not found!');
+        }
+    } else {
+        if (navyBtn) {
+            navyBtn.classList.add('active');
+            console.log('Activated navy button');
+        } else {
+            console.error('Navy button not found!');
+        }
+    }
+    
+    // Save preference to localStorage
+    localStorage.setItem('dashboardTheme', theme);
+    console.log('Saved theme to localStorage:', theme);
+    
+    // Optional: Save to server
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        fetch('/dashboard/settings/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken.value
+            },
+            body: `theme=${theme}`
+        }).then(() => {
+            console.log('Theme saved to server');
+        }).catch(err => {
+            console.log('Theme save to server skipped:', err);
+        });
+    } else {
+        console.log('CSRF token not found, skipping server save');
+    }
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== Dashboard Initializing ===');
+    
+    // Load saved theme from localStorage
+    const savedTheme = localStorage.getItem('dashboardTheme') || 'navy-gold';
+    console.log('Loading saved theme:', savedTheme);
+    switchTheme(savedTheme);
+    
+    // Initialize tooltips if Bootstrap is available
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        console.log('Bootstrap tooltips initialized');
+    }
+    
+    console.log('=== Dashboard Initialization Complete ===');
+});
+</script>
+{% endblock %}

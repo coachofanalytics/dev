@@ -1,0 +1,367 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Apply for Investment - {{ investor_type|title }} Investor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .investment-form {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin: 20px 0;
+    }
+    
+    .investor-type-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    
+    .individual { background: #e3f2fd; color: #1976d2; }
+    .angel { background: #f3e5f5; color: #7b1fa2; }
+    .vc { background: #e8f5e8; color: #388e3c; }
+    .private { background: #fff3e0; color: #f57c00; }
+    
+    .plan-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 10px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .plan-card:hover {
+        border-color: #1976d2;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+    }
+    
+    .plan-card.selected {
+        border-color: #1976d2;
+        background-color: #e3f2fd;
+    }
+    
+    .amount-input {
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .btn-invest {
+        background: linear-gradient(135deg, #1976d2, #42a5f5);
+        border: none;
+        color: white;
+        padding: 15px 40px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-invest:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<style>
+.plan-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.plan-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.1);
+}
+
+.plan-card.selected {
+    border-color: #007bff;
+    background: #f8f9ff;
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+}
+
+.plan-card.selected::before {
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #007bff;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.plan-card {
+    position: relative;
+}
+
+.investor-type-badge {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.investor-type-badge.angel {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.investor-type-badge.vc {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.investor-type-badge.private {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.investor-type-badge.individual {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+</style>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="investment-form">
+                <div class="text-center mb-4">
+                    <h2>Apply for Investment</h2>
+                    <span class="investor-type-badge {{ investor_type }}">
+                        {{ investor_type|title }} Investor
+                    </span>
+                </div>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" id="investmentForm">
+                    {% csrf_token %}
+                    
+                    <!-- Investment Plans Selection -->
+                    <div class="form-group">
+                        <label>Select Investment Plan</label>
+                        {% for plan in investment_plans %}
+                            <div class="plan-card {% if forloop.first %}selected{% endif %}" 
+                                 onclick="selectPlan({{ plan.id }}, '{{ plan.tier }}', {{ plan.base_amount }})"
+                                 data-plan-id="{{ plan.id }}">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5>{{ plan.name }}</h5>
+                                        <p class="text-muted">{{ plan.description }}</p>
+                                        <small class="text-info">{{ plan.tier }}</small>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <h4 class="text-primary">${{ plan.base_amount|floatformat:0 }}+</h4>
+                                        <p>{{ plan.rate|floatformat:2 }}% return</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Investment Amount -->
+                    <div class="form-group">
+                        <label for="amount_invested">Investment Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" 
+                                   class="form-control amount-input" 
+                                   id="amount_invested" 
+                                   name="amount_invested" 
+                                   min="1000" 
+                                   step="100" 
+                                   required>
+                        </div>
+                        <small class="form-text text-muted">
+                            Minimum: $1,000 | Maximum varies by investor type
+                        </small>
+                    </div>
+                    
+                    <!-- Duration -->
+                    <div class="form-group">
+                        <label for="duration">Investment Duration (months)</label>
+                        <select class="form-control" id="duration" name="duration" required>
+                            <option value="">Select Duration</option>
+                            <option value="6">6 months</option>
+                            <option value="12" selected>12 months</option>
+                            <option value="18">18 months</option>
+                            <option value="24">24 months</option>
+                            <option value="36">36 months</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Investment Purpose -->
+                    <div class="form-group">
+                        <label for="investment_purpose">Investment Purpose</label>
+                        <textarea class="form-control" 
+                                  id="investment_purpose" 
+                                  name="investment_purpose" 
+                                  rows="4" 
+                                  placeholder="Describe what you hope to achieve with this investment..."></textarea>
+                    </div>
+                    
+                    <!-- Model Type -->
+                    <div class="form-group">
+                        <label for="model_type">Investment Model</label>
+                        <select class="form-control" id="model_type" name="model_type">
+                            <option value="Installment" selected>Installment</option>
+                            <option value="Revenue">Revenue Share</option>
+                            <option value="Options">Options</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Revenue Share Percentage -->
+                    <div class="form-group">
+                        <label for="revenue_share_percentage">Expected Return Rate (%)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="revenue_share_percentage" 
+                               name="revenue_share_percentage" 
+                               min="0" 
+                               max="50" 
+                               step="0.1" 
+                               value="8.0">
+                        <small class="form-text text-muted">
+                            Default: 8% annual return
+                        </small>
+                    </div>
+                    
+                    <!-- Hidden field for selected plan -->
+                    <input type="hidden" id="selected_plan" name="investment_plan" value="{% if investment_plans %}{{ investment_plans.0.id }}{% endif %}">
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-invest">
+                        Submit Investment Application
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectPlan(planId, tier, baseAmount) {
+    // Remove selected class from all cards
+    document.querySelectorAll('.plan-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    event.currentTarget.classList.add('selected');
+    
+    // Set the hidden field value
+    document.getElementById('selected_plan').value = planId;
+    
+    // Set minimum amount based on plan
+    const amountInput = document.getElementById('amount_invested');
+    if (amountInput) {
+        amountInput.min = baseAmount;
+        amountInput.placeholder = `Minimum: $${baseAmount.toLocaleString()}`;
+        
+        // Update current value if it's below minimum
+        const currentAmount = parseFloat(amountInput.value) || 0;
+        if (currentAmount < baseAmount) {
+            amountInput.value = baseAmount;
+        }
+    }
+}
+
+// Initialize form on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-select first plan if none selected
+    const firstPlanCard = document.querySelector('.plan-card.selected');
+    if (firstPlanCard) {
+        const planId = firstPlanCard.getAttribute('data-plan-id');
+        const tier = firstPlanCard.querySelector('.text-info').textContent.trim();
+        const baseAmount = parseFloat(firstPlanCard.querySelector('.text-primary').textContent.replace(/[$,+]/g, ''));
+        
+        // Initialize the form with first plan
+        document.getElementById('selected_plan').value = planId;
+        
+        // Set minimum amount
+        const amountInput = document.getElementById('amount_invested');
+        if (amountInput) {
+            amountInput.min = baseAmount;
+            amountInput.placeholder = `Minimum: $${baseAmount.toLocaleString()}`;
+            
+            // Set default amount to minimum if empty
+            if (!amountInput.value) {
+                amountInput.value = baseAmount;
+            }
+        }
+    }
+});
+
+// Form validation
+document.getElementById('investmentForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('amount_invested').value);
+    const plan = document.getElementById('selected_plan').value;
+    const amountInput = document.getElementById('amount_invested');
+    const minAmount = parseFloat(amountInput.min) || 1000;
+    
+    if (!plan) {
+        e.preventDefault();
+        alert('Please select an investment plan');
+        return;
+    }
+    
+    if (!amount || isNaN(amount)) {
+        e.preventDefault();
+        alert('Please enter a valid investment amount');
+        return;
+    }
+    
+    if (amount < minAmount) {
+        e.preventDefault();
+        alert(`Minimum investment amount is $${minAmount.toLocaleString()}`);
+        return;
+    }
+    
+    if (amount < 1000) {
+        e.preventDefault();
+        alert('Minimum investment amount is $1,000');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('.btn-invest');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Submitting...';
+});
+</script>
+{% endblock %}

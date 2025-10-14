@@ -1,0 +1,80 @@
+{% extends "main/base_templates/email_base.html" %}
+{% block content %}
+<div style="width: 100%; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="background-color: #002f5b; color: #ffcc00; padding: 20px; text-align: center;">
+        <p style="margin: 0; font-size: 24px; font-weight: bold;">CODA-CROWN DATA ANALYSIS AND CONSULTANCY LLC</p>
+        <p style="margin: 5px 0 0; font-size: 16px;">
+            <a href="http://www.codanalytics.net/" style="color: #ffcc00; text-decoration: none; font-size: 16px;font-weight: bold; background-color: #0a4976; padding: 10px 20px; border-radius: 5px;">Visit Our Website</a>
+        </p>
+    </div>
+
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; text-align: center;">
+        <h2 style="color: #721c24; margin: 0;">⚠️ Guarantor Update Required</h2>
+        <p style="color: #721c24; margin: 10px 0 0;">Your guarantor has declined to approve your loan application</p>
+    </div>
+
+    <div style="background-color: #fff; border: 1px solid #ccc; padding: 20px; margin-top: 20px;">
+        <h3 style="color: #002f5b;">Dear {{ borrower.get_full_name|default:borrower.username }},</h3>
+
+        <p>We wanted to inform you that your guarantor has declined to approve your loan application. Don't worry - this is not uncommon, and we're here to help you find a solution.</p>
+
+        <div style="background-color: #f8f9fa; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0;">
+            <h4 style="margin-top: 0; color: #dc3545;">Application Details:</h4>
+            <p><strong>Application Number:</strong> #{{ loan_app.application_number }}</p>
+            <p><strong>Loan Amount:</strong> ${{ loan_app.amount_requested|floatformat:2 }}</p>
+            <p><strong>Purpose:</strong> {{ loan_app.purpose|title }}</p>
+            <p><strong>Previous Guarantor:</strong> {{ guarantor.get_full_name|default:guarantor.username }}</p>
+        </div>
+
+        <h4 style="color: #002f5b;">What You Can Do:</h4>
+        <ol>
+            <li><strong>Select a New Guarantor:</strong> Choose from our suggested staff members below</li>
+            <li><strong>Edit Your Application:</strong> Update guarantor information and resubmit</li>
+            <li><strong>Contact Support:</strong> We're here to help you through the process</li>
+        </ol>
+
+        {% if suggested_guarantors %}
+        <div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; margin: 20px 0;">
+            <h4 style="color: #0c5460; margin-top: 0;">💡 Suggested Staff Guarantors:</h4>
+            <p>Here are the top 3 most eligible staff members who can act as your guarantor:</p>
+            {% for guarantor_data in suggested_guarantors %}
+            <div style="background-color: white; border: 1px solid #bee5eb; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                <p style="margin: 5px 0;"><strong>{{ guarantor_data.staff.get_full_name }}</strong></p>
+                <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                    📧 {{ guarantor_data.staff.email }}<br>
+                    💰 ${{ guarantor_data.avg_earnings|floatformat:0 }}/month<br>
+                    📅 {{ guarantor_data.tenure_days }} days tenure<br>
+                    ⭐ Score: {{ guarantor_data.combined_score|floatformat:1 }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://www.codanalytics.net{{ edit_loan_url }}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">Edit Your Application</a>
+            <a href="http://www.codanalytics.net/finance/loan-home/" style="background-color: #6c757d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Back to Loan Home</a>
+        </div>
+
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0;">
+            <h4 style="color: #856404; margin-top: 0;">💡 Tips for Success:</h4>
+            <ul style="margin: 10px 0;">
+                <li>Choose a guarantor with stable income and good relationship with you</li>
+                <li>Make sure your guarantor understands their responsibilities</li>
+                <li>Contact your guarantor before submitting to confirm their willingness</li>
+            </ul>
+        </div>
+
+        <p>We're committed to helping you get the funding you need. If you have any questions or need assistance, please don't hesitate to contact our finance team.</p>
+
+        <p style="margin-top: 30px;">
+            Best regards,<br><br>
+            <strong>Finance Team</strong><br>
+            Crown Data Analysis and Consultancy LLC (CODA)<br>
+            <span style="color: #007bff;">finance@codanalytics.net</span><br>
+            <span style="color: #007bff;">+1(816)745-2510</span>
+        </p>
+    </div>
+</div>
+{% endblock content %}
+

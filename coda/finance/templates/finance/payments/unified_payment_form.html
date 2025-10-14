@@ -1,0 +1,141 @@
+{% extends "finance/payments/base_payment.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ form_title|default:"Payment Form" }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">{{ form_title|default:"Payment Form" }}</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:unified_dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'finance:payments' %}">Payments</a></li>
+                        <li class="breadcrumb-item active">{{ form_title|default:"Payment Form" }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="payment-form">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-credit-card"></i> 
+                            {{ form_title|default:"Payment Form" }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if form_description %}
+                            <p class="text-muted mb-4">{{ form_description }}</p>
+                        {% endif %}
+
+                        <form method="POST" id="paymentForm">
+                            {% csrf_token %}
+                            
+                            <fieldset class="form-group">
+                                <legend class="border-bottom mb-4">
+                                    {{ form_legend|default:"Payment Details" }}
+                                </legend>
+                                
+                                {% if form_errors %}
+                                    <div class="alert alert-danger">
+                                        <h6>Please correct the following errors:</h6>
+                                        {{ form_errors }}
+                                    </div>
+                                {% endif %}
+                                
+                                {{ form|crispy }}
+                            </fieldset>
+                            
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button class="action-btn" type="submit" id="submitBtn">
+                                            <i class="fas fa-check"></i> 
+                                            {{ submit_text|default:"Submit Payment" }}
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <a href="{% url 'finance:payments' %}" class="action-btn action-btn-secondary">
+                                            <i class="fas fa-arrow-left"></i> 
+                                            Cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Method Information -->
+    {% if payment_methods %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="data-card">
+                <h6 class="mb-3">
+                    <i class="fas fa-info-circle"></i> Available Payment Methods
+                </h6>
+                <div class="row">
+                    {% for method in payment_methods %}
+                        <div class="col-md-4 mb-3">
+                            <div class="payment-method-info">
+                                <h6>{{ method.name }}</h6>
+                                <p class="text-muted small">{{ method.description }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+$(document).ready(function() {
+    console.log('Unified payment form loaded');
+    
+    // Form validation
+    $('#paymentForm').on('submit', function(e) {
+        var submitBtn = $('#submitBtn');
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+        
+        // Re-enable button after 3 seconds as fallback
+        setTimeout(function() {
+            submitBtn.prop('disabled', false);
+            submitBtn.html('<i class="fas fa-check"></i> {{ submit_text|default:"Submit Payment" }}');
+        }, 3000);
+    });
+    
+    // Real-time form validation
+    $('input[required], select[required], textarea[required]').on('blur', function() {
+        if ($(this).val() === '') {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Amount formatting
+    $('input[type="number"]').on('input', function() {
+        var value = parseFloat($(this).val());
+        if (!isNaN(value)) {
+            $(this).val(value.toFixed(2));
+        }
+    });
+});
+</script>
+{% endblock %}

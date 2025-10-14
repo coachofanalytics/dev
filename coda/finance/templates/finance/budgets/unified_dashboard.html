@@ -1,0 +1,159 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Unified Budget Dashboard - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'finance/css/budget-common.css' %}">
+<style>
+    /* Fix dashboard layout skew */
+    .container-fluid[data-budget-dashboard="true"] {
+        max-width: 100%;
+        margin: 0 auto;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* Ensure proper centering */
+    .budget-header {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    /* Fix any left skew */
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .col-12, .col-md-8, .col-md-4 {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" data-budget-dashboard="true">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="budget-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Unified Budget Dashboard
+                        </h2>
+                        <p class="mb-0">Comprehensive budget management and planning system</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h4>{{ company.name }}</h4>
+                        <small>{{ "now"|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Filter -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <form method="get" class="form-inline">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="department_filter" class="me-2">Filter by Department:</label>
+                        <select name="department_id" id="department_filter" class="form-control" onchange="this.form.submit()">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if selected_department and selected_department.id == dept.id %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}" 
+                       href="?tab=overview{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'estimation' %}active{% endif %}" 
+                       href="?tab=estimation{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-robot"></i> Estimation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'planning' %}active{% endif %}" 
+                       href="?tab=planning{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-calendar-alt"></i> Planning
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'approvals' %}active{% endif %}" 
+                       href="?tab=approvals{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-check-circle"></i> Approvals
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}" 
+                       href="?tab=analytics{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'editing' %}active{% endif %}" 
+                       href="?tab=editing{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-edit"></i> Budget Editing
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'loans' %}active{% endif %}" 
+                       href="?tab=loans{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-hand-holding-usd"></i> Loans
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="row">
+        <div class="col-12">
+            {% if active_tab == 'overview' %}
+                {% include "finance/budgets/tabs/overview_tab.html" %}
+            {% elif active_tab == 'estimation' %}
+                {% include "finance/budgets/tabs/estimation_tab.html" %}
+            {% elif active_tab == 'planning' %}
+                {% include "finance/budgets/tabs/planning_tab.html" %}
+            {% elif active_tab == 'approvals' %}
+                {% include "finance/budgets/tabs/approvals_tab.html" %}
+            {% elif active_tab == 'analytics' %}
+                {% include "finance/budgets/tabs/analytics_tab.html" %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'finance/js/budget-common.js' %}"></script>
+<script>
+$(document).ready(function() {
+    console.log('Unified Budget Dashboard loaded successfully');
+    console.log('Active tab: {{ active_tab }}');
+});
+</script>
+{% endblock %}
+

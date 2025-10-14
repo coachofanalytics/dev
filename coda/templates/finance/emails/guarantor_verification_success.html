@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified - Guarantor Approval</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #28a745; color: white; padding: 20px; border-radius: 5px 5px 0 0; }
+        .content { background: #f8f9fa; padding: 20px; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 5px; border-left: 4px solid #28a745; }
+        .section.info { border-left-color: #17a2b8; }
+        .btn { display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px 5px; }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .footer { text-align: center; margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 5px; }
+        .success-icon { font-size: 48px; color: #28a745; text-align: center; margin: 20px 0; }
+        .table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .table td { padding: 8px 0; border-bottom: 1px solid #dee2e6; }
+        .table td:first-child { font-weight: bold; width: 120px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 style="margin: 0;">✅ Email Successfully Verified</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">CODA Finance Team</p>
+        </div>
+        
+        <div class="content">
+            <!-- Success Icon -->
+            <div class="success-icon">
+                ✅
+            </div>
+
+            <!-- Success Message -->
+            <div class="section">
+                <h3 style="margin-top: 0; color: #28a745;">
+                    🎉 Email Verification Complete
+                </h3>
+                <p><strong>{{ guarantor.get_full_name }}</strong>, your email address has been successfully verified!</p>
+                <p>You can now proceed to review and approve the guarantor request for <strong>{{ loan_app.borrower.get_full_name }}</strong>'s loan application.</p>
+            </div>
+
+            <!-- Quick Loan Summary -->
+            <div class="section info">
+                <h3 style="margin-top: 0; color: #17a2b8;">
+                    📋 Loan Application Summary
+                </h3>
+                <table class="table">
+                    <tr>
+                        <td>Application #:</td>
+                        <td>{{ loan_app.application_number }}</td>
+                    </tr>
+                    <tr>
+                        <td>Borrower:</td>
+                        <td>{{ loan_app.borrower.get_full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Loan Product:</td>
+                        <td>{{ loan_app.loan_product.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Amount:</td>
+                        <td>${{ loan_app.amount_requested }}</td>
+                    </tr>
+                    <tr>
+                        <td>Interest Rate:</td>
+                        <td>{{ loan_app.loan_product.interest_rate }}%</td>
+                    </tr>
+                    <tr>
+                        <td>Term:</td>
+                        <td>{{ loan_app.loan_product.term_months }} months</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="section">
+                <h3 style="margin-top: 0; color: #28a745;">
+                    🚀 What's Next?
+                </h3>
+                <p>Now that your email is verified, you can:</p>
+                <ol>
+                    <li><strong>Review the complete loan details</strong> and borrower information</li>
+                    <li><strong>Understand your responsibilities</strong> as a guarantor</li>
+                    <li><strong>Approve or decline</strong> the guarantor request</li>
+                    <li><strong>Receive updates</strong> about the loan status</li>
+                </ol>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <a href="{{ approval_url }}" class="btn btn-success">
+                        📝 Review & Approve Request
+                    </a>
+                </div>
+            </div>
+
+            <!-- Important Information -->
+            <div class="section info">
+                <h3 style="margin-top: 0; color: #17a2b8;">
+                    ⚠️ Important Information
+                </h3>
+                <ul>
+                    <li><strong>Your Decision:</strong> You can approve or decline this guarantor request</li>
+                    <li><strong>No Obligation:</strong> You are not obligated to approve if you're not comfortable</li>
+                    <li><strong>Questions:</strong> Contact us if you need clarification on any terms</li>
+                    <li><strong>Security:</strong> Your email verification ensures secure communication</li>
+                </ul>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="section">
+                <h3 style="margin-top: 0; color: #007bff;">
+                    📞 Need Assistance?
+                </h3>
+                <p>If you have any questions or need help with the approval process:</p>
+                <ul>
+                    <li><strong>Email:</strong> finance@codanalytics.net</li>
+                    <li><strong>Phone:</strong> +1(816)745-2510</li>
+                    <li><strong>Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p style="margin: 0; color: #6c757d;">
+                <strong>CODA Finance Team</strong><br>
+                Email verified for {{ guarantor.email }}<br>
+                Verification completed on {{ verification_date|date:"F j, Y, g:i a" }}
+            </p>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #6c757d;">
+                &copy; 2024 CODA Analytics. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

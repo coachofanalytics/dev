@@ -1,0 +1,39 @@
+{%extends "main/base_templates/new_base.html"%}
+ {%load crispy_forms_tags%} 
+ {% load customfilters %}
+ {%block content %}
+<section id="career">
+  <div class="career text-center">
+    <h2>Previous Searches </h2>
+    <a class="btn btn-secondary" href="{% url 'main:check_wcag_compliance' %}">Back To WCAG</a>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered" style="width: 100%">
+      <thead class="border-bottom font-weight-bold">
+        <tr>
+          <th>company   </th>
+          <th>app   </th>
+          <th>page_name   </th>
+          <th>website_url </th>
+          <th>improvements</th>
+          <th>created_at</th>
+          <th>updated_at</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for search in previous_searches %}
+        <tr>
+            <td>{{search.company }}</td>
+            <td>{{search.app_name   }}</td>
+            <td>{{search.website_url }}</td>
+            <td>{{search.page_name   }}</td>
+            <td>{{search.improvements}}</td>
+            <td>{{search.created_at}}</td>
+            <td>{{search.updated_at}}</td>
+      </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  </div>
+</section>
+{%endblock content %}

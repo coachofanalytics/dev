@@ -1,0 +1,114 @@
+<div class="row">
+    <div class="col-lg-12">
+        <p class="lead text-center">
+            <b>Terms and Conditions</b>
+        </p>
+
+        {% if model_type == "installment" %}
+        <p><strong>Installment Investment Model Agreement:</strong></p>
+        <ul>
+            <li>The agreed-upon **interest rate** for this investment shall remain fixed at <strong>{{ interest_rate }}%</strong> for the full duration of the investment period.</li>
+            <li>Monthly payments of <strong>${{ monthly_payments|floatformat:2 }}</strong> will commence on <strong>{{ contract_start_date|date:"d F, Y" }}</strong> and will be due on the same date each subsequent month.</li>
+            <li>The agreed investment duration is set at <strong>{{ contract_duration }} months</strong>. Any modification to this timeframe requires **mutual written consent** from both parties.</li>
+            <li>In the event that the investor chooses to **withdraw their investment before the agreed-upon term**, a **10% penalty fee** will be applied to the remaining balance. This penalty is non-negotiable and strictly enforced.</li>
+            <li>If an **investor fails to make payments as per the contract**, a **late penalty of 5% on the outstanding balance** will be imposed, compounding monthly until the due amount is cleared.</li>
+            <li>The investor may designate a **beneficiary** by submitting a formal written notice to CODA. In the event of the investor’s **incapacitation or death**, the designated beneficiary shall be entitled to the remaining balance of the investment.</li>
+        </ul>
+
+        <h5>Risk Disclosure</h5>
+        <p>
+            The installment-based investment model offers **fixed returns** over the agreed period. However, investors must be aware of the following potential risks:
+        </p>
+        <ul>
+            <li>**Delays in scheduled payments** due to unforeseen operational challenges or economic fluctuations.</li>
+            <li>**Partial or full loss of returns** in the event of force majeure, economic instability, or regulatory changes affecting CODA’s financial standing.</li>
+            <li>While **returns are contractually guaranteed**, CODA shall not be held liable for non-performance due to insolvency or other extreme financial circumstances.</li>
+        </ul>
+
+        {% elif model_type == "loan" %}
+        <p><strong>Loan Agreement Terms:</strong></p>
+        <ul>
+            <li>The **fixed interest rate** applicable to this loan is **{{ interest_rate }}% annually**, and this shall remain unchanged throughout the loan period.</li>
+            <li>Borrowers are required to **make monthly installment payments of ${{ monthly_installment|floatformat:2 }}**, starting on **{{ contract_date|date:"d F, Y" }}** and continuing on the same date of each month until full repayment is completed.</li>
+            <li>The loan term is set for duration as indicated above. Extensions or modifications to this period require formal **written approval from CODA**.</li>
+            <li>Failure to make monthly payments within the specified time frame shall result in a **{{ late_payment_penalty }}% penalty fee** on the outstanding balance. This penalty will be **compounded monthly** until the overdue amount is settled in full.</li>
+            <li>Early loan repayment is **permitted with no additional penalty**. Borrowers are encouraged to clear their loan early to reduce total interest costs.</li>
+            <li>CODA reserves the right to **take legal action, report loan delinquencies to credit bureaus, and initiate debt collection measures** if a borrower defaults on their loan.</li>
+            <li>Borrowers must designate a **guarantor or co-signer** who assumes legal responsibility in the event of non-repayment. The guarantor’s approval must be obtained before loan disbursement.</li>
+            <li>CODA may request **additional financial documentation** such as proof of income, business registration (if applicable), and credit history reports to assess loan eligibility.</li>
+        </ul>
+
+        <h5>Risk Disclosure</h5>
+        <p>
+            Borrowers should carefully evaluate the following financial risks associated with loans before entering into a binding agreement:
+        </p>
+        <ul>
+            <li>Failure to make timely payments may lead to **penalty charges, increased interest accumulation, and potential legal consequences**.</li>
+            <li>Loan defaults can **negatively impact a borrower's credit rating**, reducing their ability to secure future loans from CODA and other financial institutions.</li>
+            <li>In cases of **financial hardship**, CODA may offer **loan restructuring options**, but such modifications are discretionary and not guaranteed.</li>
+            <li>Loans are subject to **market conditions, regulatory changes, and CODA’s financial health**, all of which may impact future loan availability and terms.</li>
+            <li>Borrowers must ensure they have a **stable income source** to meet monthly loan repayment obligations as per the contract.</li>
+        </ul>
+
+        {% elif model_type == "revenue" %}
+        <p><strong>Revenue Sharing Investment Terms:</strong></p>
+        <ul>
+            <li>CODA shall allocate **30% of its total revenue** to the investment pool for **all investors collectively**. Investors will receive a proportional share based on their contribution.</li>
+            <li>Your **individual share of revenue** will be calculated using the following formula:
+                <ul>
+                    <li><strong>Investor Share = (Your Investment / Total Investment Pool) × 30% × Total Revenue</strong></li>
+                </ul>
+            </li>
+            <li>Payouts shall be **distributed quarterly**, with the first distribution occurring **three months after the initial investment date**.</li>
+            <li>Since revenue share payments are based on **company earnings**, investor returns may **fluctuate** due to operational performance, market conditions, or economic changes.</li>
+            <li>No minimum revenue share is guaranteed, as returns are tied to CODA’s actual business performance.</li>
+        </ul>
+
+        <h5>Risk Disclosure</h5>
+        <p>
+            Investors should understand the following risks associated with revenue-based returns:
+        </p>
+        <ul>
+            <li>Returns depend entirely on CODA’s **financial performance and market conditions**.</li>
+            <li>Economic downturns, **industry fluctuations**, and operational risks may impact CODA’s ability to generate revenue, thereby affecting investor payouts.</li>
+            <li>If the company **underperforms or incurs losses**, revenue shares may be significantly reduced or suspended.</li>
+        </ul>
+
+        {% elif model_type == "options" %}
+        <p><strong>Options Trading Investment Terms:</strong></p>
+        <ul>
+            <li>Returns from this investment are derived from CODA’s **trading activities** and are subject to **market volatility**.</li>
+            <li>CODA shall commence investor payouts **30 days after the initial deposit of funds**.</li>
+            <li>Investors may **not request withdrawals within the first six months**. Any withdrawal before this period will incur a **10% penalty on the invested amount**.</li>
+            <li>The **annual fixed interest rate** is **7%**, with potential additional profits based on trading performance.</li>
+            <li>After **six months**, investors may request withdrawals up to **33% of their total Buying Power**, subject to CODA’s risk management policies.</li>
+        </ul>
+
+        <h5>Risk Disclosure</h5>
+        <p>
+            Options trading is inherently **risky**, and investors must be aware of the following:
+        </p>
+        <ul>
+            <li>Investments in **trading strategies involve significant risks**, including the potential loss of capital.</li>
+            <li>Market fluctuations, **economic conditions**, and trade execution delays may impact returns.</li>
+            <li>CODA does not guarantee a minimum return. Profits depend on **trading performance and market conditions**.</li>
+        </ul>
+        {% else %}
+        <div class="row">
+            <div class="col-lg-12">
+                <p class="lead  text-center">
+                    <b>Terms </b>
+                </p>
+                <p>
+                    1. All training sessions will be conducted virtually using the <b>GoToMeeting & ZOOM</b> platforms. The specific dates of the training sessions will be communicated by CODA. In the event of any change in the training platform, CODA will notify the Client via email and social media groups such as WhatsApp platforms.<br>
+                    2. CODA will provide all necessary learning materials, including PowerPoints and videos, throughout the training period.<br>
+                    3. The Client agrees to make payments according to the <b>payment schedule</b> attached to the contract.<br>
+                    4. The information provided during the training sessions is for educational and entertainment purposes only. It should not be construed as solicitation or financial advice for any underlying trades.<br>
+                    5. CODA will not be held liable for any loss incurred from trades made using the information or data provided on its site.<br>
+                  </p>
+            </div>
+          </div>
+        {% endif %} 
+    </div>
+</div>
+

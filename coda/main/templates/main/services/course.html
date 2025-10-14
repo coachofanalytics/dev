@@ -1,0 +1,88 @@
+{% load static %}
+{% block content %}
+<div class="container-lg">
+    <div class="courses-section">
+        <h2 class="mt-4 mt-md-0" style="text-align: left;color: #243865;font-weight: 700;">Customized Services</h2>
+        <hr style="width: 31%; height: 4px; background-color: #E7AD4A;">
+
+        {% for service in service_categories %}
+        <div class="course-card">
+          {% if title == "Training & Professional Support" %}
+            {% if service.name == "IT-Training" %}
+              <img class="course-image" src="{% static 'main/image/ittraining.jpg' %}" alt="">
+            {% elif service.name == "Interview" %}
+              <img class="course-image" src="{% static 'main/image/interviews.png' %}" alt="">
+            {% else %}
+                  <img class="course-image" src="{% static 'main/image/jobsupport.jpg' %}" alt="">
+            {% endif %}
+          {% else %}
+            {% if service.name == "IT-Project Management" %}
+              <img class="course-image" style="height: 170px;" src="{% static 'main/image/projectmanagement.png' %}" alt="">
+            {% elif service.name == "Field Projects Management" %}
+              <img class="course-image"style="height: 170px;" src="{% static 'main/image/fieldprojectmanagement.png' %}" alt="">
+            {% else %}
+                  <img class="course-image"style="height: 170px;" src="{% static 'main/image/socialmediamarketing.png' %}" alt="">
+            {% endif %} 
+          {% endif %}   
+            <div class="course-details">
+                <h3>{{ service.name }}</h3>
+                
+                {% if service.description|length > 200 %}
+                    <p class="course-description">
+                        <span class="description-short">{{ service.description|slice:":200" }}</span>
+                        <span class="description-full" style="display: none;">{{ service.description }}</span>
+                        <a class="more-link">Read More</a>
+                        <a  class="less-link" style="display: none;">Read Less</a>
+                    </p>
+                {% else %}
+                    <p class="course-description">{{ service.description }}</p>
+                {% endif %}
+                {% if service.slug %}
+                <a href="{{ SITEURL }}/display_plans/{{ service.slug }}/"><button type="button" class="btn btn-primary">Proceed</button></a>
+                {% else %}
+                    <a href="{% url 'main:layout' %}"><button type="button" class="btn btn-primary">Proceed</button></a>
+                {% endif %}
+                <!-- <a  class="btn btn-primary enroll-button">Proceed</a> -->
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>    
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const moreLinks = document.querySelectorAll('.more-link');
+      const lessLinks = document.querySelectorAll('.less-link');
+
+      moreLinks.forEach(function(link) {
+        link.addEventListener('click', function(event) {
+          event.preventDefault();
+          const descriptionShort = this.parentNode.querySelector('.description-short');
+          const descriptionFull = this.parentNode.querySelector('.description-full');
+          const card = this.closest('.course-card');
+
+          descriptionShort.style.display = 'none';
+          descriptionFull.style.display = 'inline';
+          this.style.display = 'none';
+          this.parentNode.querySelector('.less-link').style.display = 'inline';
+
+          // Scroll to the bottom of the expanded card
+          card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        });
+      });
+
+      lessLinks.forEach(function(link) {
+        link.addEventListener('click', function(event) {
+          event.preventDefault();
+          const descriptionShort = this.parentNode.querySelector('.description-short');
+          const descriptionFull = this.parentNode.querySelector('.description-full');
+          descriptionShort.style.display = 'inline';
+          descriptionFull.style.display = 'none';
+          this.style.display = 'none';
+          this.parentNode.querySelector('.more-link').style.display = 'inline';
+        });
+      });
+    });
+</script>
+
+{% endblock %}

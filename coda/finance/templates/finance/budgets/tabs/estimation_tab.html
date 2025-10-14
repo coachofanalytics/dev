@@ -1,0 +1,58 @@
+{% load static %}
+
+<!-- Estimation Tab -->
+<div class="tab-card">
+    <h3 class="mb-4">
+        <i class="fas fa-robot"></i> Automated Budget Estimation
+    </h3>
+    
+    {% if estimation_data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ estimation_data.error }}
+    </div>
+    {% else %}
+    
+    <p class="text-muted">AI-powered budget estimation based on historical spending patterns</p>
+    
+    <!-- Estimation Results -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="metric-card">
+                <div class="metric-value">${{ estimation_data.next_month_estimate.total_estimate|default:"0"|floatformat:2 }}</div>
+                <div class="metric-label">Next Month Estimate</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <div class="metric-value">${{ estimation_data.quarterly_estimate.total_estimate|default:"0"|floatformat:2 }}</div>
+                <div class="metric-label">Quarterly Estimate</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <div class="metric-value">${{ estimation_data.annual_estimate.total_estimate|default:"0"|floatformat:2 }}</div>
+                <div class="metric-label">Annual Estimate</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommendations -->
+    {% if estimation_data.recommendations %}
+    <div class="row">
+        <div class="col-12">
+            <h4>Recommendations</h4>
+            {% for rec in estimation_data.recommendations %}
+            <div class="alert alert-{{ rec.type }}" role="alert">
+                <strong>{{ rec.title }}:</strong> {{ rec.message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% endif %}
+</div>
+
+
+
+

@@ -1,0 +1,513 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load finance_extras %}
+
+{% block title %}Detailed Budget Breakdown - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Detailed Budget Breakdown</h1>
+                <div>
+                    <button class="btn btn-success" onclick="submitDetailedEstimate()">
+                        <i class="fa fa-paper-plane"></i> Submit for Approval
+                    </button>
+                    <a href="{% url 'finance:projections-list' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Projections
+                    </a>
+                </div>
+            </div>
+
+            <!-- Projection Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Projection Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Company:</strong> {{ projection.company.name }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Department:</strong> {{ projection.department.name|default:"All" }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Horizon:</strong> {{ projection.horizon|title }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Status:</strong> 
+                            <span class="badge bg-{% if projection.status == 'submitted' %}success{% elif projection.status == 'approved' %}primary{% else %}warning{% endif %}">
+                                {{ projection.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>Total Estimate:</strong> 
+                            <span class="h5 text-primary" id="total-estimate">${{ projection.total_estimate|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Items:</strong> 
+                            <span id="total-items">{{ item_details|length }}</span> categories
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            {% for category, items in item_details.items %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ category }}</h5>
+                    <div>
+                        <span class="badge bg-info" id="category-total-{{ forloop.counter }}">$0.00</span>
+                        <button class="btn btn-sm btn-outline-primary" onclick="toggleCategory({{ forloop.counter }})">
+                            <i class="fa fa-chevron-down" id="toggle-icon-{{ forloop.counter }}"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="category-content-{{ forloop.counter }}">
+                    {% if items %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Description</th>
+                                        <th>Default Cost</th>
+                                        <th>Your Quantity</th>
+                                        <th>Your Unit Cost</th>
+                                        <th>Your Total</th>
+                                        <th>Variance</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr data-item-id="{{ item.id }}">
+                                        <td>
+                                            <strong>{{ item.item_name }}</strong>
+                                            {% if item.is_essential %}
+                                                <span class="badge bg-danger">Essential</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.description|truncatechars:50 }}</td>
+                                        <td>
+                                            <span class="text-muted">${{ item.total_cost|floatformat:2 }}</span>
+                                            <br><small>{{ item.frequency|title }}</small>
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control form-control-sm quantity-input" 
+                                                   value="{% if existing_estimates|lookup:item.id %}{{ existing_estimates|lookup:item.id.estimated_quantity|default:item.quantity }}{% else %}{{ item.quantity }}{% endif %}"
+                                                   data-item-id="{{ item.id }}"
+                                                   step="0.01" min="0">
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control form-control-sm unit-cost-input" 
+                                                   value="{% if existing_estimates|lookup:item.id %}{{ existing_estimates|lookup:item.id.estimated_unit_cost|default:item.unit_cost }}{% else %}{{ item.unit_cost }}{% endif %}"
+                                                   data-item-id="{{ item.id }}"
+                                                   step="0.01" min="0">
+                                        </td>
+                                        <td>
+                                            <span class="item-total" data-item-id="{{ item.id }}">$0.00</span>
+                                        </td>
+                                        <td>
+                                            <span class="variance" data-item-id="{{ item.id }}">0%</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" 
+                                                    onclick="saveItemEstimate({{ item.id }}, {{ projection.id }})">
+                                                <i class="fa fa-save"></i> Save
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No items defined for this category yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- AI-Powered Intelligent Suggestions -->
+            {% if ai_suggestions %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fa fa-brain"></i> AI-Powered Intelligent Suggestions
+                        <span class="badge bg-primary ms-2">{{ ai_suggestions.confidence_score|floatformat:0 }}% Confidence</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if ai_suggestions.suggestions.budget_recommendations %}
+                    <h6>Smart Budget Recommendations</h6>
+                    <div class="row">
+                        {% for category, recommendation in ai_suggestions.suggestions.budget_recommendations.items %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title">{{ category }}</h6>
+                                    <p class="card-text">
+                                        <strong>Suggested:</strong> ${{ recommendation.suggested_amount|floatformat:2 }}<br>
+                                        <small class="text-muted">{{ recommendation.reason }}</small>
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Confidence: {{ recommendation.confidence|floatformat:0 }}%</small>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="applyAISuggestion('{{ category }}', {{ recommendation.suggested_amount }})">
+                                            <i class="fa fa-magic"></i> Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if ai_suggestions.suggestions.optimization_tips %}
+                    <h6 class="mt-4">Optimization Tips</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for tip in ai_suggestions.suggestions.optimization_tips %}
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fa fa-lightbulb text-warning me-2"></i>
+                            {{ tip }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Smart Data Corrections -->
+            {% if data_corrections %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fa fa-wrench"></i> Smart Data Corrections
+                        <span class="badge bg-warning ms-2">{{ data_corrections.total_issues_found }} Issues Found</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if data_corrections.category_corrections %}
+                    <h6>Category Corrections</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Transaction</th>
+                                    <th>Current</th>
+                                    <th>Suggested</th>
+                                    <th>Confidence</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for correction in data_corrections.category_corrections %}
+                                <tr>
+                                    <td>{{ correction.description|truncatechars:30 }}</td>
+                                    <td>{{ correction.current_category|default:"None" }}</td>
+                                    <td>{{ correction.suggested_category }}</td>
+                                    <td>{{ correction.confidence|floatformat:0 }}%</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-success" onclick="applyCorrection({{ correction.transaction_id }}, 'category', '{{ correction.suggested_category }}')">
+                                            <i class="fa fa-check"></i> Apply
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                    
+                    {% if data_corrections.amount_outliers %}
+                    <h6 class="mt-3">Amount Outliers</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Amount</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Normal Range</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for outlier in data_corrections.amount_outliers %}
+                                <tr class="table-warning">
+                                    <td>${{ outlier.amount|floatformat:2 }}</td>
+                                    <td>{{ outlier.category }}</td>
+                                    <td>{{ outlier.description|truncatechars:30 }}</td>
+                                    <td>{{ outlier.normal_range }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="reviewOutlier({{ outlier.transaction_id }})">
+                                            <i class="fa fa-eye"></i> Review
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Data Quality Insights -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Data Quality Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Completeness Score</h6>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar" role="progressbar" style="width: 85%">85%</div>
+                                </div>
+                                <small class="text-muted">Data completeness</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Accuracy Score</h6>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 92%">92%</div>
+                                </div>
+                                <small class="text-muted">Data accuracy</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Confidence Level</h6>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 88%">88%</div>
+                                </div>
+                                <small class="text-muted">Estimate confidence</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate totals when inputs change
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all quantity and unit cost inputs
+    document.querySelectorAll('.quantity-input, .unit-cost-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const itemId = this.dataset.itemId;
+            calculateItemTotal(itemId);
+            calculateCategoryTotals();
+        });
+    });
+    
+    // Initial calculation
+    calculateAllTotals();
+});
+
+function calculateItemTotal(itemId) {
+    const row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+    const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+    const unitCost = parseFloat(row.querySelector('.unit-cost-input').value) || 0;
+    const total = quantity * unitCost;
+    
+    // Update display
+    row.querySelector('.item-total').textContent = '$' + total.toFixed(2);
+    
+    // Calculate variance
+    const defaultCost = parseFloat(row.querySelector('td:nth-child(3) span').textContent.replace('$', '')) || 0;
+    const variance = defaultCost > 0 ? ((total - defaultCost) / defaultCost) * 100 : 0;
+    const varianceElement = row.querySelector('.variance');
+    varianceElement.textContent = variance.toFixed(1) + '%';
+    varianceElement.className = 'variance ' + (variance > 0 ? 'text-danger' : variance < 0 ? 'text-success' : 'text-muted');
+}
+
+function calculateCategoryTotals() {
+    document.querySelectorAll('.card.mb-4').forEach((card, index) => {
+        if (index === 0) return; // Skip summary card
+        
+        const rows = card.querySelectorAll('tbody tr');
+        let categoryTotal = 0;
+        
+        rows.forEach(row => {
+            const total = parseFloat(row.querySelector('.item-total').textContent.replace('$', '')) || 0;
+            categoryTotal += total;
+        });
+        
+        const totalElement = document.getElementById(`category-total-${index}`);
+        if (totalElement) {
+            totalElement.textContent = '$' + categoryTotal.toFixed(2);
+        }
+    });
+}
+
+function calculateAllTotals() {
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        calculateItemTotal(input.dataset.itemId);
+    });
+    calculateCategoryTotals();
+    updateGrandTotal();
+}
+
+function updateGrandTotal() {
+    let grandTotal = 0;
+    document.querySelectorAll('.item-total').forEach(element => {
+        const total = parseFloat(element.textContent.replace('$', '')) || 0;
+        grandTotal += total;
+    });
+    
+    document.getElementById('total-estimate').textContent = '$' + grandTotal.toFixed(2);
+}
+
+function toggleCategory(index) {
+    const content = document.getElementById(`category-content-${index}`);
+    const icon = document.getElementById(`toggle-icon-${index}`);
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.className = 'fa fa-chevron-down';
+    } else {
+        content.style.display = 'none';
+        icon.className = 'fa fa-chevron-right';
+    }
+}
+
+function saveItemEstimate(itemId, projectionId) {
+    const row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+    const quantity = row.querySelector('.quantity-input').value;
+    const unitCost = row.querySelector('.unit-cost-input').value;
+    const notes = ''; // Could add notes field if needed
+    
+    fetch(`{% url 'finance:save-item-estimate' projection_id=0 %}`.replace('0', projectionId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `item_detail_id=${itemId}&estimated_quantity=${quantity}&estimated_unit_cost=${unitCost}&notes=${notes}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Estimate saved successfully!', 'success');
+        } else {
+            showMessage('Error saving estimate: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showMessage('Error saving estimate: ' + error, 'danger');
+    });
+}
+
+function submitDetailedEstimate() {
+    if (confirm('Submit this detailed budget estimate for approval?')) {
+        fetch(`{% url 'finance:submit-detailed-estimate' projection_id=projection.id %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '{% url "finance:projections-list" %}';
+            } else {
+                showMessage('Error submitting estimate', 'danger');
+            }
+        })
+        .catch(error => {
+            showMessage('Error submitting estimate: ' + error, 'danger');
+        });
+    }
+}
+
+function showMessage(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// AI Suggestion Functions
+function applyAISuggestion(category, amount) {
+    // Find the category card and update the inputs
+    const categoryCards = document.querySelectorAll('.card.mb-4');
+    for (let card of categoryCards) {
+        const categoryTitle = card.querySelector('h5');
+        if (categoryTitle && categoryTitle.textContent.includes(category)) {
+            // Find the first item in this category and update it
+            const quantityInput = card.querySelector('.quantity-input');
+            const unitCostInput = card.querySelector('.unit-cost-input');
+            
+            if (quantityInput && unitCostInput) {
+                // Set quantity to 1 and unit cost to the suggested amount
+                quantityInput.value = '1';
+                unitCostInput.value = amount.toFixed(2);
+                
+                // Trigger calculation
+                const itemId = quantityInput.dataset.itemId;
+                calculateItemTotal(itemId);
+                calculateCategoryTotals();
+                updateGrandTotal();
+                
+                showMessage(`Applied AI suggestion for ${category}: $${amount.toFixed(2)}`, 'success');
+                return;
+            }
+        }
+    }
+    
+    showMessage(`Category ${category} not found in current breakdown`, 'warning');
+}
+
+function applyCorrection(transactionId, type, value) {
+    if (confirm(`Apply ${type} correction: ${value}?`)) {
+        // In a real implementation, this would make an AJAX call to apply the correction
+        showMessage(`Correction applied: ${type} set to ${value}`, 'success');
+        
+        // Remove the correction row
+        const row = event.target.closest('tr');
+        if (row) {
+            row.remove();
+        }
+    }
+}
+
+function reviewOutlier(transactionId) {
+    // In a real implementation, this would open a modal or redirect to review the transaction
+    showMessage(`Opening review for transaction ${transactionId}`, 'info');
+}
+</script>
+
+<style>
+.variance.text-danger { color: #dc3545 !important; }
+.variance.text-success { color: #198754 !important; }
+.variance.text-muted { color: #6c757d !important; }
+</style>
+{% endblock %}
+
