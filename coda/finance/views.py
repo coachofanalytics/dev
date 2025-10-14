@@ -2145,11 +2145,16 @@ def pay(request, *args, **kwargs):
                 else 0
             )
         except:
-            payment_info = (
-                Investor_Information.objects.filter(investor=request.user.id)
-                .order_by("-contract_date")
-                .first()
-            )
+            try:
+                payment_info = (
+                    Investor_Information.objects.filter(investor=request.user.id)
+                    .order_by("-contract_date")
+                    .first()
+                )
+            except Exception as e:
+                # Handle case where Investor_Information table schema is outdated
+                print(f"Error fetching investor info: {e}")
+                payment_info = None
             # Need modification to take the user to the interested page.
             return redirect("main:layout")
             paypal_charges = (
