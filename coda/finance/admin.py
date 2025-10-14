@@ -65,37 +65,37 @@ class LoanApplicationAdmin(admin.ModelAdmin):
     ]
     
     list_filter = [
-        'status', 'loan_product', 'created_at'
+        'status', 'loan_product', 'created_at', 'is_eligible'
     ]
     
     search_fields = [
         'application_number', 'borrower__first_name', 'borrower__last_name',
-        'purpose'
+        'borrower__email', 'purpose'
     ]
     
-    readonly_fields = ['application_number', 'created_at', 'updated_at', 'submitted_at']
+    readonly_fields = ['application_number', 'total_payable', 'monthly_payment', 'created_at', 'updated_at', 'submitted_at']
     
     fieldsets = (
         ('Application Details', {
-            'fields': ('application_id', 'applicant', 'loan_product', 'purpose')
+            'fields': ('application_number', 'borrower', 'loan_product', 'purpose')
         }),
         ('Loan Terms', {
-            'fields': ('requested_amount', 'approved_amount', 'term_months')
+            'fields': ('amount_requested', 'duration', 'interest_rate', 'total_payable', 'monthly_payment')
         }),
         ('Status', {
-            'fields': ('status', 'priority')
+            'fields': ('status', 'is_active', 'is_eligible')
         }),
         ('Financial Information', {
-            'fields': ('monthly_income', 'monthly_expenses', 'credit_score')
+            'fields': ('monthly_income', 'credit_score')
         }),
         ('Employment', {
-            'fields': ('employer', 'employment_type', 'employment_duration')
+            'fields': ('employment_status',)
+        }),
+        ('Guarantor', {
+            'fields': ('guarantor', 'guarantor_relationship', 'guarantor_approval_status', 'guarantor_consent_date', 'collateral')
         }),
         ('Approval', {
-            'fields': ('reviewed_by', 'approved_by', 'approved_at')
-        }),
-        ('Disbursement', {
-            'fields': ('disbursed_at', 'disbursement_method')
+            'fields': ('approved_by', 'approved_at')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'submitted_at'),
