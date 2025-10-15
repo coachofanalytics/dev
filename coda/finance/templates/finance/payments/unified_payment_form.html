@@ -12,7 +12,7 @@
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item"><a href="{% url 'dashboard:unified_dashboard' %}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'finance:payments' %}">Payments</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'finance:payments' title='info' status='None' %}">Payments</a></li>
                         <li class="breadcrumb-item active">{{ form_title|default:"Payment Form" }}</li>
                     </ol>
                 </div>
@@ -62,7 +62,7 @@
                                         </button>
                                     </div>
                                     <div class="col-md-6 text-right">
-                                        <a href="{% url 'finance:payments' %}" class="action-btn action-btn-secondary">
+                                        <a href="{% url 'finance:payments' title='info' status='None' %}" class="action-btn action-btn-secondary">
                                             <i class="fas fa-arrow-left"></i> 
                                             Cancel
                                         </a>

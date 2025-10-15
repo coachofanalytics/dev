@@ -194,6 +194,13 @@ class Default_Payment_Fees(models.Model):
     plan = models.IntegerField()
     payment_fees = models.IntegerField()
     down_payment = models.IntegerField(default=500)
+    
+    # Additional fields that exist in database
+    job_plan_hours_per_month = models.IntegerField(default=0, help_text="Hours per month for job plan")
+    student_down_payment_per_month = models.IntegerField(default=500, help_text="Down payment per month for students")
+    student_bonus_payment_per_month = models.IntegerField(default=0, help_text="Bonus payment per month for students")
+    job_down_payment_per_month = models.IntegerField(default=500, help_text="Down payment per month for job plan")
+    loan_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Loan amount")
 
     def __str__(self):
         return "Plan {} - Fees: {}".format(self.plan, self.payment_fees)
@@ -243,7 +250,7 @@ class PayslipConfig(models.Model):
 
 
 class Inflow(models.Model):
-    """Cash inflow tracking"""
+    """Cash inflow tracking - Maps to existing finance_inflow table"""
     
     # Inflow Type Choices
     TYPE_CHOICES = [
@@ -262,24 +269,35 @@ class Inflow(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=15, decimal_places=2)
-    currency = models.CharField(max_length=3, default='KES')
-    inflow_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='revenue')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    # Map to existing columns in database
+    sender = models.CharField(max_length=100, help_text="Sender/Source of inflow")
+    receiver = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    category = models.CharField(max_length=100, blank=True, null=True)
+    subcategory = models.CharField(max_length=100, blank=True, null=True)
+    method = models.CharField(max_length=50, default='mpesa')
+    period = models.CharField(max_length=50, blank=True, null=True)
+    item = models.CharField(max_length=200, blank=True, null=True)
+    
+    transaction_date = models.DateTimeField(default=timezone.now)
+    receipt_link = models.CharField(max_length=500, blank=True, null=True)
+    qty = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     description = models.TextField(blank=True, null=True)
-    source = models.CharField(max_length=200, blank=True, null=True)
-    received_date = models.DateTimeField(default=timezone.now)
-    confirmed_date = models.DateTimeField(null=True, blank=True)
+    
+    # Additional tracking fields
+    total_payment = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True, help_text="Total payment (calculated as qty * amount)")
+    currency = models.CharField(max_length=3, default='KES', blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     
     class Meta:
-        ordering = ['-received_date']
+        ordering = ['-transaction_date']
         verbose_name = "Cash Inflow"
         verbose_name_plural = "Cash Inflows"
     
     def __str__(self):
-        return "{} {} - {} ({})".format(self.amount, self.currency, self.get_inflow_type_display(), self.user.username)
+        return "{} {} - {} ({})".format(self.amount, self.currency or 'KES', self.method, self.sender)
 
 
 class DC48_Inflow(models.Model):
@@ -435,6 +453,7 @@ class Transaction(models.Model):
     # Additional Fields (keeping from existing schema)
     amount_usd = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
     currency = models.CharField(max_length=3, default='KES')
+    original_currency = models.CharField(max_length=3, default='USD', help_text="Original currency of the transaction")
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
     location = models.CharField(max_length=200, blank=True, null=True)
     
@@ -468,6 +487,9 @@ class CodaBudget(TimeStampedModel):
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
+    
+    # Company relationship
+    company = models.ForeignKey('main.Company', on_delete=models.CASCADE, default=1, help_text="Company this budget belongs to")
     
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
@@ -529,6 +551,7 @@ class BalanceSheetCategory(models.Model):
     )
     parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, help_text="Amount for this category")
     
     class Meta:
         ordering = ['name']
@@ -631,6 +654,11 @@ class Food(models.Model):
         ordering = ['name']
         verbose_name = "Food Item"
         verbose_name_plural = "Food Items"
+    
+    @property
+    def total_amount(self):
+        """Calculate total amount (for compatibility with other models)"""
+        return self.unit_price or 0
     
     def __str__(self):
         return "{} - {} {}".format(self.name, self.unit_price, self.currency)

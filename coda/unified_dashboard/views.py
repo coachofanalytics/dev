@@ -305,7 +305,7 @@ def dashboard_overview(request):
         'recent_activities': recent_activities,
     }
     
-    return render(request, 'unified_dashboard/overview.html', context)
+    return render(request, 'unified_dashboard/dashboard.html', context)
 
 
 @login_required

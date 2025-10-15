@@ -2296,7 +2296,7 @@ class DefaultPaymentListView(ListView):
 
 class DefaultPaymentUpdateView(UpdateView):
     model = Default_Payment_Fees
-    success_url = "/finance/payments"
+    success_url = "/finance/payments/info/None/"
 
     fields = [
         "job_down_payment_per_month",
@@ -2590,7 +2590,6 @@ def cashflows(request, type=None, time_filter="30_days"):
         ytd_duration, current_year, first_date = dates_result
     else:
         # Fallback values if dates_functionality returns None
-        from datetime import datetime
         current_year = datetime.now().year
         ytd_duration = 365
         first_date = datetime(current_year, 1, 1).date()
@@ -4201,18 +4200,35 @@ def get_guarantor_eligibility_scores(request):
         # Format data for frontend
         guarantor_data = []
         for guarantor in suggested_guarantors:
-            guarantor_data.append(
-                {
-                    "id": guarantor["staff"].id,
-                    "first_name": guarantor["staff"].first_name,
-                    "last_name": guarantor["staff"].last_name,
-                    "email": guarantor["staff"].email,
-                    "phone": guarantor["staff"].phone or "",
-                    "eligibility_score": guarantor["eligibility_score"],
-                    "avg_earnings": float(guarantor["avg_earnings"]),
-                    "monthly_earnings": guarantor["monthly_earnings"],
-                }
-            )
+            # Handle both old and new data formats
+            if "staff" in guarantor:
+                # New format with staff object
+                guarantor_data.append(
+                    {
+                        "id": guarantor["staff"].id,
+                        "first_name": guarantor["staff"].first_name,
+                        "last_name": guarantor["staff"].last_name,
+                        "email": guarantor["staff"].email,
+                        "phone": getattr(guarantor["staff"], "phone", "") or "",
+                        "eligibility_score": guarantor.get("eligibility_score", 100),
+                        "avg_earnings": float(guarantor.get("avg_earnings", 0)),
+                        "monthly_earnings": guarantor.get("monthly_earnings", 0),
+                    }
+                )
+            else:
+                # Old format with direct keys
+                guarantor_data.append(
+                    {
+                        "id": guarantor["id"],
+                        "first_name": guarantor.get("name", "").split()[0] if guarantor.get("name") else "",
+                        "last_name": guarantor.get("name", "").split()[-1] if guarantor.get("name") else "",
+                        "email": guarantor.get("email", ""),
+                        "phone": "",
+                        "eligibility_score": guarantor.get("score", 100),
+                        "avg_earnings": 0,
+                        "monthly_earnings": 0,
+                    }
+                )
 
         return JsonResponse({"success": True, "guarantors": guarantor_data})
 
