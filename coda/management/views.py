@@ -756,11 +756,20 @@ class TaskListView(FilteredListViewMixin, ListView):
     order_by = '-id'
     
     def get_queryset(self):
-        """Apply task-specific filtering - filter by logged-in employee"""
+        """Apply task-specific filtering - filter by logged-in employee or URL parameter"""
         queryset = super().get_queryset()
         
-        # Filter by logged-in employee (not all tasks)
-        if self.request.user.is_authenticated:
+        # Check for employee filter in URL parameters
+        employee_id = self.request.GET.get('employee')
+        
+        if employee_id:
+            # Filter by specific employee from URL parameter
+            try:
+                queryset = queryset.filter(employee_id=employee_id)
+            except (ValueError, TypeError):
+                pass  # Invalid employee ID, ignore
+        elif self.request.user.is_authenticated:
+            # Filter by logged-in employee (not all tasks)
             # If staff/superuser, show all tasks; otherwise show only employee's tasks
             if not (self.request.user.is_staff or self.request.user.is_superuser):
                 queryset = queryset.filter(employee=self.request.user)
@@ -788,6 +797,17 @@ class TaskListView(FilteredListViewMixin, ListView):
         
         context['form'] = form
         context['total_count'] = self.get_queryset().count()
+        
+        # Add filtered employee info if present
+        employee_id = self.request.GET.get('employee')
+        if employee_id:
+            try:
+                from accounts.models import CustomerUser
+                filtered_employee = CustomerUser.objects.get(id=employee_id)
+                context['filtered_employee'] = filtered_employee
+            except (CustomerUser.DoesNotExist, ValueError):
+                pass
+        
         return context
 
 def tasklist(request):
@@ -888,7 +908,13 @@ def payslip(request, *args, **kwargs):
     employee = None
 
     if username:
-        employee = get_object_or_404(User, username=username)
+        # Security: Only allow users to access their own data, unless they're staff/superuser
+        if request.user.username == username or request.user.is_staff or request.user.is_superuser:
+            employee = get_object_or_404(User, username=username)
+        else:
+            # Redirect unauthorized users to their own page
+            messages.warning(request, "You can only access your own payroll information.")
+            return redirect(f"{request.path}?username={request.user.username}&pay_type={pay_type or 'usertasks'}")
 
     request.session["siteurl"] = settings.SITEURL
     today, year, deadline_date, *_ = paytime()

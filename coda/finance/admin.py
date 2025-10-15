@@ -85,25 +85,25 @@ class LoanApplicationAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Application Details', {
-            'fields': ('application_id', 'applicant', 'loan_product', 'purpose')
+            'fields': ('application_number', 'borrower', 'loan_product', 'loan_plan_id', 'purpose')
         }),
         ('Loan Terms', {
-            'fields': ('requested_amount', 'approved_amount', 'term_months')
+            'fields': ('amount_requested', 'interest_rate', 'duration', 'total_payable', 'monthly_payment')
         }),
         ('Status', {
-            'fields': ('status', 'priority')
+            'fields': ('status', 'is_active', 'is_eligible', 'is_featured')
+        }),
+        ('Guarantor Information', {
+            'fields': ('guarantor', 'guarantor_relationship', 'guarantor_approval_status', 'guarantor_consent_date', 'guarantor_eligibility_score')
         }),
         ('Financial Information', {
-            'fields': ('monthly_income', 'monthly_expenses', 'credit_score')
+            'fields': ('monthly_income', 'credit_score', 'employment_status')
         }),
-        ('Employment', {
-            'fields': ('employer', 'employment_type', 'employment_duration')
+        ('Collateral', {
+            'fields': ('collateral',)
         }),
         ('Approval', {
-            'fields': ('reviewed_by', 'approved_by', 'approved_at')
-        }),
-        ('Disbursement', {
-            'fields': ('disbursed_at', 'disbursement_method')
+            'fields': ('approved_by', 'approved_at')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'submitted_at'),

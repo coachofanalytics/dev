@@ -1,0 +1,917 @@
+{% extends "finance/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ department_display_name }} Dashboard - Enhanced v2{% endblock %}
+
+{% block extra_head %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#667eea">
+<meta name="description" content="{{ department_display_name }} Dashboard - Enhanced Card-Based Interface">
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Theme Variables - Navy & Gold */
+:root {
+    --theme-primary-start: #243865;
+    --theme-primary-end: #001f3f;
+    --theme-accent: #E7AD4A;
+    --theme-card-start: #243865;
+    --theme-card-end: #001f3f;
+    --theme-border: rgba(231, 173, 74, 0.3);
+    --theme-hover-start: #667eea;
+    --theme-hover-end: #764ba2;
+    --theme-text: #2c3e50;
+    --theme-white: #ffffff;
+    --theme-light-bg: #f8f9fa;
+}
+
+/* Enhanced Dashboard Container */
+.enhanced-department-dashboard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--theme-primary-start) 0%, var(--theme-primary-end) 100%);
+    padding: 2rem 0;
+    transition: all 0.5s ease;
+}
+
+/* Header Card with Gradient */
+.department-header-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(231, 173, 74, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.department-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--theme-accent), var(--theme-primary-start));
+}
+
+.department-header-card h1 {
+    color: var(--theme-primary-start);
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.department-header-card h1 i {
+    background: linear-gradient(135deg, var(--theme-card-start), var(--theme-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.department-subtitle {
+    font-size: 1.3rem;
+    color: #6c757d;
+    font-weight: 400;
+}
+
+/* Quick Stats Cards */
+.quick-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.98) 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(231, 173, 74, 0.1);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--theme-hover-start), var(--theme-hover-end));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.4);
+    border-color: var(--theme-accent);
+}
+
+.stat-card:hover .stat-content {
+    position: relative;
+    z-index: 1;
+    color: var(--theme-white);
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.2) rotate(360deg);
+    color: var(--theme-white);
+}
+
+.stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.4s ease;
+}
+
+.stat-info h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--theme-primary-start);
+    transition: color 0.4s ease;
+}
+
+.stat-info p {
+    font-size: 1rem;
+    color: #6c757d;
+    font-weight: 500;
+    transition: color 0.4s ease;
+}
+
+.stat-icon {
+    font-size: 3rem;
+    color: var(--theme-accent);
+    transition: all 0.6s ease;
+}
+
+/* Enhanced Action Cards Grid */
+.action-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.action-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.98) 100%);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(231, 173, 74, 0.15);
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--theme-text);
+    display: block;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(135deg, var(--theme-card-start), var(--theme-accent));
+    opacity: 0;
+    transition: all 0.6s ease;
+    transform: rotate(45deg);
+}
+
+.action-card:hover::before {
+    opacity: 1;
+    top: -10%;
+    right: -10%;
+}
+
+.action-card:hover {
+    transform: translateY(-15px) scale(1.03);
+    box-shadow: 0 30px 60px rgba(102, 126, 234, 0.5);
+    border-color: var(--theme-accent);
+    text-decoration: none;
+    color: var(--theme-white);
+}
+
+.action-card-content {
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+}
+
+.action-card:hover .action-card-content {
+    color: var(--theme-white);
+}
+
+.action-card-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--theme-accent);
+    transition: all 0.6s ease;
+    display: block;
+}
+
+.action-card:hover .action-card-icon {
+    color: var(--theme-white);
+    transform: scale(1.2) rotate(10deg);
+}
+
+.action-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--theme-primary-start);
+    transition: color 0.4s ease;
+}
+
+.action-card:hover .action-card-title {
+    color: var(--theme-white);
+}
+
+.action-card-description {
+    font-size: 1rem;
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    transition: color 0.4s ease;
+}
+
+.action-card:hover .action-card-description {
+    color: rgba(255,255,255,0.9);
+}
+
+/* Edit Button on Cards */
+.card-edit-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+    z-index: 10;
+}
+
+.card-edit-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
+    background: linear-gradient(135deg, #ff9800, #f44336);
+}
+
+/* Section Cards */
+.section-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    border: 2px solid rgba(231, 173, 74, 0.1);
+    transition: all 0.3s ease;
+}
+
+.section-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    border-color: var(--theme-accent);
+}
+
+.section-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 3px solid var(--theme-accent);
+}
+
+.section-card-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--theme-primary-start);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.section-card-title i {
+    color: var(--theme-accent);
+}
+
+.section-edit-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+}
+
+.section-edit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);
+    background: linear-gradient(135deg, #20c997, #17a2b8);
+}
+
+/* Topic Cards Grid (Individual cards for each category) */
+.topic-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.topic-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.98) 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(231, 173, 74, 0.15);
+}
+
+.topic-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(135deg, var(--theme-card-start), var(--theme-accent));
+    opacity: 0;
+    transition: all 0.6s ease;
+    transform: rotate(45deg);
+}
+
+.topic-card:hover::before {
+    opacity: 1;
+    top: -10%;
+    right: -10%;
+}
+
+.topic-card:hover {
+    transform: translateY(-15px) scale(1.03);
+    box-shadow: 0 30px 60px rgba(102, 126, 234, 0.5);
+    border-color: var(--theme-accent);
+}
+
+.topic-card-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+}
+
+.topic-card-icon {
+    font-size: 3rem;
+    color: var(--theme-accent);
+    margin-bottom: 1rem;
+    transition: all 0.6s ease;
+}
+
+.topic-card:hover .topic-card-icon {
+    color: var(--theme-white);
+    transform: scale(1.2) rotate(10deg);
+}
+
+.topic-card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--theme-primary-start);
+    margin-bottom: 0;
+    transition: color 0.4s ease;
+}
+
+.topic-card:hover .topic-card-title {
+    color: var(--theme-white);
+}
+
+.topic-card-content {
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+}
+
+.topic-link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.8rem;
+    background: rgba(248, 249, 250, 0.8);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--theme-text);
+    transition: all 0.3s ease;
+}
+
+.topic-link-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: var(--theme-accent);
+    color: var(--theme-primary-start);
+    text-decoration: none;
+    transform: translateX(5px);
+}
+
+.topic-card:hover .topic-link-item {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--theme-white);
+}
+
+.topic-link-name {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.topic-link-icon {
+    color: #6c757d;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.topic-link-item:hover .topic-link-icon {
+    color: var(--theme-accent);
+}
+
+.topic-card:hover .topic-link-icon {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Mini Cards Grid (Keep for other uses) */
+.mini-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.mini-card {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--theme-text);
+    position: relative;
+    overflow: hidden;
+}
+
+.mini-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.mini-card:hover::before {
+    left: 100%;
+}
+
+.mini-card:hover {
+    border-color: var(--theme-accent);
+    background: linear-gradient(135deg, var(--theme-hover-start), var(--theme-hover-end));
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    text-decoration: none;
+}
+
+.mini-card-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--theme-accent);
+    transition: color 0.3s ease;
+}
+
+.mini-card:hover .mini-card-icon {
+    color: white;
+}
+
+.mini-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Department Tabs */
+.department-tabs-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    border: 2px solid rgba(231, 173, 74, 0.1);
+}
+
+.tabs-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tab-button {
+    padding: 1rem 2rem;
+    border: 2px solid #e9ecef;
+    border-radius: 30px;
+    background: white;
+    color: var(--theme-text);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-button:hover,
+.tab-button.active {
+    background: linear-gradient(135deg, var(--theme-card-start), var(--theme-accent));
+    color: white;
+    border-color: var(--theme-accent);
+    text-decoration: none;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Search Bar Enhancement */
+.search-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    border: 2px solid rgba(231, 173, 74, 0.1);
+}
+
+.search-input-wrapper {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.search-input-enhanced {
+    width: 100%;
+    padding: 1.5rem 60px 1.5rem 2rem;
+    border: 3px solid #e9ecef;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.search-input-enhanced:focus {
+    outline: none;
+    border-color: var(--theme-accent);
+    background: white;
+    box-shadow: 0 0 0 5px rgba(231, 173, 74, 0.1);
+}
+
+.search-icon-enhanced {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    color: var(--theme-accent);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .department-header-card h1 {
+        font-size: 2rem;
+    }
+    
+    .action-cards-grid,
+    .mini-cards-grid,
+    .topic-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tabs-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .topic-card {
+        padding: 1.5rem;
+    }
+    
+    .topic-card-icon {
+        font-size: 2.5rem;
+    }
+    
+    .topic-card-title {
+        font-size: 1.2rem;
+    }
+}
+
+/* Animation Classes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+.animate-delay-4 { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="enhanced-department-dashboard">
+    <div class="container">
+        <!-- Enhanced Department Header -->
+        <div class="department-header-card animate-fade-in">
+            <h1>
+                <i class="fas fa-building"></i>
+                {{ department_display_name|upper }}
+            </h1>
+            <p class="department-subtitle">Modern Card-Based Dashboard with Enhanced Features</p>
+        </div>
+
+        <!-- Search Functionality -->
+        {% if search_enabled %}
+        <div class="search-card animate-fade-in animate-delay-1">
+            <div class="search-input-wrapper">
+                <input type="text" id="department-search" 
+                       placeholder="🔍 Search across all departments..." 
+                       class="search-input-enhanced">
+                <i class="fas fa-search search-icon-enhanced"></i>
+            </div>
+            <div id="search-results" style="display: none; margin-top: 1rem;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Department Tabs -->
+        <div class="department-tabs-card animate-fade-in animate-delay-2">
+            <h4 class="text-center mb-4">
+                <i class="fas fa-th-large"></i> Switch Department
+            </h4>
+            <div class="tabs-container">
+                <a href="?department=finance" class="tab-button {% if department_name == 'finance' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Finance
+                </a>
+                <a href="?department=management" class="tab-button {% if department_name == 'management' %}active{% endif %}">
+                    <i class="fas fa-cogs"></i> Management
+                </a>
+                <a href="?department=hr" class="tab-button {% if department_name == 'hr' %}active{% endif %}">
+                    <i class="fas fa-users"></i> HR
+                </a>
+                <a href="?department=it" class="tab-button {% if department_name == 'it' %}active{% endif %}">
+                    <i class="fas fa-laptop-code"></i> IT
+                </a>
+                <a href="?department=marketing" class="tab-button {% if department_name == 'marketing' %}active{% endif %}">
+                    <i class="fas fa-bullhorn"></i> Marketing
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        {% if department_stats %}
+        <div class="quick-stats-grid animate-fade-in animate-delay-3">
+            {% for stat in department_stats %}
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>{{ stat.value }}</h3>
+                        <p>{{ stat.label }}</p>
+                    </div>
+                    <i class="fas fa-{{ stat.icon|default:'chart-bar' }} stat-icon"></i>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Enhanced Features (Large Action Cards) -->
+        <div class="section-card animate-fade-in animate-delay-4">
+            <div class="section-card-header">
+                <h2 class="section-card-title">
+                    <i class="fas fa-rocket"></i>
+                    Enhanced {{ department_config.name }} Features
+                </h2>
+                <button class="section-edit-btn" onclick="editSection('enhanced-features')">
+                    <i class="fas fa-edit"></i> Edit Features
+                </button>
+            </div>
+            
+            <div class="action-cards-grid">
+                {% for feature in enhanced_features %}
+                <a href="{{ feature.url }}" class="action-card">
+                    <button class="card-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); editCard('{{ feature.title }}');">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <div class="action-card-content">
+                        <i class="{{ feature.icon }} action-card-icon"></i>
+                        <h3 class="action-card-title">{{ feature.title }}</h3>
+                        <p class="action-card-description">{{ feature.description }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Individual Topic Cards (Separate cards for each category) -->
+        <div class="topic-cards-grid">
+            {% for section in department_sections %}
+                {% for subcategory in section.subcategories %}
+                <div class="topic-card animate-fade-in">
+                    <button class="card-edit-btn" onclick="editTopicCard('{{ subcategory.name }}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    
+                    <div class="topic-card-header">
+                        <div class="topic-card-icon">
+                            {% if 'report' in subcategory.name|lower %}
+                                <i class="fas fa-chart-bar"></i>
+                            {% elif 'stock' in subcategory.name|lower or 'option' in subcategory.name|lower %}
+                                <i class="fas fa-chart-line"></i>
+                            {% elif 'household' in subcategory.name|lower or 'food' in subcategory.name|lower %}
+                                <i class="fas fa-home"></i>
+                            {% elif 'budget' in subcategory.name|lower %}
+                                <i class="fas fa-wallet"></i>
+                            {% elif 'loan' in subcategory.name|lower %}
+                                <i class="fas fa-money-bill-wave"></i>
+                            {% elif 'payment' in subcategory.name|lower %}
+                                <i class="fas fa-credit-card"></i>
+                            {% else %}
+                                <i class="fas fa-folder"></i>
+                            {% endif %}
+                        </div>
+                        <h3 class="topic-card-title">{{ subcategory.name|upper }}</h3>
+                    </div>
+                    
+                    <div class="topic-card-content">
+                        {% for link in subcategory.links %}
+                        <a href="{{ link.url }}" class="topic-link-item" target="_blank">
+                            <span class="topic-link-name">{{ link.name }}</span>
+                            <i class="fas fa-external-link-alt topic-link-icon"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+$(document).ready(function() {
+    console.log('Enhanced Department Dashboard loaded for {{ department_display_name }}');
+    
+    // Edit functionality
+    window.editCard = function(cardTitle) {
+        alert('Edit Card: ' + cardTitle + '\n\nThis will open an edit modal/form.');
+        // TODO: Implement edit modal
+    };
+    
+    window.editSection = function(sectionId) {
+        alert('Edit Section: ' + sectionId + '\n\nThis will open a section editor.');
+        // TODO: Implement section editor
+    };
+    
+    window.editTopicCard = function(topicName) {
+        alert('Edit Topic Card: ' + topicName + '\n\nThis will open a topic editor.');
+        // TODO: Implement topic edit modal
+    };
+    
+    // Search functionality
+    {% if search_enabled %}
+    var allLinks = [];
+    
+    // Collect all links
+    $('.mini-card, .action-card').each(function() {
+        var $this = $(this);
+        var linkData = {
+            title: $this.find('.mini-card-title, .action-card-title').text().trim(),
+            url: $this.attr('href'),
+            description: $this.find('.action-card-description').text().trim(),
+            element: this
+        };
+        if (linkData.title && linkData.url) {
+            allLinks.push(linkData);
+        }
+    });
+    
+    $('#department-search').on('input', function() {
+        var query = $(this).val().toLowerCase().trim();
+        var $results = $('#search-results');
+        
+        if (query.length < 2) {
+            $results.hide();
+            return;
+        }
+        
+        var filteredLinks = allLinks.filter(function(link) {
+            return link.title.toLowerCase().includes(query) || 
+                   (link.description && link.description.toLowerCase().includes(query));
+        });
+        
+        if (filteredLinks.length > 0) {
+            var resultsHtml = '<div style="background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">';
+            filteredLinks.slice(0, 8).forEach(function(link) {
+                var highlightedTitle = link.title.replace(
+                    new RegExp('(' + query + ')', 'gi'), 
+                    '<strong style="color: var(--theme-accent);">$1</strong>'
+                );
+                
+                resultsHtml += `
+                    <a href="${link.url}" style="display: block; padding: 1rem; margin-bottom: 0.5rem; border-radius: 10px; border: 2px solid #e9ecef; text-decoration: none; color: #495057; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--theme-accent)'; this.style.background='#f8f9fa';" onmouseout="this.style.borderColor='#e9ecef'; this.style.background='white';" target="_blank">
+                        <div style="font-weight: 600; margin-bottom: 0.3rem;">${highlightedTitle}</div>
+                        ${link.description ? '<div style="font-size: 0.9rem; color: #6c757d;">' + link.description + '</div>' : ''}
+                    </a>
+                `;
+            });
+            resultsHtml += '</div>';
+            
+            $results.html(resultsHtml).show();
+        } else {
+            $results.html('<div style="background: white; border-radius: 15px; padding: 2rem; text-align: center; color: #6c757d;">No results found</div>').show();
+        }
+    });
+    
+    // Clear search on Escape
+    $('#department-search').on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            $(this).val('');
+            $('#search-results').hide();
+        }
+    });
+    {% endif %}
+    
+    // Add animation on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-in');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.section-card, .stat-card, .action-card').forEach((el) => {
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}
+
