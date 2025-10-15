@@ -156,8 +156,8 @@
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                             {% endif %}
-                                            {% if loan.status == 'approved' or loan.status == 'active' %}
-                                                <a href="{% url 'finance:loan-detail' loan.id %}?action=payment" class="btn btn-sm btn-success">
+                                            {% if loan.status == 'approved' %}
+                                                <a href="{% url 'finance:unified_method_selection' %}" class="btn btn-sm btn-success">
                                                     <i class="fas fa-credit-card"></i> Make Payment
                                                 </a>
                                             {% endif %}

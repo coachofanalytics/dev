@@ -41,16 +41,24 @@ class LoanProductAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'product_type')
+            'fields': ('name', 'description', 'product_type', 'status')
         }),
         ('Financial Terms', {
-            'fields': ('min_amount', 'max_amount', 'interest_rate', 'term_months', 'fees')
+            'fields': ('min_amount', 'max_amount', 'interest_rate', 'interest_type', 
+                      'min_term_months', 'max_term_months')
+        }),
+        ('Fees', {
+            'fields': ('processing_fee', 'late_fee')
         }),
         ('Eligibility', {
-            'fields': ('min_credit_score', 'requirements')
+            'fields': ('min_credit_score', 'min_income', 'employment_required')
         }),
         ('Settings', {
-            'fields': ('is_active',)
+            'fields': ('requires_collateral', 'auto_approve')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
         }),
     )
 
@@ -65,37 +73,37 @@ class LoanApplicationAdmin(admin.ModelAdmin):
     ]
     
     list_filter = [
-        'status', 'loan_product', 'created_at', 'is_eligible'
+        'status', 'loan_product', 'created_at'
     ]
     
     search_fields = [
         'application_number', 'borrower__first_name', 'borrower__last_name',
-        'borrower__email', 'purpose'
+        'purpose'
     ]
     
-    readonly_fields = ['application_number', 'total_payable', 'monthly_payment', 'created_at', 'updated_at', 'submitted_at']
+    readonly_fields = ['application_number', 'created_at', 'updated_at', 'submitted_at']
     
     fieldsets = (
         ('Application Details', {
-            'fields': ('application_number', 'borrower', 'loan_product', 'purpose')
+            'fields': ('application_id', 'applicant', 'loan_product', 'purpose')
         }),
         ('Loan Terms', {
-            'fields': ('amount_requested', 'duration', 'interest_rate', 'total_payable', 'monthly_payment')
+            'fields': ('requested_amount', 'approved_amount', 'term_months')
         }),
         ('Status', {
-            'fields': ('status', 'is_active', 'is_eligible')
+            'fields': ('status', 'priority')
         }),
         ('Financial Information', {
-            'fields': ('monthly_income', 'credit_score')
+            'fields': ('monthly_income', 'monthly_expenses', 'credit_score')
         }),
         ('Employment', {
-            'fields': ('employment_status',)
-        }),
-        ('Guarantor', {
-            'fields': ('guarantor', 'guarantor_relationship', 'guarantor_approval_status', 'guarantor_consent_date', 'collateral')
+            'fields': ('employer', 'employment_type', 'employment_duration')
         }),
         ('Approval', {
-            'fields': ('approved_by', 'approved_at')
+            'fields': ('reviewed_by', 'approved_by', 'approved_at')
+        }),
+        ('Disbursement', {
+            'fields': ('disbursed_at', 'disbursement_method')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'submitted_at'),

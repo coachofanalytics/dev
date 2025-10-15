@@ -141,11 +141,8 @@
                                 </a>
                             {% endif %}
                             
-                            {% if loan.status == 'approved' or loan.status == 'active' %}
-                                <a href="{% url 'finance:pay' %}" class="btn btn-success ml-2">
-                                    <i class="fas fa-credit-card"></i> Make Payment
-                                </a>
-                                <a href="{% url 'finance:loan-home' %}" class="btn btn-outline-success ml-2">
+                            {% if loan.status == 'approved' %}
+                                <a href="{% url 'finance:loan-home' %}" class="btn btn-success ml-2">
                                     <i class="fas fa-plus"></i> Apply for Another Loan
                                 </a>
                             {% endif %}
