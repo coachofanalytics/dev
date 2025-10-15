@@ -104,6 +104,7 @@ LOGGING = {
 ALLOWED_HOSTS = [
     'www.codanalytics.net',
     'codanalytics.net',
+    'codatrainingapp.herokuapp.com',
     'localhost',
     '127.0.0.1',
 ]
