@@ -456,21 +456,43 @@ def parse_json_response(responses):
 
 
 def countdown_in_month():
-    now = datetime.now()
-    next_month = now.replace(day=28) + timedelta(days=4)
-    next_month = next_month.replace(day=1)
-
-    remaining_time = next_month - now
-    remaining_days = remaining_time.days
-    remaining_seconds = remaining_time.total_seconds()
-    remaining_minutes = remaining_seconds / 60
-    remaining_hours = remaining_minutes / 60
-    return (
-        remaining_days,
-        remaining_seconds,
-        remaining_minutes,
-        remaining_hours
-    )
+    """Calculate time remaining until end of current month"""
+    try:
+        now = datetime.now()
+        
+        # Calculate end of current month
+        if now.month == 12:
+            next_month = now.replace(year=now.year + 1, month=1, day=1)
+        else:
+            next_month = now.replace(month=now.month + 1, day=1)
+        
+        # Calculate end of current month (last day)
+        end_of_month = next_month - timedelta(days=1)
+        end_of_month = end_of_month.replace(hour=23, minute=59, second=59)
+        
+        remaining_time = end_of_month - now
+        
+        # Ensure we don't get negative values
+        if remaining_time.total_seconds() < 0:
+            remaining_days = 0
+            remaining_hours = 0
+            remaining_minutes = 0
+            remaining_seconds = 0
+        else:
+            remaining_days = remaining_time.days
+            remaining_seconds = int(remaining_time.seconds % 60)
+            remaining_minutes = int((remaining_time.seconds // 60) % 60)
+            remaining_hours = int(remaining_time.seconds // 3600)
+        
+        return (
+            remaining_days,
+            remaining_seconds,
+            remaining_minutes,
+            remaining_hours
+        )
+    except Exception as e:
+        # Return safe defaults if calculation fails
+        return (0, 0, 0, 0)
 
 
 

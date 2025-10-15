@@ -44,7 +44,7 @@
                                               {% endif %} -->
                                             </b>
                                           </button>
-                                      {% if payments %}
+                                      {% if payments and payments.id %}
                                         <a class="article-title" href="{% url 'finance:updatepay' payments.id %}">
                                           <button>
                                             Edit

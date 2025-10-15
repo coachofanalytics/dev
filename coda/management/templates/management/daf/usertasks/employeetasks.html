@@ -26,11 +26,32 @@
             <div class="card-body">
               <h5><b>TIME LEFT FOR MAXIMIZING YOUR PAY</b></h5>
               <hr/>
-              <h5><b class="remaining-time">{{remaining_days}} ,{{remaining_hours}},{{remaining_minutes}},{{remaining_seconds}}</b></h5>
-              
-             
+              <div class="countdown-display">
+                <div class="countdown-item">
+                  <span class="countdown-number">{{remaining_days}}</span>
+                  <span class="countdown-label">Days</span>
+                </div>
+                <div class="countdown-separator">:</div>
+                <div class="countdown-item">
+                  <span class="countdown-number">{{remaining_hours}}</span>
+                  <span class="countdown-label">Hours</span>
+                </div>
+                <div class="countdown-separator">:</div>
+                <div class="countdown-item">
+                  <span class="countdown-number">{{remaining_minutes}}</span>
+                  <span class="countdown-label">Mins</span>
+                </div>
+                <div class="countdown-separator">:</div>
+                <div class="countdown-item">
+                  <span class="countdown-number">{{remaining_seconds}}</span>
+                  <span class="countdown-label">Secs</span>
+                </div>
+              </div>
               <hr/>
-              <i><h6><b>{{pointsbalance}}</b> Points Left to be completed,kindly proceed!</b></i>
+              <div class="progress-info">
+                <i class="fas fa-target"></i>
+                <strong>{{pointsbalance}}</strong> Points Left to be completed, kindly proceed!
+              </div>
               
             </div>
           </div>
@@ -278,3 +299,124 @@
   });
   </script>
   {% endblock content %}
+
+<style>
+/* Professional Countdown Styling */
+.countdown-display {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin: 20px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  flex-wrap: nowrap;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.countdown-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1;
+}
+
+.countdown-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+.countdown-separator {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-info {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  color: #495057;
+}
+
+.progress-info i {
+  color: #28a745;
+  font-size: 1.2rem;
+}
+
+.progress-info strong {
+  color: #28a745;
+  font-size: 1.3rem;
+}
+
+/* Card improvements */
+.card {
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-body {
+  padding: 25px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .countdown-display {
+    gap: 8px;
+    padding: 15px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  
+  .countdown-number {
+    font-size: 1.8rem;
+  }
+  
+  .countdown-label {
+    font-size: 0.7rem;
+  }
+  
+  .countdown-separator {
+    font-size: 1.5rem;
+  }
+}
+
+/* Force horizontal layout */
+.countdown-display * {
+  display: inline-block;
+}
+
+.countdown-display {
+  display: flex !important;
+  flex-direction: row !important;
+}
+</style>

@@ -26,6 +26,119 @@
 
   <hr>
 
-  {% include 'components/table.html' with table_header='Current Tasks' objects=tasks table_headers='Check,Employee,Task,Group,Deadline,Submission,Points,Max Points,Max Earnings,Earnings,Evidence,Update' object_fields='actions,employee,activity_name,groupname,deadline,submission,point,mxpoint,mxearning,get_pay,actions,actions' summary_enabled=True %}
+  {% if filtered_employee %}
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <strong>Filtered by Employee:</strong> {{ filtered_employee.get_full_name|default:filtered_employee.username }}
+    <a href="{% url 'management:tasks' %}" class="btn btn-sm btn-outline-secondary ms-3">
+      <i class="fas fa-times"></i> Clear Filter
+    </a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Employee</th>
+          <th>Task</th>
+          <th>Group</th>
+          <th>Deadline</th>
+          <th>Submission</th>
+          <th>Points</th>
+          <th>Max Points</th>
+          <th>Max Earnings</th>
+          <th>Earnings</th>
+          <th>Evidence</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr>
+          <td>
+            <a href="{% url 'management:tasks' %}?employee={{ task.employee.id }}" 
+               class="text-decoration-none fw-bold text-primary">
+              {{ task.employee.get_full_name|default:task.employee.username }}
+            </a>
+          </td>
+          <td>{{ task.activity_name }}</td>
+          <td>{{ task.groupname }}</td>
+          <td>{{ task.deadline|date:"M d, Y" }}</td>
+          <td>{{ task.submission|date:"M d, Y"|default:"Not submitted" }}</td>
+          <td>{{ task.point }}</td>
+          <td>{{ task.mxpoint }}</td>
+          <td>${{ task.mxearning }}</td>
+          <td>${{ task.get_pay }}</td>
+          <td>
+            {% if task.evidence_set.exists %}
+              <span class="badge bg-success">{{ task.evidence_set.count }} file(s)</span>
+            {% else %}
+              <span class="badge bg-warning">No evidence</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="btn-group" role="group">
+              <a href="{% url 'management:taskdetail' task.id %}" 
+                 class="btn btn-sm btn-info" title="View Details">
+                <i class="fas fa-eye"></i> View
+              </a>
+              <a href="{% url 'management:updatetask' task.id %}" 
+                 class="btn btn-sm btn-warning" title="Edit Task">
+                <i class="fas fa-edit"></i> Edit
+              </a>
+              {% if request.user.is_superuser %}
+              <a href="{% url 'management:deletetask' task.id %}" 
+                 class="btn btn-sm btn-danger" title="Delete Task (Superuser Only)"
+                 onclick="return confirm('Are you sure you want to delete this task? This action cannot be undone.')">
+                <i class="fas fa-trash"></i> Delete
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="11" class="text-center text-muted">
+            <p class="my-4">No tasks found.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  {% if tasks %}
+  <div class="table-summary text-center mt-3 p-3 bg-light rounded">
+    <p class="mb-0"><strong>Total:</strong> {{ total_count }} task(s)</p>
+  </div>
+  {% endif %}
+
+  <style>
+    /* Employee name link styling */
+    .table td a.text-primary {
+      color: #0d6efd !important;
+      transition: all 0.2s ease;
+    }
+    
+    .table td a.text-primary:hover {
+      color: #0a58ca !important;
+      text-decoration: underline !important;
+      background-color: rgba(13, 110, 253, 0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    
+    /* Button group spacing */
+    .btn-group .btn {
+      margin: 0 2px;
+    }
+    
+    /* Ensure proper spacing for action buttons */
+    .btn-group {
+      display: flex;
+      gap: 4px;
+    }
+  </style>
 </section>
 {% endblock content %}

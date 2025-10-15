@@ -713,7 +713,7 @@ def unified_department_dashboard(request, department_name='finance'):
             'search_enabled': True,  # Enable search functionality
         }
         
-        return render(request, 'finance/unified_department_dashboard.html', context)
+        return render(request, 'finance/unified_department_dashboard_enhanced.html', context)
         
     except Exception as e:
         logger.error(f"Error in unified department dashboard: {str(e)}")
@@ -727,7 +727,7 @@ def unified_department_dashboard(request, department_name='finance'):
             'enhanced_features': department_configs['finance']['enhanced_features'],
             'title': 'Finance Department Dashboard',
         }
-        return render(request, 'finance/unified_department_dashboard.html', context)
+        return render(request, 'finance/unified_department_dashboard_enhanced.html', context)
 
 @login_required
 def department_dashboard_api(request, department_name):

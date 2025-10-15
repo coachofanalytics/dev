@@ -249,3 +249,54 @@ def notify_user_of_guarantor_availability(user, guarantor_info):
         logger = logging.getLogger(__name__)
         logger.error(f"Error sending guarantor notification: {e}")
         return False
+
+def calculate_paypal_charges(amount):
+    """
+    Calculate PayPal transaction fees using tiered pricing structure.
+    Lower fees for higher transaction amounts (volume discount).
+
+    Args:
+        amount (Decimal): The payment amount
+
+    Returns:
+        Decimal: The PayPal fees based on tiered pricing
+    """
+    try:
+        from decimal import Decimal
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        if not amount or amount <= 0:
+            return Decimal("0.00")
+
+        # Define the PayPal charge brackets and corresponding fees
+        # Format: (start_amount, end_amount, fee_percentage, fee_fixed)
+        charge_brackets = [
+            (0, 500.00, 0.029, 0.30),  # 2.9% + $0.30 for $0 - $500
+            (500.01, 1000.00, 0.027, 0.30),  # 2.7% + $0.30 for $500.01 - $1,000
+            (1000.01, 5000.00, 0.025, 0.30),  # 2.5% + $0.30 for $1,000.01 - $5,000
+            (5000.01, 10000.00, 0.023, 0.30),  # 2.3% + $0.30 for $5,000.01 - $10,000
+            (10000.01, 15000.00, 0.021, 0.30),  # 2.1% + $0.30 for $10,000.01 - $15,000
+            (15000.01, float("inf"), 0.019, 0.30),  # 1.9% + $0.30 for $15,000.01+
+        ]
+
+        # Cast the amount to float for comparison
+        amount_float = float(amount)
+
+        # Iterate over the charge brackets to find the applicable fee
+        for bracket in charge_brackets:
+            start_amount, end_amount, fee_percentage, fee_fixed = bracket
+            if start_amount <= amount_float <= end_amount:
+                # Calculate the PayPal charge
+                charge = amount_float * fee_percentage + fee_fixed
+                return Decimal(str(round(charge, 2)))
+
+        # If the amount is not within any of the charge brackets, return 0
+        logger.warning(f"Amount {amount} does not fit within PayPal charge brackets")
+        return Decimal("0.00")
+
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error calculating PayPal charges for amount {amount}: {e}")
+        return Decimal("0.00")

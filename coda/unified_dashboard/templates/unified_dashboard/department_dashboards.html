@@ -280,6 +280,35 @@
     .dashboard-iframe {
         height: 400px;
     }
+    
+    .topic-cards-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .topic-cards-grid {
+        grid-template-columns: repeat(2, minmax(280px, 350px)) !important;
+        gap: 1.5rem !important;
+        justify-content: center !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .topic-cards-grid {
+        grid-template-columns: repeat(3, minmax(280px, 350px)) !important;
+        gap: 1.5rem !important;
+        justify-content: center !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    .topic-cards-grid {
+        grid-template-columns: repeat(4, minmax(280px, 350px)) !important;
+        gap: 1.5rem !important;
+        justify-content: center !important;
+    }
 }
 </style>
 <div class="unified-dashboard">
@@ -387,47 +416,65 @@
         {% endif %}
 
 
-        <!-- Department Tabular Layout (Legacy Style) -->
+        <!-- Individual Topic Cards (Enhanced Layout) -->
         {% if links %}
         <div class="dashboard-section">
             <h2><i class="fas fa-th"></i> Department Resources</h2>
-            <main>
-                <div class="row">
-                    <!-- Single Department Column -->
-                    <div class="col-md-12">
-                        <div style="padding: 10px; border: 1px solid black; margin-top: 10px;">
-                            <!-- Department Header -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; background: #bcbce2; padding: 5px;">
-                                <p style="font-weight: bold; margin: 0;">{{ department_display_name }}</p>
-                                {% if request.user.is_superuser or request.user.is_admin %}
-                                    <a href="#" class="edit-btn" title="Edit Department">&#10004;</a>
-                                {% endif %}
-                            </div>
-                            <div class="links">
+            
+            <!-- Individual Topic Cards Grid -->
+            <div class="topic-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 350px)); gap: 1.5rem; margin-top: 2rem; align-items: start; justify-items: center;">
                                 {% regroup links by section.name as link_sections %}
                                 {% for section in link_sections %}
-                                    <!-- Section Category -->
-                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 5px;">
-                                        <span style="font-weight: bold;">{{ section.grouper }}</span>
-                                        {% if request.user.is_superuser or request.user.is_admin %}
-                                            <a href="#" class="edit-btn" title="Edit Section">&#10004;</a>
-                                        {% endif %}
-                                    </div>
-                                    <!-- Section Links -->
-                                    {% for link in section.list %}
-                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 5px;">
-                                            <a href="{{ link.url }}" style="flex-grow: 1; color: #007bff;">{{ link.name }}</a>
-                                            {% if request.user.is_superuser or request.user.is_admin %}
-                                                <a href="#" class="edit-btn" title="Edit Link">&#10004;</a>
+                <div class="topic-card" style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.98) 100%); border-radius: 20px; padding: 1.5rem; padding-top: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.15); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; border: 2px solid rgba(231, 173, 74, 0.15); width: 100%; max-width: 350px; margin: 0 auto; box-sizing: border-box;">
+                    
+                    <!-- Edit Button -->
+                    {% if request.user.is_superuser or request.user.is_admin %}
+                    <button class="card-edit-btn" style="position: absolute; top: 8px; right: 8px; background: linear-gradient(135deg, #ffc107, #ff9800); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); z-index: 10; overflow: hidden;" onclick="editTopicCard('{{ section.grouper }}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    {% endif %}
+                    
+                    <!-- Topic Card Header -->
+                    <div class="topic-card-header" style="text-align: center; margin-bottom: 1.5rem; position: relative; z-index: 1; transition: all 0.4s ease;">
+                        <div class="topic-card-icon" style="font-size: 3rem; color: #E7AD4A; margin-bottom: 1rem; transition: all 0.6s ease;">
+                            {% if 'report' in section.grouper|lower %}
+                                <i class="fas fa-chart-bar"></i>
+                            {% elif 'stock' in section.grouper|lower or 'option' in section.grouper|lower %}
+                                <i class="fas fa-chart-line"></i>
+                            {% elif 'household' in section.grouper|lower or 'food' in section.grouper|lower %}
+                                <i class="fas fa-home"></i>
+                            {% elif 'budget' in section.grouper|lower %}
+                                <i class="fas fa-wallet"></i>
+                            {% elif 'loan' in section.grouper|lower %}
+                                <i class="fas fa-money-bill-wave"></i>
+                            {% elif 'payment' in section.grouper|lower %}
+                                <i class="fas fa-credit-card"></i>
+                            {% elif 'employee' in section.grouper|lower or 'trainee' in section.grouper|lower %}
+                                <i class="fas fa-users"></i>
+                            {% elif 'general' in section.grouper|lower %}
+                                <i class="fas fa-cog"></i>
+                            {% else %}
+                                <i class="fas fa-folder"></i>
                                             {% endif %}
-                                        </div>
-                                    {% endfor %}
-                                {% endfor %}
-                            </div>
                         </div>
+                        <h3 class="topic-card-title" style="font-size: 1.4rem; font-weight: 700; color: #243865; margin-bottom: 0; transition: color 0.4s ease;">{{ section.grouper|upper }}</h3>
                     </div>
+                    
+                    <!-- Topic Card Content -->
+                    <div class="topic-card-content" style="position: relative; z-index: 1; transition: all 0.4s ease;">
+                        {% for link in section.list %}
+                        <a href="{{ link.url }}" class="topic-link-item" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; margin-bottom: 0.8rem; background: rgba(248, 249, 250, 0.8); border: 1px solid #e9ecef; border-radius: 12px; text-decoration: none; color: #2c3e50; transition: all 0.3s ease;" target="_blank">
+                            <span class="topic-link-name" style="font-weight: 500; font-size: 1rem;">{{ link.name }}</span>
+                            <i class="fas fa-external-link-alt topic-link-icon" style="color: #6c757d; font-size: 0.9rem; transition: color 0.3s ease;"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Hover Effect Overlay -->
+                    <div class="hover-overlay" style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: linear-gradient(135deg, #243865, #E7AD4A); opacity: 0; transition: all 0.6s ease; transform: rotate(45deg); pointer-events: none;"></div>
                 </div>
-            </main>
+                {% endfor %}
+            </div>
         </div>
         {% endif %}
 
@@ -614,6 +661,117 @@ document.addEventListener('DOMContentLoaded', function() {
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // Initialize topic card hover effects
+    initializeTopicCards();
 });
+
+// Topic card functionality
+function editTopicCard(topicName) {
+    alert('Edit Topic Card: ' + topicName + '\n\nThis will open a topic editor.');
+    // TODO: Implement topic edit modal
+}
+
+// Initialize topic card hover effects
+function initializeTopicCards() {
+    const topicCards = document.querySelectorAll('.topic-card');
+    
+    topicCards.forEach(card => {
+        const overlay = card.querySelector('.hover-overlay');
+        const icon = card.querySelector('.topic-card-icon');
+        const title = card.querySelector('.topic-card-title');
+        const content = card.querySelector('.topic-card-content');
+        const links = card.querySelectorAll('.topic-link-item');
+        
+        card.addEventListener('mouseenter', function() {
+            // Show overlay
+            overlay.style.opacity = '1';
+            overlay.style.top = '-10%';
+            overlay.style.right = '-10%';
+            
+            // Transform card
+            card.style.transform = 'translateY(-15px) scale(1.03)';
+            card.style.boxShadow = '0 30px 60px rgba(102, 126, 234, 0.5)';
+            card.style.borderColor = '#E7AD4A';
+            
+            // Transform icon
+            icon.style.transform = 'scale(1.2) rotate(10deg)';
+            icon.style.color = 'white';
+            
+            // Change text colors
+            title.style.color = 'white';
+            
+            // Change link styles
+            links.forEach(link => {
+                link.style.background = 'rgba(255, 255, 255, 0.2)';
+                link.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                link.style.color = 'white';
+                const linkIcon = link.querySelector('.topic-link-icon');
+                if (linkIcon) {
+                    linkIcon.style.color = 'rgba(255, 255, 255, 0.8)';
+                }
+            });
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            // Hide overlay
+            overlay.style.opacity = '0';
+            overlay.style.top = '-50%';
+            overlay.style.right = '-50%';
+            
+            // Reset card
+            card.style.transform = 'translateY(0) scale(1)';
+            card.style.boxShadow = '0 10px 40px rgba(0,0,0,0.15)';
+            card.style.borderColor = 'rgba(231, 173, 74, 0.15)';
+            
+            // Reset icon
+            icon.style.transform = 'scale(1) rotate(0deg)';
+            icon.style.color = '#E7AD4A';
+            
+            // Reset text colors
+            title.style.color = '#243865';
+            
+            // Reset link styles
+            links.forEach(link => {
+                link.style.background = 'rgba(248, 249, 250, 0.8)';
+                link.style.borderColor = '#e9ecef';
+                link.style.color = '#2c3e50';
+                const linkIcon = link.querySelector('.topic-link-icon');
+                if (linkIcon) {
+                    linkIcon.style.color = '#6c757d';
+                }
+            });
+        });
+        
+        // Individual link hover effects
+        links.forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                if (overlay.style.opacity !== '1') {
+                    link.style.background = 'rgba(102, 126, 234, 0.1)';
+                    link.style.borderColor = '#E7AD4A';
+                    link.style.color = '#243865';
+                    link.style.transform = 'translateX(5px)';
+                    const linkIcon = link.querySelector('.topic-link-icon');
+                    if (linkIcon) {
+                        linkIcon.style.color = '#E7AD4A';
+                    }
+                }
+            });
+            
+            link.addEventListener('mouseleave', function() {
+                if (overlay.style.opacity !== '1') {
+                    link.style.background = 'rgba(248, 249, 250, 0.8)';
+                    link.style.borderColor = '#e9ecef';
+                    link.style.color = '#2c3e50';
+                    link.style.transform = 'translateX(0)';
+                    const linkIcon = link.querySelector('.topic-link-icon');
+                    if (linkIcon) {
+                        linkIcon.style.color = '#6c757d';
+                    }
+                }
+            });
+        });
+    });
+}
 </script>
 {% endblock %}

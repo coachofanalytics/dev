@@ -28,6 +28,8 @@ class LoanProduct(models.Model):
     max_amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Maximum loan amount")
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Interest rate percentage")
     term_months = models.PositiveIntegerField(help_text="Loan term in months")
+    min_term_months = models.PositiveIntegerField(default=1, help_text="Minimum loan term in months")
+    max_term_months = models.PositiveIntegerField(default=12, help_text="Maximum loan term in months")
     fees = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Additional fees")
     is_active = models.BooleanField(default=True, help_text="Whether this product is available")
     min_credit_score = models.PositiveIntegerField(blank=True, null=True, help_text="Minimum credit score required")
@@ -119,7 +121,14 @@ class LoanApplication(models.Model):
     
     # Core fields
     application_number = models.CharField(max_length=20, unique=True, blank=True, help_text="Auto-generated application number")
-    loan_product = models.ForeignKey(LoanProduct, on_delete=models.CASCADE, help_text="Selected loan product")
+    # loan_product = models.ForeignKey(LoanProduct, on_delete=models.CASCADE, help_text="Selected loan product")
+    loan_product = models.ForeignKey(
+            LoanProduct, 
+            on_delete=models.CASCADE, 
+            null=True,  # Add this
+            blank=True,  # Add this
+            help_text="Selected loan product"
+    )
     loan_plan_id = models.IntegerField(default=1, help_text="Legacy loan plan ID")
     borrower = models.ForeignKey("accounts.CustomerUser", on_delete=models.CASCADE, related_name='loan_applications')
     
@@ -304,6 +313,33 @@ class LoanApplication(models.Model):
             return None
         except Exception:
             return None
+    
+    def send_guarantor_approval_request(self):
+        """Send email to guarantor requesting approval with verification"""
+        if self.guarantor and self.guarantor.email:
+            from .utils import send_guarantor_approval_email
+            return send_guarantor_approval_email(self)
+        return False
+
+    def process_guarantor_approval(self, approved, guarantor_user):
+        """Process guarantor's approval decision"""
+        if approved:
+            self.guarantor_approval_status = 'approved'
+            self.guarantor_consent_date = timezone.now()
+            self.status = 'approved'
+            self.approved_at = timezone.now()
+            self.approved_by = guarantor_user
+            # Send approval notification to borrower
+            from .utils import send_loan_approved_notification
+            send_loan_approved_notification(self)
+        else:
+            self.guarantor_approval_status = 'rejected'
+            self.status = 'pending_guarantor'
+            # Send rejection notification to borrower with suggested guarantors
+            from .utils import send_guarantor_rejection_notification
+            send_guarantor_rejection_notification(self)
+        
+        self.save()
 
 
 class LoanPayment(models.Model):
