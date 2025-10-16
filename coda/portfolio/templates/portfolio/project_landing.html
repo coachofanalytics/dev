@@ -1,0 +1,98 @@
+{% extends "portfolio/shared/base_presentation.html" %}
+{% load static %}
+
+{% block presentation_content %}
+<div class="row mb-4">
+    <div class="col-12 text-center text-white">
+        <h1 class="display-4">{{ project_name }}</h1>
+        <p class="lead">{{ project_tagline }}</p>
+        <p><em>Select your presentation mode below</em></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="presentation-card text-center h-100">
+            <div class="mb-3">
+                <i class="fas fa-chart-line fa-4x text-success"></i>
+            </div>
+            <h4>Investor Presentation</h4>
+            <p class="text-muted">ROI, market opportunity, business value</p>
+            <p><small><strong>Duration:</strong> 15-20 minutes</small></p>
+            <a href="{% url 'portfolio:project-presentation' project_slug 'investor' %}" class="btn btn-success btn-block">
+                <i class="fas fa-play"></i> Start Presentation
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="presentation-card text-center h-100">
+            <div class="mb-3">
+                <i class="fas fa-code fa-4x text-primary"></i>
+            </div>
+            <h4>Technical Presentation</h4>
+            <p class="text-muted">AI/ML, architecture, code samples</p>
+            <p><small><strong>Duration:</strong> 20-30 minutes</small></p>
+            <a href="{% url 'portfolio:project-presentation' project_slug 'technical' %}" class="btn btn-primary btn-block">
+                <i class="fas fa-play"></i> Start Presentation
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="presentation-card text-center h-100">
+            <div class="mb-3">
+                <i class="fas fa-user-tie fa-4x text-info"></i>
+            </div>
+            <h4>Recruiter Presentation</h4>
+            <p class="text-muted">Achievements, impact, leadership</p>
+            <p><small><strong>Duration:</strong> 10-15 minutes</small></p>
+            <a href="{% url 'portfolio:project-presentation' project_slug 'recruiter' %}" class="btn btn-info btn-block">
+                <i class="fas fa-play"></i> Start Presentation
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="presentation-card text-center h-100">
+            <div class="mb-3">
+                <i class="fas fa-laptop-code fa-4x text-warning"></i>
+            </div>
+            <h4>Live Demo</h4>
+            <p class="text-muted">Interactive demonstration</p>
+            <p><small><strong>Duration:</strong> 10 minutes</small></p>
+            <a href="{% url 'portfolio:project-presentation' project_slug 'demo' %}" class="btn btn-warning btn-block">
+                <i class="fas fa-play"></i> Start Demo
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="presentation-card">
+            <h4>Key Metrics</h4>
+            <div class="row mt-3">
+                {% for key, value in key_metrics.items %}
+                <div class="col-md-3 col-6 mb-3">
+                    <strong>{{ key|title|replace:"_":" " }}:</strong><br>
+                    <span class="text-primary">{{ value }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'portfolio:hub' %}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left"></i> Back to Portfolio
+        </a>
+        <a href="{% url 'portfolio:guide' %}" class="btn btn-outline-light ml-2">
+            <i class="fas fa-book"></i> Presentation Guide
+        </a>
+    </div>
+</div>
+{% endblock %}
+
