@@ -110,9 +110,10 @@ class Command(BaseCommand):
         """Analyze spending patterns for a single category"""
         
         # Get all transactions for this category
+        # Note: Transaction model uses 'category' field, not 'budget_category'
+        # Note: Transaction model doesn't have company field
         transactions = Transaction.objects.filter(
-            budget_category=category,
-            company=company
+            category=category
         ).exclude(
             amount__isnull=True
         ).exclude(
@@ -144,18 +145,25 @@ class Command(BaseCommand):
         max_amount = transactions.aggregate(max=Max('amount'))['max'] or Decimal('0')
         
         # Calculate monthly statistics
+        # Note: Using 'transaction_date' field for Transaction model
         monthly_data = transactions.annotate(
-            month=TruncMonth('date')
+            month=TruncMonth('transaction_date')
         ).values('month').annotate(
             monthly_total=Sum('amount'),
             monthly_count=Count('id')
         ).order_by('month')
         
         # Determine time period
+        # Note: Transaction model uses 'transaction_date' field
         if transactions.exists():
-            earliest = transactions.order_by('date').first().date
-            latest = transactions.order_by('-date').first().date
-            months_span = ((latest.year - earliest.year) * 12 + latest.month - earliest.month) + 1
+            earliest_trans = transactions.order_by('transaction_date').first()
+            latest_trans = transactions.order_by('-transaction_date').first()
+            if earliest_trans and latest_trans and earliest_trans.transaction_date and latest_trans.transaction_date:
+                earliest = earliest_trans.transaction_date
+                latest = latest_trans.transaction_date
+                months_span = ((latest.year - earliest.year) * 12 + latest.month - earliest.month) + 1
+            else:
+                months_span = 1
         else:
             months_span = 1
         
