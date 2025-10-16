@@ -322,12 +322,41 @@ class TransactionAdmin(admin.ModelAdmin):
 
 @admin.register(BudgetCategory)
 class BudgetCategoryAdmin(admin.ModelAdmin):
-    """Admin interface for budget categories"""
+    """Admin interface for budget categories with Phase 2 tier management"""
     
-    list_display = ['name', 'description', 'category_type']
-    list_filter = ['category_type']
+    list_display = [
+        'name', 
+        'approval_tier', 
+        'auto_approve_enabled', 
+        'typical_monthly_amount',
+        'variance_threshold',
+        'is_recurring',
+        'last_pattern_analysis'
+    ]
+    list_filter = ['approval_tier', 'auto_approve_enabled', 'is_recurring']
     search_fields = ['name', 'description']
-    readonly_fields = []  # No timestamp fields in this model
+    readonly_fields = ['last_pattern_analysis']  # Auto-updated by analysis command
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'description')
+        }),
+        ('Phase 2: Approval Tier Configuration', {
+            'fields': (
+                'approval_tier',
+                'auto_approve_enabled',
+                'typical_monthly_amount',
+                'variance_threshold',
+                'is_recurring',
+                'last_pattern_analysis',
+            ),
+            'description': 'Data-driven approval automation settings (Phase 2)'
+        }),
+    )
+    
+    def get_queryset(self, request):
+        """Optimize query"""
+        return super().get_queryset(request)
 
 
 @admin.register(BudgetSubCategory)

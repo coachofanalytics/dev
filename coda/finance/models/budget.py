@@ -32,10 +32,64 @@ except ImportError:
 # =============================================================================
 
 class BudgetCategory(models.Model):
-    """Budget category classification"""
+    """
+    Budget category classification with intelligent approval tier system.
     
+    Phase 1: Basic categorization
+    Phase 2: Data-driven tier classification for automated approvals
+    
+    Tiers:
+    - A: Known/Recurring (auto-approve if within variance)
+    - B: Variable/Operational (priority-based routing)
+    - C: Strategic/Discretionary (assessment required)
+    """
+    
+    # Basic Fields
     name = models.CharField(max_length=100, null=True, blank=True, default='Operations')
     description = models.TextField(max_length=1000, null=True, blank=True)
+    
+    # Phase 2: Intelligent Approval Tier System (Oct 2025)
+    approval_tier = models.CharField(
+        max_length=1,
+        choices=[
+            ('A', 'Tier A - Known/Recurring (Auto-Approve)'),
+            ('B', 'Tier B - Variable/Operational (Priority-Based)'),
+            ('C', 'Tier C - Strategic/Discretionary (Assessment Required)'),
+        ],
+        default='C',
+        help_text="Approval tier determined by spending pattern analysis"
+    )
+    
+    auto_approve_enabled = models.BooleanField(
+        default=False,
+        help_text="Finance Manager can enable/disable auto-approval for this category"
+    )
+    
+    typical_monthly_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Typical monthly spending for this category (calculated from transaction data)"
+    )
+    
+    variance_threshold = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=20.00,
+        help_text="Percentage variance from typical that triggers manual review (default: 20%)"
+    )
+    
+    is_recurring = models.BooleanField(
+        default=False,
+        help_text="Whether this category has recurring spending patterns (detected from data)"
+    )
+    
+    last_pattern_analysis = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Last time spending pattern analysis was run for this category"
+    )
 
     class Meta:
         verbose_name = _("Budget Category")
@@ -44,6 +98,43 @@ class BudgetCategory(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def needs_pattern_analysis(self):
+        """Check if pattern analysis needs to be run/updated"""
+        if not self.last_pattern_analysis:
+            return True
+        # Re-analyze if older than 30 days
+        from datetime import timedelta
+        return (timezone.now() - self.last_pattern_analysis) > timedelta(days=30)
+    
+    def is_within_variance(self, amount):
+        """Check if amount is within acceptable variance of typical monthly amount"""
+        if not self.typical_monthly_amount:
+            return False
+        
+        variance = abs(amount - self.typical_monthly_amount) / self.typical_monthly_amount * 100
+        return variance <= self.variance_threshold
+    
+    def should_auto_approve(self, amount):
+        """
+        Determine if a request for this amount should be auto-approved.
+        
+        Returns: (should_approve: bool, reason: str)
+        """
+        if not self.auto_approve_enabled:
+            return False, "Auto-approval disabled for this category"
+        
+        if self.approval_tier != 'A':
+            return False, f"Tier {self.approval_tier} requires manual approval"
+        
+        if not self.typical_monthly_amount:
+            return False, "No typical amount data - requires manual review"
+        
+        if self.is_within_variance(amount):
+            return True, f"Amount within {self.variance_threshold}% of typical ${self.typical_monthly_amount}"
+        else:
+            variance = abs(amount - self.typical_monthly_amount) / self.typical_monthly_amount * 100
+            return False, f"Amount {variance:.1f}% variance - exceeds threshold {self.variance_threshold}%"
 
 
 class BudgetSubCategory(models.Model):
