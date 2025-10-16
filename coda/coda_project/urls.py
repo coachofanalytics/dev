@@ -92,6 +92,8 @@ urlpatterns = [
     path("professional_services/", include("professional_services.urls", namespace="professional_services")),
     path("ai_services/", include("ai_services.urls", namespace="ai_services")),
     path("dashboard/", include("unified_dashboard.urls", namespace="dashboard")),
+    path("portfolio/", include("portfolio.urls", namespace="portfolio")),  # Portfolio & presentations
+    path("interview/", include("portfolio.urls", namespace="interview")),  # Interview mode (white-label)
     path("", include("core.urls", namespace="core")),
     
     # Backward compatibility redirects for renamed apps
