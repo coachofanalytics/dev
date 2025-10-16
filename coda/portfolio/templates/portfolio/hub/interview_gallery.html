@@ -21,8 +21,9 @@
                 <strong>Technologies & Achievements:</strong>
                 <ul class="list-unstyled mt-2">
                     {% for key, value in project.key_metrics.items %}
+                    {% if forloop.counter <= 3 %}
                     <li><i class="fas fa-check text-primary"></i> {{ value }}</li>
-                    {% if forloop.counter == 3 %}{% break %}{% endif %}
+                    {% endif %}
                     {% endfor %}
                 </ul>
             </div>

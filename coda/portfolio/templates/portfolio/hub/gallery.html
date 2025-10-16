@@ -20,12 +20,12 @@
                 <strong>Key Metrics:</strong>
                 <ul class="list-unstyled mt-2">
                     {% for key, value in project.key_metrics.items %}
+                    {% if forloop.counter <= 3 %}
                     <li><i class="fas fa-check text-success"></i> {{ value }}</li>
-                    {% if forloop.counter == 3 %}{% break %}{% endif %}
+                    {% endif %}
                     {% endfor %}
                 </ul>
-            </div>
-            
+            </div>            
             <div class="btn-group-vertical w-100">
                 <a href="{% url 'portfolio:project-landing' project.slug %}" class="btn btn-primary mb-2">
                     <i class="fas fa-eye"></i> View Presentations
