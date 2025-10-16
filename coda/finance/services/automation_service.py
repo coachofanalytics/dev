@@ -90,7 +90,11 @@ class BudgetRequestService(BaseFinanceService):
             raise
     
     def submit_for_approval(self, request_id, user, request=None):
-        """Submit budget request for approval"""
+        """
+        Submit budget request for approval with Phase 2 smart routing.
+        
+        Phase 2: Checks for auto-approval using tier system before routing.
+        """
         try:
             with transaction.atomic():
                 budget_request = self.get_object(request_id)
@@ -98,7 +102,29 @@ class BudgetRequestService(BaseFinanceService):
                 if budget_request.status != 'draft':
                     raise ValidationError("Only draft requests can be submitted for approval")
                 
-                # Get applicable approval policy
+                # Phase 2: Check for auto-approval first
+                from finance.services.smart_approval_service import SmartApprovalService
+                smart_service = SmartApprovalService()
+                auto_approval_result = smart_service.process_budget_request(budget_request, auto_approver=user)
+                
+                if auto_approval_result['approved']:
+                    # Auto-approved! Log and notify
+                    self.audit_service.log_action(
+                        action='auto_approve_budget_request',
+                        action_type='auto_approve',
+                        user=user,
+                        object=budget_request,
+                        details={
+                            'reason': auto_approval_result['reason'],
+                            'tier': auto_approval_result.get('tier', 'unknown')
+                        },
+                        request=request
+                    )
+                    
+                    logger.info(f"Budget request AUTO-APPROVED: {budget_request.id} - {auto_approval_result['reason']}")
+                    return budget_request
+                
+                # Not auto-approved - route using policy system
                 policy_service = ApprovalEngineService()
                 policy = policy_service.get_applicable_policy(budget_request)
                 
@@ -124,8 +150,10 @@ class BudgetRequestService(BaseFinanceService):
                         user=user,
                         object=budget_request,
                         details={
-                            'policy': policy.name,
-                            'approval_chain': approval_chain
+                            'policy': policy.name if policy else 'manual',
+                            'approval_chain': approval_chain,
+                            'tier': auto_approval_result.get('tier', 'unknown'),
+                            'routing_reason': auto_approval_result.get('routing_reason', '')
                         },
                         request=request
                     )
@@ -133,10 +161,16 @@ class BudgetRequestService(BaseFinanceService):
                     # Send notifications
                     self._send_submission_notifications(budget_request)
                     
-                    logger.info(f"Budget request submitted: {budget_request.id}")
+                    logger.info(f"Budget request submitted for manual approval: {budget_request.id}")
                     return budget_request
                 else:
-                    raise ValidationError("No applicable approval policy found")
+                    # No policy - default to submitted status for manual review
+                    budget_request.status = 'submitted'
+                    budget_request.last_modified_by = user
+                    budget_request.save()
+                    
+                    logger.warning(f"No approval policy found for request {budget_request.id} - submitted for manual review")
+                    return budget_request
                     
         except Exception as e:
             logger.error(f"Error submitting budget request: {str(e)}")
