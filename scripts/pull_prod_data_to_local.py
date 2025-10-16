@@ -29,7 +29,7 @@ args = parser.parse_args()
 prod_db_url = args.database_url or os.environ.get('DATABASE_URL') or os.environ.get('HEROKU_POSTGRESQL_MAROON_URL')
 
 if not prod_db_url:
-    print("❌ Error: Production database URL not provided")
+    print("Error: Production database URL not provided")
     print("\nOptions:")
     print("  1. Pass as argument: --database-url 'postgres://...'")
     print("  2. Set environment variable: export DATABASE_URL='postgres://...'")
@@ -37,7 +37,7 @@ if not prod_db_url:
     print("     heroku config:get DATABASE_URL --app codatrainingapp")
     sys.exit(1)
 
-print("🔄 Pulling Production Data to Local SQLite")
+print("Pulling Production Data to Local SQLite")
 print("=" * 50)
 
 # Configure Django to use production database temporarily
@@ -63,19 +63,19 @@ connections.databases['production'] = {
     'OPTIONS': prod_db_config.get('OPTIONS', {}),
 }
 
-print(f"📡 Source: {prod_db_config['HOST']}")
-print(f"💾 Destination: Local SQLite (coda/db.sqlite3)")
+print(f"Source: {prod_db_config['HOST']}")
+print(f"Destination: Local SQLite (coda/db.sqlite3)")
 
 try:
     # Test production connection
-    print("\n🔌 Connecting to production database...")
+    print("\nConnecting to production database...")
     from django.db import connections
     conn = connections['production']
     conn.ensure_connection()
-    print("✅ Connected to production")
+    print("Connected to production")
     
     # Fetch categories from production
-    print("\n📥 Fetching Budget Categories from production...")
+    print("\nFetching Budget Categories from production...")
     
     # Use raw SQL to fetch from production
     with conn.cursor() as cursor:
@@ -89,10 +89,10 @@ try:
         """)
         prod_categories = cursor.fetchall()
     
-    print(f"✅ Fetched {len(prod_categories)} categories")
+    print(f"Fetched {len(prod_categories)} categories")
     
     # Save to local database
-    print("\n💾 Saving to local SQLite...")
+    print("\nSaving to local SQLite...")
     
     from django.db import connection as local_conn
     
@@ -125,10 +125,10 @@ try:
         else:
             print(f"   ✓ {cat.name} (Tier {cat.approval_tier})")
     
-    print(f"\n✅ Saved {count} categories to local database")
+    print(f"\nSaved {count} categories to local database")
     
     # Show summary
-    print("\n📊 Category Summary:")
+    print("\nCategory Summary:")
     total = BudgetCategory.objects.count()
     tier_a = BudgetCategory.objects.filter(approval_tier='A').count()
     tier_b = BudgetCategory.objects.filter(approval_tier='B').count()
@@ -144,19 +144,19 @@ try:
     print(f"   With transaction data: {with_data}")
     
     # Show Tier A categories
-    print("\n🔍 Tier A Categories (Auto-Approve):")
+    print("\nTier A Categories (Auto-Approve):")
     for cat in BudgetCategory.objects.filter(approval_tier='A'):
         typical = f"${cat.typical_monthly_amount:,.2f}" if cat.typical_monthly_amount else "N/A"
         print(f"   - {cat.name}: {typical}/mo (variance: {cat.variance_threshold}%)")
     
     # Show top Tier B categories
-    print("\n🔍 Top Tier B Categories (Priority-Based):")
+    print("\nTop Tier B Categories (Priority-Based):")
     for cat in BudgetCategory.objects.filter(approval_tier='B').order_by('-typical_monthly_amount')[:5]:
         typical = f"${cat.typical_monthly_amount:,.2f}" if cat.typical_monthly_amount else "N/A"
         print(f"   - {cat.name}: {typical}/mo")
     
-    print("\n✅ Sync Complete!")
-    print("\n💡 Next Steps:")
+    print("\nSync Complete!")
+    print("\nNext Steps:")
     print("   1. Examine data in Django shell:")
     print("      python manage.py shell --settings=coda_project.coda_settings.local_settings")
     print("")
@@ -168,7 +168,7 @@ try:
     print("      python manage.py test finance.tests.test_budget_tier_system --settings=coda_project.coda_settings.local_settings")
 
 except Exception as e:
-    print(f"\n❌ Error: {e}")
+    print(f"\nError: {e}")
     import traceback
     traceback.print_exc()
     sys.exit(1)
