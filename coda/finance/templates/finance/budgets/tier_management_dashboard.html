@@ -1,0 +1,380 @@
+{% extends "finance/base_finance.html" %}
+{% load static %}
+
+{% block title %}Tier Management - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-layer-group"></i> Budget Category Tier Management
+                <small class="text-muted">{{ company.name }}</small>
+            </h2>
+            <p class="text-muted">Control auto-approval settings and tier classifications</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Categories</h5>
+                    <h2>{{ total_categories }}</h2>
+                    <small>{{ with_data_count }} with transaction data</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Auto-Approve Enabled</h5>
+                    <h2>{{ auto_approve_enabled_count }}</h2>
+                    <small>Active automation</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Auto-Approved (Total)</h5>
+                    <h2>{{ auto_approved_requests }}</h2>
+                    <small>All time</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'finance:auto-approval-log' company.slug %}" class="text-white">
+                            View Auto-Approval Log
+                        </a>
+                    </h5>
+                    <small>Click to view details</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier A Categories -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-check-circle"></i> Tier A: Known/Recurring (Auto-Approve)
+                        <span class="badge badge-light">{{ tier_a_categories.count }} categories</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Categories with recurring spending patterns that can be auto-approved within variance threshold.</p>
+                    
+                    {% if tier_a_categories %}
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Typical/Month</th>
+                                <th>Variance Threshold</th>
+                                <th>Recurring</th>
+                                <th>Auto-Approve</th>
+                                <th>Last Analysis</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in tier_a_categories %}
+                            <tr id="category-{{ category.id }}">
+                                <td><strong>{{ category.name }}</strong></td>
+                                <td>
+                                    {% if category.typical_monthly_amount %}
+                                        ${{ category.typical_monthly_amount|floatformat:0 }}
+                                    {% else %}
+                                        <span class="text-muted">No data</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <input type="number" 
+                                           class="form-control form-control-sm" 
+                                           id="threshold-{{ category.id }}"
+                                           value="{{ category.variance_threshold }}"
+                                           min="5" max="100" step="5"
+                                           style="width: 80px; display: inline-block;">
+                                    <span>%</span>
+                                    <button class="btn btn-sm btn-secondary" 
+                                            onclick="updateThreshold({{ category.id }})">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    {% if category.is_recurring %}
+                                        <span class="badge badge-success">✓ Yes</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">✗ No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" 
+                                               class="custom-control-input" 
+                                               id="auto-approve-{{ category.id }}"
+                                               {% if category.auto_approve_enabled %}checked{% endif %}
+                                               onchange="toggleAutoApproval({{ category.id }}, this.checked)">
+                                        <label class="custom-control-label" for="auto-approve-{{ category.id }}">
+                                            {% if category.auto_approve_enabled %}
+                                                <span class="text-success">Enabled</span>
+                                            {% else %}
+                                                <span class="text-muted">Disabled</span>
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if category.last_pattern_analysis %}
+                                        <small>{{ category.last_pattern_analysis|date:"M d, Y" }}</small>
+                                    {% else %}
+                                        <span class="text-muted">Never</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'admin:finance_budgetcategory_change' category.id %}" 
+                                       class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No Tier A categories yet. Run tier classification analysis.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier B Categories -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Tier B: Variable/Operational (Priority-Based)
+                        <span class="badge badge-light">{{ tier_b_categories.count }} categories</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Operational categories routed based on priority level (High=Auto, Medium=Manager, Low=Justification).</p>
+                    
+                    {% if tier_b_categories %}
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Typical/Month</th>
+                                <th>Variance</th>
+                                <th>Recurring</th>
+                                <th>Last Analysis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in tier_b_categories %}
+                            <tr>
+                                <td>{{ category.name }}</td>
+                                <td>
+                                    {% if category.typical_monthly_amount %}
+                                        ${{ category.typical_monthly_amount|floatformat:0 }}
+                                    {% else %}
+                                        <span class="text-muted">No data</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ category.variance_threshold }}%</td>
+                                <td>
+                                    {% if category.is_recurring %}
+                                        <span class="badge badge-success">✓</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">✗</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if category.last_pattern_analysis %}
+                                        <small>{{ category.last_pattern_analysis|date:"M d, Y" }}</small>
+                                    {% else %}
+                                        <span class="text-muted">Never</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No Tier B categories.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier C Categories -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ban"></i> Tier C: Strategic/Discretionary (Manual Approval)
+                        <span class="badge badge-light">{{ tier_c_categories.count }} categories</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Strategic categories that require assessment and manual approval.</p>
+                    
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Last Analysis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in tier_c_categories %}
+                            <tr>
+                                <td>{{ category.name }}</td>
+                                <td>
+                                    {% if category.typical_monthly_amount %}
+                                        <span class="badge badge-info">Has Data</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Dormant</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if category.last_pattern_analysis %}
+                                        <small>{{ category.last_pattern_analysis|date:"M d, Y" }}</small>
+                                    {% else %}
+                                        <span class="text-muted">Never</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Management Actions</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary" onclick="runReclassification()">
+                        <i class="fas fa-sync"></i> Re-run Tier Classification Analysis
+                    </button>
+                    <a href="{% url 'finance:auto-approval-log' company.slug %}" class="btn btn-info">
+                        <i class="fas fa-list"></i> View Auto-Approval Log
+                    </a>
+                    <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAutoApproval(categoryId, enabled) {
+    fetch(`/finance/api/tier/toggle-auto-approval/${categoryId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ enabled: enabled })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.message}`);
+        } else {
+            alert(`❌ Error: ${data.error}`);
+            // Revert toggle
+            document.getElementById(`auto-approve-${categoryId}`).checked = !enabled;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating auto-approval setting');
+        // Revert toggle
+        document.getElementById(`auto-approve-${categoryId}`).checked = !enabled;
+    });
+}
+
+function updateThreshold(categoryId) {
+    const threshold = document.getElementById(`threshold-${categoryId}`).value;
+    
+    fetch(`/finance/api/tier/update-variance-threshold/${categoryId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `variance_threshold=${threshold}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.message}`);
+        } else {
+            alert(`❌ Error: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating variance threshold');
+    });
+}
+
+function runReclassification() {
+    if (!confirm('This will re-analyze all transaction data and update tier classifications. Continue?')) {
+        return;
+    }
+    
+    const button = event.target;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running Analysis...';
+    
+    fetch(`/finance/api/tier/run-reclassification/{{ company.slug }}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Tier classification completed! Refreshing page...');
+            location.reload();
+        } else {
+            alert(`❌ Error: ${data.error}`);
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-sync"></i> Re-run Tier Classification Analysis';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error running tier classification');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-sync"></i> Re-run Tier Classification Analysis';
+    });
+}
+</script>
+{% endblock %}
+
