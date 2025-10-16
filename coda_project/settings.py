@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "django_crontab",
     "communities",
     'tailwind',
+    'memberjoin',
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

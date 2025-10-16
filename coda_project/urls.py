@@ -68,6 +68,7 @@ urlpatterns = [
     ),
   
     path("", include("main.urls", namespace="main")),
+    path('member/', include('memberjoin.urls')),
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls"), name="finance"),
 

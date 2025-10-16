@@ -1,0 +1,53 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+
+{% block content %}
+<!-- we use tailwindcss for styling -->
+<!-- hero section for membership  tailwindcss -->
+ <h1 class="text-4xl font-bold">Join Our Membership</h1>
+<p class="mt-4 text-lg">Become a member today and enjoy exclusive benefits!</p>
+<!-- card for membership benefits and plan-->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Individual Plan</h2>
+        <ul class="list-disc list-inside mb-4">
+            <li>Access to basic features</li>
+            <li>Monthly newsletter</li>
+            <li>Community support</li>
+        </ul>
+        <p class="text-xl font-bold">$10/month</p>
+        <button class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Join Now</button>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Leaders Plan</h2>
+        <ul class="list-disc list-inside mb-4">
+            <li>All Basic Plan features</li>
+            <li>Access to premium content</li>
+            <li>Priority support</li>
+        </ul>
+        <p class="text-xl font-bold">$30/month</p>
+        <button class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Join Now</button>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Organisation Plan</h2>
+        <ul class="list-disc list-inside mb-4">
+            <li>All Premium Plan features</li>
+            <li>Exclusive events and webinars</li>
+            <li>Personalized coaching</li>
+        </ul>
+        <p class="text-xl font-bold">$100/month</p>
+        <button class="mt-4 bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-600">Join Now</button>
+    </div>
+
+
+
+
+<!-- registration form section -->
+<h1>Membership Registration</h1>
+
+<!-- contact section -->
+
+
+<h1>Contact Us</h1>
+{% endblock %}
