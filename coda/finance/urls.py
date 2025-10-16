@@ -19,6 +19,7 @@ from .views.budget import views_estimates, views_detailed_budget
 from .views.budget import views_forms, views_salary_dashboard
 from .views.budget import views_automation, views_admin_controls, views_realtime_compliance
 from .views.budget import views_tier_management  # Phase 2: Finance Manager tier controls
+from .views.budget import views_budget_presentation  # Presentations for investors/recruiters/interviews
 
 # Import organized core views  
 from .views.core import views_finance_dashboard
@@ -372,6 +373,12 @@ urlpatterns = [
     path('api/admin/statistics/', views_admin_controls.get_admin_statistics, name='admin-statistics'),
     path('api/admin/audit-log/', views_admin_controls.get_audit_log, name='audit-log'),
     path('api/admin/export-report/', views_admin_controls.export_admin_report, name='export-admin-report'),
+
+    #=============================BUDGET TIER SYSTEM PRESENTATIONS=====================================
+    # Presentation modes for investors, recruiters, and technical interviews
+    path('budget-tier-presentation/', views_budget_presentation.budget_tier_presentation, name='budget-tier-presentation'),
+    path('budget-tier-presentation-guide/', views_budget_presentation.presentation_guide, name='budget-tier-presentation-guide'),
+    path('budget-tier-demo/<str:demo_type>/', views_budget_presentation.interactive_demo, name='budget-tier-interactive-demo'),
 ]
 
 # Conditionally add unified payment URLs if payment_views module is available
