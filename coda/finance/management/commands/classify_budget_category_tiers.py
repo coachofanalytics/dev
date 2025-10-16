@@ -112,13 +112,14 @@ class Command(BaseCommand):
         # Get all transactions for this category
         # Note: Transaction model uses 'category' field, not 'budget_category'
         # Note: Transaction model doesn't have company field
+        # Note: Only select fields that exist to avoid schema mismatch errors
         transactions = Transaction.objects.filter(
             category=category
         ).exclude(
             amount__isnull=True
         ).exclude(
             amount=0
-        )
+        ).only('id', 'amount', 'transaction_date', 'category')  # Only load fields we need
         
         total_transactions = transactions.count()
         
@@ -138,7 +139,7 @@ class Command(BaseCommand):
                 'amount_variance_pct': 0,
             }
         
-        # Calculate statistics
+        # Calculate statistics (using only 'amount' field)
         total_spending = transactions.aggregate(total=Sum('amount'))['total'] or Decimal('0')
         avg_amount = transactions.aggregate(avg=Avg('amount'))['avg'] or Decimal('0')
         min_amount = transactions.aggregate(min=Min('amount'))['min'] or Decimal('0')
