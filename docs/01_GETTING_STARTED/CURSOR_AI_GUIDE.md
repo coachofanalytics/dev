@@ -4,6 +4,28 @@
 
 ---
 
+## 🔑 CRITICAL REFERENCE - READ FIRST
+
+### Production Branch & Environments
+
+| Environment | Branch | Heroku App | Remote | Status |
+|-------------|--------|------------|--------|--------|
+| **Production** | `25.10_CODA_PROD_v2_CM` | codatrainingapp.herokuapp.com | `production` | ✅ Lean (79.7M) |
+| **UAT/Staging** | `25_UAT_CM` | codamakutano.herokuapp.com | `heroku` | ✅ Testing |
+
+**⚠️ ALWAYS use `25.10_CODA_PROD_v2_CM` branch for production deployments!**
+
+**Quick Deploy Commands:**
+```bash
+# Production (REQUIRES USER PERMISSION!)
+git push production 25.10_CODA_PROD_v2_CM:main --force
+
+# UAT (Allowed for testing)
+git push heroku [your-branch]:main --force
+```
+
+---
+
 ## 🎯 QUICK START FOR CURSOR AI
 
 ### When Starting ANY Task:
@@ -241,6 +263,42 @@ cd coda && python manage.py test finance
 
 ## 🚀 DEPLOYMENT WORKFLOW
 
+### Branch Strategy (IMPORTANT!)
+
+**Current Production Branch:** `25.10_CODA_PROD_v2_CM`
+
+**Branch Structure:**
+- **Production Branch**: `25.10_CODA_PROD_v2_CM`
+  - Deployed to: `codatrainingapp.herokuapp.com` (Production)
+  - Remote: `production`
+  - Status: Lean deployment (79.7M slug, venv removed)
+  
+- **UAT Branch**: `25_UAT_CM` (or current working branch)
+  - Deployed to: `codamakutano.herokuapp.com` (UAT/Staging)
+  - Remote: `heroku`
+  - Status: Testing environment
+
+- **Development Branches**: Various feature branches
+  - Local development only
+  - Merge to UAT branch for testing
+
+**Deployment Commands by Environment:**
+```bash
+# Deploy to UAT (codamakutano.herokuapp.com)
+git push heroku [your-branch]:main --force
+
+# Deploy to Production (codatrainingapp.herokuapp.com)
+git push production 25.10_CODA_PROD_v2_CM:main --force
+```
+
+**Important Notes:**
+- ✅ Always deploy `25.10_CODA_PROD_v2_CM` branch to production
+- ✅ This branch has the lean configuration (venv removed, proper settings)
+- ✅ UAT can use different branches for testing
+- ⚠️ Never deploy untested code directly to production
+
+---
+
 ### Deploying to UAT (Allowed)
 
 **Pre-Deployment Checklist:**
@@ -252,13 +310,13 @@ cd coda && python manage.py test finance
 **Deployment Commands:**
 ```bash
 # 1. Ensure on correct branch
-git branch  # Should show 25.10_UAT_DEPLOYMENT_FIX_CM
+git branch  # For UAT testing: any branch; For Production: 25.10_CODA_PROD_v2_CM
 
 # 2. Push to GitHub (backup)
-git push uat 25.10_UAT_DEPLOYMENT_FIX_CM
+git push uat [your-branch]
 
 # 3. Deploy to Heroku UAT
-git push heroku 25.10_UAT_DEPLOYMENT_FIX_CM:main --force
+git push heroku [your-branch]:main --force
 
 # 4. Monitor deployment
 heroku logs --tail --app codamakutano --num 50
@@ -306,7 +364,9 @@ heroku run "cd coda && python manage.py showmigrations finance" --app codamakuta
 # ASK USER FIRST: "Ready to deploy to production?"
 
 # If YES:
-git push production 25.10_UAT_DEPLOYMENT_FIX_CM:main --force
+# ALWAYS use the production branch: 25.10_CODA_PROD_v2_CM
+git checkout 25.10_CODA_PROD_v2_CM
+git push production 25.10_CODA_PROD_v2_CM:main --force
 
 # Monitor closely
 heroku logs --tail --app codatrainingapp --num 100
@@ -964,10 +1024,10 @@ rm docs/_temp_summaries/BUDGET_WORK_PROGRESS.md
 ### UAT Deployment (Allowed):
 ```bash
 # Push to GitHub first (backup)
-git push uat 25.10_UAT_DEPLOYMENT_FIX_CM
+git push uat [your-branch]
 
 # Deploy to Heroku UAT
-git push heroku 25.10_UAT_DEPLOYMENT_FIX_CM:main --force
+git push heroku [your-branch]:main --force
 
 # Monitor logs
 heroku logs --tail --app codamakutano
@@ -983,8 +1043,11 @@ heroku logs --tail --app codamakutano
 
 If approved:
 ```bash
+# ALWAYS use the production branch
+git checkout 25.10_CODA_PROD_v2_CM
+
 # Deploy
-git push production 25.10_UAT_DEPLOYMENT_FIX_CM:main --force
+git push production 25.10_CODA_PROD_v2_CM:main --force
 
 # Monitor closely
 heroku logs --tail --app codatrainingapp
@@ -1155,6 +1218,12 @@ This might be related because: [REASON]
 
 ## ⚡ QUICK REFERENCE
 
+### Production Branch & Environments:
+- **Production Branch:** `25.10_CODA_PROD_v2_CM` ⚠️ (ALWAYS use this for production!)
+- **UAT Branch:** `25_UAT_CM` (or current feature branch)
+- **Production URL:** https://codatrainingapp.herokuapp.com
+- **UAT URL:** https://codamakutano.herokuapp.com
+
 ### Important URLs:
 - **UAT:** https://codamakutano.herokuapp.com
 - **Production:** https://codatrainingapp.herokuapp.com
@@ -1167,14 +1236,23 @@ This might be related because: [REASON]
 # Run tests
 ./tests/run_tests.sh --regression
 
-# Deploy UAT
-git push heroku 25.10_UAT_DEPLOYMENT_FIX_CM:main --force
+# Deploy to UAT (Testing)
+git push heroku [your-branch]:main --force
 
-# Check logs
+# Deploy to Production (REQUIRES PERMISSION!)
+git push production 25.10_CODA_PROD_v2_CM:main --force
+
+# Check logs (UAT)
 heroku logs --tail --app codamakutano
 
-# Run migration
+# Check logs (Production)
+heroku logs --tail --app codatrainingapp
+
+# Run migration (UAT)
 heroku run "cd coda && python manage.py migrate" --app codamakutano
+
+# Run migration (Production)
+heroku run "cd coda && python manage.py migrate" --app codatrainingapp
 ```
 
 ### Important Files:
