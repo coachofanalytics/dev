@@ -15,7 +15,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 import json
 
 logger = logging.getLogger(__name__)
@@ -261,6 +261,7 @@ class AlertManager:
                 return False
             
             # Get admin users for alerts
+            User = get_user_model()
             admin_users = User.objects.filter(is_staff=True, is_active=True)
             admin_emails = [user.email for user in admin_users if user.email]
             
@@ -373,7 +374,6 @@ class SecurityMonitor:
             }
             
             # Check for failed login attempts (last hour)
-            from django.contrib.auth.models import User
             from datetime import timedelta
             
             recent_time = timezone.now() - timedelta(hours=1)

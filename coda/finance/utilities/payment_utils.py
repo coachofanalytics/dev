@@ -26,6 +26,72 @@ class PaymentUtils:
     """Utility class for payment-related operations."""
     
     @staticmethod
+    def get_user_persona(user):
+        """
+        Determine a user's persona for payment routing.
+
+        Priority order:
+        - staff/internal
+        - investor
+        - student/training
+        - guest/unknown
+        """
+        try:
+            # Staff / internal users
+            if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False) or getattr(user, "is_admin", False):
+                return "staff"
+
+            # Investor flags: group, top-level flag, or profile flag
+            try:
+                if hasattr(user, "groups") and user.groups.filter(name__iexact="investor").exists():
+                    return "investor"
+            except Exception:
+                pass
+
+            if getattr(user, "is_investor", False):
+                return "investor"
+
+            if hasattr(user, "profile") and getattr(user.profile, "is_investor", False):
+                return "investor"
+
+            # Student / training: group, explicit flag, or common category code
+            try:
+                if hasattr(user, "groups") and user.groups.filter(name__iexact="student").exists():
+                    return "student"
+            except Exception:
+                pass
+
+            if getattr(user, "is_training_user", False) or getattr(user, "is_student", False):
+                return "student"
+
+            # Some projects use category codes; retain as a weak signal only
+            if getattr(user, "category", None) in {1, "student"}:
+                return "student"
+
+            return "unknown"
+        except Exception:
+            return "unknown"
+
+    @staticmethod
+    def get_persona_redirect_url(user):
+        """Return the appropriate redirect URL path for a user's persona."""
+        try:
+            persona = PaymentUtils.get_user_persona(user)
+            if persona == "staff":
+                # Staff typically go straight to unified payment selection
+                return "finance:unified_method_selection", None
+            if persona == "investor":
+                # Use absolute path for investing dashboard (external app)
+                return None, "/investing/dashboard/"
+            if persona == "student":
+                # Professional services landing (training/data analysis)
+                return None, "/professional_services/"
+            # Fallback generic services landing
+            return None, "/professional_services/"
+        except Exception:
+            return None, "/professional_services/"
+
+    @staticmethod
     def update_link(service_array, user_payment_history, service_categories):
         """
         Update payment links based on service array and user payment history.

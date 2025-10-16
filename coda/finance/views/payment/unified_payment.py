@@ -1,10 +1,11 @@
-﻿from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 import logging
+
 from finance.models import Payment_Information, Payment_History
 from accounts.models import CustomerUser
 from finance.utils import validate_amount, save_payment_history, validate_user_payment_eligibility
@@ -16,7 +17,7 @@ from core.utils import generate_and_send_otp
 logger = logging.getLogger(__name__)
 
 
-    # Payment Method Constants
+# Payment Method Constants
 PAYMENT_METHODS = {
     'mpesa': {
         'name': 'MPESA',
@@ -76,7 +77,7 @@ PAYMENT_METHODS = {
         'requires_phone': False,
         'description': 'Secure payment via credit/debit card',
         'processing_time': 'Instant',
-        'fees': '2.9% + 30┬ó',
+        'fees': '2.9% + 30¢',
     },
 }
 
@@ -88,15 +89,21 @@ def payment_method_selection(request):
     Shows all available payment methods with consistent UI
     """
     try:
-        print(f"DEBUG: Starting payment_method_selection for user {request.user.id}")
-        
         # Get user's payment information
         payment_info = Payment_Information.objects.filter(customer_id=request.user.id).first()
-        print(f"DEBUG: payment_info found: {payment_info}")
         
         if not payment_info:
-            print("DEBUG: No payment_info found, redirecting")
-            messages.error(request, 'No payment information found. Please contact support.')
+            # Route user to create payable context based on persona
+            try:
+                from finance.utilities.payment_utils import PaymentUtils
+                named_url, absolute_url = PaymentUtils.get_persona_redirect_url(request.user)
+                if named_url:
+                    return redirect(reverse(named_url))
+                if absolute_url:
+                    return redirect(absolute_url)
+            except Exception:
+                pass
+            messages.error(request, 'No payment context found. Please select a service to continue.')
             return redirect('finance:payments', title='history', status='completed')
         
         # Calculate amounts

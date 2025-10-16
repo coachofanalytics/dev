@@ -2196,22 +2196,37 @@ def pay(request, *args, **kwargs):
                 payment_source = 'history'
                 logger.info(f"User {request.user.username} has unpaid history: {unpaid_history.id}")
         
-        # 4. No outstanding payments found - but user may want to pay for new service
+        # 4. No outstanding payments found - route by persona to create context
         if not payment_info:
-            logger.info(f"User {request.user.username} accessing payment page without existing payment info")
-            # Create a placeholder payment info for general payments
-            # User can select amount and service on the payment page
+            try:
+                from finance.utilities.payment_utils import PaymentUtils
+            except Exception:
+                PaymentUtils = None
+
+            logger.info(
+                f"User {request.user.username} accessing payment page without existing payment info; routing by persona"
+            )
+
+            if PaymentUtils is not None:
+                named_url, absolute_url = PaymentUtils.get_persona_redirect_url(request.user)
+                if named_url:
+                    return redirect(reverse(named_url))
+                if absolute_url:
+                    return redirect(absolute_url)
+
+            # Fallback behavior: create placeholder and show legacy page
             payment_info = type('obj', (object,), {
-                'id': None,  # No id for new payments
-                'payment_fees': 0,  # Will be entered on payment page
+                'id': None,
+                'payment_fees': 0,
                 'down_payment': 0,
-                'is_new_payment': True  # Flag to show this is a new payment
+                'is_new_payment': True,
             })()
             payment_source = 'new_service'
             paypal_charges = 0
-            
-            # Add message to help user understand they can pay for services
-            messages.info(request, "Welcome! You can make a payment for training, services, or other CODA offerings.")
+            messages.info(
+                request,
+                "Welcome! Please select a service to create a payable amount.",
+            )
 
     # Calculate payment amounts
     if hasattr(payment_info, 'payment_fees'):
