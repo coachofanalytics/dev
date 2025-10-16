@@ -13,7 +13,7 @@ ENV_CONFIG['is_testing'] = False
 ENV_CONFIG['is_production'] = True
 
 # Heroku specific settings
-DEBUG = False
+DEBUG = True  # Temporarily enabled for UAT debugging
 SECURE_SSL_REDIRECT = True
 
 # Database configuration for Heroku
@@ -86,12 +86,12 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'WARNING',
+        'level': 'INFO',  # Changed from WARNING for UAT debugging
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'INFO',  # Changed from WARNING for UAT debugging
             'propagate': False,
         },
     },
