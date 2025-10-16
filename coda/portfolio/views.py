@@ -57,11 +57,13 @@ def project_landing(request, project_slug):
     # Get presentation mode from URL (branded by default)
     presentation_mode = 'interview' if 'interview' in request.path else 'branded'
     
-    context = service.get_context('landing', presentation_mode)
+    # Get base context (use 'demo' as default audience type)
+    context = service.get_context('demo', presentation_mode)
     context.update({
         'title': f"{service.project_name} - Presentations",
         'available_audiences': ['investor', 'technical', 'recruiter', 'demo'],
         'is_project_landing': True,
+        'project_slug': project_slug,
     })
     
     return render(request, 'portfolio/project_landing.html', context)

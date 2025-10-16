@@ -73,7 +73,7 @@
             <div class="row mt-3">
                 {% for category, tech_list in technologies.items %}
                 <div class="col-md-3 mb-3">
-                    <h5>{{ category|title|replace:"_":" " }}</h5>
+                    <h5>{{ category|title }}</h5>
                     <ul class="list-unstyled">
                         {% for tech in tech_list %}
                         <li><i class="{{ tech.icon }}"></i> {{ tech.name }}</li>
