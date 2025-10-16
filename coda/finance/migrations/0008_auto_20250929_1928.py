@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         ('main', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('accounts', '0003_userprofile_country'),
-        ('finance', '0007_fix_budget_subcategory_field'),
+        ('finance', '0001_initial'),  # Changed from 0007_fix_budget_subcategory_field (doesn't exist)
     ]
 
     operations = [
