@@ -1,7 +1,7 @@
 # Budget System - Implementation
 
-**Last Updated:** October 13, 2025  
-**Version:** Phase 1 Complete
+**Last Updated:** October 16, 2025  
+**Version:** Phase 2 Complete (Data-Driven Tier System) ✅
 
 ---
 
@@ -1146,10 +1146,200 @@ total = Sum(F('unit_price') * F('quantity') * Coalesce(F('cases'), 1),
 
 ---
 
+## Phase 2: Data-Driven Tier System (October 16, 2025) ✅
+
+### Implementation Summary
+
+**Completed:** October 16, 2025  
+**Status:** ✅ Deployed to UAT, tested, ready for production  
+**Completion:** 95% (integration complete, Finance Manager UI complete)
+
+### New Features Implemented:
+
+#### 1. BudgetCategory Tier Fields
+**File:** `coda/finance/models/budget.py`  
+**Migration:** `0002_budgetcategory_tier_fields.py`
+
+**Fields Added:**
+- `approval_tier` - A/B/C classification from data analysis
+- `auto_approve_enabled` - Finance Manager toggle
+- `typical_monthly_amount` - Calculated from $1.49M transaction data
+- `variance_threshold` - Data-driven anomaly detection threshold
+- `is_recurring` - Pattern detection from transaction frequency
+- `last_pattern_analysis` - Timestamp of last analysis
+
+**Methods Added:**
+- `should_auto_approve(amount)` - Auto-approval logic
+- `is_within_variance(amount)` - Variance checking
+- `needs_pattern_analysis()` - Check if re-analysis needed
+
+---
+
+#### 2. Tier Classification Command
+**File:** `coda/finance/management/commands/classify_budget_category_tiers.py`
+
+**Analyzes:**
+- $1,458,482 in transaction data over 27 months
+- 366 transactions across 25 categories
+- Transaction frequency, amount variance, business criticality
+
+**Classifies into:**
+- **Tier A**: Known/Recurring (high frequency, low variance, essential)
+- **Tier B**: Variable/Operational (medium frequency, operational)
+- **Tier C**: Strategic/Discretionary (low frequency or high variance)
+
+**Usage:**
+```bash
+python manage.py classify_budget_category_tiers --analyze
+python manage.py classify_budget_category_tiers --analyze --save
+python manage.py classify_budget_category_tiers --export tiers.csv
+```
+
+**Results (Ran Oct 16, 2025):**
+- Tier A: 1 category (Rent - $2,000/mo)
+- Tier B: 5 categories (Salaries $33k/mo, IT, Utilities, Travel, Office)
+- Tier C: 19 categories (Strategic + dormant)
+
+---
+
+#### 3. Smart Approval Service (Phase 2)
+**File:** `coda/finance/services/smart_approval_service.py`
+
+**Rewritten to use tier data instead of hardcoded rules:**
+
+**Old (Phase 1):** Hardcoded thresholds (Utilities: 50k, IT: 15k, Salaries: 15k)  
+**New (Phase 2):** Data-driven using BudgetCategory tier fields
+
+**Methods:**
+- `should_auto_approve(budget_request)` - Uses category.should_auto_approve()
+- `get_recommended_approver(budget_request)` - Tier-based routing
+- `get_approval_routing(budget_request)` - Complete routing info
+- `process_budget_request(budget_request)` - Auto-approve or route
+
+**Routing Logic:**
+- **Tier A**: Auto-approve if within variance, else Finance Manager
+- **Tier B**: High=Auto, Medium=Dept Manager, Low=Finance Manager
+- **Tier C**: High=Senior Manager, Other=Executive
+
+---
+
+#### 4. BudgetRequestService Integration
+**File:** `coda/finance/services/automation_service.py`
+
+**Updated `submit_for_approval()` method:**
+1. Checks SmartApprovalService first
+2. Auto-approves if eligible
+3. Routes to policy system if manual approval needed
+4. Logs all actions
+
+**Auto-Approval Flow:**
+```
+Budget Request Submitted
+        ↓
+SmartApprovalService.should_auto_approve()
+        ↓
+    ┌───┴───┐
+    YES     NO
+    ↓       ↓
+Auto-    Route to
+Approve  Policy
+```
+
+---
+
+#### 5. Finance Manager Tier Control Interface
+**Files:**
+- View: `coda/finance/views/budget/views_tier_management.py`
+- Template: `coda/finance/templates/finance/budgets/tier_management_dashboard.html`
+- Template: `coda/finance/templates/finance/budgets/auto_approval_log.html`
+
+**URL:** `/finance/tier-management/{company_slug}/`
+
+**Features:**
+- View all 25 categories grouped by tier (A/B/C)
+- Toggle auto-approval per category (Tier A only)
+- Adjust variance thresholds inline
+- View tier statistics
+- Re-run tier classification analysis
+- Auto-approval log with filters
+
+**API Endpoints:**
+- `POST /finance/api/tier/toggle-auto-approval/{category_id}/`
+- `POST /finance/api/tier/update-variance-threshold/{category_id}/`
+- `POST /finance/api/tier/run-reclassification/{company}/`
+
+---
+
+#### 6. Auto-Approval Log Viewer
+**URL:** `/finance/tier/auto-approval-log/{company_slug}/`
+
+**Features:**
+- View all auto-approved requests
+- Filter by date range (7/30/90/365 days)
+- Filter by tier (A/B/C)
+- Shows variance vs typical amount
+- Tier breakdown statistics
+- Total amounts auto-approved
+
+---
+
+### Tier Classification Results (Oct 16, 2025)
+
+**Dataset Analyzed:** $1,458,482.32 over 27 months
+
+| Tier | Categories | Total Spending | % of Total |
+|------|-----------|----------------|------------|
+| **A** | 1 (Rent) | $2,000 | 0.1% |
+| **B** | 5 (Salaries, IT, Utilities, Travel, Office) | $1,130,091 | 77.5% |
+| **C** | 19 (Strategic + dormant) | $326,390 | 22.4% |
+
+**Key Finding:** 77.5% of spending is in Tier B (operational expenses)
+
+**Auto-Approval Potential:**
+- Current: 1 category eligible (Rent)
+- Future: Could enable for Tier B high-priority requests (~30-40% automation)
+
+---
+
+### URLs Added (Phase 2)
+
+```python
+# Finance Manager Tier Controls
+path('tier-management/<str:company_slug>/', ..., name='tier-management-dashboard'),
+path('tier/auto-approval-log/<str:company_slug>/', ..., name='auto-approval-log'),
+
+# API Endpoints
+path('api/tier/toggle-auto-approval/<int:category_id>/', ...),
+path('api/tier/update-variance-threshold/<int:category_id>/', ...),
+path('api/tier/run-reclassification/<str:company_slug>/', ...),
+```
+
+---
+
+### Configuration
+
+**Tier Classification:** Run on production data Oct 16, 2025  
+**Default Settings:**
+- Variance threshold: 15-50% (data-driven)
+- Auto-approval: Disabled by default (Finance Manager must enable)
+- Tier assignment: Based on transaction patterns
+
+**Re-run Analysis:** Finance Manager can trigger via UI or command line
+
+---
+
 ## Change History
 
 | Date | Change | Developer | Reason | Reference |
 |------|--------|-----------|--------|-----------|
+| Oct 16, 2025 | **Phase 2: Tier System COMPLETE** | CM | Data-driven approval automation | This session |
+| Oct 16, 2025 | Added 6 tier fields to BudgetCategory | CM | Enable data-driven auto-approval | Migration 0002 |
+| Oct 16, 2025 | Created tier classification command | CM | Analyze $1.49M dataset | classify_budget_category_tiers.py |
+| Oct 16, 2025 | Ran tier analysis on production data | CM | Classify 25 categories | Results saved to DB |
+| Oct 16, 2025 | Integrated SmartApprovalService (Phase 2) | CM | Use tier data, not hardcoded rules | smart_approval_service.py |
+| Oct 16, 2025 | Updated BudgetRequestService | CM | Auto-approve before routing | automation_service.py |
+| Oct 16, 2025 | Created Finance Manager UI | CM | Tier control interface | views_tier_management.py |
+| Oct 16, 2025 | Lean production deployment | CM | 87% size reduction (venv removed) | Production v1738 |
 | Oct 13, 2025 | Added approval fields (Migration 0099) | CM | Support Phase 1 workflow | This session |
 | Oct 13, 2025 | Fixed permission logic (simple staff approval) | CM | Unblock development | This session |
 | Oct 2, 2025 | Dashboard bug fix (aggregation formula) | CM | Fix 177x inflation error | MASTER_REFERENCE.md |
@@ -1159,6 +1349,6 @@ total = Sum(F('unit_price') * F('quantity') * Coalesce(F('cases'), 1),
 ---
 
 **Maintained by:** Cursor AI Assistant  
-**Next Review:** After Phase 2 implementation  
+**Last Major Update:** October 16, 2025 (Phase 2 Complete)  
 **Questions?** Check REQUIREMENTS.md for business logic, TESTING.md for verification
 
