@@ -6,5 +6,6 @@ from .views import member_home
 urlpatterns = [
 
     # Define your URL patterns here
-    path('join', member_home, name='member_home'),
+    path('membership', member_home, name='member_home'),
+    
 ]

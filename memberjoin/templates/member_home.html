@@ -1,130 +1,103 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
-
 {% block content %}
-<!-- ========================= -->
-<!-- HERO SECTION -->
-<!-- ========================= -->
-<section class="bg-gradient-to-r from-green-700 to-red-700 text-white py-16 text-center mt-3">
-  <div class="container mx-auto px-6">
-    <h1 class="text-4xl md:text-5xl font-bold mb-4">Join Diaspora County 48 Kenya (DC48K)</h1>
-    <p class="text-lg max-w-2xl mx-auto">
-      Be part of the “48th County of Kenya” — uniting Kenyans in the diaspora through community, leadership, and development.
-    </p>
-    <a href="#register" class="mt-6 inline-block bg-white text-green-700 font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition">
-      Register Now
-    </a>
-  </div>
+
+<!-- Hero Section -->
+<section class="bg-blue-50 py-16 text-center">
+  <h1 class="text-4xl font-bold text-blue-800">Join Diaspora County 48 Kenya (DC48K)</h1>
+  <p class="mt-4 text-lg text-gray-700">Be part of a global community representing Kenyans abroad — the 48th County of Kenya.</p>
 </section>
 
-<!-- ========================= -->
-<!-- MEMBERSHIP PLANS SECTION -->
-<!-- ========================= -->
-<section class="py-16 bg-gray-50">
-  <div class="container mx-auto px-6">
-    <h2 class="text-3xl font-bold text-center mb-10 text-green-700">Membership Plans & Benefits</h2>
+<!-- Membership Plans -->
+<section class="container mx-auto px-4 mt-12">
+  <h2 class="text-3xl font-semibold text-center mb-8">Membership Plans</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+      <h3 class="text-2xl font-semibold mb-4">Individual</h3>
+      <ul class="list-disc list-inside mb-4">
+        <li>Community Access</li>
+        <li>Monthly Updates</li>
+        <li>Support Network</li>
+      </ul>
+      <p class="text-xl font-bold text-blue-600">$10 / month</p>
+    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Individual Plan -->
-      <div class="bg-white p-8 rounded-2xl shadow-md hover:shadow-lg transition">
-        <h3 class="text-2xl font-semibold mb-4 text-green-700">Individual Membership</h3>
-        <ul class="list-disc list-inside text-gray-700 mb-6">
-          <li>Access to basic DC48K community benefits</li>
-          <li>Monthly newsletter updates</li>
-          <li>Participation in diaspora programs</li>
-        </ul>
-        <p class="text-xl font-bold mb-4">$20 / Year</p>
-        <a href="#register" class="block bg-green-700 text-white py-2 rounded-full hover:bg-green-800 text-center">
-          Join Now
-        </a>
-      </div>
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+      <h3 class="text-2xl font-semibold mb-4">Leadership</h3>
+      <ul class="list-disc list-inside mb-4">
+        <li>Includes Individual Benefits</li>
+        <li>Leadership Forums</li>
+        <li>Exclusive Policy Events</li>
+      </ul>
+      <p class="text-xl font-bold text-blue-600">$30 / month</p>
+    </div>
 
-      <!-- Leader Plan -->
-      <div class="bg-white p-8 rounded-2xl shadow-md hover:shadow-lg transition border-t-4 border-red-700">
-        <h3 class="text-2xl font-semibold mb-4 text-red-700">Leadership Membership</h3>
-        <ul class="list-disc list-inside text-gray-700 mb-6">
-          <li>All Individual benefits</li>
-          <li>Leadership forum access</li>
-          <li>Voting rights in DC48K governance</li>
-          <li>Eligible for leadership recognition awards</li>
-        </ul>
-        <p class="text-xl font-bold mb-4">$100 / Year</p>
-        <a href="#register" class="block bg-red-700 text-white py-2 rounded-full hover:bg-red-800 text-center">
-          Join as a Leader
-        </a>
-      </div>
-
-      <!-- Organization Plan -->
-      <div class="bg-white p-8 rounded-2xl shadow-md hover:shadow-lg transition">
-        <h3 class="text-2xl font-semibold mb-4 text-green-700">Organization Membership</h3>
-        <ul class="list-disc list-inside text-gray-700 mb-6">
-          <li>All Leadership benefits</li>
-          <li>Organizational representation at events</li>
-          <li>Access to networking and funding opportunities</li>
-        </ul>
-        <p class="text-xl font-bold mb-4">$250 / Year</p>
-        <a href="#register" class="block bg-green-700 text-white py-2 rounded-full hover:bg-green-800 text-center">
-          Join as Organization
-        </a>
-      </div>
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+      <h3 class="text-2xl font-semibold mb-4">Organization</h3>
+      <ul class="list-disc list-inside mb-4">
+        <li>All Leadership Benefits</li>
+        <li>Brand Exposure</li>
+        <li>Collaboration Opportunities</li>
+      </ul>
+      <p class="text-xl font-bold text-blue-600">$100 / month</p>
     </div>
   </div>
 </section>
 
-<!-- ========================= -->
-<!-- REGISTRATION FORM SECTION -->
-<!-- ========================= -->
-<section id="register" class="py-20 bg-white">
-  <div class="container mx-auto px-6 max-w-3xl bg-gray-50 shadow-lg rounded-2xl p-8">
-    <h2 class="text-3xl font-bold text-center text-green-700 mb-8">Membership Registration</h2>
+<!-- Display messages -->
+{% if messages %}
+  <div class="max-w-xl mx-auto mt-6">
+    {% for message in messages %}
+      <div class="p-4 mb-4 text-sm text-green-800 bg-green-100 rounded-lg" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 
-    <form method="POST" class="space-y-6">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-
-      {% for field in form %}
+<!-- Registration Form -->
+<section class="container mx-auto px-4 mt-16 mb-20">
+  <h2 class="text-3xl font-semibold text-center mb-6">Membership Registration</h2>
+  <form method="POST" class="max-w-xl mx-auto bg-white shadow-lg p-8 rounded-lg space-y-6">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
         {{ field }}
         {% if field.errors %}
-          <p class="text-red-500 text-sm mt-1">{{ field.errors|striptags }}</p>
+          <p class="text-red-500 text-sm mt-1">{{ field.errors|join:", " }}</p>
         {% endif %}
       </div>
-      {% endfor %}
-
-      <div class="text-center">
-        <button type="submit"
-                class="bg-green-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-800 transition">
-          Submit Registration
-        </button>
-      </div>
-    </form>
-  </div>
+    {% endfor %}
+    <button type="submit" name="register_submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+      Register Now
+    </button>
+  </form>
 </section>
 
-<!-- ========================= -->
-<!-- CONTACT SECTION -->
-<!-- ========================= -->
-<section class="bg-green-700 text-white py-16 mb-3">
-  <div class="container mx-auto px-6 text-center">
-    <h2 class="text-3xl font-bold mb-4">Contact Us</h2>
-    <p class="max-w-xl mx-auto mb-8">
-      Have questions about DC48K membership? Reach out to us anytime — we’re here to help!
-    </p>
-    <form method="post" action="#" class="max-w-xl mx-auto space-y-4">
-      <div>
-        <input type="text" name="name" placeholder="Your Name" class="w-full p-3 rounded-lg text-gray-900" required>
+<!-- Contact Form -->
+<section class="bg-gray-100 py-16 text-center">
+  <h2 class="text-3xl font-semibold mb-4">Have Questions?</h2>
+  <p class="text-gray-700 mb-6">Reach out to our team for more details about membership and partnership opportunities.</p>
+
+  <form method="POST" class="max-w-xl mx-auto bg-white shadow-lg p-8 rounded-lg text-left">
+    {% csrf_token %}
+    {{ contact_form.non_field_errors }}
+    {% for field in contact_form %}
+      <div class="mb-4">
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <p class="text-red-500 text-sm mt-1">{{ field.errors|join:", " }}</p>
+        {% endif %}
       </div>
-      <div>
-        <input type="email" name="email" placeholder="Your Email" class="w-full p-3 rounded-lg text-gray-900" required>
-      </div>
-      <div>
-        <textarea name="message" rows="4" placeholder="Your Message" class="w-full p-3 rounded-lg text-gray-900" required></textarea>
-      </div>
-      <button type="submit" class="bg-white text-green-700 font-semibold px-6 py-2 rounded-full hover:bg-gray-200 transition">
-        Send Message
-      </button>
-    </form>
-  </div>
+    {% endfor %}
+    <button type="submit" name="contact_submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+      Send Message
+    </button>
+  </form>
 </section>
+
 {% endblock %}
+
