@@ -23,4 +23,13 @@ class MembershipRegistration(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.email}"
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=60)
+    email = models.EmailField()
+    message = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.email}"
     
