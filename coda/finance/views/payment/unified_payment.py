@@ -90,7 +90,18 @@ def payment_method_selection(request):
     """
     try:
         # Get user's payment information
-        payment_info = Payment_Information.objects.filter(customer_id=request.user.id).first()
+        # Query without ordering to avoid created_at field issue
+        try:
+            payment_info = Payment_Information.objects.filter(
+                customer_id=request.user.id
+            ).order_by('-id').first()  # Use id instead of created_at
+        except Exception as db_error:
+            logger.warning(f"Database query issue, trying alternate method: {db_error}")
+            # Fallback: get without ordering
+            payment_info = Payment_Information.objects.filter(
+                customer_id=request.user.id
+            )[:1]
+            payment_info = payment_info[0] if payment_info else None
         
         if not payment_info:
             # Route user to create payable context based on persona
