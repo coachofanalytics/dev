@@ -80,5 +80,65 @@
         </div>
     </div>
 </section>
+<!-- ///////////////////////////////////////////////////////////////////////////////////////////////// -->
+<div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        
+        <div class="card">
+          <div class="exchange-header text-center">
+            <h3 class="mb-0">🇰🇪 Kenyan Shilling Exchange Rate</h3>
+          </div>
+
+          <div class="card-body text-center">
+            <p class="mb-1">1 {{ base_currency }} equals</p>
+            <p class="exchange-value mb-1">{{ kes_rate }} KES</p>
+            <p class="text-muted">Last updated: {{ date }}</p>
+
+            <form method="get" class="mt-4">
+              <div class="input-group">
+                <label class="input-group-text" for="base">Base Currency</label>
+                <select name="base" id="base" class="form-select">
+                  <option value="USD" {% if base_currency == 'USD' %}selected{% endif %}>USD</option>
+                  <option value="GBP" {% if base_currency == 'GBP' %}selected{% endif %}>GBP</option>
+                  <option value="EUR" {% if base_currency == 'EUR' %}selected{% endif %}>EUR</option>
+                </select>
+                <button type="submit" class="btn btn-success">Check</button>
+              </div>
+            </form>
+
+            <hr class="my-4">
+
+            <form method="get">
+              <div class="input-group">
+                <input 
+                  type="hidden" name="base" value="{{ base_currency }}"
+                >
+                <input 
+                  type="number" name="amount" step="0.01" class="form-control" 
+                  placeholder="Enter amount in {{ base_currency }}" 
+                  required
+                >
+                <button type="submit" class="btn btn-outline-success">Convert</button>
+              </div>
+            </form>
+
+            {% if request.GET.amount %}
+              <div class="mt-4">
+                <h5 class="text-secondary">Result:</h5>
+                <p class="fw-bold text-success">
+                  {{ request.GET.amount }} {{ base_currency }} = 
+                  {{ request.GET.amount|floatformat:2|add:"0"|floatformat:2|floatformat:0 }} × {{ kes_rate }} KES
+                </p>
+                <p class="fw-bold text-success">
+                  amont in kenyan shillings: {{ converted }} KES
+                </p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+<!-- ///////////////////////////////////////////////////////////////////////////////////////////////// -->
 
 {% endblock content %}
