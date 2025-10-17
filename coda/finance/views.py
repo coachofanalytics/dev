@@ -1926,11 +1926,11 @@ def send_notification(request, payment_id=None):
     if payslip_config.loan_repayment_percentage > Decimal(0):
         # print("Percentage=====>",payslip_config.loan_repayment_percentage)
         repayment_amount = (
-            user_payment_information.fee_balance
+            user_payment_information.get_fee_balance()
             * payslip_config.loan_repayment_percentage
         )
     else:
-        repayment_amount = user_payment_information.fee_balance
+        repayment_amount = user_payment_information.get_fee_balance()
         # print("repayment_amount=====>",repayment_amount,payslip_config.loan_repayment_percentage)
 
     # Calculate overdue days and due date
@@ -2051,7 +2051,7 @@ def send_invoice(request, type="collection"):
             client_email = client.email
             today = datetime.now()
             date = datetime(today.year, today.month, 1)
-            debt_amount = customer_payment_information.fee_balance
+            debt_amount = customer_payment_information.get_fee_balance()
             repayment_amount = payslip_config.installment_amount
             balance_amount = (
                 debt_amount - repayment_amount

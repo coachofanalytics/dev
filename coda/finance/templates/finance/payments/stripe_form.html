@@ -28,7 +28,7 @@
                             </div>
                             <div class="col-6">
                                 <small class="text-muted">Available Balance</small>
-                                <div class="fw-bold">${{ payment_info.fee_balance }}</div>
+                                <div class="fw-bold">${{ payment_info.get_fee_balance }}</div>
                             </div>
                         </div>
                     </div>
@@ -58,11 +58,11 @@
                                            name="amount" 
                                            step="0.01" 
                                            min="1" 
-                                           max="{{ payment_info.fee_balance }}"
+                                           max="{{ payment_info.get_fee_balance }}"
                                            value="{{ payment_info.down_payment }}"
                                            required>
                                 </div>
-                                <div class="form-text">Maximum: ${{ payment_info.fee_balance }}</div>
+                                <div class="form-text">Maximum: ${{ payment_info.get_fee_balance }}</div>
                             </div>
 
                             <div class="payment-info mb-4">
@@ -109,7 +109,7 @@
 <script>
 document.getElementById('stripePaymentForm').addEventListener('submit', function(e) {
     const amount = parseFloat(document.getElementById('amount').value);
-    const maxAmount = {{ payment_info.fee_balance }};
+    const maxAmount = {{ payment_info.get_fee_balance }};
     
     if (amount > maxAmount) {
         e.preventDefault();

@@ -1,6 +1,6 @@
 # Payment History Bug Fix - October 17, 2025
 
-## Issues (3 bugs discovered iteratively)
+## Issues (4 bugs discovered iteratively)
 
 ### Bug #1: Invalid field name 'description'
 **Error:** `Payment_History() got an unexpected keyword argument 'description'`
@@ -8,11 +8,15 @@
 
 ### Bug #2: Missing required field 'fee_balance' 
 **Error:** `null value in column "fee_balance" violates not-null constraint`
-**Root Cause:** Database has NOT NULL column but code wasn't passing value
+**Root Cause:** Database has NOT NULL column in Payment_History table but code wasn't passing value
 
 ### Bug #3: Model missing 'fee_balance' definition
 **Error:** `Payment_History() got an unexpected keyword argument 'fee_balance'`
 **Root Cause:** Database has column but Django model didn't define field
+
+### Bug #4: Payment_Information schema mismatch
+**Error:** `column finance_payment_information.fee_balance does not exist`
+**Root Cause:** Payment_Information table DOESN'T have fee_balance column, only Payment_History does
 
 ## Investigation
 
@@ -62,24 +66,31 @@ payment_record = Payment_History(
 )
 ```
 
-### Changes Made - Part 3 (model schema alignment)
-Added fee_balance field to Django models to match database:
+### Changes Made - Part 3 (Payment_History schema alignment)
+Added fee_balance field to Payment_History model to match database:
 ```python
-class Payment_Information(PaymentBase):
-    ...
-    fee_balance = models.IntegerField(default=0, help_text="Calculated as payment_fees - down_payment")
-    ...
-
 class Payment_History(PaymentBase):
     ...
     fee_balance = models.IntegerField(default=0, help_text="Calculated as payment_fees - down_payment")
     ...
 ```
 
+### Changes Made - Part 4 (Payment_Information property)
+Converted fee_balance to a property for Payment_Information (database table doesn't have column):
+```python
+class Payment_Information(PaymentBase):
+    ...
+    @property
+    def fee_balance(self):
+        """Calculate fee_balance dynamically - column doesn't exist in database"""
+        return self.payment_fees - self.down_payment
+    ...
+```
+
 ### Files Modified
 1. ✅ `coda/finance/utils.py` - Fixed (description → notes) + Added fee_balance calc
 2. ✅ `coda/finance/utils/__init__.py` - Fixed (description → notes) + Added fee_balance calc
-3. ✅ `coda/finance/models/core.py` - Added fee_balance field to both models
+3. ✅ `coda/finance/models/core.py` - Added fee_balance field to Payment_History, property to Payment_Information
 
 ### Documentation Updated
 1. ✅ `docs/apps/finance/Payment/IMPLEMENTATION.md` - Added to Change History
@@ -104,10 +115,11 @@ When payment system is re-enabled:
 ## Follow-Up Actions
 
 ### Immediate
-✅ All 3 bugs fixed - Complete resolution
+✅ All 4 bugs fixed - Complete resolution
 ✅ Deployed to UAT v937 (description → notes)
 ✅ Deployed to UAT v938 (fee_balance calculation)
-✅ Deployed to UAT v939 (model field definition)
+✅ Deployed to UAT v939 (Payment_History field)
+✅ Deployed to UAT v940 (Payment_Information property)
 
 ### Future
 - [ ] Re-enable payment system (deploy `_deprecated` module OR refactor)
@@ -128,8 +140,9 @@ When payment system is re-enabled:
 4. **Multiple Implementations:** Found duplicate `save_payment_history()` functions - should consolidate
 5. **Template Fields Pattern:** Similar to BudgetRequest approval fields bug (Oct 13)
 6. **Proactive Fix:** Fixed before payment system re-enabled - prevents future breakage
-7. **Iterative Debugging:** Each fix revealed the next issue - all three now resolved
+7. **Iterative Debugging:** Each fix revealed the next issue - all four now resolved
 8. **Schema Mismatch Pattern:** Database evolved but Django models didn't - classic technical debt
+9. **Different Tables, Different Schemas:** Payment_History has fee_balance column, Payment_Information doesn't
 
 ## Related Issues
 
@@ -139,8 +152,8 @@ When payment system is re-enabled:
 
 ---
 
-**Status:** ✅ Fixed, Deployed (v939), and Documented  
-**Deployments:** UAT v937, v938, v939 (3 iterative fixes)
+**Status:** ✅ Fixed, Deployed (v940), and Documented  
+**Deployments:** UAT v937, v938, v939, v940 (4 iterative fixes)
 **Testing Required:** When payment system re-enabled  
 **Priority:** High (was blocking all payment processing)
 

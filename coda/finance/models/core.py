@@ -142,14 +142,13 @@ class Payment_Information(PaymentBase):
     subplan = models.IntegerField(null=True)
     pricing_plan = models.IntegerField(null=True)
     client_signature = models.CharField(max_length=1000)
-    
-    @property
-    def fee_balance(self):
-        """Calculate fee_balance dynamically - column doesn't exist in database"""
-        return self.payment_fees - self.down_payment
 
     def __str__(self):
         return "Payment Info for {} - Plan {}".format(self.customer.username, self.plan)
+    
+    def get_fee_balance(self):
+        """Calculate fee_balance dynamically - column doesn't exist in database"""
+        return self.payment_fees - self.down_payment
 
 
 class Payment_History(PaymentBase):

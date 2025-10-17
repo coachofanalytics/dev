@@ -16,7 +16,7 @@
     <label for="totalAmount">Total Payment Amount:</label>
     <div class="styled-input" id="totalAmount" tabindex="0">
         {% if payment_info %}
-        ${{ payment_info.0.fee_balance }}
+        ${{ payment_info.0.get_fee_balance }}
         {% endif %}
     </div>
     
@@ -98,7 +98,7 @@
     // Pass Django variables into JavaScript
     const payment = {
         periods: {{ payment_info.0.subplan|default:7 }},
-        fee_balance: {{ payment_info.0.fee_balance|default:0 }}
+        fee_balance: {{ payment_info.0.get_fee_balance|default:0 }}
     };
 
     // Log the value to ensure it's being passed correctly
