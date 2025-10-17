@@ -734,8 +734,34 @@ def validate_user_payment_eligibility(user, amount, payment_method="general"):
         if not amount_valid:
             return False, amount_message
 
-        # Then check user balance and eligibility
-        payment_info = Payment_Information.objects.filter(customer_id=user.id).first()
+        # Then check user balance and eligibility - use safe query to avoid field conflicts
+        try:
+            payment_info = Payment_Information.objects.filter(
+                customer_id=user.id
+            ).only('id', 'customer_id', 'payment_fees', 'down_payment').first()
+        except Exception as db_error:
+            # Fallback: use raw query to avoid model ordering issues
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, customer_id, payment_fees, down_payment 
+                    FROM finance_payment_information 
+                    WHERE customer_id = %s 
+                    ORDER BY id DESC 
+                    LIMIT 1
+                """, [user.id])
+                result = cursor.fetchone()
+                if result:
+                    # Create a simple object with the needed attributes
+                    payment_info = type('PaymentInfo', (), {
+                        'id': result[0],
+                        'customer_id': result[1],
+                        'payment_fees': result[2],
+                        'down_payment': result[3]
+                    })()
+                else:
+                    payment_info = None
+        
         if not payment_info:
             return False, "No payment information found"
 
@@ -1120,8 +1146,34 @@ def validate_user_payment_eligibility(user, amount, payment_method="general"):
         if not amount_valid:
             return False, amount_message, None
 
-        # Then check user balance and eligibility
-        payment_info = Payment_Information.objects.filter(customer_id=user.id).first()
+        # Then check user balance and eligibility - use safe query to avoid field conflicts
+        try:
+            payment_info = Payment_Information.objects.filter(
+                customer_id=user.id
+            ).only('id', 'customer_id', 'payment_fees', 'down_payment').first()
+        except Exception as db_error:
+            # Fallback: use raw query to avoid model ordering issues
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, customer_id, payment_fees, down_payment 
+                    FROM finance_payment_information 
+                    WHERE customer_id = %s 
+                    ORDER BY id DESC 
+                    LIMIT 1
+                """, [user.id])
+                result = cursor.fetchone()
+                if result:
+                    # Create a simple object with the needed attributes
+                    payment_info = type('PaymentInfo', (), {
+                        'id': result[0],
+                        'customer_id': result[1],
+                        'payment_fees': result[2],
+                        'down_payment': result[3]
+                    })()
+                else:
+                    payment_info = None
+        
         if not payment_info:
             return False, "No payment information found", None
 
