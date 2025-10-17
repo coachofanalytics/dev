@@ -1,11 +1,18 @@
 # Payment History Bug Fix - October 17, 2025
 
-## Issue
+## Issues (3 bugs discovered iteratively)
+
+### Bug #1: Invalid field name 'description'
 **Error:** `Payment_History() got an unexpected keyword argument 'description'`
+**Root Cause:** Code passing `description=` but model has `notes` field
 
-**When:** Processing PayPal payments via `/finance/unified/process/paypal/`
+### Bug #2: Missing required field 'fee_balance' 
+**Error:** `null value in column "fee_balance" violates not-null constraint`
+**Root Cause:** Database has NOT NULL column but code wasn't passing value
 
-**Root Cause:** Multiple `save_payment_history()` functions were passing `description=` parameter, but the `Payment_History` model only has a `notes` field (inherited from `PaymentBase`).
+### Bug #3: Model missing 'fee_balance' definition
+**Error:** `Payment_History() got an unexpected keyword argument 'fee_balance'`
+**Root Cause:** Database has column but Django model didn't define field
 
 ## Investigation
 
@@ -42,7 +49,7 @@ To:
 notes=f"Ref: {reference} | Status: {status}"
 ```
 
-### Changes Made - Part 2 (fee_balance missing)
+### Changes Made - Part 2 (fee_balance calculation)
 Added fee_balance calculation to all save_payment_history functions:
 ```python
 # Calculate fee_balance (required database field)
@@ -55,9 +62,24 @@ payment_record = Payment_History(
 )
 ```
 
+### Changes Made - Part 3 (model schema alignment)
+Added fee_balance field to Django models to match database:
+```python
+class Payment_Information(PaymentBase):
+    ...
+    fee_balance = models.IntegerField(default=0, help_text="Calculated as payment_fees - down_payment")
+    ...
+
+class Payment_History(PaymentBase):
+    ...
+    fee_balance = models.IntegerField(default=0, help_text="Calculated as payment_fees - down_payment")
+    ...
+```
+
 ### Files Modified
-1. ✅ `coda/finance/utils.py` - Fixed 2 occurrences (description → notes) + Added fee_balance
-2. ✅ `coda/finance/utils/__init__.py` - Fixed 1 occurrence (description → notes) + Added fee_balance
+1. ✅ `coda/finance/utils.py` - Fixed (description → notes) + Added fee_balance calc
+2. ✅ `coda/finance/utils/__init__.py` - Fixed (description → notes) + Added fee_balance calc
+3. ✅ `coda/finance/models/core.py` - Added fee_balance field to both models
 
 ### Documentation Updated
 1. ✅ `docs/apps/finance/Payment/IMPLEMENTATION.md` - Added to Change History
@@ -82,9 +104,10 @@ When payment system is re-enabled:
 ## Follow-Up Actions
 
 ### Immediate
-✅ Bug fixed - Both issues resolved
-✅ Deployed to UAT v937 (description fix)
-✅ Deployed to UAT v938 (fee_balance fix)
+✅ All 3 bugs fixed - Complete resolution
+✅ Deployed to UAT v937 (description → notes)
+✅ Deployed to UAT v938 (fee_balance calculation)
+✅ Deployed to UAT v939 (model field definition)
 
 ### Future
 - [ ] Re-enable payment system (deploy `_deprecated` module OR refactor)
@@ -105,7 +128,8 @@ When payment system is re-enabled:
 4. **Multiple Implementations:** Found duplicate `save_payment_history()` functions - should consolidate
 5. **Template Fields Pattern:** Similar to BudgetRequest approval fields bug (Oct 13)
 6. **Proactive Fix:** Fixed before payment system re-enabled - prevents future breakage
-7. **Iterative Debugging:** First fix revealed second issue - both now resolved
+7. **Iterative Debugging:** Each fix revealed the next issue - all three now resolved
+8. **Schema Mismatch Pattern:** Database evolved but Django models didn't - classic technical debt
 
 ## Related Issues
 
@@ -115,8 +139,8 @@ When payment system is re-enabled:
 
 ---
 
-**Status:** ✅ Fixed and Documented  
-**Ready to Deploy:** Yes  
+**Status:** ✅ Fixed, Deployed (v939), and Documented  
+**Deployments:** UAT v937, v938, v939 (3 iterative fixes)
 **Testing Required:** When payment system re-enabled  
-**Priority:** High (blocks payment processing)
+**Priority:** High (was blocking all payment processing)
 
