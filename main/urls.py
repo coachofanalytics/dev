@@ -5,7 +5,7 @@ from . import views
 
 app_name = 'main'
 urlpatterns = [
-    path('', views.layout, name='layout'),
+    path('', views.home_view, name='home'),
     #=======================SERVICES=====================================
     path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
     path('services/', views.services, name='services'),
@@ -17,6 +17,9 @@ urlpatterns = [
     path("location_list", views.location_list, name="account-location_list"),
     path("location_create", views.location_create, name="location_create"),
     path("location_update/<str:pk>/", views.location_update, name="location_update"),
+
+
+    path("services", views.servicecategory_list, name="servicecategory_list"),
     
     #==============DEPARTMENTS==============================================location_update
     #==============DEPARTMENTS==============================================

@@ -270,6 +270,9 @@ def general_errors(request):
     context={'message':'message'}
     return render(request,'main/errors/generalerrors.html',context)
 
+def home_view(request):
+    return render(request, 'main/home_templates/home.html')    
+
 
 
 
@@ -299,3 +302,8 @@ def location_update(request, pk):
     else:
         form = locationForm()  
     return render(request, "main/snippets_templates/table/location_edit.html", {'form': form})
+
+
+def servicecategory_list(request):
+    categories = ServiceCategory.objects.all()
+    return render(request, 'main/snippets_templates/table/sevices.html', {'categories': categories})
