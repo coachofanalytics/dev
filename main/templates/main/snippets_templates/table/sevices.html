@@ -1,8 +1,10 @@
 {% include 'main/navbar_templates/home_navbar.html' %}
+
 {% block content %}
 <div class="container mt-4">
   <h2>Service Categories</h2>
-  <a href="#" class="btn btn-success mb-3">Add New Category</a>
+  <a href="{% url 'main:servicecategory_create' %}" class="btn btn-primary mb-3">+ Add New Category</a>
+
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
@@ -16,17 +18,17 @@
     <tbody>
       {% for cat in categories %}
       <tr>
-        <td><a href="#">{{ cat.name }}</a></td>
+        <td><a href="{% url 'main:servicecategory_detail' cat.pk %}">{{ cat.name }}</a></td>
         <td>{{ cat.description|truncatewords:10 }}</td>
         <td>{{ cat.is_active }}</td>
         <td>{{ cat.is_featured }}</td>
         <td>
-          <a href="#" class="btn btn-sm btn-warning">Edit</a>
-          <a href="#" class="btn btn-sm btn-danger">Delete</a>
+          <a href="{% url 'main:servicecategory_update' cat.pk %}" class="btn btn-sm btn-warning">Edit</a>
+          <a href="{% url 'main:servicecategory_delete' cat.pk %}" class="btn btn-sm btn-danger">Delete</a>
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="5">No service categories available.</td></tr>
+      <tr><td colspan="5" class="text-center">No service categories available.</td></tr>
       {% endfor %}
     </tbody>
   </table>

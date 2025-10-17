@@ -1,12 +1,12 @@
 {% include 'main/navbar_templates/home_navbar.html' %}
 {% block content %}
 <div class="container mt-4">
-  <h2>{{ category.name }}</h2>
-  <p>{{ category.description }}</p>
-  <p><strong>Active:</strong> {{ category.is_active }}</p>
-  <p><strong>Featured:</strong> {{ category.is_featured }}</p>
-  <a href="#" class="btn btn-warning">Edit</a>
-  <a href="#" class="btn btn-danger">Delete</a>
-  <a href="#" class="btn btn-secondary">Back</a>
+  <h3>Delete Category</h3>
+  <p>Are you sure you want to delete <strong>{{ category.name }}</strong>?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{% url 'main:servicecategory_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
 </div>
 {% endblock %}
