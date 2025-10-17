@@ -137,12 +137,16 @@ class Payment_Information(PaymentBase):
     )
     payment_fees = models.IntegerField()
     down_payment = models.IntegerField(default=500)
-    fee_balance = models.IntegerField(default=0, help_text="Calculated as payment_fees - down_payment")
     student_bonus = models.IntegerField(null=True, blank=True)
     plan = models.IntegerField()
     subplan = models.IntegerField(null=True)
     pricing_plan = models.IntegerField(null=True)
     client_signature = models.CharField(max_length=1000)
+    
+    @property
+    def fee_balance(self):
+        """Calculate fee_balance dynamically - column doesn't exist in database"""
+        return self.payment_fees - self.down_payment
 
     def __str__(self):
         return "Payment Info for {} - Plan {}".format(self.customer.username, self.plan)
