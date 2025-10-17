@@ -505,3 +505,38 @@ def Payment_Review(request):
 
 def financial_services(request):
     return render(request,"financial_services.html")
+
+import requests
+
+def financial_exchange(request):
+
+
+    base_currency = request.GET.get("base","USD")
+    amount = float(request.GET.get("amount",1))
+    URl =" https://v6.exchangerate-api.com/v6/24c20b412a3ba72f197d6e66/latest/USD"
+    try:
+        response = requests.get(URl,timeout=10)
+        data = response.json()
+        print("response", response)
+        print("data", data)
+        if data.get("result") == "success" and "KES" in data["conversion_rates"]:
+            kes_rate = data["conversion_rates"]["KES"]
+            converted = amount * kes_rate
+        else:
+            kes_rate = None
+            converted = None
+            print("Expected API response", data)
+    except Exception as e:
+        kes_rate = None
+        converted = None
+        print("API fetch error", e)
+
+
+    context = {
+        "base_currency": base_currency,
+        "kes_rate":kes_rate,
+        "converted": converted,
+        "date": data.get("time_last_update_utc","N/A")
+    }
+    return render(request,"financial_exchange.html",context)
+    
