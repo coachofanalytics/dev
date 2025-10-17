@@ -307,3 +307,22 @@ def location_update(request, pk):
 def servicecategory_list(request):
     categories = ServiceCategory.objects.all()
     return render(request, 'main/snippets_templates/table/sevices.html', {'categories': categories})
+
+
+
+
+def servicecategory_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        is_active = bool(request.POST.get('is_active'))
+        is_featured = bool(request.POST.get('is_featured'))
+
+        ServiceCategory.objects.create(
+            name=name,
+            description=description,
+            is_active=is_active,
+            is_featured=is_featured,
+        )
+        return redirect('accounts:servicecategory_list')
+    return render(request, 'main/snippets_templates/table/services_create.html')

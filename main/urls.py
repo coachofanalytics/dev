@@ -19,7 +19,9 @@ urlpatterns = [
     path("location_update/<str:pk>/", views.location_update, name="location_update"),
 
 
-    path("services", views.servicecategory_list, name="servicecategory_list"),
+
+    path("services", views.servicecategory_list, name="accounts-servicecategory_list"),
+    path('services/create/', views.servicecategory_create, name='servicecategory_create'),
     
     #==============DEPARTMENTS==============================================location_update
     #==============DEPARTMENTS==============================================

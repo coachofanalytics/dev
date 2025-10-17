@@ -1,0 +1,27 @@
+{% include 'main/navbar_templates/home_navbar.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>{% if category %}Update{% else %}Create{% endif %} Service Category</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label>Name</label>
+      <input type="text" name="name" class="form-control" value="{{ category.name|default:'' }}" required>
+    </div>
+    <div class="mb-3">
+      <label>Description</label>
+      <textarea name="description" class="form-control">{{ category.description|default:'' }}</textarea>
+    </div>
+    <div class="form-check mb-2">
+      <input type="checkbox" name="is_active" class="form-check-input" {% if category.is_active %}checked{% endif %}>
+      <label class="form-check-label">Active</label>
+    </div>
+    <div class="form-check mb-3">
+      <input type="checkbox" name="is_featured" class="form-check-input" {% if category.is_featured %}checked{% endif %}>
+      <label class="form-check-label">Featured</label>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="#" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
