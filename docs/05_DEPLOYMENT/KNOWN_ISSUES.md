@@ -14,7 +14,9 @@
 5. **LoanProduct schema mismatch** - Aligned with database ✅
 6. **BudgetRequest approval fields** - Added approved_by, etc. ✅
 7. **ApprovalPolicy.approvers error** - Simplified logic ✅
-8. **Payment_History 'description' field error** - Changed to 'notes' field (Oct 17) ✅
+8. **Payment_History field errors** - Fixed 2 issues (Oct 17) ✅
+   - Changed `description` to `notes` field
+   - Added `fee_balance` calculation (payment_fees - down_payment)
 
 ---
 

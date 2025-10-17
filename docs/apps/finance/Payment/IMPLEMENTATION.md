@@ -389,7 +389,7 @@ Amount: $XXX.XX
 
 | Date | Change | Files Modified | Reason |
 |------|--------|----------------|---------|
-| Oct 17, 2025 | Fixed Payment_History field error | `utils.py`, `utils/__init__.py` | Changed `description=` to `notes=` to match model field |
+| Oct 17, 2025 | Fixed Payment_History field errors (2 bugs) | `utils.py`, `utils/__init__.py` | 1) Changed `description=` to `notes=` to match model field<br>2) Added `fee_balance` calculation (payment_fees - down_payment) |
 
 ---
 

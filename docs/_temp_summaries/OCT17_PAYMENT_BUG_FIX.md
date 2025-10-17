@@ -31,7 +31,7 @@ Three functions were passing `description=`:
 
 ## Solution
 
-### Changes Made
+### Changes Made - Part 1 (description → notes)
 Changed all occurrences of:
 ```python
 description=f"Ref: {reference} | Status: {status}"
@@ -42,9 +42,22 @@ To:
 notes=f"Ref: {reference} | Status: {status}"
 ```
 
+### Changes Made - Part 2 (fee_balance missing)
+Added fee_balance calculation to all save_payment_history functions:
+```python
+# Calculate fee_balance (required database field)
+fee_balance_value = payment_fees_value - down_payment_value
+
+payment_record = Payment_History(
+    ...
+    fee_balance=fee_balance_value,
+    ...
+)
+```
+
 ### Files Modified
-1. ✅ `coda/finance/utils.py` - Fixed 2 occurrences (replace_all)
-2. ✅ `coda/finance/utils/__init__.py` - Fixed 1 occurrence
+1. ✅ `coda/finance/utils.py` - Fixed 2 occurrences (description → notes) + Added fee_balance
+2. ✅ `coda/finance/utils/__init__.py` - Fixed 1 occurrence (description → notes) + Added fee_balance
 
 ### Documentation Updated
 1. ✅ `docs/apps/finance/Payment/IMPLEMENTATION.md` - Added to Change History
@@ -69,7 +82,9 @@ When payment system is re-enabled:
 ## Follow-Up Actions
 
 ### Immediate
-✅ Bug fixed - code will work when payment system is re-enabled
+✅ Bug fixed - Both issues resolved
+✅ Deployed to UAT v937 (description fix)
+✅ Deployed to UAT v938 (fee_balance fix)
 
 ### Future
 - [ ] Re-enable payment system (deploy `_deprecated` module OR refactor)
@@ -85,9 +100,12 @@ When payment system is re-enabled:
 ## Lessons Learned
 
 1. **Model Schema Matters:** Always check model fields before using them
-2. **Multiple Implementations:** Found duplicate `save_payment_history()` functions - should consolidate
-3. **Template Fields Pattern:** Similar to BudgetRequest approval fields bug (Oct 13)
-4. **Proactive Fix:** Fixed before payment system re-enabled - prevents future breakage
+2. **Database vs Model Mismatch:** Database had `fee_balance` column but Django model didn't define it
+3. **Schema Alignment Critical:** Similar to LoanProduct schema mismatch (Oct 13) - dev/database must align
+4. **Multiple Implementations:** Found duplicate `save_payment_history()` functions - should consolidate
+5. **Template Fields Pattern:** Similar to BudgetRequest approval fields bug (Oct 13)
+6. **Proactive Fix:** Fixed before payment system re-enabled - prevents future breakage
+7. **Iterative Debugging:** First fix revealed second issue - both now resolved
 
 ## Related Issues
 
