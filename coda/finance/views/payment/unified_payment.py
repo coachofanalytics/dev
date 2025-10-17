@@ -90,18 +90,35 @@ def payment_method_selection(request):
     """
     try:
         # Get user's payment information
-        # Query without ordering to avoid created_at/updated_at field issues
+        # Query without any default ordering to avoid field conflicts
         try:
             payment_info = Payment_Information.objects.filter(
                 customer_id=request.user.id
-            ).order_by('-id').first()  # Use id instead of created_at
+            ).order_by('-id').only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan').first()
         except Exception as db_error:
             logger.warning(f"Database query issue, trying alternate method: {db_error}")
-            # Fallback: get without any ordering to avoid field conflicts
-            payment_info = Payment_Information.objects.filter(
-                customer_id=request.user.id
-            ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan')[:1]
-            payment_info = payment_info[0] if payment_info else None
+            # Fallback: use raw query to avoid model ordering issues
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, customer_id, payment_fees, down_payment, plan 
+                    FROM finance_payment_information 
+                    WHERE customer_id = %s 
+                    ORDER BY id DESC 
+                    LIMIT 1
+                """, [request.user.id])
+                result = cursor.fetchone()
+                if result:
+                    # Create a simple object with the needed attributes
+                    payment_info = type('PaymentInfo', (), {
+                        'id': result[0],
+                        'customer_id': result[1],
+                        'payment_fees': result[2],
+                        'down_payment': result[3],
+                        'plan': result[4]
+                    })()
+                else:
+                    payment_info = None
         
         if not payment_info:
             # Route user to create payable context based on persona
@@ -158,13 +175,31 @@ def payment_processing(request, method):
         try:
             payment_info = Payment_Information.objects.filter(
                 customer_id=request.user.id
-            ).order_by('-id').first()
+            ).order_by('-id').only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan').first()
         except Exception as db_error:
             logger.warning(f"Database query issue in payment processing: {db_error}")
-            payment_info = Payment_Information.objects.filter(
-                customer_id=request.user.id
-            ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan')[:1]
-            payment_info = payment_info[0] if payment_info else None
+            # Fallback: use raw query to avoid model ordering issues
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, customer_id, payment_fees, down_payment, plan 
+                    FROM finance_payment_information 
+                    WHERE customer_id = %s 
+                    ORDER BY id DESC 
+                    LIMIT 1
+                """, [request.user.id])
+                result = cursor.fetchone()
+                if result:
+                    # Create a simple object with the needed attributes
+                    payment_info = type('PaymentInfo', (), {
+                        'id': result[0],
+                        'customer_id': result[1],
+                        'payment_fees': result[2],
+                        'down_payment': result[3],
+                        'plan': result[4]
+                    })()
+                else:
+                    payment_info = None
         
         if not payment_info:
             messages.error(request, 'No payment information found.')
