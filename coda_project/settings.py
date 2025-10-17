@@ -14,6 +14,7 @@ AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend
 INSTALLED_APPS = [
     "main.apps.MainConfig",
     "accounts.apps.AccountsConfig",
+    # "finance.apps.FinanceConfig",
     "application.apps.ApplicationConfig",
     "crispy_forms",
     "django.contrib.admin",
@@ -66,26 +67,20 @@ ROOT_URLCONF = "coda_project.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            # os.path.join(BASE_DIR, 'templates')
-            "templates"
-        ],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "main.context_processors.images",
-                "main.context_processors.googledriveurl",
-                "main.context_processors.services",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Add your custom templates folder if needed
+        'APP_DIRS': True,  # Ensures Django looks in each app's templates folder
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
-          
         },
     },
 ]
+
 
 #  ==============DBFUNCTIONS=====================================
 def dba_values():
@@ -96,15 +91,22 @@ def dba_values():
         password = os.environ.get('HEROKU_PROD_PASS')
     elif os.environ.get('ENVIRONMENT') == 'testing':
         # In Heroku/Postgres it is Heroku_UAT
-        host = os.environ.get('DB_HOST')
-        dbname = os.environ.get('DB_NAME')
-        user = os.environ.get('DB_USER')
-        password = os.environ.get('DB_PASSWORD')
+        host = os.environ.get('STG_DB_HOST')
+        dbname = os.environ.get('STG_DB_NAME')
+        user = os.environ.get('STG_DB_USER')
+        password = os.environ.get('STG_DB_PASSWORD')
+        port = 5432
     else:
-        host = "localhost"
-        dbname = "postgres"
-        user = "postgres"
-        password = "postgres" #"*******"
+        host = os.environ.get('STG_DB_HOST')
+        dbname = os.environ.get('STG_DB_NAME')
+        user = os.environ.get('STG_DB_USER')
+        password = os.environ.get('STG_DB_PASSWORD')
+        # port = 5432
+        # host = "localhost"     
+        # dbname = "MAKUTANO"
+        # user = "postgres"
+        # password = "postgres" #"*******"
+       
         
         # host = os.environ.get('POSTGRES_DB_NAME')
         # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
@@ -116,24 +118,50 @@ WSGI_APPLICATION = "coda_project.wsgi.application"
 import dj_database_url
 
 host,dbname,user,password=dba_values()
+print(host,dbname,user,password)
+
+import os
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 
 
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": dbname,
+#         "USER":user,
+#         "PASSWORD":password,
+#         "HOST": host
+#     }
+# }
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": dbname,
-        "USER":user,
-        "PASSWORD":password,
-        "HOST": host
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR,"db.sqlite3"),
+    
     }
 }
+import sys
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'coda_dev'
+    }
+
+
 '''=========== Heroku DB ================'''
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES["default"].update(db_from_env)
+
+
+
 
 import sys
 if 'test' in sys.argv:
@@ -182,6 +210,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_ROOT = os.path.join(BASE_DIR, '..', "staticfiles")
 STATIC_URL = "/static/"
 STATICFILES_DIR = os.path.join(BASE_DIR, "static")
+# Use simple storage to avoid CSS post-processing errors
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
 
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
@@ -271,6 +302,11 @@ if os.environ.get('ENVIRONMENT') == 'production':
 elif os.environ.get('ENVIRONMENT') == 'testing':
     SECURE_SSL_REDIRECT = True
     SITEURL = "https://codamakutano.herokuapp.com"
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    DEBUG = True
+elif os.environ.get('ENVIRONMENT') == 'testing':
+    SECURE_SSL_REDIRECT = True
+    SITEURL = "https://codadev.herokuapp.com"
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     DEBUG = True
 else:
