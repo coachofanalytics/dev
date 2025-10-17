@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser
+from .models import CustomerUser,All_transaction
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -257,3 +257,8 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
+    
+def all_transaction_list(request):
+    transactions = All_transaction.objects.all()
+    return render(request, "accounts/transaction_list.html", {"transactions": transactions})
+    print(reverse("accounts:all_transaction_list"))

@@ -10,7 +10,6 @@ from accounts.choices import CategoryChoices, SubCategoryChoices
 
 
 
-
 # ✅ Transaction type choices defined globally
 TRANSACTION_TYPE_CHOICES = [
     ('INCOME', 'Income'),
