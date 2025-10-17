@@ -90,17 +90,17 @@ def payment_method_selection(request):
     """
     try:
         # Get user's payment information
-        # Query without ordering to avoid created_at field issue
+        # Query without ordering to avoid created_at/updated_at field issues
         try:
             payment_info = Payment_Information.objects.filter(
                 customer_id=request.user.id
             ).order_by('-id').first()  # Use id instead of created_at
         except Exception as db_error:
             logger.warning(f"Database query issue, trying alternate method: {db_error}")
-            # Fallback: get without ordering
+            # Fallback: get without any ordering to avoid field conflicts
             payment_info = Payment_Information.objects.filter(
                 customer_id=request.user.id
-            )[:1]
+            ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan')[:1]
             payment_info = payment_info[0] if payment_info else None
         
         if not payment_info:
@@ -154,8 +154,17 @@ def payment_processing(request, method):
         return redirect('finance:unified_method_selection')
     
     try:
-        # Get payment information
-        payment_info = Payment_Information.objects.filter(customer_id=request.user.id).first()
+        # Get payment information - avoid ordering issues
+        try:
+            payment_info = Payment_Information.objects.filter(
+                customer_id=request.user.id
+            ).order_by('-id').first()
+        except Exception as db_error:
+            logger.warning(f"Database query issue in payment processing: {db_error}")
+            payment_info = Payment_Information.objects.filter(
+                customer_id=request.user.id
+            ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan')[:1]
+            payment_info = payment_info[0] if payment_info else None
         
         if not payment_info:
             messages.error(request, 'No payment information found.')
