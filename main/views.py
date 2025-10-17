@@ -338,4 +338,13 @@ def servicecategory_update(request, pk):
         category.is_featured = bool(request.POST.get('is_featured'))
         category.save()
         return redirect('servicecategory_list')
-    return render(request, 'main/snippets_templates/table/services_update.html', {'category': category})    
+    return render(request, 'main/snippets_templates/table/services_update.html', {'category': category}) 
+
+
+
+def servicecategory_delete(request, pk):
+    category = get_object_or_404(ServiceCategory, pk=pk)
+    if request.method == 'POST':
+        category.delete()
+        return redirect('servicecategory_list')
+    return render(request, 'main/snippets_templates/table/services_delete.html', {'category': category})       

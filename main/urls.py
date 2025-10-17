@@ -23,7 +23,7 @@ urlpatterns = [
     path("servicecategory_list", views.servicecategory_list, name="accounts-servicecategory_list"),
     path('servicecategory_create/', views.servicecategory_create, name='servicecategory_create'),
     path('services/<int:pk>/update/', views.servicecategory_update, name='servicecategory_update'),
-    
+    path('services/<int:pk>/delete/', views.servicecategory_delete, name='servicecategory_delete'),
     #==============DEPARTMENTS==============================================location_update
     #==============DEPARTMENTS==============================================
     #---------------HUMAN RESOURCE--------------------#
