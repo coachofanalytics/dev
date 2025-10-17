@@ -280,12 +280,22 @@ def location_list(request):
 
 def location_create(request):
     if request.method == 'POST':
-        form=locationForm(request.POST)
+        form = locationForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect("accounts:account-location_list")
     else:
-        form= locationForm()
-    return render (request,"main/snippets_templates/table/location_create.html",{'form':form})           
+        form = locationForm()
+    return render(request, "main/snippets_templates/table/location_create.html", {'form': form})
 
 
+def location_update(request, pk):
+    locations = get_object_or_404(Location, pk=pk)  
+    if request.method == 'POST':
+        form = locationForm(request.POST, instance=locations)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:account-location_list")
+    else:
+        form = locationForm()  
+    return render(request, "main/snippets_templates/table/location_edit.html", {'form': form})

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils.text import slugify
 from django.db.models import Q
 from django.utils.text import slugify
 from django.db.models.signals import pre_save
@@ -102,3 +103,24 @@ class Location(models.Model):
 
     def __str__(self):
         return f"{self.city}, {self.state}"
+
+
+
+
+
+
+class ServiceCategory(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super(ServiceCategory, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
