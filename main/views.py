@@ -324,5 +324,18 @@ def servicecategory_create(request):
             is_active=is_active,
             is_featured=is_featured,
         )
-        return redirect('accounts:servicecategory_list')
+        return redirect('servicecategory_list')
     return render(request, 'main/snippets_templates/table/services_create.html')
+
+
+
+def servicecategory_update(request, pk):
+    category = get_object_or_404(ServiceCategory, pk=pk)
+    if request.method == 'POST':
+        category.name = request.POST.get('name')
+        category.description = request.POST.get('description')
+        category.is_active = bool(request.POST.get('is_active'))
+        category.is_featured = bool(request.POST.get('is_featured'))
+        category.save()
+        return redirect('servicecategory_list')
+    return render(request, 'main/snippets_templates/table/services_update.html', {'category': category})    

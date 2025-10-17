@@ -22,6 +22,7 @@ urlpatterns = [
 
     path("services", views.servicecategory_list, name="accounts-servicecategory_list"),
     path('services/create/', views.servicecategory_create, name='servicecategory_create'),
+    path('services/<int:pk>/update/', views.servicecategory_update, name='servicecategory_update'),
     
     #==============DEPARTMENTS==============================================location_update
     #==============DEPARTMENTS==============================================
