@@ -55,8 +55,22 @@
 - [ ] Update `management/utils.py` quick links
 - [ ] Monitor payment callbacks/webhooks
 
+## Regression Tests
+
+### Test: Payment History Creation (Oct 17, 2025)
+**Bug Fixed:** Payment_History model doesn't have 'description' field, uses 'notes' instead
+
+**Test:**
+1. Process a PayPal payment
+2. Verify Payment_History record created successfully
+3. Check that 'notes' field contains reference and status
+
+**Expected:** No "unexpected keyword argument 'description'" error
+
+**Status:** ✅ Fixed - Changed `description=` to `notes=` in all save_payment_history functions
+
 ---
 
-**Last Updated:** October 13, 2025  
-**Status:** Cannot test - system disabled
+**Last Updated:** October 17, 2025  
+**Status:** Bug fixed, system still disabled
 

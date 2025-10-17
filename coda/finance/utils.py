@@ -838,7 +838,7 @@ def save_payment_history(
             company_rep="system",
             client_date=timezone.now().strftime("%Y-%m-%d"),
             rep_date=timezone.now().strftime("%Y-%m-%d"),
-            description=f"Ref: {reference} | Status: {status}",
+            notes=f"Ref: {reference} | Status: {status}",
         )
 
         print("DEBUG: Payment record object created successfully")
@@ -1252,7 +1252,7 @@ def save_payment_history(
             company_rep="system",
             client_date=timezone.now().strftime("%Y-%m-%d"),
             rep_date=timezone.now().strftime("%Y-%m-%d"),
-            description=f"Ref: {reference} | Status: {status}",
+            notes=f"Ref: {reference} | Status: {status}",
         )
 
         print("DEBUG: Payment_History object created, calling save()...")

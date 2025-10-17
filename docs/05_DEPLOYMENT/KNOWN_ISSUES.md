@@ -5,7 +5,7 @@
 
 ---
 
-## ✅ RESOLVED (October 13, 2025)
+## ✅ RESOLVED (October 13-17, 2025)
 
 1. **ModuleNotFoundError: finance._deprecated** - Graceful import handling ✅
 2. **BudgetRequest.company field errors** - Removed invalid filters ✅
@@ -14,6 +14,7 @@
 5. **LoanProduct schema mismatch** - Aligned with database ✅
 6. **BudgetRequest approval fields** - Added approved_by, etc. ✅
 7. **ApprovalPolicy.approvers error** - Simplified logic ✅
+8. **Payment_History 'description' field error** - Changed to 'notes' field (Oct 17) ✅
 
 ---
 

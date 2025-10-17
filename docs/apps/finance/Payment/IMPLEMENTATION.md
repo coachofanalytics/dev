@@ -385,6 +385,14 @@ Amount: $XXX.XX
 
 ---
 
-**Last Updated:** October 13, 2025  
+## Change History
+
+| Date | Change | Files Modified | Reason |
+|------|--------|----------------|---------|
+| Oct 17, 2025 | Fixed Payment_History field error | `utils.py`, `utils/__init__.py` | Changed `description=` to `notes=` to match model field |
+
+---
+
+**Last Updated:** October 17, 2025  
 **Status:** Architecture complete, implementation pending
 
