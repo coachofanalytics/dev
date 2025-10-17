@@ -27,6 +27,9 @@ def save_payment_history(user, payment_info, method, reference, amount, status="
     try:
         from finance.models import Payment_History
         
+        # Calculate fee_balance (required database field)
+        fee_balance = amount - payment_info.down_payment
+        
         payment_history = Payment_History.objects.create(
             customer=user,
             payment_fees=amount,
@@ -35,6 +38,7 @@ def save_payment_history(user, payment_info, method, reference, amount, status="
             subplan=payment_info.subplan,
             pricing_plan=payment_info.pricing_plan,
             down_payment=payment_info.down_payment,
+            fee_balance=int(fee_balance),
             student_bonus=payment_info.student_bonus,
             notes=f"Payment via {method} - Ref: {reference}",
             contract_submitted_date=payment_info.contract_submitted_date,

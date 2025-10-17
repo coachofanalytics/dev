@@ -824,10 +824,14 @@ def save_payment_history(
         # Try to create the object step by step
         print("DEBUG: Attempting to create Payment_History object...")
 
+        # Calculate fee_balance (required database field)
+        fee_balance_value = payment_fees_value - down_payment_value
+        
         payment_record = Payment_History(
             customer=user,
             payment_fees=payment_fees_value,
             down_payment=down_payment_value,
+            fee_balance=fee_balance_value,
             student_bonus=student_bonus_value,
             plan=plan_value,
             subplan=subplan_value,
@@ -1238,10 +1242,14 @@ def save_payment_history(
         # Try to create the object step by step
         print("DEBUG: Attempting to create Payment_History object...")
 
+        # Calculate fee_balance (required database field)
+        fee_balance_value = payment_fees_value - down_payment_value
+        
         payment_record = Payment_History(
             customer=user,
             payment_fees=payment_fees_value,
             down_payment=down_payment_value,
+            fee_balance=fee_balance_value,
             student_bonus=student_bonus_value,
             plan=plan_value,
             subplan=subplan_value,
