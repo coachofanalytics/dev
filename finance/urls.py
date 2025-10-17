@@ -43,6 +43,6 @@ urlpatterns = [
     # path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),
     path('budget/', views.budget, name='company_budget'),
     path("budget/<str:subtitle>/<str:duration>/", views.budget_projection, name="budget_projection"),
-    path("financial_services/", views.financial_services, name="financial_services"),
+    path("financial_services/",views.financial_services,name="financial_services")
    
 ]

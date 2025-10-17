@@ -501,3 +501,7 @@ def Payment_Review(request):
     
     return render(request,"finance/payments/Payment_Review.html",context)
 
+
+
+def financial_services(request):
+    return render(request,"financial_services.html")
