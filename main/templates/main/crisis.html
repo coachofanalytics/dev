@@ -75,7 +75,7 @@
     </style>
 </head>
 <body>
-     <!-- HERO SECTION - Background updated to Teal -->
+     <!-- HERO SECTION -->
         <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
                 <!-- Text Content Column -->
@@ -97,6 +97,69 @@
                 </div>
             </div>
         </header>
+        <!-- Mission/Introduction Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
+            <h3 class="text-4xl main-heading text-gray-800 mb-4">Preparedness and Rapid Response</h3>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto">
+                In times of uncertainty, quick access to information and direct assistance is paramount.
+                 Our Crisis Management services ensure your safety and provide coordinated support wherever you are.
+            </p>
+        </section>
+        <!-- SERVICES DETAILED BLOCKS (Alternating Layout) -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- 1. Emergency Response (Image Left) -->
+            <div id="emergency-response" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Image -->
+                <div class="lg:order-1">
+                    <img id="image-response" src="{% static 'main/img/world.png' %}" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
+                <!-- Content -->
+                <div class="lg:order-2">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Emergency Response</h3>
+                    <p class="text-gray-700 mb-6">
+                        We provide immediate, confidential assistance for critical situations, acting as a liaison between local authorities, the Consulate, and your family.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>24/7 Crisis Hotline for immediate physical and legal emergencies</li>
+                        <li>Coordinated assistance in cases of detention, hospitalization, or disappearance</li>
+                        <li>Urgent welfare checks and family notification services</li>
+                        <li>Referrals to emergency legal counsel and repatriation assistance</li>
+                    </ul>
+                    <div class="mt-6">
+                        <a href="#" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md 
+                        uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
+                            View Emergency Contact List
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- 2. Advisories (Image Right) -->
+            <div id="advisories" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                 <!-- Content -->
+                <div class="lg:order-1">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Advisories</h3>
+                    <p class="text-gray-700 mb-6">
+                        Stay informed about political unrest, natural disasters, and health crises in your region. We deliver official, real-time safety updates and preparedness information.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>Real-time security and political stability alerts by region</li>
+                        <li>Guidance on severe weather and natural disaster preparedness</li>
+                        <li>Mandatory evacuation and sheltering-in-place instructions</li>
+                        <li>Public health alerts and travel restriction updates</li>
+                    </ul>
+                     <div class="mt-6">
+                        <a href="#" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                            Subscribe to Safety Alerts
+                        </a>
+                    </div>
+                </div>
+                <!-- Image -->
+                <div class="lg:order-2">
+                    <img id="image-advisories" src="{% static 'main/img/family.png' %}" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
+            </div>
+            
 </body>
 </html>
 {% endblock %}
