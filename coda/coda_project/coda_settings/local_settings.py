@@ -54,6 +54,15 @@ CSRF_COOKIE_SECURE = False
 # Site URL for local development
 SITEURL = "http://localhost:8000"  # Will be https://localhost:8000 when using SSL server
 
+# Database helper functions (for compatibility with ai_services/utils.py)
+def dba_values():
+    """Dummy function for local development - returns None values since we use SQLite"""
+    return None, None, None, None
+
+def source_target():
+    """Dummy function for local development - returns None values since we use SQLite"""
+    return None, None, None, None, None, None, None, None
+
 # Static files (for local development)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
