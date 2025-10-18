@@ -1,0 +1,49 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">📄 Transaction Details</h2>
+
+    <div class="card shadow p-4">
+        <table class="table table-bordered">
+            <tr>
+                <th>Type</th>
+                <td>
+                    {% if transaction.type == 'INCOME' %}
+                        <span class="badge bg-success">{{ transaction.type }}</span>
+                    {% else %}
+                        <span class="badge bg-danger">{{ transaction.type }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Category</th>
+                <td>{{ transaction.category }}</td>
+            </tr>
+            <tr>
+                <th>Amount</th>
+                <td>${{ transaction.amount }}</td>
+            </tr>
+            <tr>
+                <th>Payment Method</th>
+                <td>{{ transaction.payment_method }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ transaction.date|date:"M d, Y H:i" }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ transaction.description|default:"—" }}</td>
+            </tr>
+        </table>
+
+        <div class="text-end mt-3">
+            <a href="{% url 'accounts:all_transaction_update' transaction.pk %}" class="btn btn-warning">Edit</a>
+              <a href="{% url 'accounts:all_transaction_delete' transaction.pk %}" class="btn btn-danger">Delete</a>
+            <a href="{%url 'accounts:accounts-all_transaction_list' %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

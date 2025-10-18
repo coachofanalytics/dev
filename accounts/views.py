@@ -299,10 +299,10 @@ def All_transaction_update_view(request, pk):
 
 
 
-# def All_transaction_detail_view(request, pk):
-#     """Display details of a specific transaction"""
-#     transaction = get_object_or_404(All_transaction, pk=pk)
-#     return render(request, "accounts/transaction_detail.html", {"transaction": transaction})
+def All_transaction_detail_view(request, pk):
+    """Display details of a specific transaction"""
+    transaction = get_object_or_404(All_transaction, pk=pk)
+    return render(request, "accounts/transaction_detail.html", {"transaction": transaction})
 
 # def all_transaction_delete_view(request, pk):
 #     """Handles deleting a specific transaction."""
