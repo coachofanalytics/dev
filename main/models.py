@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.contrib.auth.models import User
 
 # from tableauhyperapi import DatabaseName
 
@@ -124,3 +126,19 @@ class ServiceCategory(models.Model):
     def __str__(self):
         return self.name
 
+
+
+class Testimonials(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    content = models.TextField()
+    rating = models.IntegerField(default=5)
+    date_posted = models.DateTimeField(default=timezone.now)
+    writer = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('testimonial_detail', kwargs={'slug': self.slug})

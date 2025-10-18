@@ -1,10 +1,30 @@
-{% include 'main/navbar_templates/home_navbar.html' %}
+
+
 {% block content %}
-<div class="container text-center mt-5">
-    <h1>Welcome to the CODA Admin Dashboard</h1>
-    <p class="lead">Manage your service categories easily.</p>
-    <a href="{% url 'main:servicecategory_list' %}" class="btn btn-primary btn-lg mt-3">
-        Manage Service Categories
+<!-- Hero Section -->
+<section class="hero-section text-center d-flex align-items-center justify-content-center">
+  <div class="overlay"></div>
+  <div class="container position-relative text-white">
+    <h5 class="fw-bold text-warning mb-3">SERVICES</h5>
+    <h1 class="display-4 fw-bold mb-4">
+      Get help with career,<br />
+      business, and personal projects.
+    </h1>
+    <a href="{% url 'main:servicecategory_list' %}" class="btn btn-primary btn-lg px-4 mt-3">
+      Manage Services
     </a>
-</div>
+  </div>
+
+  <!-- Floating Card (Register Now) -->
+  <div class="floating-card shadow-lg">
+    <div class="card-body text-center">
+      <h5 class="fw-bold mb-2">Want to Join Us?</h5>
+      <p class="small text-muted mb-3">Become a registered member today.</p>
+      <a href="#" class="btn btn-warning text-dark fw-bold px-4">
+        Register Now
+      </a>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
