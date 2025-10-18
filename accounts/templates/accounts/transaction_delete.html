@@ -1,0 +1,24 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h3 class="text-danger text-center mb-3">⚠️ Confirm Delete</h3>
+        <p class="text-center">Are you sure you want to delete this transaction?</p>
+
+        <div class="alert alert-warning text-center">
+            <strong>{{ transaction.type }}</strong> — 
+            {{ transaction.category }} (${{ transaction.amount }})
+        </div>
+
+        <form method="POST" class="text-center mt-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a href="{% url 'accounts:all_transaction_detail' transaction.pk %}" class="btn btn-secondary ms-2">
+                Cancel
+            </a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

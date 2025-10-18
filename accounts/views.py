@@ -304,16 +304,16 @@ def All_transaction_detail_view(request, pk):
     transaction = get_object_or_404(All_transaction, pk=pk)
     return render(request, "accounts/transaction_detail.html", {"transaction": transaction})
 
-# def all_transaction_delete_view(request, pk):
-#     """Handles deleting a specific transaction."""
-#     transaction = get_object_or_404(All_transaction, pk=pk)
+def all_transaction_delete_view(request, pk):
+    """Handles deleting a specific transaction."""
+    transaction = get_object_or_404(All_transaction, pk=pk)
 
-#     if request.method == "POST":
-#         transaction.delete()
-#         messages.success(request, "Transaction deleted successfully.")
-#         return redirect("accounts:accounts-all_transaction_list")
+    if request.method == "POST":
+        transaction.delete()
+        messages.success(request, "Transaction deleted successfully.")
+        return redirect("accounts:accounts-all_transaction_list")
 
-#     return render(request, "accounts/transaction_delete.html", {"transaction": transaction})
+    return render(request, "accounts/transaction_delete.html", {"transaction": transaction})
 
 
 
