@@ -84,16 +84,25 @@ def start_training(request, slug=None, *args, **kwargs):
     except Service.DoesNotExist:
         return redirect('main:layout')
     service_categories = ServiceCategory.objects.filter(service=service_shown.id)
-    category_slug=None
-    category_name=None
-    category_id=None
+    # Initialize variables with default values
+    category_slug = None
+    category_name = None
+    category_id = None
+    description = ""
+    
     for item in service_categories:
         if item.slug==slug:
             category_slug=item.slug
             category_name=item.name
             description=item.description
             data_items=data_interview,
+            break  # Exit loop once found
 
+    # Check if category was found
+    if not category_slug:
+        messages.error(request, f"Service category '{slug}' not found.")
+        return redirect('professional_services:services')
+    
     onboarding_description,troubleshooting_description,requirement_description=split_sentences(description)
 
     if category_slug == 'interview':

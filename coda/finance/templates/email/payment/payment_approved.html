@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Approved</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="margin: 0; font-size: 24px;">✓ Payment Approved!</h1>
+    </div>
+
+    <!-- Content -->
+    <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+        
+        <p style="font-size: 16px;">
+            Hi <strong>{{ customer.first_name }}</strong>,
+        </p>
+        
+        <p>
+            Great news! Your payment has been verified and approved.
+        </p>
+
+        <!-- Success Box -->
+        <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 20px; margin: 20px 0; border-radius: 5px;">
+            <h3 style="margin: 0 0 10px 0; color: #155724;">Payment Confirmed</h3>
+            <p style="margin: 0; color: #155724;">
+                <strong>Amount:</strong> ${{ payment.payment_fees|floatformat:2 }}<br>
+                <strong>Reference:</strong> PAY-{{ payment.id }}<br>
+                <strong>Method:</strong> {{ payment.payment_method }}<br>
+                <strong>Verified by:</strong> {{ verified_by }}<br>
+                <strong>Verification Date:</strong> {{ verification_date|date:"F d, Y - g:i A" }}
+            </p>
+        </div>
+
+        <!-- Receipt Download -->
+        <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 5px; border: 1px solid #ddd; text-align: center;">
+            <h4 style="margin: 0 0 15px 0;">Your Receipt is Ready</h4>
+            <p style="margin-bottom: 15px;">
+                Download your official payment receipt for your records.
+            </p>
+            <a href="https://codamakutano.herokuapp.com/finance/receipt/{{ payment.id }}/" 
+               style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                📄 Download Receipt
+            </a>
+        </div>
+
+        <!-- What's Next -->
+        <div style="background: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <h4 style="margin: 0 0 10px 0;">What's Next?</h4>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li>Your payment has been credited to your account</li>
+                <li>Services/features will be activated within 24 hours</li>
+                <li>Keep your receipt for your records</li>
+                <li>Contact support if you have any questions</li>
+            </ul>
+        </div>
+
+        <!-- Support -->
+        <div style="background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center;">
+            <p style="margin: 0; font-size: 14px; color: #666;">
+                <strong>Questions?</strong><br>
+                Contact us at: <a href="mailto:{{ support_email }}" style="color: #007bff;">{{ support_email }}</a>
+            </p>
+        </div>
+
+        <p style="font-size: 14px; color: #666; margin-top: 30px;">
+            Thank you for your payment!<br>
+            <strong>CODA Analytics Team</strong>
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+
+        <p style="font-size: 12px; color: #999; text-align: center;">
+            This is an automated email confirmation.<br>
+            Payment Reference: PAY-{{ payment.id }}
+        </p>
+
+    </div>
+
+</body>
+</html>
+

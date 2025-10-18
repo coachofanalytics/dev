@@ -16,6 +16,22 @@ from .views.payment.payment_details import (
     show_payment_details,
     upload_payment_proof,
 )
+from .views.payment.receipt_views import (
+    view_receipt,
+    download_receipt,
+    email_receipt,
+    verify_payment_receipt,
+)
+from .views.payment.dashboard_views import (
+    payment_dashboard,
+    retry_payment,
+)
+from .views.payment.admin_verification import (
+    admin_payment_verification_dashboard,
+    approve_payment,
+    reject_payment,
+    bulk_approve_payments,
+)
 
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
@@ -387,6 +403,22 @@ urlpatterns += [
     # Payment Details (Universal Fallback)
     path('payment-details/<str:method>/', show_payment_details, name='payment_details'),
     path('payment-proof/upload/<str:reference>/', upload_payment_proof, name='upload_payment_proof'),
+    
+    # Payment Dashboard (User)
+    path('my-payments/', payment_dashboard, name='payment_dashboard'),
+    path('payment/retry/<int:payment_id>/', retry_payment, name='retry_payment'),
+    
+    # Payment Receipts
+    path('receipt/<int:payment_id>/', view_receipt, name='view_receipt'),
+    path('receipt/<int:payment_id>/download/', download_receipt, name='download_receipt'),
+    path('receipt/<int:payment_id>/email/', email_receipt, name='email_receipt'),
+    path('verify-payment/<int:payment_id>/', verify_payment_receipt, name='verify_payment_receipt'),
+    
+    # Admin Payment Verification
+    path('admin/verify-payments/', admin_payment_verification_dashboard, name='admin_payment_verification'),
+    path('admin/payment/<int:payment_id>/approve/', approve_payment, name='approve_payment'),
+    path('admin/payment/<int:payment_id>/reject/', reject_payment, name='reject_payment'),
+    path('admin/payments/bulk-approve/', bulk_approve_payments, name='bulk_approve_payments'),
     
     # M-Pesa OTP Verification Flow
     path('unified/mpesa-otp/', unified_mpesa_otp, name='mpesa_otp_confirmation'),

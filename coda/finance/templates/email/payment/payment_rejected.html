@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Verification Issue</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="margin: 0; font-size: 24px;">⚠ Payment Verification Issue</h1>
+    </div>
+
+    <!-- Content -->
+    <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+        
+        <p style="font-size: 16px;">
+            Hi <strong>{{ customer.first_name }}</strong>,
+        </p>
+        
+        <p>
+            We're writing to inform you about an issue with your recent payment submission.
+        </p>
+
+        <!-- Issue Box -->
+        <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 20px; margin: 20px 0; border-radius: 5px;">
+            <h3 style="margin: 0 0 10px 0; color: #721c24;">Payment Not Verified</h3>
+            <p style="margin: 0; color: #721c24;">
+                <strong>Reference:</strong> PAY-{{ payment.id }}<br>
+                <strong>Amount:</strong> ${{ payment.payment_fees|floatformat:2 }}<br>
+                <strong>Method:</strong> {{ payment.payment_method }}<br>
+                <strong>Reviewed by:</strong> {{ verified_by }}<br>
+                <strong>Date:</strong> {{ verification_date|date:"F d, Y - g:i A" }}
+            </p>
+        </div>
+
+        <!-- Reason -->
+        {% if reason %}
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <h4 style="margin: 0 0 10px 0; color: #856404;">Reason:</h4>
+            <p style="margin: 0; color: #856404;">{{ reason }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Next Steps -->
+        <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 5px; border: 1px solid #ddd;">
+            <h4 style="margin: 0 0 15px 0;">What Should You Do?</h4>
+            <ol style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 10px;">Review the reason above</li>
+                <li style="margin-bottom: 10px;">Contact our support team for clarification</li>
+                <li style="margin-bottom: 10px;">Resubmit payment with correct information</li>
+                <li>Keep all payment receipts/confirmations</li>
+            </ol>
+        </div>
+
+        <!-- Contact Support -->
+        <div style="background: #e7f3ff; border-left: 4px solid #007bff; padding: 20px; margin: 20px 0; border-radius: 5px; text-align: center;">
+            <h4 style="margin: 0 0 10px 0;">Need Help?</h4>
+            <p style="margin: 0 0 15px 0;">
+                Our support team is here to assist you
+            </p>
+            <a href="mailto:{{ support_email }}" 
+               style="display: inline-block; background: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                Contact Support
+            </a>
+        </div>
+
+        <p style="font-size: 14px; color: #666; margin-top: 30px;">
+            Best regards,<br>
+            <strong>CODA Analytics Team</strong>
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+
+        <p style="font-size: 12px; color: #999; text-align: center;">
+            If you believe this is an error, please reply to this email.<br>
+            Payment Reference: PAY-{{ payment.id }}
+        </p>
+
+    </div>
+
+</body>
+</html>
+
