@@ -101,7 +101,7 @@ def start_training(request, slug=None, *args, **kwargs):
     # Check if category was found
     if not category_slug:
         messages.error(request, f"Service category '{slug}' not found.")
-        return redirect('professional_services:services')
+        return redirect('professional_services:home')
     
     onboarding_description,troubleshooting_description,requirement_description=split_sentences(description)
 
