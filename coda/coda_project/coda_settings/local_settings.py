@@ -11,6 +11,9 @@ DEBUG = True
 # Local development hosts
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
+# Site URL for local development
+SITEURL = "http://localhost:8000"
+
 # Use SQLite for local development (easier setup, no PostgreSQL required)
 DATABASES = {
     'default': {
@@ -47,6 +50,9 @@ SOCIALACCOUNT_EMAIL_REQUIRED = False
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+# Site URL for local development
+SITEURL = "http://localhost:8000"  # Will be https://localhost:8000 when using SSL server
 
 # Static files (for local development)
 STATIC_URL = '/static/'
