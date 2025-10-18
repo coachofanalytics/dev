@@ -72,9 +72,182 @@
             height: 100%;
             object-fit: cover;
         }
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0a926d;
+            border-radius: 50%; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 50;
+            transition: transform 0.3s ease-in-out;
+        }
+        #chat-button:hover {
+            transform: scale(1.1);
+        }
+        #chat-container {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            max-width: 90vw;
+            background-color: white; 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: none; 
+            flex-direction: column;
+            z-index: 50;
+            overflow: hidden;
+        }
+         #chat-container.open {
+            display: flex;
+        }
+ 
+        #chat-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+ 
+        #chat-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f7f9fc;  
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+         
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+        .bot-message {
+            background-color: #e6f7f4;  
+            color: #0a926d;  
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+        .user-message {
+            background-color: #1e40af;  
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+        }
+ 
+        #chat-input-area {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        #chat-input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #chat-input:focus {
+            border-color: #1e40af;
+        }
+ 
+        #send-button {
+            margin-left: 0.75rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
     </style>
 </head>
 <body>
+    <script>
+        
+ function toggleChat() {
+            const chatContainer = document.getElementById('chat-container');
+            const chatButton = document.getElementById('chat-button');
+            const isOpen = chatContainer.classList.toggle('open');
+             
+            chatButton.innerHTML = isOpen ? `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>` : `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+            if (isOpen) { 
+                const messages = document.getElementById('chat-messages');
+                if (messages.children.length === 0) { 
+                    appendMessage("Welcome! I'm the **Crisis AI Assistant** for Diaspora County 48. Feel free to ask me for information on **Emergency** support, safety **Advisories**, **Welfare** checks, or general **Contact** details.", 'bot');
+                }
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+             
+            let content = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            messageElement.classList.add('message-bubble', sender === 'user' ? 'user-message' : 'bot-message');
+            messageElement.innerHTML = content;
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;  
+        }
+
+        function handleUserInput() {
+            const inputElement = document.getElementById('chat-input');
+            const message = inputElement.value.trim();
+
+            if (message) { 
+                appendMessage(message, 'user');
+ 
+                setTimeout(() => {
+                    const response = simulateAIResponse(message);
+                    appendMessage(response, 'bot');
+                }, 800);  
+                inputElement.value = '';
+            }
+        }
+
+        function simulateAIResponse(userMessage) {
+            const lowerCaseMessage = userMessage.toLowerCase();
+
+            if (lowerCaseMessage.includes('emergency')) {
+                return "🚨 **EMERGENCY INFO:** If you are in immediate danger, **dial your local emergency number first**. Our 24/7 hotline provides consular, legal, and welfare assistance after you are safe. Key contacts are listed under the 'Emergency Response' section above.";
+            } else if (lowerCaseMessage.includes('advisory')) {
+                return "📢 **ADVISORY INFO:** We monitor real-time security, weather, and public health threats. To subscribe to alerts for your region, please click the 'Subscribe to Safety Alerts' link in the Advisories section.";
+            } else if (lowerCaseMessage.includes('welfare') || lowerCaseMessage.includes('check')) {
+                return "❤️ **WELFARE CHECK:** We can conduct urgent welfare checks for registered members. Please state the full name and last known location of the individual you are concerned about for immediate processing.";
+            } else if (lowerCaseMessage.includes('contact')) {
+                return "📞 **CONTACT:** The Diaspora County 48 Crisis Line is available 24/7. You can find the contact number by clicking the 'Contact DC48K Crisis Line' button in the red section at the bottom of the page.";
+            } else { 
+                return "That's a good question! I specialize in crisis services. To get the most relevant response, try focusing your question on one of these areas: **Emergency** support, safety **Advisories**, **Welfare** checks, or general **Contact** information.";
+            }
+        }
+
+        window.onload = function() { 
+            
+            document.getElementById('chat-button').addEventListener('click', toggleChat);
+            document.getElementById('send-button').addEventListener('click', handleUserInput);
+            document.getElementById('chat-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    handleUserInput();
+                }
+            });
+        };
+
+    </script>
      <!-- HERO SECTION -->
         <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
@@ -149,17 +322,56 @@
                         <li>Public health alerts and travel restriction updates</li>
                     </ul>
                      <div class="mt-6">
-                        <a href="#" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                        <a href="#" class="inline-block bg-brand-green text-white font-bold py-3
+                         px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
                             Subscribe to Safety Alerts
                         </a>
                     </div>
                 </div>
                 <!-- Image -->
                 <div class="lg:order-2">
-                    <img id="image-advisories" src="{% static 'main/img/family.png' %}" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                    <img id="image-advisories" src="{% static 'main/img/family.png' %}" 
+                    class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
                 </div>
             </div>
-            
+            <!-- ChatboxAssistance section -->
+           
+<div id="chat-button" class="bg-brand-green text-white">
+  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+       xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+  </svg>
+</div>
+ 
+<div id="chat-container">
+  <div id="chat-header" class="bg-brand-blue text-white flex justify-between items-center">
+    <h4 class="text-lg font-bold">Crisis AI Assistant</h4>
+    <button onclick="toggleChat()" class="text-white hover:text-gray-200 p-1 rounded-full">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+ 
+  <div id="chat-messages"></div>
+
+  <div id="chat-input-area">
+    <input type="text" id="chat-input"
+           placeholder="Ask about crisis management..."
+           class="text-gray-700 flex-grow border rounded-full px-3 py-2 focus:outline-none focus:ring focus:ring-brand-blue">
+    <button id="send-button" class="ml-2 bg-brand-green text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-[#086a4f] transition duration-300">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
 {% endblock %}
