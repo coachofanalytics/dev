@@ -8,9 +8,10 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization
+from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
+from django.views.decorators.csrf import csrf_exempt
 from main.forms import ContactForm
 from django.contrib.auth import get_user_model
 
@@ -64,6 +65,19 @@ def template_errors(request):
 
     print(error_code)
     return render(request, 'main/errors/template_error.html', context)
+
+
+
+@csrf_exempt
+def medical_resource_form(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        # Redirect using the named URL so it works regardless of include path
+        return redirect('main:healthcare_info')
+    return render(request, 'main/data/medical_resource_form.html')
 
 
 def general_errors(request):

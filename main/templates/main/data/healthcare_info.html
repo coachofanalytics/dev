@@ -8,15 +8,16 @@
 <div class="healthcare-page">
 
 <script src="{% static 'main/js/healthcare.js' %}"></script>
+<script src="{% static 'main/js/hospitals.js' %}"></script>
 
-    <!-- HERO SECTION -->
+
     <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6 p-5">
                     <h1 class="display-4 main-heading mb-3">HEALTHCARE INFORMATION</h1>
                     <h2 class="h5 font-weight-normal text-light mb-4">Vetted medical guidance and resources to keep you and your family well, wherever you reside.</h2>
-                    <a href="#" class="btn btn-danger btn-lg">FIND MEDICAL RESOURCES</a>
+                    <a href="{% url 'main:medical_resource_form' %}" class="btn btn-danger btn-lg">FIND MEDICAL RESOURCES</a>
                 </div>
                 <div class="col-md-6 hero-image-container p-3">
                     {% if hero_image_url %}
@@ -89,10 +90,16 @@
         <div class="bg-brand-blue text-white p-4 rounded mt-5 text-center">
             <h3 class="h3 font-weight-bold">URGENT MEDICAL ADVISORY</h3>
             <p class="mb-3">For life-threatening emergencies, always dial your host country's local emergency number first.</p>
-            <a href="#" class="btn btn-danger">View Emergency Contacts by Country</a>
+            <button onclick="findNearbyHospitals()" class="btn btn-danger">Find Nearby Hospitals</button>
+            <a href="#" class="btn btn-outline-danger ms-2">View Emergency Contacts by Country</a>
         </div>
     </section>
 
 </div>
+
+<!-- Healthcare chat widget root and assets -->
+<div id="healthcare-chat-root-placeholder"></div>
+<link rel="stylesheet" href="{% static 'main/css/chat.css' %}">
+<script src="{% static 'main/js/chat.js' %}" defer></script>
 
 {% endblock %}

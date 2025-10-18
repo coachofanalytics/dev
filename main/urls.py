@@ -37,4 +37,6 @@ urlpatterns = [
     path('404/', views.hendler404, name='404-error'),
     path('500/', views.hendler500, name='500-error'),
 
+    path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
+
 ]
