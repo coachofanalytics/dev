@@ -156,7 +156,8 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
     def get_success_url(self):
         return reverse('main:images') 
     
-
+def crisis_page(request):
+    return render(request, "main/crisis.html")
 
 
 
