@@ -20,8 +20,12 @@ fi
 # Change to coda directory
 cd coda
 
+# Set Django settings module for local development
+export DJANGO_SETTINGS_MODULE=coda_project.coda_settings.local_settings
+
 # Run SSL server
 echo "✅ SSL certificates found"
+echo "✅ Using local_settings.py"
 echo "📡 Starting server on https://localhost:8000/"
 echo "⚠️  Your browser will show a security warning (self-signed certificate)"
 echo "   Click 'Advanced' -> 'Proceed to localhost' to continue"
