@@ -35,65 +35,49 @@
                 </div>
             </div>
 
-            <!-- Payment Form -->
+            <!-- Payment Options -->
             <div class="payment-form">
-                <div class="card">
-                    <div class="card-header">
+                <!-- Option 1: PayPal Button (Automated) -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
                         <h5 class="card-title mb-0">
                             <i class="fa fa-paypal mr-2"></i>
-                            PayPal Payment Details
+                            Option 1: Pay with PayPal (Recommended)
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" id="paypalPaymentForm">
-                            {% csrf_token %}
-                            
-                            <div class="mb-3">
-                                <label for="amount" class="form-label">Payment Amount *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="amount" 
-                                           name="amount" 
-                                           step="0.01" 
-                                           min="1" 
-                                           max="{{ payment_info.get_fee_balance }}"
-                                           value="{{ payment_info.down_payment }}"
-                                           required>
-                                </div>
-                                <div class="form-text">Maximum: ${{ payment_info.get_fee_balance }}</div>
-                            </div>
+                        <div class="alert alert-success">
+                            <i class="fa fa-check-circle"></i>
+                            <strong>Quick & Secure</strong> - Click the button below to pay instantly
+                        </div>
+                        
+                        <input type="hidden" id="paypal-amount" value="{{ payment_info.down_payment }}">
+                        
+                        <!-- PayPal Button Container -->
+                        <div id="paypal-button-container" class="mb-3"></div>
+                        
+                        <small class="text-muted">
+                            <i class="fa fa-shield-alt"></i> Secure payment powered by PayPal
+                        </small>
+                    </div>
+                </div>
 
-                            <div class="mb-3">
-                                <label for="email" class="form-label">PayPal Email Address *</label>
-                                <input type="email" 
-                                       class="form-control" 
-                                       id="email" 
-                                       name="email" 
-                                       placeholder="your-email@example.com"
-                                       required>
-                                <div class="form-text">Enter the email associated with your PayPal account</div>
-                            </div>
-
-                            <div class="payment-info mb-4">
-                                <div class="alert alert-info">
-                                    <h6><i class="fa fa-info-circle mr-2"></i>Payment Information</h6>
-                                    <ul class="mb-0 small">
-                                        <li>Processing Time: 2-3 business days</li>
-                                        <li>Fees: 3.5% of payment amount</li>
-                                        <li>You will receive a confirmation email after payment</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary btn-lg w-100">
-                                    <i class="fa fa-paypal mr-2"></i>
-                                    Pay with PayPal
-                                </button>
-                            </div>
-                        </form>
+                <!-- Option 2: Manual Payment Details (Fallback) -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fa fa-envelope mr-2"></i>
+                            Option 2: Get Payment Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            If the PayPal button doesn't work, click below to get manual payment instructions
+                        </p>
+                        <a href="{% url 'finance:payment_details' 'paypal' %}" class="btn btn-outline-primary w-100">
+                            <i class="fa fa-file-invoice-dollar mr-2"></i>
+                            Show Payment Details
+                        </a>
                     </div>
                 </div>
             </div>
@@ -109,23 +93,93 @@
     </div>
 </div>
 
+<!-- Include PayPal JavaScript SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id=AYsNJlHsAzemW-IvLkkf42iMHGdTMxFfupX6CTI2-rhDDfU67zTQ2n_lszMkxcrrYq_5Qltrw99Lep4D&currency=USD"></script>
+
 <script>
-document.getElementById('paypalPaymentForm').addEventListener('submit', function(e) {
-    const amount = parseFloat(document.getElementById('amount').value);
-    const maxAmount = {{ payment_info.get_fee_balance }};
-    
-    if (amount > maxAmount) {
-        e.preventDefault();
-        alert('Payment amount cannot exceed available balance of $' + maxAmount);
-        return false;
+// Get CSRF token
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
     }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+// Complete order function - calls Django backend
+function completeOrder(orderData) {
+    var url = "{% url 'finance:payment_complete' %}";
     
-    if (amount <= 0) {
-        e.preventDefault();
-        alert('Please enter a valid payment amount');
-        return false;
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify({
+            "payment_fees": orderData.purchase_units[0].amount.value,
+            "transaction_id": orderData.id,
+            "payer_email": orderData.payer.email_address
+        })
+    });
+}
+
+// Get payment amount
+var paypalAmount = document.getElementById('paypal-amount').value;
+
+// Render PayPal Buttons
+paypal.Buttons({
+    // Set up the transaction
+    createOrder: function(data, actions) {
+        return actions.order.create({
+            purchase_units: [{
+                amount: {
+                    value: paypalAmount
+                }
+            }]
+        });
+    },
+    
+    // Finalize the transaction
+    onApprove: function(data, actions) {
+        return actions.order.capture().then(function(orderData) {
+            // Log successful capture
+            console.log('PayPal Capture result', orderData, JSON.stringify(orderData, null, 2));
+            var transaction = orderData.purchase_units[0].payments.captures[0];
+            
+            // Complete order in our system
+            completeOrder(orderData).then(function() {
+                alert('Payment completed successfully! Transaction ID: ' + transaction.id);
+                // Redirect to success page
+                window.location.href = "{% url 'finance:unified_success' %}";
+            }).catch(function(error) {
+                console.error('Error completing order:', error);
+                alert('Payment was processed by PayPal but there was an error recording it. Please contact support with Transaction ID: ' + transaction.id);
+            });
+        });
+    },
+    
+    // Handle errors
+    onError: function(err) {
+        console.error('PayPal error:', err);
+        alert('PayPal payment failed. Please try again or use manual payment option below.');
+    },
+    
+    // Handle cancellation
+    onCancel: function(data) {
+        console.log('PayPal payment cancelled by user');
+        alert('Payment cancelled. You can try again or use manual payment option below.');
     }
-});
+}).render('#paypal-button-container');
 </script>
 {% endblock %}
 

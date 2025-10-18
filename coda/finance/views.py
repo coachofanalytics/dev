@@ -2252,34 +2252,41 @@ def paymentComplete(request):
     payments = Payment_Information.objects.filter(customer_id=request.user.id).first()
     customer = request.user
     body = json.loads(request.body)
-    payment_fees = body["payment_fees"]
+    payment_fees = int(float(body["payment_fees"]))
     down_payment = payments.down_payment
     studend_bonus = payments.student_bonus
     plan = payments.plan
     subplan = payments.subplan
     pricing_plan = payments.pricing_plan
-    # fee_balance = payments.fee_balance
+    # Calculate fee_balance (required field)
+    fee_balance = payment_fees - down_payment
     payment_mothod = payments.payment_method
     contract_submitted_date = payments.contract_submitted_date
     client_signature = payments.client_signature
     company_rep = payments.company_rep
     client_date = payments.client_date
     rep_date = payments.rep_date
+    
+    # Get PayPal transaction details if available
+    transaction_id = body.get("transaction_id", "")
+    payer_email = body.get("payer_email", "")
+    
     Payment_History.objects.create(
         customer=customer,
         payment_fees=payment_fees,
         down_payment=down_payment,
+        fee_balance=fee_balance,
         student_bonus=studend_bonus,
         plan=plan,
         subplan=subplan,
         pricing_plan=pricing_plan,
-        # fee_balance=fee_balance,
         payment_method=payment_mothod,
         contract_submitted_date=contract_submitted_date,
         client_signature=client_signature,
         company_rep=company_rep,
         client_date=client_date,
         rep_date=rep_date,
+        notes=f"PayPal Transaction ID: {transaction_id} | Payer: {payer_email}" if transaction_id else "",
     )
     try:
         if PayslipConfig.objects.filter(user__username=request.user.username).exists():
