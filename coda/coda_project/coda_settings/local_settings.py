@@ -56,6 +56,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Django SSL Server for local HTTPS development
+INSTALLED_APPS = INSTALLED_APPS + ['sslserver']
+
+# SSL Certificate paths
+SSL_CERTIFICATE = os.path.join(BASE_DIR, 'certs', 'cert.pem')
+SSL_KEY = os.path.join(BASE_DIR, 'certs', 'key.pem')
+
 # Django Debug Toolbar (optional - install with pip install django-debug-toolbar)
 try:
     import debug_toolbar
