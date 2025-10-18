@@ -9,7 +9,7 @@ from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 import openai
 from django.db.models import Sum
-from .models import Service,Assets,Readme,Location
+from .models import Service,Assets,Readme,Location,Testimonials
 from .utils import *
 from coda_project import settings
 from application.models import UserProfile
@@ -354,3 +354,8 @@ def servicecategory_detail(request, pk):
     category = get_object_or_404(ServiceCategory, pk=pk)
     return render(request, 'main/snippets_templates/table/services_detail.html', {'category': category})
    
+
+
+def testimonials_list(request):
+    testimonials = Testimonials.objects.order_by('-date_posted')
+    return render(request, 'main/snippets_templates/table/testmonial.html', {'testimonials': testimonials})

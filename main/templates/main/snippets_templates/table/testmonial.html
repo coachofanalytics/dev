@@ -1,0 +1,24 @@
+{% include 'main/navbar_templates/home_navbar.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center text-primary mb-4">Testimonials</h2>
+  <a href="#" class="btn btn-success mb-4">➕ Add New Testimonial</a>
+  <div class="row">
+    {% for t in testimonials %}
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5><a href="#" class="text-dark">{{ t.title }}</a></h5>
+          <p>{{ t.content|truncatewords:20 }}</p>
+          <small class="text-muted">
+            ⭐ {{ t.rating }}/5 | 👤 {{ t.writer.username }} | {{ t.date_posted|date:"M d, Y" }}
+          </small>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>No testimonials yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

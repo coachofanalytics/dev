@@ -16,7 +16,12 @@ urlpatterns = [
     # ====== Locations ======
     path("location_list/", views.location_list, name="account-location_list"),
     path("location_create/", views.location_create, name="location_create"),
-    path("location_update/<str:pk>/", views.location_update, name="location_update"),
+    path("location_update/<str:pk>/", views.location_update, name="location_update"),    
+    
+
+     # ====== Testimonials ======
+    
+    path('Testimonials/', views.testimonials_list, name='Testimonials'),
 
     # ====== Other ======
     path('it/', views.it, name='it'),
