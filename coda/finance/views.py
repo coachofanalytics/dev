@@ -3345,7 +3345,9 @@ def foodlist(request):
 
     total_add_amount = 0
     for supply in supplies_Fs.qs:
-        total_add_amount = total_add_amount + supply.additional_amount
+        # Handle missing additional_amount field gracefully
+        additional_amount = getattr(supply, 'additional_amount', 0)
+        total_add_amount = total_add_amount + additional_amount
 
     context = {
         "total_add_amount": total_add_amount,
@@ -4526,7 +4528,7 @@ class FoodListView(FilteredListViewMixin, ListView):
         # Calculate totals
         total_amt = sum(supply.total_amount for supply in supplies_filter.qs)
         total_add_amount = sum(
-            supply.additional_amount for supply in supplies_filter.qs
+            getattr(supply, 'additional_amount', 0) for supply in supplies_filter.qs
         )
 
         context.update(
