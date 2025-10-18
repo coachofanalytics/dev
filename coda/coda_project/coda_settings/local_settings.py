@@ -61,7 +61,7 @@ def dba_values():
 
 def source_target():
     """Dummy function for local development - returns None values since we use SQLite"""
-    return None, None, None, None, None, None, None, None
+    return None, None, None, None, None  # source_host, source_dbname, source_user, source_password, target_db_path
 
 # Static files (for local development)
 STATIC_URL = '/static/'
