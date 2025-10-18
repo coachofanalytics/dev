@@ -10,6 +10,7 @@ from finance.models import Payment_Information, Payment_History
 from accounts.models import CustomerUser
 from finance.utils import validate_amount, save_payment_history, validate_user_payment_eligibility
 from core.utils import generate_and_send_otp
+from .payment_details import show_payment_details
 
 # PaymentService not currently used - commented out in views
 # from finance.services.core.base import PaymentService
@@ -246,7 +247,24 @@ def process_payment_by_method(request, method, payment_info, payment_service):
         messages.error(request, f'Payment method {method} not implemented yet.')
         return redirect('finance:unified_method_selection')
 def process_mpesa_payment(request, payment_info, payment_service):
-    """Process MPESA payment"""
+    """
+    Process M-Pesa payment with automatic fallback
+    Try STK Push if credentials available, otherwise show payment details
+    """
+    import os
+    
+    # Check if M-Pesa credentials are available
+    has_mpesa_creds = all([
+        os.environ.get('MPESA_CONSUMER_KEY'),
+        os.environ.get('MPESA_CONSUMER_SECRET'),
+        os.environ.get('MPESA_SHORTCODE')
+    ])
+    
+    if not has_mpesa_creds:
+        logger.info(f"M-Pesa credentials not available for user {request.user.username}, showing payment details")
+        return show_payment_details(request, 'mpesa')
+    
+    # Try automated STK Push
     phone_number = request.POST.get('phone_number')
     amount = request.POST.get('amount')
     
@@ -273,7 +291,18 @@ def process_mpesa_payment(request, payment_info, payment_service):
     
     return redirect('finance:mpesa_otp_confirmation')
 def process_paypal_payment(request, payment_info, payment_service):
-    """Process PayPal payment"""
+    """
+    Process PayPal payment with automatic fallback
+    Try automated payment first, fallback to payment details if fails
+    """
+    # NOTE: PayPal SDK integration is handled client-side
+    # This function handles POST from PayPal form or fallback request
+    
+    # Check if this is a fallback request (user couldn't use PayPal button)
+    if request.GET.get('fallback') == 'true':
+        logger.info(f"PayPal fallback requested for user {request.user.username}")
+        return show_payment_details(request, 'paypal')
+    
     amount = request.POST.get("amount")
     email = request.POST.get("email")
     
@@ -290,7 +319,8 @@ def process_paypal_payment(request, payment_info, payment_service):
     if not eligible:
         request.session['error_message'] = message
         return redirect('finance:unified_failed')
-    # Simulate successful payment
+    
+    # Try to process payment
     try:
         # Create payment record using utility function
         reference = f"PAYPAL-{request.user.id}-{amount_float}"
@@ -303,23 +333,33 @@ def process_paypal_payment(request, payment_info, payment_service):
             status='completed'
         )
         if not ok:
-            request.session['error_message'] = 'Payment failed to save'
-            return redirect('finance:unified_failed')
+            # Fallback to payment details
+            logger.warning(f"PayPal payment save failed for user {request.user.username}, showing payment details")
+            return show_payment_details(request, 'paypal')
+            
         messages.success(request, f"PayPal payment of ${amount_float} completed successfully!")
         
         # Store payment data in session for success page
         request.session['payment_reference'] = reference
         request.session['payment_amount'] = amount_float
-        request.session['payment_method'] = 'paypal'  # Use lowercase for consistency
+        request.session['payment_method'] = 'paypal'
         
         return redirect("finance:unified_success")
         
     except Exception as e:
         logger.error(f"Error creating PayPal payment record: {str(e)}")
-        request.session['error_message'] = 'Payment processing failed'
-        return redirect('finance:unified_failed')
+        # Fallback to payment details instead of showing error
+        logger.info(f"PayPal payment error for user {request.user.username}, falling back to payment details")
+        return show_payment_details(request, 'paypal')
 def process_cashapp_payment(request, payment_info, payment_service):
-    """Process CashApp payment"""
+    """
+    Process CashApp payment - No API available, show payment details
+    """
+    logger.info(f"CashApp payment requested for user {request.user.username}, showing payment details")
+    return show_payment_details(request, 'cashapp')
+
+def process_cashapp_payment_DEPRECATED(request, payment_info, payment_service):
+    """DEPRECATED - Old CashApp simulation"""
     amount = request.POST.get("amount")
     cashapp_id = request.POST.get("cashapp_id")
     if not amount:
@@ -364,137 +404,38 @@ def process_cashapp_payment(request, payment_info, payment_service):
         request.session['error_message'] = 'Database error'
         return redirect('finance:unified_failed')
 def process_zelle_payment(request, payment_info, payment_service):
-    """Process Zelle payment"""
-    amount = request.POST.get("amount")
-    email = request.POST.get("email")
-    
-    if not amount:
-        messages.error(request, "Payment amount is required.")
-        return redirect("finance:unified_processing", method="zelle")
-    
-    if not email:
-        messages.error(request, "Zelle email is required.")
-        return redirect("finance:unified_processing", method="zelle")
-    
-    # User balance validation - FIXED: was 'mpesa', now 'zelle'
-    eligible, message, amount_float = validate_user_payment_eligibility(request.user, amount, 'zelle')
-    if not eligible:
-        request.session['error_message'] = message
-        return redirect('finance:unified_failed')
-    # Simulate successful payment
-    try:
-        reference = f"ZELLE-{request.user.id}-{amount_float}"
-        ok = save_payment_history(
-            user=request.user,
-            payment_info=payment_info,
-            method='Zelle',
-            reference=reference,
-            amount=amount_float,
-            status='completed'
-        )
-        if not ok:
-            request.session['error_message'] = 'Payment failed to save'
-            return redirect('finance:unified_failed')
-        
-        messages.success(request, f"Zelle payment of ${amount_float} completed successfully!")
-        
-        # Store payment data in session for success page
-        request.session['payment_reference'] = reference
-        request.session['payment_amount'] = amount_float
-        request.session['payment_method'] = 'zelle'
-        
-        return redirect("finance:unified_success")
-        
-    except Exception as e:
-        logger.error(f"Error creating Zelle payment record: {str(e)}")
-        request.session['error_message'] = 'Database error'
-        return redirect('finance:unified_failed')
+    """
+    Process Zelle payment - No API available, show payment details
+    """
+    logger.info(f"Zelle payment requested for user {request.user.username}, showing payment details")
+    return show_payment_details(request, 'zelle')
 def process_venmo_payment(request, payment_info, payment_service):
-    """Process Venmo payment"""
-    amount = request.POST.get("amount")
-    venmo_username = request.POST.get("venmo_username")
-    
-    if not amount:
-        messages.error(request, "Payment amount is required.")
-        return redirect("finance:unified_processing", method="venmo")
-    
-    if not venmo_username:
-        messages.error(request, "Venmo username is required.")
-        return redirect("finance:unified_processing", method="venmo")
-    
-    # User balance validation - FIXED: was 'mpesa', now 'venmo'
-    eligible, message, amount_float = validate_user_payment_eligibility(request.user, amount, 'venmo')
-    if not eligible:
-        request.session['error_message'] = message
-        return redirect('finance:unified_failed')
-    
-    # Simulate successful payment
-    try:
-        reference = f"VENMO-{request.user.id}-{amount_float}"
-        ok = save_payment_history(
-            user=request.user,
-            payment_info=payment_info,
-            method='Venmo',
-            reference=reference,
-            amount=amount_float,
-            status='completed'
-        )
-        if not ok:
-            request.session['error_message'] = 'Payment failed to save'
-            return redirect('finance:unified_failed')
-        
-        messages.success(request, f"Venmo payment of ${amount_float} completed successfully!")
-        
-        # Store payment data in session for success page
-        request.session['payment_reference'] = reference
-        request.session['payment_amount'] = amount_float
-        request.session['payment_method'] = 'venmo'
-        
-        return redirect("finance:unified_success")
-        
-    except Exception as e:
-        logger.error(f"Error creating Venmo payment record: {str(e)}")
-        request.session['error_message'] = 'Database error'
-        return redirect('finance:unified_failed')
+    """
+    Process Venmo payment - No API available, show payment details
+    """
+    logger.info(f"Venmo payment requested for user {request.user.username}, showing payment details")
+    return show_payment_details(request, 'venmo')
 def process_stripe_payment(request, payment_info, payment_service):
-    """Process Stripe payment"""
-    amount = request.POST.get("amount")
-    if not amount:
-        messages.error(request, "Payment amount is required.")
-        return redirect("finance:unified_processing", method="stripe")
-    # User balance validation - FIXED: was 'mpesa', now 'stripe'
-    eligible, message, amount_float = validate_user_payment_eligibility(request.user, amount, 'stripe')
-    if not eligible:
-        request.session['error_message'] = message
-        return redirect('finance:unified_failed')
-    # Simulate successful payment
-    try:
-        reference = f"STRIPE-{request.user.id}-{amount_float}"
-        ok = save_payment_history(
-            user=request.user,
-            payment_info=payment_info,
-            method='Stripe',
-            reference=reference,
-            amount=amount_float,
-            status='completed'
-        )
-        if not ok:
-            request.session['error_message'] = 'Payment failed to save'
-            return redirect('finance:unified_failed')
-        
-        messages.success(request, f"Stripe payment of ${amount_float} completed successfully!")
-        
-        # Store payment data in session for success page
-        request.session['payment_reference'] = reference
-        request.session['payment_amount'] = amount_float
-        request.session['payment_method'] = 'stripe'
-        
-        return redirect("finance:unified_success")
-        
-    except Exception as e:
-        logger.error(f"Error creating Stripe payment record: {str(e)}")
-        request.session['error_message'] = 'Database error'
-        return redirect('finance:unified_failed')
+    """
+    Process Stripe payment with automatic fallback
+    Try Stripe API if credentials available, otherwise show payment details
+    """
+    import os
+    
+    # Check if Stripe credentials are available
+    has_stripe_creds = all([
+        os.environ.get('STRIPE_PUBLISHABLE_KEY'),
+        os.environ.get('STRIPE_SECRET_KEY')
+    ])
+    
+    if not has_stripe_creds:
+        logger.info(f"Stripe credentials not available for user {request.user.username}, showing payment details")
+        return show_payment_details(request, 'stripe')
+    
+    # TODO: Implement Stripe Elements integration when credentials provided
+    # For now, fallback to payment details
+    logger.info(f"Stripe integration pending for user {request.user.username}, showing payment details")
+    return show_payment_details(request, 'stripe')
 @login_required
 def payment_success(request):
     """Unified payment success view"""

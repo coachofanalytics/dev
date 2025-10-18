@@ -12,6 +12,10 @@ from .views.payment import (
     mpesa_otp_confirmation as unified_mpesa_otp,
     verify_mpesa_otp as unified_verify_otp,
 )
+from .views.payment.payment_details import (
+    show_payment_details,
+    upload_payment_proof,
+)
 
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
@@ -379,6 +383,10 @@ urlpatterns += [
     # Payment Results
     path('unified/success/', unified_payment_success, name='unified_success'),
     path('unified/failed/', unified_payment_failed, name='unified_failed'),
+    
+    # Payment Details (Universal Fallback)
+    path('payment-details/<str:method>/', show_payment_details, name='payment_details'),
+    path('payment-proof/upload/<str:reference>/', upload_payment_proof, name='upload_payment_proof'),
     
     # M-Pesa OTP Verification Flow
     path('unified/mpesa-otp/', unified_mpesa_otp, name='mpesa_otp_confirmation'),

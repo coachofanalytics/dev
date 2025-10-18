@@ -13,6 +13,11 @@ from .unified_payment import (
     PAYMENT_METHODS,
 )
 
+from .payment_details import (
+    show_payment_details,
+    upload_payment_proof,
+)
+
 __all__ = [
     'payment_method_selection',
     'payment_processing',
@@ -20,6 +25,8 @@ __all__ = [
     'payment_failed',
     'mpesa_otp_confirmation',
     'verify_mpesa_otp',
+    'show_payment_details',
+    'upload_payment_proof',
     'PAYMENT_METHODS',
 ]
 
