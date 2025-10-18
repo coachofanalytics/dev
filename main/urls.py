@@ -21,7 +21,8 @@ urlpatterns = [
 
      # ====== Testimonials ======
     
-    path('Testimonials/', views.testimonials_list, name='Testimonials'),
+    path('Testimonials/', views.testimonials_list, name='testimonials_list'),
+    path("Testimonials_create/", views.testimonial_create, name="Testimonials_create"),
 
     # ====== Other ======
     path('it/', views.it, name='it'),

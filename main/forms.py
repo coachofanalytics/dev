@@ -17,3 +17,16 @@ class locationForm(forms.Form):
     class Meta:
         model = Location
         fields = ['zipcode','city','state','county']
+
+
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model =Testimonials
+        fields = ['title', 'slug', 'content', 'rating']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'slug': forms.TextInput(attrs={'class': 'form-control'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'rating': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 5}),
+        }

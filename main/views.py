@@ -23,7 +23,7 @@ from django.views.generic import (
         DetailView,
         UpdateView,)
 
-from .forms import *
+from .forms import TestimonialForm
 from django.http import JsonResponse
 from django.apps import apps
 from langchain_community.llms import OpenAI
@@ -359,3 +359,18 @@ def servicecategory_detail(request, pk):
 def testimonials_list(request):
     testimonials = Testimonials.objects.order_by('-date_posted')
     return render(request, 'main/snippets_templates/table/testmonial.html', {'testimonials': testimonials})
+
+
+def testimonial_create(request):
+    if request.method == 'POST':
+        form = TestimonialForm(request.POST)
+        if form.is_valid():
+            testimonial = form.save(commit=False)
+            testimonial.writer = request.user
+            testimonial.save()
+            return redirect('testimonials_list')
+    else:
+        form = TestimonialForm()
+    return render(request, 'main/snippets_templates/table/testmonial_create.html', {'form': form, 'title': 'Add Testimonial'})
+
+      
