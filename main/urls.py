@@ -24,8 +24,11 @@ urlpatterns = [
 
     path('testimonials/', views.testimonials_list, name='testimonials_list'),
     path('testimonials/create/', views.testimonial_create, name='testimonial_create'),
+    path('testimonials/<int:pk>/', views.testimonial_detail, name='testimonial_detail'),
     path('testimonials/<int:pk>/edit/', views.testimonial_update, name='testimonial_update'),
-    
+    path('testimonials/<int:pk>/delete/', views.testimonial_delete, name='testimonial_delete'),
+
+
     # ====== Other ======
     path('it/', views.it, name='it'),
     path('finance/', views.finance, name='finance'),

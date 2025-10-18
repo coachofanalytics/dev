@@ -1,0 +1,91 @@
+{% include 'main/navbar_templates/home_navbar.html' %}
+{% block content %}
+<style>
+  .detail-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8fbff, #ffffff);
+    padding: 60px 20px;
+  }
+
+  .detail-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px 50px;
+    max-width: 700px;
+    width: 100%;
+  }
+
+  .detail-card h3 {
+    color: #0d6efd;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .detail-card p {
+    color: #444;
+    line-height: 1.6;
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+
+  .detail-meta {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 25px;
+  }
+
+  .btn {
+    border-radius: 30px;
+    padding: 8px 25px;
+    font-weight: 500;
+  }
+
+  .btn-primary {
+    background-color: #0d6efd;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background-color: #0b5ed7;
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background-color: #bb2d3b;
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5c636a;
+  }
+</style>
+
+<div class="detail-section">
+  <div class="detail-card text-center">
+    <h3>{{ testimonial.title }}</h3>
+    <p>{{ testimonial.content }}</p>
+    <div class="detail-meta">
+      ⭐ Rating: {{ testimonial.rating|default:"5" }}/5<br>
+      👤 Writer: {{ testimonial.writer|default:"Anonymous" }}<br>
+      🕓 Posted on: {{ testimonial.date_posted|date:"M d, Y" }}
+    </div>
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <a href="{% url 'main:testimonial_update' testimonial.pk %}" class="btn btn-primary">✏️ Edit</a>
+      <a href="{% url 'main:testimonial_delete' testimonial.pk %}" class="btn btn-danger">🗑 Delete</a>
+      <a href="{% url 'main:testimonials_list' %}" class="btn btn-secondary">⬅ Back</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

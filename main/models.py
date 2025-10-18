@@ -128,17 +128,24 @@ class ServiceCategory(models.Model):
 
 
 
+
+
 class Testimonials(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     content = models.TextField()
     rating = models.IntegerField(default=5)
     date_posted = models.DateTimeField(default=timezone.now)
-    writer = models.ForeignKey(User, on_delete=models.CASCADE)
+    writer = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,   null=True, 
+        blank=True,                 # Allow form submissions without writer
+        related_name='testimonials' # Optional, for reverse lookup: user.testimonials.all()
+    )
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('testimonial_detail', kwargs={'slug': self.slug})
+        return reverse('main:testimonial_detail', kwargs={'slug': self.slug})

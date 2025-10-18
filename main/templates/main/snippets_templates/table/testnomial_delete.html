@@ -1,0 +1,77 @@
+{% include 'main/navbar_templates/home_navbar.html' %}
+{% block content %}
+<style>
+  .delete-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8fbff, #ffffff);
+    padding: 60px 20px;
+  }
+
+  .delete-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px 50px;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .delete-card h4 {
+    color: #dc3545;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .delete-card p {
+    color: #555;
+    margin-bottom: 30px;
+  }
+
+  .btn {
+    border-radius: 30px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background-color: #bb2d3b;
+    transform: scale(1.05);
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5c636a;
+    transform: scale(1.05);
+  }
+</style>
+
+<div class="delete-section">
+  <div class="delete-card">
+    <h4>🗑 Delete Confirmation</h4>
+    <p>
+      Are you sure you want to permanently delete  
+      <strong class="text-danger">“{{ testimonial.title }}”</strong>?
+    </p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger me-2">✅ Yes, Delete</button>
+      <a href="{% url 'main:testimonials_list' %}" class="btn btn-secondary">❌ Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

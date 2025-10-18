@@ -367,12 +367,14 @@ def testimonial_create(request):
         form = TestimonialForm(request.POST)
         if form.is_valid():
             testimonial = form.save(commit=False)
-            testimonial.writer = request.user.id  # save user ID
+            if request.user.is_authenticated:
+                testimonial.writer = request.user  # Assign writer only if logged in
             testimonial.save()
-            return redirect('testimonials_list')
+            return redirect('main:testimonials_list')
     else:
         form = TestimonialForm()
-    return render(request, 'main/snippets_templates/table/testmonial_create.html', {'form': form, 'title': 'Add Testimonial'})
+        
+    return render(request, 'main/snippets_templates/table/testmonial_create.html', {'form': form,'title': 'Add Testimonial'})
 
 
 def testimonial_update(request, pk):
@@ -381,7 +383,22 @@ def testimonial_update(request, pk):
         form = TestimonialForm(request.POST, instance=testimonial)
         if form.is_valid():
             form.save()
-            return redirect('testimonials_list')
+            return redirect('main:testimonials_list')
     else:
         form = TestimonialForm(instance=testimonial)
     return render(request, 'main/snippets_templates/table/testmonial_update.html', {'form': form, 'title': 'Edit Testimonial'})
+
+
+def testimonial_delete(request, pk):
+    testimonial = get_object_or_404(Testimonials, pk=pk)
+    if request.method == 'POST':
+        testimonial.delete()
+        return redirect('main:testimonials_list')
+    return render(request, 'main/snippets_templates/table/testnomial_delete.html', {'testimonial': testimonial})  
+
+
+
+
+def testimonial_detail(request, pk):
+    testimonial = get_object_or_404(Testimonials, pk=pk)
+    return render(request, 'main/snippets_templates/table/detail.html', {'testimonial': testimonial})  
