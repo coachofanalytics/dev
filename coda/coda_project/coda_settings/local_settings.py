@@ -1,6 +1,15 @@
 """
 Local Development Settings
-For running the application locally and for testing
+Supports multiple database configurations via environment variable
+
+Set LOCAL_DB environment variable to choose database:
+- LOCAL_DB=sqlite (default) - Use local SQLite database
+- LOCAL_DB=uat - Connect to UAT/Heroku staging database
+- LOCAL_DB=prod - Connect to production Heroku database
+
+Example:
+    LOCAL_DB=uat ./runserver_local.sh
+    LOCAL_DB=prod python manage.py shell
 """
 
 from .base_settings import *
@@ -11,37 +20,155 @@ DEBUG = True
 # Local development hosts
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
-# Site URL for local development
-SITEURL = "http://localhost:8000"
+# ============================================
+# DATABASE CONFIGURATION (Conditional)
+# ============================================
 
-# Use SQLite for local development (easier setup, no PostgreSQL required)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+# Get database choice from environment variable (default: sqlite)
+LOCAL_DB = os.environ.get('LOCAL_DB', 'sqlite').lower()
 
-# Or use PostgreSQL if you have it set up locally:
-# Uncomment and configure if you want to use local PostgreSQL
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'coda_dev',
-        'USER': 'postgres',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+print(f"🗄️  Database mode: {LOCAL_DB.upper()}")
+
+if LOCAL_DB == 'sqlite':
+    # ========== SQLITE (Default) ==========
+    # Local SQLite database - no external dependencies
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
-"""
+    SITEURL = "http://localhost:8000"
+    
+    # Database helper functions (compatibility with ai_services)
+    def dba_values():
+        """Returns None values for SQLite"""
+        return None, None, None, None
+    
+    def source_target():
+        """Returns None values for SQLite"""
+        return None, None, None, None, None
+    
+    print("   Using local SQLite database: db.sqlite3")
+
+elif LOCAL_DB == 'uat' or LOCAL_DB == 'staging' or LOCAL_DB == 'heroku':
+    # ========== UAT/STAGING (Heroku) ==========
+    # Connect to UAT database on Heroku
+    def dba_values():
+        """Get UAT/staging database credentials from environment"""
+        host = os.environ.get('HEROKU_DEV_HOST')
+        dbname = os.environ.get('HEROKU_DEV_NAME')
+        user = os.environ.get('HEROKU_DEV_USER')
+        password = os.environ.get('HEROKU_DEV_PASS')
+        return host, dbname, user, password
+    
+    def source_target():
+        """Returns UAT database info"""
+        host, dbname, user, password = dba_values()
+        return host, dbname, user, password, None
+    
+    host, dbname, user, password = dba_values()
+    
+    if not all([host, dbname, user, password]):
+        print("   ⚠️  WARNING: UAT database credentials not found in environment!")
+        print("   Set: HEROKU_DEV_HOST, HEROKU_DEV_NAME, HEROKU_DEV_USER, HEROKU_DEV_PASS")
+        print("   Falling back to SQLite...")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            }
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': dbname,
+                'USER': user,
+                'PASSWORD': password,
+                'HOST': host,
+                'PORT': '5432',
+                'CONN_MAX_AGE': 600,
+            }
+        }
+        print(f"   Connected to UAT database: {dbname} on {host}")
+    
+    SITEURL = "https://codamakutano.herokuapp.com"
+
+elif LOCAL_DB == 'prod' or LOCAL_DB == 'production':
+    # ========== PRODUCTION (Heroku) ==========
+    # Connect to production database on Heroku
+    def dba_values():
+        """Get production database credentials from environment"""
+        host = os.environ.get('HEROKU_PROD_HOST')
+        dbname = os.environ.get('HEROKU_PROD_NAME')
+        user = os.environ.get('HEROKU_PROD_USER')
+        password = os.environ.get('HEROKU_PROD_PASS')
+        return host, dbname, user, password
+    
+    def source_target():
+        """Returns production database info"""
+        host, dbname, user, password = dba_values()
+        return host, dbname, user, password, None
+    
+    host, dbname, user, password = dba_values()
+    
+    if not all([host, dbname, user, password]):
+        print("   ⚠️  WARNING: Production database credentials not found in environment!")
+        print("   Set: HEROKU_PROD_HOST, HEROKU_PROD_NAME, HEROKU_PROD_USER, HEROKU_PROD_PASS")
+        print("   Falling back to SQLite...")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            }
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': dbname,
+                'USER': user,
+                'PASSWORD': password,
+                'HOST': host,
+                'PORT': '5432',
+                'CONN_MAX_AGE': 600,
+                'OPTIONS': {
+                    'sslmode': 'require',  # Required for Heroku PostgreSQL
+                }
+            }
+        }
+        print(f"   ⚠️  Connected to PRODUCTION database: {dbname} on {host}")
+        print(f"   ⚠️  USE WITH CAUTION - You're modifying production data!")
+    
+    SITEURL = "https://codatrainingapp.herokuapp.com"
+
+else:
+    print(f"   ⚠️  Unknown LOCAL_DB value: {LOCAL_DB}")
+    print("   Valid options: sqlite, uat, prod")
+    print("   Falling back to SQLite...")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+    SITEURL = "http://localhost:8000"
+    
+    def dba_values():
+        return None, None, None, None
+    
+    def source_target():
+        return None, None, None, None, None
+
+# ============================================
+# COMMON SETTINGS (All Modes)
+# ============================================
 
 # Email backend for local development (console output)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Allauth configuration fixes for local development
-# Override base_settings to avoid assertion errors
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # Skip email verification locally
 ACCOUNT_EMAIL_REQUIRED = True  # Required by allauth
 SOCIALACCOUNT_EMAIL_REQUIRED = False
@@ -50,18 +177,6 @@ SOCIALACCOUNT_EMAIL_REQUIRED = False
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
-
-# Site URL for local development
-SITEURL = "http://localhost:8000"  # Will be https://localhost:8000 when using SSL server
-
-# Database helper functions (for compatibility with ai_services/utils.py)
-def dba_values():
-    """Dummy function for local development - returns None values since we use SQLite"""
-    return None, None, None, None
-
-def source_target():
-    """Dummy function for local development - returns None values since we use SQLite"""
-    return None, None, None, None, None  # source_host, source_dbname, source_user, source_password, target_db_path
 
 # Static files (for local development)
 STATIC_URL = '/static/'
@@ -78,7 +193,7 @@ INSTALLED_APPS = INSTALLED_APPS + ['sslserver']
 SSL_CERTIFICATE = os.path.join(BASE_DIR, 'certs', 'cert.pem')
 SSL_KEY = os.path.join(BASE_DIR, 'certs', 'key.pem')
 
-# Django Debug Toolbar (optional - install with pip install django-debug-toolbar)
+# Django Debug Toolbar (optional)
 try:
     import debug_toolbar
     INSTALLED_APPS = INSTALLED_APPS + ['debug_toolbar']
@@ -128,11 +243,14 @@ LOGGING = {
     },
 }
 
-# Testing settings
+# ============================================
+# TESTING CONFIGURATION
+# ============================================
+
 if 'test' in sys.argv or 'test_coverage' in sys.argv:
     print("🧪 Running in TEST mode - using in-memory SQLite database")
     
-    # Use in-memory SQLite for faster tests
+    # Always use in-memory SQLite for tests (regardless of LOCAL_DB)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -163,8 +281,18 @@ if 'test' in sys.argv or 'test_coverage' in sys.argv:
     LOGGING['loggers']['django']['level'] = 'WARNING'
     LOGGING['loggers']['finance']['level'] = 'WARNING'
 
-print("✅ Local settings loaded for development")
-print(f"   Database: {DATABASES['default']['ENGINE']}")
-print(f"   Debug: {DEBUG}")
-print(f"   Allowed Hosts: {ALLOWED_HOSTS}")
+# ============================================
+# STARTUP SUMMARY
+# ============================================
 
+print("✅ Local settings loaded for development")
+print(f"   Database Engine: {DATABASES['default']['ENGINE']}")
+if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    print(f"   Database File: {DATABASES['default']['NAME']}")
+else:
+    print(f"   Database Name: {DATABASES['default'].get('NAME', 'N/A')}")
+    print(f"   Database Host: {DATABASES['default'].get('HOST', 'N/A')}")
+print(f"   Debug Mode: {DEBUG}")
+print(f"   Site URL: {SITEURL}")
+print(f"   Allowed Hosts: {ALLOWED_HOSTS}")
+print("")
