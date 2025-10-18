@@ -4,6 +4,7 @@ from .models import CustomerUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import  RegexValidator,validate_email
 from django.core.exceptions import ValidationError
+from .models import All_transaction
 import re
 # from django.db import transaction
 
@@ -142,4 +143,10 @@ class LoginForm(forms.Form):
         if not username_or_email:
             self.add_error('enter_your_username_or_email', "This field is required.")
         if not password:
-            self.add_error('password', "This field is required.")    
+            self.add_error('password', "This field is required.")  
+
+class AlltransactionForm(forms.ModelForm):
+    class Meta:
+        model = All_transaction
+        fields = ['type', 'category', 'amount', 'payment_method', 'description']
+       

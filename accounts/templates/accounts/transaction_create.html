@@ -1,0 +1,18 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">➕ Add New Transaction</h2>
+  <div class="card shadow-sm p-4">
+    <form method="POST">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-success me-2">Save</button>
+        <a href="{% url 'accounts:accounts-all_transaction_list' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

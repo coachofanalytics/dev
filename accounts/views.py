@@ -18,6 +18,7 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
+from .forms import AlltransactionForm
 # Create your views here..
 
 # @allowed_users(allowed_roles=['admin'])
@@ -258,7 +259,21 @@ def custom_social_login(request):
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
     
-def all_transaction_list(request):
-    transactions = All_transaction.objects.all()
-    return render(request, "accounts/transaction_list.html", {"transactions": transactions})
-    print(reverse("accounts:all_transaction_list"))
+def All_transaction_list_view(request):
+    transaction = All_transaction.objects.all().order_by ('-date')
+    return render(request, "accounts/transaction_list.html",{'transactions':transaction})
+
+
+
+def All_transaction_create_view(request):
+    if request.method == "POST":
+        form = AlltransactionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Transaction created successfully!")
+            return redirect('accounts:accounts-all_transaction_list')
+    else:
+        form = AlltransactionForm()
+    
+    return render(request, "accounts/transaction_create.html", {'form': form})
+
