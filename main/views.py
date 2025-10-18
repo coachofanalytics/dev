@@ -23,7 +23,7 @@ from django.views.generic import (
         DetailView,
         UpdateView,)
 
-from .forms import TestimonialForm
+from .forms import TestimonialForm,locationForm
 from django.http import JsonResponse
 from django.apps import apps
 from langchain_community.llms import OpenAI
@@ -356,6 +356,7 @@ def servicecategory_detail(request, pk):
    
 
 
+
 def testimonials_list(request):
     testimonials = Testimonials.objects.order_by('-date_posted')
     return render(request, 'main/snippets_templates/table/testmonial.html', {'testimonials': testimonials})
@@ -366,11 +367,21 @@ def testimonial_create(request):
         form = TestimonialForm(request.POST)
         if form.is_valid():
             testimonial = form.save(commit=False)
-            testimonial.writer = request.user
+            testimonial.writer = request.user.id  # save user ID
             testimonial.save()
             return redirect('testimonials_list')
     else:
         form = TestimonialForm()
     return render(request, 'main/snippets_templates/table/testmonial_create.html', {'form': form, 'title': 'Add Testimonial'})
 
-      
+
+def testimonial_update(request, pk):
+    testimonial = get_object_or_404(Testimonials, pk=pk)
+    if request.method == 'POST':
+        form = TestimonialForm(request.POST, instance=testimonial)
+        if form.is_valid():
+            form.save()
+            return redirect('testimonials_list')
+    else:
+        form = TestimonialForm(instance=testimonial)
+    return render(request, 'main/snippets_templates/table/testmonial_update.html', {'form': form, 'title': 'Edit Testimonial'})

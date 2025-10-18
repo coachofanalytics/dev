@@ -16,14 +16,16 @@ urlpatterns = [
     # ====== Locations ======
     path("location_list/", views.location_list, name="account-location_list"),
     path("location_create/", views.location_create, name="location_create"),
-    path("location_update/<str:pk>/", views.location_update, name="location_update"),    
+    path("location_update/<slug:slug>/", views.location_update, name="location_update"),    
     
 
      # ====== Testimonials ======
     
-    path('Testimonials/', views.testimonials_list, name='testimonials_list'),
-    path("Testimonials_create/", views.testimonial_create, name="Testimonials_create"),
 
+    path('testimonials/', views.testimonials_list, name='testimonials_list'),
+    path('testimonials/create/', views.testimonial_create, name='testimonial_create'),
+    path('testimonials/<int:pk>/edit/', views.testimonial_update, name='testimonial_update'),
+    
     # ====== Other ======
     path('it/', views.it, name='it'),
     path('finance/', views.finance, name='finance'),
