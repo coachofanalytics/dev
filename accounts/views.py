@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
 from .forms import AlltransactionForm
+
 # Create your views here..
 
 # @allowed_users(allowed_roles=['admin'])
@@ -276,4 +277,44 @@ def All_transaction_create_view(request):
         form = AlltransactionForm()
     
     return render(request, "accounts/transaction_create.html", {'form': form})
+
+
+
+
+def All_transaction_update_view(request, pk):
+    """Handles updating an existing transaction"""
+    transaction = get_object_or_404(All_transaction, pk=pk)
+
+    if request.method == "POST":
+        form = AlltransactionForm(request.POST, instance=transaction)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Transaction updated successfully!")
+            return redirect("accounts:all_transaction_detail", pk=transaction.pk)
+    else:
+        form = AlltransactionForm(instance=transaction)
+
+    # ✅ Always return render() for GET or invalid POST
+    return render(request, "accounts/transaction_update.html", {"form": form, "transaction": transaction})
+
+
+
+# def All_transaction_detail_view(request, pk):
+#     """Display details of a specific transaction"""
+#     transaction = get_object_or_404(All_transaction, pk=pk)
+#     return render(request, "accounts/transaction_detail.html", {"transaction": transaction})
+
+# def all_transaction_delete_view(request, pk):
+#     """Handles deleting a specific transaction."""
+#     transaction = get_object_or_404(All_transaction, pk=pk)
+
+#     if request.method == "POST":
+#         transaction.delete()
+#         messages.success(request, "Transaction deleted successfully.")
+#         return redirect("accounts:accounts-all_transaction_list")
+
+#     return render(request, "accounts/transaction_delete.html", {"transaction": transaction})
+
+
+
 

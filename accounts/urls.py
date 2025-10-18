@@ -13,5 +13,9 @@ urlpatterns = [
     # ✅ Correct route for transactions
     path('all_transaction_list/', views.All_transaction_list_view, name='accounts-all_transaction_list'),
     path('all_transaction_create/', views.All_transaction_create_view, name='all_transaction_create'),
+    path('all_transaction_update/<int:pk>/', views.All_transaction_update_view, name='all_transaction_update'),
+    # path('all_transaction_detail/<int:pk>/', views.All_transaction_detail_view, name='all_transaction_detail'),
+    # path("all_transaction_delete/<int:pk>/", views.all_transaction_delete_view, name="all_transaction_delete"),
+
     
 ]
