@@ -1,0 +1,27 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h3 class="text-center text-primary mb-4">📋 Transaction Details</h3>
+    <table class="table table-striped table-bordered">
+      <tr><th>Sender</th><td>{{ transaction.sender }}</td></tr>
+      <tr><th>Receiver</th><td>{{ transaction.receiver }}</td></tr>
+      <tr><th>Department</th><td>{{ transaction.department }}</td></tr>
+      <tr><th>Category</th><td>{{ transaction.category }}</td></tr>
+      <tr><th>Amount</th><td>${{ transaction.amount }}</td></tr>
+      <tr><th>Quantity</th><td>{{ transaction.qty }}</td></tr>
+      <tr><th>Payment Method</th><td>{{ transaction.payment_method }}</td></tr>
+      <tr><th>Type</th><td>{{ transaction.type }}</td></tr>
+      <tr><th>Date</th><td>{{ transaction.activity_date|date:"Y-m-d H:i" }}</td></tr>
+      <tr><th>Description</th><td>{{ transaction.description }}</td></tr>
+    </table>
+
+    <div class="text-center mt-3">
+      <a href="{% url 'accounts:transaction_update' transaction.id %}" class="btn btn-warning">✏️ Edit</a>
+      <a href="{% url 'accounts:accounts-transaction_list' %}" class="btn btn-secondary">⬅️ Back</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -367,10 +367,17 @@ def transaction_update_view(request, pk):
             return redirect('accounts:accounts-transaction_list')
 
         else:
-            print("❌ Form errors:", form.errors)
+            print(" Form errors:", form.errors)
     else:
         form = TransactionForm(instance=transaction)
     return render(request, 'accounts/Transaction_update_view.html', {'form': form, 'transaction': transaction})
+
+
+
+def transaction_detail_view(request, pk):    
+    transaction = get_object_or_404(Transaction, pk=pk)
+    return render(request, 'accounts/Transaction_detail_view.html', {'transaction': transaction})
+
 
 
 
