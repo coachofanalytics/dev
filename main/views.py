@@ -321,12 +321,7 @@ class VolunteerCreateView(CreateView):
 #         return JsonResponse({'status': 'available'})
 from django.shortcuts import render
 
-def home(request):
-    return render(request, 'main/home.html')
-from django.shortcuts import render
 
-def home(request):
-    return render(request, 'main/home.html')
 
 from django.views.generic import ListView
 from .models import WCAGStandardWebsite
