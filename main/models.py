@@ -149,3 +149,17 @@ class Testimonials(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('main:testimonial_detail', kwargs={'slug': self.slug})
+
+
+
+class Volunteer(models.Model):
+    company_name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
+    motivation = models.TextField(max_length=100)
+    image = models.ImageField(upload_to='volunteer_images/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.company_name
+
+
