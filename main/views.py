@@ -9,7 +9,7 @@ from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 import openai
 from django.db.models import Sum
-from .models import Service,Assets,Readme,Location,Testimonials
+from .models import Service,Assets,Readme,Location,Testimonials,Volunteer
 from .utils import *
 from coda_project import settings
 from application.models import UserProfile
@@ -401,4 +401,8 @@ def testimonial_delete(request, pk):
 
 def testimonial_detail(request, pk):
     testimonial = get_object_or_404(Testimonials, pk=pk)
-    return render(request, 'main/snippets_templates/table/detail.html', {'testimonial': testimonial})  
+    return render(request, 'main/snippets_templates/table/detail.html', {'testimonial': testimonial}) 
+
+def volunteer_list(request):
+    volunteers = Volunteer.objects.all().order_by('-created_at')
+    return render(request, 'main/snippets_templates/table/voluntere_list', {'volunteers': volunteers})

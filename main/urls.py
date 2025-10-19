@@ -16,8 +16,12 @@ urlpatterns = [
     # ====== Locations ======
     path("location_list/", views.location_list, name="account-location_list"),
     path("location_create/", views.location_create, name="location_create"),
-    path("location_update/<slug:slug>/", views.location_update, name="location_update"),    
-    
+    path("location_update/<slug:slug>/", views.location_update, name="location_update"),  
+
+
+
+       # ====== volunteer ======  
+    path('volunteer_list/', views.volunteer_list, name='volunteer_list'),
 
      # ====== Testimonials ======
     
