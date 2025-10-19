@@ -1,0 +1,17 @@
+{% include 'main/navbar_templates/home_navbar.html' %}
+{% block content %}
+<div class="form-section">
+  <div class="form-card">
+    <h3 class="text-center">{{ title }}</h3>
+    <form method="POST">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary me-2">💾 Save</button>
+        <a href="{% url 'main:volunteer_list' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -23,7 +23,7 @@ from django.views.generic import (
         DetailView,
         UpdateView,)
 
-from .forms import TestimonialForm,locationForm
+from .forms import TestimonialForm,locationForm,volunteersform
 from django.http import JsonResponse
 from django.apps import apps
 from langchain_community.llms import OpenAI
@@ -406,3 +406,27 @@ def testimonial_detail(request, pk):
 def volunteer_list(request):
     volunteers = Volunteer.objects.all().order_by('-created_at')
     return render(request, 'main/snippets_templates/table/voluntere_list', {'volunteers': volunteers})
+
+
+def volunteer_create(request):
+    if request.method == 'POST':
+        form = volunteersform(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('main:volunteer_list')
+    else:
+        form = volunteersform()
+    return render(request, 'main/snippets_templates/table/volunteer_create.html', {'form': form})
+
+        
+def volunteer_update(request, pk):
+    volunteer = get_object_or_404(Volunteer, pk=pk)
+    if request.method == 'POST':
+        form = volunteersform(request.POST, request.FILES, instance=volunteer)
+        if form.is_valid():
+            form.save()
+            return redirect('main:volunteer_list')
+    else:
+        form = volunteersform(instance=volunteer)
+    return render(request, 'main/snippets_templates/table/volunteree_update.html', {'form': form, 'volunteer': volunteer})
+

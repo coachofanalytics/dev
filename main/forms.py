@@ -18,6 +18,11 @@ class locationForm(forms.Form):
         model = Location
         fields = ['zipcode','city','state','county']
 
+class volunteersform(forms.ModelForm):
+    class Meta:
+        model = Volunteer
+        fields = ['company_name','email','motivation','image']        
+
 
 
 class TestimonialForm(forms.ModelForm):
