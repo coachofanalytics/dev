@@ -24,6 +24,7 @@ from django.contrib.auth import views as auth_views
 
 from accounts import views as account_views
 from coda_project import settings
+from django.shortcuts import redirect
 
 from . import views
 
@@ -45,6 +46,8 @@ urlpatterns = [
         ),
         name="account-logout",
     ),
+    
+    
     
     path(
         "password-reset/",
@@ -80,6 +83,7 @@ urlpatterns = [
     path('social_accounts/login/', account_views.login_view),
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
+    path("", lambda request: redirect("accounts:home")), 
 
 ]
 
@@ -87,3 +91,11 @@ if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
     ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('accounts/', include('accounts.urls')),
+]

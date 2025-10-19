@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
 from accounts.choices import CategoryChoices, SubCategoryChoices
+
+
 # from accounts.models import Department, Credential, CredentialCategory, TaskGroups, Tracker, All_transaction
 
 
@@ -119,3 +121,85 @@ class All_transaction(models.Model):
 
     def __str__(self):
         return f"{self.type} - {self.amount}"
+
+
+class Transaction(models.Model):
+    # ----------------------------
+    # CHOICES
+    # ----------------------------
+    CAT_CHOICES = [
+        ('Salary', 'Salary'),
+        ('Health', 'Health'),
+        ('Transport', 'Transport'),
+        ('Food_Accomodation', 'Food & Accommodation'),
+        ('Internet_Airtime', 'Internet & Airtime'),
+        ('Recruitment', 'Recruitment'),
+        ('Labour', 'Labour'),
+        ('Electricity', 'Electricity'),
+        ('Construction', 'Construction'),
+        ('Training', 'Training'),
+        ('Grocery', 'Grocery'),
+        ('Gas', 'Gas'),
+        ('Poshmil', 'Poshmil'),
+        ('Other', 'Other'),
+    ]
+
+    PAY_CHOICES = [
+        ('Cash', 'Cash'),
+        ('Mpesa', 'Mpesa'),
+        ('Bank_Transfer', 'Bank Transfer'),
+        ('Cheque', 'Cheque'),
+        ('Other', 'Other'),
+    ]
+
+    # ----------------------------
+    # FIELDS
+    # ----------------------------
+    sender = models.ForeignKey(
+        'accounts.CustomerUser',  # string reference avoids circular import
+        verbose_name=_('Sender'),
+        related_name='transactions_sent',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        limit_choices_to={'is_staff': True, 'is_active': True},
+    )
+
+    department = models.ForeignKey(
+    'departments.Department',  # ✅ Correct reference
+    verbose_name=_('Department'),
+    on_delete=models.CASCADE,
+    null=True,
+    blank=True,
+
+
+    )
+
+    receiver = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    type = models.CharField(max_length=100, null=True, blank=True)
+    activity_date = models.DateTimeField(default=timezone.now)
+    receipt_link = models.CharField(max_length=255, null=True, blank=True)
+    qty = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    transaction_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    payment_method = models.CharField(max_length=50, choices=PAY_CHOICES, default='Other')
+    category = models.CharField(max_length=100, choices=CAT_CHOICES, default='Other')
+
+    # Computed field
+    @property
+    def total_transactions_amt(self):
+        if self.amount and self.qty:
+            return self.amount * self.qty
+        return self.amount or 0
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Transactions"
+        ordering = ['-activity_date']
+
+    def __str__(self):
+        return f"{self.category} - {self.amount} ({self.payment_method})"
