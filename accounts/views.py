@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm
+from .forms import UserForm, LoginForm,AlltransactionForm,TransactionForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -18,7 +18,7 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
-from .forms import AlltransactionForm
+
 from django.db.models import Q
 
 # Create your views here..
@@ -343,6 +343,19 @@ def transaction_list_view(request):
 
     # ✅ Fix 2: Make sure the return statement is outside the if-block
     return render(request, 'accounts/Transaction_list._view.html', {'transactions': transactions})
+
+def transaction_create_view(request):
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Transaction created successfully!')
+            return redirect('accounts:accounts-transaction_list')  # ✅ make sure this name matches your urls.py
+    else:
+        form = TransactionForm()  # ✅ GET request handled here (shows empty form)
+
+    return render(request, 'accounts/Transaction_create_view.html', {'form': form})
+
 
 
 

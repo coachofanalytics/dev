@@ -4,7 +4,7 @@ from .models import CustomerUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import  RegexValidator,validate_email
 from django.core.exceptions import ValidationError
-from .models import All_transaction
+from .models import All_transaction,Transaction
 import re
 # from django.db import transaction
 
@@ -147,6 +147,25 @@ class LoginForm(forms.Form):
 
 class AlltransactionForm(forms.ModelForm):
     class Meta:
-        model = All_transaction
+        model = Transaction
         fields = ['type', 'category', 'amount', 'payment_method', 'description']
-       
+
+# accounts/forms.py
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = Transaction
+        fields = [
+            'sender',
+            'department',
+            'receiver',
+            'phone',
+            'type',
+            'activity_date',
+            'receipt_link',
+            'qty',
+            'amount',
+            'transaction_cost',
+            'description',
+            'payment_method',
+            'category'
+        ]

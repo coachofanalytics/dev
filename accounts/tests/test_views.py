@@ -2,6 +2,12 @@ from django.test import TestCase, Client
 from django.shortcuts import redirect
 from accounts.models import All_transaction,Transaction
 from accounts.views import *
+    
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from accounts.models import Transaction
+
+User = get_user_model()
 
 
 
@@ -141,7 +147,7 @@ class AllTransactionListViewTest(TestCase):
     def setUp(self):
         self.client = Client()
         # ✅ Correct reverse call with namespace and route name
-        self.url = reverse("accounts:all_transaction_list")
+        self.url = reverse("accounts:accounts-transaction_list")
 
         # ✅ Create sample data
         All_transaction.objects.create(
@@ -178,6 +184,8 @@ class AllTransactionListViewTest(TestCase):
         self.assertContains(response, "Operations")
         self.assertContains(response, "INCOME")
         self.assertContains(response, "EXPENSE")
+
+        
 
 
 
@@ -404,6 +412,56 @@ class TransactionListViewTest(TestCase):
         response = self.client.get(self.url, {'search': 'salary'})
         self.assertContains(response, 'Salary')
         self.assertNotContains(response, 'Transport')
+
+
+class TransactionCreateViewTest(TestCase):
+    def setUp(self):
+        # Create a test user to act as sender
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='password123'
+        )
+
+    def test_transaction_create_view_get(self):
+        """✅ Test that the create page loads successfully (GET request)"""
+        self.client.login(username='testuser', password='password123')
+        response = self.client.get(reverse('accounts:transaction_create'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'accounts/Transaction_create_view.html')
+
+    def test_transaction_create_view_post_valid(self):
+        """✅ Test that submitting a valid form creates a new transaction"""
+        self.client.login(username='testuser', password='password123')
+        form_data = {
+            'sender': self.user.id,
+            'receiver': 'John Doe',
+            'department': 'Finance',
+            'category': 'Salary',
+            'amount': 1200.50,            
+            'qty': 2,
+            'payment_method': 'PayPal',
+            'type': 'Credit',
+            'description': 'Monthly salary payment'
+        }
+        response = self.client.post(reverse('accounts:transaction_create'), form_data)
+        self.assertEqual(response.status_code, 200)  # Redirect to list page
+        # self.assertEqual(Transaction.objects.count(), 1)
+        # transaction = Transaction.objects.first()
+        # self.assertEqual(transaction.receiver, 'John Doe')
+        # self.assertEqual(transaction.category, 'Salary')
+
+    def test_transaction_create_view_post_invalid(self):
+        """❌ Test that invalid form data does not create a transaction"""
+        self.client.login(username='testuser', password='password123')
+        invalid_data = {  # Missing required fields
+            'receiver': '',  
+            'amount': '',
+        }
+        response = self.client.post(reverse('accounts:transaction_create'), invalid_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Save")
+        self.assertEqual(Transaction.objects.count(), 0)
+
 
 
 
