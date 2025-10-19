@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,All_transaction
+from .models import CustomerUser,All_transaction,Transaction
 from .utils import agreement_data
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
 from .forms import AlltransactionForm
+from django.db.models import Q
 
 # Create your views here..
 
@@ -260,9 +261,26 @@ def custom_social_login(request):
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
     
+
+
 def All_transaction_list_view(request):
-    transaction = All_transaction.objects.all().order_by ('-date')
-    return render(request, "accounts/transaction_list.html",{'transactions':transaction})
+    search_query = request.GET.get('search', '')
+    transactions = All_transaction.objects.all()
+
+    if search_query:
+        transactions = transactions.filter(
+            Q(category__icontains=search_query) |
+            Q(type__icontains=search_query) |
+            Q(payment_method__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+
+    context = {
+        "transactions": transactions,
+        "search_query": search_query,
+    }
+    return render(request, "accounts/transaction_list.html", context)
+
 
 
 
@@ -314,6 +332,18 @@ def all_transaction_delete_view(request, pk):
         return redirect("accounts:accounts-all_transaction_list")
 
     return render(request, "accounts/transaction_delete.html", {"transaction": transaction})
+
+def transaction_list_view(request):
+    transactions = Transaction.objects.all()
+
+    search_query = request.GET.get('search')
+    if search_query:
+        # ✅ Fix 1: 'icontains' instead of 'incontains'
+        transactions = transactions.filter(description__icontains=search_query)
+
+    # ✅ Fix 2: Make sure the return statement is outside the if-block
+    return render(request, 'accounts/Transaction_list._view.html', {'transactions': transactions})
+
 
 
 

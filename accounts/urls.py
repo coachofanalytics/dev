@@ -16,6 +16,7 @@ urlpatterns = [
     path('all_transaction_update/<int:pk>/', views.All_transaction_update_view, name='all_transaction_update'),
     path('all_transaction_detail/<int:pk>/', views.All_transaction_detail_view, name='all_transaction_detail'),
     path("all_transaction_delete/<int:pk>/", views.all_transaction_delete_view, name="all_transaction_delete"),
+    path('CODA_Transaction/', views.transaction_list_view, name='transaction_list'),
 
     
 ]
