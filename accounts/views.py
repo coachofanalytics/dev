@@ -350,11 +350,29 @@ def transaction_create_view(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Transaction created successfully!')
-            return redirect('accounts:accounts-transaction_list')  # ✅ make sure this name matches your urls.py
+            return redirect('accounts:accounts-transaction_list')
+  # ✅ make sure this name matches your urls.py
     else:
         form = TransactionForm()  # ✅ GET request handled here (shows empty form)
 
     return render(request, 'accounts/Transaction_create_view.html', {'form': form})
+
+def transaction_update_view(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk)
+    if request.method == 'POST':
+        form = TransactionForm(request.POST, instance=transaction)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Transaction updated successfully!')
+            return redirect('accounts:accounts-transaction_list')
+
+        else:
+            print("❌ Form errors:", form.errors)
+    else:
+        form = TransactionForm(instance=transaction)
+    return render(request, 'accounts/Transaction_update_view.html', {'form': form, 'transaction': transaction})
+
+
 
 
 

@@ -1,0 +1,16 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h3 class="text-center mb-4 text-warning">✏️ Update Transaction</h3>
+  <div class="card p-4 shadow">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="text-end mt-3">
+        <a href="{% url 'accounts:accounts-transaction_list' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-warning">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
