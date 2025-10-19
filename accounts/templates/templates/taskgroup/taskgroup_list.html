@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Groups</title>
+</head>
+<body>
+    <h1>Task Groups</h1>
+
+    <a href="{% url 'taskgroup_create' %}">+ Add New Task Group</a>
+    <hr>
+
+    {% if taskgroups %}
+        <ul>
+        {% for tg in taskgroups %}
+            <li>
+                <strong>{{ tg.title }}</strong><br>
+                {{ tg.description|truncatewords:15 }}<br>
+                <small>Created on: {{ tg.created_at|date:"M d, Y H:i" }}</small>
+            </li>
+            <hr>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No task groups found.</p>
+    {% endif %}
+</body>
+</html>
