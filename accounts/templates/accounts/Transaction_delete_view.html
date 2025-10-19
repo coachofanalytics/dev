@@ -1,0 +1,21 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4 text-center">
+    <h4 class="text-danger">⚠️ Confirm Deletion</h4>
+    <p>
+      Are you sure you want to delete the transaction for
+      <strong>{{ transaction.receiver }}</strong> amounting to
+      <strong>${{ transaction.amount }}</strong>?
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <a href="{% url 'accounts:accounts-transaction_list' %}" class="btn btn-secondary me-2">Cancel</a>
+      <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

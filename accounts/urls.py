@@ -18,7 +18,8 @@ urlpatterns = [
     path('CODA_Transaction/', views.transaction_list_view, name='accounts-transaction_list'),
     path('CODA_Transaction_create/', views.transaction_create_view, name='transaction_create'),
     path('CODA_Transaction_update/<int:pk>/', views.transaction_update_view, name='transaction_update'),
-     path('CODA_Transaction_detail/<int:pk>/', views.transaction_detail_view, name='transaction_detail'),
+    path('CODA_Transaction_detail/<int:pk>/', views.transaction_detail_view, name='transaction_detail'),
+    path('CODA_Transaction_delete/<int:pk>/', views.transaction_delete_view, name='transaction_delete'),
 
     
 ]
