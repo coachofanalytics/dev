@@ -62,5 +62,47 @@ class CustomerAdmin(UserAdmin):
 # Now register the new UserAdmin...
 admin.site.register(CustomerUser, CustomerAdmin)
 # admin.site.register(CustomerUser)
+# @admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "description", "is_featured", "is_active")
+    search_fields = ("name", "slug", "description")
+from django.contrib import admin
+from .models import Credential, CredentialCategory
 
-# Register your models here.
+@admin.register(CredentialCategory)
+class CredentialCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+    ordering = ('name',)
+
+
+@admin.register(Credential)
+class CredentialAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 
+        'name', 
+        'department', 
+        'added_by', 
+        'is_active', 
+        'is_featured', 
+        'entry_date'
+    )
+    search_fields = ('name', 'department', 'description', 'link_name')
+    list_filter = ('is_active', 'is_featured', 'department', 'entry_date')
+    ordering = ('-entry_date',)
+    prepopulated_fields = {'slug': ('name',)}  # Auto-fill slug from name
+    filter_horizontal = ('category',)  # Nice ManyToMany widget in admin
+    readonly_fields = ('entry_date',)
+
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'slug', 'department', 'description', 'category')
+        }),
+        ('Links & Access', {
+            'fields': ('link_name', 'link', 'password')
+        }),
+        ('Status & Meta', {
+            'fields': ('user_types', 'added_by', 'is_active', 'is_featured', 'entry_date')
+        }),
+    )
+

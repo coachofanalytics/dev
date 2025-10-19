@@ -75,19 +75,15 @@ class UserGroups(models.Model):
     def __str__(self):
         return self.name
 
-
-# accounts/models.py
 from django.db import models
 from django.utils.text import slugify
 
 class Department(models.Model):
-    name = models.CharField(max_length=150, unique=True)  # add if you don't have a title/name
-    description = models.TextField(blank=True, null=True)  # not varchar(500)
-    slug = models.SlugField(max_length=150, unique=True)   # not integer
-    is_featured = models.BooleanField(default=False)       # not varchar
-    is_active = models.BooleanField(default=True)          # not varchar
-    created_at = models.DateTimeField(auto_now_add=True)   # optional but useful
-    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(max_length=500, null=True, blank=True)
+    slug = models.SlugField(unique=True, blank=True)
+    is_featured = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -96,3 +92,51 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name_plural = "Departments"
+
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.utils.text import slugify
+
+User = get_user_model()
+
+class CredentialCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Credential Category"
+        verbose_name_plural = "Credential Categories"
+
+
+class Credential(models.Model):
+    department = models.CharField(max_length=100, null=False)
+    category = models.ManyToManyField(CredentialCategory, related_name='credentials')
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='added_credentials')
+    name = models.CharField(max_length=255, null=False)
+    slug = models.SlugField(max_length=255, unique=True)
+    description = models.TextField(max_length=1000, null=False)
+    link_name = models.CharField(max_length=255, null=False)
+    link = models.CharField(max_length=100, null=False)
+    password = models.CharField(max_length=255, null=True, blank=True)
+    entry_date = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+    user_types = models.CharField(max_length=25, null=False)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Credential"
+        verbose_name_plural = "Credentials"
+        ordering = ['-entry_date']
