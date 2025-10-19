@@ -1,0 +1,18 @@
+{% include 'main/navbar_templates/home_navbar.html' %}
+{% block content %}
+<div class="delete-section">
+  <div class="delete-card">
+    <h4>🗑 Delete Confirmation</h4>
+    <p>
+      Are you sure you want to permanently delete  
+      <strong class="text-danger">“{{ Volunteer.title }}”</strong>?
+    </p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger me-2">✅ Yes, Delete</button>
+      <a href="{% url 'main:volunteer_list' %}" class="btn btn-secondary">❌ Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

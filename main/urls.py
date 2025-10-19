@@ -24,6 +24,7 @@ urlpatterns = [
     path('volunteer_list/', views.volunteer_list, name='volunteer_list'),
     path('volunteer/create/', views.volunteer_create, name='volunteer_create'),
     path('volunteer/<int:pk>/', views.volunteer_update, name='volunteer_update'),
+    path('volunteer/<int:pk>/delete/', views.volunteer_delete, name='volunteer_delete'),
 
      # ====== Testimonials ======
 

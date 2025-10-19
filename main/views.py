@@ -430,3 +430,11 @@ def volunteer_update(request, pk):
         form = volunteersform(instance=volunteer)
     return render(request, 'main/snippets_templates/table/volunteree_update.html', {'form': form, 'volunteer': volunteer})
 
+def volunteer_delete(request,pk):
+    volunteer = get_object_or_404(Volunteer, pk=pk)
+    if request.method == 'POST':
+        volunteer.delete()
+        return redirect('main:volunteer_list')
+    return render(request,'main/snippets_templates/table/volunteer_delete.html',{'volunteer':volunteer})    
+    
+
