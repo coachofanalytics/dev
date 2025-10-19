@@ -134,7 +134,7 @@ class Testimonials(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     content = models.TextField()
-    rating = models.IntegerField(default=5)
+    rating = models.IntegerField(default=0)
     date_posted = models.DateTimeField(default=timezone.now)
     writer = models.ForeignKey(
         User,
