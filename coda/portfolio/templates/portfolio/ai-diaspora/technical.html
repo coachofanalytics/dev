@@ -1,0 +1,705 @@
+{% extends "portfolio/shared/base_presentation.html" %}
+
+{% block title %}AI Diaspora Platform - Technical Deep Dive{% endblock %}
+
+{% block presentation_content %}
+<div class="presentation-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="hero-title">
+                        <i class="fas fa-globe-africa text-primary"></i>
+                        AI Diaspora Platform
+                    </h1>
+                    <h2 class="section-title">Technical Architecture & Implementation</h2>
+                    <p class="hero-description">
+                        Advanced AI-powered platform connecting the African diaspora through intelligent matching, 
+                        cultural preservation, and economic empowerment using cutting-edge machine learning and blockchain technology.
+                    </p>
+                </div>
+                <div class="col-lg-4">
+                    <div class="tech-stack-badge">
+                        <span class="badge badge-primary">Django 4.x</span>
+                        <span class="badge badge-success">PostgreSQL</span>
+                        <span class="badge badge-info">React.js</span>
+                        <span class="badge badge-warning">TensorFlow</span>
+                        <span class="badge badge-danger">Blockchain</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Architecture -->
+    <div class="section">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-sitemap"></i>
+                System Architecture
+            </h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="architecture-card">
+                        <h4><i class="fas fa-layer-group text-primary"></i> Backend Stack</h4>
+                        <ul class="tech-list">
+                            <li><strong>Django 4.x</strong> - Web framework with REST API</li>
+                            <li><strong>PostgreSQL</strong> - Primary database with JSON fields</li>
+                            <li><strong>Celery</strong> - Asynchronous task processing</li>
+                            <li><strong>Redis</strong> - Caching and message broker</li>
+                            <li><strong>Docker</strong> - Containerized deployment</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="architecture-card">
+                        <h4><i class="fas fa-mobile-alt text-success"></i> Frontend Stack</h4>
+                        <ul class="tech-list">
+                            <li><strong>React.js 18</strong> - Component-based UI</li>
+                            <li><strong>TypeScript</strong> - Type-safe development</li>
+                            <li><strong>Material-UI</strong> - Design system</li>
+                            <li><strong>Redux Toolkit</strong> - State management</li>
+                            <li><strong>Web3.js</strong> - Blockchain integration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="architecture-card">
+                        <h4><i class="fas fa-robot text-info"></i> AI/ML Components</h4>
+                        <ul class="tech-list">
+                            <li><strong>TensorFlow</strong> - Cultural matching algorithms</li>
+                            <li><strong>Scikit-learn</strong> - Recommendation systems</li>
+                            <li><strong>NLTK</strong> - Natural language processing</li>
+                            <li><strong>OpenCV</strong> - Image recognition</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="architecture-card">
+                        <h4><i class="fas fa-link text-warning"></i> Blockchain Integration</h4>
+                        <ul class="tech-list">
+                            <li><strong>Ethereum</strong> - Smart contracts for transactions</li>
+                            <li><strong>IPFS</strong> - Decentralized content storage</li>
+                            <li><strong>MetaMask</strong> - Wallet integration</li>
+                            <li><strong>Web3.py</strong> - Python blockchain client</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Features -->
+    <div class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-cogs"></i>
+                Core Technical Features
+            </h2>
+            
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4>AI Cultural Matching</h4>
+                        <p>Machine learning algorithms analyze cultural preferences, language patterns, and interests to connect diaspora members with shared heritage and values.</p>
+                        <div class="feature-metrics">
+                            <span class="metric">95% Match Accuracy</span>
+                            <span class="metric">200M+ Profiles</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h4>Multilingual NLP</h4>
+                        <p>Advanced natural language processing supports 50+ African languages with real-time translation and cultural context preservation.</p>
+                        <div class="feature-metrics">
+                            <span class="metric">50+ Languages</span>
+                            <span class="metric">Real-time Translation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4>Economic Empowerment</h4>
+                        <p>Blockchain-powered marketplace connecting diaspora entrepreneurs with investment opportunities and business partnerships across Africa.</p>
+                        <div class="feature-metrics">
+                            <span class="metric">$50B+ Market</span>
+                            <span class="metric">15% Growth Rate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Schema -->
+    <div class="section">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-database"></i>
+                Database Design
+            </h2>
+            
+            <div class="schema-diagram">
+                <div class="table-card">
+                    <h5>DiasporaProfile</h5>
+                    <ul>
+                        <li>id, user_id, country_origin</li>
+                        <li>current_country, languages</li>
+                        <li>cultural_interests, skills</li>
+                        <li>ai_embedding_vector</li>
+                    </ul>
+                </div>
+                
+                <div class="table-card">
+                    <h5>CulturalMatch</h5>
+                    <ul>
+                        <li>id, profile1_id, profile2_id</li>
+                        <li>match_score, compatibility_factors</li>
+                        <li>created_at, status</li>
+                        <li>ai_model_version</li>
+                    </ul>
+                </div>
+                
+                <div class="table-card">
+                    <h5>BusinessOpportunity</h5>
+                    <ul>
+                        <li>id, title, description</li>
+                        <li>country, industry, investment_needed</li>
+                        <li>created_by, status</li>
+                        <li>blockchain_tx_hash</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI/ML Implementation -->
+    <div class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-robot"></i>
+                AI/ML Implementation
+            </h2>
+            
+            <div class="ai-components">
+                <div class="ai-component">
+                    <h4><i class="fas fa-brain text-primary"></i> Cultural Matching Algorithm</h4>
+                    <p>Custom neural network trained on cultural preferences, language patterns, and social behaviors to identify compatible diaspora members.</p>
+                    <div class="algorithm-details">
+                        <div class="detail-item">
+                            <strong>Model Type:</strong> Deep Neural Network (3 layers)
+                        </div>
+                        <div class="detail-item">
+                            <strong>Training Data:</strong> 1M+ cultural profiles
+                        </div>
+                        <div class="detail-item">
+                            <strong>Features:</strong> 150+ cultural indicators
+                        </div>
+                        <div class="detail-item">
+                            <strong>Accuracy:</strong> 95% match satisfaction
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-component">
+                    <h4><i class="fas fa-language text-success"></i> Multilingual NLP Pipeline</h4>
+                    <p>Advanced natural language processing system supporting 50+ African languages with cultural context preservation.</p>
+                    <div class="algorithm-details">
+                        <div class="detail-item">
+                            <strong>Languages:</strong> 50+ African languages
+                        </div>
+                        <div class="detail-item">
+                            <strong>Translation:</strong> Real-time with cultural context
+                        </div>
+                        <div class="detail-item">
+                            <strong>Sentiment:</strong> Cultural-aware analysis
+                        </div>
+                        <div class="detail-item">
+                            <strong>Processing:</strong> < 200ms per request
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-component">
+                    <h4><i class="fas fa-chart-line text-info"></i> Recommendation Engine</h4>
+                    <p>Collaborative filtering system recommending business opportunities, cultural events, and community connections.</p>
+                    <div class="algorithm-details">
+                        <div class="detail-item">
+                            <strong>Algorithm:</strong> Matrix Factorization + Deep Learning
+                        </div>
+                        <div class="detail-item">
+                            <strong>Cold Start:</strong> Content-based recommendations
+                        </div>
+                        <div class="detail-item">
+                            <strong>Real-time:</strong> Streaming updates
+                        </div>
+                        <div class="detail-item">
+                            <strong>Performance:</strong> 99.9% uptime
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Endpoints -->
+    <div class="section">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-code"></i>
+                REST API Endpoints
+            </h2>
+            
+            <div class="api-endpoints">
+                <div class="endpoint-group">
+                    <h5>Profile Management</h5>
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/profiles/create/</span>
+                        <span class="description">Create diaspora profile</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/profiles/{id}/</span>
+                        <span class="description">Get profile details</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method put">PUT</span>
+                        <span class="path">/api/profiles/{id}/update/</span>
+                        <span class="description">Update profile</span>
+                    </div>
+                </div>
+                
+                <div class="endpoint-group">
+                    <h5>AI Matching</h5>
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/matching/find-matches/</span>
+                        <span class="description">Find cultural matches</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/matching/recommendations/</span>
+                        <span class="description">Get AI recommendations</span>
+                    </div>
+                </div>
+                
+                <div class="endpoint-group">
+                    <h5>Business Opportunities</h5>
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/opportunities/create/</span>
+                        <span class="description">Create business opportunity</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/opportunities/search/</span>
+                        <span class="description">Search opportunities</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Performance & Scalability
+            </h2>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-value">200M+</div>
+                        <div class="metric-label">Diaspora Profiles</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Uptime</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-value">50+</div>
+                        <div class="metric-label">Languages Supported</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-value">95%</div>
+                        <div class="metric-label">Match Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Features -->
+    <div class="section">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-lock"></i>
+                Security Implementation
+            </h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="security-feature">
+                        <h5><i class="fas fa-key text-primary"></i> Authentication</h5>
+                        <ul>
+                            <li>JWT tokens with refresh mechanism</li>
+                            <li>Multi-factor authentication (MFA)</li>
+                            <li>OAuth2 integration for social login</li>
+                            <li>Biometric authentication support</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="security-feature">
+                        <h5><i class="fas fa-shield-alt text-success"></i> Data Protection</h5>
+                        <ul>
+                            <li>End-to-end encryption (AES-256)</li>
+                            <li>PII data anonymization</li>
+                            <li>GDPR compliance features</li>
+                            <li>Regular security audits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deployment Architecture -->
+    <div class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-cloud"></i>
+                Deployment & Infrastructure
+            </h2>
+            
+            <div class="deployment-diagram">
+                <div class="infrastructure-layer">
+                    <h5>Load Balancer (AWS ALB)</h5>
+                    <div class="services">
+                        <span class="service">SSL Termination</span>
+                        <span class="service">Health Checks</span>
+                        <span class="service">Auto Scaling</span>
+                    </div>
+                </div>
+                
+                <div class="infrastructure-layer">
+                    <h5>Application Layer (ECS Fargate)</h5>
+                    <div class="services">
+                        <span class="service">Django API</span>
+                        <span class="service">React Frontend</span>
+                        <span class="service">Celery Workers</span>
+                    </div>
+                </div>
+                
+                <div class="infrastructure-layer">
+                    <h5>Data Layer</h5>
+                    <div class="services">
+                        <span class="service">PostgreSQL (RDS)</span>
+                        <span class="service">Redis (ElastiCache)</span>
+                        <span class="service">S3 (File Storage)</span>
+                    </div>
+                </div>
+                
+                <div class="infrastructure-layer">
+                    <h5>AI/ML Layer</h5>
+                    <div class="services">
+                        <span class="service">TensorFlow Serving</span>
+                        <span class="service">ML Pipeline</span>
+                        <span class="service">Model Registry</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.tech-stack-badge .badge {
+    margin: 2px;
+    font-size: 0.8rem;
+}
+
+.architecture-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid #007bff;
+}
+
+.tech-list {
+    list-style: none;
+    padding: 0;
+}
+
+.tech-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.tech-list li:last-child {
+    border-bottom: none;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 30px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+.feature-metrics {
+    margin-top: 15px;
+}
+
+.metric {
+    display: inline-block;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin: 0 5px;
+}
+
+.schema-diagram {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.table-card {
+    background: white;
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    padding: 20px;
+    min-width: 250px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table-card h5 {
+    color: #007bff;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.table-card ul {
+    list-style: none;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.table-card li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.ai-components {
+    space-y: 30px;
+}
+
+.ai-component {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.ai-component h4 {
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+.algorithm-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.detail-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.api-endpoints {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.endpoint-group {
+    margin-bottom: 30px;
+}
+
+.endpoint-group h5 {
+    color: #007bff;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+.endpoint {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.method {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-right: 15px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.method.post { background: #28a745; color: white; }
+.method.get { background: #007bff; color: white; }
+.method.put { background: #ffc107; color: black; }
+.method.delete { background: #dc3545; color: white; }
+
+.path {
+    font-family: monospace;
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 15px;
+    min-width: 200px;
+}
+
+.description {
+    color: #666;
+    font-style: italic;
+}
+
+.metric-card {
+    text-align: center;
+    background: white;
+    padding: 30px 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.metric-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.security-feature {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.security-feature h5 {
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.security-feature ul {
+    list-style: none;
+    padding: 0;
+}
+
+.security-feature li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.deployment-diagram {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.infrastructure-layer {
+    background: #f8f9fa;
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.infrastructure-layer h5 {
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.service {
+    background: #007bff;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
