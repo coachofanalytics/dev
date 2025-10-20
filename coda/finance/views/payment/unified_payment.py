@@ -20,16 +20,18 @@ logger = logging.getLogger(__name__)
 
 
 # Payment Method Constants
+# Order: Stripe (priority), PayPal (priority), then others
 PAYMENT_METHODS = {
-    'mpesa': {
-        'name': 'MPESA',
-        'display_name': 'MPESA Mobile Money',
-        'icon': 'fa fa-mobile',
-        'color': 'success',
-        'requires_phone': True,
-        'description': 'Fast mobile money payment via MPESA',
+    'stripe': {
+        'name': 'Stripe',
+        'display_name': 'Credit/Debit Card',
+        'icon': 'fa fa-credit-card',
+        'color': 'warning',
+        'requires_phone': False,
+        'has_api': True,  # API integration available
+        'description': 'Secure payment via credit/debit card',
         'processing_time': 'Instant',
-        'fees': '2.5%',
+        'fees': '2.9% + 30¢',
     },
     'paypal': {
         'name': 'PayPal',
@@ -37,9 +39,21 @@ PAYMENT_METHODS = {
         'icon': 'fa fa-paypal',
         'color': 'primary',
         'requires_phone': False,
+        'has_api': True,  # API integration available
         'description': 'Secure online payment via PayPal',
         'processing_time': '2-3 business days',
         'fees': '3.5%',
+    },
+    'mpesa': {
+        'name': 'MPESA',
+        'display_name': 'MPESA Mobile Money',
+        'icon': 'fa fa-mobile',
+        'color': 'success',
+        'requires_phone': True,
+        'has_api': False,  # Direct to payment details
+        'description': 'Fast mobile money payment via MPESA',
+        'processing_time': 'Instant',
+        'fees': '2.5%',
     },
     'cashapp': {
         'name': 'CashApp',
@@ -47,6 +61,7 @@ PAYMENT_METHODS = {
         'icon': 'fa fa-dollar',
         'color': 'success',
         'requires_phone': False,
+        'has_api': False,  # Direct to payment details
         'description': 'Quick payment via CashApp',
         'processing_time': 'Instant',
         'fees': '1.5%',
@@ -57,6 +72,7 @@ PAYMENT_METHODS = {
         'icon': 'fa fa-university',
         'color': 'info',
         'requires_phone': False,
+        'has_api': False,  # Direct to payment details
         'description': 'Bank-to-bank transfer via Zelle',
         'processing_time': '1-2 business days',
         'fees': 'Free',
@@ -67,19 +83,10 @@ PAYMENT_METHODS = {
         'icon': 'fa fa-cc-venmo',
         'color': 'primary',
         'requires_phone': False,
+        'has_api': False,  # Direct to payment details
         'description': 'Social payment via Venmo',
         'processing_time': '1-3 business days',
         'fees': '3%',
-    },
-    'stripe': {
-        'name': 'Stripe',
-        'display_name': 'Credit/Debit Card',
-        'icon': 'fa fa-credit-card',
-        'color': 'warning',
-        'requires_phone': False,
-        'description': 'Secure payment via credit/debit card',
-        'processing_time': 'Instant',
-        'fees': '2.9% + 30¢',
     },
 }
 

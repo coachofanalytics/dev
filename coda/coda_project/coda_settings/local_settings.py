@@ -1,298 +1,300 @@
 """
-Local Development Settings
-Supports multiple database configurations via environment variable
-
-Set LOCAL_DB environment variable to choose database:
-- LOCAL_DB=sqlite (default) - Use local SQLite database
-- LOCAL_DB=uat - Connect to UAT/Heroku staging database
-- LOCAL_DB=prod - Connect to production Heroku database
-
-Example:
-    LOCAL_DB=uat ./runserver_local.sh
-    LOCAL_DB=prod python manage.py shell
+Local development settings for coda_project.
+Development-specific configurations that override base_settings.
 """
+
 
 from .base_settings import *
 
-# Debug mode ON for local development
+
+# Override environment for local development
+ENV_CONFIG['environment'] = 'local'
+ENV_CONFIG['is_development'] = True
+ENV_CONFIG['is_testing'] = False
+ENV_CONFIG['is_production'] = False
+
+
+# Local development specific settings
 DEBUG = True
-LOCAL_DB='uat'
-# Local development hosts
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
+SECURE_SSL_REDIRECT = False
 
-# ============================================
-# DATABASE CONFIGURATION (Conditional)
-# ============================================
 
-# Get database choice from environment variable (default: sqlite)
-LOCAL_DB = os.environ.get('LOCAL_DB', 'sqlite').lower()
+# Enhanced Database Configuration for Local Development
+# Supports multiple database backends with environment variable control
 
-print(f"🗄️  Database mode: {LOCAL_DB.upper()}")
 
-if LOCAL_DB == 'sqlite':
-    # ========== SQLITE (Default) ==========
-    # Local SQLite database - no external dependencies
-    DATABASES = {
+def get_database_config():
+    """
+    Get database configuration based on environment variables
+    Supports: SQLite (default), PostgreSQL (UAT), PostgreSQL (Production)
+    """
+    # Environment variable controls
+    # DB_TYPE = os.environ.get('DB_TYPE', 'sqlite').lower()
+    DB_TYPE = 'prod'
+    print("🗄️  DB_TYPE: ", DB_TYPE)
+    USE_POSTGRESQL = os.environ.get('USE_POSTGRESQL', 'False').lower() == 'true'
+   
+    # Database URLs from environment
+    UAT_DATABASE_URL = os.environ.get('UAT_DATABASE_URL')  # Heroku UAT
+    PROD_DATABASE_URL = os.environ.get('PROD_DATABASE_URL')  # Heroku Production
+    LOCAL_POSTGRES_URL = os.environ.get('LOCAL_POSTGRES_URL')  # Local PostgreSQL
+   
+    print("🗄️ Database Configuration:")
+    print(f"   DB_TYPE: {DB_TYPE}")
+    print(f"   USE_POSTGRESQL: {USE_POSTGRESQL}")
+   
+    # Determine which database to use
+    if DB_TYPE in ['uat', 'prod', 'postgres'] or USE_POSTGRESQL:
+        # PostgreSQL configuration
+        if DB_TYPE == 'uat' and UAT_DATABASE_URL:
+            db_url = UAT_DATABASE_URL
+            db_name = "UAT (Heroku)"
+        elif DB_TYPE == 'prod' and PROD_DATABASE_URL:
+            db_url = PROD_DATABASE_URL
+            db_name = "Production (Heroku)"
+        elif DB_TYPE == 'postgres' and LOCAL_POSTGRES_URL:
+            db_url = LOCAL_POSTGRES_URL
+            db_name = "Local PostgreSQL"
+        elif USE_POSTGRESQL and UAT_DATABASE_URL:
+            # Fallback: USE_POSTGRESQL=true with UAT URL
+            db_url = UAT_DATABASE_URL
+            db_name = "UAT (Heroku) - Fallback"
+        elif USE_POSTGRESQL and PROD_DATABASE_URL:
+            # Fallback: USE_POSTGRESQL=true with Production URL
+            db_url = PROD_DATABASE_URL
+            db_name = "Production (Heroku) - Fallback"
+        elif USE_POSTGRESQL and LOCAL_POSTGRES_URL:
+            # Fallback: USE_POSTGRESQL=true with Local PostgreSQL URL
+            db_url = LOCAL_POSTGRES_URL
+            db_name = "Local PostgreSQL - Fallback"
+        else:
+            print("   ⚠️  No PostgreSQL URL found, falling back to SQLite")
+            return get_sqlite_config()
+       
+        try:
+            import dj_database_url
+            db_config = dj_database_url.parse(db_url, conn_max_age=600, ssl_require=True)
+            print(f"   ✅ Connected to {db_name}")
+            print(f"   📍 Host: {db_config.get('HOST', 'Unknown')}")
+            print(f"   📍 Database: {db_config.get('NAME', 'Unknown')}")
+            return {
+                'default': db_config
+            }
+        except ImportError:
+            print("   ❌ dj_database_url not installed, falling back to SQLite")
+            return get_sqlite_config()
+        except Exception as e:
+            print(f"   ❌ PostgreSQL connection failed: {e}")
+            print("   🔄 Falling back to SQLite")
+            return get_sqlite_config()
+   
+    else:
+        # SQLite configuration (default)
+        return get_sqlite_config()
+
+
+def get_sqlite_config():
+    """Get SQLite database configuration"""
+    print("   📁 Using SQLite database for local development")
+    return {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'CONN_MAX_AGE': 0,
         }
     }
-    SITEURL = "http://localhost:8000"
-    
-    # Database helper functions (compatibility with ai_services)
-    def dba_values():
-        """Returns None values for SQLite"""
-        return None, None, None, None
-    
-    def source_target():
-        """Returns None values for SQLite"""
-        return None, None, None, None, None
-    
-    print("   Using local SQLite database: db.sqlite3")
 
-elif LOCAL_DB == 'uat' or LOCAL_DB == 'staging' or LOCAL_DB == 'heroku':
-    # ========== UAT/STAGING (Heroku) ==========
-    # Connect to UAT database on Heroku
-    def dba_values():
-        """Get UAT/staging database credentials from environment"""
-        host = os.environ.get('HEROKU_DEV_HOST')
-        dbname = os.environ.get('HEROKU_DEV_NAME')
-        user = os.environ.get('HEROKU_DEV_USER')
-        password = os.environ.get('HEROKU_DEV_PASS')
-        return host, dbname, user, password
-    
-    def source_target():
-        """Returns UAT database info"""
-        host, dbname, user, password = dba_values()
-        return host, dbname, user, password, None
-    
-    host, dbname, user, password = dba_values()
-    
-    if not all([host, dbname, user, password]):
-        print("   ⚠️  WARNING: UAT database credentials not found in environment!")
-        print("   Set: HEROKU_DEV_HOST, HEROKU_DEV_NAME, HEROKU_DEV_USER, HEROKU_DEV_PASS")
-        print("   Falling back to SQLite...")
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-            }
-        }
-    else:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': dbname,
-                'USER': user,
-                'PASSWORD': password,
-                'HOST': host,
-                'PORT': '5432',
-                'CONN_MAX_AGE': 600,
-            }
-        }
-        print(f"   Connected to UAT database: {dbname} on {host}")
-    
-    SITEURL = "https://codamakutano.herokuapp.com"
 
-elif LOCAL_DB == 'prod' or LOCAL_DB == 'production':
-    # ========== PRODUCTION (Heroku) ==========
-    # Connect to production database on Heroku
-    def dba_values():
-        """Get production database credentials from environment"""
-        host = os.environ.get('HEROKU_PROD_HOST')
-        dbname = os.environ.get('HEROKU_PROD_NAME')
-        user = os.environ.get('HEROKU_PROD_USER')
-        password = os.environ.get('HEROKU_PROD_PASS')
-        return host, dbname, user, password
-    
-    def source_target():
-        """Returns production database info"""
-        host, dbname, user, password = dba_values()
-        return host, dbname, user, password, None
-    
-    host, dbname, user, password = dba_values()
-    
-    if not all([host, dbname, user, password]):
-        print("   ⚠️  WARNING: Production database credentials not found in environment!")
-        print("   Set: HEROKU_PROD_HOST, HEROKU_PROD_NAME, HEROKU_PROD_USER, HEROKU_PROD_PASS")
-        print("   Falling back to SQLite...")
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-            }
-        }
-    else:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': dbname,
-                'USER': user,
-                'PASSWORD': password,
-                'HOST': host,
-                'PORT': '5432',
-                'CONN_MAX_AGE': 600,
-                'OPTIONS': {
-                    'sslmode': 'require',  # Required for Heroku PostgreSQL
-                }
-            }
-        }
-        print(f"   ⚠️  Connected to PRODUCTION database: {dbname} on {host}")
-        print(f"   ⚠️  USE WITH CAUTION - You're modifying production data!")
-    
-    SITEURL = "https://codatrainingapp.herokuapp.com"
-
+# Apply database configuration
+DATABASES = get_database_config()
+print("🗄️  DATABASES: ", DATABASES['default']['ENGINE'])
+print("🗄️  DATABASES: ", DATABASES['default']['NAME'])
+print("🗄️  DATABASES: ", DATABASES['default']['CONN_MAX_AGE'])
+# Only print PostgreSQL-specific fields if they exist (not for SQLite)
+if 'HOST' in DATABASES['default']:
+    print("🗄️  DATABASES: ", DATABASES['default']['HOST'])
+if 'PORT' in DATABASES['default']:
+    print("🗄️  DATABASES: ", DATABASES['default']['PORT'])
+if 'USER' in DATABASES['default']:
+    print("🗄️  DATABASES: ", DATABASES['default']['USER'])
+if 'PASSWORD' in DATABASES['default']:
+    print("🗄️  DATABASES: ", DATABASES['default']['PASSWORD'])
+# print("🗄️  DATABASES: ", DATABASES['default']['OPTIONS'])
+# print("🗄️  DATABASES: ", DATABASES['default']['TEST'])
+# print("🗄️  DATABASES: ", DATABASES['default']['TIME_ZONE'])
+# print("🗄️  DATABASES: ", DATABASES['default']['USER'])
+# print("🗄️  DATABASES: ", DATABASES['default']['PASSWORD'])
+# print("🗄️  DATABASES: ", DATABASES['default']['OPTIONS'])
+# print("🗄️  DATABASES: ", DATABASES['default']['TEST'])
+# print("🗄️  DATABASES: ", DATABASES['default']['TIME_ZONE'])
+# print("🗄️  DATABASES: ", DATABASES['default']['USER'])
+# Database connection info for debugging
+if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    print(f"   📁 SQLite file: {DATABASES['default']['NAME']}")
 else:
-    print(f"   ⚠️  Unknown LOCAL_DB value: {LOCAL_DB}")
-    print("   Valid options: sqlite, uat, prod")
-    print("   Falling back to SQLite...")
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
-    SITEURL = "http://localhost:8000"
-    
-    def dba_values():
-        return None, None, None, None
-    
-    def source_target():
-        return None, None, None, None, None
+    print(f"   🗄️ PostgreSQL: {DATABASES['default'].get('NAME', 'Unknown')}")
 
-# ============================================
-# COMMON SETTINGS (All Modes)
-# ============================================
 
-# Email backend for local development (console output)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+print("   " + "="*50)
+# Email settings for local development
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# Allauth configuration fixes for local development
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # Skip email verification locally
-ACCOUNT_EMAIL_REQUIRED = True  # Required by allauth
-SOCIALACCOUNT_EMAIL_REQUIRED = False
 
-# Disable HTTPS redirects for local development
+# Allauth settings for local development - no email verification required
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+
+
+# Disable security features for local development
+SECURE_HSTS_SECONDS = 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+SECURE_BROWSER_XSS_FILTER = False
+SECURE_CONTENT_TYPE_NOSNIFF = False
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+SECURE_REFERRER_POLICY = None
 
-# Static files (for local development)
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Local development URLs
+SITEURL = "http://127.0.0.1:8000"
 
-# Django SSL Server for local HTTPS development
-INSTALLED_APPS = INSTALLED_APPS + ['sslserver']
 
-# SSL Certificate paths
-SSL_CERTIFICATE = os.path.join(BASE_DIR, 'certs', 'cert.pem')
-SSL_KEY = os.path.join(BASE_DIR, 'certs', 'key.pem')
+# Static files for local development
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
-# Django Debug Toolbar (optional)
-try:
-    import debug_toolbar
-    INSTALLED_APPS = INSTALLED_APPS + ['debug_toolbar']
-    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
-    INTERNAL_IPS = ['127.0.0.1', 'localhost']
-except ImportError:
-    pass
 
-# Celery settings for local development (synchronous execution)
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
-
-# Logging configuration for local development
+# Logging for local development
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'simple',
         },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs.log'),
-            'formatter': 'verbose',
-        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
-        },
-        'finance': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-        },
-        'management': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
 
-# ============================================
-# TESTING CONFIGURATION
-# ============================================
 
-if 'test' in sys.argv or 'test_coverage' in sys.argv:
-    print("🧪 Running in TEST mode - using in-memory SQLite database")
-    
-    # Always use in-memory SQLite for tests (regardless of LOCAL_DB)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',
-        }
+# Local development specific settings
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+]
+
+
+# Cache settings for local development
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
-    
-    # Disable migrations for faster tests
-    class DisableMigrations:
-        def __contains__(self, item):
-            return True
-        def __getitem__(self, item):
-            return None
-    
-    MIGRATION_MODULES = DisableMigrations()
-    
-    # Speed up password hashing in tests
-    PASSWORD_HASHERS = [
-        'django.contrib.auth.hashers.MD5PasswordHasher',
-    ]
-    
-    # Disable debug toolbar in tests
-    DEBUG_TOOLBAR_CONFIG = {
-        'SHOW_TOOLBAR_CALLBACK': lambda request: False,
+}
+
+
+# Email settings for local development
+DEFAULT_FROM_EMAIL = 'noreply@localhost'
+SERVER_EMAIL = 'noreply@localhost'
+
+
+# Performance settings for local development
+CONN_MAX_AGE = 0
+
+
+# Local development middleware
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    'Middleware.MiddlewareFile.MailMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
+]
+
+
+# Stripe Configuration for Local Development
+# Note: You need BOTH publishable key (pk_test_) and secret key (sk_test_)
+# Get both from: https://dashboard.stripe.com/test/apikeys
+STRIPE_PUBLISHABLE_KEY="pk_test_51RcwhrFmZDMqLvNl5ygyIvt8p17GZdWi52WJku1ScwWyUpe3QwTfWErhqLXI6AHdxVtytJ7LKtJv3IKp2ewViJ9l00DDQ9p39l"
+STRIPE_SECRET_KEY="sk_test_51RtbJqKUqxKl3Yd1NhS4QouYBhKWbogQiL0MgCNXukX7wyMY4hM7Ta7VQkJA3cTtK59oBTUMWsM4sbS347n6sIAt00Xu17hXyf"
+STRIPE_WEBHOOK_SECRET="whsec_58c6ae18b2d10387771d5788818e91cb5e8ad0746f79714cfe78fbfb2b210b02"
+
+
+# Stripe settings (will use environment variables if set)
+# STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+# STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+# STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+
+
+print("💳 Stripe Configuration:")
+print(f"   Publishable Key: {'Set' if STRIPE_PUBLISHABLE_KEY else 'Not Set'}")
+print(f"   Secret Key: {'Set' if STRIPE_SECRET_KEY else 'Not Set'}")
+print(f"   Webhook Secret: {'Set' if STRIPE_WEBHOOK_SECRET else 'Not Set'}")
+if not STRIPE_PUBLISHABLE_KEY:
+    print("   ⚠️  Set STRIPE_PUBLISHABLE_KEY environment variable for Stripe testing")
+
+
+# Payment method configurations for testing
+PAYMENT_METHODS = {
+    'stripe': {
+        'test_mode': True,
+        'sandbox': True,
+        'description': 'Test with Stripe sandbox - use test card numbers'
     }
-    
-    # Test-specific logging (less verbose)
-    LOGGING['loggers']['django']['level'] = 'WARNING'
-    LOGGING['loggers']['finance']['level'] = 'WARNING'
+}
 
-# ============================================
-# STARTUP SUMMARY
-# ============================================
 
-print("✅ Local settings loaded for development")
-print(f"   Database Engine: {DATABASES['default']['ENGINE']}")
-if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
-    print(f"   Database File: {DATABASES['default']['NAME']}")
-else:
-    print(f"   Database Name: {DATABASES['default'].get('NAME', 'N/A')}")
-    print(f"   Database Host: {DATABASES['default'].get('HOST', 'N/A')}")
-print(f"   Debug Mode: {DEBUG}")
-print(f"   Site URL: {SITEURL}")
-print(f"   Allowed Hosts: {ALLOWED_HOSTS}")
-print("")
+# Test card numbers for Stripe sandbox
+STRIPE_TEST_CARDS = {
+    'visa': '4242424242424242',
+    'visa_debit': '4000056655665556',
+    'mastercard': '5555555555554444',
+    'amex': '378282246310005',
+    'declined': '4000000000000002',
+    'insufficient_funds': '4000000000009995',
+    'expired': '4000000000000069',
+    'cvc_fail': '4000000000000127',
+}
+
+
+print("💳 Stripe Configuration:")
+print(f"   Publishable Key: {'Set' if STRIPE_PUBLISHABLE_KEY else 'Not Set'}")
+print(f"   Secret Key: {'Set' if STRIPE_SECRET_KEY else 'Not Set'}")
+print(f"   Webhook Secret: {'Set' if STRIPE_WEBHOOK_SECRET else 'Not Set'}")
+if not STRIPE_PUBLISHABLE_KEY:
+    print("   ⚠️  Set STRIPE_PUBLISHABLE_KEY environment variable for Stripe testing")
+
+
+# Local development settings loaded - configuration complete

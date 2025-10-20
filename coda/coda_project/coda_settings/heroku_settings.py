@@ -97,6 +97,30 @@ LOGGING = {
     },
 }
 
+# ====================================
+# PAYMENT GATEWAY SETTINGS
+# ====================================
+
+# Stripe Configuration
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+
+# PayPal Configuration
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '')
+PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET', '')
+PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')  # 'sandbox' or 'live'
+
+# Payment Gateway Details (for manual payments fallback)
+PAYPAL_EMAIL = os.environ.get('PAYPAL_EMAIL', 'payments@codanalytics.net')
+MPESA_PHONE_NUMBER = os.environ.get('MPESA_PHONE_NUMBER', '')
+MPESA_PAYBILL = os.environ.get('MPESA_PAYBILL', '')
+CASHAPP_USERNAME = os.environ.get('CASHAPP_USERNAME', '$codanalytics')
+VENMO_USERNAME = os.environ.get('VENMO_USERNAME', '@codanalytics')
+STANBIC_ACCOUNT_NO = os.environ.get('STANBIC_ACCOUNT_NO', '')
+STANBIC_ROUTING = os.environ.get('STANBIC_ROUTING', '')
+SWIFT_CODE = os.environ.get('SWIFT_CODE', '')
+
 # Heroku-specific settings
 ALLOWED_HOSTS = [
     'codamakutano.herokuapp.com',

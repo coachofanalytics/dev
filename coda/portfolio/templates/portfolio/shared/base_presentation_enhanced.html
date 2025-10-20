@@ -1,0 +1,845 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================ */
+/* PRESENTATION MODE - FULL SCREEN OVERLAY */
+/* ============================================ */
+.presentation-mode-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    z-index: 9999;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Branded vs Interview Mode Gradients */
+.presentation-mode-overlay.branded-mode {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+.presentation-mode-overlay.interview-mode {
+    background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
+}
+
+/* ============================================ */
+/* PRESENTATION HEADER */
+/* ============================================ */
+.presentation-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.presentation-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.presentation-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.presentation-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-left: 1rem;
+    display: inline-block;
+}
+
+.presentation-metrics {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.metric-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.metric-item strong {
+    font-size: 1.2rem;
+    color: #ffd700;
+}
+
+/* ============================================ */
+/* PRESENTATION CONTENT */
+/* ============================================ */
+.presentation-content {
+    padding: 3rem 0;
+    min-height: calc(100vh - 250px);
+}
+
+/* ============================================ */
+/* CARD COMPONENTS */
+/* ============================================ */
+
+/* General presentation card - white background */
+.presentation-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.presentation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+}
+
+.presentation-card h2, 
+.presentation-card h3, 
+.presentation-card h4 {
+    color: #1e3c72;
+}
+
+/* Transparent card - for overlay on gradient */
+.presentation-card-transparent {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.presentation-card-transparent:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+}
+
+/* Market opportunity card */
+.market-opportunity-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+/* Opportunity metrics */
+.opportunity-metric {
+    background: rgba(30, 60, 114, 0.05);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s;
+}
+
+.opportunity-metric:hover {
+    background: rgba(30, 60, 114, 0.1);
+    transform: scale(1.05);
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #1e3c72;
+    display: block;
+}
+
+.metric-label {
+    font-size: 1rem;
+    color: #666;
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.metric-growth {
+    font-size: 0.85rem;
+    color: #28a745;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+/* Scenario cards */
+.scenario-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.scenario-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+
+.scenario-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.scenario-icon {
+    margin-bottom: 1rem;
+}
+
+.scenario-icon i {
+    color: #ffd700;
+}
+
+.scenario-header h4 {
+    margin: 0.5rem 0;
+    color: white;
+}
+
+.scenario-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.scenario-body {
+    padding: 1.5rem;
+}
+
+.roi-preview {
+    background: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid #28a745;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.roi-label {
+    font-weight: bold;
+    color: #666;
+    display: block;
+}
+
+.roi-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745;
+    display: block;
+}
+
+.market-size {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.market-label {
+    font-weight: bold;
+    color: #666;
+}
+
+.market-value {
+    color: #1e3c72;
+    font-weight: bold;
+}
+
+.scenario-description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #666;
+}
+
+.scenario-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+}
+
+.scenario-btn {
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+/* Competitive advantage card */
+.competitive-advantage-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2.5rem;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    margin-bottom: 2rem;
+}
+
+.advantage-item {
+    padding: 1.5rem;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.advantage-item:hover {
+    background: rgba(30, 60, 114, 0.05);
+    transform: scale(1.05);
+}
+
+.advantage-icon {
+    margin-bottom: 1rem;
+}
+
+.advantage-item h4 {
+    color: #1e3c72;
+    margin-bottom: 1rem;
+}
+
+.advantage-item p {
+    color: #666;
+    line-height: 1.6;
+}
+
+.advantage-metrics {
+    margin-top: 1rem;
+}
+
+.metric-badge {
+    background: #1e3c72;
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    margin: 0.25rem;
+    display: inline-block;
+}
+
+/* ============================================ */
+/* FINANCIAL PROJECTIONS */
+/* ============================================ */
+.financial-projections-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2.5rem;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    margin-bottom: 2rem;
+}
+
+.projection-year {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.projection-year:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    transform: scale(1.05);
+}
+
+.projection-year h4 {
+    color: #1e3c72;
+    margin-bottom: 1rem;
+}
+
+.projection-metric {
+    margin: 0.75rem 0;
+}
+
+.projection-label {
+    font-weight: bold;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.projection-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+/* ============================================ */
+/* TECHNICAL HIGHLIGHTS */
+/* ============================================ */
+.technical-highlight {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.tech-category-header {
+    border-bottom: 3px solid #1e3c72;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.tech-category-header h4 {
+    color: #1e3c72;
+    margin: 0;
+}
+
+.tech-skills-list li {
+    margin-bottom: 0.75rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+.tech-badge {
+    background: #1e3c72;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    margin: 0.25rem;
+    display: inline-block;
+}
+
+/* Code sample cards */
+.code-sample-card {
+    background: #f8f9fa;
+    border-left: 4px solid #1e3c72;
+    padding: 1.5rem;
+    border-radius: 5px;
+    margin: 1rem 0;
+}
+
+.code-sample-title {
+    font-weight: bold;
+    color: #1e3c72;
+    margin-bottom: 0.5rem;
+}
+
+.code-sample-description {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* ============================================ */
+/* ACHIEVEMENT CARDS (RECRUITER MODE) */
+/* ============================================ */
+.achievement-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.achievement-category h4 {
+    color: #1e3c72;
+    border-bottom: 2px solid #1e3c72;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.achievement-metric {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.75rem 0;
+    transition: all 0.3s;
+}
+
+.achievement-metric:hover {
+    transform: translateX(5px);
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
+
+.achievement-metric-label {
+    font-weight: bold;
+    color: #1e3c72;
+    font-size: 0.9rem;
+}
+
+.achievement-metric-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #28a745;
+    display: block;
+}
+
+.achievement-metric-description {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Timeline */
+.timeline-item {
+    background: white;
+    border-left: 4px solid #1e3c72;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 1.5rem;
+    width: 16px;
+    height: 16px;
+    background: #1e3c72;
+    border-radius: 50%;
+    border: 3px solid white;
+}
+
+.timeline-phase {
+    font-weight: bold;
+    color: #1e3c72;
+    font-size: 1.1rem;
+}
+
+.timeline-duration {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.timeline-outcome {
+    color: #28a745;
+    margin-top: 0.5rem;
+}
+
+/* ============================================ */
+/* NAVIGATION CONTROLS */
+/* ============================================ */
+.presentation-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.presentation-controls .btn {
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+}
+
+/* ============================================ */
+/* FOOTER */
+/* ============================================ */
+.presentation-footer {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 3rem;
+    color: white;
+}
+
+.contact-links a {
+    color: white;
+    font-size: 1.5rem;
+    margin: 0 10px;
+    transition: color 0.3s;
+}
+
+.contact-links a:hover {
+    color: #ffd700;
+}
+
+/* ============================================ */
+/* UTILITY CLASSES */
+/* ============================================ */
+.text-white-overlay {
+    color: white !important;
+}
+
+.bg-dark-overlay {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+/* Divider */
+.presentation-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+    margin: 2rem 0;
+}
+
+/* ============================================ */
+/* RESPONSIVE DESIGN */
+/* ============================================ */
+@media (max-width: 768px) {
+    .presentation-title {
+        font-size: 2rem;
+    }
+    
+    .presentation-subtitle {
+        font-size: 1rem;
+    }
+    
+    .presentation-metrics {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .presentation-controls {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .presentation-controls .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+    }
+    
+    .scenario-card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* ============================================ */
+/* BOOTSTRAP OVERRIDES FOR PRESENTATIONS */
+/* ============================================ */
+.presentation-content .card {
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.presentation-content .card-header {
+    border-radius: 12px 12px 0 0 !important;
+    font-weight: bold;
+}
+
+.presentation-content .alert {
+    border-radius: 10px;
+}
+
+.presentation-content .progress {
+    height: 25px;
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+/* ============================================ */
+/* ANIMATION EFFECTS */
+/* ============================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.fade-in-delay-1 { animation-delay: 0.2s; }
+.fade-in-delay-2 { animation-delay: 0.4s; }
+.fade-in-delay-3 { animation-delay: 0.6s; }
+
+/* ============================================ */
+/* PRINT STYLES */
+/* ============================================ */
+@media print {
+    .presentation-header,
+    .presentation-footer,
+    .presentation-controls {
+        display: none;
+    }
+    
+    .presentation-mode-overlay {
+        position: static;
+        background: white;
+        color: black;
+    }
+    
+    .presentation-card {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="presentation-mode-overlay {{ presentation_mode }}-mode">
+    <!-- Presentation Header -->
+    <div class="presentation-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    {% if show_branding %}
+                        <h1 class="presentation-title">
+                            <i class="fas fa-building"></i> {{ branding.company_name }}
+                            <span class="presentation-badge">{{ audience_type|title }}</span>
+                        </h1>
+                        <p class="presentation-subtitle">{{ project_name }}</p>
+                        <p class="presentation-subtitle" style="opacity: 0.8; font-size: 1rem;">{{ subtitle }}</p>
+                    {% else %}
+                        <h1 class="presentation-title">
+                            <i class="fas fa-user-tie"></i> {{ branding.developer_name }}
+                            <span class="presentation-badge">{{ audience_type|title }}</span>
+                        </h1>
+                        <p class="presentation-subtitle">{{ branding.developer_title }}</p>
+                        <p class="presentation-subtitle" style="opacity: 0.8;">{{ project_name }}</p>
+                    {% endif %}
+                    
+                    {% if key_metrics %}
+                    <div class="presentation-metrics">
+                        {% for key, value in key_metrics.items %}
+                        {% if forloop.counter <= 4 %}
+                        <span class="metric-item"><strong>{{ value }}</strong> {{ key|title|slice:":12" }}</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="presentation-controls">
+                        {% if presentation_mode == 'branded' %}
+                            <a href="{% url 'interview:project-presentation' project_slug audience_type %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-user-tie"></i> Interview Mode
+                            </a>
+                        {% else %}
+                            <a href="{% url 'portfolio:project-presentation' project_slug audience_type %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-building"></i> Branded Mode
+                            </a>
+                        {% endif %}
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-light btn-sm dropdown-toggle" data-toggle="dropdown">
+                                <i class="fas fa-users"></i> Audience
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="{% url presentation_mode|add:':project-presentation' project_slug 'investor' %}">
+                                    <i class="fas fa-chart-line"></i> Investor
+                                </a>
+                                <a class="dropdown-item" href="{% url presentation_mode|add:':project-presentation' project_slug 'technical' %}">
+                                    <i class="fas fa-code"></i> Technical
+                                </a>
+                                <a class="dropdown-item" href="{% url presentation_mode|add:':project-presentation' project_slug 'recruiter' %}">
+                                    <i class="fas fa-user-tie"></i> Recruiter
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <a href="{% url presentation_mode|add:':hub' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-th"></i> All Projects
+                        </a>
+                        
+                        <button class="btn btn-outline-light btn-sm" onclick="toggleFullscreen()">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Presentation Content -->
+    <div class="presentation-content">
+        <div class="container-fluid">
+            {% block presentation_content %}
+            <!-- Content will be overridden by specific presentation templates -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="presentation-card text-center">
+                        <h2>Presentation Content</h2>
+                        <p>This section will be populated by specific presentation templates.</p>
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Presentation Footer -->
+    <div class="presentation-footer">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    {% if show_branding %}
+                        <p class="mb-0">{{ branding.footer_text }}</p>
+                        <p class="mb-0">Contact: {{ branding.contact.email }}</p>
+                    {% else %}
+                        <p class="mb-0">{{ branding.footer_text }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 text-right">
+                    {% if not show_branding %}
+                        <div class="contact-links">
+                            <a href="mailto:{{ branding.contact.email }}" title="Email"><i class="fas fa-envelope"></i></a>
+                            <a href="{{ branding.contact.linkedin }}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                            <a href="{{ branding.contact.github }}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    {% else %}
+                        <p class="mb-0">{{ audience_type|title }} Presentation - {% now "Y" %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Common JavaScript -->
+<script>
+// Fullscreen toggle
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.log('Fullscreen error:', err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.fullscreenElement) {
+        document.exitFullscreen();
+    } else if (e.key === 'F11') {
+        e.preventDefault();
+        toggleFullscreen();
+    }
+});
+
+// Auto-hide cursor after inactivity (presentation mode)
+let cursorTimeout;
+document.addEventListener('mousemove', function() {
+    document.body.style.cursor = 'default';
+    clearTimeout(cursorTimeout);
+    cursorTimeout = setTimeout(() => {
+        if (document.fullscreenElement) {
+            document.body.style.cursor = 'none';
+        }
+    }, 3000);
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+</script>
+{% endblock %}
+
