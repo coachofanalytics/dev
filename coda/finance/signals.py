@@ -40,8 +40,7 @@ def sync_transaction_to_budget(sender, instance, created, **kwargs):
     if subcategory is None:
         subcategory, _ = BudgetSubCategory.objects.get_or_create(
             name="Other", 
-            category=category,
-            defaults={'description': 'Default subcategory'}
+            category=category
         )
 
     # Find or create the default Company
