@@ -27,14 +27,14 @@
                 </ul>
             </div>            
             <div class="btn-group-vertical w-100">
-                <a href="{% url 'portfolio:project-landing' project.slug %}" class="btn btn-primary mb-2">
+                <a href="/portfolio/{{ project.slug }}/" class="btn btn-primary mb-2">
                     <i class="fas fa-eye"></i> View Presentations
                 </a>
                 <div class="btn-group w-100">
-                    <a href="{% url 'portfolio:project-presentation' project.slug 'investor' %}" class="btn btn-outline-primary btn-sm">
+                    <a href="/portfolio/{{ project.slug }}/investor/" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-chart-line"></i> Investor
                     </a>
-                    <a href="{% url 'portfolio:project-presentation' project.slug 'technical' %}" class="btn btn-outline-primary btn-sm">
+                    <a href="/portfolio/{{ project.slug }}/technical/" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-code"></i> Technical
                     </a>
                 </div>
