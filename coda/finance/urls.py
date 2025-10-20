@@ -2,11 +2,40 @@ from django.urls import path, reverse
 from django.shortcuts import redirect
 from . import views
 from .views import legacy_views
-# Import new unified payment views (gracefully handle if _deprecated directory not deployed)
-try:
-    from ._deprecated.legacy_views import payment_views
-except ImportError:
-    payment_views = None  # Will skip payment-related URLs if not available
+
+# Import organized payment views
+from .views.payment import (
+    payment_method_selection as unified_payment_selection,
+    payment_processing as unified_payment_processing,
+    payment_success as unified_payment_success,
+    payment_failed as unified_payment_failed,
+    mpesa_otp_confirmation as unified_mpesa_otp,
+    verify_mpesa_otp as unified_verify_otp,
+)
+from .views.payment.payment_details import (
+    show_payment_details,
+    upload_payment_proof,
+)
+from .views.payment.receipt_views import (
+    view_receipt,
+    download_receipt,
+    email_receipt,
+    verify_payment_receipt,
+)
+from .views.payment.dashboard_views import (
+    payment_dashboard,
+    retry_payment,
+)
+from .views.payment.admin_verification import (
+    admin_payment_verification_dashboard,
+    approve_payment,
+    reject_payment,
+    bulk_approve_payments,
+)
+from .views.payment.stripe_views import (
+    create_payment_intent,
+    stripe_webhook,
+)
 
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
@@ -99,9 +128,9 @@ urlpatterns = [
     path('mycontract/<str:username>/', views.mycontract, name='mycontract'),
     path('newcontract/<str:username>/', views.new_contract, name='newcontract'),
     path('newinvestmentcontract/<int:plan_id>/', views.new_investment_contract, name='newinvestmentcontract'),
-    path('pay/', views.pay, name='pay'),
+    path('pay/', unified_payment_selection, name='pay'),
     path('payment/<int:service>/', views.pay, name='service_pay'),
-    path('payment_method/<str:method>/', views.payment, name='payment_method'),
+    path('payment_method/<str:method>/', legacy_views.payment, name='payment_method'),
     path("payment_complete/", views.paymentComplete, name="payment_complete"),
     path('payments/<str:title>/<str:status>/', views.payments, name='payments'),
     path('payment_plan/<str:payment_id>', views.payment_plan, name='payment_plan'),
@@ -380,21 +409,43 @@ urlpatterns = [
     path('budget-tier-presentation-guide/', lambda request: redirect('/portfolio/guide/', permanent=True), name='budget-tier-presentation-guide'),
 ]
 
-# Conditionally add unified payment URLs if payment_views module is available
-if payment_views is not None:
-    urlpatterns += [
-        path('unified/methods/', payment_views.payment_method_selection, name='unified_method_selection'),
-        path('unified/process/<str:method>/', payment_views.payment_processing, name='unified_processing'),
-        path('unified/success/', payment_views.payment_success, name='unified_success'),
-        path('unified/failed/', payment_views.payment_failed, name='unified_failed'),
-        path('visitor/<str:method>/', payment_views.process_visitor_payment, name='visitor_payment'),
-        
-        # MPESA OTP verification
-        path('mpesa-otp-confirmation/', payment_views.mpesa_otp_confirmation, name='mpesa_otp_confirmation'),
-        path('verify-mpesa-otp/', payment_views.verify_mpesa_otp, name='verify_mpesa_otp'),
-    ]
-else:
-    # Fallback: redirect unified payment URLs to legacy payment page
-    urlpatterns += [
-        path('unified/methods/', lambda request: redirect('finance:pay'), name='unified_method_selection'),
-    ]
+# Unified Payment System URLs
+urlpatterns += [
+    # Payment Method Selection
+    path('unified/methods/', unified_payment_selection, name='unified_method_selection'),
+    
+    # Payment Processing
+    path('unified/process/<str:method>/', unified_payment_processing, name='unified_processing'),
+    
+    # Payment Results
+    path('unified/success/', unified_payment_success, name='unified_success'),
+    path('unified/failed/', unified_payment_failed, name='unified_failed'),
+    
+    # Payment Details (Universal Fallback)
+    path('payment-details/<str:method>/', show_payment_details, name='payment_details'),
+    path('payment-proof/upload/<str:reference>/', upload_payment_proof, name='upload_payment_proof'),
+    
+    # Payment Dashboard (User)
+    path('my-payments/', payment_dashboard, name='payment_dashboard'),
+    path('payment/retry/<int:payment_id>/', retry_payment, name='retry_payment'),
+    
+    # Payment Receipts
+    path('receipt/<int:payment_id>/', view_receipt, name='view_receipt'),
+    path('receipt/<int:payment_id>/download/', download_receipt, name='download_receipt'),
+    path('receipt/<int:payment_id>/email/', email_receipt, name='email_receipt'),
+    path('verify-payment/<int:payment_id>/', verify_payment_receipt, name='verify_payment_receipt'),
+    
+    # Admin Payment Verification
+    path('admin/verify-payments/', admin_payment_verification_dashboard, name='admin_payment_verification'),
+    path('admin/payment/<int:payment_id>/approve/', approve_payment, name='approve_payment'),
+    path('admin/payment/<int:payment_id>/reject/', reject_payment, name='reject_payment'),
+    path('admin/payments/bulk-approve/', bulk_approve_payments, name='bulk_approve_payments'),
+    
+    # M-Pesa OTP Verification Flow
+    path('unified/mpesa-otp/', unified_mpesa_otp, name='mpesa_otp_confirmation'),
+    path('unified/verify-otp/', unified_verify_otp, name='verify_mpesa_otp'),
+    
+    # Stripe Payment Integration
+    path('stripe/payment-intent/', create_payment_intent, name='stripe_payment_intent'),
+    path('stripe/webhook/', stripe_webhook, name='stripe_webhook'),
+]

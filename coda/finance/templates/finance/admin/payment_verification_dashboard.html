@@ -1,0 +1,296 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Payment Verification - Admin - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-check-double"></i> Payment Verification Dashboard</h2>
+            <p class="text-muted">Review and verify manual payments</p>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Pending Review</h6>
+                            <h3 class="mb-0">{{ stats.pending_count }}</h3>
+                        </div>
+                        <i class="fas fa-hourglass-half fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Approved Today</h6>
+                            <h3 class="mb-0">{{ stats.completed_today }}</h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Failed/Rejected</h6>
+                            <h3 class="mb-0">{{ stats.failed_count }}</h3>
+                        </div>
+                        <i class="fas fa-times-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">With Proof</h6>
+                            <h3 class="mb-0">{{ stats.needs_review }}</h3>
+                        </div>
+                        <i class="fas fa-file-image fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="method" class="form-label">Payment Method</label>
+                            <select name="method" id="method" class="form-select">
+                                <option value="all" {% if method_filter == 'all' %}selected{% endif %}>All Methods</option>
+                                <option value="PayPal">PayPal</option>
+                                <option value="MPESA">M-Pesa</option>
+                                <option value="Stripe">Stripe</option>
+                                <option value="CashApp">CashApp</option>
+                                <option value="Zelle">Zelle</option>
+                                <option value="Venmo">Venmo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" name="search" id="search" class="form-control" 
+                                   placeholder="Customer, Reference, Email..." value="{{ search_query }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Payments to Verify</h5>
+                    <form method="POST" action="{% url 'finance:bulk_approve_payments' %}" id="bulkApproveForm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-success" id="bulkApproveBtn" disabled>
+                            <i class="fas fa-check"></i> Approve Selected
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="selectAll">
+                                    </th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Reference</th>
+                                    <th>Method</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>
+                                        {% if payment.status == 'pending' and payment.customer != request.user %}
+                                        <input type="checkbox" name="payment_ids" value="{{ payment.id }}" 
+                                               class="payment-checkbox" form="bulkApproveForm">
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {% if payment.payment_date %}
+                                                {{ payment.payment_date|date:"M d, Y" }}<br>
+                                                <span class="text-muted">{{ payment.payment_date|date:"g:i A" }}</span>
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ payment.customer.get_full_name|default:payment.customer.username }}</strong><br>
+                                        <small class="text-muted">{{ payment.customer.email }}</small>
+                                    </td>
+                                    <td>
+                                        <code>PAY-{{ payment.id }}</code>
+                                        {% if payment.notes %}
+                                        <br><small class="text-muted" title="{{ payment.notes }}">
+                                            {{ payment.notes|truncatechars:30 }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ payment.payment_method }}</td>
+                                    <td><strong>${{ payment.payment_fees|floatformat:2 }}</strong></td>
+                                    <td>
+                                        {% if payment.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                        {% elif payment.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif payment.status == 'failed' %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ payment.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if payment.status == 'pending' %}
+                                                {% if payment.customer != request.user %}
+                                                <a href="{% url 'finance:approve_payment' payment.id %}" 
+                                                   class="btn btn-sm btn-success" 
+                                                   title="Approve"
+                                                   onclick="return confirm('Approve this payment of ${{ payment.payment_fees }}?')">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{% url 'finance:reject_payment' payment.id %}" 
+                                                   class="btn btn-sm btn-danger" 
+                                                   title="Reject">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                                {% else %}
+                                                <button class="btn btn-sm btn-secondary" disabled title="Cannot verify own payment">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                                {% endif %}
+                                            {% else %}
+                                            <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if payments.has_other_pages %}
+                    <div class="card-footer">
+                        <nav>
+                            <ul class="pagination justify-content-center mb-0">
+                                {% if payments.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ payments.previous_page_number }}&status={{ status_filter }}&method={{ method_filter }}&search={{ search_query }}">
+                                        Previous
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ payments.number }} of {{ payments.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if payments.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ payments.next_page_number }}&status={{ status_filter }}&method={{ method_filter }}&search={{ search_query }}">
+                                        Next
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="p-5 text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No payments found matching your criteria.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Select all checkbox functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.payment-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    updateBulkButton();
+});
+
+// Update bulk approve button state
+document.querySelectorAll('.payment-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateBulkButton);
+});
+
+function updateBulkButton() {
+    const checked = document.querySelectorAll('.payment-checkbox:checked').length;
+    const btn = document.getElementById('bulkApproveBtn');
+    btn.disabled = checked === 0;
+    btn.textContent = checked > 0 ? `Approve Selected (${checked})` : 'Approve Selected';
+}
+
+// Confirm bulk approval
+document.getElementById('bulkApproveForm').addEventListener('submit', function(e) {
+    const checked = document.querySelectorAll('.payment-checkbox:checked').length;
+    if (!confirm(`Approve ${checked} payment(s)? Customers will be notified via email.`)) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}
+

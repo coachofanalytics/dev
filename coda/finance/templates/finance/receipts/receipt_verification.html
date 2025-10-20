@@ -1,0 +1,67 @@
+{% extends "main/base_templates/new_base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% if verified %}
+            <div class="card border-success shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h4><i class="fas fa-check-circle"></i> Receipt Verified</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <strong>✓ Authentic Receipt</strong><br>
+                        This payment receipt is valid and verified.
+                    </div>
+                    
+                    <h5>Payment Information:</h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Receipt Number:</strong></td>
+                            <td>{{ receipt_number }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Customer:</strong></td>
+                            <td>{{ payment.customer.get_full_name|default:payment.customer.username }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Amount:</strong></td>
+                            <td class="text-success"><strong>${{ payment.payment_fees|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Method:</strong></td>
+                            <td>{{ payment.payment_method }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td><span class="badge bg-success">VERIFIED</span></td>
+                        </tr>
+                    </table>
+                    
+                    <p class="text-muted small mt-3">
+                        <i class="fas fa-clock"></i> Verified on: {{ verification_date|date:"F d, Y - g:i A" }}
+                    </p>
+                </div>
+            </div>
+            {% else %}
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4><i class="fas fa-times-circle"></i> Verification Failed</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <strong>✗ Invalid Receipt</strong><br>
+                        {{ error }}
+                    </div>
+                    <p class="text-muted">
+                        If you believe this is an error, please contact support at 
+                        <a href="mailto:info@codanalytics.net">info@codanalytics.net</a>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

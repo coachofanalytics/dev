@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Receipt - {{ receipt_number }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; }
+        .receipt-container { max-width: 800px; margin: 40px auto; padding: 40px; background: white; }
+        .header { text-align: center; border-bottom: 3px solid #667eea; padding-bottom: 20px; margin-bottom: 30px; }
+        .company-name { font-size: 32px; font-weight: bold; color: #667eea; margin-bottom: 5px; }
+        .company-tagline { color: #666; font-size: 14px; }
+        .receipt-title { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; margin: 20px 0; }
+        .info-section { margin: 30px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .info-label { font-weight: bold; color: #666; width: 40%; }
+        .info-value { width: 60%; text-align: right; }
+        .amount-box { background: #f0f7ff; border: 2px solid #667eea; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0; }
+        .amount-label { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .amount-value { font-size: 36px; font-weight: bold; color: #28a745; }
+        .status-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        .qr-section { text-align: center; margin: 30px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; }
+        .qr-code { max-width: 150px; margin: 10px auto; }
+        .notes-section { background: #fffbea; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee; color: #666; font-size: 12px; }
+        .verification-link { color: #667eea; text-decoration: none; font-family: 'Courier New', monospace; font-size: 11px; }
+        
+        @media print {
+            body { margin: 0; }
+            .receipt-container { margin: 0; padding: 20px; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        
+        <!-- Header -->
+        <div class="header">
+            <div class="company-name">CODA ANALYTICS</div>
+            <div class="company-tagline">Professional Training & Development</div>
+            <div style="margin-top: 10px; color: #666; font-size: 12px;">
+                {{ company_website }} | {{ company_email }}
+            </div>
+        </div>
+
+        <!-- Receipt Title -->
+        <div class="receipt-title">
+            PAYMENT RECEIPT
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-label">Receipt Number:</div>
+                <div class="info-value"><strong>{{ receipt_number }}</strong></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Issue Date:</div>
+                <div class="info-value">{{ issue_date|date:"F d, Y - g:i A" }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Payment Status:</div>
+                <div class="info-value">
+                    <span class="status-badge status-{{ status|lower }}">{{ status }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="info-section">
+            <h3 style="color: #667eea; margin-bottom: 15px;">Customer Information</h3>
+            <div class="info-row">
+                <div class="info-label">Name:</div>
+                <div class="info-value">{{ customer_name }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Email:</div>
+                <div class="info-value">{{ customer_email }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Customer ID:</div>
+                <div class="info-value">#{{ customer_id }}</div>
+            </div>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="info-section">
+            <h3 style="color: #667eea; margin-bottom: 15px;">Payment Details</h3>
+            <div class="info-row">
+                <div class="info-label">Payment Date:</div>
+                <div class="info-value">{{ payment_date|date:"F d, Y - g:i A" }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Payment Method:</div>
+                <div class="info-value">{{ payment_method }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Payment Reference:</div>
+                <div class="info-value"><code>{{ payment_reference }}</code></div>
+            </div>
+            {% if transaction_id != 'N/A' %}
+            <div class="info-row">
+                <div class="info-label">Transaction ID:</div>
+                <div class="info-value"><code>{{ transaction_id }}</code></div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Amount Breakdown -->
+        <div class="info-section">
+            <h3 style="color: #667eea; margin-bottom: 15px;">Amount Breakdown</h3>
+            <div class="info-row">
+                <div class="info-label">Payment Amount:</div>
+                <div class="info-value">${{ amount_paid|floatformat:2 }}</div>
+            </div>
+            {% if processing_fee > 0 %}
+            <div class="info-row">
+                <div class="info-label">Processing Fee:</div>
+                <div class="info-value">${{ processing_fee|floatformat:2 }}</div>
+            </div>
+            {% endif %}
+            <div class="info-row" style="border-top: 2px solid #667eea; border-bottom: 2px solid #667eea; margin-top: 10px;">
+                <div class="info-label" style="font-size: 18px; color: #000;">Total Paid:</div>
+                <div class="info-value" style="font-size: 18px; color: #28a745; font-weight: bold;">
+                    ${{ total_amount|floatformat:2 }} {{ currency }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        {% if notes %}
+        <div class="notes-section">
+            <strong>Notes:</strong> {{ notes }}
+        </div>
+        {% endif %}
+
+        <!-- QR Code Verification -->
+        {% if qr_code %}
+        <div class="qr-section">
+            <h4 style="color: #667eea; margin-bottom: 10px;">Verify This Receipt</h4>
+            <img src="{{ qr_code }}" alt="QR Code" class="qr-code">
+            <div style="font-size: 12px; color: #666; margin-top: 10px;">
+                Scan QR code to verify receipt authenticity
+            </div>
+            <div style="margin-top: 10px;">
+                <a href="{{ verification_url }}" class="verification-link">{{ verification_url }}</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="footer">
+            <p style="margin-bottom: 10px;">
+                <strong>Thank you for your payment!</strong>
+            </p>
+            <p>
+                This is an official receipt from CODA Analytics.<br>
+                For questions about this payment, please contact {{ company_email }}<br>
+                Keep this receipt for your records.
+            </p>
+            <p style="margin-top: 20px; font-size: 10px; color: #999;">
+                Generated on {{ issue_date|date:"F d, Y - g:i A" }} | Receipt #{{ receipt_number }}
+            </p>
+        </div>
+
+        <!-- Print Button (No Print) -->
+        <div class="no-print" style="text-align: center; margin-top: 30px;">
+            <button onclick="window.print()" style="background: #667eea; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 5px; cursor: pointer;">
+                <i class="fas fa-print"></i> Print Receipt
+            </button>
+            <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                Close
+            </button>
+        </div>
+
+    </div>
+</body>
+</html>
+

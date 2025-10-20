@@ -734,8 +734,34 @@ def validate_user_payment_eligibility(user, amount, payment_method="general"):
         if not amount_valid:
             return False, amount_message
 
-        # Then check user balance and eligibility
-        payment_info = Payment_Information.objects.filter(customer_id=user.id).first()
+        # Then check user balance and eligibility - use safe query to avoid field conflicts
+        try:
+            payment_info = Payment_Information.objects.filter(
+                customer_id=user.id
+            ).only('id', 'customer_id', 'payment_fees', 'down_payment').first()
+        except Exception as db_error:
+            # Fallback: use raw query to avoid model ordering issues
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, customer_id, payment_fees, down_payment 
+                    FROM finance_payment_information 
+                    WHERE customer_id = %s 
+                    ORDER BY id DESC 
+                    LIMIT 1
+                """, [user.id])
+                result = cursor.fetchone()
+                if result:
+                    # Create a simple object with the needed attributes
+                    payment_info = type('PaymentInfo', (), {
+                        'id': result[0],
+                        'customer_id': result[1],
+                        'payment_fees': result[2],
+                        'down_payment': result[3]
+                    })()
+                else:
+                    payment_info = None
+        
         if not payment_info:
             return False, "No payment information found"
 
@@ -798,10 +824,14 @@ def save_payment_history(
         # Try to create the object step by step
         print("DEBUG: Attempting to create Payment_History object...")
 
+        # Calculate fee_balance (required database field)
+        fee_balance_value = payment_fees_value - down_payment_value
+        
         payment_record = Payment_History(
             customer=user,
             payment_fees=payment_fees_value,
             down_payment=down_payment_value,
+            fee_balance=fee_balance_value,
             student_bonus=student_bonus_value,
             plan=plan_value,
             subplan=subplan_value,
@@ -812,7 +842,7 @@ def save_payment_history(
             company_rep="system",
             client_date=timezone.now().strftime("%Y-%m-%d"),
             rep_date=timezone.now().strftime("%Y-%m-%d"),
-            description=f"Ref: {reference} | Status: {status}",
+            notes=f"Ref: {reference} | Status: {status}",
         )
 
         print("DEBUG: Payment record object created successfully")
@@ -1027,3 +1057,224 @@ def send_borrower_notification_email(loan_application, notification_type):
     except Exception as e:
         logger.error(f"Error sending borrower notification email: {str(e)}")
         return False
+
+
+# ====================================================
+# PAYMENT UTILITY FUNCTIONS
+# ====================================================
+
+def validate_amount(amount_str, payment_method="general"):    """     Comprehensive amount validation including format, limits, and method-specific rules      Parameters:     - amount_str: The amount as a string (e.g., '15.99')     - payment_method: The payment method for method-specific limits      Returns:     - A tuple: (is_valid, message, amount_float)     """     try:         # Basic format validation         if not amount_str:             return False, "Payment amount is required", None          # Convert to float         amount_float = float(amount_str)          # Basic range validation         if amount_float <= 0:             return False, "Payment amount must be greater than zero", None          # Method-specific amount limits         method_limits = {             "mpesa": {"min": 10, "max": 300},             "paypal": {"min": 5, "max": 1000},             "stripe": {"min": 5, "max": 2000},             "cashapp": {"min": 5, "max": 500},             "zelle": {"min": 5, "max": 1500},             "venmo": {"min": 5, "max": 800},         }          if payment_method.lower() in method_limits:             limits = method_limits[payment_method.lower()]             if amount_float < limits["min"]:                 return (                     False,                     f"Amount ${amount_float} is below minimum limit of ${limits['min']} for {payment_method.title()}",                     None,                 )             if amount_float > limits["max"]:                 return (                     False,                     f"Amount ${amount_float} exceeds maximum limit of ${limits['max']} for {payment_method.title()}",                     None,                 )          # Additional validations         # Check for decimal precision (max 2 decimal places)         if len(str(amount_float).split(".")[-1]) > 2:             return False, "Amount cannot have more than 2 decimal places", None          # Check for reasonable amount (prevent extremely large amounts)         if amount_float > 100000:  # $100k limit             return (                 False,                 "Amount exceeds reasonable limit. Please contact support for large payments.",                 None,             )          return True, "Amount valid", amount_float      except (ValueError, TypeError):         return False, "Invalid payment amount format", None     except Exception as e:         return False, f"Error validating amount: {str(e)}", None   def validate_user_payment_eligibility(user, amount, payment_method="general"):     """     Validate if user can make payment based on balance and amount     Uses validate_amount for comprehensive amount validation     """     try:         from finance.models import Payment_Information          # First validate the amount using the enhanced validate_amount function         amount_valid, amount_message, amount_float = validate_amount(             amount, payment_method         )
+# ====================================================
+# PAYMENT UTILITY FUNCTIONS
+# ====================================================
+
+def validate_amount(amount_str, payment_method="general"):
+    """
+    Comprehensive amount validation including format, limits, and method-specific rules
+
+    Parameters:
+    - amount_str: The amount as a string (e.g., '15.99')
+    - payment_method: The payment method for method-specific limits
+
+    Returns:
+    - A tuple: (is_valid, message, amount_float)
+    """
+    try:
+        # Basic format validation
+        if not amount_str:
+            return False, "Payment amount is required", None
+
+        # Convert to float
+        amount_float = float(amount_str)
+
+        # Basic range validation
+        if amount_float <= 0:
+            return False, "Payment amount must be greater than zero", None
+
+        # Method-specific amount limits
+        method_limits = {
+            "mpesa": {"min": 10, "max": 300},
+            "paypal": {"min": 5, "max": 1000},
+            "stripe": {"min": 5, "max": 2000},
+            "cashapp": {"min": 5, "max": 500},
+            "zelle": {"min": 5, "max": 1500},
+            "venmo": {"min": 5, "max": 800},
+        }
+
+        if payment_method.lower() in method_limits:
+            limits = method_limits[payment_method.lower()]
+            if amount_float < limits["min"]:
+                return (
+                    False,
+                    f"Amount ${amount_float} is below minimum limit of ${limits['min']} for {payment_method.title()}",
+                    None,
+                )
+            if amount_float > limits["max"]:
+                return (
+                    False,
+                    f"Amount ${amount_float} exceeds maximum limit of ${limits['max']} for {payment_method.title()}",
+                    None,
+                )
+
+        # Additional validations
+        # Check for decimal precision (max 2 decimal places)
+        if len(str(amount_float).split(".")[-1]) > 2:
+            return False, "Amount cannot have more than 2 decimal places", None
+
+        # Check for reasonable amount (prevent extremely large amounts)
+        if amount_float > 100000:
+            return False, "Amount exceeds maximum allowed limit ($100,000)", None
+
+        # All validations passed
+        return True, "Valid amount", amount_float
+
+    except (ValueError, TypeError):
+        return False, "Invalid amount format. Please enter a valid number.", None
+    except Exception as e:
+        logger.error(f"validate_amount failed: {e}")
+        return False, f"Validation error: {str(e)}", None
+
+
+def validate_user_payment_eligibility(user, amount, payment_method="general"):
+    """
+    Validate if user can make payment based on balance and amount
+    Uses validate_amount for comprehensive amount validation
+    """
+    try:
+        from finance.models import Payment_Information
+
+        # First validate the amount using the enhanced validate_amount function
+        amount_valid, amount_message, amount_float = validate_amount(
+            amount, payment_method
+        )
+        if not amount_valid:
+            return False, amount_message, None
+
+        # Then check user balance and eligibility - use safe query to avoid field conflicts
+        try:
+            payment_info = Payment_Information.objects.filter(
+                customer_id=user.id
+            ).only('id', 'customer_id', 'payment_fees', 'down_payment').first()
+        except Exception as db_error:
+            # Fallback: use raw query to avoid model ordering issues
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, customer_id, payment_fees, down_payment 
+                    FROM finance_payment_information 
+                    WHERE customer_id = %s 
+                    ORDER BY id DESC 
+                    LIMIT 1
+                """, [user.id])
+                result = cursor.fetchone()
+                if result:
+                    # Create a simple object with the needed attributes
+                    payment_info = type('PaymentInfo', (), {
+                        'id': result[0],
+                        'customer_id': result[1],
+                        'payment_fees': result[2],
+                        'down_payment': result[3]
+                    })()
+                else:
+                    payment_info = None
+        
+        if not payment_info:
+            return False, "No payment information found", None
+
+        # Check if user has negative balance (owes money)
+        if payment_info.payment_fees < 0:
+            return (
+                False,
+                f"Account has negative balance of ${abs(payment_info.payment_fees)}. Please resolve outstanding balance first.",
+                None
+            )
+
+        # Check if user has $0 balance and trying to make payment
+        if payment_info.payment_fees == 0:
+            return False, "Account has $0 balance. Please add funds or contact support.", None
+
+        # Check if payment amount exceeds available balance
+        if amount_float > payment_info.payment_fees:
+            return (
+                False,
+                f"Payment amount ${amount_float} exceeds available balance of ${payment_info.payment_fees}",
+                None
+            )
+
+        return True, "Payment eligible", amount_float
+
+    except Exception as e:
+        return False, f"Error checking payment eligibility: {str(e)}", None
+
+
+def save_payment_history(
+    user, payment_info, method, reference, amount, status="completed"
+):
+    """Persist a payment into Payment_History using existing model fields."""
+    try:
+        from finance.models import Payment_History  # local import to avoid circulars
+
+        print("DEBUG: Starting save_payment_history")
+        print(f"DEBUG: user: {user}")
+        print(f"DEBUG: payment_info: {payment_info}")
+        print(f"DEBUG: method: {method}")
+        print(f"DEBUG: reference: {reference}")
+        print(f"DEBUG: amount: {amount}")
+        print(f"DEBUG: status: {status}")
+
+        # Debug the calculated values
+        payment_fees_value = int(round(float(amount))) if amount else 0
+        down_payment_value = getattr(payment_info, "down_payment", 0) or 0
+        student_bonus_value = getattr(payment_info, "student_bonus", 0) or 0
+        plan_value = getattr(payment_info, "plan", 1) or 1
+        subplan_value = getattr(payment_info, "subplan", 1) or 1
+        pricing_plan_value = getattr(payment_info, "pricing_plan", 1) or 1
+
+        print(f"DEBUG: payment_fees_value: {payment_fees_value}")
+        print(f"DEBUG: down_payment_value: {down_payment_value}")
+        print(f"DEBUG: student_bonus_value: {student_bonus_value}")
+        print(f"DEBUG: plan_value: {plan_value}")
+        print(f"DEBUG: subplan_value: {subplan_value}")
+        print(f"DEBUG: pricing_plan_value: {pricing_plan_value}")
+
+        # fee_balance is a computed property - no need to set it manually
+
+        # Try to create the object step by step
+        print("DEBUG: Attempting to create Payment_History object...")
+
+        # Calculate fee_balance (required database field)
+        fee_balance_value = payment_fees_value - down_payment_value
+        
+        payment_record = Payment_History(
+            customer=user,
+            payment_fees=payment_fees_value,
+            down_payment=down_payment_value,
+            fee_balance=fee_balance_value,
+            student_bonus=student_bonus_value,
+            plan=plan_value,
+            subplan=subplan_value,
+            pricing_plan=pricing_plan_value,
+            payment_method=str(method),
+            contract_submitted_date=timezone.now(),
+            client_signature="system",
+            company_rep="system",
+            client_date=timezone.now().strftime("%Y-%m-%d"),
+            rep_date=timezone.now().strftime("%Y-%m-%d"),
+            notes=f"Ref: {reference} | Status: {status}",
+        )
+
+        print("DEBUG: Payment_History object created, calling save()...")
+        payment_record.save()
+
+        print(f"DEBUG: Payment_History created successfully with ID {payment_record.id}")
+        return True
+
+    except Exception as e:
+        import traceback
+
+        print(f"DEBUG: Exception occurred: {str(e)}")
+        print(f"DEBUG: Exception type: {type(e)}")
+        print(f"DEBUG: Full traceback: {traceback.format_exc()}")
+        logger.error(f"save_payment_history failed: {e}")
+        return False
+

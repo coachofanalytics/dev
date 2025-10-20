@@ -27,6 +27,9 @@ def save_payment_history(user, payment_info, method, reference, amount, status="
     try:
         from finance.models import Payment_History
         
+        # Calculate fee_balance (required database field)
+        fee_balance = amount - payment_info.down_payment
+        
         payment_history = Payment_History.objects.create(
             customer=user,
             payment_fees=amount,
@@ -35,8 +38,9 @@ def save_payment_history(user, payment_info, method, reference, amount, status="
             subplan=payment_info.subplan,
             pricing_plan=payment_info.pricing_plan,
             down_payment=payment_info.down_payment,
+            fee_balance=int(fee_balance),
             student_bonus=payment_info.student_bonus,
-            description=f"Payment via {method} - Ref: {reference}",
+            notes=f"Payment via {method} - Ref: {reference}",
             contract_submitted_date=payment_info.contract_submitted_date,
             client_signature=payment_info.client_signature,
             company_rep=payment_info.company_rep,
@@ -64,8 +68,34 @@ def validate_user_payment_eligibility(user, amount, payment_method="general"):
         
         amount_float = float(amount)
         
-        # Check user payment information
-        payment_info = Payment_Information.objects.filter(customer_id=user.id).first()
+        # Check user payment information - use safe query to avoid field conflicts
+        try:
+            payment_info = Payment_Information.objects.filter(
+                customer_id=user.id
+            ).only('id', 'customer_id', 'payment_fees', 'down_payment').first()
+        except Exception as db_error:
+            # Fallback: use raw query to avoid model ordering issues
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, customer_id, payment_fees, down_payment 
+                    FROM finance_payment_information 
+                    WHERE customer_id = %s 
+                    ORDER BY id DESC 
+                    LIMIT 1
+                """, [user.id])
+                result = cursor.fetchone()
+                if result:
+                    # Create a simple object with the needed attributes
+                    payment_info = type('PaymentInfo', (), {
+                        'id': result[0],
+                        'customer_id': result[1],
+                        'payment_fees': result[2],
+                        'down_payment': result[3]
+                    })()
+                else:
+                    payment_info = None
+        
         if not payment_info:
             return False, "No payment information found", None
         

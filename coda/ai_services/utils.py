@@ -46,7 +46,16 @@ import logging
 logger = logging.getLogger(__name__)
 #libraries for Options_play data extraction
 
-from coda_project.settings import dba_values ,source_target #dblocal,herokudev,herokuprod
+# Database configuration functions - moved to local_settings.py
+def dba_values():
+    """Get database values for local development environment"""
+    # Use SQLite for local development
+    return None, None, None, None
+
+def source_target():
+    """Get source and target database configuration"""
+    # For local development, use same database for both source and target
+    return None, None, None, None, None
 # from testing.utils import dblocal,herokudev,herokuprod
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://mail.google.com/']

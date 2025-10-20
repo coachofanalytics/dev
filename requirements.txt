@@ -59,6 +59,8 @@ aiohttp==3.10.5
 click==8.1.3
 tqdm==4.64.1
 packaging==23.2
+qrcode==7.4.2
+pillow==11.1.0  # Required for qrcode (already included above)
 
 # Development and Testing (only for development)
 coverage==7.10.6

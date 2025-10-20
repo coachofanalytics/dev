@@ -5,7 +5,7 @@
 
 ---
 
-## ✅ RESOLVED (October 13, 2025)
+## ✅ RESOLVED (October 13-17, 2025)
 
 1. **ModuleNotFoundError: finance._deprecated** - Graceful import handling ✅
 2. **BudgetRequest.company field errors** - Removed invalid filters ✅
@@ -14,6 +14,11 @@
 5. **LoanProduct schema mismatch** - Aligned with database ✅
 6. **BudgetRequest approval fields** - Added approved_by, etc. ✅
 7. **ApprovalPolicy.approvers error** - Simplified logic ✅
+8. **Payment_History field errors** - Fixed 3 issues (Oct 17) ✅
+   - Changed `description` to `notes` field  
+   - Added `fee_balance` calculation (payment_fees - down_payment)
+   - Added `fee_balance` field to Django models (schema alignment)
+   - **Deployed:** UAT v937, v938, v939
 
 ---
 

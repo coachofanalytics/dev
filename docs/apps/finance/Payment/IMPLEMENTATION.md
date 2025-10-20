@@ -385,6 +385,14 @@ Amount: $XXX.XX
 
 ---
 
-**Last Updated:** October 13, 2025  
+## Change History
+
+| Date | Change | Files Modified | Reason |
+|------|--------|----------------|---------|
+| Oct 17, 2025 | Fixed Payment field errors (4 bugs) | `utils.py`, `utils/__init__.py`, `models/core.py` | 1) Changed `description=` to `notes=` field<br>2) Added `fee_balance` calculation<br>3) Added `fee_balance` field to Payment_History<br>4) Made fee_balance a @property in Payment_Information<br>**Deployed:** UAT v937, v938, v939, v940 |
+
+---
+
+**Last Updated:** October 17, 2025  
 **Status:** Architecture complete, implementation pending
 

@@ -1926,11 +1926,11 @@ def send_notification(request, payment_id=None):
     if payslip_config.loan_repayment_percentage > Decimal(0):
         # print("Percentage=====>",payslip_config.loan_repayment_percentage)
         repayment_amount = (
-            user_payment_information.fee_balance
+            user_payment_information.get_fee_balance()
             * payslip_config.loan_repayment_percentage
         )
     else:
-        repayment_amount = user_payment_information.fee_balance
+        repayment_amount = user_payment_information.get_fee_balance()
         # print("repayment_amount=====>",repayment_amount,payslip_config.loan_repayment_percentage)
 
     # Calculate overdue days and due date
@@ -2051,7 +2051,7 @@ def send_invoice(request, type="collection"):
             client_email = client.email
             today = datetime.now()
             date = datetime(today.year, today.month, 1)
-            debt_amount = customer_payment_information.fee_balance
+            debt_amount = customer_payment_information.get_fee_balance()
             repayment_amount = payslip_config.installment_amount
             balance_amount = (
                 debt_amount - repayment_amount
@@ -2196,22 +2196,37 @@ def pay(request, *args, **kwargs):
                 payment_source = 'history'
                 logger.info(f"User {request.user.username} has unpaid history: {unpaid_history.id}")
         
-        # 4. No outstanding payments found - but user may want to pay for new service
+        # 4. No outstanding payments found - route by persona to create context
         if not payment_info:
-            logger.info(f"User {request.user.username} accessing payment page without existing payment info")
-            # Create a placeholder payment info for general payments
-            # User can select amount and service on the payment page
+            try:
+                from finance.utilities.payment_utils import PaymentUtils
+            except Exception:
+                PaymentUtils = None
+
+            logger.info(
+                f"User {request.user.username} accessing payment page without existing payment info; routing by persona"
+            )
+
+            if PaymentUtils is not None:
+                named_url, absolute_url = PaymentUtils.get_persona_redirect_url(request.user)
+                if named_url:
+                    return redirect(reverse(named_url))
+                if absolute_url:
+                    return redirect(absolute_url)
+
+            # Fallback behavior: create placeholder and show legacy page
             payment_info = type('obj', (object,), {
-                'id': None,  # No id for new payments
-                'payment_fees': 0,  # Will be entered on payment page
+                'id': None,
+                'payment_fees': 0,
                 'down_payment': 0,
-                'is_new_payment': True  # Flag to show this is a new payment
+                'is_new_payment': True,
             })()
             payment_source = 'new_service'
             paypal_charges = 0
-            
-            # Add message to help user understand they can pay for services
-            messages.info(request, "Welcome! You can make a payment for training, services, or other CODA offerings.")
+            messages.info(
+                request,
+                "Welcome! Please select a service to create a payable amount.",
+            )
 
     # Calculate payment amounts
     if hasattr(payment_info, 'payment_fees'):
@@ -2237,34 +2252,41 @@ def paymentComplete(request):
     payments = Payment_Information.objects.filter(customer_id=request.user.id).first()
     customer = request.user
     body = json.loads(request.body)
-    payment_fees = body["payment_fees"]
+    payment_fees = int(float(body["payment_fees"]))
     down_payment = payments.down_payment
     studend_bonus = payments.student_bonus
     plan = payments.plan
     subplan = payments.subplan
     pricing_plan = payments.pricing_plan
-    # fee_balance = payments.fee_balance
+    # Calculate fee_balance (required field)
+    fee_balance = payment_fees - down_payment
     payment_mothod = payments.payment_method
     contract_submitted_date = payments.contract_submitted_date
     client_signature = payments.client_signature
     company_rep = payments.company_rep
     client_date = payments.client_date
     rep_date = payments.rep_date
+    
+    # Get PayPal transaction details if available
+    transaction_id = body.get("transaction_id", "")
+    payer_email = body.get("payer_email", "")
+    
     Payment_History.objects.create(
         customer=customer,
         payment_fees=payment_fees,
         down_payment=down_payment,
+        fee_balance=fee_balance,
         student_bonus=studend_bonus,
         plan=plan,
         subplan=subplan,
         pricing_plan=pricing_plan,
-        # fee_balance=fee_balance,
         payment_method=payment_mothod,
         contract_submitted_date=contract_submitted_date,
         client_signature=client_signature,
         company_rep=company_rep,
         client_date=client_date,
         rep_date=rep_date,
+        notes=f"PayPal Transaction ID: {transaction_id} | Payer: {payer_email}" if transaction_id else "",
     )
     try:
         if PayslipConfig.objects.filter(user__username=request.user.username).exists():
@@ -3323,7 +3345,9 @@ def foodlist(request):
 
     total_add_amount = 0
     for supply in supplies_Fs.qs:
-        total_add_amount = total_add_amount + supply.additional_amount
+        # Handle missing additional_amount field gracefully
+        additional_amount = getattr(supply, 'additional_amount', 0)
+        total_add_amount = total_add_amount + additional_amount
 
     context = {
         "total_add_amount": total_add_amount,
@@ -4504,7 +4528,7 @@ class FoodListView(FilteredListViewMixin, ListView):
         # Calculate totals
         total_amt = sum(supply.total_amount for supply in supplies_filter.qs)
         total_add_amount = sum(
-            supply.additional_amount for supply in supplies_filter.qs
+            getattr(supply, 'additional_amount', 0) for supply in supplies_filter.qs
         )
 
         context.update(
