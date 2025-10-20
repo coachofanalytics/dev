@@ -203,3 +203,68 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.category} - {self.amount} ({self.payment_method})"
+    
+
+
+class PaymentInformation(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('cash', 'cash'),
+        ('Mpesa', 'Mpesa'),
+        ('Bank_Transfer', 'Bank_Transfer'),
+        ('Cheque', 'Cheque'),
+        ('Other', 'Other'),
+    ]
+
+    customer_id = models.ForeignKey(
+        CustomerUser,
+        on_delete=models.CASCADE,
+        null=False,
+        related_name='payments'
+    )
+    payment_fees = models.DecimalField(max_digits=12, decimal_places=2, null=False)
+    down_payment = models.DecimalField(max_digits=12, decimal_places=2, null=False, default=500)
+    student_bonus = models.DecimalField(max_digits=12, decimal_places=2, null=True, default=0.00)
+    plan = models.IntegerField(null=False)
+    subplan = models.IntegerField(null=True)
+    payment_method = models.CharField(max_length=100, choices=PAYMENT_METHOD_CHOICES)
+    contract_submitted_date = models.DateTimeField(default=timezone.now)
+    client_signature = models.CharField(max_length=100, null=False)
+    company_rep = models.CharField(max_length=100, null=False)
+    client_date = models.CharField(max_length=100, null=True)
+    rep_date = models.CharField(max_length=100, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=False)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    # ✅ Property methods (must be inside the class)
+    @property
+    def student_balance(self):
+        try:
+            return self.payment_fees - (self.down_payment + self.student_bonus)
+        except (TypeError, ValueError):
+            return 0.00
+
+    @property
+    def jobsupport_balance(self):
+        try:
+            return self.payment_fees - self.down_payment
+        except (TypeError, ValueError):
+            return 0.00
+        
+
+@property
+def student_balance(self):
+    try:
+        return float(self.payment_fees or 0) - (float(self.down_payment or 0) + float(self.student_bonus or 0))
+    except (TypeError, ValueError):
+        return 0.0
+
+@property
+def jobsupport_balance(self):
+    try:
+        return float(self.payment_fees or 0) - float(self.down_payment or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+
+
