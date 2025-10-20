@@ -48,12 +48,13 @@ def sync_transaction_to_budget(sender, instance, created, **kwargs):
             department=department,
             category=category,
             subcategory=subcategory,
-            item=truncated_item,
+            item_name=truncated_item,
             defaults={  # Fields to update if it already exists
                 "cases": 1,
-                "qty": instance.qty,
+                "quantity": instance.qty,
                 "unit_price": instance.amount,
-                "created_at": instance.transaction_date,
+                "start_date": instance.transaction_date.date() if hasattr(instance.transaction_date, 'date') else instance.transaction_date,
+                "end_date": instance.transaction_date.date() if hasattr(instance.transaction_date, 'date') else instance.transaction_date,
                 "description": truncated_description,
                 "receipt_link": truncated_receipt_link
             }
@@ -73,11 +74,12 @@ def sync_transaction_to_budget(sender, instance, created, **kwargs):
             department=department,
             category=category,
             subcategory=subcategory,
-            item=truncated_item,
+            item_name=truncated_item,
             cases=1,
-            qty=instance.qty,
+            quantity=instance.qty,
             unit_price=instance.amount,
-            created_at=instance.transaction_date,
+            start_date=instance.transaction_date.date() if hasattr(instance.transaction_date, 'date') else instance.transaction_date,
+            end_date=instance.transaction_date.date() if hasattr(instance.transaction_date, 'date') else instance.transaction_date,
             description=truncated_description,
             receipt_link=truncated_receipt_link
         )
