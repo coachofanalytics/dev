@@ -3,9 +3,9 @@
 
 {% block presentation_content %}
 <!-- Market Opportunity Section -->
-<div class="row mb-4">
+<div class="row mb-5">
     <div class="col-12">
-        <div class="presentation-card">
+        <div class="market-opportunity-card">
             <h2 class="text-center mb-4">
                 <i class="fas fa-globe-africa"></i> Market Opportunity & Problem Statement
             </h2>
@@ -14,39 +14,50 @@
                     <h4 class="text-danger"><i class="fas fa-exclamation-triangle"></i> The Problem</h4>
                     <p class="lead">{{ market_opportunity.problem }}</p>
                     <ul class="mt-3">
-                        <li><strong>Manual Processes:</strong> Budget approvals take 3-7 days</li>
-                        <li><strong>High Costs:</strong> $50K+ annually in labor and delays</li>
-                        <li><strong>Inefficiency:</strong> Finance teams spend 40+ hours/month on routine approvals</li>
-                        <li><strong>Error-Prone:</strong> Inconsistent approval decisions</li>
+                        <li><i class="fas fa-times text-danger"></i> <strong>Manual Processes:</strong> Budget approvals take 3-7 days</li>
+                        <li><i class="fas fa-times text-danger"></i> <strong>High Costs:</strong> $50K+ annually in labor and delays</li>
+                        <li><i class="fas fa-times text-danger"></i> <strong>Inefficiency:</strong> Finance teams spend 40+ hours/month on routine approvals</li>
+                        <li><i class="fas fa-times text-danger"></i> <strong>Error-Prone:</strong> Inconsistent approval decisions</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
                     <h4 class="text-success"><i class="fas fa-lightbulb"></i> Our Solution</h4>
                     <p class="lead">{{ market_opportunity.solution }}</p>
                     <ul class="mt-3">
-                        <li><strong>AI-Driven:</strong> Data-driven tier classification</li>
-                        <li><strong>Automated:</strong> 75% of approvals happen instantly</li>
-                        <li><strong>Cost-Effective:</strong> $50K+ annual savings</li>
-                        <li><strong>Accurate:</strong> 95%+ accuracy rate</li>
+                        <li><i class="fas fa-check text-success"></i> <strong>AI-Driven:</strong> Data-driven tier classification</li>
+                        <li><i class="fas fa-check text-success"></i> <strong>Automated:</strong> 75% of approvals happen instantly</li>
+                        <li><i class="fas fa-check text-success"></i> <strong>Cost-Effective:</strong> $50K+ annual savings</li>
+                        <li><i class="fas fa-check text-success"></i> <strong>Accurate:</strong> 95%+ accuracy rate</li>
                     </ul>
                 </div>
             </div>
             <div class="row mt-4">
                 <div class="col-md-3 text-center">
-                    <h3 class="text-primary">{{ market_opportunity.market_size }}</h3>
-                    <p>Market Size</p>
+                    <div class="opportunity-metric">
+                        <span class="metric-value">{{ market_opportunity.market_size }}</span>
+                        <span class="metric-label">Market Size</span>
+                    </div>
                 </div>
                 <div class="col-md-3 text-center">
-                    <h3 class="text-primary">$50K+</h3>
-                    <p>Cost Savings/Year</p>
+                    <div class="opportunity-metric">
+                        <span class="metric-value">$50K+</span>
+                        <span class="metric-label">Cost Savings/Year</span>
+                        <span class="metric-growth">Per Organization</span>
+                    </div>
                 </div>
                 <div class="col-md-3 text-center">
-                    <h3 class="text-primary">75%</h3>
-                    <p>Automation Rate</p>
+                    <div class="opportunity-metric">
+                        <span class="metric-value">75%</span>
+                        <span class="metric-label">Automation Rate</span>
+                        <span class="metric-growth">Industry Leading</span>
+                    </div>
                 </div>
                 <div class="col-md-3 text-center">
-                    <h3 class="text-primary">95%+</h3>
-                    <p>Accuracy</p>
+                    <div class="opportunity-metric">
+                        <span class="metric-value">95%+</span>
+                        <span class="metric-label">Accuracy</span>
+                        <span class="metric-growth">AI Classification</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -62,49 +73,70 @@
     </div>
 </div>
 
-<div class="row mb-4">
+<div class="row mb-5">
     {% for scenario in roi_scenarios %}
-    <div class="col-md-4 mb-3">
-        <div class="presentation-card h-100">
-            <div class="text-center mb-3">
-                <i class="{{ scenario.icon }} fa-3x text-primary"></i>
+    <div class="col-md-4 mb-4">
+        <div class="scenario-card">
+            <div class="scenario-header">
+                <div class="scenario-icon">
+                    <i class="{{ scenario.icon }} fa-3x"></i>
+                </div>
+                <h4>{{ scenario.title }}</h4>
+                <p class="scenario-subtitle">{{ scenario.subtitle }}</p>
             </div>
-            <h4 class="text-center">{{ scenario.title }}</h4>
-            <p class="text-center text-muted">{{ scenario.subtitle }}</p>
-            
-            <div class="mb-3 p-3 bg-light rounded">
-                <div class="text-center">
-                    <h5 class="text-success">{{ scenario.roi }}</h5>
-                    <small class="text-muted">Projected ROI</small>
+            <div class="scenario-body">
+                <div class="roi-preview">
+                    <span class="roi-label">Projected ROI:</span>
+                    <span class="roi-value">{{ scenario.roi }}</span>
+                </div>
+                <div class="market-size">
+                    <span class="market-label">Annual Savings:</span>
+                    <span class="market-value">{{ scenario.cost_savings }}</span>
+                </div>
+                <p class="mt-3"><strong>Time Savings:</strong> {{ scenario.time_savings }}</p>
+                <p><strong>Payback Period:</strong> {{ scenario.payback_period }}</p>
+                <div class="scenario-description mt-3">
+                    {{ scenario.description }}
                 </div>
             </div>
-            
-            <p><strong>Annual Savings:</strong> {{ scenario.cost_savings }}</p>
-            <p><strong>Time Savings:</strong> {{ scenario.time_savings }}</p>
-            <p><strong>Payback Period:</strong> {{ scenario.payback_period }}</p>
-            <p class="text-muted">{{ scenario.description }}</p>
+            <div class="scenario-footer">
+                <button class="btn btn-primary btn-block scenario-btn" onclick="showScenarioDetails('{{ scenario.key }}')">
+                    <i class="fas fa-calculator"></i> Calculate ROI
+                </button>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
 
+<script>
+function showScenarioDetails(scenarioKey) {
+    alert('ROI Calculator for ' + scenarioKey + ' coming soon!');
+    // Future: Show interactive ROI calculator
+}
+</script>
+
 <!-- Competitive Advantage -->
-<div class="row mb-4">
+<div class="row mb-5">
     <div class="col-12">
-        <div class="presentation-card">
+        <div class="competitive-advantage-card">
             <h2 class="text-center mb-4">
-                <i class="fas fa-trophy"></i> Competitive Advantages
+                <i class="fas fa-trophy"></i> Competitive Advantages & Moats
             </h2>
             <div class="row">
                 {% for advantage in competitive_advantages %}
-                <div class="col-md-4 text-center mb-3">
-                    <i class="{{ advantage.icon }} fa-3x mb-3"></i>
-                    <h4>{{ advantage.title }}</h4>
-                    <p>{{ advantage.description }}</p>
-                    <div>
-                        {% for metric in advantage.metrics %}
-                        <span class="badge badge-primary">{{ metric }}</span>
-                        {% endfor %}
+                <div class="col-md-4 text-center mb-4">
+                    <div class="advantage-item">
+                        <div class="advantage-icon">
+                            <i class="{{ advantage.icon }} fa-3x text-primary"></i>
+                        </div>
+                        <h4>{{ advantage.title }}</h4>
+                        <p>{{ advantage.description }}</p>
+                        <div class="advantage-metrics">
+                            {% for metric in advantage.metrics %}
+                            <span class="metric-badge">{{ metric }}</span>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -114,34 +146,68 @@
 </div>
 
 <!-- Financial Projections -->
-<div class="row mb-4">
+<div class="row mb-5">
     <div class="col-12">
-        <div class="presentation-card">
+        <div class="financial-projections-card">
             <h2 class="text-center mb-4">
-                <i class="fas fa-chart-bar"></i> Financial Projections (3-Year)
+                <i class="fas fa-chart-bar"></i> Financial Projections & Unit Economics
             </h2>
             <div class="row">
-                <div class="col-md-4 text-center">
-                    <h3>Year 1</h3>
-                    <p><strong>Revenue:</strong> <span class="text-success">{{ financial_projections.year_1.revenue }}</span></p>
-                    <p><strong>Costs:</strong> <span class="text-danger">{{ financial_projections.year_1.costs }}</span></p>
-                    <p><strong>Profit:</strong> <span class="text-primary"><strong>{{ financial_projections.year_1.profit }}</strong></span></p>
+                <div class="col-md-4 mb-3">
+                    <div class="projection-year">
+                        <h4>Year 1</h4>
+                        <div class="projection-metric">
+                            <span class="projection-label">Revenue</span>
+                            <span class="projection-value">{{ financial_projections.year_1.revenue }}</span>
+                        </div>
+                        <div class="projection-metric">
+                            <span class="projection-label">Costs</span>
+                            <span class="projection-value" style="color: #dc3545;">{{ financial_projections.year_1.costs }}</span>
+                        </div>
+                        <div class="projection-metric">
+                            <span class="projection-label">Profit</span>
+                            <span class="projection-value">{{ financial_projections.year_1.profit }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 text-center">
-                    <h3>Year 2</h3>
-                    <p><strong>Revenue:</strong> <span class="text-success">{{ financial_projections.year_2.revenue }}</span></p>
-                    <p><strong>Costs:</strong> <span class="text-danger">{{ financial_projections.year_2.costs }}</span></p>
-                    <p><strong>Profit:</strong> <span class="text-primary"><strong>{{ financial_projections.year_2.profit }}</strong></span></p>
+                <div class="col-md-4 mb-3">
+                    <div class="projection-year">
+                        <h4>Year 2</h4>
+                        <div class="projection-metric">
+                            <span class="projection-label">Revenue</span>
+                            <span class="projection-value">{{ financial_projections.year_2.revenue }}</span>
+                        </div>
+                        <div class="projection-metric">
+                            <span class="projection-label">Costs</span>
+                            <span class="projection-value" style="color: #dc3545;">{{ financial_projections.year_2.costs }}</span>
+                        </div>
+                        <div class="projection-metric">
+                            <span class="projection-label">Profit</span>
+                            <span class="projection-value">{{ financial_projections.year_2.profit }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 text-center">
-                    <h3>Year 3</h3>
-                    <p><strong>Revenue:</strong> <span class="text-success">{{ financial_projections.year_3.revenue }}</span></p>
-                    <p><strong>Costs:</strong> <span class="text-danger">{{ financial_projections.year_3.costs }}</span></p>
-                    <p><strong>Profit:</strong> <span class="text-primary"><strong>{{ financial_projections.year_3.profit }}</strong></span></p>
+                <div class="col-md-4 mb-3">
+                    <div class="projection-year">
+                        <h4>Year 3</h4>
+                        <div class="projection-metric">
+                            <span class="projection-label">Revenue</span>
+                            <span class="projection-value">{{ financial_projections.year_3.revenue }}</span>
+                        </div>
+                        <div class="projection-metric">
+                            <span class="projection-label">Costs</span>
+                            <span class="projection-value" style="color: #dc3545;">{{ financial_projections.year_3.costs }}</span>
+                        </div>
+                        <div class="projection-metric">
+                            <span class="projection-label">Profit</span>
+                            <span class="projection-value">{{ financial_projections.year_3.profit }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="presentation-divider"></div>
             <div class="text-center mt-4">
-                <p class="lead"><strong>Break-even:</strong> Month 8 | <strong>3-Year ROI:</strong> 450%+</p>
+                <h5 class="text-success"><i class="fas fa-check-circle"></i> Break-even: Month 8 | 3-Year ROI: 450%+</h5>
             </div>
         </div>
     </div>
