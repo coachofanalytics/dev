@@ -142,14 +142,18 @@ def show_payment_details(request, method):
     Shows payment details when automated payment fails or is unavailable
     """
     try:
-        # Get user's payment information
+        # Get user's payment information - avoid updated_at field that doesn't exist
         payment_info = Payment_Information.objects.filter(
             customer_id=request.user.id
-        ).order_by('-id').first()
+        ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').order_by('-id').first()
         
         if not payment_info:
             messages.error(request, 'No payment information found. Please create a payment first.')
-            return redirect('finance:pay')
+            # Redirect to loan application instead of method selection to avoid loop
+            try:
+                return redirect('finance:loan-home')
+            except Exception:
+                return redirect('finance:finance-index')
         
         # Generate payment reference
         payment_reference = generate_payment_reference(request.user.id, method)
@@ -209,7 +213,11 @@ def show_payment_details(request, method):
     except Exception as e:
         logger.error(f"Error showing payment details: {str(e)}")
         messages.error(request, 'Error displaying payment details. Please contact support.')
-        return redirect('finance:pay')
+        # Redirect to loan application instead of method selection to avoid loop
+        try:
+            return redirect('finance:loan-home')
+        except Exception:
+            return redirect('finance:finance-index')
 
 
 def send_payment_details_email(user, method, amount, reference, method_config):
@@ -274,5 +282,9 @@ def upload_payment_proof(request, reference):
             messages.error(request, 'Error uploading file. Please try again or contact support.')
             return redirect('finance:payment_details', method='unknown')
     
-    return redirect('finance:pay')
+    # Fallback redirect - go to loan application instead of method selection
+    try:
+        return redirect('finance:loan-home')
+    except Exception:
+        return redirect('finance:finance-index')
 

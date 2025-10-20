@@ -2,7 +2,7 @@
 Payment Dashboard Views
 User-facing payment history and status tracking
 """
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Count, Q
@@ -68,10 +68,10 @@ def payment_dashboard(request):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         
-        # Get user's payment information
+        # Get user's payment information - avoid updated_at field that doesn't exist
         payment_info = Payment_Information.objects.filter(
             customer_id=request.user.id
-        ).order_by('-id').first()
+        ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').order_by('-id').first()
         
         context = {
             'payments': page_obj,

@@ -32,6 +32,10 @@ from .views.payment.admin_verification import (
     reject_payment,
     bulk_approve_payments,
 )
+from .views.payment.stripe_views import (
+    create_payment_intent,
+    stripe_webhook,
+)
 
 # Import organized budget views
 from .views.budget import drilldown as views_budget_drilldown
@@ -423,4 +427,8 @@ urlpatterns += [
     # M-Pesa OTP Verification Flow
     path('unified/mpesa-otp/', unified_mpesa_otp, name='mpesa_otp_confirmation'),
     path('unified/verify-otp/', unified_verify_otp, name='verify_mpesa_otp'),
+    
+    # Stripe Payment Integration
+    path('stripe/payment-intent/', create_payment_intent, name='stripe_payment_intent'),
+    path('stripe/webhook/', stripe_webhook, name='stripe_webhook'),
 ]

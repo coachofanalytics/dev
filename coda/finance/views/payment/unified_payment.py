@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse
 import logging
 
 from finance.models import Payment_Information, Payment_History
@@ -132,8 +133,26 @@ def payment_method_selection(request):
                     return redirect(absolute_url)
             except Exception:
                 pass
-            messages.error(request, 'No payment context found. Please select a service to continue.')
-            return redirect('finance:payments', title='history', status='completed')
+            
+            # If no payment context found, redirect to loan application or service selection
+            messages.error(request, 'No payment context found. Please select a service or apply for a loan to continue.')
+            
+            # Try to redirect to loan application first
+            try:
+                return redirect('finance:loan-home')
+            except Exception:
+                pass
+            
+            # Fallback to finance index
+            try:
+                return redirect('finance:finance-index')
+            except Exception:
+                pass
+            
+            # Last resort - show error page
+            return render(request, 'finance/payments/no_payment_context.html', {
+                'error_message': 'No payment context found. Please contact support or select a service.'
+            })
         
         # Calculate amounts
         total_amount = payment_info.payment_fees
@@ -421,21 +440,21 @@ def process_stripe_payment(request, payment_info, payment_service):
     Try Stripe API if credentials available, otherwise show payment details
     """
     import os
+    from django.conf import settings
     
     # Check if Stripe credentials are available
     has_stripe_creds = all([
-        os.environ.get('STRIPE_PUBLISHABLE_KEY'),
-        os.environ.get('STRIPE_SECRET_KEY')
+        getattr(settings, 'STRIPE_PUBLISHABLE_KEY', None),
+        getattr(settings, 'STRIPE_SECRET_KEY', None)
     ])
     
     if not has_stripe_creds:
         logger.info(f"Stripe credentials not available for user {request.user.username}, showing payment details")
         return show_payment_details(request, 'stripe')
     
-    # TODO: Implement Stripe Elements integration when credentials provided
-    # For now, fallback to payment details
-    logger.info(f"Stripe integration pending for user {request.user.username}, showing payment details")
-    return show_payment_details(request, 'stripe')
+    # Show Stripe Elements form
+    logger.info(f"Showing Stripe Elements form for user {request.user.username}")
+    return show_payment_form(request, 'stripe', payment_info)
 @login_required
 def payment_success(request):
     """Unified payment success view"""
@@ -492,12 +511,25 @@ def payment_failed(request):
 def show_payment_form(request, method, payment_info):
     """Show payment form for the specified method"""
     try:
+        # For manual payment methods, redirect to payment details instead of showing forms
+        manual_methods = ['mpesa', 'cashapp', 'zelle', 'venmo']
+        
+        if method in manual_methods:
+            logger.info(f"Manual payment method {method} requested, redirecting to payment details")
+            return show_payment_details(request, method)
+        
+        # For automated methods (PayPal, Stripe), show their specific forms
         method_info = PAYMENT_METHODS.get(method, {})
         context = {
             'method': method,
             'method_info': method_info,
             'payment_info': payment_info,
         }
+        
+        # Add Stripe-specific context
+        if method == 'stripe':
+            from django.conf import settings
+            context['stripe_publishable_key'] = getattr(settings, 'STRIPE_PUBLISHABLE_KEY', '')
         
         template_name = f'finance/payments/{method}_form.html'
 
@@ -556,7 +588,7 @@ def verify_mpesa_otp(request):
             return redirect('finance:mpesa_otp_confirmation')
         
         # OTP is valid - process payment
-        payment_info = Payment_Information.objects.get(id=mpesa_data['payment_info_id'])
+        payment_info = Payment_Information.objects.only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').get(id=mpesa_data['payment_info_id'])
         
         # Create payment record
         reference = mpesa_data['reference']
