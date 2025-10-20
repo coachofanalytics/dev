@@ -2,7 +2,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from datetime import datetime
 from finance.models import Transaction, Budget, BudgetCategory, BudgetSubCategory
-from main.models import Company, Department
+from main.models import Company
+from accounts.models import Department
 
 @receiver(post_save, sender=Transaction)
 def sync_transaction_to_budget(sender, instance, created, **kwargs):
