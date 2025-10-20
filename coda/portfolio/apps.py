@@ -13,3 +13,10 @@ class PortfolioConfig(AppConfig):
             AIDiasporaPresentationService,
             SmartLoanPresentationService,
         )
+        
+        # Register services with ProjectRegistry
+        from .services.base_presentation import ProjectRegistry
+        
+        ProjectRegistry.register("budget-tier", BudgetTierPresentationService)
+        ProjectRegistry.register("ai-diaspora", AIDiasporaPresentationService)
+        ProjectRegistry.register("smart-loan", SmartLoanPresentationService)
