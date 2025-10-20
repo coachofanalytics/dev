@@ -1,6 +1,26 @@
 from datetime import date
 import string
 import secrets
+import os
+import random
+import json
+import requests
+
+
+
+#This function obtains exchange rate information
+def get_exchange_rate(base, target):
+    # api_key = 'YOUR_APP_ID'
+    exchange_api_key = os.environ.get('EXCHANGE_API_KEY')
+    # api_key = exchange_api_key
+    try:
+        url = f'https://openexchangerates.org/api/latest.json?app_id={exchange_api_key}&base={base}'
+        response = requests.get(url)
+        data = response.json()
+        rate=data['rates'][target]
+    except:
+        rate=139.00
+    return rate
 
 def generate_random_password(length=12):
     characters = string.ascii_letters + string.digits + "!@#$%&"

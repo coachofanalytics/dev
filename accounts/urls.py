@@ -11,7 +11,7 @@ urlpatterns = [
     path('profile/', views.profile, name='account-profile'),   
 
     # ✅ Correct route for transactions
-    path('all_transaction_list/', views.All_transaction_list_view, name='accounts:transaction_list'),
+    path('all_transaction_list/', views.All_transaction_list_view, name='accounts-transaction_list'),
     path('all_transaction_create/', views.All_transaction_create_view, name='all_transaction_create'),
     path('all_transaction_update/<int:pk>/', views.All_transaction_update_view, name='all_transaction_update'),
     path('all_transaction_detail/<int:pk>/', views.All_transaction_detail_view, name='all_transaction_detail'),
@@ -20,6 +20,10 @@ urlpatterns = [
     path('CODA_Transaction_update/<int:pk>/', views.transaction_update_view, name='transaction_update'),
     path('CODA_Transaction_detail/<int:pk>/', views.transaction_detail_view, name='transaction_detail'),
     path('CODA_Transaction_delete/<int:pk>/', views.transaction_delete_view, name='transaction_delete'),
+
+   path("payment_list/", views.payment_list_view, name="payment_list"),
+
+
 
     
 ]

@@ -5,7 +5,7 @@ from accounts.views import *
     
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from accounts.models import Transaction
+from accounts.models import Transaction,PaymentInformation
 
 User = get_user_model()
 
@@ -358,10 +358,6 @@ class AllTransactionDeleteViewTest(TestCase):
 
         
 
-from django.test import TestCase, Client
-from django.urls import reverse
-from accounts.models import Transaction
-from django.utils import timezone
 
 class TransactionListViewTest(TestCase):
     """✅ Test suite for transaction_list_view."""
@@ -461,13 +457,56 @@ class TransactionCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Save")
         self.assertEqual(Transaction.objects.count(), 0)
+from django.test import TestCase, Client
+from django.urls import reverse
+from accounts.models import PaymentInformation, CustomerUser
+from django.utils import timezone
 
 
+class PaymentInformationListViewTest(TestCase):
+    """✅ Tests for the Payment Information List View"""
 
+    def setUp(self):
+        self.client = Client()
 
+        # ✅ Correctly define the URL here
+        self.url = reverse("accounts:payment_list")
 
+        # Create customer
+        self.customer = CustomerUser.objects.create(
+            first_name="John",
+            last_name="Doe",
+            email="john@example.com",
+            is_active=True
+        )
 
+        # Create sample payments
+        PaymentInformation.objects.create(
+            customer_id=self.customer,
+            payment_fees=1000.00,
+            down_payment=200.00,
+            student_bonus=50.00,
+            plan=1,
+            payment_method="Cash",
+            contract_submitted_date=timezone.now(),
+            client_signature="Signed",
+            company_rep="Admin",
+        )
 
+        PaymentInformation.objects.create(
+            customer_id=self.customer,
+            payment_fees=1500.00,
+            down_payment=300.00,
+            student_bonus=100.00,
+            plan=2,
+            payment_method="Mpesa",
+            contract_submitted_date=timezone.now(),
+            client_signature="Signed",
+            company_rep="Manager",
+        )
 
-
-
+    def test_view_status_code(self):
+        """✅ Page should load successfully"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/paymentinformation_list.html")

@@ -74,4 +74,9 @@ admin.site.register(CustomerUser, CustomerAdmin)
 admin.site.register(LoginHistory, LoginHistoryAdmin)
 admin.site.register(All_transaction)
 admin.site.register(Transaction)
-admin.site.register(PaymentInformation)
+class PaymentInformationAdmin(admin.ModelAdmin):
+    list_display = (
+        "id", "customer_id", "payment_fees", "down_payment", 
+        "student_bonus", "plan", "payment_method", "contract_submitted_date"
+    )
+

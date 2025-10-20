@@ -7,8 +7,8 @@ from .forms import UserForm, LoginForm,AlltransactionForm,TransactionForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,All_transaction,Transaction
-from .utils import agreement_data
+from .models import CustomerUser,All_transaction,Transaction,PaymentInformation
+from .utils import agreement_data,get_exchange_rate
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
 
@@ -18,10 +18,13 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from accounts.choices import CategoryChoices
-
+from decimal import *
 from django.db.models import Q
 
 # Create your views here..
+#Exchange Rate details
+usd_to_kes = get_exchange_rate('USD', 'KES')
+rate = round(Decimal(usd_to_kes), 2)
 
 # @allowed_users(allowed_roles=['admin'])
 def home(request):
@@ -389,6 +392,16 @@ def transaction_delete_view(request, pk):
         return redirect('accounts:accounts-transaction_list')
 
     return render(request, 'accounts/Transaction_delete_view.html', {'transaction': transaction})
+
+
+def payment_list_view(request):
+    payments = PaymentInformation.objects.all().order_by('-created_at')
+    context ={'payments': payments,
+              'rate': rate
+              }
+    return render(request, "accounts/paymentinformation_list.html", context)
+
+
 
 
 
