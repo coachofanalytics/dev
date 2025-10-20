@@ -16,11 +16,11 @@ print(f"Loading settings for environment: {ENVIRONMENT}")
 from .coda_settings.base_settings import *
 
 # Then, import environment-specific overrides
-if ENVIRONMENT == 'local':
+if ENVIRONMENT == 'staging':
     from .coda_settings.local_settings import *
-elif ENVIRONMENT == 'staging':
-    print(f"Loading settings_staging for environment: {ENVIRONMENT}")
-    from .coda_settings.heroku_settings import *
+# elif ENVIRONMENT == 'staging':
+#     print(f"Loading settings_staging for environment: {ENVIRONMENT}")
+#     from .coda_settings.heroku_settings import *
 elif ENVIRONMENT == 'production':
     from .coda_settings.prod_settings import *
 elif ENVIRONMENT == 'heroku2':

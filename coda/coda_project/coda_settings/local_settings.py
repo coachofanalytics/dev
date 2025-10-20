@@ -16,7 +16,7 @@ from .base_settings import *
 
 # Debug mode ON for local development
 DEBUG = True
-
+LOCAL_DB='uat'
 # Local development hosts
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
