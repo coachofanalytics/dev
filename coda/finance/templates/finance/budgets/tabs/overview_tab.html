@@ -13,6 +13,15 @@
             <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-outline-secondary">
                 <i class="fas fa-list"></i> My Requests
             </a>
+            <a href="{% url 'finance:budget_projection' subtitle='summary' %}" class="btn btn-success">
+                <i class="fas fa-project-diagram"></i> Budget Projection
+            </a>
+            <a href="{% url 'finance:projections-list' %}" class="btn btn-info">
+                <i class="fas fa-chart-line"></i> View Projections
+            </a>
+            <button onclick="generateBudgetProjections()" class="btn btn-warning">
+                <i class="fas fa-magic"></i> Generate 2026 Budget
+            </button>
             {% if user.is_staff %}
             <a href="{% url 'finance:budget-approval-dashboard' company.slug %}" class="btn btn-outline-warning">
                 <i class="fas fa-gavel"></i> Approvals
@@ -136,6 +145,66 @@
     
     {% endif %}
 </div>
+
+<script>
+function generateBudgetProjections() {
+    if (confirm('This will generate 2026 budget projections based on historical data. Continue?')) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        button.disabled = true;
+        
+        // Make AJAX call to generate projections
+        fetch('{% url "finance:generate-budget-projections-api" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                company_slug: '{{ company.slug }}',
+                projection_months: 12,
+                save: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create detailed breakdown message
+                let breakdownText = 'Budget projections generated successfully!\\n\\n';
+                breakdownText += 'Total Annual: $' + data.total_annual.toLocaleString() + '\\n';
+                breakdownText += 'Monthly Average: $' + data.monthly_average.toLocaleString() + '\\n';
+                breakdownText += 'Categories: ' + data.categories_count + '\\n\\n';
+                breakdownText += 'Category Breakdown:\\n';
+                
+                // Sort categories by amount (descending)
+                const sortedBreakdown = Object.entries(data.breakdown || {})
+                    .sort(([,a], [,b]) => b - a);
+                
+                sortedBreakdown.forEach(([category, amount]) => {
+                    breakdownText += '• ' + category + ': $' + amount.toLocaleString() + '\\n';
+                });
+                
+                alert(breakdownText);
+                // Reload page to show updated data
+                location.reload();
+            } else {
+                alert('Error generating projections: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error generating projections. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+</script>
 
 
 

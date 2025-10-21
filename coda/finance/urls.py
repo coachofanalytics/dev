@@ -41,6 +41,7 @@ from .views.payment.stripe_views import (
 from .views.budget import drilldown as views_budget_drilldown
 from .views.budget import editing as views_budget_editing
 from .views.api import smart_form_api as views_api_smart_form
+from .views.api import api_cascading as views_api_cascading
 from .views.budget import dashboard as views_budget_dashboard
 from .views.budget import approvals  # CONSOLIDATED: approval.py + views_approvals.py + views_enhanced_approvals.py
 from .views.budget import views_unified_budget, views_enhanced_budget, views_projections
@@ -261,6 +262,9 @@ urlpatterns = [
     #=============================SMART FORM API=====================================
     path('api/smart-form/suggestions/', views_api_smart_form.get_form_suggestions, name='smart-form-suggestions'),
     path('api/smart-form/defaults/', views_api_smart_form.get_department_defaults, name='smart-form-defaults'),
+    
+    #=============================BUDGET GENERATION API=====================================
+    path('api/generate-budget-projections/', views_api_cascading.generate_budget_projections_api, name='generate-budget-projections-api'),
     
     #=============================UNIFIED BUDGET SYSTEM (PHASE 3)=====================================
     # New unified dashboard - consolidates all budget views
