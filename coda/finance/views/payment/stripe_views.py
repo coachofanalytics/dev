@@ -56,13 +56,11 @@ def create_payment_intent(request):
         if not payment_info:
             return JsonResponse({'error': 'No payment information found'}, status=400)
         
-        # Create PaymentIntent
+        # Create PaymentIntent (without payment_method first)
         intent = stripe.PaymentIntent.create(
             amount=int(amount * 100),  # Convert to cents
             currency='usd',
-            payment_method=payment_method_id,
             confirmation_method='manual',
-            confirm=True,
             return_url=request.build_absolute_uri('/finance/unified/success/'),
             metadata={
                 'user_id': str(request.user.id),
@@ -76,27 +74,27 @@ def create_payment_intent(request):
             'status': intent.status
         })
         
-    except stripe.error.CardError as e:
+    except stripe._error.CardError as e:
         logger.error(f"Stripe card error: {str(e)}")
         return JsonResponse({'error': str(e.user_message)}, status=400)
         
-    except stripe.error.RateLimitError as e:
+    except stripe._error.RateLimitError as e:
         logger.error(f"Stripe rate limit error: {str(e)}")
         return JsonResponse({'error': 'Too many requests. Please try again later.'}, status=429)
         
-    except stripe.error.InvalidRequestError as e:
+    except stripe._error.InvalidRequestError as e:
         logger.error(f"Stripe invalid request error: {str(e)}")
         return JsonResponse({'error': 'Invalid request. Please check your payment details.'}, status=400)
         
-    except stripe.error.AuthenticationError as e:
+    except stripe._error.AuthenticationError as e:
         logger.error(f"Stripe authentication error: {str(e)}")
         return JsonResponse({'error': 'Payment service authentication failed.'}, status=500)
         
-    except stripe.error.APIConnectionError as e:
+    except stripe._error.APIConnectionError as e:
         logger.error(f"Stripe API connection error: {str(e)}")
         return JsonResponse({'error': 'Payment service temporarily unavailable.'}, status=503)
         
-    except stripe.error.StripeError as e:
+    except stripe._error.StripeError as e:
         logger.error(f"Stripe error: {str(e)}")
         return JsonResponse({'error': 'Payment processing failed. Please try again.'}, status=500)
         
