@@ -23,13 +23,16 @@ urlpatterns = [
 
      path('payment_list/', views.payment_list_view, name='payment_list'),
 
- # ✅ Correct route for paymenthistory
-   path('paymenthistory_list/', views.payment_history_list_view, name='accounts-paymenthistory_list'),
-   path('paymenthistory_create/', views.payment_history_create_view, name='paymenthistory_create'),
-    
-
-    
-
-
-    
+    # ✅ Correct route for paymenthistory
+    path('paymenthistory_list/', views.payment_history_list_view, name='accounts-paymenthistory_list'),
+    path('paymenthistory_create/', views.payment_history_create_view, name='paymenthistory_create'),
+    path('paymenthistory_update/<int:pk>/', views.payment_history_update_view, name='paymenthistory_update'),
+     
 ]
+    
+
+    
+
+
+    
+

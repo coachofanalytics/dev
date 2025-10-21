@@ -578,7 +578,7 @@ class PaymentHistoryCreateViewTest(TestCase):
         )
 
         # Set the URL for the payment history create view
-        self.url = reverse('accounts:paymenthistory_create')
+        self.url = reverse('accounts:accounts-paymenthistory_list-')
 
     def test_create_view_get(self):
         """Test that the GET request loads the form correctly"""

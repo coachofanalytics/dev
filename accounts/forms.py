@@ -176,24 +176,48 @@ class PaymentInformationForm(forms.ModelForm):
         model = PaymentInformation
         fields = "__all__"
 
+
+
 class PaymentHistoryForm(forms.ModelForm):
+    """Form for creating and updating Payment History"""
+
     class Meta:
         model = Payment_History
         fields = [
-            'customer',
-            'payment_fees',
-            'down_payment',
-            'student_bonus',
-            'fee_balance',
-            'plan',
-            'subplan',
-            'payment_method',
-            'contract_submitted_date',
-            'client_signature',
-            'company_rep',
-            'client_date',
+            'customer', 
+            'payment_fees', 
+            'down_payment', 
+            'student_bonus', 
+            'fee_balance', 
+            'plan', 
+            'subplan', 
+            'payment_method', 
+            'contract_submitted_date', 
+            'client_signature', 
+            'company_rep', 
+            'client_date', 
             'rep_date'
         ]
+
+    # Optional: You can add custom validation or styling here if needed.
+
+    def __init__(self, *args, **kwargs):
+        """Override constructor to customize the form's field attributes (e.g. CSS classes)."""
+        super().__init__(*args, **kwargs)
+        self.fields['customer'].widget.attrs.update({'class': 'form-control'})
+        self.fields['payment_fees'].widget.attrs.update({'class': 'form-control'})
+        self.fields['down_payment'].widget.attrs.update({'class': 'form-control'})
+        self.fields['student_bonus'].widget.attrs.update({'class': 'form-control'})
+        self.fields['fee_balance'].widget.attrs.update({'class': 'form-control'})
+        self.fields['plan'].widget.attrs.update({'class': 'form-control'})
+        self.fields['subplan'].widget.attrs.update({'class': 'form-control'})
+        self.fields['payment_method'].widget.attrs.update({'class': 'form-control'})
+        self.fields['contract_submitted_date'].widget.attrs.update({'class': 'form-control'})
+        self.fields['client_signature'].widget.attrs.update({'class': 'form-control'})
+        self.fields['company_rep'].widget.attrs.update({'class': 'form-control'})
+        self.fields['client_date'].widget.attrs.update({'class': 'form-control'})
+        self.fields['rep_date'].widget.attrs.update({'class': 'form-control'})
+
 
 
 
