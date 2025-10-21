@@ -22,6 +22,9 @@ urlpatterns = [
     path('CODA_Transaction_delete/<int:pk>/', views.transaction_delete_view, name='transaction_delete'),
 
      path('payment_list/', views.payment_list_view, name='payment_list'),
+
+ # ✅ Correct route for paymenthistory
+   path('paymenthistory_list/', views.payment_history_list_view, name='paymenthistory_list'),
     
 
     

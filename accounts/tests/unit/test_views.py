@@ -5,7 +5,7 @@ from accounts.views import *
     
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from accounts.models import Transaction,PaymentInformation
+from accounts.models import Transaction,PaymentInformation,Payment_History
 
 User = get_user_model()
 
@@ -457,10 +457,6 @@ class TransactionCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Save")
         self.assertEqual(Transaction.objects.count(), 0)
-from django.test import TestCase, Client
-from django.urls import reverse
-from accounts.models import PaymentInformation, CustomerUser
-from django.utils import timezone
 
 
 class PaymentInformationListViewTest(TestCase):
@@ -510,3 +506,60 @@ class PaymentInformationListViewTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "accounts/paymentinformation_list.html")
+
+
+
+
+class PaymentHistoryListViewTest(TestCase):
+    """✅ Test Payment_History list view and template rendering"""
+
+    def setUp(self):
+        self.customer = CustomerUser.objects.create(
+            first_name="Chris",
+            last_name="Maghas",
+            email="chris@example.com",
+            is_active=True
+        )
+
+        # Create sample payment history records
+        for i in range(5):
+            Payment_History.objects.create(
+                customer=self.customer,
+                payment_fees=10000 + i * 100,
+                down_payment=500,
+                student_bonus=100,
+                fee_balance=9400 + i * 100,
+                plan=1,
+                subplan=1,
+                payment_method="Mpesa",
+                contract_submitted_date=timezone.now(),
+                client_signature="Signed",
+                company_rep="Rep " + str(i),
+                client_date="2025-01-12",
+                rep_date="2025-01-13"
+            )
+
+        self.url = reverse("accounts:paymenthistory_list")
+
+    def test_view_status_code(self):
+        """✅ Page should load successfully"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_template_used(self):
+        """✅ Correct template should be used"""
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, "accounts/Paymenthistory_list_html")
+
+    def test_context_data(self):
+        """✅ Template should receive payments in context"""
+        response = self.client.get(self.url)
+        self.assertIn("payments", response.context)
+        self.assertEqual(response.context["payments"].count(), 5)
+
+    def test_search_functionality(self):
+        """✅ Should filter results when search query is provided"""
+        response = self.client.get(self.url, {"search": "Mpesa"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Mpesa")
+

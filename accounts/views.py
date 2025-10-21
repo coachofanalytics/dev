@@ -7,7 +7,7 @@ from .forms import UserForm, LoginForm,AlltransactionForm,TransactionForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CustomerUser,All_transaction,Transaction,PaymentInformation
+from .models import CustomerUser,All_transaction,Transaction,PaymentInformation,Payment_History
 from .utils import agreement_data,get_exchange_rate
 from application.models import UserProfile,Assets
 from .utils import generate_random_password
@@ -400,6 +400,32 @@ def payment_list_view(request):
               'rate': rate
               }
     return render(request, "accounts/paymentinformation_list.html", context)
+
+
+
+
+def payment_history_list_view(request):
+    search_query = request.GET.get('search', '')
+    payments = Payment_History.objects.all()
+
+    if search_query:
+        payments = payments.filter(payment_method__icontains=search_query)
+
+    payments = payments.order_by('-contract_submitted_date')
+
+    return render(request, 'accounts/Paymenthistory_list_html', {
+        'payments': payments,
+        'search_query': search_query
+    })
+
+
+
+
+
+
+
+
+
 
 
 
