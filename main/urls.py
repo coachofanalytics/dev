@@ -39,4 +39,8 @@ urlpatterns = [
 
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
 
+    path('education/',views.education_landing,name='education_landing'),
+    path('education/scholarship/',views.education_landing, name='education_scholarship'),
+    path('education/training',views.education_landing, name='education_training'),
+
 ]

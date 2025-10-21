@@ -302,6 +302,13 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+def education_landing(request):
+
+    initial_view = request.GET.get('view','landing')
+    context = {'initial_view': initial_view}
+    return render(request, 'main/education/education.html', context)
+
+
 def donation_list(request):
     donations = Donation_organization.objects.all().order_by('-created_at')
     return render(request,'main/snippets_templates/table/donation_list.html',{'donations': donations})
