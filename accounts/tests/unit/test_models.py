@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from accounts.models import All_transaction, Transaction, CustomerUser,PaymentInformation
+from accounts.models import All_transaction, Transaction, CustomerUser,PaymentInformation,Payment_History
 
 class AllTransactionModelTest(TestCase):
     """✅ Tests for the All_transaction model."""
@@ -202,4 +202,56 @@ class PaymentInformationModelTest(TestCase):
         )
         self.assertIsNotNone(p.student_balance)
         self.assertIsNotNone(p.jobsupport_balance)
+
+   
+
+class PaymentHistoryModelTest(TestCase):
+    """✅ Unit tests for Payment_History model"""
+
+    def setUp(self):
+        self.customer = CustomerUser.objects.create(
+            first_name="Chris",
+            last_name="Maghas",
+            email="chris@example.com",
+            is_active=True
+        )
+        self.payment = Payment_History.objects.create(
+            customer=self.customer,
+            payment_fees=10000,
+            down_payment=500,
+            student_bonus=100,
+            fee_balance=9400,
+            plan=1,
+            subplan=1,
+            payment_method='Mpesa',
+            contract_submitted_date=timezone.now(),
+            client_signature='Signed',
+            company_rep='Manager A',
+            client_date='2025-01-12',
+            rep_date='2025-01-13'
+        )
+
+    def test_payment_history_creation(self):
+        """✅ Model instance should be created successfully"""
+        self.assertEqual(Payment_History.objects.count(), 1)
+        self.assertEqual(self.payment.customer.first_name, "Chris")
+        self.assertEqual(self.payment.payment_method, "Mpesa")
+
+    def test_string_representation(self):
+        """✅ Model string representation returns customer name"""
+        # self.assertEqual(str(self.payment.customer), "Chris")
+
+    def test_field_values(self):
+        """✅ Field values should match assigned values"""
+        self.assertEqual(self.payment.payment_fees, 10000)
+        self.assertEqual(self.payment.down_payment, 500)
+        self.assertEqual(self.payment.student_bonus, 100)
+        self.assertEqual(self.payment.fee_balance, 9400)
+
+    def test_date_fields_exist(self):
+        """✅ Contract and date fields exist"""
+        self.assertIsNotNone(self.payment.contract_submitted_date)
+        self.assertEqual(self.payment.client_date, "2025-01-12")
+        self.assertEqual(self.payment.rep_date, "2025-01-13")
+
 

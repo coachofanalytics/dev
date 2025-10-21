@@ -267,4 +267,40 @@ def jobsupport_balance(self):
 
 
 
+class Payment_History(models.Model):
+    customer = models.ForeignKey(
+        CustomerUser,
+        verbose_name="Client Name",
+        on_delete=models.CASCADE,
+        related_name="customer_payment_history"
+    )
+    payment_fees = models.IntegerField(null=False)
+    down_payment = models.IntegerField(default=500)
+    student_bonus = models.IntegerField(null=True, blank=True)
+    fee_balance = models.IntegerField(null=True, blank=True, default=None)
+    plan = models.IntegerField(null=False)
+    subplan = models.IntegerField(null=True, blank=True)
+    payment_method = models.CharField(max_length=100, null=False)
+    contract_submitted_date = models.DateTimeField(default=timezone.now)
+    client_signature = models.CharField(max_length=1000, null=True, blank=True)
+    company_rep = models.CharField(max_length=1000, null=False)
+    client_date = models.CharField(max_length=100, null=True, blank=True)
+    rep_date = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        """Readable representation for Django admin and logs."""
+        return f"{self.customer.first_name} - {self.payment_method}"
+
+    class Meta:
+        verbose_name_plural = "Payment History"
+        ordering = ["-contract_submitted_date"]
+
+    
+
+
+
+
+
+
+
 
