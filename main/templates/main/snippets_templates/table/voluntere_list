@@ -2,118 +2,256 @@
 {% load static %}
 {% block content %}
 
+<!-- ===== Bootstrap CSS ===== -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
   body {
-    background-color: #f8f9fa;
+    background: linear-gradient(to bottom right, #f9fafb, #eef2ff);
+    font-family: 'Poppins', sans-serif;
   }
 
-  .volunteer-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 50px 15px;
-  }
-
-  .volunteer-header {
+  /* ===== HERO SECTION ===== */
+  .hero-banner {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8, #0ea5e9);
+    color: #fff;
     text-align: center;
-    margin-bottom: 40px;
+    padding: 80px 20px 100px;
+    border-radius: 0 0 50px 50px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+    position: relative;
   }
 
-  .volunteer-header h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #222;
+  .hero-banner h2 {
+    font-weight: 800;
+    font-size: 2.5rem;
+    letter-spacing: -0.5px;
   }
 
-  .volunteer-header p {
-    font-size: 1.1rem;
-    color: #555;
+  .hero-banner p {
+    color: #e0e7ff;
+    font-size: 1.05rem;
+    margin-top: 10px;
   }
 
-  .add-btn {
-    background-color: #0d6efd;
+  /* ===== ADD BUTTON ===== */
+  .add-volunteer-btn {
+    position: absolute;
+    right: 40px;
+    bottom: -25px;
+    background: linear-gradient(90deg, #10b981, #059669);
     color: white;
-    border-radius: 30px;
-    padding: 10px 25px;
-    font-weight: 500;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .add-volunteer-btn:hover {
+    background: linear-gradient(90deg, #059669, #047857);
+    transform: translateY(-3px);
+  }
+
+  /* ===== FORM SECTION ===== */
+  .form-box {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+    padding: 40px 50px;
+    margin-top: -40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .form-control {
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    padding: 12px;
+    font-size: 1rem;
     transition: 0.3s;
   }
 
-  .add-btn:hover {
-    background-color: #0056b3;
-    color: #fff;
+  .form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.15rem rgba(37,99,235,0.2);
+  }
+
+  .btn-primary {
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(90deg, #1e3a8a, #1d4ed8);
+    transform: translateY(-2px);
+  }
+
+  /* ===== VOLUNTEER GRID ===== */
+  .volunteer-grid {
+    max-width: 1150px;
+    margin: 70px auto 50px;
   }
 
   .volunteer-card {
-    border: none;
-    border-radius: 20px;
-    background: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    transition: 0.3s;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    padding: 20px;
+    transition: all 0.3s ease;
     text-align: center;
-    padding: 25px 15px;
   }
 
   .volunteer-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.1);
   }
 
   .volunteer-img {
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 200px;
     object-fit: cover;
-    border-radius: 50%;
+    border-radius: 12px;
     margin-bottom: 15px;
   }
 
   .volunteer-card h5 {
-    font-weight: 600;
-    color: #222;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #111827;
   }
 
   .volunteer-card p {
-    color: #555;
+    color: #6b7280;
     font-size: 0.95rem;
   }
 
   .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
     margin-top: 10px;
   }
 
-  .btn-sm {
-    border-radius: 30px;
+  .btn-outline-primary,
+  .btn-outline-warning,
+  .btn-outline-danger {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-primary:hover {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  .btn-outline-warning:hover {
+    background: #f59e0b;
+    color: #fff;
+  }
+
+  .btn-outline-danger:hover {
+    background: #dc2626;
+    color: #fff;
   }
 
   .text-muted {
     font-size: 0.85rem;
   }
+
+  /* ===== ANIMATION ===== */
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .volunteer-card {
+    animation: fadeInUp 0.6s ease forwards;
+  }
 </style>
 
-<div class="volunteer-section">
-  <div class="volunteer-header">
-    <h2>Become a Volunteer</h2>
-    <p>Join our team of dedicated volunteers to support our projects and events.</p>
-    <a href="{% url 'main:volunteer_create' %}" class="btn add-btn mt-3">+ Add Volunteer</a>
-  </div>
+<!-- ===== HERO SECTION ===== -->
+<div class="hero-banner">
+  <h2>Our Volunteers</h2>
+  <p>Meet the amazing individuals and organizations helping us create change.</p>
+  <a href="{% url 'main:volunteer_create' %}" class="add-volunteer-btn">+ Add Volunteer</a>
+</div>
 
-  <div class="row justify-content-center">
+<!-- ===== FORM SECTION ===== -->
+<div class="form-box">
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Company / Organization Name</label>
+      {{ form.company_name }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Email Address</label>
+      {{ form.email }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Motivation / Why You Want to Volunteer</label>
+      {{ form.motivation }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Upload Image (optional)</label>
+      {{ form.image }}
+    </div>
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-primary">Submit Application</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===== VOLUNTEER LIST SECTION ===== -->
+<div class="volunteer-grid container">
+  <h3 class="fw-bold mb-4 text-center text-primary">All Registered Volunteers</h3>
+  <div class="row g-4">
     {% for v in volunteers %}
-      <div class="col-md-4 col-lg-3 mb-4">
+      <div class="col-md-6 col-lg-4">
         <div class="volunteer-card">
-          <img src="{{ v.image.url }}" alt="{{ v.company_name }}" class="volunteer-img">
+          {% if v.image %}
+            <img src="{{ v.image.url }}" alt="{{ v.company_name }}" class="volunteer-img">
+          {% else %}
+            <img src="{% static 'images/default_profile.png' %}" alt="default" class="volunteer-img">
+          {% endif %}
           <h5>{{ v.company_name }}</h5>
-          <p>{{ v.motivation }}</p>
-          <p class="text-muted">Registered on {{ v.created_at|date:"M d, Y" }}</p>
+          <p>{{ v.motivation|truncatewords:15 }}</p>
+          <p class="text-muted">Joined: {{ v.created_at|date:"d M Y" }}</p>
           <div class="btn-group">
-            <a href="#" class="btn btn-outline-secondary btn-sm">View</a>
-            <a href="{% url 'main:volunteer_update' v.id %}" class="btn btn-outline-primary btn-sm">Edit</a>
-            <a href="{% url 'main:volunteer_delete' v.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+            <a href="{% url 'main:volunteer_detail' v.id %}" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-eye"></i> View
+            </a>
+            <a href="{% url 'main:volunteer_update' v.id %}" class="btn btn-outline-warning btn-sm">
+              <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a href="{% url 'main:volunteer_delete' v.id %}" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash"></i> Delete
+            </a>
           </div>
         </div>
       </div>
     {% empty %}
-      <p class="text-center">No volunteers have joined yet. Be the first to register!</p>
+      <p class="text-center text-muted mt-4">No volunteers have joined yet. Be the first to register!</p>
     {% endfor %}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.js"></script>
 {% endblock %}

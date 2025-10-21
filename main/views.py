@@ -416,6 +416,7 @@ def volunteer_create(request):
             return redirect('main:volunteer_list')
     else:
         form = volunteersform()
+        volunteers = Volunteer.objects.all().order_by('-created_at')
     return render(request, 'main/snippets_templates/table/volunteer_create.html', {'form': form})
 
         
@@ -438,3 +439,7 @@ def volunteer_delete(request,pk):
     return render(request,'main/snippets_templates/table/volunteer_delete.html',{'volunteer':volunteer})    
     
 
+def volunteer_detail(request,pk):
+    volunteer = get_object_or_404(Volunteer, pk=pk)
+    return render(request,'main/snippets_templates/table/volunteer_detail.html',{'volunteer':volunteer})    
+    

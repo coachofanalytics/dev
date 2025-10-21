@@ -1,18 +1,26 @@
 {% include 'main/navbar_templates/home_navbar.html' %}
 {% block content %}
-<div class="delete-section">
-  <div class="delete-card">
-    <h4>🗑 Delete Confirmation</h4>
-    <p>
-      Are you sure you want to permanently delete  
-      <strong class="text-danger">“{{ Volunteer.title }}”</strong>?
-    </p>
-
-    <form method="POST">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-danger me-2">✅ Yes, Delete</button>
-      <a href="{% url 'main:volunteer_list' %}" class="btn btn-secondary">❌ Cancel</a>
-    </form>
+<div class="container mt-5 text-center">
+  <div class="card shadow-lg border-0 mx-auto p-4" style="max-width: 500px; border-radius: 15px;">
+    
+    {% if volunteer.image %}
+      <img src="{{ volunteer.image.url }}" class="rounded-circle mb-3 shadow-sm" width="150" height="150" alt="{{ volunteer.company_name }}">
+    {% else %}
+      <img src="/static/images/default-avatar.png" class="rounded-circle mb-3 shadow-sm" width="150" height="150" alt="No Image">
+    {% endif %}
+    
+    <h4 class="fw-bold text-primary">{{ volunteer.company_name }}</h4>
+    <p><strong>Email:</strong> {{ volunteer.email }}</p>
+    <p class="text-muted small">Registered on {{ volunteer.created_at|date:"M d, Y" }}</p>
+    <p class="text-danger fw-semibold mt-3">⚠ Are you sure you want to permanently delete this volunteer?</p>
+    
+    <div class="mt-4">
+      <form method="POST" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger px-4 me-2">✅ Yes, Delete</button>
+      </form>
+      <a href="{% url 'main:volunteer_list' %}" class="btn btn-secondary px-4">❌ Cancel</a>
+    </div>
   </div>
 </div>
 {% endblock %}

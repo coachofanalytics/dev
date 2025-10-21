@@ -163,3 +163,18 @@ class Volunteer(models.Model):
         return self.company_name
 
 
+
+class WCAGStandardWebsite(models.Model):
+    company = models.CharField(max_length=500, null=True, blank=True)
+    app_name = models.CharField(max_length=500, null=True, blank=True)
+    page_name = models.TextField(null=True, blank=True)
+    website_url = models.FileField(upload_to='websites/', null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.company} - {self.app_name}"
+
+
+
+
