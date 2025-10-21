@@ -4,7 +4,7 @@ from .models import CustomerUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import  RegexValidator,validate_email
 from django.core.exceptions import ValidationError
-from .models import All_transaction,Transaction,PaymentInformation
+from .models import All_transaction,Transaction,PaymentInformation,Payment_History
 import re
 # from django.db import transaction
 
@@ -175,4 +175,25 @@ class PaymentInformationForm(forms.ModelForm):
     class Meta:
         model = PaymentInformation
         fields = "__all__"
+
+class PaymentHistoryForm(forms.ModelForm):
+    class Meta:
+        model = Payment_History
+        fields = [
+            'customer',
+            'payment_fees',
+            'down_payment',
+            'student_bonus',
+            'fee_balance',
+            'plan',
+            'subplan',
+            'payment_method',
+            'contract_submitted_date',
+            'client_signature',
+            'company_rep',
+            'client_date',
+            'rep_date'
+        ]
+
+
 

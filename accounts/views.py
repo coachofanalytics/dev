@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm,AlltransactionForm,TransactionForm
+from .forms import UserForm, LoginForm,AlltransactionForm,TransactionForm,PaymentHistoryForm
 from coda_project import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -417,6 +417,19 @@ def payment_history_list_view(request):
         'payments': payments,
         'search_query': search_query
     })
+
+def payment_history_create_view(request):
+    if request.method == "POST":
+        form = PaymentHistoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Transaction created successfully!")
+            return redirect('accounts:accounts-paymenthistory_list')
+    else:
+        form = PaymentHistoryForm()
+    
+    return render(request, "accounts/paymenthistory_create.html", {'form': form})
+
 
 
 

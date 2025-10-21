@@ -539,7 +539,7 @@ class PaymentHistoryListViewTest(TestCase):
                 rep_date="2025-01-13"
             )
 
-        self.url = reverse("accounts:paymenthistory_list")
+        self.url = reverse("accounts:accounts-paymenthistory_list")
 
     def test_view_status_code(self):
         """✅ Page should load successfully"""
@@ -562,4 +562,49 @@ class PaymentHistoryListViewTest(TestCase):
         response = self.client.get(self.url, {"search": "Mpesa"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Mpesa")
+
+
+
+
+class PaymentHistoryCreateViewTest(TestCase):
+
+    def setUp(self):
+        # Create a CustomerUser object to associate with the payment history
+        self.customer = CustomerUser.objects.create(
+            first_name="Chris",
+            last_name="Maghas",
+            email="chris@example.com",
+            is_active=True
+        )
+
+        # Set the URL for the payment history create view
+        self.url = reverse('accounts:paymenthistory_create')
+
+    def test_create_view_get(self):
+        """Test that the GET request loads the form correctly"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'accounts/paymenthistory_create.html')  # Ensure the correct template is used
+
+    def test_create_view_post_valid(self):
+        """Test that a valid POST request creates a new PaymentHistory record"""
+        form_data = {
+            "customer": self.customer.id,
+            "payment_fees": 10000.00,
+            "down_payment": 500.00,
+            "student_bonus": 200.00,
+            "fee_balance": 0,
+            "plan": 1,
+            "payment_method": "Mpesa",
+            "contract_submitted_date": timezone.now(),
+            "client_signature": "Signed",
+            "company_rep": "Manager",
+        }
+        response = self.client.post(self.url, data=form_data)
+        self.assertEqual(response.status_code, 302)  # Redirect after successful form submission
+        self.assertRedirects(response, reverse('accounts:accounts-paymenthistory_list'))  # Ensure it redirects to the list view
+        self.assertEqual(Payment_History.objects.count(), 1)  # Check if the record is created
+
+
+
 
