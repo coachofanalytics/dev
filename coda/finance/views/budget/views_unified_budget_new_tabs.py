@@ -52,8 +52,9 @@ def _get_projections_tab_data(company, department):
             'budget', 'budget__category'
         ).order_by('-projected_amount')
         
-        if department:
-            projections = projections.filter(budget__department=department)
+        # Don't filter by department for projections - show all company projections
+        # if department:
+        #     projections = projections.filter(budget__department=department)
         
         # Calculate totals
         projection_stats = projections.aggregate(
@@ -63,7 +64,7 @@ def _get_projections_tab_data(company, department):
         )
         
         total_amount = projection_stats['total'] or 0
-        monthly_average = total_amount / 12 if total_amount > 0 else 0
+        monthly_average = float(total_amount) / 12 if total_amount > 0 else 0
         
         # Calculate totals for historical and projected
         total_historical = 0
@@ -72,13 +73,13 @@ def _get_projections_tab_data(company, department):
         for proj in projections:
             # Calculate historical monthly from budget data
             if proj.budget.unit_price:
-                historical_monthly = proj.budget.unit_price / 1.10  # Remove growth factor
+                historical_monthly = float(proj.budget.unit_price) / 1.10  # Remove growth factor
                 total_historical += historical_monthly
-                total_projected_monthly += proj.budget.unit_price
+                total_projected_monthly += float(proj.budget.unit_price)
                 
                 # Add to projection object for display
                 proj.historical_monthly = historical_monthly
-                proj.projected_monthly = proj.budget.unit_price
+                proj.projected_monthly = float(proj.budget.unit_price)
         
         return {
             'projections_data': {

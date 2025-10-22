@@ -397,21 +397,27 @@ def _get_approvals_tab_data(company, department, user):
             status__in=['pending', 'under_review']
         )
         
-        if department:
-            pending_disbursements = pending_disbursements.filter(department=department)
+        # Note: DisbursementRequest doesn't have department field
+        # if department:
+        #     pending_disbursements = pending_disbursements.filter(department=department)
         
         # Budget estimate projections awaiting approval
         pending_projections = BudgetEstimateProjection.objects.filter(
-            company=company,
-            status='submitted'
+            budget__company=company,
+            # Note: BudgetEstimateProjection doesn't have status field
+            # status='submitted'
         )
         
-        if department:
-            pending_projections = pending_projections.filter(department=department)
+        # Note: BudgetEstimateProjection doesn't have department field
+        # if department:
+        #     pending_projections = pending_projections.filter(department=department)
         
         # Approval statistics
         total_pending = pending_requests.count() + pending_disbursements.count()
-        user_pending = user_requests.filter(status__in=['submitted', 'under_review']).count()
+        user_pending = BudgetRequest.objects.filter(
+            requester=user,
+            status__in=['submitted', 'under_review']
+        ).count()
         
         return {
             'approvals_data': {

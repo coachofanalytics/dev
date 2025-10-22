@@ -52,11 +52,12 @@ def create_payment_intent(request):
         if not payment_info:
             return JsonResponse({'error': 'No payment information found'}, status=400)
         
-        # Create PaymentIntent without PaymentMethod first (to avoid PaymentMethod issues)
+        # Create PaymentIntent with setup_future_usage for better reliability
         intent = stripe.PaymentIntent.create(
             amount=int(amount * 100),  # Convert to cents
             currency='usd',
-            confirmation_method='manual',
+            confirmation_method='automatic',
+            setup_future_usage='off_session',
             metadata={
                 'user_id': str(request.user.id),
                 'payment_info_id': str(payment_info.id),
