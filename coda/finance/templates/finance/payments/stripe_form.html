@@ -277,7 +277,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(result.error);
             }
             
-            // Confirm payment with card element (this creates PaymentMethod automatically)
+            console.log('PaymentIntent created:', result);
+            
+            // Confirm payment with card element
             const {error: confirmError, paymentIntent} = await stripe.confirmCardPayment(
                 result.client_secret,
                 {
@@ -288,8 +290,11 @@ document.addEventListener('DOMContentLoaded', function() {
             );
             
             if (confirmError) {
+                console.error('Payment confirmation error:', confirmError);
                 throw new Error(confirmError.message);
             }
+            
+            console.log('Payment confirmed:', paymentIntent);
             
             // Payment succeeded
             if (paymentIntent.status === 'succeeded') {

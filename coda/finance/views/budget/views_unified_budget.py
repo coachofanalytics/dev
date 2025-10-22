@@ -168,8 +168,9 @@ def _get_overview_tab_data(company, department, estimation_service, consolidatio
         
         # Filter transactions (they don't have company field, so we get all categorized)
         transactions = Transaction.objects.filter(category__isnull=False)
-        if department:
-            transactions = transactions.filter(department=department)
+        # Don't filter by department for overview - show all company data
+        # if department:
+        #     transactions = transactions.filter(department=department)
         
         # Calculate real spending stats
         total_transactions = transactions.count()

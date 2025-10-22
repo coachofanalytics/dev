@@ -19,14 +19,6 @@
             <a href="{% url 'finance:projections-list' %}" class="btn btn-info">
                 <i class="fas fa-chart-line"></i> View Projections
             </a>
-            <button onclick="generateBudgetProjections()" class="btn btn-warning">
-                <i class="fas fa-magic"></i> Generate 2026 Budget
-            </button>
-            {% if user.is_staff %}
-            <a href="{% url 'finance:budget-approval-dashboard' company.slug %}" class="btn btn-outline-warning">
-                <i class="fas fa-gavel"></i> Approvals
-            </a>
-            {% endif %}
         </div>
     </div>
     
@@ -214,6 +206,7 @@ function generateBudgetProjections() {
     }
 }
 </script>
+
 
 
 
