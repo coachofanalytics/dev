@@ -10,15 +10,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Volunteer',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('company_name', models.CharField(max_length=100)),
-                ('email', models.EmailField(max_length=100)),
-                ('motivation', models.TextField(max_length=100)),
-                ('image', models.ImageField(upload_to='volunteer_images/')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-            ],
-        ),
+        # migrations.CreateModel(
+        #     name='Volunteer',
+        #     fields=[
+        #         ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        #         ('company_name', models.CharField(max_length=100)),
+        #         ('email', models.EmailField(max_length=100)),
+        #         ('motivation', models.TextField(max_length=100)),
+        #         ('image', models.ImageField(upload_to='volunteer_images/')),
+        #         ('created_at', models.DateTimeField(auto_now_add=True)),
+        #     ],
+        # ),
     ]
