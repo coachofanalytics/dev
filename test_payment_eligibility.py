@@ -48,3 +48,4 @@ print("="*60)
 print("✅ Payment eligibility function should now work")
 print("✅ No more 'updated_at does not exist' errors")
 print("\n🚀 Ready to test full payment flow in browser!")
+
