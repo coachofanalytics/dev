@@ -35,11 +35,7 @@ def create_payment_intent(request):
     
     try:
         data = json.loads(request.body)
-        payment_method_id = data.get('payment_method_id')
         amount = float(data.get('amount', 0))
-        
-        if not payment_method_id:
-            return JsonResponse({'error': 'Payment method ID is required'}, status=400)
         
         if amount <= 0:
             return JsonResponse({'error': 'Invalid amount'}, status=400)
@@ -56,13 +52,11 @@ def create_payment_intent(request):
         if not payment_info:
             return JsonResponse({'error': 'No payment information found'}, status=400)
         
-        # Create PaymentIntent with PaymentMethod
+        # Create PaymentIntent without PaymentMethod first (to avoid PaymentMethod issues)
         intent = stripe.PaymentIntent.create(
             amount=int(amount * 100),  # Convert to cents
             currency='usd',
-            payment_method=payment_method_id,
             confirmation_method='manual',
-            confirm=True,
             return_url=request.build_absolute_uri('/finance/unified/success/'),
             metadata={
                 'user_id': str(request.user.id),
