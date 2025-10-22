@@ -259,7 +259,17 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         
         try {
-            // Get PaymentIntent from server first
+            // Create PaymentMethod first (proper Stripe flow)
+            const {error: pmError, paymentMethod} = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+            });
+            
+            if (pmError) {
+                throw new Error(pmError.message);
+            }
+            
+            // Get PaymentIntent from server with payment method
             const response = await fetch('{% url "finance:stripe_payment_intent" %}', {
                 method: 'POST',
                 headers: {
@@ -267,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                 },
                 body: JSON.stringify({
+                    payment_method_id: paymentMethod.id,
                     amount: amount,
                 }),
             });
@@ -277,14 +288,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(result.error);
             }
             
-            // Confirm payment with card element
+            // Confirm payment
             const {error: confirmError, paymentIntent} = await stripe.confirmCardPayment(
-                result.client_secret,
-                {
-                    payment_method: {
-                        card: cardElement,
-                    }
-                }
+                result.client_secret
             );
             
             if (confirmError) {
