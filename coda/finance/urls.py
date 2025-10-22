@@ -47,6 +47,8 @@ from .views.budget import views_unified_budget, views_enhanced_budget, views_pro
 from .views.budget import views_estimates, views_detailed_budget
 from .views.budget import views_forms, views_salary_dashboard
 from .views.budget import views_automation, views_admin_controls, views_realtime_compliance
+from .views.budget import views_tier_management  # Phase 2: Finance Manager tier controls
+# views_budget_presentation migrated to portfolio app
 
 # Import organized core views  
 from .views.core import views_finance_dashboard
@@ -356,6 +358,16 @@ urlpatterns = [
     path('budget/<str:company_slug>/requests/<int:request_id>/reject/', views_budget_editing.reject_budget_request, name='reject-budget-request'),
     path('budget/<str:company_slug>/approvals/', views_budget_editing.budget_approval_dashboard, name='budget-approval-dashboard'),
 
+    #=============================PHASE 2: FINANCE MANAGER TIER CONTROLS=====================================
+    # Finance Manager interface for managing budget category tiers and auto-approval
+    path('tier-management/<str:company_slug>/', views_tier_management.tier_management_dashboard, name='tier-management-dashboard'),
+    path('tier/auto-approval-log/<str:company_slug>/', views_tier_management.auto_approval_log, name='auto-approval-log'),
+    
+    # API endpoints for tier management
+    path('api/tier/toggle-auto-approval/<int:category_id>/', views_tier_management.toggle_auto_approval, name='api-toggle-auto-approval'),
+    path('api/tier/update-variance-threshold/<int:category_id>/', views_tier_management.update_variance_threshold, name='api-update-variance-threshold'),
+    path('api/tier/run-reclassification/<str:company_slug>/', views_tier_management.run_tier_reclassification, name='api-run-reclassification'),
+
     #=============================LOAN-BUDGET INTEGRATION (PHASE 3)=====================================
     # Loan system integrated with budget constraints
     path('loan/<str:company_slug>/eligibility/', views_loan_budget_integration.loan_eligibility_check, name='loan-eligibility-check'),
@@ -390,6 +402,11 @@ urlpatterns = [
     path('api/admin/statistics/', views_admin_controls.get_admin_statistics, name='admin-statistics'),
     path('api/admin/audit-log/', views_admin_controls.get_audit_log, name='audit-log'),
     path('api/admin/export-report/', views_admin_controls.export_admin_report, name='export-admin-report'),
+
+    #=============================BUDGET TIER SYSTEM PRESENTATIONS=====================================
+    # MIGRATED to portfolio app - Redirects for backward compatibility
+    path('budget-tier-presentation/', lambda request: redirect('/portfolio/budget-tier/investor/', permanent=True), name='budget-tier-presentation'),
+    path('budget-tier-presentation-guide/', lambda request: redirect('/portfolio/guide/', permanent=True), name='budget-tier-presentation-guide'),
 ]
 
 # Unified Payment System URLs

@@ -13,7 +13,7 @@ from django.core.wsgi import get_wsgi_application
 
 # Check if we're running on Heroku
 if 'DYNO' in os.environ:
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coda_project.heroku_settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coda_project.coda_settings.heroku_settings')
 else:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coda_project.settings')
 

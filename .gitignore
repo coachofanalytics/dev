@@ -54,3 +54,8 @@ backups/
 # Environment variables
 .env
 .env.local
+
+# SSL Certificates - DO NOT COMMIT (self-signed for local dev)
+coda/certs/*.pem
+coda/certs/*.key
+coda/certs/*.crt

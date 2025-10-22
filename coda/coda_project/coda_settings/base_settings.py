@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "finance.apps.FinanceConfig",
     "marketing.apps.MarketingConfig",
     "unified_dashboard.apps.UnifiedDashboardConfig",
+    "portfolio.apps.PortfolioConfig",  # Professional presentations & portfolio
     "crispy_forms",
     "django.contrib.admin",
     "django.contrib.auth",

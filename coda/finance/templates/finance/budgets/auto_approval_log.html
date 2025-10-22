@@ -1,0 +1,147 @@
+{% extends "finance/base_finance.html" %}
+{% load static %}
+
+{% block title %}Auto-Approval Log - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-check-circle"></i> Auto-Approval Log
+                <small class="text-muted">{{ company.name }}</small>
+            </h2>
+            <p class="text-muted">Budget requests automatically approved by the tier system</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <label class="mr-2">Show last:</label>
+                        <select name="days" class="form-control mr-2" onchange="this.form.submit()">
+                            <option value="7" {% if days_filter == 7 %}selected{% endif %}>7 days</option>
+                            <option value="30" {% if days_filter == 30 %}selected{% endif %}>30 days</option>
+                            <option value="90" {% if days_filter == 90 %}selected{% endif %}>90 days</option>
+                            <option value="365" {% if days_filter == 365 %}selected{% endif %}>1 year</option>
+                        </select>
+                        
+                        <label class="mr-2 ml-3">Tier:</label>
+                        <select name="tier" class="form-control mr-2" onchange="this.form.submit()">
+                            <option value="">All Tiers</option>
+                            <option value="A" {% if tier_filter == 'A' %}selected{% endif %}>Tier A</option>
+                            <option value="B" {% if tier_filter == 'B' %}selected{% endif %}>Tier B</option>
+                            <option value="C" {% if tier_filter == 'C' %}selected{% endif %}>Tier C</option>
+                        </select>
+                        
+                        <a href="{% url 'finance:tier-management-dashboard' company.slug %}" class="btn btn-secondary ml-3">
+                            <i class="fas fa-arrow-left"></i> Back to Tier Management
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Total Auto-Approved</h5>
+                    <h2>{{ total_auto_approved }}</h2>
+                    <small>Last {{ days_filter }} days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Total Amount</h5>
+                    <h2>${{ total_amount|floatformat:0 }}</h2>
+                    <small>Auto-approved</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Tier Breakdown</h5>
+                    <div>
+                        {% for tier, data in tier_breakdown.items %}
+                        Tier {{ tier }}: {{ data.count }} ({{ data.amount|floatformat:0 }})<br>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-Approved Requests Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Auto-Approved Budget Requests</h5>
+                </div>
+                <div class="card-body">
+                    {% if auto_approved_requests %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Tier</th>
+                                <th>Amount</th>
+                                <th>Typical Amount</th>
+                                <th>Variance</th>
+                                <th>Requester</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in auto_approved_requests %}
+                            <tr>
+                                <td><a href="{% url 'finance:budget_request_detail' req.id %}">#{{ req.id }}</a></td>
+                                <td>{{ req.approved_at|date:"M d, Y H:i" }}</td>
+                                <td>{{ req.budget_category.name }}</td>
+                                <td>
+                                    <span class="badge badge-{% if req.budget_category.approval_tier == 'A' %}primary{% elif req.budget_category.approval_tier == 'B' %}warning{% else %}danger{% endif %}">
+                                        Tier {{ req.budget_category.approval_tier }}
+                                    </span>
+                                </td>
+                                <td>${{ req.amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if req.budget_category.typical_monthly_amount %}
+                                        ${{ req.budget_category.typical_monthly_amount|floatformat:0 }}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.budget_category.typical_monthly_amount %}
+                                        {% widthratio req.amount req.budget_category.typical_monthly_amount 100 %}%
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ req.requester.username }}</td>
+                                <td>{{ req.purpose|truncatewords:10 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No auto-approved requests in the last {{ days_filter }} days.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

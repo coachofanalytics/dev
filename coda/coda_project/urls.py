@@ -89,6 +89,11 @@ urlpatterns = [
     ),
     path("", include("main.urls", namespace="main")),
     path("accounts/", include("accounts.urls")),
+    
+    # Portfolio & presentations (MUST come before professional_services to avoid URL conflicts)
+    path("portfolio/", include("portfolio.urls", namespace="portfolio")),  # Portfolio & presentations
+    path("interview/", include("portfolio.urls", namespace="interview")),  # Interview mode (white-label)
+    
     path("professional_services/", include("professional_services.urls", namespace="professional_services")),
     path("ai_services/", include("ai_services.urls", namespace="ai_services")),
     path("dashboard/", include("unified_dashboard.urls", namespace="dashboard")),

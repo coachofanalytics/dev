@@ -1,0 +1,103 @@
+{% extends "portfolio/shared/base_presentation.html" %}
+{% load static %}
+
+{% block presentation_content %}
+<div class="row mb-4">
+    <div class="col-12 text-center text-white">
+        <h1 class="display-5">{{ subtitle }}</h1>
+    </div>
+</div>
+
+<!-- Technical Highlights -->
+{% for highlight in technical_highlights %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="presentation-card">
+            <h3><i class="{{ highlight.icon }} text-primary"></i> {{ highlight.category }}</h3>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h5>Skills Demonstrated:</h5>
+                    <ul>
+                        {% for skill in highlight.skills %}
+                        <li>{{ skill }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    {% if highlight.code_samples %}
+                    <h5>Code Samples:</h5>
+                    {% for sample in highlight.code_samples %}
+                    <div class="mb-3">
+                        <strong>{{ sample.title }}</strong> ({{ sample.language }})<br>
+                        <small class="text-muted">{{ sample.description }}</small>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Problem Solving Stories -->
+{% if problem_solving_stories %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="presentation-card">
+            <h3><i class="fas fa-puzzle-piece text-warning"></i> Problem Solving Examples</h3>
+            {% for story in problem_solving_stories %}
+            <div class="mt-4">
+                <h5>{{ story.title }}</h5>
+                <p><strong>Problem:</strong> {{ story.problem }}</p>
+                <p><strong>Solution:</strong> {{ story.solution }}</p>
+                <p><strong>Skills Used:</strong> 
+                    {% for skill in story.skills %}
+                    <span class="badge badge-info">{{ skill }}</span>
+                    {% endfor %}
+                </p>
+                <p><strong>Outcome:</strong> <span class="text-success">{{ story.outcome }}</span></p>
+            </div>
+            {% if not forloop.last %}<hr>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Technologies Used -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="presentation-card">
+            <h3><i class="fas fa-tools text-info"></i> Technology Stack</h3>
+            <div class="row mt-3">
+                {% for category, tech_list in technologies.items %}
+                <div class="col-md-3 mb-3">
+                    <h5>{{ category|title }}</h5>
+                    <ul class="list-unstyled">
+                        {% for tech in tech_list %}
+                        <li><i class="{{ tech.icon }}"></i> {{ tech.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Demo Link -->
+<div class="row">
+    <div class="col-12 text-center">
+        {% if show_branding %}
+        <a href="/finance/tier-management/coda/" class="btn btn-success btn-lg" target="_blank">
+            <i class="fas fa-external-link-alt"></i> View Live Demo on UAT
+        </a>
+        {% endif %}
+        <a href="{% url 'portfolio:guide' %}" class="btn btn-outline-light btn-lg ml-2">
+            <i class="fas fa-book"></i> View Presentation Guide
+        </a>
+    </div>
+</div>
+{% endblock %}
+
