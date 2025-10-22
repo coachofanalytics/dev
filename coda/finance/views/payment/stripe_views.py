@@ -57,7 +57,6 @@ def create_payment_intent(request):
             amount=int(amount * 100),  # Convert to cents
             currency='usd',
             confirmation_method='manual',
-            return_url=request.build_absolute_uri('/finance/unified/success/'),
             metadata={
                 'user_id': str(request.user.id),
                 'payment_info_id': str(payment_info.id),

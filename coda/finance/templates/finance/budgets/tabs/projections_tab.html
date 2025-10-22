@@ -1,0 +1,225 @@
+<!-- Budget Projections Tab -->
+<div class="tab-content-section">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="fas fa-chart-line"></i> Budget Projections</h3>
+        <div>
+            <a href="{% url 'finance:projections-list' %}" class="btn btn-info">
+                <i class="fas fa-list"></i> All Projections
+            </a>
+            <button onclick="generateBudgetProjections()" class="btn btn-warning">
+                <i class="fas fa-magic"></i> Generate New Projections
+            </button>
+        </div>
+    </div>
+
+    {% if projections_data %}
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ projections_data.total_projections }}</div>
+                <div class="metric-label">Total Projections</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ projections_data.total_amount|floatformat:2 }}</div>
+                <div class="metric-label">Total Projected</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">${{ projections_data.monthly_average|floatformat:2 }}</div>
+                <div class="metric-label">Monthly Average</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ projections_data.avg_confidence|floatformat:0 }}%</div>
+                <div class="metric-label">Avg Confidence</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projections Table -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Budget Projections by Category</h4>
+            <p class="mb-0 text-muted">Based on historical transaction analysis with 10% growth factor</p>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Historical Monthly</th>
+                            <th>Projected Monthly</th>
+                            <th>Annual Projection</th>
+                            <th>Confidence</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for proj in projections_data.projections %}
+                        <tr>
+                            <td><strong>{{ proj.budget.category.name|default:"N/A" }}</strong></td>
+                            <td>${{ proj.historical_monthly|default:0|floatformat:2 }}</td>
+                            <td>
+                                <strong class="text-success">${{ proj.projected_monthly|default:0|floatformat:2 }}</strong>
+                            </td>
+                            <td>
+                                <strong>${{ proj.projected_amount|floatformat:2 }}</strong>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar 
+                                        {% if proj.confidence_score >= 90 %}bg-success
+                                        {% elif proj.confidence_score >= 70 %}bg-info
+                                        {% elif proj.confidence_score >= 50 %}bg-warning
+                                        {% else %}bg-danger{% endif %}"
+                                        role="progressbar"
+                                        style="width: {{ proj.confidence_score }}%"
+                                        aria-valuenow="{{ proj.confidence_score }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100">
+                                        {{ proj.confidence_score|floatformat:0 }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ proj.projection_method }}</span></td>
+                            <td>{{ proj.projection_date|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-info">
+                            <th>TOTAL</th>
+                            <th>${{ projections_data.total_historical|floatformat:2 }}</th>
+                            <th>${{ projections_data.total_projected_monthly|floatformat:2 }}</th>
+                            <th><strong>${{ projections_data.total_amount|floatformat:2 }}</strong></th>
+                            <th colspan="3"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projection Chart -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h4>Projection Breakdown</h4>
+        </div>
+        <div class="card-body">
+            <canvas id="projectionChart" height="100"></canvas>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>No Projections Available</strong>
+        <p class="mb-0">No budget projections have been generated yet. Click "Generate New Projections" to create projections based on transaction history.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function generateBudgetProjections() {
+    if (confirm('This will generate budget projections based on historical transaction data. Continue?')) {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        button.disabled = true;
+        
+        fetch('{% url "finance:generate-budget-projections-api" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                company_slug: '{{ company.slug }}',
+                projection_months: 12,
+                save: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let breakdownText = 'Budget projections generated successfully!\n\n';
+                breakdownText += 'Total Annual: $' + data.total_annual.toLocaleString() + '\n';
+                breakdownText += 'Monthly Average: $' + data.monthly_average.toLocaleString() + '\n';
+                breakdownText += 'Categories: ' + data.categories_count + '\n\n';
+                breakdownText += 'Category Breakdown:\n';
+                
+                const sortedBreakdown = Object.entries(data.breakdown || {})
+                    .sort(([,a], [,b]) => b - a);
+                
+                sortedBreakdown.forEach(([category, amount]) => {
+                    breakdownText += '• ' + category + ': $' + amount.toLocaleString() + '\n';
+                });
+                
+                alert(breakdownText);
+                location.reload();
+            } else {
+                alert('Error generating projections: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error generating projections. Please try again.');
+        })
+        .finally(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+
+{% if projections_data and projections_data.projections %}
+// Chart for projections
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('projectionChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    {% for proj in projections_data.projections %}
+                    '{{ proj.budget.category.name|truncatewords:3 }}'{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'Annual Projection ($)',
+                    data: [
+                        {% for proj in projections_data.projections %}
+                        {{ proj.projected_amount }}{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+{% endif %}
+</script>
+

@@ -40,6 +40,9 @@ from finance.services.data_quality_service import DataQualityService
 from finance.utils.calculation_utils import CalculationUtils
 from finance.utils.filter_utils import FilterUtils
 
+# Import new tab functions
+from .views_unified_budget_new_tabs import _get_requests_tab_data, _get_projections_tab_data
+
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
@@ -116,6 +119,16 @@ def unified_budget_dashboard(request, company_slug="coda"):
         elif active_tab == 'approvals':
             context.update(_get_approvals_tab_data(
                 company, selected_department, request.user
+            ))
+        
+        elif active_tab == 'requests':
+            context.update(_get_requests_tab_data(
+                company, selected_department, request.user
+            ))
+        
+        elif active_tab == 'projections':
+            context.update(_get_projections_tab_data(
+                company, selected_department
             ))
         
         elif active_tab == 'analytics':
