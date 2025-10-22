@@ -267,3 +267,9 @@ def Donation_delete(request,pk):
 def Donation_details(request,pk):
     donation = get_object_or_404(Donation_organisation,pk=pk)
     return render(request,"main/snippets_templates/table/donation_details.html",{"donation":donation})
+
+
+
+
+def coursesListingAndReg(request):
+    return render(request,"courses.html")
