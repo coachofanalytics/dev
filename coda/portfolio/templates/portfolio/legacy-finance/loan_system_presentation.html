@@ -1,0 +1,553 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Smart Loan System - Investor Presentation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Presentation Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 text-primary mb-3">
+                <i class="fas fa-rocket"></i> Smart Loan System
+            </h1>
+            <h2 class="text-secondary mb-4">Revolutionary IoT + Blockchain + AI-Powered Lending</h2>
+            <p class="lead">The Future of Secure, Intelligent, and Profitable Lending</p>
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-8">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-chart-line"></i> Investment Opportunity</h5>
+                        <p class="mb-0">Join us in revolutionizing the $4.8 trillion global lending market with cutting-edge technology</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problem Statement -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3><i class="fas fa-exclamation-triangle"></i> The Problem: Traditional Lending is Broken</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-danger">Current Industry Pain Points:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-times text-danger"></i> <strong>15-20% default rates</strong> - Massive losses</li>
+                                <li><i class="fas fa-times text-danger"></i> <strong>Manual processes</strong> - High operational costs</li>
+                                <li><i class="fas fa-times text-danger"></i> <strong>Static collateral</strong> - Easy to manipulate</li>
+                                <li><i class="fas fa-times text-danger"></i> <strong>Slow recovery</strong> - 60-70% recovery rates</li>
+                                <li><i class="fas fa-times text-danger"></i> <strong>No real-time monitoring</strong> - Reactive, not proactive</li>
+                                <li><i class="fas fa-times text-danger"></i> <strong>High fraud rates</strong> - Billions in losses annually</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h4 class="text-danger">$4.8 Trillion</h4>
+                                <p>Global lending market with massive inefficiencies</p>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar bg-danger" style="width: 20%">20% Default Rate</div>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar bg-warning" style="width: 60%">60% Recovery Rate</div>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" style="width: 40%">40% Manual Processes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Solution Overview -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h3><i class="fas fa-lightbulb"></i> Our Revolutionary Solution</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="card border-primary h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-wifi fa-3x text-primary mb-3"></i>
+                                    <h5>IoT Monitoring</h5>
+                                    <p>Real-time tracking of all collateral with tamper-proof devices</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="card border-info h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-link fa-3x text-info mb-3"></i>
+                                    <h5>Blockchain Security</h5>
+                                    <p>Immutable records and automatic smart contract enforcement</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="card border-warning h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-brain fa-3x text-warning mb-3"></i>
+                                    <h5>AI Intelligence</h5>
+                                    <p>Predictive analytics and automated risk assessment</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4 class="text-center text-success">The Result: Unbeatable Security + Maximum Profitability</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-cogs"></i> Cutting-Edge Technology Stack</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-microchip"></i> IoT Device Network</h5>
+                            <ul>
+                                <li><strong>GPS Trackers</strong> - Real-time location, geofencing, tamper detection</li>
+                                <li><strong>Smart Cameras</strong> - AI-powered security, motion detection</li>
+                                <li><strong>Environmental Sensors</strong> - Condition monitoring, damage detection</li>
+                                <li><strong>Smart Locks</strong> - Biometric access, remote control</li>
+                                <li><strong>Blockchain Nodes</strong> - Immutable verification</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-code"></i> Smart Contract Framework</h5>
+                            <ul>
+                                <li><strong>Automatic Enforcement</strong> - No human intervention needed</li>
+                                <li><strong>Payment Processing</strong> - Auto-deduction, penalty application</li>
+                                <li><strong>Collateral Management</strong> - Real-time monitoring, automatic repossession</li>
+                                <li><strong>Risk Management</strong> - Dynamic interest rates, early warning systems</li>
+                                <li><strong>Legal Compliance</strong> - Immutable records, court-admissible evidence</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-robot"></i> AI-Powered Intelligence</h5>
+                            <ul>
+                                <li><strong>Predictive Analytics</strong> - Default prediction before it happens</li>
+                                <li><strong>Behavioral Analysis</strong> - Payment patterns, location stability</li>
+                                <li><strong>Market Intelligence</strong> - Real-time valuation, trend analysis</li>
+                                <li><strong>Automated Responses</strong> - Smart alerts, preventive actions</li>
+                                <li><strong>Risk Scoring</strong> - Dynamic, real-time risk assessment</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-shield-alt"></i> Security Features</h5>
+                            <ul>
+                                <li><strong>Multi-layer Security</strong> - Physical + Digital + Legal</li>
+                                <li><strong>Tamper-proof Devices</strong> - Impossible to disable or manipulate</li>
+                                <li><strong>Blockchain Verification</strong> - Immutable, transparent records</li>
+                                <li><strong>Real-time Monitoring</strong> - 24/7 surveillance and alerts</li>
+                                <li><strong>Automatic Recovery</strong> - GPS-based repossession</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Opportunity -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h3><i class="fas fa-chart-line"></i> Massive Market Opportunity</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h2 class="text-warning">$4.8T</h2>
+                            <h5>Global Lending Market</h5>
+                            <p>Growing at 8.2% annually</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h2 class="text-warning">$960B</h2>
+                            <h5>Annual Defaults</h5>
+                            <p>20% default rate = massive losses</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h2 class="text-warning">$288B</h2>
+                            <h5>Recovery Gap</h5>
+                            <p>60% recovery rate leaves 40% unrecovered</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4 class="text-center">Our Target: Capture 1% of Global Market = $48B Portfolio</h4>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width: 95%">95% Default Reduction</div>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-info" style="width: 99%">99% Recovery Rate</div>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" style="width: 90%">90% Automation</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Competitive Advantage -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-trophy"></i> Unbeatable Competitive Advantage</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Feature</th>
+                                    <th class="text-center">Traditional Lenders</th>
+                                    <th class="text-center">Fintech Companies</th>
+                                    <th class="text-center text-success"><strong>Our Smart System</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Default Rate</strong></td>
+                                    <td class="text-center text-danger">15-20%</td>
+                                    <td class="text-center text-warning">10-15%</td>
+                                    <td class="text-center text-success"><strong>&lt;1%</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Recovery Rate</strong></td>
+                                    <td class="text-center text-danger">60-70%</td>
+                                    <td class="text-center text-warning">70-80%</td>
+                                    <td class="text-center text-success"><strong>99%+</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Processing Time</strong></td>
+                                    <td class="text-center">5-10 days</td>
+                                    <td class="text-center">1-3 days</td>
+                                    <td class="text-center text-success"><strong>Real-time</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Monitoring</strong></td>
+                                    <td class="text-center text-danger">None</td>
+                                    <td class="text-center text-warning">Basic</td>
+                                    <td class="text-center text-success"><strong>24/7 IoT + AI</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Enforcement</strong></td>
+                                    <td class="text-center text-danger">Manual</td>
+                                    <td class="text-center text-warning">Semi-automated</td>
+                                    <td class="text-center text-success"><strong>Fully Automated</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fraud Prevention</strong></td>
+                                    <td class="text-center text-danger">Reactive</td>
+                                    <td class="text-center text-warning">Basic AI</td>
+                                    <td class="text-center text-success"><strong>Predictive AI</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Model -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h3><i class="fas fa-dollar-sign"></i> Profitable Revenue Model</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-chart-pie"></i> Revenue Streams</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-percentage text-success"></i> <strong>Interest Income</strong> - 12-18% APR</li>
+                                <li><i class="fas fa-cog text-primary"></i> <strong>IoT Device Fees</strong> - $50-200 per device</li>
+                                <li><i class="fas fa-link text-info"></i> <strong>Smart Contract Fees</strong> - $10-50 per contract</li>
+                                <li><i class="fas fa-shield-alt text-warning"></i> <strong>Insurance Premiums</strong> - 2-5% of loan value</li>
+                                <li><i class="fas fa-chart-line text-danger"></i> <strong>Analytics & Reports</strong> - $100-1000 per report</li>
+                                <li><i class="fas fa-cogs text-secondary"></i> <strong>Platform Licensing</strong> - $10K-100K per bank</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-calculator"></i> Financial Projections</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <h6 class="text-success">Year 1</h6>
+                                    <p><strong>$10M</strong> Revenue<br>
+                                    <strong>$2M</strong> Profit<br>
+                                    <strong>1,000</strong> Loans</p>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-success">Year 3</h6>
+                                    <p><strong>$100M</strong> Revenue<br>
+                                    <strong>$30M</strong> Profit<br>
+                                    <strong>50,000</strong> Loans</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <h6 class="text-success">Year 5</h6>
+                                    <p><strong>$500M</strong> Revenue<br>
+                                    <strong>$150M</strong> Profit<br>
+                                    <strong>500,000</strong> Loans</p>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-success">Year 10</h6>
+                                    <p><strong>$2B</strong> Revenue<br>
+                                    <strong>$600M</strong> Profit<br>
+                                    <strong>5M</strong> Loans</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Demo -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3><i class="fas fa-play-circle"></i> Live Technology Demo</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-desktop"></i> Smart Collateral Dashboard</h5>
+                            <div class="text-center mb-3">
+                                <a href="{% url 'finance:smart-collateral-dashboard' %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-external-link-alt"></i> View Live Dashboard
+                                </a>
+                            </div>
+                            <p>Experience our real-time monitoring system with:</p>
+                            <ul>
+                                <li>Live IoT device status</li>
+                                <li>Real-time risk scoring</li>
+                                <li>AI-powered insights</li>
+                                <li>Smart contract monitoring</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-mobile-alt"></i> User Experience</h5>
+                            <div class="text-center mb-3">
+                                <a href="{% url 'finance:loan-home' %}" class="btn btn-success btn-lg">
+                                    <i class="fas fa-user"></i> Try Loan Application
+                                </a>
+                            </div>
+                            <p>Test our seamless user experience:</p>
+                            <ul>
+                                <li>Instant eligibility check</li>
+                                <li>Smart collateral form</li>
+                                <li>Real-time approval</li>
+                                <li>Automated monitoring</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Ask -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-handshake"></i> Investment Opportunity</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-money-bill-wave"></i> Funding Requirements</h5>
+                            <div class="alert alert-info">
+                                <h4 class="text-center">$5M Series A</h4>
+                                <p class="text-center mb-0">To scale our revolutionary lending platform</p>
+                            </div>
+                            <h6>Use of Funds:</h6>
+                            <ul>
+                                <li><strong>40%</strong> - Technology development & IoT infrastructure</li>
+                                <li><strong>30%</strong> - Market expansion & user acquisition</li>
+                                <li><strong>20%</strong> - Team expansion & talent acquisition</li>
+                                <li><strong>10%</strong> - Regulatory compliance & legal</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-chart-line"></i> Expected Returns</h5>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h4 class="text-success">10x</h4>
+                                    <p>Revenue Growth<br>Year 1-3</p>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success">50x</h4>
+                                    <p>Valuation Growth<br>Year 1-5</p>
+                                </div>
+                            </div>
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-trophy"></i> Exit Strategy</h6>
+                                <p class="mb-0">IPO or acquisition by major financial institution within 5-7 years</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team & Vision -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h3><i class="fas fa-users"></i> Vision & Mission</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-eye"></i> Our Vision</h5>
+                            <p class="lead">To revolutionize global lending by making it impossible to default while providing the best borrower experience possible.</p>
+                            
+                            <h5><i class="fas fa-bullseye"></i> Our Mission</h5>
+                            <p>To create the world's most secure, intelligent, and profitable lending platform using cutting-edge IoT, blockchain, and AI technology.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-star"></i> Why Invest Now?</h5>
+                            <ul>
+                                <li><strong>First-mover advantage</strong> in smart collateral lending</li>
+                                <li><strong>Proven technology</strong> with working prototypes</li>
+                                <li><strong>Massive market opportunity</strong> in $4.8T industry</li>
+                                <li><strong>Unbeatable competitive moat</strong> through technology</li>
+                                <li><strong>Experienced team</strong> with deep industry expertise</li>
+                                <li><strong>Clear path to profitability</strong> with multiple revenue streams</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h2 class="text-success mb-4">
+                        <i class="fas fa-rocket"></i> Ready to Join the Revolution?
+                    </h2>
+                    <p class="lead mb-4">Be part of the future of lending. Invest in the technology that will transform a $4.8 trillion industry.</p>
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <a href="mailto:investors@codanalytics.net" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-envelope"></i> Contact Investors
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <a href="{% url 'finance:smart-collateral-dashboard' %}" class="btn btn-info btn-lg w-100">
+                                        <i class="fas fa-desktop"></i> View Demo
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <a href="/docs/SMART_COLLATERAL_SYSTEM_DESIGN.md" class="btn btn-success btn-lg w-100">
+                                        <i class="fas fa-file-alt"></i> Read Documentation
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h4><i class="fas fa-shield-alt"></i> CODA Analytics</h4>
+                    <p class="mb-0">Revolutionizing Finance Through Technology</p>
+                    <div class="mt-3">
+                        <a href="https://codanalytics.net" class="text-white me-3"><i class="fas fa-globe"></i> Website</a>
+                        <a href="mailto:info@codanalytics.net" class="text-white me-3"><i class="fas fa-envelope"></i> Email</a>
+                        <a href="tel:+254700000000" class="text-white"><i class="fas fa-phone"></i> Phone</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Presentation Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling for better presentation experience
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+    
+    // Add animation effects
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Observe all cards for animation
+    document.querySelectorAll('.card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

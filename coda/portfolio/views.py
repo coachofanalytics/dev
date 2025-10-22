@@ -6,6 +6,7 @@ Handles all portfolio and presentation views
 from django.shortcuts import render, redirect
 from django.http import Http404
 from .services import ProjectRegistry
+from ai_services.services.presentation_service import PresentationService
 
 
 def portfolio_hub(request):
@@ -144,3 +145,34 @@ def presentation_guide(request):
     }
     
     return render(request, 'portfolio/guide/master_guide.html', context)
+
+
+# Legacy Presentation Views (copied from original apps)
+def legacy_ai_diaspora_presentation(request, presentation_mode='investor'):
+    """
+    Legacy AI Diaspora presentation - exact copy from ai_services
+    URL: /portfolio/legacy/ai-diaspora/{mode}/
+    """
+    # Use the original presentation service
+    presentation_service = PresentationService()
+    context = presentation_service.get_presentation_context(presentation_mode)
+    
+    # Map presentation modes to templates
+    template_mapping = {
+        'investor': 'portfolio/legacy-ai-diaspora/investor_presentation_dashboard.html',
+        'banking': 'portfolio/legacy-ai-diaspora/banking_presentation_dashboard.html',
+        'hybrid': 'portfolio/legacy-ai-diaspora/hybrid_presentation_dashboard.html',
+        'standard': 'portfolio/legacy-ai-diaspora/presentation_dashboard.html',
+    }
+    
+    template = template_mapping.get(presentation_mode, 'portfolio/legacy-ai-diaspora/presentation_dashboard.html')
+    
+    return render(request, template, context)
+
+
+def legacy_finance_presentation(request):
+    """
+    Legacy Finance presentation - exact copy from finance app
+    URL: /portfolio/legacy/finance/
+    """
+    return render(request, 'portfolio/legacy-finance/loan_system_presentation.html')

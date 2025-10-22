@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<style>
+table, th, td {
+  border:1px solid black;
+}
+</style>
+<body>
+
+<h2>Recruiters you have replied</h2>
+{% if msg %}
+    <h4>{{msg}}</h4>
+{% endif %}
+<table style="width:100%">
+  <tr>
+    <th>id</th>
+    <th>from_mail</th>
+    <th>to_mail</th>
+    <th>subject</th>
+    <th>text_mail</th>
+    <th>received_date</th>
+  </tr>
+  {% for mail in mails %}
+  <tr>
+    <td>{{mail.id}}</td>
+    <td>{{mail.from_mail}}</td>
+    <td>{{mail.to_mail}}</td>
+    <td>{{mail.subject}}</td>
+    <td>{{mail.text_mail}}</td>
+    <td>{{mail.received_date}}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>
+

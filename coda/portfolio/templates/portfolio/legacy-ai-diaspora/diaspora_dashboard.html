@@ -1,0 +1,776 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="jumbotron bg-primary text-white text-center py-5 mb-4">
+                <h1 class="display-4">
+                    <i class="fas fa-brain"></i> CODA AI Platform
+                </h1>
+                <p class="lead">Empowering the Kenyan Diaspora through AI-driven Financial Inclusion, Trade Facilitation, and Social Impact</p>
+                <hr class="my-4 bg-white">
+                <p>Experience real-time AI predictions for remittance patterns, trade behaviors, investment opportunities, education pathways, and healthcare access.</p>
+                    <!-- Enhanced Button Layout -->
+                    <div class="mt-4">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-10 col-xl-8">
+                                <div class="d-flex flex-wrap justify-content-center gap-3">
+                                    {% if user.is_staff %}
+                                    <a href="{% url 'ai_services:analytics_dashboard' %}" class="btn btn-primary btn-lg action-btn">
+                                        <i class="fas fa-tachometer-alt"></i> 
+                                        <span class="btn-text">Analytics Dashboard</span>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <!-- Presentation Mode Dropdown -->
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-outline-light btn-lg dropdown-toggle action-btn" type="button" id="presentationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-presentation"></i> 
+                                            <span class="btn-text">Presentation Modes</span>
+                                            <i class="fas fa-chevron-down ml-2"></i>
+                                        </button>
+                                        <div class="dropdown-menu presentation-dropdown" aria-labelledby="presentationDropdown">
+                                            <a class="dropdown-item" href="{% url 'ai_services:presentation_dashboard' %}?mode=standard">
+                                                <i class="fas fa-desktop"></i> Standard Demo
+                                            </a>
+                                            <a class="dropdown-item" href="{% url 'ai_services:presentation_dashboard' %}?mode=investor">
+                                                <i class="fas fa-chart-line"></i> Investor Presentation
+                                            </a>
+                                            <a class="dropdown-item" href="{% url 'ai_services:presentation_dashboard' %}?mode=banking">
+                                                <i class="fas fa-university"></i> Banking Presentation
+                                            </a>
+                                            <a class="dropdown-item" href="{% url 'ai_services:presentation_dashboard' %}?mode=hybrid">
+                                                <i class="fas fa-handshake"></i> Hybrid Presentation
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="{% url 'ai_services:presentation_guide' %}">
+                                                <i class="fas fa-book"></i> Presentation Guide
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quick Demo Button -->
+                                    <button class="btn btn-outline-light btn-lg action-btn" onclick="enterPresentationMode()">
+                                        <i class="fas fa-play"></i> 
+                                        <span class="btn-text">Quick Demo</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Analysis Types Grid -->
+            <div class="row">
+                {% for analysis in analysis_types %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm analysis-card" data-analysis-type="{{ analysis.key }}">
+                        <div class="card-body text-center">
+                            <div class="analysis-icon mb-3">
+                                <i class="{{ analysis.icon }} fa-3x text-primary"></i>
+                            </div>
+                            <h5 class="card-title">{{ analysis.name }}</h5>
+                            <p class="card-text">
+                                {% if analysis.key == 'remittance_analysis' %}
+                                    Get AI-powered credit scoring and remittance optimization suggestions.
+                                {% elif analysis.key == 'trade_facilitation' %}
+                                    Analyze market opportunities and trade facilitation recommendations.
+                                {% elif analysis.key == 'investment_opportunities' %}
+                                    Discover investment opportunities tailored to your risk profile.
+                                {% elif analysis.key == 'education_pathways' %}
+                                    Find education pathways and scholarship opportunities.
+                                {% elif analysis.key == 'healthcare_access' %}
+                                    Access healthcare recommendations and insurance options.
+                                {% endif %}
+                            </p>
+                            <button class="btn btn-primary btn-lg start-analysis-btn" data-analysis-type="{{ analysis.key }}">
+                                <i class="fas fa-play"></i> Start Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Features Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h2 class="text-center mb-4">Platform Features</h2>
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-robot fa-3x text-success"></i>
+                            </div>
+                            <h4>AI-Powered Analysis</h4>
+                            <p>Advanced AI models provide accurate predictions and recommendations for diaspora needs.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-chart-line fa-3x text-info"></i>
+                            </div>
+                            <h4>Real-Time Insights</h4>
+                            <p>Get instant analysis results with confidence scores and detailed recommendations.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-shield-alt fa-3x text-warning"></i>
+                            </div>
+                            <h4>Secure & Private</h4>
+                            <p>Your data is anonymized and secure. All analysis is for demonstration purposes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                    <!-- User Status & AI Health -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-user"></i> User Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if user.is_authenticated %}
+                                        <p class="text-success"><i class="fas fa-check-circle"></i> Authenticated User</p>
+                                        <p><strong>Welcome:</strong> {{ user.get_full_name|default:user.username }}</p>
+                                        <a href="{% url 'ai_services:user_analytics' %}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-chart-bar"></i> My Analytics
+                                        </a>
+                                        {% if user.is_staff %}
+                                        <a href="{% url 'ai_services:analytics_dashboard' %}" class="btn btn-sm btn-outline-success ml-2">
+                                            <i class="fas fa-tachometer-alt"></i> Analytics Dashboard
+                                        </a>
+                                        {% endif %}
+                                    {% else %}
+                                        <p class="text-warning"><i class="fas fa-user-slash"></i> Anonymous User</p>
+                                        <p>Sign in to save your analysis history and access personalized features.</p>
+                                        <a href="{% url 'accounts:account-login' %}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-sign-in-alt"></i> Sign In
+                                        </a>
+                                        <a href="{% url 'accounts:join' %}" class="btn btn-sm btn-outline-success ml-2">
+                                            <i class="fas fa-user-plus"></i> Sign Up
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-brain"></i> AI Service Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="ai-health-status">
+                                        <p><i class="fas fa-spinner fa-spin"></i> Checking AI services...</p>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-success" onclick="checkAIHealth()">
+                                        <i class="fas fa-sync"></i> Refresh Status
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform Information -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h4><i class="fas fa-info-circle"></i> Platform Information</h4>
+                                <p>This platform showcases CODA's AI capabilities for diaspora empowerment. All data is anonymized and used for analysis purposes only.</p>
+                                <ul>
+                                    <li>AI predictions are generated using advanced machine learning models with automatic fallback</li>
+                                    <li>Results include confidence scores and detailed recommendations</li>
+                                    <li>Data is stored securely and anonymized for analytics</li>
+                                    <li>Analysis sessions are limited to 30 minutes</li>
+                                    <li>Real AI integration with fallback to realistic dummy data when services are unavailable</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <h5>Creating Analysis Session...</h5>
+                <p>Please wait while we set up your analysis session.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modern Diaspora Dashboard Styling */
+
+/* Enhanced Background with Modern Gradients */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.container-fluid {
+    background: transparent;
+}
+
+/* Hero Section with Enhanced Gradient */
+.jumbotron {
+    background: linear-gradient(135deg, 
+        rgba(30, 60, 114, 0.95) 0%, 
+        rgba(42, 82, 152, 0.9) 25%, 
+        rgba(102, 126, 234, 0.85) 50%, 
+        rgba(118, 75, 162, 0.9) 75%, 
+        rgba(30, 60, 114, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    margin: 2rem 0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.jumbotron::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        transparent 50%, 
+        rgba(255, 255, 255, 0.05) 100%);
+    pointer-events: none;
+}
+
+.jumbotron .display-4 {
+    font-weight: 800;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.jumbotron .lead {
+    font-size: 1.3rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.jumbotron hr {
+    border: none;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.8) 50%, 
+        transparent 100%);
+    border-radius: 2px;
+    margin: 2rem 0;
+}
+
+/* Enhanced Button Layout Styling */
+.action-btn {
+    min-width: 200px !important;
+    margin: 0.5rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.btn-text {
+    margin-left: 0.5rem;
+}
+
+/* Modern Button Styling */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 25px !important;
+    padding: 1rem 2rem !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4) !important;
+}
+
+.btn-outline-light {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.8) !important;
+    color: white !important;
+    border-radius: 25px !important;
+    padding: 1rem 2rem !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    backdrop-filter: blur(10px) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.btn-outline-light::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent);
+    transition: left 0.5s;
+}
+
+.btn-outline-light:hover::before {
+    left: 100%;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: white !important;
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 15px 35px rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-outline-info {
+    background: rgba(23, 162, 184, 0.1) !important;
+    border: 2px solid #17a2b8 !important;
+    color: #17a2b8 !important;
+    border-radius: 25px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.btn-outline-info:hover {
+    background: #17a2b8 !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 25px rgba(23, 162, 184, 0.3) !important;
+}
+
+.btn-outline-success {
+    background: rgba(40, 167, 69, 0.1) !important;
+    border: 2px solid #28a745 !important;
+    color: #28a745 !important;
+    border-radius: 25px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.btn-outline-success:hover {
+    background: #28a745 !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3) !important;
+}
+
+/* Enhanced Analysis Cards */
+.analysis-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    border-radius: 20px !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    cursor: pointer !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.analysis-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.analysis-card:hover::before {
+    transform: scaleX(1);
+}
+
+.analysis-card:hover {
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+    background: rgba(255, 255, 255, 1) !important;
+}
+
+.analysis-icon {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+.analysis-card:hover .analysis-icon {
+    transform: scale(1.2) rotate(5deg) !important;
+}
+
+.start-analysis-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 20px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+.start-analysis-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* Enhanced Feature Icons */
+.feature-icon {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+.feature-icon:hover {
+    transform: scale(1.2) rotate(-5deg) !important;
+}
+
+/* Enhanced Cards */
+.card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    border-radius: 15px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    transition: all 0.3s ease !important;
+}
+
+.card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    border-radius: 15px 15px 0 0 !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+/* Enhanced Alert */
+.alert-info {
+    background: rgba(23, 162, 184, 0.1) !important;
+    border: 1px solid rgba(23, 162, 184, 0.3) !important;
+    border-radius: 15px !important;
+    backdrop-filter: blur(10px) !important;
+    color: #0c5460 !important;
+}
+
+/* Enhanced Dropdown Styling */
+.presentation-dropdown {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    border-radius: 15px !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+    margin-top: 0.5rem !important;
+    min-width: 250px !important;
+}
+
+.presentation-dropdown .dropdown-item {
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 10px !important;
+    margin: 0.25rem !important;
+    transition: all 0.3s ease !important;
+    color: #333 !important;
+    font-weight: 500 !important;
+}
+
+.presentation-dropdown .dropdown-item:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    transform: translateX(5px) !important;
+}
+
+.presentation-dropdown .dropdown-divider {
+    margin: 0.5rem 1rem !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Button Group Enhancements */
+.btn-group .btn {
+    border-radius: 25px !important;
+}
+
+.btn-group .dropdown-toggle::after {
+    display: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .jumbotron {
+        margin: 1rem 0;
+        padding: 2rem 1rem !important;
+    }
+    
+    .jumbotron .display-4 {
+        font-size: 2rem !important;
+    }
+    
+    .jumbotron .lead {
+        font-size: 1.1rem !important;
+    }
+    
+    .btn-primary, .btn-outline-light {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .action-btn {
+        min-width: 150px !important;
+        margin: 0.25rem !important;
+    }
+    
+    .d-flex {
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    
+    .btn-group {
+        width: 100% !important;
+        margin: 0.5rem 0 !important;
+    }
+    
+    .btn-group .btn {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .action-btn {
+        min-width: 120px !important;
+        font-size: 0.9rem !important;
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .btn-text {
+        display: none !important;
+    }
+    
+    .action-btn i {
+        margin-right: 0 !important;
+    }
+}
+
+/* Animation for page load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.jumbotron, .analysis-card, .card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.analysis-card:nth-child(1) { animation-delay: 0.1s; }
+.analysis-card:nth-child(2) { animation-delay: 0.2s; }
+.analysis-card:nth-child(3) { animation-delay: 0.3s; }
+.analysis-card:nth-child(4) { animation-delay: 0.4s; }
+.analysis-card:nth-child(5) { animation-delay: 0.5s; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard JavaScript loaded');
+    
+    // Add click handlers to analysis cards
+    document.querySelectorAll('.analysis-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const analysisType = this.dataset.analysisType;
+            console.log('Card clicked:', analysisType);
+            startAnalysis(analysisType);
+        });
+    });
+
+    // Add click handlers to start buttons
+    document.querySelectorAll('.start-analysis-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const analysisType = this.dataset.analysisType;
+            console.log('Button clicked:', analysisType);
+            startAnalysis(analysisType);
+        });
+    });
+
+    function startAnalysis(analysisType) {
+        console.log('Starting analysis for:', analysisType);
+        
+        // Show loading modal
+        const modal = document.getElementById('loadingModal');
+        if (modal) {
+            // Use Bootstrap modal if available, otherwise show simple alert
+            if (typeof $ !== 'undefined' && $.fn.modal) {
+                $('#loadingModal').modal('show');
+            } else {
+                // Fallback: show loading message
+                const loadingDiv = document.createElement('div');
+                loadingDiv.innerHTML = '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px; z-index: 9999;">Creating Analysis Session...</div>';
+                document.body.appendChild(loadingDiv);
+            }
+        }
+        
+        // Create analysis session
+        fetch('{% url "ai_services:create_session" %}', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            console.log('Session creation response:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Session creation data:', data);
+            if (data.success) {
+                // Redirect to analysis form
+                const url = `{% url "ai_services:analysis_form" "PLACEHOLDER" %}`.replace('PLACEHOLDER', analysisType);
+                console.log('Redirecting to:', url);
+                window.location.href = url;
+            } else {
+                alert('Error creating analysis session: ' + (data.error || 'Unknown error'));
+                if (typeof $ !== 'undefined' && $.fn.modal) {
+                    $('#loadingModal').modal('hide');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error creating analysis session. Please try again.');
+            if (typeof $ !== 'undefined' && $.fn.modal) {
+                $('#loadingModal').modal('hide');
+            }
+        });
+    }
+        });
+
+        // AI Health Check Function
+        function checkAIHealth() {
+            const statusDiv = document.getElementById('ai-health-status');
+            statusDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Checking AI services...</p>';
+            
+            fetch('{% url "ai_services:ai_health_check" %}')
+                .then(response => response.json())
+                .then(data => {
+                    let statusHtml = '';
+                    
+                    if (data.overall_status === 'healthy') {
+                        statusHtml = '<p class="text-success"><i class="fas fa-check-circle"></i> All AI services healthy</p>';
+                    } else if (data.overall_status === 'degraded') {
+                        statusHtml = '<p class="text-warning"><i class="fas fa-exclamation-triangle"></i> Some AI services unavailable</p>';
+                    } else {
+                        statusHtml = '<p class="text-danger"><i class="fas fa-times-circle"></i> AI services unavailable - using fallback</p>';
+                    }
+                    
+                    statusHtml += '<div class="mt-2">';
+                    for (const [service, info] of Object.entries(data.services)) {
+                        const statusIcon = info.status === 'available' ? 'fa-check-circle text-success' : 
+                                         info.status === 'unavailable' ? 'fa-times-circle text-warning' : 
+                                         'fa-exclamation-triangle text-danger';
+                        statusHtml += `<small><i class="fas ${statusIcon}"></i> ${service}: ${info.status}</small><br>`;
+                    }
+                    statusHtml += '</div>';
+                    
+                    statusDiv.innerHTML = statusHtml;
+                })
+                .catch(error => {
+                    statusDiv.innerHTML = '<p class="text-danger"><i class="fas fa-times-circle"></i> Error checking AI services</p>';
+                    console.error('AI health check error:', error);
+                });
+        }
+
+        // Check AI health on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAIHealth();
+        });
+
+        // Presentation Mode functionality
+        function enterPresentationMode() {
+            if (confirm('Enter Demo Presentation Mode? This will provide a fullscreen, guided experience optimized for stakeholder presentations.')) {
+                // Create a new session with presentation mode enabled
+                fetch('/ai_services/diaspora/create-session/?presentation_mode=true')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Reload the page to enter presentation mode
+                            window.location.reload();
+                        } else {
+                            alert('Failed to enter presentation mode. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error entering presentation mode:', error);
+                        alert('Error entering presentation mode. Please try again.');
+                    });
+            }
+        }
+        </script>
+        {% endblock %}

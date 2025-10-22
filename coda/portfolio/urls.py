@@ -27,5 +27,13 @@ urlpatterns = [
     
     # ========== GUIDE & RESOURCES ==========
     path('guide/', views.presentation_guide, name='guide'),
+    
+    # ========== LEGACY PRESENTATIONS (Exact copies from original apps) ==========
+    # AI Diaspora legacy presentation
+    path('legacy/ai-diaspora/', views.legacy_ai_diaspora_presentation, {'presentation_mode': 'investor'}, name='legacy-ai-diaspora'),
+    path('legacy/ai-diaspora/<str:presentation_mode>/', views.legacy_ai_diaspora_presentation, name='legacy-ai-diaspora-mode'),
+    
+    # Finance legacy presentation
+    path('legacy/finance/', views.legacy_finance_presentation, name='legacy-finance'),
 ]
 

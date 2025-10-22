@@ -1,0 +1,1057 @@
+{% extends "portfolio/legacy-ai-diaspora/base_presentation.html" %}
+{% load static %}
+{% load mathfilters %}
+
+{% block presentation_content %}
+    <!-- Perspective Toggle -->
+    <div class="perspective-toggle">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="perspective-switcher">
+                        <button class="perspective-btn active" data-perspective="investor" onclick="switchPerspective('investor')">
+                            <i class="fas fa-chart-line"></i> Investor View
+                        </button>
+                        <button class="perspective-btn" data-perspective="banking" onclick="switchPerspective('banking')">
+                            <i class="fas fa-university"></i> Banking View
+                        </button>
+                        <button class="perspective-btn" data-perspective="hybrid" onclick="switchPerspective('hybrid')">
+                            <i class="fas fa-handshake"></i> Combined View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="container-fluid">
+            <!-- Dual Perspective Analysis -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="dual-perspective-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-eye"></i> Dual Perspective Analysis
+                        </h2>
+                        <div class="row">
+                            <!-- Investor Perspective -->
+                            <div class="col-md-6">
+                                <div class="perspective-section investor-perspective">
+                                    <h4><i class="fas fa-chart-line"></i> Investor Perspective</h4>
+                                    <div class="perspective-metrics">
+                                        <div class="metric-row">
+                                            <span class="metric-label">Market Opportunity:</span>
+                                            <span class="metric-value">$50B+</span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Projected ROI:</span>
+                                            <span class="metric-value">300-400%</span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Growth Rate:</span>
+                                            <span class="metric-value">15% YoY</span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Competitive Moat:</span>
+                                            <span class="metric-value">AI + Data</span>
+                                        </div>
+                                    </div>
+                                    <div class="perspective-benefits">
+                                        <h5>Key Benefits:</h5>
+                                        <ul>
+                                            <li>Scalable SaaS revenue model</li>
+                                            <li>High-margin AI services</li>
+                                            <li>Network effects with data</li>
+                                            <li>Multiple revenue streams</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Banking Perspective -->
+                            <div class="col-md-6">
+                                <div class="perspective-section banking-perspective">
+                                    <h4><i class="fas fa-university"></i> Banking Perspective</h4>
+                                    <div class="perspective-metrics">
+                                        <div class="metric-row">
+                                            <span class="metric-label">Customer Base:</span>
+                                            <span class="metric-value">200M+</span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Risk Reduction:</span>
+                                            <span class="metric-value">35%</span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Customer Acquisition:</span>
+                                            <span class="metric-value">+200%</span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Compliance Score:</span>
+                                            <span class="metric-value">95%</span>
+                                        </div>
+                                    </div>
+                                    <div class="perspective-benefits">
+                                        <h5>Key Benefits:</h5>
+                                        <ul>
+                                            <li>Enhanced credit scoring</li>
+                                            <li>Reduced default rates</li>
+                                            <li>New customer segments</li>
+                                            <li>Regulatory compliance</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Demo Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="live-demo-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-play-circle"></i> Live Demo - Dual Perspective Analysis
+                        </h2>
+                        
+                        <!-- Demo Input -->
+                        <div class="demo-input-section">
+                            <h4>Scenario: High-Value Diaspora Customer</h4>
+                            <div class="demo-data-grid">
+                                <div class="data-item">
+                                    <span class="data-label">Monthly Remittance:</span>
+                                    <span class="data-value">$5,000</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="data-label">Frequency:</span>
+                                    <span class="data-value">Monthly</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="data-label">Destination:</span>
+                                    <span class="data-value">Kenya</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="data-label">Purpose:</span>
+                                    <span class="data-value">Investment</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="data-label">Experience:</span>
+                                    <span class="data-value">8 years</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="data-label">Method:</span>
+                                    <span class="data-value">Bank Transfer</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dual Results -->
+                        <div class="dual-results-section">
+                            <div class="row">
+                                <!-- Investor Results -->
+                                <div class="col-md-6">
+                                    <div class="results-section investor-results">
+                                        <h4><i class="fas fa-chart-line"></i> Investor Analysis</h4>
+                                        <div class="results-grid">
+                                            <div class="result-item">
+                                                <span class="result-label">Investment Score:</span>
+                                                <span class="result-value score-high">8.7/10</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="result-label">Market Potential:</span>
+                                                <span class="result-value potential-high">High</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="result-label">Scalability:</span>
+                                                <span class="result-value scalability-high">Excellent</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="result-label">Revenue Potential:</span>
+                                                <span class="result-value revenue-high">$2.4M LTV</span>
+                                            </div>
+                                        </div>
+                                        <div class="investor-recommendations">
+                                            <h5>Investment Recommendations:</h5>
+                                            <ul>
+                                                <li>Series A funding: $5M</li>
+                                                <li>Focus on enterprise sales</li>
+                                                <li>Expand to 5 African markets</li>
+                                                <li>Build strategic partnerships</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Banking Results -->
+                                <div class="col-md-6">
+                                    <div class="results-section banking-results">
+                                        <h4><i class="fas fa-university"></i> Banking Analysis</h4>
+                                        <div class="results-grid">
+                                            <div class="result-item">
+                                                <span class="result-label">Credit Score:</span>
+                                                <span class="result-value score-high">742/850</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="result-label">Risk Level:</span>
+                                                <span class="result-value risk-low">Low-Medium</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="result-label">Confidence:</span>
+                                                <span class="result-value confidence-high">89%</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="result-label">Processing Time:</span>
+                                                <span class="result-value time-fast">1.2s</span>
+                                            </div>
+                                        </div>
+                                        <div class="banking-recommendations">
+                                            <h5>Banking Recommendations:</h5>
+                                            <ul>
+                                                <li>Personal loan: up to $25,000</li>
+                                                <li>Premium remittance services</li>
+                                                <li>Investment advisory services</li>
+                                                <li>Cross-border banking solutions</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Synergy Analysis -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="synergy-analysis-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-sync-alt"></i> Synergy Analysis: Investor + Banking
+                        </h2>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="synergy-item">
+                                    <div class="synergy-icon">
+                                        <i class="fas fa-chart-bar fa-3x text-success"></i>
+                                    </div>
+                                    <h4>Revenue Synergy</h4>
+                                    <p>Combined revenue streams create 2.5x higher unit economics than standalone solutions.</p>
+                                    <div class="synergy-metrics">
+                                        <span class="synergy-metric">$2.4M LTV</span>
+                                        <span class="synergy-metric">85% Margin</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="synergy-item">
+                                    <div class="synergy-icon">
+                                        <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                                    </div>
+                                    <h4>Risk Mitigation</h4>
+                                    <p>AI-powered risk assessment reduces default rates by 35% while maintaining high approval rates.</p>
+                                    <div class="synergy-metrics">
+                                        <span class="synergy-metric">35% Risk Reduction</span>
+                                        <span class="synergy-metric">95% Compliance</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="synergy-item">
+                                    <div class="synergy-icon">
+                                        <i class="fas fa-users fa-3x text-warning"></i>
+                                    </div>
+                                    <h4>Market Expansion</h4>
+                                    <p>Banking partnerships accelerate customer acquisition while providing stable revenue base.</p>
+                                    <div class="synergy-metrics">
+                                        <span class="synergy-metric">200% Growth</span>
+                                        <span class="synergy-metric">5x Scale</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Implementation Roadmap -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="roadmap-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-road"></i> Implementation Roadmap
+                        </h2>
+                        <div class="roadmap-timeline">
+                            <div class="roadmap-phase">
+                                <div class="phase-header">
+                                    <span class="phase-number">1</span>
+                                    <h4>Phase 1: Foundation (Months 1-6)</h4>
+                                </div>
+                                <div class="phase-content">
+                                    <div class="phase-items">
+                                        <div class="phase-item investor-item">
+                                            <strong>Investor Focus:</strong> Complete Series A funding ($5M)
+                                        </div>
+                                        <div class="phase-item banking-item">
+                                            <strong>Banking Focus:</strong> Pilot with 3 major banks
+                                        </div>
+                                        <div class="phase-item hybrid-item">
+                                            <strong>Combined:</strong> Deploy core AI platform
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="roadmap-phase">
+                                <div class="phase-header">
+                                    <span class="phase-number">2</span>
+                                    <h4>Phase 2: Scale (Months 7-18)</h4>
+                                </div>
+                                <div class="phase-content">
+                                    <div class="phase-items">
+                                        <div class="phase-item investor-item">
+                                            <strong>Investor Focus:</strong> Series B preparation ($15M)
+                                        </div>
+                                        <div class="phase-item banking-item">
+                                            <strong>Banking Focus:</strong> Expand to 15 bank partners
+                                        </div>
+                                        <div class="phase-item hybrid-item">
+                                            <strong>Combined:</strong> Launch in 5 African markets
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="roadmap-phase">
+                                <div class="phase-header">
+                                    <span class="phase-number">3</span>
+                                    <h4>Phase 3: Expansion (Months 19-36)</h4>
+                                </div>
+                                <div class="phase-content">
+                                    <div class="phase-items">
+                                        <div class="phase-item investor-item">
+                                            <strong>Investor Focus:</strong> IPO preparation
+                                        </div>
+                                        <div class="phase-item banking-item">
+                                            <strong>Banking Focus:</strong> Global banking network
+                                        </div>
+                                        <div class="phase-item hybrid-item">
+                                            <strong>Combined:</strong> Market leadership position
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modals %}
+<!-- Comparison Modal -->
+<div id="comparisonModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-balance-scale"></i> Investor vs Banking Comparison</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="comparison-table">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th class="text-success">Investor View</th>
+                                <th class="text-primary">Banking View</th>
+                                <th class="text-warning">Combined Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Primary Focus</strong></td>
+                                <td>ROI & Growth</td>
+                                <td>Risk & Compliance</td>
+                                <td>Market Leadership</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Revenue Model</strong></td>
+                                <td>SaaS Subscriptions</td>
+                                <td>Transaction Fees</td>
+                                <td>Hybrid Model</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Customer Base</strong></td>
+                                <td>Enterprise Clients</td>
+                                <td>End Consumers</td>
+                                <td>Both Segments</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Key Metrics</strong></td>
+                                <td>LTV, CAC, Growth</td>
+                                <td>Risk, Compliance</td>
+                                <td>Market Share</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Success Criteria</strong></td>
+                                <td>300%+ ROI</td>
+                                <td>35% Risk Reduction</td>
+                                <td>Market Dominance</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hybrid Presentation Styles -->
+<style>
+.hybrid-presentation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+    color: white;
+    z-index: 9999;
+    overflow-y: auto;
+}
+
+.hybrid-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hybrid-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.hybrid-badge {
+    background: linear-gradient(45deg, #28a745, #17a2b8);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-left: 1rem;
+}
+
+.hybrid-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.hybrid-metrics {
+    display: flex;
+    gap: 2rem;
+}
+
+.metric-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.investor-metric {
+    border-left: 4px solid #28a745;
+}
+
+.banking-metric {
+    border-left: 4px solid #17a2b8;
+}
+
+.hybrid-metric {
+    border-left: 4px solid #ffc107;
+}
+
+.perspective-toggle {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.perspective-switcher {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.perspective-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.perspective-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.perspective-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.hybrid-content {
+    padding: 3rem 0;
+    min-height: calc(100vh - 200px);
+}
+
+.dual-perspective-card,
+.live-demo-card,
+.synergy-analysis-card,
+.roadmap-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.perspective-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.investor-perspective {
+    border-left: 4px solid #28a745;
+}
+
+.banking-perspective {
+    border-left: 4px solid #17a2b8;
+}
+
+.perspective-metrics {
+    margin-bottom: 1rem;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric-value {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.perspective-benefits ul {
+    list-style: none;
+    padding: 0;
+}
+
+.perspective-benefits li {
+    padding: 0.25rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.perspective-benefits li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #28a745;
+    font-weight: bold;
+}
+
+.demo-data-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.data-item {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.data-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+}
+
+.data-value {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.results-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.investor-results {
+    border-left: 4px solid #28a745;
+}
+
+.banking-results {
+    border-left: 4px solid #17a2b8;
+}
+
+.results-grid {
+    margin-bottom: 1rem;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-value {
+    font-weight: bold;
+}
+
+.score-high, .potential-high, .scalability-high, .revenue-high {
+    color: #28a745;
+}
+
+.risk-low, .confidence-high, .time-fast {
+    color: #17a2b8;
+}
+
+.investor-recommendations,
+.banking-recommendations {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.investor-recommendations ul,
+.banking-recommendations ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.investor-recommendations li,
+.banking-recommendations li {
+    padding: 0.25rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.investor-recommendations li:before {
+    content: "📈";
+    position: absolute;
+    left: 0;
+}
+
+.banking-recommendations li:before {
+    content: "🏦";
+    position: absolute;
+    left: 0;
+}
+
+.synergy-item {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.synergy-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px);
+}
+
+.synergy-icon {
+    margin-bottom: 1rem;
+}
+
+.synergy-metrics {
+    margin-top: 1rem;
+}
+
+.synergy-metric {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    margin: 0.25rem;
+    display: inline-block;
+}
+
+.roadmap-timeline {
+    position: relative;
+}
+
+.roadmap-phase {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.phase-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.phase-number {
+    background: linear-gradient(45deg, #28a745, #17a2b8);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+.phase-content {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.phase-items {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.phase-item {
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.investor-item {
+    background: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid #28a745;
+}
+
+.banking-item {
+    background: rgba(23, 162, 184, 0.1);
+    border-left: 4px solid #17a2b8;
+}
+
+.hybrid-item {
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+}
+
+.hybrid-footer {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+}
+
+.hybrid-controls .btn {
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.comparison-table {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.comparison-table th {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+}
+
+.comparison-table td {
+    border: none;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hybrid-title {
+        font-size: 2rem;
+    }
+    
+    .hybrid-metrics {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .perspective-switcher {
+        flex-direction: column;
+    }
+    
+    .demo-data-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .phase-items {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<!-- Hybrid Presentation JavaScript -->
+<script>
+let currentPerspective = 'investor';
+
+// Start hybrid demo
+function startHybridDemo() {
+    // Simulate live demo with dual perspective data
+    const demoData = {
+        amount: 5000,
+        frequency: 'monthly',
+        destination: 'Kenya',
+        purpose: 'investment',
+        experience: 8,
+        method: 'bank_transfer'
+    };
+    
+    // Show dual perspective results
+    showHybridResults(demoData);
+}
+
+// Show hybrid results with both perspectives
+function showHybridResults(data) {
+    const investorResults = {
+        investment_score: 8.7,
+        market_potential: 'High',
+        scalability: 'Excellent',
+        revenue_potential: '$2.4M LTV'
+    };
+    
+    const bankingResults = {
+        credit_score: 742,
+        risk_level: 'Low-Medium',
+        confidence: 89,
+        processing_time: 1.2
+    };
+    
+    // Update UI with both result sets
+    updateDualResults(investorResults, bankingResults);
+}
+
+// Update dual results display
+function updateDualResults(investorResults, bankingResults) {
+    // Animate investor results
+    const investorElements = document.querySelectorAll('.investor-results .result-value');
+    investorElements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 200);
+        }, index * 100);
+    });
+    
+    // Animate banking results
+    const bankingElements = document.querySelectorAll('.banking-results .result-value');
+    bankingElements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 200);
+        }, (index + 4) * 100);
+    });
+}
+
+// Switch perspective
+function switchPerspective(perspective) {
+    currentPerspective = perspective;
+    
+    // Update active button
+    document.querySelectorAll('.perspective-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-perspective="${perspective}"]`).classList.add('active');
+    
+    // Update content based on perspective
+    updatePerspectiveContent(perspective);
+}
+
+// Update content based on perspective
+function updatePerspectiveContent(perspective) {
+    const dualCard = document.querySelector('.dual-perspective-card');
+    const demoCard = document.querySelector('.live-demo-card');
+    
+    if (perspective === 'investor') {
+        dualCard.style.borderLeft = '4px solid #28a745';
+        demoCard.style.borderLeft = '4px solid #28a745';
+    } else if (perspective === 'banking') {
+        dualCard.style.borderLeft = '4px solid #17a2b8';
+        demoCard.style.borderLeft = '4px solid #17a2b8';
+    } else {
+        dualCard.style.borderLeft = '4px solid #ffc107';
+        demoCard.style.borderLeft = '4px solid #ffc107';
+    }
+}
+
+// Toggle perspective
+function togglePerspective() {
+    const perspectives = ['investor', 'banking', 'hybrid'];
+    const currentIndex = perspectives.indexOf(currentPerspective);
+    const nextIndex = (currentIndex + 1) % perspectives.length;
+    switchPerspective(perspectives[nextIndex]);
+}
+
+// Show comparison modal
+function showComparison() {
+    $('#comparisonModal').modal('show');
+}
+
+// Exit hybrid mode
+function exitHybridMode() {
+    if (confirm('Exit hybrid presentation mode?')) {
+        window.location.href = '/ai_services/diaspora/';
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        exitHybridMode();
+    } else if (e.key === 'c' || e.key === 'C') {
+        showComparison();
+    } else if (e.key === 'p' || e.key === 'P') {
+        togglePerspective();
+    } else if (e.key === 'd' || e.key === 'D') {
+        startHybridDemo();
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial perspective
+    switchPerspective('investor');
+    
+    // Add hover effects to synergy items
+    const synergyItems = document.querySelectorAll('.synergy-item');
+    synergyItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.02)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+});
+
+// Hybrid-specific functions
+function startPresentationDemo() {
+    startHybridDemo();
+}
+
+function startHybridDemo() {
+    // Simulate live demo with dual perspective data
+    const demoData = {
+        amount: 5000,
+        frequency: 'monthly',
+        destination: 'Kenya',
+        purpose: 'investment',
+        experience: 8,
+        method: 'bank_transfer'
+    };
+    
+    // Show dual perspective results
+    showHybridResults(demoData);
+}
+
+function showHybridResults(data) {
+    const investorResults = {
+        investment_score: 8.7,
+        market_potential: 'High',
+        scalability: 'Excellent',
+        revenue_potential: '$2.4M LTV'
+    };
+    
+    const bankingResults = {
+        credit_score: 742,
+        risk_level: 'Low-Medium',
+        confidence: 89,
+        processing_time: 1.2
+    };
+    
+    // Update UI with both result sets
+    updateDualResults(investorResults, bankingResults);
+}
+
+function updateDualResults(investorResults, bankingResults) {
+    // Animate investor results
+    const investorElements = document.querySelectorAll('.investor-results .result-value');
+    investorElements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 200);
+        }, index * 100);
+    });
+    
+    // Animate banking results
+    const bankingElements = document.querySelectorAll('.banking-results .result-value');
+    bankingElements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 200);
+        }, (index + 4) * 100);
+    });
+}
+
+function togglePerspective() {
+    const perspectives = ['investor', 'banking', 'hybrid'];
+    const currentIndex = perspectives.indexOf(currentPerspective);
+    const nextIndex = (currentIndex + 1) % perspectives.length;
+    switchPerspective(perspectives[nextIndex]);
+}
+
+function showComparison() {
+    $('#comparisonModal').modal('show');
+}
+
+// Override base template functions
+function exitPresentationMode() {
+    if (confirm('Exit hybrid presentation mode?')) {
+        window.location.href = '/ai_services/diaspora/';
+    }
+}
+</script>
+{% endblock %}
