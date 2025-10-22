@@ -82,6 +82,7 @@
     <div class="row">
         <div class="col-12">
             <ul class="nav nav-tabs mb-4" role="tablist">
+                <!-- Main Tabs (Left) -->
                 <li class="nav-item">
                     <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}" 
                        href="?tab=overview{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
@@ -89,6 +90,32 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'approvals' %}active{% endif %}" 
+                       href="?tab=approvals{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-check-circle"></i> Approvals
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'requests' %}active{% endif %}" 
+                       href="?tab=requests{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-file-invoice-dollar"></i> Requests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'projections' %}active{% endif %}" 
+                       href="?tab=projections{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-chart-line"></i> Projections
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}" 
+                       href="?tab=analytics{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                </li>
+                
+                <!-- Secondary Tabs (Right) -->
+                <li class="nav-item ms-auto">
                     <a class="nav-link {% if active_tab == 'estimation' %}active{% endif %}" 
                        href="?tab=estimation{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
                         <i class="fas fa-robot"></i> Estimation
@@ -101,27 +128,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'approvals' %}active{% endif %}" 
-                       href="?tab=approvals{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-check-circle"></i> Approvals
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}" 
-                       href="?tab=analytics{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-chart-bar"></i> Analytics
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link {% if active_tab == 'editing' %}active{% endif %}" 
                        href="?tab=editing{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-edit"></i> Budget Editing
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'loans' %}active{% endif %}" 
-                       href="?tab=loans{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-hand-holding-usd"></i> Loans
+                        <i class="fas fa-edit"></i> Edit
                     </a>
                 </li>
             </ul>
@@ -133,14 +142,20 @@
         <div class="col-12">
             {% if active_tab == 'overview' %}
                 {% include "finance/budgets/tabs/overview_tab.html" %}
+            {% elif active_tab == 'approvals' %}
+                {% include "finance/budgets/tabs/approvals_tab.html" %}
+            {% elif active_tab == 'requests' %}
+                {% include "finance/budgets/tabs/requests_tab.html" %}
+            {% elif active_tab == 'projections' %}
+                {% include "finance/budgets/tabs/projections_tab.html" %}
+            {% elif active_tab == 'analytics' %}
+                {% include "finance/budgets/tabs/analytics_tab.html" %}
             {% elif active_tab == 'estimation' %}
                 {% include "finance/budgets/tabs/estimation_tab.html" %}
             {% elif active_tab == 'planning' %}
                 {% include "finance/budgets/tabs/planning_tab.html" %}
-            {% elif active_tab == 'approvals' %}
-                {% include "finance/budgets/tabs/approvals_tab.html" %}
-            {% elif active_tab == 'analytics' %}
-                {% include "finance/budgets/tabs/analytics_tab.html" %}
+            {% elif active_tab == 'editing' %}
+                {% include "finance/budgets/tabs/editing_tab.html" %}
             {% endif %}
         </div>
     </div>

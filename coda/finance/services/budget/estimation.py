@@ -529,3 +529,74 @@ class BudgetEstimationService(BaseFinanceService, BudgetServiceMixin):
         except Exception as e:
             self.log_error("Error creating projection", e)
             raise
+    
+    def analyze_investment_opportunities(self, company, department=None):
+        """
+        Analyze investment opportunities for the company.
+        This is a placeholder method for investment analysis.
+        """
+        try:
+            # Basic investment analysis based on budget data
+            from finance.models import Budget, BudgetCategory
+            from django.db.models import Sum, Count
+            
+            # Get budget data for analysis
+            budgets = Budget.objects.filter(company=company, is_active=True)
+            if department:
+                budgets = budgets.filter(department=department)
+            
+            # Calculate total budget amount
+            total_budget = budgets.aggregate(
+                total=Sum('unit_price') * Sum('quantity') * Sum('cases')
+            )['total'] or 0
+            
+            # Get category breakdown
+            category_breakdown = {}
+            for category in BudgetCategory.objects.all():
+                cat_budgets = budgets.filter(category=category)
+                if cat_budgets.exists():
+                    cat_total = cat_budgets.aggregate(
+                        total=Sum('unit_price') * Sum('quantity') * Sum('cases')
+                    )['total'] or 0
+                    category_breakdown[category.name] = float(cat_total)
+            
+            # Simple investment recommendations
+            investment_opportunities = []
+            
+            # If total budget is significant, suggest investment areas
+            if total_budget > 100000:  # $100K+
+                investment_opportunities.append({
+                    'type': 'Technology Upgrade',
+                    'description': 'Consider investing in technology infrastructure',
+                    'potential_return': '15-25%',
+                    'risk_level': 'Medium',
+                    'priority': 'High'
+                })
+            
+            if total_budget > 500000:  # $500K+
+                investment_opportunities.append({
+                    'type': 'Market Expansion',
+                    'description': 'Explore new market opportunities',
+                    'potential_return': '20-40%',
+                    'risk_level': 'High',
+                    'priority': 'Medium'
+                })
+            
+            return {
+                'total_budget': float(total_budget),
+                'category_breakdown': category_breakdown,
+                'investment_opportunities': investment_opportunities,
+                'analysis_date': timezone.now().date(),
+                'recommendations_count': len(investment_opportunities)
+            }
+            
+        except Exception as e:
+            self.log_error("Error analyzing investment opportunities", e)
+            return {
+                'total_budget': 0,
+                'category_breakdown': {},
+                'investment_opportunities': [],
+                'analysis_date': timezone.now().date(),
+                'recommendations_count': 0,
+                'error': str(e)
+            }

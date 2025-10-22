@@ -1,0 +1,903 @@
+   ==================================================
+💳 Stripe Configuration:
+   Publishable Key: Set
+   Secret Key: Set
+   Webhook Secret: Set
+💳 Stripe Configuration:
+   Publishable Key: Set
+   Secret Key: Set
+   Webhook Secret: Set
+Settings loaded successfully for staging environment
+WARNING Missing Google API credentials - some functionality may be limited
+WARNING AIPredictionCache model not available yet
+================================================================================
+INTELLIGENT TRANSACTION CATEGORIZATION
+================================================================================
+
+Found 290 uncategorized transactions
+
+================================================================================
+CATEGORIZATION PLAN
+================================================================================
+
+Salaries and Wages:
+  Transactions: 129
+  Total Amount: $736,352.98
+  Avg Confidence: 62%
+  Examples:
+    - joj ndalu | $1700.00 | 30% | Department: HR Department, Amount in range: $1000-$50000
+    - brenda | $1000.00 | 30% | Department: HR Department, Amount in range: $1000-$50000
+    - b/lu | $5000.00 | 30% | Department: HR Department, Amount in range: $1000-$50000
+
+Human Resources:
+  Transactions: 22
+  Total Amount: $82,255.00
+  Avg Confidence: 74%
+  Examples:
+    - lule | $500.00 | 30% | Department: HR Department, Amount in range: $500-$10000
+    - KPLC | $5000.00 | 60% | Description contains: hr, Department: HR Department
+    - Alex | $950.00 | 30% | Department: HR Department, Amount in range: $500-$10000
+
+Operational Expenses:
+  Transactions: 82
+  Total Amount: $252,315.75
+  Avg Confidence: 66%
+  Examples:
+    - makutano solar | $1050.00 | 40% | Description contains: makutano, Amount in range: $100-$15000
+    - makutano vegetable | $1580.00 | 40% | Description contains: makutano, Amount in range: $100-$15000
+    - eunice | $7742.00 | 50% | Receiver matches: eunice, Amount in range: $100-$15000
+
+IT and Software:
+  Transactions: 18
+  Total Amount: $85,545.00
+  Avg Confidence: 75%
+  Examples:
+    - safaricom | $6800.00 | 80% | Receiver matches: safaricom, Description contains: internet
+    - safaricom | $5800.00 | 80% | Receiver matches: safaricom, Description contains: internet
+    - safaricom | $2870.00 | 80% | Receiver matches: safaricom, Description contains: safaricom
+
+Travel and Entertainment:
+  Transactions: 10
+  Total Amount: $18,010.00
+  Avg Confidence: 53%
+  Examples:
+    - Bonface | $850.00 | 40% | Description contains: transport, Amount in range: $100-$5000
+    - boda | $1200.00 | 50% | Receiver matches: boda, Amount in range: $100-$5000
+    - boda | $750.00 | 80% | Receiver matches: boda, Description contains: boda
+
+Utilities:
+  Transactions: 9
+  Total Amount: $31,795.00
+  Avg Confidence: 76%
+  Examples:
+    - geogre ndala | $1500.00 | 40% | Description contains: water, Amount in range: $500-$10000
+    - makutano kplc | $5499.00 | 80% | Receiver matches: kplc, Description contains: kplc
+    - kplc | $1340.00 | 80% | Receiver matches: kplc, Description contains: kplc
+
+Facilities and Equipment:
+  Transactions: 1
+  Total Amount: $10,180.00
+  Avg Confidence: 40%
+  Examples:
+    - Janet Wasama | $10180.00 | 40% | Description contains: building, Amount in range: $1000-$50000
+
+Professional Services:
+  Transactions: 1
+  Total Amount: $2,365.00
+  Avg Confidence: 80%
+  Examples:
+    - NICODEMUS LIBINDU | $2365.00 | 80% | Receiver matches: nicodemus libindu, Description contains: pavement
+
+Maintenance and Repairs:
+  Transactions: 2
+  Total Amount: $12.00
+  Avg Confidence: 60%
+  Examples:
+    - PHILIP | $6.00 | 60% | Description contains: trimming, Description contains: grooving
+    - PHILIP | $6.00 | 60% | Description contains: trimming, Description contains: grooving
+
+================================================================================
+SUMMARY:
+  Will categorize: 274 transactions
+  Cannot match: 16 transactions (need manual review)
+
+  Unmatched examples (need rules or manual categorization):
+    - luke | $400.00 | Dept: HR Department
+    - luke | $200.00 | Dept: HR Department
+    - brenda | $200.00 | Dept: IT Department
+    - Luke | $50.00 | Dept: IT Department
+    - Bonface Muli | $850.00 | Dept: IT Department
+
+================================================================================
+EXECUTING CATEGORIZATION...
+================================================================================
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-06-24 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-06-24 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 513
+This is my data
+✅ New Budget entry created for Transaction 512
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-06-23 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-06-23 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 479
+This is my data
+✅ New Budget entry created for Transaction 478
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-06-22 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-06-22 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 445
+This is my data
+✅ New Budget entry created for Transaction 411
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-06-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-06-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 410
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-05-18 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-05-18 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 389
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-03-27 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-03-27 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 379
+This is my data
+✅ New Budget entry created for Transaction 378
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-03-07 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-03-07 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 368
+This is my data
+✅ New Budget entry created for Transaction 367
+This is my data
+✅ New Budget entry created for Transaction 366
+This is my data
+🔄 Budget entry updated for Transaction 350
+This is my data
+✅ New Budget entry created for Transaction 349
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-03-06 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-03-06 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 339
+This is my data
+✅ New Budget entry created for Transaction 338
+This is my data
+✅ New Budget entry created for Transaction 337
+This is my data
+✅ New Budget entry created for Transaction 336
+This is my data
+✅ New Budget entry created for Transaction 332
+This is my data
+✅ New Budget entry created for Transaction 331
+This is my data
+✅ New Budget entry created for Transaction 330
+This is my data
+✅ New Budget entry created for Transaction 329
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-12-16 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-12-16 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 327
+This is my data
+✅ New Budget entry created for Transaction 326
+This is my data
+🔄 Budget entry updated for Transaction 325
+This is my data
+✅ New Budget entry created for Transaction 322
+This is my data
+✅ New Budget entry created for Transaction 321
+This is my data
+🔄 Budget entry updated for Transaction 320
+This is my data
+✅ New Budget entry created for Transaction 314
+This is my data
+✅ New Budget entry created for Transaction 312
+This is my data
+✅ New Budget entry created for Transaction 311
+This is my data
+🔄 Budget entry updated for Transaction 310
+This is my data
+✅ New Budget entry created for Transaction 309
+This is my data
+✅ New Budget entry created for Transaction 307
+This is my data
+🔄 Budget entry updated for Transaction 306
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-11-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-11-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 303
+This is my data
+✅ New Budget entry created for Transaction 300
+This is my data
+🔄 Budget entry updated for Transaction 299
+This is my data
+🔄 Budget entry updated for Transaction 298
+This is my data
+🔄 Budget entry updated for Transaction 297
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-10-22 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-10-22 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 296
+This is my data
+🔄 Budget entry updated for Transaction 295
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-09-02 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-09-02 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 294
+This is my data
+🔄 Budget entry updated for Transaction 293
+This is my data
+✅ New Budget entry created for Transaction 292
+This is my data
+🔄 Budget entry updated for Transaction 291
+This is my data
+🔄 Budget entry updated for Transaction 290
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-08-26 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-08-26 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 287
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-08-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-08-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 286
+This is my data
+🔄 Budget entry updated for Transaction 285
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-08-18 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-08-18 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 284
+This is my data
+🔄 Budget entry updated for Transaction 283
+This is my data
+🔄 Budget entry updated for Transaction 282
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-08-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-08-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 248
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-08-12 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-08-12 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 247
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-08-08 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-08-08 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 244
+This is my data
+🔄 Budget entry updated for Transaction 243
+This is my data
+✅ New Budget entry created for Transaction 241
+This is my data
+🔄 Budget entry updated for Transaction 240
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-07-19 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-07-19 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 235
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-07-17 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-07-17 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 205
+This is my data
+🔄 Budget entry updated for Transaction 204
+This is my data
+🔄 Budget entry updated for Transaction 202
+This is my data
+🔄 Budget entry updated for Transaction 201
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-07-03 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-07-03 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 200
+This is my data
+🔄 Budget entry updated for Transaction 199
+This is my data
+🔄 Budget entry updated for Transaction 198
+This is my data
+🔄 Budget entry updated for Transaction 197
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-06-25 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-06-25 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 196
+This is my data
+🔄 Budget entry updated for Transaction 195
+This is my data
+🔄 Budget entry updated for Transaction 194
+This is my data
+✅ New Budget entry created for Transaction 193
+This is my data
+🔄 Budget entry updated for Transaction 192
+This is my data
+🔄 Budget entry updated for Transaction 191
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-06-08 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-06-08 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 190
+This is my data
+🔄 Budget entry updated for Transaction 189
+This is my data
+🔄 Budget entry updated for Transaction 188
+This is my data
+🔄 Budget entry updated for Transaction 187
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-05-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-05-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 186
+This is my data
+✅ New Budget entry created for Transaction 185
+This is my data
+✅ New Budget entry created for Transaction 184
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-05-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-05-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 183
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-05-09 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-05-09 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 181
+This is my data
+✅ New Budget entry created for Transaction 180
+This is my data
+🔄 Budget entry updated for Transaction 179
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-04-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-04-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 178
+This is my data
+🔄 Budget entry updated for Transaction 177
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-04-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-04-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 174
+This is my data
+🔄 Budget entry updated for Transaction 173
+This is my data
+🔄 Budget entry updated for Transaction 172
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-04-11 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-04-11 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 171
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-02-07 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-02-07 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 169
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-01-23 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-01-23 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 167
+This is my data
+🔄 Budget entry updated for Transaction 166
+This is my data
+🔄 Budget entry updated for Transaction 165
+This is my data
+🔄 Budget entry updated for Transaction 164
+This is my data
+🔄 Budget entry updated for Transaction 163
+This is my data
+🔄 Budget entry updated for Transaction 162
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2023-01-07 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2023-01-07 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 160
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-12-29 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-12-29 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 159
+This is my data
+✅ New Budget entry created for Transaction 158
+This is my data
+✅ New Budget entry created for Transaction 157
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-12-20 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-12-20 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 153
+This is my data
+✅ New Budget entry created for Transaction 152
+This is my data
+🔄 Budget entry updated for Transaction 150
+This is my data
+🔄 Budget entry updated for Transaction 149
+This is my data
+🔄 Budget entry updated for Transaction 148
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-12-08 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-12-08 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 113
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-12-05 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-12-05 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 112
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-12-03 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-12-03 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 110
+This is my data
+✅ New Budget entry created for Transaction 109
+This is my data
+✅ New Budget entry created for Transaction 108
+This is my data
+✅ New Budget entry created for Transaction 107
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-11-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-11-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 106
+This is my data
+✅ New Budget entry created for Transaction 104
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-11-20 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-11-20 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+🔄 Budget entry updated for Transaction 103
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-11-11 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-11-11 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 101
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-11-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-11-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 99
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-10-17 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-10-17 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 95
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-10-03 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-10-03 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 90
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-09-24 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-09-24 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 87
+This is my data
+✅ New Budget entry created for Transaction 86
+This is my data
+✅ New Budget entry created for Transaction 84
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-09-23 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-09-23 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 81
+This is my data
+✅ New Budget entry created for Transaction 80
+This is my data
+✅ New Budget entry created for Transaction 79
+This is my data
+This is my data
+  ✓ Updated 129 transactions → Salaries and Wages
+This is my data
+✅ New Budget entry created for Transaction 510
+This is my data
+✅ New Budget entry created for Transaction 304
+This is my data
+🔄 Budget entry updated for Transaction 301
+This is my data
+🔄 Budget entry updated for Transaction 289
+This is my data
+🔄 Budget entry updated for Transaction 281
+This is my data
+🔄 Budget entry updated for Transaction 156
+This is my data
+✅ New Budget entry created for Transaction 98
+This is my data
+✅ New Budget entry created for Transaction 96
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-10-06 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-10-06 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 92
+This is my data
+✅ New Budget entry created for Transaction 85
+This is my data
+✅ New Budget entry created for Transaction 78
+This is my data
+✅ New Budget entry created for Transaction 77
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-08-06 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-08-06 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 71
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-08-05 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-08-05 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 35
+This is my data
+✅ New Budget entry created for Transaction 29
+This is my data
+✅ New Budget entry created for Transaction 27
+This is my data
+🔄 Budget entry updated for Transaction 23
+This is my data
+🔄 Budget entry updated for Transaction 22
+This is my data
+🔄 Budget entry updated for Transaction 19
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-07-31 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-07-31 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 15
+This is my data
+This is my data
+  ✓ Updated 22 transactions → Human Resources
+This is my data
+✅ New Budget entry created for Transaction 477
+This is my data
+✅ New Budget entry created for Transaction 444
+This is my data
+✅ New Budget entry created for Transaction 412
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-06-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-06-15 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 409
+This is my data
+✅ New Budget entry created for Transaction 408
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-06-14 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-06-14 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 407
+This is my data
+🔄 Budget entry updated for Transaction 406
+This is my data
+🔄 Budget entry updated for Transaction 405
+This is my data
+✅ New Budget entry created for Transaction 404
+This is my data
+✅ New Budget entry created for Transaction 403
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-06-12 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-06-12 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 402
+This is my data
+✅ New Budget entry created for Transaction 400
+This is my data
+✅ New Budget entry created for Transaction 399
+This is my data
+✅ New Budget entry created for Transaction 398
+This is my data
+✅ New Budget entry created for Transaction 397
+This is my data
+✅ New Budget entry created for Transaction 395
+This is my data
+✅ New Budget entry created for Transaction 394
+This is my data
+🔄 Budget entry updated for Transaction 393
+This is my data
+🔄 Budget entry updated for Transaction 392
+This is my data
+🔄 Budget entry updated for Transaction 391
+This is my data
+🔄 Budget entry updated for Transaction 390
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-05-13 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-05-13 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 387
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-04-24 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-04-24 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 386
+This is my data
+✅ New Budget entry created for Transaction 385
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-04-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-04-21 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 384
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2024-04-10 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2024-04-10 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 382
+This is my data
+✅ New Budget entry created for Transaction 380
+This is my data
+✅ New Budget entry created for Transaction 376
+This is my data
+✅ New Budget entry created for Transaction 375
+This is my data
+🔄 Budget entry updated for Transaction 374
+This is my data
+✅ New Budget entry created for Transaction 373
+This is my data
+✅ New Budget entry created for Transaction 365
+This is my data
+✅ New Budget entry created for Transaction 364
+This is my data
+✅ New Budget entry created for Transaction 363
+This is my data
+✅ New Budget entry created for Transaction 362
+This is my data
+✅ New Budget entry created for Transaction 361
+This is my data
+🔄 Budget entry updated for Transaction 360
+This is my data
+✅ New Budget entry created for Transaction 359
+This is my data
+✅ New Budget entry created for Transaction 357
+This is my data
+✅ New Budget entry created for Transaction 356
+This is my data
+🔄 Budget entry updated for Transaction 355
+This is my data
+🔄 Budget entry updated for Transaction 354
+This is my data
+🔄 Budget entry updated for Transaction 353
+This is my data
+✅ New Budget entry created for Transaction 352
+This is my data
+🔄 Budget entry updated for Transaction 351
+This is my data
+✅ New Budget entry created for Transaction 348
+This is my data
+✅ New Budget entry created for Transaction 347
+This is my data
+🔄 Budget entry updated for Transaction 346
+This is my data
+✅ New Budget entry created for Transaction 345
+This is my data
+✅ New Budget entry created for Transaction 343
+This is my data
+✅ New Budget entry created for Transaction 341
+This is my data
+✅ New Budget entry created for Transaction 333
+This is my data
+✅ New Budget entry created for Transaction 324
+This is my data
+✅ New Budget entry created for Transaction 323
+This is my data
+✅ New Budget entry created for Transaction 319
+This is my data
+🔄 Budget entry updated for Transaction 318
+This is my data
+🔄 Budget entry updated for Transaction 316
+This is my data
+🔄 Budget entry updated for Transaction 315
+This is my data
+🔄 Budget entry updated for Transaction 308
+This is my data
+✅ New Budget entry created for Transaction 302
+This is my data
+🔄 Budget entry updated for Transaction 151
+This is my data
+✅ New Budget entry created for Transaction 102
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-10-12 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-10-12 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+✅ New Budget entry created for Transaction 94
+This is my data
+✅ New Budget entry created for Transaction 91
+This is my data
+🔄 Budget entry updated for Transaction 88
+This is my data
+✅ New Budget entry created for Transaction 75
+This is my data
+✅ New Budget entry created for Transaction 74
+This is my data
+✅ New Budget entry created for Transaction 38
+This is my data
+🔄 Budget entry updated for Transaction 34
+This is my data
+✅ New Budget entry created for Transaction 33
+This is my data
+🔄 Budget entry updated for Transaction 31
+This is my data
+🔄 Budget entry updated for Transaction 30
+This is my data
+🔄 Budget entry updated for Transaction 28
+This is my data
+🔄 Budget entry updated for Transaction 26
+This is my data
+🔄 Budget entry updated for Transaction 24
+This is my data
+🔄 Budget entry updated for Transaction 21
+This is my data
+🔄 Budget entry updated for Transaction 20
+This is my data
+🔄 Budget entry updated for Transaction 18
+This is my data
+🔄 Budget entry updated for Transaction 17
+This is my data
+🔄 Budget entry updated for Transaction 16
+This is my data
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.start_date received a naive datetime (2022-07-25 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1358: RuntimeWarning: DateTimeField Budget.end_date received a naive datetime (2022-07-25 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s.%s received a naive datetime "
+Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/query.py", line 581, in get_or_create
+    return self.get(**kwargs), False
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/query.py", line 435, in get
+    raise self.model.DoesNotExist(
+finance.models.budget.Budget.DoesNotExist: Budget matching query does not exist.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "budget_lead_id" of relation "finance_budget" violates not-null constraint
+DETAIL:  Failing row contains (939, null, 2022-07-25 00:00:00+00, 2022-07-25 00:00:00+00, null, 3020.00, food budget facilitation Matunda(may), t, null, null, 78, 2, 25, 1, 77, null, HRM Cost, general, monthly, null, null, manual, null, 0.00, null, draft, t, null, null, f, null, null, null, 0.00, 0.00, 0.00, 4.00, null, 2025-10-20 23:41:47.858644+00, 2025-10-20 23:41:47.858671+00).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py", line 32, in <module>
+    main()
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/manage.py", line 28, in main
+    execute_from_command_line(sys.argv)
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 419, in execute_from_command_line
+    utility.execute()
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 413, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/core/management/base.py", line 354, in run_from_argv
+    self.execute(*args, **cmd_options)
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/core/management/base.py", line 398, in execute
+    output = self.handle(*args, **options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/finance/management/commands/categorize_transactions.py", line 59, in handle
+    self._execute_categorization(categorization_plan)
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/finance/management/commands/categorize_transactions.py", line 299, in _execute_categorization
+    txn.save()
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/base.py", line 774, in save_base
+    post_save.send(
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/dispatch/dispatcher.py", line 181, in send
+    (receiver, receiver(signal=self, sender=sender, **named))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/coda/finance/signals.py", line 45, in sync_transaction_to_budget
+    coda_budget, created = Budget.objects.update_or_create(
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/query.py", line 608, in update_or_create
+    obj, created = self.select_for_update().get_or_create(defaults, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/query.py", line 588, in get_or_create
+    return self.create(**params), True
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "budget_lead_id" of relation "finance_budget" violates not-null constraint
+DETAIL:  Failing row contains (939, null, 2022-07-25 00:00:00+00, 2022-07-25 00:00:00+00, null, 3020.00, food budget facilitation Matunda(may), t, null, null, 78, 2, 25, 1, 77, null, HRM Cost, general, monthly, null, null, manual, null, 0.00, null, draft, t, null, null, f, null, null, null, 0.00, 0.00, 0.00, 4.00, null, 2025-10-20 23:41:47.858644+00, 2025-10-20 23:41:47.858671+00).

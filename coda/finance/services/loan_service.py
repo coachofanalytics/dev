@@ -356,6 +356,51 @@ class LoanService(BaseFinanceService):
         except Exception as e:
             self.logger.error(f"Failed to send approval notification: {str(e)}")
     
+    def get_loan_statistics(self):
+        """
+        Get loan statistics for admin dashboard.
+        Returns statistics about all loans in the system.
+        """
+        from django.db.models import Count, Sum, Avg, Q
+        from finance.models import LoanApplication
+        
+        try:
+            total_loans = LoanApplication.objects.count()
+            
+            statistics = {
+                'total_applications': total_loans,
+                'pending_applications': LoanApplication.objects.filter(
+                    status__in=['draft', 'submitted', 'pending_guarantor', 'under_review']
+                ).count(),
+                'approved_loans': LoanApplication.objects.filter(status='approved').count(),
+                'active_loans': LoanApplication.objects.filter(status='active').count(),
+                'rejected_loans': LoanApplication.objects.filter(status='rejected').count(),
+                'repaid_loans': LoanApplication.objects.filter(status='repaid').count(),
+                'overdue_loans': LoanApplication.objects.filter(status='overdue').count(),
+                'total_amount_requested': LoanApplication.objects.aggregate(
+                    total=Sum('amount_requested')
+                )['total'] or 0,
+                'total_amount_approved': LoanApplication.objects.filter(
+                    status__in=['approved', 'active', 'repaid']
+                ).aggregate(total=Sum('amount_requested'))['total'] or 0,
+                'average_loan_amount': LoanApplication.objects.aggregate(
+                    avg=Avg('amount_requested')
+                )['avg'] or 0,
+            }
+            
+            return {
+                'success': True,
+                'statistics': statistics
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting loan statistics: {str(e)}")
+            return {
+                'success': False,
+                'statistics': {},
+                'error': str(e)
+            }
+    
     def _send_rejection_notification(self, loan_application: LoanApplication):
         """Send notification email for loan rejection."""
         try:

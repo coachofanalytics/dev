@@ -29,10 +29,10 @@
             </div>
             
             <div class="btn-group-vertical w-100">
-                <a href="{% url 'interview:project-landing' project.slug %}" class="btn btn-primary mb-2">
+                <a href="/interview/{{ project.slug }}/" class="btn btn-primary mb-2">
                     <i class="fas fa-laptop-code"></i> Technical Presentation
                 </a>
-                <a href="{% url 'interview:project-presentation' project.slug 'technical' %}" class="btn btn-outline-primary">
+                <a href="/interview/{{ project.slug }}/technical/" class="btn btn-outline-primary">
                     <i class="fas fa-code"></i> View Code & Architecture
                 </a>
             </div>

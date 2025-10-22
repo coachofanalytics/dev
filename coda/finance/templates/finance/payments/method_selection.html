@@ -75,11 +75,21 @@
                             </div>
                             
                             <div class="card-footer">
-                                <a href="{% url 'finance:unified_processing' method=method_key %}" 
-                                   class="btn btn-primary btn-block">
-                                    <i class="fa fa-arrow-right mr-2"></i>
-                                    Continue with {{ method_config.name }}
-                                </a>
+                                {% if method_config.has_api %}
+                                    {# API available - go to processing form #}
+                                    <a href="{% url 'finance:unified_processing' method=method_key %}" 
+                                       class="btn btn-primary btn-block">
+                                        <i class="fa fa-arrow-right mr-2"></i>
+                                        Continue with {{ method_config.name }}
+                                    </a>
+                                {% else %}
+                                    {# No API - direct to payment details #}
+                                    <a href="{% url 'finance:payment_details' method_key %}" 
+                                       class="btn btn-outline-primary btn-block">
+                                        <i class="fa fa-info-circle mr-2"></i>
+                                        Get {{ method_config.name }} Details
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

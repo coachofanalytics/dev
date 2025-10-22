@@ -2,9 +2,19 @@
 
 <!-- Planning Tab -->
 <div class="tab-card">
-    <h3 class="mb-4">
-        <i class="fas fa-calendar-alt"></i> Budget Planning
-    </h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="fas fa-calendar-alt"></i> Budget Planning
+        </h3>
+        <div>
+            <button onclick="generateBudgetProjections()" class="btn btn-warning">
+                <i class="fas fa-magic"></i> Generate 2026 Budget
+            </button>
+            <a href="{% url 'finance:projections-list' %}" class="btn btn-info">
+                <i class="fas fa-chart-line"></i> View Projections
+            </a>
+        </div>
+    </div>
     
     {% if planning_data.error %}
     <div class="alert alert-warning">

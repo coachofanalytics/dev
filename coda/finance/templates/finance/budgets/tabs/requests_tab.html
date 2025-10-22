@@ -1,0 +1,96 @@
+<!-- Budget Requests Tab -->
+<div class="tab-content-section">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="fas fa-file-invoice-dollar"></i> Budget Requests</h3>
+        <a href="{% url 'finance:create-budget-request' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Request
+        </a>
+    </div>
+
+    {% if budget_requests %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card bg-info text-white">
+                <div class="metric-value">{{ total_requests }}</div>
+                <div class="metric-label">Total Requests</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card bg-warning text-white">
+                <div class="metric-value">{{ pending_requests }}</div>
+                <div class="metric-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card bg-success text-white">
+                <div class="metric-value">{{ approved_requests }}</div>
+                <div class="metric-label">Approved</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card bg-danger text-white">
+                <div class="metric-value">{{ rejected_requests }}</div>
+                <div class="metric-label">Rejected</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Recent Budget Requests</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Requester</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in budget_requests %}
+                        <tr>
+                            <td>{{ request.id }}</td>
+                            <td>{{ request.requester.get_full_name|default:request.requester.username }}</td>
+                            <td>${{ request.amount|floatformat:2 }}</td>
+                            <td>{{ request.budget_category.name }}</td>
+                            <td>{{ request.department.name }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if request.status == 'approved' %}bg-success
+                                    {% elif request.status == 'rejected' %}bg-danger
+                                    {% elif request.status == 'submitted' or request.status == 'under_review' %}bg-warning
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ request.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ request.request_date|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'finance:budget-request-detail' request.id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 
+        <strong>No Budget Requests</strong>
+        <p class="mb-0">There are currently no budget requests in the system. Click "New Request" to create one.</p>
+    </div>
+    {% endif %}
+</div>
+

@@ -13,11 +13,12 @@
             <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-outline-secondary">
                 <i class="fas fa-list"></i> My Requests
             </a>
-            {% if user.is_staff %}
-            <a href="{% url 'finance:budget-approval-dashboard' company.slug %}" class="btn btn-outline-warning">
-                <i class="fas fa-gavel"></i> Approvals
+            <a href="{% url 'finance:budget_projection' subtitle='summary' %}" class="btn btn-success">
+                <i class="fas fa-project-diagram"></i> Budget Projection
             </a>
-            {% endif %}
+            <a href="{% url 'finance:projections-list' %}" class="btn btn-info">
+                <i class="fas fa-chart-line"></i> View Projections
+            </a>
         </div>
     </div>
     
@@ -32,28 +33,35 @@
         <div class="col-md-3">
             <div class="metric-card">
                 <div class="metric-value">{{ overview_data.total_budgets|default:"0" }}</div>
-                <div class="metric-label">Total Budgets</div>
+                <div class="metric-label">Total Transactions</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
                 <div class="metric-value">{{ overview_data.active_budgets|default:"0" }}</div>
-                <div class="metric-label">Active Budgets</div>
+                <div class="metric-label">Categorized</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
                 <div class="metric-value">${{ overview_data.total_amount.total|default:"0"|floatformat:2 }}</div>
-                <div class="metric-label">Total Amount</div>
+                <div class="metric-label">Total Spending</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                <div class="metric-value">{{ overview_data.category_summary|length|default:"0" }}</div>
-                <div class="metric-label">Categories</div>
+                <div class="metric-value">${{ overview_data.monthly_average|default:"0"|floatformat:2 }}</div>
+                <div class="metric-label">Monthly Average</div>
             </div>
         </div>
     </div>
+    
+    <!-- Data Source Info -->
+    {% if overview_data.data_source == 'real_transactions' %}
+    <div class="alert alert-info">
+        <i class="fas fa-database"></i> <strong>Real Transaction Data:</strong> {{ overview_data.data_quality }}
+    </div>
+    {% endif %}
     
     <!-- Category Summary -->
     {% if overview_data.category_summary %}
@@ -65,8 +73,9 @@
                     <thead>
                         <tr>
                             <th>Category</th>
-                            <th>Count</th>
+                            <th>Transactions</th>
                             <th>Total Amount</th>
+                            <th>Monthly Avg</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -76,6 +85,7 @@
                             <td><i class="fas fa-tag"></i> {{ category_name }}</td>
                             <td>{{ data.count }}</td>
                             <td>${{ data.total|floatformat:2 }}</td>
+                            <td>${{ data.monthly_avg|floatformat:2 }}</td>
                             <td>
                                 {% if data.category_id %}
                                 <div class="btn-group btn-group-sm" role="group">
@@ -136,6 +146,67 @@
     
     {% endif %}
 </div>
+
+<script>
+function generateBudgetProjections() {
+    if (confirm('This will generate 2026 budget projections based on historical data. Continue?')) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        button.disabled = true;
+        
+        // Make AJAX call to generate projections
+        fetch('{% url "finance:generate-budget-projections-api" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                company_slug: '{{ company.slug }}',
+                projection_months: 12,
+                save: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create detailed breakdown message
+                let breakdownText = 'Budget projections generated successfully!\\n\\n';
+                breakdownText += 'Total Annual: $' + data.total_annual.toLocaleString() + '\\n';
+                breakdownText += 'Monthly Average: $' + data.monthly_average.toLocaleString() + '\\n';
+                breakdownText += 'Categories: ' + data.categories_count + '\\n\\n';
+                breakdownText += 'Category Breakdown:\\n';
+                
+                // Sort categories by amount (descending)
+                const sortedBreakdown = Object.entries(data.breakdown || {})
+                    .sort(([,a], [,b]) => b - a);
+                
+                sortedBreakdown.forEach(([category, amount]) => {
+                    breakdownText += '• ' + category + ': $' + amount.toLocaleString() + '\\n';
+                });
+                
+                alert(breakdownText);
+                // Reload page to show updated data
+                location.reload();
+            } else {
+                alert('Error generating projections: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error generating projections. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+</script>
+
 
 
 

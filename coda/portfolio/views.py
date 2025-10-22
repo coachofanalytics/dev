@@ -15,6 +15,13 @@ def portfolio_hub(request):
     """
     projects = ProjectRegistry.get_all_projects()
     
+    # Debug: Log what we got
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Portfolio hub: Found {len(projects)} projects")
+    for p in projects:
+        logger.info(f"  Project: {p.get('name', 'NO NAME')} - Slug: {p.get('slug', 'NO SLUG')}")
+    
     context = {
         'title': 'CODA Portfolio - Professional Projects',
         'projects': projects,

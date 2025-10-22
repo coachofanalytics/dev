@@ -711,11 +711,11 @@
                 <div class="col-md-4">
                     <div class="presentation-controls">
                         {% if presentation_mode == 'branded' %}
-                            <a href="/interview/{{ project_slug }}/{{ audience_type }}/" class="btn btn-warning btn-sm">
+                            <a href="{% url 'interview:project-presentation' project_slug audience_type %}" class="btn btn-warning btn-sm">
                                 <i class="fas fa-user-tie"></i> Interview Mode
                             </a>
                         {% else %}
-                            <a href="/portfolio/{{ project_slug }}/{{ audience_type }}/" class="btn btn-info btn-sm">
+                            <a href="{% url 'portfolio:project-presentation' project_slug audience_type %}" class="btn btn-info btn-sm">
                                 <i class="fas fa-building"></i> Branded Mode
                             </a>
                         {% endif %}
@@ -725,39 +725,21 @@
                                 <i class="fas fa-users"></i> Audience
                             </button>
                             <div class="dropdown-menu dropdown-menu-right">
-                                {% if presentation_mode == 'branded' %}
-                                <a class="dropdown-item" href="/portfolio/{{ project_slug }}/investor/">
+                                <a class="dropdown-item" href="{% url presentation_mode|add:':project-presentation' project_slug 'investor' %}">
                                     <i class="fas fa-chart-line"></i> Investor
                                 </a>
-                                <a class="dropdown-item" href="/portfolio/{{ project_slug }}/technical/">
+                                <a class="dropdown-item" href="{% url presentation_mode|add:':project-presentation' project_slug 'technical' %}">
                                     <i class="fas fa-code"></i> Technical
                                 </a>
-                                <a class="dropdown-item" href="/portfolio/{{ project_slug }}/recruiter/">
+                                <a class="dropdown-item" href="{% url presentation_mode|add:':project-presentation' project_slug 'recruiter' %}">
                                     <i class="fas fa-user-tie"></i> Recruiter
                                 </a>
-                                {% else %}
-                                <a class="dropdown-item" href="/interview/{{ project_slug }}/investor/">
-                                    <i class="fas fa-chart-line"></i> Investor
-                                </a>
-                                <a class="dropdown-item" href="/interview/{{ project_slug }}/technical/">
-                                    <i class="fas fa-code"></i> Technical
-                                </a>
-                                <a class="dropdown-item" href="/interview/{{ project_slug }}/recruiter/">
-                                    <i class="fas fa-user-tie"></i> Recruiter
-                                </a>
-                                {% endif %}
                             </div>
                         </div>
                         
-                        {% if presentation_mode == 'branded' %}
-                        <a href="/portfolio/" class="btn btn-outline-light btn-sm">
+                        <a href="{% url presentation_mode|add:':hub' %}" class="btn btn-outline-light btn-sm">
                             <i class="fas fa-th"></i> All Projects
                         </a>
-                        {% else %}
-                        <a href="/interview/" class="btn btn-outline-light btn-sm">
-                            <i class="fas fa-th"></i> All Projects
-                        </a>
-                        {% endif %}
                         
                         <button class="btn btn-outline-light btn-sm" onclick="toggleFullscreen()">
                             <i class="fas fa-expand"></i>
@@ -860,4 +842,5 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 </script>
 {% endblock %}
+
 

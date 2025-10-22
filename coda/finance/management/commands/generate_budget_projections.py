@@ -370,47 +370,82 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("No departments found. Cannot save projections."))
             return
         
+        # Get default budget lead
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        default_user = User.objects.filter(username='coda_info').first()
+        if not default_user:
+            default_user = User.objects.filter(is_staff=True).first()
+        
+        if not default_user:
+            self.stdout.write(self.style.ERROR("No user found to assign as budget lead"))
+            return
+        
         self.stdout.write(f"\nSaving projections for department: {main_department.name}")
+        self.stdout.write(f"Budget lead: {default_user.username}")
         self.stdout.write("(Note: These are company-wide projections, not department-specific)\n")
         
-        # Create BudgetEstimateProjection records
+        # Create Budget and BudgetEstimateProjection records
         saved_count = 0
+        projection_date = datetime.now().date()
+        
         for cat_id, proj in projections.items():
             try:
                 category = BudgetCategory.objects.get(id=cat_id)
                 
-                # Create projection record (using main department as placeholder)
-                projection_obj, created = BudgetEstimateProjection.objects.update_or_create(
+                # Step 1: Get or create Budget for this category
+                budget, budget_created = Budget.objects.get_or_create(
                     company=company,
-                    department=main_department,
-                    template=None,
-                    horizon='monthly',
-                    method='transaction_analysis',
+                    category=category,
+                    item_name=f"{proj['name']} - 2026 Projection",
+                    status='draft',
                     defaults={
-                        'estimates': {
-                            'category': proj['name'],
-                            'monthly_avg': float(proj['projected_monthly']),
-                            'total_projection': float(proj['total_projection']),
-                            'projection_months': projection_months,
-                            'growth_factor': float(proj['growth_factor']),
-                            'based_on_transactions': int(proj['historical_count']),
-                            'note': 'Company-wide projection (all departments combined)'
-                        },
-                        'total_estimate': proj['total_projection'],
-                        'status': 'draft'
+                        'department': main_department,
+                        'budget_lead': default_user,
+                        'description': f"Auto-generated from {int(proj['historical_count'])} transactions. Monthly avg: ${proj['historical_monthly_avg']:,.2f}",
+                        'quantity': 1,
+                        'unit_price': proj['projected_monthly'],
+                        'cases': projection_months,  # Represents months
+                        'is_active': False,  # Don't include in current calculations
+                        'estimation_method': 'trend_analysis',
+                        'estimated_amount': proj['total_projection'],
+                        'estimation_confidence': 85.0,
+                        'estimation_source': 'Transaction history analysis',
+                        'start_date': datetime(2026, 1, 1),
+                        'end_date': datetime(2026, 12, 31),
+                        'budget_type': 'general',
+                        'timeframe': 'yearly'
                     }
                 )
                 
-                action = 'Created' if created else 'Updated'
-                self.stdout.write(f"  {action}: {proj['name']}")
+                # Step 2: Create BudgetEstimateProjection linked to Budget
+                projection_obj, proj_created = BudgetEstimateProjection.objects.update_or_create(
+                    budget=budget,  # ✅ Correct FK
+                    projection_date=projection_date,
+                    projection_method='transaction_analysis',
+                    defaults={
+                        'projected_amount': proj['total_projection'],
+                        'confidence_score': 85.0,
+                        'notes': f"Category: {proj['name']}. Based on {int(proj['historical_count'])} transactions. Historical monthly avg: ${proj['historical_monthly_avg']:,.2f}. Growth factor: {proj['growth_factor']}x"
+                    }
+                )
+                
+                budget_action = 'Created' if budget_created else 'Updated'
+                proj_action = 'Created' if proj_created else 'Updated'
+                self.stdout.write(
+                    f"  {budget_action} budget + {proj_action} projection: {proj['name']} "
+                    f"(${proj['total_projection']:,.2f})"
+                )
                 saved_count += 1
                 
             except BudgetCategory.DoesNotExist:
                 self.stdout.write(self.style.WARNING(f"  Skipped: Category ID {cat_id} not found"))
             except Exception as e:
+                import traceback
                 self.stdout.write(self.style.ERROR(f"  Error saving {proj['name']}: {str(e)}"))
+                self.stdout.write(self.style.ERROR(traceback.format_exc()))
         
         self.stdout.write(self.style.SUCCESS(f"\n✓ Saved {saved_count} budget projections to database"))
-        self.stdout.write(f"\nView in admin: /admin/finance/budgetestimateprojection/")
-        self.stdout.write(f"Or query: BudgetEstimateProjection.objects.filter(method='transaction_analysis')")
+        self.stdout.write(f"\nView budgets: Budget.objects.filter(estimation_method='trend_analysis')")
+        self.stdout.write(f"View projections: BudgetEstimateProjection.objects.filter(projection_method='transaction_analysis')")
 

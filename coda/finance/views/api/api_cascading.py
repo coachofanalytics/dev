@@ -4,7 +4,13 @@ Provides filtered data for Category → Subcategory → Item dropdowns
 """
 from django.http import JsonResponse
 from django.db.models import Count, Q, Avg
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.utils.decorators import method_decorator
+from django.views import View
+import json
 from finance.models import BudgetCategory, BudgetSubCategory, BudgetItemLibrary, Transaction, Budget, CodaBudget
+from main.models import Company
 
 
 def api_get_subcategories(request):
@@ -201,4 +207,137 @@ def api_suggest_defaults(request):
             'suggested': None,
             'message': 'No similar transactions found'
         })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def generate_budget_projections_api(request):
+    """
+    API endpoint to generate budget projections
+    
+    POST /api/generate-budget-projections/
+    Body: {
+        "company_slug": "coda",
+        "projection_months": 12,
+        "save": true
+    }
+    """
+    try:
+        # Parse JSON body
+        data = json.loads(request.body)
+        company_slug = data.get('company_slug', 'coda')
+        projection_months = data.get('projection_months', 12)
+        save = data.get('save', True)
+        
+        # Get company
+        try:
+            company = Company.objects.get(slug=company_slug)
+        except Company.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': f'Company {company_slug} not found'
+            }, status=404)
+        
+        # Import the management command
+        from finance.management.commands.generate_budget_projections import Command as GenerateBudgetCommand
+        from io import StringIO
+        from django.core.management import call_command
+        
+        # Create command instance
+        cmd = GenerateBudgetCommand()
+        
+        # Capture output
+        output = StringIO()
+        
+        # Call the management command
+        try:
+            call_command(
+                'generate_budget_projections',
+                company=company_slug,
+                projection_months=projection_months,
+                save=save,
+                stdout=output
+            )
+            
+            # Parse output to get results
+            output_text = output.getvalue()
+            
+            # Get actual data from the database after generation
+            from finance.models import Budget, BudgetCategory
+            from django.db.models import Sum, Count, F, DecimalField
+            from django.db.models.functions import Coalesce
+            
+            # Calculate actual totals from generated budgets
+            budget_totals = Budget.objects.filter(
+                company=company,
+                is_active=True
+            ).aggregate(
+                total_annual=Sum(
+                    F('unit_price') * F('quantity') * Coalesce(F('cases'), 1),
+                    output_field=DecimalField()
+                ),
+                count=Count('id')
+            )
+            
+            # Get category breakdown
+            category_breakdown = {}
+            for category in BudgetCategory.objects.all():
+                cat_total = Budget.objects.filter(
+                    company=company,
+                    category=category,
+                    is_active=True
+                ).aggregate(
+                    total=Sum(
+                        F('unit_price') * F('quantity') * Coalesce(F('cases'), 1),
+                        output_field=DecimalField()
+                    )
+                )['total'] or 0
+                
+                if cat_total > 0:
+                    category_breakdown[category.name] = float(cat_total)
+            
+            total_annual = float(budget_totals['total_annual'] or 0)
+            monthly_average = total_annual / 12 if total_annual > 0 else 0
+            
+            result = {
+                'success': True,
+                'message': 'Budget projections generated successfully',
+                'total_annual': total_annual,
+                'monthly_average': monthly_average,
+                'categories_count': len(category_breakdown),
+                'breakdown': category_breakdown,
+                'projections_created': budget_totals['count']
+            }
+            
+        except Exception as e:
+            result = {
+                'success': False,
+                'error': f'Command execution failed: {str(e)}'
+            }
+        
+        if result['success']:
+            return JsonResponse({
+                'success': True,
+                'message': 'Budget projections generated successfully',
+                'total_annual': result['total_annual'],
+                'monthly_average': result['monthly_average'],
+                'categories_count': result['categories_count'],
+                'projections_created': result['projections_created']
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': result['error']
+            }, status=400)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Unexpected error: {str(e)}'
+        }, status=500)
 
