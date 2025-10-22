@@ -29,12 +29,44 @@
             </div>
             
             <div class="btn-group-vertical w-100">
-                <a href="/interview/{{ project.slug }}/" class="btn btn-primary mb-2">
-                    <i class="fas fa-laptop-code"></i> Technical Presentation
-                </a>
-                <a href="/interview/{{ project.slug }}/technical/" class="btn btn-outline-primary">
-                    <i class="fas fa-code"></i> View Code & Architecture
-                </a>
+                {% if project.slug == 'ai-diaspora' %}
+                    <!-- AI Diaspora - Link to Legacy Presentation (White-label) -->
+                    <a href="/portfolio/legacy/ai-diaspora/" class="btn btn-primary mb-2">
+                        <i class="fas fa-laptop-code"></i> Legacy Presentation
+                    </a>
+                    <div class="btn-group w-100">
+                        <a href="/portfolio/legacy/ai-diaspora/investor/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chart-line"></i> Investor
+                        </a>
+                        <a href="/portfolio/legacy/ai-diaspora/banking/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-university"></i> Banking
+                        </a>
+                        <a href="/portfolio/legacy/ai-diaspora/hybrid/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-link"></i> Hybrid
+                        </a>
+                    </div>
+                {% elif project.slug == 'smart-loan' %}
+                    <!-- Smart Loan - Link to Legacy Finance Presentation (White-label) -->
+                    <a href="/portfolio/legacy/finance/" class="btn btn-primary mb-2">
+                        <i class="fas fa-laptop-code"></i> Legacy Presentation
+                    </a>
+                    <div class="btn-group w-100">
+                        <a href="/portfolio/legacy/finance/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chart-line"></i> Investor
+                        </a>
+                        <a href="/interview/{{ project.slug }}/technical/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-code"></i> Technical
+                        </a>
+                    </div>
+                {% else %}
+                    <!-- Other Projects - Use New Portfolio Structure -->
+                    <a href="/interview/{{ project.slug }}/" class="btn btn-primary mb-2">
+                        <i class="fas fa-laptop-code"></i> Technical Presentation
+                    </a>
+                    <a href="/interview/{{ project.slug }}/technical/" class="btn btn-outline-primary">
+                        <i class="fas fa-code"></i> View Code & Architecture
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
