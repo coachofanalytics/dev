@@ -1480,6 +1480,8 @@ def diaspora_dashboard(request):
             'investor': 'ai_services/investor_presentation_dashboard.html',
             'banking': 'ai_services/banking_presentation_dashboard.html',
             'hybrid': 'ai_services/hybrid_presentation_dashboard.html',
+            'technical': 'ai_services/technical_presentation_dashboard.html',
+            'recruiter': 'ai_services/recruiter_presentation_dashboard.html',
         }
         
         template = template_mapping.get(presentation_mode, 'ai_services/presentation_dashboard.html')

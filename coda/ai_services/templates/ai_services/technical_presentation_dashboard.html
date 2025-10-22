@@ -1,0 +1,903 @@
+{% extends "ai_services/base_presentation.html" %}
+{% load static %}
+{% load mathfilters %}
+
+{% block presentation_content %}
+        <div class="container-fluid">
+            <!-- Technical Architecture Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="market-opportunity-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-code"></i> Technical Architecture & Implementation
+                        </h2>
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="opportunity-metric">
+                                    <h3 class="metric-value">89%</h3>
+                                    <p class="metric-label">AI Model Accuracy</p>
+                                    <small class="metric-growth">XGBoost + Feature Engineering</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="opportunity-metric">
+                                    <h3 class="metric-value">&lt;100ms</h3>
+                                    <p class="metric-label">Prediction Latency</p>
+                                    <small class="metric-growth">Real-time Processing</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="opportunity-metric">
+                                    <h3 class="metric-value">10M+</h3>
+                                    <p class="metric-label">Daily Predictions</p>
+                                    <small class="metric-growth">Scalable Architecture</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="opportunity-metric">
+                                    <h3 class="metric-value">99.9%</h3>
+                                    <p class="metric-label">System Uptime</p>
+                                    <small class="metric-growth">High Availability</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Scenarios -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h2 class="text-center mb-4">
+                        <i class="fas fa-lightbulb"></i> Investment Scenarios & Use Cases
+                    </h2>
+                    <div class="row">
+                        {% for scenario in investor_scenarios %}
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="scenario-card" data-scenario="{{ scenario.key }}">
+                                <div class="scenario-header">
+                                    <div class="scenario-icon">
+                                        <i class="{{ scenario.icon }} fa-3x"></i>
+                                    </div>
+                                    <h4>{{ scenario.title }}</h4>
+                                    <p class="scenario-subtitle">{{ scenario.subtitle }}</p>
+                                </div>
+                                <div class="scenario-body">
+                                    <div class="roi-preview">
+                                        <span class="roi-label">Projected ROI:</span>
+                                        <span class="roi-value">{{ scenario.roi }}</span>
+                                    </div>
+                                    <div class="market-size">
+                                        <span class="market-label">Market Size:</span>
+                                        <span class="market-value">{{ scenario.market_size }}</span>
+                                    </div>
+                                    <div class="scenario-description">
+                                        {{ scenario.description }}
+                                    </div>
+                                </div>
+                                <div class="scenario-footer">
+                                    <button class="btn btn-primary btn-block scenario-btn" data-scenario="{{ scenario.key }}">
+                                        <i class="fas fa-play"></i> Demo Scenario
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Competitive Advantage -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="competitive-advantage-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-trophy"></i> Competitive Advantages & Moats
+                        </h2>
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="advantage-item">
+                                    <div class="advantage-icon mb-3">
+                                        <i class="fas fa-brain fa-3x text-primary"></i>
+                                    </div>
+                                    <h4>AI-First Approach</h4>
+                                    <p>Proprietary AI models trained on diaspora financial behavior patterns. 90%+ accuracy in predictions.</p>
+                                    <div class="advantage-metrics">
+                                        <span class="metric-badge">90%+ Accuracy</span>
+                                        <span class="metric-badge">&lt;2s Response</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="advantage-item">
+                                    <div class="advantage-icon mb-3">
+                                        <i class="fas fa-database fa-3x text-success"></i>
+                                    </div>
+                                    <h4>Data Network Effects</h4>
+                                    <p>Unique dataset of diaspora financial patterns creates increasing value with scale. Data moat strengthens over time.</p>
+                                    <div class="advantage-metrics">
+                                        <span class="metric-badge">200M+ Records</span>
+                                        <span class="metric-badge">Real-time Updates</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="advantage-item">
+                                    <div class="advantage-icon mb-3">
+                                        <i class="fas fa-shield-alt fa-3x text-warning"></i>
+                                    </div>
+                                    <h4>Regulatory Compliance</h4>
+                                    <p>Built-in compliance with international financial regulations. Reduces implementation risk for enterprise clients.</p>
+                                    <div class="advantage-metrics">
+                                        <span class="metric-badge">GDPR Compliant</span>
+                                        <span class="metric-badge">PCI DSS</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Projections -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="financial-projections-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-chart-bar"></i> Financial Projections & Unit Economics
+                        </h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Revenue Model</h4>
+                                <ul class="revenue-list">
+                                    <li><strong>SaaS Subscriptions:</strong> $50-500/month per enterprise client</li>
+                                    <li><strong>Transaction Fees:</strong> 0.5-2% per analysis</li>
+                                    <li><strong>API Licensing:</strong> $0.10-1.00 per API call</li>
+                                    <li><strong>Data Insights:</strong> $1,000-10,000 per custom report</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Unit Economics</h4>
+                                <div class="unit-economics">
+                                    <div class="unit-item">
+                                        <span class="unit-label">Customer Acquisition Cost:</span>
+                                        <span class="unit-value">$150</span>
+                                    </div>
+                                    <div class="unit-item">
+                                        <span class="unit-label">Lifetime Value:</span>
+                                        <span class="unit-value">$2,400</span>
+                                    </div>
+                                    <div class="unit-item">
+                                        <span class="unit-label">LTV/CAC Ratio:</span>
+                                        <span class="unit-value">16:1</span>
+                                    </div>
+                                    <div class="unit-item">
+                                        <span class="unit-label">Gross Margin:</span>
+                                        <span class="unit-value">85%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Demo Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="live-demo-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-play-circle"></i> Live AI Demo - Remittance Analysis
+                        </h2>
+                        <div class="demo-container">
+                            <div class="demo-input-section">
+                                <h4>Scenario: High-Value Diaspora Investor</h4>
+                                <div class="demo-data">
+                                    <div class="data-item">
+                                        <span class="data-label">Monthly Remittance:</span>
+                                        <span class="data-value">$5,000</span>
+                                    </div>
+                                    <div class="data-item">
+                                        <span class="data-label">Frequency:</span>
+                                        <span class="data-value">Monthly</span>
+                                    </div>
+                                    <div class="data-item">
+                                        <span class="data-label">Destination:</span>
+                                        <span class="data-value">Kenya</span>
+                                    </div>
+                                    <div class="data-item">
+                                        <span class="data-label">Purpose:</span>
+                                        <span class="data-value">Investment</span>
+                                    </div>
+                                    <div class="data-item">
+                                        <span class="data-label">Experience:</span>
+                                        <span class="data-value">8 years</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="demo-results-section">
+                                <h4>AI Analysis Results</h4>
+                                <div class="results-grid">
+                                    <div class="result-item">
+                                        <span class="result-label">Investment Score:</span>
+                                        <span class="result-value score-high">8.7/10</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Risk Level:</span>
+                                        <span class="result-value risk-low">Low-Medium</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Confidence:</span>
+                                        <span class="result-value confidence-high">89%</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Processing Time:</span>
+                                        <span class="result-value time-fast">1.2s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="demo-recommendations">
+                            <h4>Investment Recommendations</h4>
+                            <div class="recommendations-list">
+                                <div class="recommendation-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Consider fintech partnerships for mobile money integration</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Explore real estate investment opportunities in Nairobi</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Evaluate government bond investments for stable returns</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modals %}
+<!-- ROI Calculator Modal -->
+<div id="roiCalculatorModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-calculator"></i> ROI Calculator</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Investment Parameters</h6>
+                        <div class="form-group">
+                            <label>Initial Investment ($)</label>
+                            <input type="number" class="form-control" id="initialInvestment" value="1000000">
+                        </div>
+                        <div class="form-group">
+                            <label>Monthly Customers</label>
+                            <input type="number" class="form-control" id="monthlyCustomers" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label>Average Revenue per Customer ($)</label>
+                            <input type="number" class="form-control" id="avgRevenue" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Growth Rate (% per month)</label>
+                            <input type="number" class="form-control" id="growthRate" value="10">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>ROI Projections</h6>
+                        <div class="roi-results">
+                            <div class="roi-item">
+                                <span class="roi-label">Year 1 Revenue:</span>
+                                <span class="roi-value" id="year1Revenue">$720,000</span>
+                            </div>
+                            <div class="roi-item">
+                                <span class="roi-label">Year 2 Revenue:</span>
+                                <span class="roi-value" id="year2Revenue">$1,440,000</span>
+                            </div>
+                            <div class="roi-item">
+                                <span class="roi-label">Year 3 Revenue:</span>
+                                <span class="roi-value" id="year3Revenue">$2,880,000</span>
+                            </div>
+                            <div class="roi-item">
+                                <span class="roi-label">3-Year ROI:</span>
+                                <span class="roi-value" id="threeYearROI">144%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" onclick="updateROI()">Calculate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hybrid Mode Toggle -->
+<div id="hybridModeToggle" class="hybrid-toggle" style="display: none;">
+    <div class="hybrid-toggle-content">
+        <h5><i class="fas fa-university"></i> Banking Perspective</h5>
+        <p>Switch to banking view to see risk management, compliance, and customer acquisition benefits.</p>
+        <button class="btn btn-primary btn-sm" onclick="activateBankingMode()">Switch to Banking View</button>
+    </div>
+</div>
+
+<!-- Investor Presentation Styles -->
+<style>
+.investor-presentation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    z-index: 9999;
+    overflow-y: auto;
+}
+
+.investor-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.investor-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.investor-badge {
+    background: rgba(40, 167, 69, 0.8);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-left: 1rem;
+}
+
+.investor-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.investor-metrics {
+    display: flex;
+    gap: 2rem;
+}
+
+.metric-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.investor-content {
+    padding: 3rem 0;
+    min-height: calc(100vh - 200px);
+}
+
+.market-opportunity-card,
+.scenario-card,
+.competitive-advantage-card,
+.financial-projections-card,
+.live-demo-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.scenario-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.opportunity-metric {
+    padding: 1rem;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #28a745;
+    display: block;
+}
+
+.metric-label {
+    font-size: 1rem;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+}
+
+.metric-growth {
+    font-size: 0.8rem;
+    color: #28a745;
+}
+
+.scenario-icon {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.scenario-header h4 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.scenario-subtitle {
+    text-align: center;
+    opacity: 0.8;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.roi-preview,
+.market-size {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.roi-value {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.market-value {
+    color: #17a2b8;
+    font-weight: bold;
+}
+
+.scenario-description {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+}
+
+.advantage-item {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.advantage-metrics {
+    margin-top: 1rem;
+}
+
+.metric-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+}
+
+.revenue-list {
+    list-style: none;
+    padding: 0;
+}
+
+.revenue-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.unit-economics {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.unit-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.unit-value {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.demo-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.demo-data,
+.results-grid {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.data-item,
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.data-value,
+.result-value {
+    font-weight: bold;
+}
+
+.score-high { color: #28a745; }
+.risk-low { color: #28a745; }
+.confidence-high { color: #17a2b8; }
+.time-fast { color: #ffc107; }
+
+.recommendations-list {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.recommendation-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.recommendation-item i {
+    margin-right: 0.5rem;
+}
+
+.investor-footer {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+}
+
+.investor-controls .btn {
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.hybrid-toggle {
+    position: fixed;
+    top: 50%;
+    right: 2rem;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 10000;
+    max-width: 300px;
+}
+
+.hybrid-toggle h5 {
+    color: #17a2b8;
+    margin-bottom: 0.5rem;
+}
+
+.hybrid-toggle p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .investor-title {
+        font-size: 2rem;
+    }
+    
+    .investor-metrics {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .demo-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .hybrid-toggle {
+        right: 1rem;
+        left: 1rem;
+        max-width: none;
+    }
+}
+</style>
+
+<!-- Investor Presentation JavaScript -->
+<script>
+// Investor-specific demo scenarios
+const investorScenarios = {
+    'fintech_partnership': {
+        title: 'Fintech Partnership',
+        roi: '300% ROI',
+        market_size: '$2.5B',
+        description: 'Partner with mobile money providers to offer AI-powered remittance optimization and investment recommendations.'
+    },
+    'real_estate': {
+        title: 'Real Estate Investment',
+        roi: '250% ROI',
+        market_size: '$1.8B',
+        description: 'AI-driven property investment recommendations for diaspora members looking to invest in Kenyan real estate.'
+    },
+    'banking_integration': {
+        title: 'Banking Integration',
+        roi: '400% ROI',
+        market_size: '$3.2B',
+        description: 'White-label AI platform for banks to offer enhanced diaspora services and credit scoring.'
+    }
+};
+
+// Start investor demo
+function startInvestorDemo() {
+    // Simulate live demo with investor-focused data
+    const demoData = {
+        amount: 5000,
+        frequency: 'monthly',
+        destination: 'Kenya',
+        purpose: 'investment',
+        experience: 8,
+        method: 'bank_transfer'
+    };
+    
+    // Show demo results with investor metrics
+    showInvestorResults(demoData);
+}
+
+// Show investor-specific results
+function showInvestorResults(data) {
+    const results = {
+        investment_score: 8.7,
+        risk_level: 'Low-Medium',
+        confidence: 89,
+        processing_time: 1.2,
+        recommendations: [
+            'Consider fintech partnerships for mobile money integration',
+            'Explore real estate investment opportunities in Nairobi',
+            'Evaluate government bond investments for stable returns'
+        ]
+    };
+    
+    // Update UI with results
+    updateDemoResults(results);
+}
+
+// Update demo results display
+function updateDemoResults(results) {
+    // Animate results appearance
+    const resultElements = document.querySelectorAll('.result-value');
+    resultElements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 200);
+        }, index * 100);
+    });
+}
+
+// ROI Calculator functions
+function showROICalculator() {
+    $('#roiCalculatorModal').modal('show');
+}
+
+function updateROI() {
+    const initialInvestment = parseFloat(document.getElementById('initialInvestment').value);
+    const monthlyCustomers = parseFloat(document.getElementById('monthlyCustomers').value);
+    const avgRevenue = parseFloat(document.getElementById('avgRevenue').value);
+    const growthRate = parseFloat(document.getElementById('growthRate').value) / 100;
+    
+    // Calculate projections
+    let year1Revenue = 0;
+    let year2Revenue = 0;
+    let year3Revenue = 0;
+    
+    for (let month = 1; month <= 12; month++) {
+        const customers = monthlyCustomers * Math.pow(1 + growthRate, month - 1);
+        year1Revenue += customers * avgRevenue;
+    }
+    
+    for (let month = 13; month <= 24; month++) {
+        const customers = monthlyCustomers * Math.pow(1 + growthRate, month - 1);
+        year2Revenue += customers * avgRevenue;
+    }
+    
+    for (let month = 25; month <= 36; month++) {
+        const customers = monthlyCustomers * Math.pow(1 + growthRate, month - 1);
+        year3Revenue += customers * avgRevenue;
+    }
+    
+    const totalRevenue = year1Revenue + year2Revenue + year3Revenue;
+    const threeYearROI = ((totalRevenue - initialInvestment) / initialInvestment) * 100;
+    
+    // Update display
+    document.getElementById('year1Revenue').textContent = '$' + Math.round(year1Revenue).toLocaleString();
+    document.getElementById('year2Revenue').textContent = '$' + Math.round(year2Revenue).toLocaleString();
+    document.getElementById('year3Revenue').textContent = '$' + Math.round(year3Revenue).toLocaleString();
+    document.getElementById('threeYearROI').textContent = Math.round(threeYearROI) + '%';
+}
+
+// Hybrid mode functions
+function toggleHybridMode() {
+    const hybridToggle = document.getElementById('hybridModeToggle');
+    if (hybridToggle.style.display === 'none') {
+        hybridToggle.style.display = 'block';
+    } else {
+        hybridToggle.style.display = 'none';
+    }
+}
+
+function activateBankingMode() {
+    // Switch to banking perspective
+    window.location.href = '/ai_services/diaspora/presentation/?mode=banking';
+}
+
+// Exit investor mode
+function exitInvestorMode() {
+    if (confirm('Exit investor presentation mode?')) {
+        window.location.href = '/ai_services/diaspora/';
+    }
+}
+
+// Handle scenario button clicks
+document.addEventListener('DOMContentLoaded', function() {
+    const scenarioButtons = document.querySelectorAll('.scenario-btn');
+    
+    scenarioButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const scenario = this.getAttribute('data-scenario');
+            startScenarioDemo(scenario);
+        });
+    });
+});
+
+function startScenarioDemo(scenario) {
+    // Start specific scenario demo
+    console.log('Starting scenario:', scenario);
+    // Implementation would start the specific demo flow
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        exitInvestorMode();
+    } else if (e.key === 'r' || e.key === 'R') {
+        showROICalculator();
+    } else if (e.key === 'h' || e.key === 'H') {
+        toggleHybridMode();
+    }
+});
+
+// Investor-specific functions
+function startPresentationDemo() {
+    startInvestorDemo();
+}
+
+function startInvestorDemo() {
+    // Simulate live demo with investor-focused data
+    const demoData = {
+        amount: 5000,
+        frequency: 'monthly',
+        destination: 'Kenya',
+        purpose: 'investment',
+        experience: 8,
+        method: 'bank_transfer'
+    };
+    
+    // Show demo results with investor metrics
+    showInvestorResults(demoData);
+}
+
+function showInvestorResults(data) {
+    const results = {
+        investment_score: 8.7,
+        risk_level: 'Low-Medium',
+        confidence: 89,
+        processing_time: 1.2,
+        recommendations: [
+            'Consider fintech partnerships for mobile money integration',
+            'Explore real estate investment opportunities in Nairobi',
+            'Evaluate government bond investments for stable returns'
+        ]
+    };
+    
+    // Update UI with results
+    updateDemoResults(results);
+}
+
+function updateDemoResults(results) {
+    // Animate results appearance
+    const resultElements = document.querySelectorAll('.result-value');
+    resultElements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 200);
+        }, index * 100);
+    });
+}
+
+function showROICalculator() {
+    $('#roiCalculatorModal').modal('show');
+}
+
+function updateROI() {
+    const initialInvestment = parseFloat(document.getElementById('initialInvestment').value);
+    const monthlyCustomers = parseFloat(document.getElementById('monthlyCustomers').value);
+    const avgRevenue = parseFloat(document.getElementById('avgRevenue').value);
+    const growthRate = parseFloat(document.getElementById('growthRate').value) / 100;
+    
+    // Calculate projections
+    let year1Revenue = 0;
+    let year2Revenue = 0;
+    let year3Revenue = 0;
+    
+    for (let month = 1; month <= 12; month++) {
+        const customers = monthlyCustomers * Math.pow(1 + growthRate, month - 1);
+        year1Revenue += customers * avgRevenue;
+    }
+    
+    for (let month = 13; month <= 24; month++) {
+        const customers = monthlyCustomers * Math.pow(1 + growthRate, month - 1);
+        year2Revenue += customers * avgRevenue;
+    }
+    
+    for (let month = 25; month <= 36; month++) {
+        const customers = monthlyCustomers * Math.pow(1 + growthRate, month - 1);
+        year3Revenue += customers * avgRevenue;
+    }
+    
+    const totalRevenue = year1Revenue + year2Revenue + year3Revenue;
+    const threeYearROI = ((totalRevenue - initialInvestment) / initialInvestment) * 100;
+    
+    // Update display
+    document.getElementById('year1Revenue').textContent = '$' + Math.round(year1Revenue).toLocaleString();
+    document.getElementById('year2Revenue').textContent = '$' + Math.round(year2Revenue).toLocaleString();
+    document.getElementById('year3Revenue').textContent = '$' + Math.round(year3Revenue).toLocaleString();
+    document.getElementById('threeYearROI').textContent = Math.round(threeYearROI) + '%';
+}
+
+function toggleBankingMode() {
+    window.location.href = '/ai_services/diaspora/presentation/?mode=banking';
+}
+
+function toggleHybridMode() {
+    window.location.href = '/ai_services/diaspora/presentation/?mode=hybrid';
+}
+
+// Override base template functions
+function exitPresentationMode() {
+    if (confirm('Exit investor presentation mode?')) {
+        window.location.href = '/ai_services/diaspora/';
+    }
+}
+</script>
+{% endblock %}

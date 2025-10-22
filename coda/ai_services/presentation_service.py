@@ -35,6 +35,10 @@ class PresentationService:
             return {**base_context, **self._get_banking_context()}
         elif mode == 'hybrid':
             return {**base_context, **self._get_hybrid_context()}
+        elif mode == 'technical':
+            return {**base_context, **self._get_technical_context()}
+        elif mode == 'recruiter':
+            return {**base_context, **self._get_recruiter_context()}
         else:
             return {**base_context, **self._get_standard_context()}
     
@@ -126,6 +130,30 @@ class PresentationService:
             'presentation_mode': 'standard',
             'platform_features': self._get_platform_features(),
             'demo_scenarios': self._get_demo_scenarios(),
+        }
+    
+    def _get_technical_context(self) -> Dict[str, Any]:
+        """Get technical presentation context for interviews."""
+        return {
+            'presentation_mode': 'technical',
+            'technical_architecture': self._get_technical_architecture(),
+            'ai_ml_implementation': self._get_ai_ml_implementation(),
+            'data_pipeline': self._get_data_pipeline(),
+            'performance_metrics': self._get_performance_metrics(),
+            'code_examples': self._get_code_examples(),
+            'challenges_solved': self._get_technical_challenges(),
+        }
+    
+    def _get_recruiter_context(self) -> Dict[str, Any]:
+        """Get recruiter presentation context for HR interviews."""
+        return {
+            'presentation_mode': 'recruiter',
+            'project_achievements': self._get_project_achievements(),
+            'leadership_experience': self._get_leadership_experience(),
+            'team_collaboration': self._get_team_collaboration(),
+            'problem_solving': self._get_problem_solving_examples(),
+            'impact_metrics': self._get_impact_metrics(),
+            'career_growth': self._get_career_growth(),
         }
     
     def _get_investment_scenarios(self) -> List[Dict[str, Any]]:
@@ -555,4 +583,295 @@ class PresentationService:
                 'time_savings': '90% faster processing',
                 'access_improvement': '200% increase in financial services',
             }
+    
+    def _get_technical_architecture(self) -> Dict[str, Any]:
+        """Get technical architecture details."""
+        return {
+            'backend': {
+                'framework': 'Django 4.x',
+                'database': 'PostgreSQL with Redis caching',
+                'api': 'RESTful APIs with GraphQL',
+                'authentication': 'JWT with OAuth2',
+            },
+            'ai_ml': {
+                'models': 'TensorFlow, PyTorch, Scikit-learn',
+                'deployment': 'Docker containers on Kubernetes',
+                'monitoring': 'MLflow for model versioning',
+                'data_pipeline': 'Apache Airflow + Pandas',
+            },
+            'frontend': {
+                'framework': 'React with TypeScript',
+                'visualization': 'D3.js, Chart.js, Plotly',
+                'state_management': 'Redux Toolkit',
+                'styling': 'Material-UI with custom themes',
+            },
+            'infrastructure': {
+                'cloud': 'AWS with multi-region deployment',
+                'ci_cd': 'GitHub Actions with automated testing',
+                'monitoring': 'Prometheus + Grafana + ELK stack',
+                'security': 'WAF, DDoS protection, encryption at rest',
+            }
+        }
+    
+    def _get_ai_ml_implementation(self) -> Dict[str, Any]:
+        """Get AI/ML implementation details."""
+        return {
+            'risk_scoring': {
+                'algorithm': 'XGBoost with feature engineering',
+                'accuracy': '89% on test data',
+                'features': '150+ financial and behavioral features',
+                'latency': '<100ms for real-time scoring',
+            },
+            'predictive_analytics': {
+                'models': 'LSTM for time series, Random Forest for classification',
+                'data_sources': 'Transaction history, market data, social signals',
+                'prediction_horizon': '30-90 days ahead',
+                'confidence_interval': '85-95% accuracy range',
+            },
+            'nlp_processing': {
+                'libraries': 'spaCy, NLTK, Transformers',
+                'use_cases': 'Sentiment analysis, document processing',
+                'languages': 'English, Swahili, French support',
+                'performance': 'Real-time processing with <50ms latency',
+            }
+        }
+    
+    def _get_data_pipeline(self) -> Dict[str, Any]:
+        """Get data pipeline architecture."""
+        return {
+            'ingestion': {
+                'sources': 'APIs, databases, file uploads, real-time streams',
+                'tools': 'Apache Kafka, AWS Kinesis, custom connectors',
+                'volume': '10M+ records per day',
+                'latency': 'Near real-time processing',
+            },
+            'processing': {
+                'etl': 'Apache Airflow for orchestration',
+                'transformation': 'Pandas, NumPy, custom Python scripts',
+                'validation': 'Great Expectations for data quality',
+                'storage': 'Data lake on S3 with Parquet format',
+            },
+            'serving': {
+                'api_layer': 'FastAPI with async processing',
+                'caching': 'Redis for hot data, PostgreSQL for cold data',
+                'scaling': 'Horizontal scaling with load balancers',
+                'monitoring': 'Custom dashboards with real-time alerts',
+            }
+        }
+    
+    def _get_performance_metrics(self) -> Dict[str, Any]:
+        """Get performance and scalability metrics."""
+        return {
+            'response_times': {
+                'api_endpoints': '<200ms average',
+                'ai_predictions': '<100ms average',
+                'database_queries': '<50ms average',
+                'page_load': '<2 seconds',
+            },
+            'scalability': {
+                'concurrent_users': '10,000+ supported',
+                'throughput': '1,000 requests/second',
+                'data_processing': '10M records/hour',
+                'uptime': '99.9% availability',
+            },
+            'optimization': {
+                'caching_hit_rate': '85%',
+                'database_optimization': 'Query optimization, indexing',
+                'code_optimization': 'Profiling, async processing',
+                'infrastructure': 'Auto-scaling, load balancing',
+            }
+        }
+    
+    def _get_code_examples(self) -> List[Dict[str, Any]]:
+        """Get code examples for technical interviews."""
+        return [
+            {
+                'title': 'AI Risk Scoring Model',
+                'language': 'Python',
+                'description': 'XGBoost model for credit risk assessment',
+                'key_features': ['Feature engineering', 'Model validation', 'Real-time scoring'],
+                'complexity': 'Advanced',
+            },
+            {
+                'title': 'Real-time Data Pipeline',
+                'language': 'Python + Apache Kafka',
+                'description': 'Stream processing for financial transactions',
+                'key_features': ['Event streaming', 'Data validation', 'Error handling'],
+                'complexity': 'Expert',
+            },
+            {
+                'title': 'React Dashboard Component',
+                'language': 'TypeScript + React',
+                'description': 'Interactive data visualization dashboard',
+                'key_features': ['Real-time updates', 'Responsive design', 'Performance optimization'],
+                'complexity': 'Intermediate',
+            }
+        ]
+    
+    def _get_technical_challenges(self) -> List[Dict[str, Any]]:
+        """Get technical challenges solved."""
+        return [
+            {
+                'challenge': 'Real-time AI Model Serving',
+                'problem': 'Serve ML models with <100ms latency at scale',
+                'solution': 'Implemented model caching, async processing, and horizontal scaling',
+                'impact': 'Reduced latency by 60%, increased throughput by 300%',
+                'technologies': ['Docker', 'Kubernetes', 'Redis', 'FastAPI'],
+            },
+            {
+                'challenge': 'Data Quality at Scale',
+                'problem': 'Ensure data quality across 10M+ daily records',
+                'solution': 'Built automated data validation pipeline with Great Expectations',
+                'impact': 'Reduced data quality issues by 95%',
+                'technologies': ['Apache Airflow', 'Great Expectations', 'Python'],
+            },
+            {
+                'challenge': 'Multi-language NLP Processing',
+                'problem': 'Process text in English, Swahili, and French',
+                'solution': 'Implemented language detection and custom tokenization',
+                'impact': 'Enabled support for 3 languages with 90% accuracy',
+                'technologies': ['spaCy', 'NLTK', 'Transformers', 'Python'],
+            }
+        ]
+    
+    def _get_project_achievements(self) -> List[Dict[str, Any]]:
+        """Get project achievements for recruiter presentations."""
+        return [
+            {
+                'achievement': 'Led AI Platform Development',
+                'description': 'Built end-to-end AI platform serving 200M+ users',
+                'metrics': ['$50B+ market impact', '89% accuracy rate', '10M+ daily predictions'],
+                'skills_demonstrated': ['Technical Leadership', 'AI/ML Expertise', 'System Design'],
+            },
+            {
+                'achievement': 'Reduced Processing Time by 90%',
+                'description': 'Optimized data pipeline and AI model serving',
+                'metrics': ['<100ms response time', '300% throughput increase', '60% cost reduction'],
+                'skills_demonstrated': ['Performance Optimization', 'Problem Solving', 'Cost Management'],
+            },
+            {
+                'achievement': 'Built Scalable Architecture',
+                'description': 'Designed system handling 10,000+ concurrent users',
+                'metrics': ['99.9% uptime', '10M records/hour', 'Multi-region deployment'],
+                'skills_demonstrated': ['System Architecture', 'Scalability', 'Reliability'],
+            }
+        ]
+    
+    def _get_leadership_experience(self) -> Dict[str, Any]:
+        """Get leadership experience details."""
+        return {
+            'team_size': '8-12 developers',
+            'duration': '2+ years',
+            'responsibilities': [
+                'Technical architecture decisions',
+                'Code review and mentoring',
+                'Cross-team collaboration',
+                'Project planning and delivery',
+            ],
+            'achievements': [
+                'Reduced bug rate by 70% through better processes',
+                'Improved team velocity by 40%',
+                'Mentored 5 junior developers to senior level',
+                'Led successful migration to microservices',
+            ]
+        }
+    
+    def _get_team_collaboration(self) -> Dict[str, Any]:
+        """Get team collaboration examples."""
+        return {
+            'cross_functional_teams': [
+                'Product Management - Requirements and prioritization',
+                'Data Science - Model development and validation',
+                'DevOps - Infrastructure and deployment',
+                'QA - Testing and quality assurance',
+            ],
+            'collaboration_tools': [
+                'Agile/Scrum methodologies',
+                'Jira for project management',
+                'Slack for communication',
+                'Git for version control',
+            ],
+            'conflict_resolution': [
+                'Technical decision disagreements',
+                'Resource allocation conflicts',
+                'Timeline pressure management',
+                'Quality vs speed trade-offs',
+            ]
+        }
+    
+    def _get_problem_solving_examples(self) -> List[Dict[str, Any]]:
+        """Get problem-solving examples."""
+        return [
+            {
+                'situation': 'AI Model Performance Degradation',
+                'task': 'Identify and fix model accuracy issues in production',
+                'action': 'Implemented A/B testing, model monitoring, and rollback strategy',
+                'result': 'Restored 95% accuracy and prevented $2M in losses',
+            },
+            {
+                'situation': 'Database Performance Bottleneck',
+                'task': 'Optimize slow queries affecting user experience',
+                'action': 'Analyzed query patterns, added indexes, implemented caching',
+                'result': 'Reduced query time by 80% and improved user satisfaction',
+            },
+            {
+                'situation': 'Security Vulnerability Discovery',
+                'task': 'Address critical security issue without service disruption',
+                'action': 'Coordinated with security team, implemented hotfix, updated monitoring',
+                'result': 'Fixed vulnerability within 4 hours with zero downtime',
+            }
+        ]
+    
+    def _get_impact_metrics(self) -> Dict[str, Any]:
+        """Get impact and business metrics."""
+        return {
+            'business_impact': {
+                'revenue_increase': '$5M+ annually',
+                'cost_savings': '$2M+ in operational efficiency',
+                'user_satisfaction': '95% positive feedback',
+                'market_expansion': '200% user growth',
+            },
+            'technical_impact': {
+                'performance_improvement': '90% faster processing',
+                'reliability_increase': '99.9% uptime achieved',
+                'scalability_gain': '10x increase in capacity',
+                'security_enhancement': 'Zero security incidents',
+            },
+            'team_impact': {
+                'productivity_increase': '40% team velocity improvement',
+                'knowledge_sharing': '5 developers mentored to senior level',
+                'process_improvement': '70% reduction in bug rate',
+                'innovation_driven': '3 new product features launched',
+            }
+        }
+    
+    def _get_career_growth(self) -> Dict[str, Any]:
+        """Get career growth and development."""
+        return {
+            'current_role': 'Senior AI/ML Engineer',
+            'career_progression': [
+                'Junior Developer (1 year)',
+                'Software Engineer (2 years)',
+                'Senior Software Engineer (2 years)',
+                'Senior AI/ML Engineer (Current)',
+            ],
+            'skills_developed': [
+                'Machine Learning and AI',
+                'System Architecture',
+                'Team Leadership',
+                'Project Management',
+                'Cross-functional Collaboration',
+            ],
+            'certifications': [
+                'AWS Certified Solutions Architect',
+                'Google Cloud Professional ML Engineer',
+                'Certified Scrum Master (CSM)',
+            ],
+            'future_goals': [
+                'Technical Leadership role',
+                'AI/ML Architecture specialization',
+                'Open source contributions',
+                'Conference speaking',
+            ]
+        }
 
