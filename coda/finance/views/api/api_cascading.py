@@ -264,7 +264,8 @@ def generate_budget_projections_api(request):
             
             # Get actual data from the database after generation
             from finance.models import Budget, BudgetCategory
-            from django.db.models import Sum, Count, F, Coalesce, DecimalField
+            from django.db.models import Sum, Count, F, DecimalField
+            from django.db.models.functions import Coalesce
             
             # Calculate actual totals from generated budgets
             budget_totals = Budget.objects.filter(

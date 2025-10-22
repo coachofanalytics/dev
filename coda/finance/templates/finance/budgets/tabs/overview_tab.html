@@ -41,28 +41,35 @@
         <div class="col-md-3">
             <div class="metric-card">
                 <div class="metric-value">{{ overview_data.total_budgets|default:"0" }}</div>
-                <div class="metric-label">Total Budgets</div>
+                <div class="metric-label">Total Transactions</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
                 <div class="metric-value">{{ overview_data.active_budgets|default:"0" }}</div>
-                <div class="metric-label">Active Budgets</div>
+                <div class="metric-label">Categorized</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
                 <div class="metric-value">${{ overview_data.total_amount.total|default:"0"|floatformat:2 }}</div>
-                <div class="metric-label">Total Amount</div>
+                <div class="metric-label">Total Spending</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                <div class="metric-value">{{ overview_data.category_summary|length|default:"0" }}</div>
-                <div class="metric-label">Categories</div>
+                <div class="metric-value">${{ overview_data.monthly_average|default:"0"|floatformat:2 }}</div>
+                <div class="metric-label">Monthly Average</div>
             </div>
         </div>
     </div>
+    
+    <!-- Data Source Info -->
+    {% if overview_data.data_source == 'real_transactions' %}
+    <div class="alert alert-info">
+        <i class="fas fa-database"></i> <strong>Real Transaction Data:</strong> {{ overview_data.data_quality }}
+    </div>
+    {% endif %}
     
     <!-- Category Summary -->
     {% if overview_data.category_summary %}
@@ -74,8 +81,9 @@
                     <thead>
                         <tr>
                             <th>Category</th>
-                            <th>Count</th>
+                            <th>Transactions</th>
                             <th>Total Amount</th>
+                            <th>Monthly Avg</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -85,6 +93,7 @@
                             <td><i class="fas fa-tag"></i> {{ category_name }}</td>
                             <td>{{ data.count }}</td>
                             <td>${{ data.total|floatformat:2 }}</td>
+                            <td>${{ data.monthly_avg|floatformat:2 }}</td>
                             <td>
                                 {% if data.category_id %}
                                 <div class="btn-group btn-group-sm" role="group">
