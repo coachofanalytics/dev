@@ -1638,3 +1638,726 @@ class NotificationPreference(TimeStampedModel):
     
     def __str__(self):
         return f"{self.investor.username} - {self.get_notification_type_display()} - {self.frequency}"
+
+
+# ============================================================================
+# MANAGED OPTIONS TRADING MODELS
+# ============================================================================
+# New models for professional options account management service
+# These models support CODA managing client accounts with options strategies
+
+class ManagedTradingAccount(TimeStampedModel):
+    """
+    Managed options trading account for clients
+    
+    This model tracks client accounts where CODA manages options trading
+    on behalf of the client. Includes fee structure, risk parameters,
+    performance tracking, and account status.
+    """
+    
+    # Client Information
+    client = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='managed_trading_accounts',
+        help_text="Client who owns this account"
+    )
+    account_number = models.CharField(
+        max_length=20,
+        unique=True,
+        help_text="Unique account identifier (e.g., CODA-OPT-001)"
+    )
+    account_name = models.CharField(
+        max_length=100,
+        help_text="Descriptive name for the account"
+    )
+    account_manager = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='managed_accounts',
+        help_text="CODA staff member managing this account"
+    )
+    
+    # Financial Details
+    initial_capital = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('5000.00'))],
+        help_text="Starting account balance"
+    )
+    current_balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Current total account value"
+    )
+    cash_available = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Cash available for new positions"
+    )
+    cash_reserved = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Cash reserved for margin/collateral"
+    )
+    high_water_mark = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Highest account value reached (for performance fees)"
+    )
+    
+    # Fee Structure
+    FEE_TIER_CHOICES = [
+        ('consultative', 'Consultative Coaching - $420/month + 10% bonus'),
+        ('starter', 'Starter - 0% mgmt + 25% performance'),
+        ('professional', 'Professional - 1.5% mgmt + 20% perf'),
+        ('premium', 'Premium - 1% mgmt + 15% perf + $500/mo min'),
+        ('co_invest', 'Co-Investment - 50/50 split'),
+        ('custom', 'Custom Fee Structure')
+    ]
+    fee_tier = models.CharField(
+        max_length=20,
+        choices=FEE_TIER_CHOICES,
+        default='professional',
+        help_text="Fee tier selected by client"
+    )
+    management_fee_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('1.50'),
+        validators=[MinValueValidator(Decimal('0.00')), MaxValueValidator(Decimal('5.00'))],
+        help_text="Annual management fee percentage (0-5%)"
+    )
+    performance_fee_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('20.00'),
+        validators=[MinValueValidator(Decimal('0.00')), MaxValueValidator(Decimal('50.00'))],
+        help_text="Performance fee percentage (0-50%)"
+    )
+    performance_threshold = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('8.00'),
+        help_text="Hurdle rate - only pay performance fee above this return %"
+    )
+    
+    # Consultative Tier Fields
+    session_fee = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=Decimal('50.00'),
+        help_text="Fee per coaching session (for consultative tier)"
+    )
+    sessions_per_month = models.IntegerField(
+        default=8,
+        help_text="Number of sessions per month"
+    )
+    monthly_platform_fee = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=Decimal('20.00'),
+        help_text="Monthly platform/software fee"
+    )
+    sessions_completed_this_month = models.IntegerField(
+        default=0,
+        help_text="Sessions completed in current month"
+    )
+    total_sessions_completed = models.IntegerField(
+        default=0,
+        help_text="Total sessions completed all-time"
+    )
+    next_session_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Next scheduled coaching session"
+    )
+    
+    # Risk Parameters
+    max_position_risk = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('7000.00'),
+        help_text="Maximum capital at risk per position"
+    )
+    max_total_risk = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('15.00'),
+        help_text="Maximum total portfolio risk as % of balance"
+    )
+    max_daily_loss = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('2.00'),
+        help_text="Maximum daily loss as % of balance"
+    )
+    max_weekly_loss = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('5.00'),
+        help_text="Maximum weekly loss as % of balance"
+    )
+    max_monthly_loss = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('10.00'),
+        help_text="Maximum monthly loss as % of balance"
+    )
+    max_positions = models.IntegerField(
+        default=10,
+        help_text="Maximum number of simultaneous open positions"
+    )
+    
+    # Account Status
+    STATUS_CHOICES = [
+        ('pending', 'Pending Activation'),
+        ('active', 'Active'),
+        ('paused', 'Paused'),
+        ('closed', 'Closed'),
+        ('suspended', 'Suspended')
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    trading_enabled = models.BooleanField(
+        default=True,
+        help_text="Can trader execute new positions"
+    )
+    auto_trading_enabled = models.BooleanField(
+        default=False,
+        help_text="Allow automated position entry/exit"
+    )
+    activation_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date account was activated"
+    )
+    closure_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date account was closed"
+    )
+    
+    # Performance Tracking
+    total_trades = models.IntegerField(
+        default=0,
+        help_text="Total number of closed positions"
+    )
+    winning_trades = models.IntegerField(
+        default=0,
+        help_text="Number of profitable closed positions"
+    )
+    losing_trades = models.IntegerField(
+        default=0,
+        help_text="Number of losing closed positions"
+    )
+    total_profit_loss = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Cumulative profit/loss all-time"
+    )
+    total_fees_paid = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Total fees paid by client"
+    )
+    last_fee_calculation_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Last date fees were calculated"
+    )
+    
+    class Meta:
+        verbose_name = "Managed Trading Account"
+        verbose_name_plural = "Managed Trading Accounts"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['client', 'status']),
+            models.Index(fields=['account_number']),
+            models.Index(fields=['account_manager', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.account_number} - {self.client.get_full_name()}"
+    
+    @property
+    def available_buying_power(self):
+        """Calculate available buying power for new positions"""
+        return self.cash_available - self.cash_reserved
+    
+    @property
+    def current_risk_exposure(self):
+        """Calculate current risk exposure as % of balance"""
+        open_positions = self.positions.filter(status='open')
+        total_risk = sum([pos.max_loss for pos in open_positions])
+        if self.current_balance > 0:
+            return (total_risk / self.current_balance) * 100
+        return Decimal('0.00')
+    
+    @property
+    def win_rate(self):
+        """Calculate win rate percentage"""
+        if self.total_trades > 0:
+            return (self.winning_trades / self.total_trades) * 100
+        return Decimal('0.00')
+    
+    @property
+    def return_on_investment(self):
+        """Calculate ROI percentage"""
+        if self.initial_capital > 0:
+            return ((self.current_balance - self.initial_capital) / self.initial_capital) * 100
+        return Decimal('0.00')
+
+
+class OptionsPosition(TimeStampedModel):
+    """
+    Individual options position/trade
+    
+    Tracks a single options position including entry/exit details,
+    Greeks, P&L, and current status.
+    """
+    
+    # Account Linkage
+    managed_account = models.ForeignKey(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        related_name='positions'
+    )
+    
+    # Position Details
+    symbol = models.CharField(
+        max_length=10,
+        help_text="Underlying stock ticker (e.g., AAPL)"
+    )
+    
+    STRATEGY_CHOICES = [
+        ('short_put', 'Cash-Secured Short Put'),
+        ('covered_call', 'Covered Call'),
+        ('short_call', 'Naked Short Call'),
+        ('bull_put_spread', 'Bull Put Spread'),
+        ('bear_call_spread', 'Bear Call Spread'),
+        ('iron_condor', 'Iron Condor'),
+        ('long_call', 'Long Call'),
+        ('long_put', 'Long Put'),
+        ('straddle', 'Straddle'),
+        ('strangle', 'Strangle'),
+        ('other', 'Other Strategy')
+    ]
+    strategy = models.CharField(
+        max_length=20,
+        choices=STRATEGY_CHOICES,
+        help_text="Options strategy type"
+    )
+    
+    # Position Legs (stored as JSON for multi-leg strategies)
+    positions = models.JSONField(
+        help_text="Array of position legs with strike, type, contracts, etc."
+    )
+    
+    # Financial Details
+    capital_required = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Capital required/reserved for this position"
+    )
+    premium_collected = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Total premium collected (credit received)"
+    )
+    max_profit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Maximum possible profit"
+    )
+    max_loss = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Maximum possible loss"
+    )
+    
+    # Greeks (at position level)
+    position_delta = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position delta"
+    )
+    position_theta = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position theta (daily decay)"
+    )
+    position_gamma = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position gamma"
+    )
+    position_vega = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position vega"
+    )
+    
+    # Dates
+    entry_date = models.DateField(
+        auto_now_add=True,
+        help_text="Date position was opened"
+    )
+    expiration_date = models.DateField(
+        help_text="Options expiration date"
+    )
+    exit_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date position was closed"
+    )
+    
+    # Status
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+        ('assigned', 'Assigned'),
+        ('expired', 'Expired'),
+        ('rolled', 'Rolled')
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='open'
+    )
+    
+    # P&L Tracking
+    current_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Current market value of position"
+    )
+    realized_pnl = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Realized profit/loss (for closed positions)"
+    )
+    unrealized_pnl = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Unrealized profit/loss (for open positions)"
+    )
+    
+    # Exit Details
+    EXIT_REASON_CHOICES = [
+        ('profit_target', 'Profit Target Reached'),
+        ('stop_loss', 'Stop Loss Hit'),
+        ('expiration', 'Approaching Expiration'),
+        ('delta_shift', 'Delta Shifted'),
+        ('roll', 'Rolled to Next Cycle'),
+        ('assignment', 'Assigned'),
+        ('manual', 'Manual Close'),
+        ('other', 'Other')
+    ]
+    exit_reason = models.CharField(
+        max_length=20,
+        choices=EXIT_REASON_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Reason for closing position"
+    )
+    exit_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Price at which position was closed"
+    )
+    
+    # Notes
+    notes = models.TextField(
+        blank=True,
+        help_text="Trade notes, rationale, observations"
+    )
+    
+    class Meta:
+        verbose_name = "Options Position"
+        verbose_name_plural = "Options Positions"
+        ordering = ['-entry_date', 'expiration_date']
+        indexes = [
+            models.Index(fields=['managed_account', 'status']),
+            models.Index(fields=['symbol', 'status']),
+            models.Index(fields=['expiration_date', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.symbol} {self.get_strategy_display()} - {self.managed_account.account_number}"
+    
+    @property
+    def days_in_trade(self):
+        """Calculate number of days position has been open"""
+        if self.exit_date:
+            return (self.exit_date - self.entry_date).days
+        return (date.today() - self.entry_date).days
+    
+    @property
+    def days_to_expiration(self):
+        """Calculate days until expiration"""
+        return (self.expiration_date - date.today()).days
+    
+    @property
+    def is_profitable(self):
+        """Check if position is currently profitable"""
+        if self.status == 'open':
+            return self.unrealized_pnl > 0
+        return self.realized_pnl > 0
+    
+    @property
+    def profit_percentage(self):
+        """Calculate profit as percentage of max profit"""
+        if self.max_profit > 0:
+            if self.status == 'open':
+                return (self.unrealized_pnl / self.max_profit) * 100
+            return (self.realized_pnl / self.max_profit) * 100
+        return Decimal('0.00')
+
+
+class TradingRule(TimeStampedModel):
+    """
+    Configurable trading rules per account
+    
+    Defines rules for position sizing, risk limits, profit targets,
+    stop losses, and other trading constraints.
+    """
+    
+    managed_account = models.ForeignKey(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        related_name='trading_rules'
+    )
+    
+    rule_name = models.CharField(
+        max_length=100,
+        help_text="Descriptive name for the rule"
+    )
+    
+    RULE_TYPE_CHOICES = [
+        ('position_limit', 'Position Size Limit'),
+        ('risk_limit', 'Risk Limit'),
+        ('profit_target', 'Profit Target'),
+        ('stop_loss', 'Stop Loss'),
+        ('time_based', 'Time-Based Rule'),
+        ('exposure_limit', 'Exposure Limit'),
+        ('custom', 'Custom Rule')
+    ]
+    rule_type = models.CharField(
+        max_length=20,
+        choices=RULE_TYPE_CHOICES
+    )
+    
+    # Rule Configuration (stored as JSON for flexibility)
+    rule_config = models.JSONField(
+        help_text="Rule parameters and thresholds"
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Is this rule currently enforced"
+    )
+    priority = models.IntegerField(
+        default=10,
+        help_text="Rule priority (1=highest, 10=lowest)"
+    )
+    
+    class Meta:
+        verbose_name = "Trading Rule"
+        verbose_name_plural = "Trading Rules"
+        ordering = ['priority', 'rule_name']
+        indexes = [
+            models.Index(fields=['managed_account', 'is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.rule_name} ({self.managed_account.account_number})"
+
+
+class TradingActivity(TimeStampedModel):
+    """
+    Audit trail of all trading activities
+    
+    Logs every action taken on managed accounts including position
+    entry/exit, rule changes, account modifications, etc.
+    """
+    
+    managed_account = models.ForeignKey(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        related_name='activities'
+    )
+    
+    position = models.ForeignKey(
+        OptionsPosition,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='activities',
+        help_text="Related position (if applicable)"
+    )
+    
+    ACTIVITY_TYPE_CHOICES = [
+        ('account_created', 'Account Created'),
+        ('account_modified', 'Account Modified'),
+        ('account_paused', 'Account Paused'),
+        ('account_activated', 'Account Activated'),
+        ('position_opened', 'Position Opened'),
+        ('position_closed', 'Position Closed'),
+        ('position_rolled', 'Position Rolled'),
+        ('alert_generated', 'Alert Generated'),
+        ('rule_violated', 'Rule Violated'),
+        ('rule_changed', 'Rule Changed'),
+        ('fee_calculated', 'Fee Calculated'),
+        ('session_completed', 'Coaching Session Completed'),
+        ('other', 'Other Activity')
+    ]
+    activity_type = models.CharField(
+        max_length=30,
+        choices=ACTIVITY_TYPE_CHOICES
+    )
+    
+    description = models.TextField(
+        help_text="Human-readable description of the activity"
+    )
+    
+    # Data Snapshot (stores state at time of activity)
+    data_snapshot = models.JSONField(
+        default=dict,
+        help_text="JSON snapshot of relevant data"
+    )
+    
+    performed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="User who performed the action"
+    )
+    
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this activity occurred"
+    )
+    
+    class Meta:
+        verbose_name = "Trading Activity"
+        verbose_name_plural = "Trading Activities"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['managed_account', '-timestamp']),
+            models.Index(fields=['activity_type', '-timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_activity_type_display()} - {self.managed_account.account_number} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
+
+class TradingSession(TimeStampedModel):
+    """
+    Track coaching/review sessions with clients
+    For Consultative tier accounts
+    """
+    
+    managed_account = models.ForeignKey(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        related_name='sessions'
+    )
+    
+    session_date = models.DateTimeField(
+        help_text="Date and time of session"
+    )
+    session_duration_minutes = models.IntegerField(
+        default=30,
+        help_text="Session duration in minutes"
+    )
+    
+    SESSION_TYPE_CHOICES = [
+        ('position_review', 'Position Review'),
+        ('strategy_planning', 'Strategy Planning'),
+        ('performance_review', 'Performance Review'),
+        ('education', 'Education/Training'),
+        ('risk_review', 'Risk Management Review')
+    ]
+    session_type = models.CharField(
+        max_length=20,
+        choices=SESSION_TYPE_CHOICES
+    )
+    
+    # Session content
+    topics_discussed = models.TextField(
+        help_text="Topics covered in session"
+    )
+    positions_reviewed = models.ManyToManyField(
+        OptionsPosition,
+        blank=True,
+        related_name='review_sessions',
+        help_text="Positions discussed in session"
+    )
+    action_items = models.JSONField(
+        default=list,
+        help_text="Action items from session"
+    )
+    
+    # Session notes
+    session_notes = models.TextField(
+        blank=True,
+        help_text="Detailed session notes"
+    )
+    client_feedback = models.TextField(
+        blank=True,
+        help_text="Client feedback on session"
+    )
+    
+    # Billing
+    fee_charged = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=Decimal('50.00'),
+        help_text="Fee charged for this session"
+    )
+    is_billed = models.BooleanField(
+        default=False,
+        help_text="Has this session been billed?"
+    )
+    billing_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date session was billed"
+    )
+    
+    # Recording (optional)
+    recording_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="URL to session recording"
+    )
+    
+    class Meta:
+        verbose_name = "Trading Session"
+        verbose_name_plural = "Trading Sessions"
+        ordering = ['-session_date']
+        indexes = [
+            models.Index(fields=['managed_account', '-session_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.managed_account.account_number} - {self.session_date.strftime('%Y-%m-%d')}"
