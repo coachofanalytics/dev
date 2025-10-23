@@ -453,3 +453,9 @@ urlpatterns += [
     path('stripe/payment-intent/', create_payment_intent, name='stripe_payment_intent'),
     path('stripe/webhook/', stripe_webhook, name='stripe_webhook'),
 ]
+
+# Food Management System URLs
+from django.urls import include
+urlpatterns += [
+    path('food/', include('finance.urls_food', namespace='food')),
+]
