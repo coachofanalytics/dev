@@ -18,7 +18,7 @@ class MultiLegOptionsForm(forms.Form):
     
     # Account Selection
     managed_account = forms.ModelChoiceField(
-        queryset=ManagedTradingAccount.objects.filter(status='active'),
+        queryset=ManagedTradingAccount.objects.filter(status__in=['active', 'pending']),
         empty_label="Select Account",
         widget=forms.Select(attrs={'class': 'form-control'})
     )

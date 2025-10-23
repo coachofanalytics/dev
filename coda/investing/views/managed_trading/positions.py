@@ -38,6 +38,8 @@ def create_position(request, account_id=None):
     if request.method == 'POST':
         # Determine which form was submitted
         form_type = request.POST.get('form_type', 'multi_leg')
+        print(f"DEBUG: POST request received, form_type: {form_type}")
+        print(f"DEBUG: POST data keys: {list(request.POST.keys())}")
         
         if form_type == 'quick':
             form = QuickPositionEntryForm(request.POST)
@@ -47,6 +49,7 @@ def create_position(request, account_id=None):
             form = OptionsPositionForm(request.POST)
         
         if form.is_valid():
+            print(f"DEBUG: Form is valid, processing {form_type} form...")
             service = ManagedTradingService()
             try:
                 if form_type == 'quick':
@@ -149,6 +152,11 @@ def create_position(request, account_id=None):
                 
             except Exception as e:
                 messages.error(request, f'Error creating position: {str(e)}')
+        else:
+            print(f"DEBUG: Form is NOT valid. Errors: {form.errors}")
+            print(f"DEBUG: Non-field errors: {form.non_field_errors()}")
+            for field, errors in form.errors.items():
+                print(f"DEBUG: {field}: {errors}")
     else:
         # Initialize form with account if provided
         initial = {'managed_account': account} if account else {}
