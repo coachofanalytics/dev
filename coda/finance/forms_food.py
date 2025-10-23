@@ -253,7 +253,7 @@ class RestockRequestForm(forms.ModelForm):
     
     class Meta:
         model = FoodRestockRequest
-        fields = ['inventory', 'requested_quantity', 'notes']
+        fields = ['inventory', 'requested_quantity', 'rejection_reason']
         widgets = {
             'inventory': forms.Select(attrs={
                 'class': 'form-control',
@@ -264,12 +264,15 @@ class RestockRequestForm(forms.ModelForm):
                 'id': 'id_requested_quantity',
                 'step': '0.01'
             }),
-            'notes': forms.Textarea(attrs={
+            'rejection_reason': forms.Textarea(attrs={
                 'class': 'form-control',
-                'id': 'id_notes',
+                'id': 'id_rejection_reason',
                 'rows': 3,
-                'placeholder': 'Reason for restock request'
+                'placeholder': 'Reason for restock request (optional)'
             }),
+        }
+        labels = {
+            'rejection_reason': 'Notes'
         }
     
     def __init__(self, *args, **kwargs):
