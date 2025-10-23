@@ -1,0 +1,177 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fa fa-plus-circle"></i> Create Managed Trading Account</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="accountForm">
+                        {% csrf_token %}
+                        
+                        <!-- Client & Account Info -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Account Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_client" class="form-label">Client *</label>
+                                        {{ form.client }}
+                                        {% if form.client.errors %}
+                                            <div class="text-danger">{{ form.client.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_account_name" class="form-label">Account Name *</label>
+                                        {{ form.account_name }}
+                                        {% if form.account_name.errors %}
+                                            <div class="text-danger">{{ form.account_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_initial_capital" class="form-label">Initial Capital * (Min: $5,000)</label>
+                                        {{ form.initial_capital }}
+                                        {% if form.initial_capital.errors %}
+                                            <div class="text-danger">{{ form.initial_capital.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_account_manager" class="form-label">Account Manager</label>
+                                        {{ form.account_manager }}
+                                        {% if form.account_manager.errors %}
+                                            <div class="text-danger">{{ form.account_manager.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fee Structure -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Fee Structure</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="id_fee_tier" class="form-label">Fee Tier *</label>
+                                    {{ form.fee_tier }}
+                                    <small class="form-text text-muted">Select pricing model for this account</small>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="id_management_fee_percentage" class="form-label">Management Fee % (Annual)</label>
+                                        {{ form.management_fee_percentage }}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="id_performance_fee_percentage" class="form-label">Performance Fee %</label>
+                                        {{ form.performance_fee_percentage }}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="id_performance_threshold" class="form-label">Hurdle Rate %</label>
+                                        {{ form.performance_threshold }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Consultative Tier Fields -->
+                                <div id="consultativeFields" style="display:none;">
+                                    <hr>
+                                    <h6>Consultative Tier Settings</h6>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_session_fee" class="form-label">Session Fee</label>
+                                            {{ form.session_fee }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_sessions_per_month" class="form-label">Sessions/Month</label>
+                                            {{ form.sessions_per_month }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_monthly_platform_fee" class="form-label">Platform Fee</label>
+                                            {{ form.monthly_platform_fee }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Risk Parameters -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Risk Parameters</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_max_position_risk" class="form-label">Max Position Risk ($)</label>
+                                        {{ form.max_position_risk }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_max_total_risk" class="form-label">Max Total Risk (%)</label>
+                                        {{ form.max_total_risk }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="id_max_daily_loss" class="form-label">Max Daily Loss (%)</label>
+                                        {{ form.max_daily_loss }}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="id_max_weekly_loss" class="form-label">Max Weekly Loss (%)</label>
+                                        {{ form.max_weekly_loss }}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="id_max_monthly_loss" class="form-label">Max Monthly Loss (%)</label>
+                                        {{ form.max_monthly_loss }}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="id_max_positions" class="form-label">Max Concurrent Positions</label>
+                                    {{ form.max_positions }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-secondary">
+                                <i class="fa fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fa fa-check"></i> Create Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide consultative tier fields based on selected tier
+document.getElementById('id_fee_tier').addEventListener('change', function() {
+    const consultativeFields = document.getElementById('consultativeFields');
+    if (this.value === 'consultative') {
+        consultativeFields.style.display = 'block';
+    } else {
+        consultativeFields.style.display = 'none';
+    }
+});
+
+// Trigger on page load
+document.getElementById('id_fee_tier').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}
+

@@ -1,0 +1,143 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fa fa-plus"></i> Create Options Position</h4>
+                    {% if account %}
+                    <p class="mb-0 mt-2">Account: {{ account.account_number }} | Available: ${{ account.available_buying_power|floatformat:2 }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="quick">
+                        
+                        <!-- Account Selection (if not pre-selected) -->
+                        {% if not account %}
+                        <div class="mb-3">
+                            <label for="id_account" class="form-label">Account *</label>
+                            {{ form.account }}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Position Details -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_symbol" class="form-label">Symbol *</label>
+                                {{ form.symbol }}
+                                <small class="form-text text-muted">Stock ticker (e.g., AAPL, MSFT)</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_strategy" class="form-label">Strategy *</label>
+                                {{ form.strategy }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_strike_price" class="form-label">Strike Price *</label>
+                                {{ form.strike_price }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_contracts" class="form-label">Contracts *</label>
+                                {{ form.contracts }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_premium" class="form-label">Premium Collected *</label>
+                                {{ form.premium }}
+                                <small class="form-text text-muted">Total credit received</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_expiration_date" class="form-label">Expiration Date *</label>
+                                {{ form.expiration_date }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_delta" class="form-label">Delta (Optional)</label>
+                                {{ form.delta }}
+                                <small class="form-text text-muted">Position delta (e.g., -0.30)</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_notes" class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+                        
+                        <!-- Risk Preview -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6>Risk Preview</h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p class="mb-1"><strong>Max Profit:</strong> <span id="maxProfit">$0.00</span></p>
+                                        <p class="mb-0"><strong>Max Loss:</strong> <span id="maxLoss">$0.00</span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="mb-1"><strong>Capital Required:</strong> <span id="capitalRequired">$0.00</span></p>
+                                        <p class="mb-0"><strong>Risk/Reward:</strong> <span id="riskReward">0:0</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% if account %}{% url 'investing:managed_account_detail' account.id %}{% else %}{% url 'investing:managed_positions_list' %}{% endif %}" 
+                               class="btn btn-secondary">
+                                <i class="fa fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fa fa-check"></i> Create Position
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate risk/reward preview
+function updateRiskPreview() {
+    const strike = parseFloat(document.getElementById('id_strike_price').value) || 0;
+    const contracts = parseInt(document.getElementById('id_contracts').value) || 0;
+    const premium = parseFloat(document.getElementById('id_premium').value) || 0;
+    
+    const maxProfit = premium;
+    const capitalRequired = strike * 100 * contracts;
+    const maxLoss = capitalRequired - premium;
+    const riskReward = maxProfit > 0 ? (maxLoss / maxProfit).toFixed(2) : 0;
+    
+    document.getElementById('maxProfit').textContent = '$' + maxProfit.toFixed(2);
+    document.getElementById('maxLoss').textContent = '$' + maxLoss.toFixed(2);
+    document.getElementById('capitalRequired').textContent = '$' + capitalRequired.toFixed(2);
+    document.getElementById('riskReward').textContent = '1:' + riskReward;
+}
+
+// Add event listeners
+['id_strike_price', 'id_contracts', 'id_premium'].forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+        element.addEventListener('input', updateRiskPreview);
+    }
+});
+
+// Initial calculation
+updateRiskPreview();
+</script>
+{% endblock %}
+

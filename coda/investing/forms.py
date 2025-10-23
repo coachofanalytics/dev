@@ -8,6 +8,10 @@ from .models import (
     ShortPut,
     Portfolio,
     InvestmentsStrategy,
+    ManagedTradingAccount,
+    OptionsPosition,
+    TradingRule,
+    TradingSession,
 )
 
 
@@ -265,3 +269,257 @@ class InvestmentStatusForm(forms.Form):
             'placeholder': 'Reason for status change'
         })
     )
+
+
+# ============================================================================
+# MANAGED OPTIONS TRADING FORMS
+# ============================================================================
+
+class ManagedAccountForm(forms.ModelForm):
+    """
+    Form for creating/editing managed trading accounts
+    """
+    
+    class Meta:
+        model = ManagedTradingAccount
+        fields = [
+            'client',
+            'account_name',
+            'initial_capital',
+            'account_manager',
+            'fee_tier',
+            'management_fee_percentage',
+            'performance_fee_percentage',
+            'performance_threshold',
+            'max_position_risk',
+            'max_total_risk',
+            'max_daily_loss',
+            'max_weekly_loss',
+            'max_monthly_loss',
+            'max_positions',
+            'session_fee',
+            'sessions_per_month',
+            'monthly_platform_fee',
+        ]
+        widgets = {
+            'client': forms.Select(attrs={'class': 'form-control'}),
+            'account_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Account Name'}),
+            'initial_capital': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '5000'}),
+            'account_manager': forms.Select(attrs={'class': 'form-control'}),
+            'fee_tier': forms.Select(attrs={'class': 'form-control'}),
+            'management_fee_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '5'}),
+            'performance_fee_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '50'}),
+            'performance_threshold': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
+            'max_position_risk': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_total_risk': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_daily_loss': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_weekly_loss': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_monthly_loss': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_positions': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'session_fee': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'sessions_per_month': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'monthly_platform_fee': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+    
+    def clean_initial_capital(self):
+        capital = self.cleaned_data.get('initial_capital')
+        if capital and capital < Decimal('5000.00'):
+            raise ValidationError('Minimum account size is $5,000')
+        return capital
+
+
+class OptionsPositionForm(forms.ModelForm):
+    """
+    Form for creating options positions
+    """
+    
+    class Meta:
+        model = OptionsPosition
+        fields = [
+            'managed_account',
+            'symbol',
+            'strategy',
+            'positions',
+            'capital_required',
+            'premium_collected',
+            'max_profit',
+            'max_loss',
+            'position_delta',
+            'position_theta',
+            'position_gamma',
+            'position_vega',
+            'expiration_date',
+            'notes'
+        ]
+        widgets = {
+            'managed_account': forms.Select(attrs={'class': 'form-control'}),
+            'symbol': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ticker Symbol (e.g., AAPL)'}),
+            'strategy': forms.Select(attrs={'class': 'form-control'}),
+            'positions': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'JSON format: [{"type": "short_put", "strike": 170, "contracts": 1, "premium": 300}]'}),
+            'capital_required': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'premium_collected': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_profit': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_loss': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'position_delta': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001'}),
+            'position_theta': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001'}),
+            'position_gamma': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001'}),
+            'position_vega': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001'}),
+            'expiration_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Trade notes...'}),
+        }
+    
+    def clean_symbol(self):
+        symbol = self.cleaned_data.get('symbol')
+        if symbol:
+            return symbol.upper()
+        return symbol
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        account = cleaned_data.get('managed_account')
+        capital = cleaned_data.get('capital_required')
+        
+        if account and capital:
+            if capital > account.available_buying_power:
+                raise ValidationError(
+                    f'Insufficient buying power. Available: ${account.available_buying_power:,.2f}'
+                )
+        
+        return cleaned_data
+
+
+class ClosePositionForm(forms.Form):
+    """
+    Form for closing options positions
+    """
+    
+    exit_price = forms.DecimalField(
+        label="Exit Price",
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Exit price'})
+    )
+    
+    exit_reason = forms.ChoiceField(
+        label="Exit Reason",
+        choices=OptionsPosition.EXIT_REASON_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    notes = forms.CharField(
+        label="Exit Notes",
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Reason for exit...'})
+    )
+
+
+class TradingSessionForm(forms.ModelForm):
+    """
+    Form for creating/editing trading sessions (consultative tier)
+    """
+    
+    class Meta:
+        model = TradingSession
+        fields = [
+            'managed_account',
+            'session_date',
+            'session_duration_minutes',
+            'session_type',
+            'topics_discussed',
+            'positions_reviewed',
+            'action_items',
+            'session_notes',
+            'client_feedback',
+            'fee_charged',
+            'recording_url',
+        ]
+        widgets = {
+            'managed_account': forms.Select(attrs={'class': 'form-control'}),
+            'session_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'session_duration_minutes': forms.NumberInput(attrs={'class': 'form-control', 'min': '15', 'step': '15'}),
+            'session_type': forms.Select(attrs={'class': 'form-control'}),
+            'topics_discussed': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Topics covered...'}),
+            'positions_reviewed': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'action_items': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '["Action 1", "Action 2"]'}),
+            'session_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'client_feedback': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'fee_charged': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'recording_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
+        }
+
+
+class QuickPositionEntryForm(forms.Form):
+    """
+    Simplified form for quick position entry
+    """
+    
+    account = forms.ModelChoiceField(
+        queryset=ManagedTradingAccount.objects.filter(status='active'),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Account"
+    )
+    
+    symbol = forms.CharField(
+        max_length=10,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ticker Symbol'}),
+        label="Symbol"
+    )
+    
+    strategy = forms.ChoiceField(
+        choices=OptionsPosition.STRATEGY_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Strategy"
+    )
+    
+    strike_price = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        label="Strike Price"
+    )
+    
+    contracts = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+        label="Contracts"
+    )
+    
+    premium = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        label="Premium Collected"
+    )
+    
+    expiration_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        label="Expiration Date"
+    )
+    
+    delta = forms.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001'}),
+        label="Delta"
+    )
+    
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Trade notes...'}),
+        label="Notes"
+    )
+    
+    def clean_symbol(self):
+        return self.cleaned_data['symbol'].upper()
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        contracts = cleaned_data.get('contracts', 1)
+        strike = cleaned_data.get('strike_price', Decimal('0'))
+        
+        # Calculate capital required for short put (most common)
+        capital_required = strike * Decimal('100') * contracts
+        cleaned_data['capital_required'] = capital_required
+        
+        return cleaned_data

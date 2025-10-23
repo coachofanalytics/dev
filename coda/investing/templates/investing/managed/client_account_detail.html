@@ -1,0 +1,71 @@
+{% extends "main/base_templates/new_base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2>{{ account.account_number }} - Account Details</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Balance</h6>
+                    <h3>${{ summary.summary.current_balance|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>P&L</h6>
+                    <h3 class="{% if summary.summary.total_profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        ${{ summary.summary.total_profit_loss|floatformat:2 }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Open Positions</h6>
+                    <h3>{{ summary.positions.open_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5>Open Positions</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Strategy</th>
+                        <th>Entry</th>
+                        <th>Expiration</th>
+                        <th>P&L</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position in open_positions %}
+                    <tr>
+                        <td>{{ position.symbol }}</td>
+                        <td>{{ position.get_strategy_display }}</td>
+                        <td>{{ position.entry_date|date:"M d, Y" }}</td>
+                        <td>{{ position.expiration_date|date:"M d, Y" }}</td>
+                        <td class="{% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            ${{ position.unrealized_pnl|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <a href="{% url 'investing:client_portal' %}" class="btn btn-primary mt-3">Back to Portal</a>
+</div>
+{% endblock %}
+

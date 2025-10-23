@@ -1,0 +1,17 @@
+{% extends "main/base_templates/new_base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2>{{ title }}</h2>
+    <p>Account: {{ account.account_number }}</p>
+    {% for alert in alerts %}
+        <div class="alert alert-{{ alert.severity }}">
+            {{ alert.message }}
+        </div>
+    {% empty %}
+        <p class="text-success">No alerts - all positions within parameters</p>
+    {% endfor %}
+    <a href="{% url 'investing:managed_account_detail' account.id %}" class="btn btn-primary">Back to Account</a>
+</div>
+{% endblock %}
+
