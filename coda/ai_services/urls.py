@@ -61,5 +61,6 @@ urlpatterns = [
     path('diaspora/my-analytics/', views.user_analytics, name='user_analytics'),
     path('diaspora/ai-health/', views.ai_health_check, name='ai_health_check'),
     path('diaspora/presentation-guide/', views.presentation_guide, name='presentation_guide'),
+    path('portfolio-dashboard/', views.portfolio_dashboard, name='portfolio_dashboard'),
 
 ]

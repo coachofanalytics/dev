@@ -1807,3 +1807,20 @@ def presentation_guide(request):
     }
     
     return render(request, 'ai_services/presentation_guide.html', context)
+
+
+def portfolio_dashboard(request):
+    """Portfolio dashboard with all projects"""
+    from portfolio.services import ProjectRegistry
+    
+    projects = ProjectRegistry.get_all_projects()
+    
+    context = {
+        'title': 'CODA Portfolio Dashboard - Professional Projects',
+        'projects': projects,
+        'presentation_mode': 'branded',
+        'show_branding': True,
+        'is_portfolio_hub': True,
+    }
+    
+    return render(request, 'ai_services/portfolio_dashboard.html', context)
