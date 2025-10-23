@@ -14,30 +14,30 @@
                         <div class="row">
                             <div class="col-md-3 text-center">
                                 <div class="opportunity-metric">
-                                    <h3 class="metric-value">89%</h3>
-                                    <p class="metric-label">AI Model Accuracy</p>
-                                    <small class="metric-growth">XGBoost + Feature Engineering</small>
+                                    <h3 class="metric-value">Django</h3>
+                                    <p class="metric-label">Backend Framework</p>
+                                    <small class="metric-growth">Python 3.12 + PostgreSQL</small>
                                 </div>
                             </div>
                             <div class="col-md-3 text-center">
                                 <div class="opportunity-metric">
-                                    <h3 class="metric-value">&lt;100ms</h3>
-                                    <p class="metric-label">Prediction Latency</p>
-                                    <small class="metric-growth">Real-time Processing</small>
+                                    <h3 class="metric-value">React</h3>
+                                    <p class="metric-label">Frontend Framework</p>
+                                    <small class="metric-growth">TypeScript + Material-UI</small>
                                 </div>
                             </div>
                             <div class="col-md-3 text-center">
                                 <div class="opportunity-metric">
-                                    <h3 class="metric-value">10M+</h3>
-                                    <p class="metric-label">Daily Predictions</p>
-                                    <small class="metric-growth">Scalable Architecture</small>
+                                    <h3 class="metric-value">XGBoost</h3>
+                                    <p class="metric-label">AI/ML Engine</p>
+                                    <small class="metric-growth">TensorFlow + PyTorch</small>
                                 </div>
                             </div>
                             <div class="col-md-3 text-center">
                                 <div class="opportunity-metric">
-                                    <h3 class="metric-value">99.9%</h3>
-                                    <p class="metric-label">System Uptime</p>
-                                    <small class="metric-growth">High Availability</small>
+                                    <h3 class="metric-value">AWS</h3>
+                                    <p class="metric-label">Cloud Infrastructure</p>
+                                    <small class="metric-growth">Kubernetes + Docker</small>
                                 </div>
                             </div>
                         </div>
@@ -45,11 +45,75 @@
                 </div>
             </div>
 
-            <!-- Investment Scenarios -->
+            <!-- Tech Stack Button -->
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <button class="btn btn-warning btn-lg" onclick="toggleTechStack()">
+                        <i class="fas fa-layer-group"></i> View Complete Tech Stack
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tech Stack Details (Hidden by default) -->
+            <div id="tech-stack-details" class="row mb-5" style="display: none;">
+                <div class="col-12">
+                    <div class="market-opportunity-card">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-layer-group"></i> Complete Technology Stack
+                        </h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4><i class="fas fa-server"></i> Backend Technologies</h4>
+                                <ul class="list-unstyled">
+                                    <li><strong>Framework:</strong> Django 4.x with Python 3.12</li>
+                                    <li><strong>Database:</strong> PostgreSQL with Redis caching</li>
+                                    <li><strong>API:</strong> RESTful APIs with GraphQL</li>
+                                    <li><strong>Authentication:</strong> JWT with OAuth2</li>
+                                    <li><strong>Task Queue:</strong> Celery with Redis broker</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4><i class="fas fa-desktop"></i> Frontend Technologies</h4>
+                                <ul class="list-unstyled">
+                                    <li><strong>Framework:</strong> React 18 with TypeScript</li>
+                                    <li><strong>UI Library:</strong> Material-UI with custom themes</li>
+                                    <li><strong>State Management:</strong> Redux Toolkit</li>
+                                    <li><strong>Visualization:</strong> D3.js, Chart.js, Plotly</li>
+                                    <li><strong>Build Tool:</strong> Vite with hot reload</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <h4><i class="fas fa-brain"></i> AI/ML Stack</h4>
+                                <ul class="list-unstyled">
+                                    <li><strong>ML Libraries:</strong> TensorFlow, PyTorch, Scikit-learn</li>
+                                    <li><strong>Deployment:</strong> Docker containers on Kubernetes</li>
+                                    <li><strong>Monitoring:</strong> MLflow for model versioning</li>
+                                    <li><strong>Data Pipeline:</strong> Apache Airflow + Pandas</li>
+                                    <li><strong>NLP:</strong> spaCy, NLTK, Transformers</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4><i class="fas fa-cloud"></i> Infrastructure</h4>
+                                <ul class="list-unstyled">
+                                    <li><strong>Cloud:</strong> AWS with multi-region deployment</li>
+                                    <li><strong>CI/CD:</strong> GitHub Actions with automated testing</li>
+                                    <li><strong>Monitoring:</strong> Prometheus + Grafana + ELK stack</li>
+                                    <li><strong>Security:</strong> WAF, DDoS protection, encryption at rest</li>
+                                    <li><strong>CDN:</strong> CloudFront for global content delivery</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Challenges & Solutions -->
             <div class="row mb-5">
                 <div class="col-12">
                     <h2 class="text-center mb-4">
-                        <i class="fas fa-lightbulb"></i> Investment Scenarios & Use Cases
+                        <i class="fas fa-tools"></i> Technical Challenges & Solutions
                     </h2>
                     <div class="row">
                         {% for scenario in investor_scenarios %}
@@ -893,9 +957,22 @@ function toggleHybridMode() {
     window.location.href = '/ai_services/diaspora/presentation/?mode=hybrid';
 }
 
+function toggleTechStack() {
+    const details = document.getElementById('tech-stack-details');
+    const button = document.querySelector('button[onclick="toggleTechStack()"]');
+    
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        button.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Tech Stack';
+    } else {
+        details.style.display = 'none';
+        button.innerHTML = '<i class="fas fa-layer-group"></i> View Complete Tech Stack';
+    }
+}
+
 // Override base template functions
 function exitPresentationMode() {
-    if (confirm('Exit investor presentation mode?')) {
+    if (confirm('Exit technical presentation mode?')) {
         window.location.href = '/ai_services/diaspora/';
     }
 }

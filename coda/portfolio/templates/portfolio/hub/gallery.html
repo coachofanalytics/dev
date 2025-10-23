@@ -2,112 +2,102 @@
 {% load static %}
 
 {% block presentation_content %}
-<!-- Hero Section -->
-<div class="hero-section">
-    <div class="container">
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="container-fluid">
         <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h1 class="hero-title">
-                    <i class="fas fa-briefcase text-primary"></i>
-                    CODA Portfolio
+            <div class="col-md-8">
+                <h1 class="dashboard-title">
+                    <i class="fas fa-briefcase"></i>
+                    CODA Portfolio Dashboard
                 </h1>
-                <h2 class="hero-subtitle">Professional Project Showcase</h2>
-                <p class="hero-description">
-                    Discover our innovative solutions in AI, blockchain, and fintech. 
-                    Each project demonstrates cutting-edge technology and real-world impact.
-                </p>
+                <p class="dashboard-subtitle">Professional Project Showcase & Presentations</p>
             </div>
-            <div class="col-lg-4">
-                <div class="portfolio-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">Active Projects</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">$50B+</div>
-                        <div class="stat-label">Market Impact</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">200M+</div>
-                        <div class="stat-label">Users Served</div>
-                    </div>
+            <div class="col-md-4 text-right">
+                <div class="dashboard-actions">
+                    <a href="{% url 'interview:hub' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-tie"></i> Interview Mode
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    {% for project in projects %}
-    <div class="col-lg-4 col-md-6 mb-4">
-        <div class="presentation-card h-100">
-            <h3>{{ project.name }}</h3>
-            <p class="text-muted">{{ project.tagline }}</p>
-            
-            <div class="mb-3">
-                <strong>Key Metrics:</strong>
-                <ul class="list-unstyled mt-2">
+<!-- Dashboard Feature Boxes -->
+<div class="dashboard-grid">
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="feature-box">
+                <div class="feature-header">
+                    <h3 class="feature-title">{{ project.name }}</h3>
+                    <p class="feature-subtitle">{{ project.tagline }}</p>
+                </div>
+                
+                <div class="feature-metrics">
                     {% for key, value in project.key_metrics.items %}
-                    {% if forloop.counter <= 3 %}
-                    <li><i class="fas fa-check text-success"></i> {{ value }}</li>
+                    {% if forloop.counter <= 4 %}
+                    <div class="metric-item">
+                        <span class="metric-value">{{ value }}</span>
+                        <span class="metric-label">{{ key|title }}</span>
+                    </div>
                     {% endif %}
                     {% endfor %}
-                </ul>
-            </div>            
-            <div class="btn-group-vertical w-100">
-                {% if project.slug == 'ai-diaspora' %}
-                    <!-- AI Diaspora - Link to AI Services Presentations -->
-                    <a href="/ai_services/diaspora/presentation/?mode=investor" class="btn btn-primary mb-2">
-                        <i class="fas fa-eye"></i> View AI Services Presentation
-                    </a>
-                    <div class="btn-group w-100">
-                        <a href="/ai_services/diaspora/presentation/?mode=investor" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-chart-line"></i> Investor
-                        </a>
-                        <a href="/ai_services/diaspora/presentation/?mode=technical" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-code"></i> Technical
-                        </a>
-                        <a href="/ai_services/diaspora/presentation/?mode=recruiter" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-user-tie"></i> Recruiter
-                        </a>
-                    </div>
-                {% elif project.slug == 'smart-loan' %}
-                    <!-- Smart Loan - Link to Legacy Finance Presentation -->
-                    <a href="/portfolio/legacy/finance/" class="btn btn-primary mb-2">
-                        <i class="fas fa-eye"></i> View Legacy Presentation
-                    </a>
-                    <div class="btn-group w-100">
-                        <a href="/portfolio/legacy/finance/" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-chart-line"></i> Investor
-                        </a>
-                        <a href="/portfolio/legacy/finance/" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-code"></i> Technical
-                        </a>
-                    </div>
-                {% else %}
-                    <!-- Other Projects - Use New Portfolio Structure -->
-                    <a href="/portfolio/{{ project.slug }}/" class="btn btn-primary mb-2">
-                        <i class="fas fa-eye"></i> View Presentations
-                    </a>
-                    <div class="btn-group w-100">
-                        <a href="/portfolio/{{ project.slug }}/investor/" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-chart-line"></i> Investor
-                        </a>
-                        <a href="/portfolio/{{ project.slug }}/technical/" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-code"></i> Technical
-                        </a>
-                    </div>
-                {% endif %}
+                </div>
+                
+                <div class="feature-actions">
+                    {% if project.slug == 'ai-diaspora' %}
+                        <!-- AI Diaspora - AI Services Presentations -->
+                        <div class="action-group">
+                            <a href="/ai_services/diaspora/presentation/?mode=investor" class="btn btn-primary btn-block mb-2">
+                                <i class="fas fa-chart-line"></i> Investor Presentation
+                            </a>
+                            <a href="/ai_services/diaspora/presentation/?mode=technical" class="btn btn-info btn-block mb-2">
+                                <i class="fas fa-code"></i> Technical Interview
+                            </a>
+                            <a href="/ai_services/diaspora/presentation/?mode=recruiter" class="btn btn-success btn-block">
+                                <i class="fas fa-user-tie"></i> Recruiter Mode
+                            </a>
+                        </div>
+                    {% elif project.slug == 'smart-loan' %}
+                        <!-- Smart Loan - Legacy Finance Presentation -->
+                        <div class="action-group">
+                            <a href="/portfolio/legacy/finance/" class="btn btn-primary btn-block mb-2">
+                                <i class="fas fa-chart-line"></i> Investor Presentation
+                            </a>
+                            <a href="/portfolio/legacy/finance/" class="btn btn-info btn-block">
+                                <i class="fas fa-code"></i> Technical Overview
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Other Projects - Portfolio Structure -->
+                        <div class="action-group">
+                            <a href="/portfolio/{{ project.slug }}/" class="btn btn-primary btn-block mb-2">
+                                <i class="fas fa-eye"></i> View Presentations
+                            </a>
+                            <div class="btn-group w-100">
+                                <a href="/portfolio/{{ project.slug }}/investor/" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-chart-line"></i> Investor
+                                </a>
+                                <a href="/portfolio/{{ project.slug }}/technical/" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-code"></i> Technical
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
-    {% empty %}
-    <div class="col-12">
-        <div class="presentation-card text-center">
-            <p>No projects available yet.</p>
+        {% empty %}
+        <div class="col-12">
+            <div class="feature-box text-center">
+                <h3>No projects available yet.</h3>
+                <p>Projects will appear here once they are configured.</p>
+            </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 
 <div class="row mt-5">
@@ -121,113 +111,156 @@
 
 {% block extra_css %}
 <style>
-.hero-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Dashboard Header */
+.dashboard-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
-    padding: 60px 0;
-    margin-bottom: 40px;
+    padding: 40px 0;
+    margin-bottom: 30px;
 }
 
-.hero-title {
-    font-size: 3rem;
+.dashboard-title {
+    font-size: 2.5rem;
     font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
-.hero-subtitle {
-    font-size: 1.5rem;
+.dashboard-subtitle {
+    font-size: 1.2rem;
     opacity: 0.9;
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
-.hero-description {
-    font-size: 1.1rem;
-    opacity: 0.8;
-    line-height: 1.6;
-}
-
-.portfolio-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.stat-item {
-    background: rgba(255,255,255,0.1);
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-.presentation-card {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #e9ecef;
-}
-
-.presentation-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-}
-
-.presentation-card h3 {
-    color: #007bff;
-    margin-bottom: 15px;
-    font-size: 1.3rem;
-}
-
-.presentation-card .text-muted {
-    color: #6c757d !important;
-    margin-bottom: 20px;
-}
-
-.presentation-card ul {
-    list-style: none;
-    padding: 0;
-}
-
-.presentation-card li {
-    padding: 5px 0;
-    color: #495057;
-}
-
-.presentation-card .btn-group-vertical {
-    margin-top: 20px;
-}
-
-.presentation-card .btn {
+.dashboard-actions .btn {
     border-radius: 8px;
     font-weight: 500;
 }
 
-.presentation-card .btn-primary {
+/* Dashboard Grid */
+.dashboard-grid {
+    padding: 0 15px;
+}
+
+/* Feature Boxes */
+.feature-box {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e9ecef;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.feature-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.feature-title {
+    color: #1e3c72;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.feature-subtitle {
+    color: #6c757d;
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+/* Feature Metrics */
+.feature-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.metric-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #1e3c72;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Feature Actions */
+.feature-actions {
+    margin-top: auto;
+}
+
+.action-group .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 10px 15px;
+}
+
+.action-group .btn-primary {
     background: linear-gradient(135deg, #007bff, #0056b3);
     border: none;
 }
 
-.presentation-card .btn-outline-primary {
+.action-group .btn-info {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    border: none;
+}
+
+.action-group .btn-success {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    border: none;
+}
+
+.action-group .btn-outline-primary {
     border-color: #007bff;
     color: #007bff;
 }
 
-.presentation-card .btn-outline-primary:hover {
+.action-group .btn-outline-primary:hover {
     background: #007bff;
     border-color: #007bff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
+    .feature-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-actions {
+        text-align: center;
+        margin-top: 20px;
+    }
 }
 </style>
 {% endblock %}
