@@ -264,3 +264,4 @@ class Command(BaseCommand):
             self.stdout.write("\n3. Set up cron job for automatic sync:")
             self.stdout.write("   0 0 * * 0 python manage.py sync_budgets  # Weekly on Sunday")
 
+

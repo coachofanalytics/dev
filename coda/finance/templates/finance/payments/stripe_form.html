@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Confirm payment with card element using confirmPayment (more reliable)
             const {error: confirmError, paymentIntent} = await stripe.confirmPayment({
                 clientSecret: result.client_secret,
-                elements: stripeElements,
+                elements: elements,
                 confirmParams: {
                     payment_method_data: {
                         billing_details: {

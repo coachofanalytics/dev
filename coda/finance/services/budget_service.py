@@ -458,3 +458,4 @@ class BudgetService:
 # Import models after class definition to avoid circular imports
 from django.db import models
 
+

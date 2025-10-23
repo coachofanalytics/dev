@@ -6,7 +6,7 @@ Handles all portfolio and presentation views
 from django.shortcuts import render, redirect
 from django.http import Http404
 from .services import ProjectRegistry
-from ai_services.services.presentation_service import PresentationService
+from ai_services.presentation_service import PresentationService
 
 
 def portfolio_hub(request):

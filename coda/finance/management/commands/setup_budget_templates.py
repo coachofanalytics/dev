@@ -124,3 +124,4 @@ class Command(BaseCommand):
                 if cat_templates.exists():
                     self.stdout.write(f"  {category.name}: {cat_templates.count()} templates")
 
+
