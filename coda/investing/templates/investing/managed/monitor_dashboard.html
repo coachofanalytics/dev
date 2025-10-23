@@ -1,0 +1,17 @@
+{% extends "main/base_templates/new_base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2><i class="fa fa-exclamation-triangle"></i> {{ title }}</h2>
+    
+    <div class="alert alert-danger" role="alert">
+        <strong>Critical Alerts:</strong> {{ critical_count }}
+    </div>
+    <div class="alert alert-warning" role="alert">
+        <strong>High Priority Alerts:</strong> {{ high_count }}
+    </div>
+    
+    <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-primary">Back to Accounts</a>
+</div>
+{% endblock %}
+

@@ -1,0 +1,331 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Food Inventory Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-utensils"></i> Food Inventory Dashboard</h2>
+            {% if user_department %}
+            <p class="text-muted">Location: {{ user_department.name }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">In Stock</h5>
+                    <h2>{{ summary.in_stock }}</h2>
+                    <small>Items available</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Low Stock</h5>
+                    <h2>{{ summary.low_stock }}</h2>
+                    <small>Need restock soon</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Out of Stock</h5>
+                    <h2>{{ summary.out_of_stock }}</h2>
+                    <small>Urgent restocking</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Restocks</h5>
+                    <h2>{{ summary.pending_restocks }}</h2>
+                    <small>Awaiting approval</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'finance:food:log_consumption' %}" class="btn btn-primary btn-lg mr-2">
+                        <i class="fas fa-clipboard-list"></i> Log Daily Consumption
+                    </a>
+                    <a href="{% url 'finance:food:record_purchase' %}" class="btn btn-success btn-lg mr-2">
+                        <i class="fas fa-shopping-cart"></i> Record Purchase
+                    </a>
+                    <a href="{% url 'finance:food:create_restock' %}" class="btn btn-warning btn-lg mr-2">
+                        <i class="fas fa-box"></i> Request Restock
+                    </a>
+                    <a href="{% url 'finance:food:spending_report' %}" class="btn btn-info btn-lg">
+                        <i class="fas fa-chart-bar"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alerts -->
+    {% if low_stock_items %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-white">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Location</th>
+                                    <th>Current Stock</th>
+                                    <th>Reorder Level</th>
+                                    <th>Status</th>
+                                    <th>Days Until Stockout</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inventory in low_stock_items %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'finance:food:inventory_detail' inventory.id %}">
+                                            {{ inventory.food_item.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ inventory.location.name }}</td>
+                                    <td>
+                                        <strong>{{ inventory.quantity }}</strong> {{ inventory.food_item.unit_of_measurement }}
+                                    </td>
+                                    <td>{{ inventory.reorder_level }} {{ inventory.food_item.unit_of_measurement }}</td>
+                                    <td>
+                                        {% if inventory.status == 'out_of_stock' %}
+                                        <span class="badge badge-danger">Out of Stock</span>
+                                        {% elif inventory.status == 'low_stock' %}
+                                        <span class="badge badge-warning">Low Stock</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if inventory.days_until_stockout %}
+                                        {{ inventory.days_until_stockout|floatformat:0 }} days
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'finance:food:create_restock' %}?inventory={{ inventory.id }}" 
+                                           class="btn btn-sm btn-warning">
+                                            Request Restock
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Restock Requests -->
+    {% if pending_restocks %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-clock"></i> Pending Restock Requests</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Item</th>
+                                    <th>Location</th>
+                                    <th>Quantity</th>
+                                    <th>Estimated Cost</th>
+                                    <th>Requested By</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in pending_restocks %}
+                                <tr>
+                                    <td>#{{ request.id }}</td>
+                                    <td>{{ request.inventory.food_item.name }}</td>
+                                    <td>{{ request.inventory.location.name }}</td>
+                                    <td>{{ request.requested_quantity }} {{ request.inventory.food_item.unit_of_measurement }}</td>
+                                    <td>{{ request.estimated_cost }} {{ request.inventory.food_item.currency }}</td>
+                                    <td>{{ request.requested_by.get_full_name }}</td>
+                                    <td>{{ request.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if request.status == 'approved' %}
+                                        <a href="{% url 'finance:food:fulfill_restock' request.id %}" 
+                                           class="btn btn-sm btn-success">
+                                            Fulfill
+                                        </a>
+                                        {% else %}
+                                        <span class="badge badge-warning">Pending Approval</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Consumption -->
+    {% if recent_consumption %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Recent Consumption (Last 7 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Type</th>
+                                    <th>Recorded By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_consumption %}
+                                <tr>
+                                    <td>{{ log.consumption_date|date:"M d" }}</td>
+                                    <td>{{ log.inventory.food_item.name }}</td>
+                                    <td>{{ log.quantity_consumed }} {{ log.inventory.food_item.unit_of_measurement }}</td>
+                                    <td>
+                                        {% if log.consumption_type == 'normal' %}
+                                        <span class="badge badge-primary">Normal</span>
+                                        {% elif log.consumption_type == 'event' %}
+                                        <span class="badge badge-info">Event</span>
+                                        {% elif log.consumption_type == 'waste' %}
+                                        <span class="badge badge-danger">Waste</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">{{ log.get_consumption_type_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ log.recorded_by.get_full_name|default:"System" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Inventory -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-warehouse"></i> All Inventory</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Current Stock</th>
+                                    <th>Status</th>
+                                    <th>Daily Rate</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inventory in inventories %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'finance:food:inventory_detail' inventory.id %}">
+                                            <strong>{{ inventory.food_item.name }}</strong>
+                                        </a>
+                                    </td>
+                                    <td>{{ inventory.food_item.category }}</td>
+                                    <td>{{ inventory.location.name }}</td>
+                                    <td>{{ inventory.quantity }} {{ inventory.food_item.unit_of_measurement }}</td>
+                                    <td>
+                                        {% if inventory.status == 'in_stock' %}
+                                        <span class="badge badge-success">In Stock</span>
+                                        {% elif inventory.status == 'low_stock' %}
+                                        <span class="badge badge-warning">Low Stock</span>
+                                        {% elif inventory.status == 'out_of_stock' %}
+                                        <span class="badge badge-danger">Out of Stock</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">{{ inventory.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if inventory.daily_consumption_rate %}
+                                        {{ inventory.daily_consumption_rate|floatformat:2 }} {{ inventory.food_item.unit_of_measurement }}/day
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'finance:food:inventory_detail' inventory.id %}" 
+                                           class="btn btn-sm btn-info">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize DataTable for better UX
+$(document).ready(function() {
+    $('#inventoryTable').DataTable({
+        "pageLength": 25,
+        "order": [[0, "asc"]],
+        "language": {
+            "search": "Search inventory:"
+        }
+    });
+});
+</script>
+{% endblock %}
+

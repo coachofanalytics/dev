@@ -1,0 +1,622 @@
+"""
+Managed Trading Service
+Core business logic for managing client options accounts
+
+This service handles:
+- Account creation and management
+- Position entry and exit
+- Fee calculations
+- Performance tracking
+- Risk validation
+"""
+
+import logging
+from decimal import Decimal
+from datetime import date, datetime, timedelta
+from typing import Dict, List, Tuple, Optional
+from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+
+from ..models import (
+    ManagedTradingAccount,
+    OptionsPosition,
+    TradingRule,
+    TradingActivity,
+    TradingSession
+)
+from .base_service import BaseInvestingService
+
+logger = logging.getLogger(__name__)
+User = get_user_model()
+
+
+class ManagedTradingService(BaseInvestingService):
+    """
+    Service for managed options trading operations
+    
+    Provides methods for:
+    - Creating and managing trading accounts
+    - Entering and closing positions
+    - Calculating fees
+    - Generating account summaries
+    """
+    
+    def create_managed_account(
+        self, 
+        client_user: User, 
+        account_data: Dict
+    ) -> ManagedTradingAccount:
+        """
+        Create new managed trading account
+        
+        Args:
+            client_user: User instance (client)
+            account_data: Dict with account parameters
+                Required: account_name, initial_capital
+                Optional: account_manager, fee_tier, management_fee_percentage,
+                         performance_fee_percentage, etc.
+        
+        Returns:
+            ManagedTradingAccount instance
+        
+        Raises:
+            ValidationError: If validation fails
+        """
+        try:
+            # Validate user
+            self._validate_user(client_user)
+            
+            # Validate initial capital
+            initial_capital = Decimal(str(account_data.get('initial_capital', 0)))
+            if initial_capital < Decimal('5000.00'):
+                raise ValidationError('Minimum account size is $5,000')
+            
+            with transaction.atomic():
+                # Generate account number
+                account_number = self._generate_account_number()
+                
+                # Get account manager (defaults to current user if staff)
+                account_manager = account_data.get('account_manager')
+                
+                # Create account
+                account = ManagedTradingAccount.objects.create(
+                    client=client_user,
+                    account_name=account_data.get('account_name', f"{client_user.get_full_name()} - Options Account"),
+                    account_number=account_number,
+                    initial_capital=initial_capital,
+                    current_balance=initial_capital,
+                    cash_available=initial_capital,
+                    cash_reserved=Decimal('0.00'),
+                    high_water_mark=initial_capital,
+                    account_manager=account_manager,
+                    fee_tier=account_data.get('fee_tier', 'professional'),
+                    management_fee_percentage=account_data.get('management_fee_percentage', Decimal('1.50')),
+                    performance_fee_percentage=account_data.get('performance_fee_percentage', Decimal('20.00')),
+                    performance_threshold=account_data.get('performance_threshold', Decimal('8.00')),
+                    status='active',
+                    activation_date=date.today()
+                )
+                
+                # Create default trading rules
+                self._create_default_trading_rules(account)
+                
+                # Log activity
+                TradingActivity.objects.create(
+                    managed_account=account,
+                    activity_type='account_created',
+                    description=f'Managed account created with ${account.initial_capital:,.2f}',
+                    performed_by=account_manager,
+                    data_snapshot={
+                        'initial_capital': str(account.initial_capital),
+                        'fee_tier': account.fee_tier,
+                        'management_fee': str(account.management_fee_percentage),
+                        'performance_fee': str(account.performance_fee_percentage)
+                    }
+                )
+                
+                logger.info(f"Created managed account {account.account_number} for {client_user.username}")
+                
+                return account
+                
+        except Exception as e:
+            logger.error(f"Error creating managed account: {e}")
+            raise ValidationError(f"Failed to create account: {str(e)}")
+    
+    def _generate_account_number(self) -> str:
+        """Generate unique account number"""
+        prefix = 'CODA-OPT'
+        
+        # Get count of existing accounts
+        count = ManagedTradingAccount.objects.count() + 1
+        
+        # Format: CODA-OPT-001, CODA-OPT-002, etc.
+        account_number = f"{prefix}-{count:03d}"
+        
+        # Ensure uniqueness
+        while ManagedTradingAccount.objects.filter(account_number=account_number).exists():
+            count += 1
+            account_number = f"{prefix}-{count:03d}"
+        
+        return account_number
+    
+    def _create_default_trading_rules(self, account: ManagedTradingAccount):
+        """Create standard trading rules for account"""
+        default_rules = [
+            {
+                'name': 'Max Position Size',
+                'type': 'position_limit',
+                'config': {
+                    'max_position_size': float(account.max_position_risk),
+                    'max_contracts': 3
+                },
+                'priority': 1
+            },
+            {
+                'name': 'Profit Target',
+                'type': 'profit_target',
+                'config': {
+                    'target_percentage': 50,
+                    'recommend_close': True
+                },
+                'priority': 2
+            },
+            {
+                'name': 'Stop Loss',
+                'type': 'stop_loss',
+                'config': {
+                    'loss_percentage': 200,
+                    'auto_close': False,
+                    'alert_on_hit': True
+                },
+                'priority': 1
+            },
+            {
+                'name': 'Daily Loss Limit',
+                'type': 'risk_limit',
+                'config': {
+                    'max_daily_loss': float(account.max_daily_loss),
+                    'pause_trading_on_breach': True
+                },
+                'priority': 1
+            },
+            {
+                'name': 'Expiration Management',
+                'type': 'time_based',
+                'config': {
+                    'close_days_before_expiry': 5,
+                    'auto_close': False,
+                    'send_alert': True
+                },
+                'priority': 2
+            }
+        ]
+        
+        for rule_data in default_rules:
+            TradingRule.objects.create(
+                managed_account=account,
+                rule_name=rule_data['name'],
+                rule_type=rule_data['type'],
+                rule_config=rule_data['config'],
+                priority=rule_data['priority'],
+                is_active=True
+            )
+    
+    def create_position(
+        self,
+        account: ManagedTradingAccount,
+        position_data: Dict
+    ) -> OptionsPosition:
+        """
+        Create new options position
+        
+        Args:
+            account: ManagedTradingAccount instance
+            position_data: Dict with position details
+                Required: symbol, strategy, positions (JSONField),
+                         capital_required, premium_collected, max_profit, max_loss,
+                         expiration_date
+        
+        Returns:
+            OptionsPosition instance
+        
+        Raises:
+            ValidationError: If validation fails or rules violated
+        """
+        try:
+            with transaction.atomic():
+                # Validate account status
+                if account.status != 'active':
+                    raise ValidationError('Account is not active')
+                
+                if not account.trading_enabled:
+                    raise ValidationError('Trading is disabled for this account')
+                
+                # Validate buying power
+                capital_required = Decimal(str(position_data['capital_required']))
+                if capital_required > account.available_buying_power:
+                    raise ValidationError(
+                        f'Insufficient buying power. Available: ${account.available_buying_power:,.2f}'
+                    )
+                
+                # Validate against trading rules
+                self._validate_position_against_rules(account, position_data)
+                
+                # Create position
+                position = OptionsPosition.objects.create(
+                    managed_account=account,
+                    symbol=position_data['symbol'].upper(),
+                    strategy=position_data['strategy'],
+                    positions=position_data['positions'],
+                    capital_required=capital_required,
+                    premium_collected=Decimal(str(position_data['premium_collected'])),
+                    max_profit=Decimal(str(position_data['max_profit'])),
+                    max_loss=Decimal(str(position_data['max_loss'])),
+                    position_delta=Decimal(str(position_data.get('position_delta', '0.0000'))),
+                    position_theta=Decimal(str(position_data.get('position_theta', '0.0000'))),
+                    position_gamma=Decimal(str(position_data.get('position_gamma', '0.0000'))),
+                    position_vega=Decimal(str(position_data.get('position_vega', '0.0000'))),
+                    expiration_date=position_data['expiration_date'],
+                    notes=position_data.get('notes', ''),
+                    status='open'
+                )
+                
+                # Update account balances
+                account.cash_reserved += capital_required
+                account.cash_available -= capital_required
+                account.save(update_fields=['cash_reserved', 'cash_available', 'updated_at'])
+                
+                # Log activity
+                TradingActivity.objects.create(
+                    managed_account=account,
+                    position=position,
+                    activity_type='position_opened',
+                    description=f'Opened {position.symbol} {position.get_strategy_display()} position',
+                    performed_by=account.account_manager,
+                    data_snapshot={
+                        'symbol': position.symbol,
+                        'strategy': position.strategy,
+                        'capital_required': str(capital_required),
+                        'premium_collected': str(position.premium_collected),
+                        'expiration_date': str(position.expiration_date)
+                    }
+                )
+                
+                logger.info(f"Created position {position.id} for account {account.account_number}")
+                
+                return position
+                
+        except Exception as e:
+            logger.error(f"Error creating position: {e}")
+            raise ValidationError(f"Failed to create position: {str(e)}")
+    
+    def _validate_position_against_rules(
+        self,
+        account: ManagedTradingAccount,
+        position_data: Dict
+    ):
+        """Validate position against account trading rules"""
+        active_rules = account.trading_rules.filter(is_active=True)
+        
+        capital_required = Decimal(str(position_data['capital_required']))
+        
+        for rule in active_rules:
+            config = rule.rule_config
+            
+            # Position size limit
+            if rule.rule_type == 'position_limit':
+                max_size = Decimal(str(config.get('max_position_size', 0)))
+                if capital_required > max_size:
+                    raise ValidationError(
+                        f'Position size ${capital_required:,.2f} exceeds limit ${max_size:,.2f}'
+                    )
+            
+            # Total risk exposure
+            elif rule.rule_type == 'exposure_limit':
+                current_exposure = account.current_risk_exposure
+                max_exposure = Decimal(str(config.get('max_total_exposure', 100)))
+                new_risk = (capital_required / account.current_balance) * 100
+                
+                if (current_exposure + new_risk) > max_exposure:
+                    raise ValidationError(
+                        f'Total risk exposure would exceed {max_exposure}%'
+                    )
+    
+    def close_position(
+        self,
+        position: OptionsPosition,
+        exit_data: Dict
+    ) -> OptionsPosition:
+        """
+        Close options position
+        
+        Args:
+            position: OptionsPosition instance
+            exit_data: Dict with exit details
+                Required: exit_price, exit_reason
+                Optional: notes
+        
+        Returns:
+            Updated OptionsPosition instance
+        """
+        try:
+            with transaction.atomic():
+                account = position.managed_account
+                
+                # Update position
+                position.exit_date = date.today()
+                position.exit_price = Decimal(str(exit_data['exit_price']))
+                position.exit_reason = exit_data['exit_reason']
+                position.status = 'closed'
+                
+                # Calculate realized P&L
+                position.realized_pnl = position.premium_collected - position.exit_price
+                position.unrealized_pnl = Decimal('0.00')
+                
+                # Append notes if provided
+                if exit_data.get('notes'):
+                    position.notes += f"\n\nExit Notes: {exit_data['notes']}"
+                
+                position.save()
+                
+                # Update account balances
+                account.cash_reserved -= position.capital_required
+                account.cash_available += position.capital_required
+                account.current_balance += position.realized_pnl
+                
+                # Update performance tracking
+                account.total_trades += 1
+                if position.realized_pnl > 0:
+                    account.winning_trades += 1
+                else:
+                    account.losing_trades += 1
+                
+                account.total_profit_loss += position.realized_pnl
+                
+                # Update high water mark if applicable
+                if account.current_balance > account.high_water_mark:
+                    account.high_water_mark = account.current_balance
+                
+                account.save(update_fields=[
+                    'cash_reserved', 'cash_available', 'current_balance',
+                    'total_trades', 'winning_trades', 'losing_trades',
+                    'total_profit_loss', 'high_water_mark', 'updated_at'
+                ])
+                
+                # Log activity
+                TradingActivity.objects.create(
+                    managed_account=account,
+                    position=position,
+                    activity_type='position_closed',
+                    description=f'Closed {position.symbol} position - P&L: ${position.realized_pnl:,.2f}',
+                    performed_by=account.account_manager,
+                    data_snapshot={
+                        'symbol': position.symbol,
+                        'exit_price': str(position.exit_price),
+                        'realized_pnl': str(position.realized_pnl),
+                        'exit_reason': position.exit_reason,
+                        'days_in_trade': position.days_in_trade
+                    }
+                )
+                
+                logger.info(f"Closed position {position.id} with P&L: ${position.realized_pnl}")
+                
+                return position
+                
+        except Exception as e:
+            logger.error(f"Error closing position: {e}")
+            raise ValidationError(f"Failed to close position: {str(e)}")
+    
+    def calculate_fees(
+        self,
+        account: ManagedTradingAccount,
+        period_start: date = None,
+        period_end: date = None
+    ) -> Dict:
+        """
+        Calculate fees for account based on fee tier
+        
+        Args:
+            account: ManagedTradingAccount instance
+            period_start: Start date for fee calculation (defaults to last calculation)
+            period_end: End date for fee calculation (defaults to today)
+        
+        Returns:
+            Dict with fee breakdown
+        """
+        if not period_end:
+            period_end = date.today()
+        
+        if not period_start:
+            period_start = account.last_fee_calculation_date or account.activation_date or period_end
+        
+        # Calculate based on fee tier
+        if account.fee_tier == 'consultative':
+            return self._calculate_consultative_fees(account, period_start, period_end)
+        elif account.fee_tier == 'starter':
+            return self._calculate_starter_fees(account)
+        elif account.fee_tier == 'professional':
+            return self._calculate_professional_fees(account)
+        elif account.fee_tier == 'premium':
+            return self._calculate_premium_fees(account)
+        elif account.fee_tier == 'co_invest':
+            return self._calculate_co_invest_fees(account)
+        else:
+            return self._calculate_custom_fees(account)
+    
+    def _calculate_consultative_fees(
+        self,
+        account: ManagedTradingAccount,
+        period_start: date,
+        period_end: date
+    ) -> Dict:
+        """Calculate fees for consultative tier"""
+        # Session fees
+        sessions_fee = account.sessions_completed_this_month * account.session_fee
+        
+        # Platform fee
+        platform_fee = account.monthly_platform_fee
+        
+        # Performance bonus (10% of profit)
+        month_profit = account.total_profit_loss
+        performance_bonus = month_profit * Decimal('0.10') if month_profit > 0 else Decimal('0.00')
+        
+        total = sessions_fee + platform_fee + performance_bonus
+        
+        return {
+            'fee_tier': 'consultative',
+            'session_fees': sessions_fee,
+            'platform_fee': platform_fee,
+            'performance_bonus': performance_bonus,
+            'total': total,
+            'breakdown': f"{account.sessions_completed_this_month} sessions @ ${account.session_fee} + ${platform_fee} platform + ${performance_bonus} performance bonus",
+            'period_start': period_start,
+            'period_end': period_end
+        }
+    
+    def _calculate_professional_fees(self, account: ManagedTradingAccount) -> Dict:
+        """Calculate fees for professional tier (1.5% mgmt + 20% perf above 8% hurdle)"""
+        # Annual management fee (prorated monthly)
+        annual_mgmt = account.current_balance * (account.management_fee_percentage / Decimal('100'))
+        monthly_mgmt = annual_mgmt / Decimal('12')
+        
+        # Performance fee (only if above high-water mark and hurdle)
+        perf_fee = Decimal('0.00')
+        if account.current_balance > account.high_water_mark:
+            profit_above_hwm = account.current_balance - account.high_water_mark
+            hurdle_amount = account.high_water_mark * (account.performance_threshold / Decimal('100'))
+            
+            if profit_above_hwm > hurdle_amount:
+                excess_profit = profit_above_hwm - hurdle_amount
+                perf_fee = excess_profit * (account.performance_fee_percentage / Decimal('100'))
+        
+        total = monthly_mgmt + perf_fee
+        
+        return {
+            'fee_tier': 'professional',
+            'management_fee': monthly_mgmt,
+            'performance_fee': perf_fee,
+            'total': total,
+            'breakdown': f"${monthly_mgmt:.2f} mgmt + ${perf_fee:.2f} performance"
+        }
+    
+    def _calculate_starter_fees(self, account: ManagedTradingAccount) -> Dict:
+        """Calculate fees for starter tier (0% mgmt + 25% performance)"""
+        # Performance fee only
+        perf_fee = account.total_profit_loss * Decimal('0.25') if account.total_profit_loss > 0 else Decimal('0.00')
+        
+        return {
+            'fee_tier': 'starter',
+            'management_fee': Decimal('0.00'),
+            'performance_fee': perf_fee,
+            'total': perf_fee,
+            'breakdown': f"25% of ${account.total_profit_loss:.2f} profit"
+        }
+    
+    def _calculate_premium_fees(self, account: ManagedTradingAccount) -> Dict:
+        """Calculate fees for premium tier (1% mgmt + 15% perf + $500 min)"""
+        # Management fee
+        annual_mgmt = account.current_balance * Decimal('0.01')
+        monthly_mgmt = annual_mgmt / Decimal('12')
+        
+        # Performance fee
+        perf_fee = account.total_profit_loss * Decimal('0.15') if account.total_profit_loss > 0 else Decimal('0.00')
+        
+        # Monthly minimum
+        total = monthly_mgmt + perf_fee
+        minimum = Decimal('500.00')
+        
+        if total < minimum:
+            total = minimum
+        
+        return {
+            'fee_tier': 'premium',
+            'management_fee': monthly_mgmt,
+            'performance_fee': perf_fee,
+            'minimum_applied': total == minimum,
+            'total': total,
+            'breakdown': f"${monthly_mgmt:.2f} mgmt + ${perf_fee:.2f} perf (min $500)"
+        }
+    
+    def _calculate_co_invest_fees(self, account: ManagedTradingAccount) -> Dict:
+        """Calculate fees for co-investment tier (50/50 profit split)"""
+        # 50% of profit
+        coda_share = account.total_profit_loss * Decimal('0.50') if account.total_profit_loss > 0 else Decimal('0.00')
+        
+        return {
+            'fee_tier': 'co_invest',
+            'management_fee': Decimal('0.00'),
+            'profit_share': coda_share,
+            'total': coda_share,
+            'breakdown': f"50% of ${account.total_profit_loss:.2f} profit"
+        }
+    
+    def _calculate_custom_fees(self, account: ManagedTradingAccount) -> Dict:
+        """Calculate fees for custom tier"""
+        # Use default professional calculation
+        return self._calculate_professional_fees(account)
+    
+    def get_account_summary(self, account: ManagedTradingAccount) -> Dict:
+        """
+        Generate comprehensive account summary
+        
+        Args:
+            account: ManagedTradingAccount instance
+        
+        Returns:
+            Dict with account summary data
+        """
+        open_positions = account.positions.filter(status='open')
+        closed_positions = account.positions.filter(status='closed')
+        
+        # Calculate totals
+        total_unrealized_pnl = sum([pos.unrealized_pnl for pos in open_positions])
+        total_realized_pnl = sum([pos.realized_pnl for pos in closed_positions])
+        
+        # Recent activity
+        recent_activity = account.activities.all()[:10]
+        
+        # Upcoming expirations
+        upcoming_expirations = open_positions.filter(
+            expiration_date__lte=date.today() + timedelta(days=7)
+        ).order_by('expiration_date')
+        
+        # Calculate fees
+        current_fees = self.calculate_fees(account)
+        
+        return {
+            'account': account,
+            'summary': {
+                'account_number': account.account_number,
+                'client_name': account.client.get_full_name(),
+                'status': account.status,
+                'fee_tier': account.get_fee_tier_display(),
+                'current_balance': account.current_balance,
+                'initial_capital': account.initial_capital,
+                'total_profit_loss': account.total_profit_loss,
+                'return_on_investment': account.return_on_investment,
+                'available_buying_power': account.available_buying_power,
+                'cash_reserved': account.cash_reserved,
+                'risk_exposure': account.current_risk_exposure,
+            },
+            'performance': {
+                'total_trades': account.total_trades,
+                'winning_trades': account.winning_trades,
+                'losing_trades': account.losing_trades,
+                'win_rate': account.win_rate,
+                'total_realized_pnl': total_realized_pnl,
+                'total_unrealized_pnl': total_unrealized_pnl,
+            },
+            'positions': {
+                'open_count': open_positions.count(),
+                'open_positions': list(open_positions),
+                'closed_count': closed_positions.count(),
+                'recent_closed': list(closed_positions[:5]),
+                'upcoming_expirations': list(upcoming_expirations),
+            },
+            'fees': current_fees,
+            'activity': {
+                'recent': list(recent_activity),
+            }
+        }
+

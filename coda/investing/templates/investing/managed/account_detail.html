@@ -1,0 +1,269 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <i class="fa fa-briefcase"></i> {{ account.account_number }}
+                <span class="badge bg-{% if account.status == 'active' %}success{% else %}warning{% endif %}">
+                    {{ account.get_status_display }}
+                </span>
+            </h2>
+            <p class="text-muted">
+                Client: {{ account.client.get_full_name }} | 
+                Manager: {{ account.account_manager.get_full_name|default:"Unassigned" }} |
+                {{ account.get_fee_tier_display }}
+            </p>
+        </div>
+        <div class="col-auto">
+            {% if is_manager %}
+                <a href="{% url 'investing:create_position_for_account' account.id %}" class="btn btn-success">
+                    <i class="fa fa-plus"></i> New Position
+                </a>
+                <a href="{% url 'investing:account_alerts' account.id %}" class="btn btn-warning">
+                    <i class="fa fa-exclamation-triangle"></i> Alerts
+                </a>
+                {% if is_consultative %}
+                <a href="{% url 'investing:create_session' account.id %}" class="btn btn-info">
+                    <i class="fa fa-calendar"></i> Record Session
+                </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Current Balance</h6>
+                    <h3>${{ summary.summary.current_balance|floatformat:2 }}</h3>
+                    <small class="text-muted">Initial: ${{ summary.summary.initial_capital|floatformat:0 }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total P&L</h6>
+                    <h3 class="{% if summary.summary.total_profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        ${{ summary.summary.total_profit_loss|floatformat:2 }}
+                    </h3>
+                    <small class="text-muted">ROI: {{ summary.summary.return_on_investment|floatformat:2 }}%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Buying Power</h6>
+                    <h3>${{ summary.summary.available_buying_power|floatformat:2 }}</h3>
+                    <small class="text-muted">Reserved: ${{ summary.summary.cash_reserved|floatformat:0 }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Performance</h6>
+                    <h3>{{ summary.performance.win_rate|floatformat:1 }}%</h3>
+                    <small class="text-muted">Win Rate ({{ summary.performance.winning_trades }}/{{ summary.performance.total_trades }})</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Consultative Tier Session Info -->
+    {% if is_consultative %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fa fa-calendar"></i> Sessions This Month</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h2>{{ account.sessions_completed_this_month }}</h2>
+                            <p class="text-muted">Completed</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h2>{{ remaining_sessions }}</h2>
+                            <p class="text-muted">Remaining</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h2>${{ session_fees_this_month|floatformat:0 }}</h2>
+                            <p class="text-muted">Session Fees</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            {% if account.next_session_date %}
+                                <p><strong>Next Session:</strong></p>
+                                <p>{{ account.next_session_date|date:"M d, Y g:i A" }}</p>
+                            {% else %}
+                                <p class="text-muted">No session scheduled</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Open Positions -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Open Positions ({{ summary.positions.open_count }})</h5>
+            {% if is_manager %}
+            <a href="{% url 'investing:create_position_for_account' account.id %}" class="btn btn-sm btn-success">
+                <i class="fa fa-plus"></i> Add Position
+            </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Strategy</th>
+                            <th>Entry</th>
+                            <th>Expiration</th>
+                            <th class="text-center">DTE</th>
+                            <th class="text-end">Premium</th>
+                            <th class="text-end">P&L</th>
+                            <th class="text-end">Profit %</th>
+                            {% if is_manager %}
+                            <th class="text-end">Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for position in open_positions %}
+                        <tr class="{% if position.days_to_expiration <= 5 %}table-warning{% endif %}">
+                            <td><strong>{{ position.symbol }}</strong></td>
+                            <td>{{ position.get_strategy_display }}</td>
+                            <td>{{ position.entry_date|date:"M d" }}</td>
+                            <td>{{ position.expiration_date|date:"M d, Y" }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-{% if position.days_to_expiration <= 5 %}danger{% elif position.days_to_expiration <= 14 %}warning{% else %}secondary{% endif %}">
+                                    {{ position.days_to_expiration }} days
+                                </span>
+                            </td>
+                            <td class="text-end">${{ position.premium_collected|floatformat:2 }}</td>
+                            <td class="text-end">
+                                <span class="{% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ position.unrealized_pnl|floatformat:2 }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span class="{% if position.profit_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ position.profit_percentage|floatformat:1 }}%
+                                </span>
+                            </td>
+                            {% if is_manager %}
+                            <td class="text-end">
+                                <a href="{% url 'investing:managed_position_detail' position.id %}" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="{% url 'investing:close_managed_position' position.id %}" 
+                                   class="btn btn-sm btn-danger">
+                                    <i class="fa fa-times"></i>
+                                </a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if is_manager %}9{% else %}8{% endif %}" class="text-center text-muted">
+                                No open positions
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Closed Positions -->
+    {% if recent_closed %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Recent Closed Positions</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Strategy</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>Days</th>
+                            <th class="text-end">P&L</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for position in recent_closed %}
+                        <tr>
+                            <td>{{ position.symbol }}</td>
+                            <td>{{ position.get_strategy_display }}</td>
+                            <td>{{ position.entry_date|date:"M d" }}</td>
+                            <td>{{ position.exit_date|date:"M d" }}</td>
+                            <td>{{ position.days_in_trade }}</td>
+                            <td class="text-end">
+                                <span class="{% if position.realized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ position.realized_pnl|floatformat:2 }}
+                                </span>
+                            </td>
+                            <td>
+                                <small>{{ position.get_exit_reason_display }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Recent Activity -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Recent Activity</h5>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                {% for activity in recent_activity %}
+                <div class="mb-3">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fa fa-circle text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong>{{ activity.get_activity_type_display }}</strong>
+                            <p class="mb-0">{{ activity.description }}</p>
+                            <small class="text-muted">{{ activity.timestamp|date:"M d, Y g:i A" }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No recent activity</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

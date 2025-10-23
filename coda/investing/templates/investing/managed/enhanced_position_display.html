@@ -1,0 +1,280 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Position Details - Realistic View{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fa fa-chart-line"></i> Position Details - {{ position.symbol }}
+            </h1>
+        </div>
+    </div>
+
+    <!-- Position Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Capital Required</h5>
+                    <h2>${{ position.capital_required|floatformat:2 }}</h2>
+                    <small>Cash Secured</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Premium Collected</h5>
+                    <h2>${{ position.premium_collected|floatformat:2 }}</h2>
+                    <small>Total Credit</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Max Profit</h5>
+                    <h2>${{ position.max_profit|floatformat:2 }}</h2>
+                    <small>If expires OTM</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Max Loss</h5>
+                    <h2>${{ position.max_loss|floatformat:2 }}</h2>
+                    <small>If assigned</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Position Information -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Position Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Symbol:</strong></td>
+                                    <td>{{ position.symbol }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Strategy:</strong></td>
+                                    <td>{{ position.get_strategy_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Entry Date:</strong></td>
+                                    <td>{{ position.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Expiration:</strong></td>
+                                    <td>{{ position.expiration_date|date:"M d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Days to Expiration:</strong></td>
+                                    <td>{{ position.days_to_expiration }} days</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Current P&L:</strong></td>
+                                    <td class="{% if position.current_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ position.current_pnl|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>P&L %:</strong></td>
+                                    <td class="{% if position.profit_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ position.profit_percentage|floatformat:2 }}%
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Breakeven:</strong></td>
+                                    <td>${{ position.breakeven_price|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Risk/Reward:</strong></td>
+                                    <td>1:{{ position.risk_reward_ratio|floatformat:2 }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Greeks</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Delta:</strong></td>
+                            <td>{{ position.position_delta|floatformat:4 }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Theta:</strong></td>
+                            <td>{{ position.position_theta|floatformat:4 }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gamma:</strong></td>
+                            <td>{{ position.position_gamma|floatformat:4 }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vega:</strong></td>
+                            <td>{{ position.position_vega|floatformat:4 }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Position Legs (for multi-leg strategies) -->
+    {% if position.positions %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Position Legs</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Leg</th>
+                                    <th>Type</th>
+                                    <th>Strike</th>
+                                    <th>Contracts</th>
+                                    <th>Premium</th>
+                                    <th>Delta</th>
+                                    <th>Days to Exp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leg in position.positions %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if 'short' in leg.type %}danger{% else %}success{% endif %}">
+                                            {{ leg.type|title }}
+                                        </span>
+                                    </td>
+                                    <td>${{ leg.strike|floatformat:2 }}</td>
+                                    <td>{{ leg.contracts }}</td>
+                                    <td>${{ leg.premium|floatformat:2 }}</td>
+                                    <td>{{ leg.delta|floatformat:4 }}</td>
+                                    <td>{{ leg.dte }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Account Impact -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Account Impact</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4>${{ position.managed_account.current_balance|floatformat:2 }}</h4>
+                                <p class="text-muted">Account Balance</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-warning">${{ position.capital_required|floatformat:2 }}</h4>
+                                <p class="text-muted">Capital Used</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info">${{ position.managed_account.available_buying_power|floatformat:2 }}</h4>
+                                <p class="text-muted">Buying Power Remaining</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-success">{{ position.managed_account.current_risk_exposure|floatformat:2 }}%</h4>
+                                <p class="text-muted">Risk Exposure</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if position.notes %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Notes</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ position.notes }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="{% url 'investing:close_managed_position' position.id %}" class="btn btn-danger me-2">
+                        <i class="fa fa-times"></i> Close Position
+                    </a>
+                    <a href="{% url 'investing:managed_account_detail' position.managed_account.id %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time P&L updates (placeholder for future implementation)
+function updateRealTimePnL() {
+    // This would connect to real-time market data
+    // For now, just show static data
+    console.log('Real-time P&L updates would go here');
+}
+
+// Update every 30 seconds
+setInterval(updateRealTimePnL, 30000);
+</script>
+{% endblock %}

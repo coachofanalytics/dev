@@ -1,0 +1,123 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="fa fa-user-circle"></i> My Managed Accounts</h2>
+            <p class="text-muted">Track your options trading accounts managed by CODA</p>
+        </div>
+    </div>
+    
+    <!-- Portfolio Summary -->
+    {% if has_accounts %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6>Total Invested</h6>
+                    <h3>${{ total_invested|floatformat:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Current Value</h6>
+                    <h3>${{ total_current_value|floatformat:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card {% if total_pnl >= 0 %}bg-info{% else %}bg-danger{% endif %} text-white">
+                <div class="card-body">
+                    <h6>Total Profit/Loss</h6>
+                    <h3>${{ total_pnl|floatformat:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6>Open Positions</h6>
+                    <h3>{{ total_open_positions }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Accounts List -->
+    <div class="row">
+        {% for account in accounts %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        {{ account.account_number }}
+                        <span class="badge bg-secondary float-end">{{ account.get_fee_tier_display }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="mb-1 text-muted">Balance</p>
+                            <h4>${{ account.current_balance|floatformat:2 }}</h4>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1 text-muted">P&L</p>
+                            <h4 class="{% if account.total_profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ${{ account.total_profit_loss|floatformat:2 }}
+                            </h4>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="mb-0"><small class="text-muted">ROI</small></p>
+                            <p class="{% if account.return_on_investment >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ account.return_on_investment|floatformat:2 }}%
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-0"><small class="text-muted">Open Positions</small></p>
+                            <p>{{ account.open_positions_count|default:0 }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="mb-0"><small class="text-muted">Manager</small></p>
+                        <p>{{ account.account_manager.get_full_name|default:"Unassigned" }}</p>
+                    </div>
+                    
+                    <a href="{% url 'investing:client_account_detail' account.id %}" class="btn btn-primary btn-block w-100">
+                        <i class="fa fa-eye"></i> View Details
+                    </a>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Active since {{ account.activation_date|date:"M d, Y" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- No Accounts -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fa fa-inbox fa-4x text-muted mb-3"></i>
+                    <h4>No Managed Accounts Yet</h4>
+                    <p class="text-muted">Contact CODA to set up a managed options trading account.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

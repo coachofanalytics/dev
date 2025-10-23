@@ -645,49 +645,6 @@ class Supplier(models.Model):
         return self.name
 
 
-class Food(models.Model):
-    """Food item tracking"""
-    
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=3, default='KES')
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        ordering = ['name']
-        verbose_name = "Food Item"
-        verbose_name_plural = "Food Items"
-    
-    @property
-    def total_amount(self):
-        """Calculate total amount (for compatibility with other models)"""
-        return self.unit_price or 0
-    
-    def __str__(self):
-        return "{} - {} {}".format(self.name, self.unit_price, self.currency)
-
-
-class FoodHistory(models.Model):
-    """Food purchase history"""
-    
-    food = models.ForeignKey(Food, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    total_amount = models.DecimalField(max_digits=15, decimal_places=2)
-    purchase_date = models.DateTimeField(default=timezone.now)
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True)
-    notes = models.TextField(blank=True, null=True)
-    
-    class Meta:
-        ordering = ['-purchase_date']
-        verbose_name = "Food Purchase History"
-        verbose_name_plural = "Food Purchase History"
-    
-    def __str__(self):
-        return "{} - {} units - {}".format(self.food.name, self.quantity, self.total_amount)
-    
-    def save(self, *args, **kwargs):
-        self.total_amount = self.quantity * self.unit_price
-        super().save(*args, **kwargs)
+# Food and FoodHistory models moved to finance.models.food
+# They are imported via __init__.py, so no need to import here
+# This prevents circular import issues

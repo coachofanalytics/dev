@@ -16,6 +16,7 @@ from .budget import *
 from .loan import *
 from .payment import *
 from .notifications import *
+from .food import *
 
 # Import extra models
 try:
@@ -38,7 +39,12 @@ __all__ = [
     'WebSubCategory',
     'Supplier',
     'Food',
-    'FoodHistory',
+    'FoodHistory',  # Legacy alias for FoodPurchaseTransaction
+    'FoodPriceHistory',
+    'FoodInventory',
+    'FoodPurchaseTransaction',
+    'FoodConsumptionLog',
+    'FoodRestockRequest',
     
     # Budget models
     'BudgetCategory',

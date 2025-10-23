@@ -1,0 +1,97 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fa fa-times-circle"></i> Close Position</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Position Summary -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5>{{ position.symbol }} {{ position.get_strategy_display }}</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-1"><strong>Entry Date:</strong> {{ position.entry_date|date:"M d, Y" }}</p>
+                                    <p class="mb-1"><strong>Expiration:</strong> {{ position.expiration_date|date:"M d, Y" }}</p>
+                                    <p class="mb-0"><strong>Days in Trade:</strong> {{ position.days_in_trade }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="mb-1"><strong>Premium:</strong> ${{ position.premium_collected|floatformat:2 }}</p>
+                                    <p class="mb-1"><strong>Current P&L:</strong> 
+                                        <span class="{% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                            ${{ position.unrealized_pnl|floatformat:2 }}
+                                        </span>
+                                    </p>
+                                    <p class="mb-0"><strong>Profit %:</strong> {{ position.profit_percentage|floatformat:1 }}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Close Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_exit_price" class="form-label">Exit Price *</label>
+                            {{ form.exit_price }}
+                            <small class="form-text text-muted">Price to close position</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_exit_reason" class="form-label">Exit Reason *</label>
+                            {{ form.exit_reason }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_notes" class="form-label">Exit Notes</label>
+                            {{ form.notes }}
+                        </div>
+                        
+                        <!-- P&L Preview -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6>Projected P&L</h6>
+                                <h3 id="projectedPnl" class="mb-0">$0.00</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'investing:managed_account_detail' account.id %}" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fa fa-times"></i> Close Position
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate projected P&L
+function updatePnlPreview() {
+    const exitPrice = parseFloat(document.getElementById('id_exit_price').value) || 0;
+    const premium = {{ position.premium_collected }};
+    const pnl = premium - exitPrice;
+    
+    const pnlElement = document.getElementById('projectedPnl');
+    pnlElement.textContent = '$' + pnl.toFixed(2);
+    pnlElement.className = pnl >= 0 ? 'mb-0 text-success' : 'mb-0 text-danger';
+}
+
+document.getElementById('id_exit_price').addEventListener('input', updatePnlPreview);
+updatePnlPreview();
+</script>
+{% endblock %}
+

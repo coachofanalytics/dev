@@ -7,4 +7,6 @@ class FinanceConfig(AppConfig):
     name = 'finance'
 
     def ready(self):
-        import finance.signals  # Ensure signals are imported
+        import finance.signals  # Ensure transaction signals are imported
+        import finance.signals_food  # Ensure food system signals are imported
+        import finance.admin_food  # Ensure food admin is registered

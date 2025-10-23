@@ -1,0 +1,171 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="fa fa-briefcase"></i> Managed Trading Accounts</h2>
+            <p class="text-muted">Professional options account management</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'investing:create_managed_account' %}" class="btn btn-primary">
+                <i class="fa fa-plus"></i> New Account
+            </a>
+            <a href="{% url 'investing:monitor_dashboard' %}" class="btn btn-warning">
+                <i class="fa fa-exclamation-triangle"></i> Monitoring
+            </a>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="mb-2">Total Accounts</h6>
+                    <h3 class="mb-0">{{ accounts.count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="mb-2">Total AUM</h6>
+                    <h3 class="mb-0">${{ total_aum|floatformat:0|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card {% if total_pnl >= 0 %}bg-info{% else %}bg-danger{% endif %} text-white">
+                <div class="card-body">
+                    <h6 class="mb-2">Total P&L</h6>
+                    <h3 class="mb-0">${{ total_pnl|floatformat:0|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="mb-2">Open Positions</h6>
+                    <h3 class="mb-0">{{ total_positions }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fee Tier Breakdown -->
+    {% if tier_breakdown %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Accounts by Fee Tier</h6>
+                    <div class="row">
+                        {% for tier, count in tier_breakdown.items %}
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h4>{{ count }}</h4>
+                                <small class="text-muted">{{ tier }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Accounts Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Active Accounts</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Account #</th>
+                            <th>Client</th>
+                            <th>Fee Tier</th>
+                            <th class="text-end">Balance</th>
+                            <th class="text-end">P&L</th>
+                            <th class="text-end">ROI %</th>
+                            <th class="text-center">Positions</th>
+                            <th>Manager</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td>
+                                <strong>{{ account.account_number }}</strong><br>
+                                <small class="text-muted">{{ account.created_at|date:"M d, Y" }}</small>
+                            </td>
+                            <td>
+                                {{ account.client.get_full_name|default:account.client.username }}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ account.get_fee_tier_display }}</span>
+                            </td>
+                            <td class="text-end">
+                                ${{ account.current_balance|floatformat:2 }}
+                            </td>
+                            <td class="text-end">
+                                <span class="{% if account.total_profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ account.total_profit_loss|floatformat:2 }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span class="{% if account.return_on_investment >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ account.return_on_investment|floatformat:2 }}%
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {{ account.open_positions_count|default:0 }}
+                            </td>
+                            <td>
+                                {{ account.account_manager.get_full_name|default:"Unassigned" }}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if account.status == 'active' %}success{% elif account.status == 'paused' %}warning{% else %}secondary{% endif %}">
+                                    {{ account.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'investing:managed_account_detail' account.id %}" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="fa fa-eye"></i> View
+                                </a>
+                                <a href="{% url 'investing:create_position_for_account' account.id %}" 
+                                   class="btn btn-sm btn-success">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-5">
+                                <i class="fa fa-inbox fa-3x mb-3"></i>
+                                <p>No managed accounts yet. Create one to get started.</p>
+                                <a href="{% url 'investing:create_managed_account' %}" class="btn btn-primary">
+                                    <i class="fa fa-plus"></i> Create First Account
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

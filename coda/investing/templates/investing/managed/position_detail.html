@@ -1,0 +1,12 @@
+{% extends "main/base_templates/new_base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2>{{ position.symbol }} - {{ position.get_strategy_display }}</h2>
+    <p>Account: {{ account.account_number }}</p>
+    <p>Status: {{ position.status }}</p>
+    <p>P&L: ${{ position.unrealized_pnl|floatformat:2 }}</p>
+    <a href="{% url 'investing:managed_account_detail' account.id %}" class="btn btn-primary">Back to Account</a>
+</div>
+{% endblock %}
+

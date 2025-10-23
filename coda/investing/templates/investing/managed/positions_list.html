@@ -1,0 +1,54 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2><i class="fa fa-list"></i> {{ title }}</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Account</th>
+                        <th>Strategy</th>
+                        <th>Entry</th>
+                        <th>Expiration</th>
+                        <th>DTE</th>
+                        <th>P&L</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position in positions %}
+                    <tr>
+                        <td>{{ position.symbol }}</td>
+                        <td>{{ position.managed_account.account_number }}</td>
+                        <td>{{ position.get_strategy_display }}</td>
+                        <td>{{ position.entry_date|date:"M d, Y" }}</td>
+                        <td>{{ position.expiration_date|date:"M d, Y" }}</td>
+                        <td>{{ position.days_to_expiration }}</td>
+                        <td class="{% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            ${{ position.unrealized_pnl|floatformat:2 }}
+                        </td>
+                        <td>
+                            <a href="{% url 'investing:managed_position_detail' position.id %}" class="btn btn-sm btn-info">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No positions found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
