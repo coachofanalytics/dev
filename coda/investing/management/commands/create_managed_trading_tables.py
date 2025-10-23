@@ -24,7 +24,7 @@ class Command(BaseCommand):
                     updated_at TIMESTAMP WITH TIME ZONE,
                     is_active BOOLEAN DEFAULT FALSE,
                     is_featured BOOLEAN DEFAULT FALSE,
-                    client_id INTEGER NOT NULL REFERENCES accounts_customeruser(id) ON DELETE PROTECT,
+                    client_id INTEGER NOT NULL REFERENCES accounts_customeruser(id) ON DELETE RESTRICT,
                     account_number VARCHAR(20) UNIQUE NOT NULL,
                     account_name VARCHAR(100) NOT NULL,
                     account_manager_id INTEGER REFERENCES accounts_customeruser(id) ON DELETE SET NULL,
@@ -128,13 +128,12 @@ class Command(BaseCommand):
                     id SERIAL PRIMARY KEY,
                     created_at TIMESTAMP WITH TIME ZONE,
                     updated_at TIMESTAMP WITH TIME ZONE,
-                    is_active BOOLEAN DEFAULT FALSE,
+                    is_active BOOLEAN DEFAULT TRUE,
                     is_featured BOOLEAN DEFAULT FALSE,
                     managed_account_id INTEGER NOT NULL REFERENCES investing_managedtradingaccount(id) ON DELETE CASCADE,
                     rule_name VARCHAR(100) NOT NULL,
                     rule_type VARCHAR(20) NOT NULL,
                     rule_config JSONB NOT NULL,
-                    is_active BOOLEAN DEFAULT TRUE,
                     priority INTEGER DEFAULT 10
                 );
             """)
