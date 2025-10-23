@@ -74,7 +74,7 @@ def finance_dashboard(request, company_slug="coda"):
     transaction_analysis = get_transaction_analysis(company, user_department)
     
     # Multi-year Planning Overview
-    multi_year_plans = MultiYearBudgetPlan.objects.filter(company=company).order_by('-created_at')[:3]
+    multi_year_plans = MultiYearBudgetPlan.objects.filter(is_active=True).order_by('-created_at')[:3]
     
     # Recent Budget Requests
     recent_requests = BudgetRequest.objects.filter(
