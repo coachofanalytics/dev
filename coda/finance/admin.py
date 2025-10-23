@@ -19,6 +19,9 @@ from .models import (
     BudgetRequest, ApprovalPolicy,
     # Loan models
     LoanApplication, LoanProduct,
+    # Food models
+    Food, FoodPriceHistory, FoodInventory, FoodPurchaseTransaction, 
+    FoodConsumptionLog, FoodRestockRequest, Supplier,
 )
 
 

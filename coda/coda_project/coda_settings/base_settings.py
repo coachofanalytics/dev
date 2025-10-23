@@ -88,6 +88,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'Middleware.MiddlewareFile.MailMiddleware',
     "allauth.account.middleware.AccountMiddleware",
+    "Middleware.track_user_middleware.TrackUserMiddleware",  # Track user for signals
 ]
 
 # Security settings are now environment-specific
