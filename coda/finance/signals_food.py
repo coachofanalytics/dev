@@ -520,3 +520,4 @@ logger.info("   - Inventory updates on purchase/consumption")
 logger.info("   - Automatic restock requests")
 logger.info("   - Budget request creation for restocks")
 
+

@@ -80,6 +80,68 @@
         </div>
     </div>
 
+    <!-- Staff Management Tools (NEW) -->
+    {% if user.is_staff %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fa fa-tools"></i> Staff Management Tools
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-outline-primary w-100">
+                                <i class="fa fa-briefcase"></i> Manage Accounts
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'investing:create_managed_position' %}" class="btn btn-outline-success w-100">
+                                <i class="fa fa-plus"></i> Create Position
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'investing:monitor_dashboard' %}" class="btn btn-outline-danger w-100">
+                                <i class="fa fa-exclamation-triangle"></i> Monitor & Alerts
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="/admin/investing/" class="btn btn-outline-secondary w-100">
+                                <i class="fa fa-cog"></i> Admin Panel
+                            </a>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'investing:create_managed_account' %}" class="btn btn-outline-info w-100">
+                                <i class="fa fa-user-plus"></i> New Client Account
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'investing:managed_positions_list' %}" class="btn btn-outline-primary w-100">
+                                <i class="fa fa-list"></i> All Positions
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'investing:risk_dashboard' %}" class="btn btn-outline-warning w-100">
+                                <i class="fa fa-shield-alt"></i> Risk Dashboard
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="/admin/" class="btn btn-outline-dark w-100">
+                                <i class="fa fa-database"></i> Full Admin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Managed Options Trading Section (NEW) -->
     {% if has_managed_accounts %}
     <div class="row mb-4">

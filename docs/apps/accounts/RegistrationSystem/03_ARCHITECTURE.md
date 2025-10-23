@@ -686,3 +686,4 @@ def send_verification_email(user):
 **See:** 04_IMPLEMENTATION.md for code details and file locations
 
 
+

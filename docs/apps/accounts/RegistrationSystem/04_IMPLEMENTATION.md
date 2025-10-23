@@ -590,3 +590,4 @@ logger.error(f'Registration failed for {email}: {error}')
 **See:** 05_TESTING.md for test scenarios
 
 
+
