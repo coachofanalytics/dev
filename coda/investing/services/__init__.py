@@ -7,7 +7,11 @@ and provide clean interfaces for views and other components.
 """
 
 from .investment_service import InvestmentService
+from .managed_trading_service import ManagedTradingService
+from .options_monitoring_service import OptionsMonitoringService
 
 __all__ = [
     'InvestmentService',
+    'ManagedTradingService',
+    'OptionsMonitoringService',
 ]

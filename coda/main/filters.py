@@ -87,7 +87,8 @@ class FoodFilter(django_filters.FilterSet):
         # fields='__all__'
         fields = {
             'name': ['icontains'],
-            'supplier': ['exact'],
+            'current_supplier': ['exact'],  # Updated to match new model field name
+            'category': ['exact'],  # Added category filtering
             'is_active': ['exact'],
         }
     
