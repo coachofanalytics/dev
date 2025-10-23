@@ -911,28 +911,115 @@ cd coda && coverage report
 
 ## 📝 DOCUMENTATION UPDATE PROTOCOL
 
+### The 7-Doc Standard (Implemented October 22, 2025)
+
+**Every feature has EXACTLY 7 documents:**
+
+```
+Feature/
+├── 01_ANALYSIS.md       ← Why (problem, goals, metrics, ROI)
+├── 02_REQUIREMENTS.md   ← What (functional requirements, phases)
+├── 03_ARCHITECTURE.md   ← How to design (system design, data models)
+├── 04_IMPLEMENTATION.md ← How it's built (code locations, functions)
+├── 05_TESTING.md        ← How to verify (test scenarios, results)
+├── 06_MAINTENANCE.md    ← How to maintain (issues, TODO, troubleshooting)
+└── 07_DEPLOYMENT.md     ← How to deploy (procedures, configuration)
+```
+
+**Examples:**
+- Budget: `docs/apps/finance/Budget/01-07`
+- Transaction: `docs/apps/finance/Transaction/01-07`
+- Loan: `docs/apps/finance/Loan/01-07`
+- Payment: `docs/apps/finance/Payment/01-07`
+- GoToMeeting: `docs/apps/ai_services/GoToMeeting/01-07`
+
+---
+
 ### When to Update Which Doc:
 
+**Problem Definition or ROI Change?**
+→ `01_ANALYSIS.md` (problem statement, business goals, metrics)
+
 **New Requirement?**
-→ `REQUIREMENTS.md` (add to Phase X section)
+→ `02_REQUIREMENTS.md` (add to Phase X section)
+
+**Architecture/Design Change?**
+→ `03_ARCHITECTURE.md` (system design, data models)
 
 **Code Change?**
-→ `IMPLEMENTATION.md` (Change History table)
+→ `04_IMPLEMENTATION.md` (Change History table, code locations)
 
 **Bug Fix?**
-→ `IMPLEMENTATION.md` (Change History) + `TESTING.md` (regression test)
-
-**Status Change?**
-→ `README.md` (Current Status section)
-
-**Historical Context?**
-→ `README.md` (History section)
-
-**Business Rule Change?**
-→ `REQUIREMENTS.md` (Business Rules section)
+→ `04_IMPLEMENTATION.md` (Change History) + `05_TESTING.md` (regression test) + `06_MAINTENANCE.md` (resolved issues)
 
 **New Test?**
-→ `TESTING.md` (test scenarios + results log)
+→ `05_TESTING.md` (test scenarios + results log)
+
+**Issue Discovered?**
+→ `06_MAINTENANCE.md` (Known Issues section)
+
+**TODO Added?**
+→ `06_MAINTENANCE.md` (TODO List section)
+
+**Deployment Procedure Change?**
+→ `07_DEPLOYMENT.md` (update procedures)
+
+**Status Change?**
+→ Feature `README.md` (not in 7 docs - app-level overview only)
+
+**Historical Context?**
+→ `01_ANALYSIS.md` (Lessons Learned) or `04_IMPLEMENTATION.md` (Change History)
+
+**Business Rule Change?**
+→ `02_REQUIREMENTS.md` (Business Rules section)
+
+---
+
+## 📚 THE 7-DOC STANDARD FOR FEATURE DOCUMENTATION
+
+**Implemented:** October 22, 2025  
+**Status:** ✅ Active standard for all features
+
+### Structure Overview
+
+Every feature (Budget, Transaction, Loan, etc.) has EXACTLY 7 documents:
+
+| Doc | Name | Purpose | When to Update |
+|-----|------|---------|----------------|
+| **01** | ANALYSIS.md | Why we built it (problem, goals, ROI) | When business case changes |
+| **02** | REQUIREMENTS.md | What it must do (functional requirements) | When requirements change |
+| **03** | ARCHITECTURE.md | How it's designed (system design, models) | When architecture changes |
+| **04** | IMPLEMENTATION.md | How it's built (code locations, functions) | **Every code change** |
+| **05** | TESTING.md | How to verify (test scenarios) | When tests added/run |
+| **06** | MAINTENANCE.md | How to maintain (issues, TODO) | When issues found/resolved |
+| **07** | DEPLOYMENT.md | How to deploy (procedures, config) | When deployment changes |
+
+### Benefits:
+- ✅ **Easy Navigation:** Always know where to find information
+- ✅ **No Duplication:** Each topic has exactly one home
+- ✅ **Prevents Sprawl:** Clear rules prevent doc proliferation
+- ✅ **Consistent:** Same structure across all features
+
+### Results (October 2025):
+- **Before:** 41 files (Budget: 13, Payment: 15, scattered)
+- **After:** 35 organized files (7 per feature)
+- **Improvement:** 53% fewer files, 100% better organization
+
+---
+
+### Quick Navigation Examples:
+
+**"Where do I find the Budget approval code?"**
+→ `docs/apps/finance/Budget/04_IMPLEMENTATION.md`
+
+**"What are the loan requirements?"**
+→ `docs/apps/finance/Loan/02_REQUIREMENTS.md`
+
+**"How do I deploy transactions?"**
+→ `docs/apps/finance/Transaction/07_DEPLOYMENT.md`
+
+**"What issues exist with payments?"**
+→ `docs/apps/finance/Payment/06_MAINTENANCE.md`
 
 ---
 

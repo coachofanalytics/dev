@@ -1,0 +1,295 @@
+# Managed Options Trading - Testing
+**Feature:** CODA Managed Options Trading Service  
+**Date:** October 22, 2025  
+**Status:** 🧪 Testing Plan
+
+---
+
+## 🎯 Testing Strategy
+
+### **Testing Pyramid**
+
+```
+             /\
+            /  \
+           / E2E\ ──────► 10% - End-to-End Tests
+          /──────\
+         /        \
+        /Integration\ ───► 30% - Integration Tests
+       /────────────\
+      /              \
+     /   Unit Tests   \ ─► 60% - Unit Tests
+    /──────────────────\
+```
+
+**Target Coverage:** 80%+
+
+---
+
+## 🧪 Unit Tests
+
+### **Test File: `tests/test_managed_trading_models.py`**
+
+```python
+from django.test import TestCase
+from decimal import Decimal
+from datetime import date, timedelta
+
+from investing.models import ManagedTradingAccount, OptionsPosition
+from accounts.models import CustomerUser
+
+
+class ManagedTradingAccountTestCase(TestCase):
+    def setUp(self):
+        self.client_user = CustomerUser.objects.create_user(
+            username='test_client',
+            email='client@test.com',
+            password='test123'
+        )
+        
+        self.account = ManagedTradingAccount.objects.create(
+            client=self.client_user,
+            account_name='Test Account',
+            account_number='CODA-OPT-TEST-001',
+            initial_capital=Decimal('30000.00'),
+            current_balance=Decimal('30000.00'),
+            cash_available=Decimal('30000.00'),
+            cash_reserved=Decimal('0.00')
+        )
+    
+    def test_win_rate_calculation(self):
+        """Test win rate property calculation"""
+        self.account.total_trades = 10
+        self.account.winning_trades = 7
+        self.account.save()
+        
+        self.assertEqual(self.account.win_rate, 70.0)
+    
+    def test_roi_calculation(self):
+        """Test ROI property calculation"""
+        self.account.total_profit_loss = Decimal('1500.00')
+        self.account.save()
+        
+        self.assertEqual(self.account.return_on_investment, 5.0)
+    
+    def test_available_buying_power(self):
+        """Test available buying power calculation"""
+        self.account.cash_available = Decimal('30000.00')
+        self.account.cash_reserved = Decimal('17000.00')
+        self.account.save()
+        
+        self.assertEqual(self.account.available_buying_power, Decimal('13000.00'))
+
+
+class OptionsPositionTestCase(TestCase):
+    # Test position creation, P&L calculations, etc.
+    pass
+```
+
+---
+
+## 🔄 Integration Tests
+
+### **Test File: `tests/test_managed_trading_service.py`**
+
+```python
+from django.test import TestCase
+from investing.services.managed_trading_service import ManagedTradingService
+
+
+class ManagedTradingServiceTestCase(TestCase):
+    def test_create_account_workflow(self):
+        """Test complete account creation workflow"""
+        service = ManagedTradingService()
+        
+        account_data = {
+            'account_name': 'Test Client Account',
+            'initial_capital': '30000.00',
+            'management_fee': '1.50',
+            'performance_fee': '20.00'
+        }
+        
+        account = service.create_managed_account(self.client_user, account_data)
+        
+        # Verify account created
+        self.assertIsNotNone(account.id)
+        self.assertEqual(account.current_balance, Decimal('30000.00'))
+        
+        # Verify trading rules created
+        self.assertTrue(account.trading_rules.exists())
+    
+    def test_position_entry_and_close(self):
+        """Test complete position lifecycle"""
+        # Create position
+        # Monitor position
+        # Close position
+        # Verify P&L updated
+        pass
+```
+
+---
+
+## 🌐 End-to-End Tests
+
+### **Test Scenarios**
+
+#### **E2E Test 1: Complete Account Setup**
+```
+1. Admin logs in
+2. Creates new managed account for client
+3. Sets risk parameters
+4. Activates account
+5. Verifies account appears in list
+6. Client logs in and sees dashboard
+```
+
+#### **E2E Test 2: Complete Position Lifecycle**
+```
+1. Trader identifies opportunity
+2. Enters position via form
+3. System validates against rules
+4. Position created successfully
+5. System monitors position
+6. Profit target reached
+7. Alert generated
+8. Trader closes position
+9. P&L updated
+10. Client notified
+```
+
+#### **E2E Test 3: Risk Alert Workflow**
+```
+1. Position loses money
+2. Stop loss threshold hit
+3. Critical alert generated
+4. Email sent to trader
+5. Trader reviews position
+6. Position closed
+7. Loss recorded
+8. Account updated
+```
+
+---
+
+## ✅ Test Cases
+
+### **Critical Test Cases (Must Pass)**
+
+#### **TC-001: Account Creation**
+- **Given:** Valid client and account data
+- **When:** Admin creates managed account
+- **Then:** Account created with correct balance, rules generated, activity logged
+
+#### **TC-002: Position Entry Validation**
+- **Given:** Position data that exceeds buying power
+- **When:** Trader attempts to create position
+- **Then:** Validation error, position not created
+
+#### **TC-003: Stop Loss Trigger**
+- **Given:** Position with unrealized loss = 200% of premium
+- **When:** Monitoring service runs
+- **Then:** Critical alert generated, trader notified
+
+#### **TC-004: Profit Target**
+- **Given:** Position with profit = 50% of max
+- **When:** Monitoring service runs
+- **Then:** Alert generated recommending close
+
+#### **TC-005: Fee Calculation**
+- **Given:** Account with profit above threshold
+- **When:** Monthly fee calculation runs
+- **Then:** Correct management and performance fees calculated
+
+---
+
+## 📊 Performance Tests
+
+### **Load Test Scenarios**
+
+#### **Test 1: 50 Accounts, 250 Positions**
+```python
+# Measure:
+- Dashboard load time
+- Position monitoring time
+- Report generation time
+- Database query performance
+
+# Acceptance:
+- Dashboard: <3 seconds
+- Monitoring: <30 seconds
+- Reports: <10 seconds each
+```
+
+#### **Test 2: Real-time Updates**
+```python
+# Simulate:
+- 50 concurrent users
+- Accessing dashboards simultaneously
+- Position updates every 15 seconds
+
+# Acceptance:
+- No timeouts
+- All data accurate
+- Response time <2 seconds
+```
+
+---
+
+## 🐛 Bug Tracking Template
+
+```markdown
+### Bug #XXX
+**Severity:** [Critical/High/Medium/Low]
+**Component:** [Account/Position/Risk/Reporting]
+**Environment:** [Local/UAT/Production]
+
+**Description:**
+[Clear description of the bug]
+
+**Steps to Reproduce:**
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+
+**Expected Result:**
+[What should happen]
+
+**Actual Result:**
+[What actually happened]
+
+**Error Message:**
+```
+[Paste any error messages]
+```
+
+**Screenshots:**
+[Attach if available]
+
+**Additional Context:**
+- Browser: [Chrome/Firefox/Safari]
+- User Role: [Admin/Manager/Client]
+- Account: [CODA-OPT-XXX]
+```
+
+---
+
+## ✅ Testing Checklist
+
+### **Pre-Deployment Testing**
+- [ ] All unit tests passing (60+ tests)
+- [ ] All integration tests passing (20+ tests)
+- [ ] End-to-end workflows tested
+- [ ] Performance tests passed
+- [ ] Security audit completed
+- [ ] Code coverage >80%
+- [ ] No critical or high bugs
+- [ ] All documentation updated
+- [ ] Client UAT completed
+- [ ] Regulatory compliance verified
+
+---
+
+**Next Phase:** [06_MAINTENANCE.md](06_MAINTENANCE.md)  
+**Previous Phase:** [04_IMPLEMENTATION.md](04_IMPLEMENTATION.md)  
+**Return to:** [README.md](README.md)
+

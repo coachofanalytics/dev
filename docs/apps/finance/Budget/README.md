@@ -45,6 +45,32 @@ Complete budget management system for CODA including budget request creation, ap
 
 ## Quick Start
 
+### ⚡ 5-Minute Setup (For Developers):
+
+**Step 1: Categorize Transactions** (2 min)
+```bash
+cd coda
+python manage.py categorize_transactions --company coda
+```
+Expected: 97% of transactions categorized
+
+**Step 2: Generate Projections** (2 min)
+```bash
+python manage.py generate_budget_projections --company coda --save
+```
+Expected: 15 budget projections created
+
+**Step 3: Auto-Sync Budgets** (1 min)
+```bash
+python manage.py sync_budgets --company coda --min-transactions 10
+```
+Expected: 4 active budgets created
+
+**Step 4: View Dashboard**
+Navigate to: `/finance/budget-dashboard/coda/`
+
+---
+
 ### For Budget Requesters:
 1. Login to system
 2. Navigate to `/finance/budget/request/new/`
@@ -61,6 +87,66 @@ Complete budget management system for CODA including budget request creation, ap
 3. Click approve ✅ or reject ❌ icon
 4. Add optional notes
 5. Confirm action
+
+---
+
+## 👥 User Roles & Permissions
+
+### Budget Viewer
+- View dashboard
+- View reports
+- View transactions
+
+### Budget Creator
+- All Viewer permissions
+- Create budget requests
+- Submit for approval
+- Clone templates
+
+### Department Head
+- All Creator permissions
+- Approve department budgets (< $10K)
+- View department variance reports
+
+### Finance Manager
+- All Department Head permissions
+- Approve all budgets
+- Generate projections
+- Run auto-sync
+- Configure templates
+- Manage approval policies
+- **Access tier management:** `/finance/tier-management/coda/`
+
+### System Admin
+- All permissions
+- Configure system settings
+- Manage users
+- Run management commands
+- Database migrations
+
+---
+
+## 🔧 Common Management Commands
+
+```bash
+# Categorize transactions
+python manage.py categorize_transactions --company coda
+
+# Generate projections
+python manage.py generate_budget_projections --company coda --save
+
+# Auto-sync budgets
+python manage.py sync_budgets --company coda
+
+# Analyze transactions
+python manage.py analyze_transaction_data
+
+# Setup templates
+python manage.py setup_budget_templates
+
+# View URLs
+python manage.py show_urls | grep budget
+```
 
 ## Documentation
 
