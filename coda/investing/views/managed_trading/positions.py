@@ -14,6 +14,7 @@ import json
 
 from ...models import ManagedTradingAccount, OptionsPosition
 from ...forms import OptionsPositionForm, ClosePositionForm, QuickPositionEntryForm
+from ...forms_enhanced import MultiLegOptionsForm, OptionPlayIntegrationForm
 from ...services import ManagedTradingService, OptionsMonitoringService
 
 
@@ -36,10 +37,12 @@ def create_position(request, account_id=None):
     
     if request.method == 'POST':
         # Determine which form was submitted
-        form_type = request.POST.get('form_type', 'quick')
+        form_type = request.POST.get('form_type', 'multi_leg')
         
         if form_type == 'quick':
             form = QuickPositionEntryForm(request.POST)
+        elif form_type == 'multi_leg':
+            form = MultiLegOptionsForm(request.POST)
         else:
             form = OptionsPositionForm(request.POST)
         
@@ -66,6 +69,53 @@ def create_position(request, account_id=None):
                         'max_loss': form.cleaned_data['capital_required'] - form.cleaned_data['premium'],
                         'position_delta': form.cleaned_data.get('delta', Decimal('0.0000')),
                         'position_theta': Decimal('0.0000'),
+                        'expiration_date': form.cleaned_data['expiration_date'],
+                        'notes': form.cleaned_data.get('notes', '')
+                    }
+                elif form_type == 'multi_leg':
+                    # Build position data from multi-leg form
+                    account = form.cleaned_data['managed_account']
+                    
+                    # Build legs array
+                    legs = []
+                    leg1 = {
+                        'type': form.cleaned_data['leg1_type'],
+                        'strike': float(form.cleaned_data['leg1_strike']),
+                        'contracts': form.cleaned_data['leg1_contracts'],
+                        'premium': float(form.cleaned_data['leg1_premium']),
+                        'delta': float(form.cleaned_data.get('delta', 0)),
+                        'theta': float(form.cleaned_data.get('theta', 0)),
+                    }
+                    legs.append(leg1)
+                    
+                    # Add second leg if present
+                    if form.cleaned_data.get('leg2_type'):
+                        leg2 = {
+                            'type': form.cleaned_data['leg2_type'],
+                            'strike': float(form.cleaned_data['leg2_strike']),
+                            'contracts': form.cleaned_data['leg2_contracts'],
+                            'premium': float(form.cleaned_data['leg2_premium']),
+                            'delta': 0,  # Will be calculated
+                            'theta': 0,  # Will be calculated
+                        }
+                        legs.append(leg2)
+                    
+                    # Calculate metrics
+                    capital_required = form.calculate_capital_required(form.cleaned_data)
+                    premium_collected = sum(leg['premium'] * leg['contracts'] * 100 for leg in legs if 'short' in leg['type'])
+                    premium_paid = sum(leg['premium'] * leg['contracts'] * 100 for leg in legs if 'long' in leg['type'])
+                    net_credit = premium_collected - premium_paid
+                    
+                    position_data = {
+                        'symbol': form.cleaned_data['symbol'],
+                        'strategy': form.cleaned_data['strategy'],
+                        'positions': legs,
+                        'capital_required': capital_required,
+                        'premium_collected': net_credit,
+                        'max_profit': net_credit,
+                        'max_loss': capital_required - net_credit,
+                        'position_delta': form.cleaned_data.get('delta', Decimal('0.0000')),
+                        'position_theta': form.cleaned_data.get('theta', Decimal('0.0000')),
                         'expiration_date': form.cleaned_data['expiration_date'],
                         'notes': form.cleaned_data.get('notes', '')
                     }
@@ -101,17 +151,17 @@ def create_position(request, account_id=None):
                 messages.error(request, f'Error creating position: {str(e)}')
     else:
         # Initialize form with account if provided
-        initial = {'account': account} if account else {}
-        form = QuickPositionEntryForm(initial=initial)
+        initial = {'managed_account': account} if account else {}
+        form = MultiLegOptionsForm(initial=initial)
     
     context = {
         'form': form,
         'account': account,
         'title': 'Create Position',
-        'form_type': 'quick'
+        'form_type': 'multi_leg'
     }
     
-    return render(request, 'investing/managed/create_position.html', context)
+    return render(request, 'investing/managed/create_position_enhanced.html', context)
 
 
 @staff_member_required
