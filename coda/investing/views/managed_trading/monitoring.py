@@ -9,6 +9,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from datetime import date, timedelta
+from decimal import Decimal
 
 from ...models import ManagedTradingAccount, OptionsPosition, RiskAlert
 from ...services import OptionsMonitoringService

@@ -94,11 +94,11 @@
                             <p class="text-muted">Completed</p>
                         </div>
                         <div class="col-md-3 text-center">
-                            <h2>{{ account.sessions_per_month|add:"-"|add:account.sessions_completed_this_month }}</h2>
+                            <h2>{{ remaining_sessions }}</h2>
                             <p class="text-muted">Remaining</p>
                         </div>
                         <div class="col-md-3 text-center">
-                            <h2>${{ account.sessions_completed_this_month|multiply:account.session_fee|floatformat:0 }}</h2>
+                            <h2>${{ session_fees_this_month|floatformat:0 }}</h2>
                             <p class="text-muted">Session Fees</p>
                         </div>
                         <div class="col-md-3 text-center">

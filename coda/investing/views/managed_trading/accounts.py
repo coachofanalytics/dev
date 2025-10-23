@@ -155,6 +155,10 @@ def managed_account_detail(request, account_id):
         if pos.status == 'open'
     )
     
+    # Calculate session fees for consultative tier
+    session_fees_this_month = account.sessions_completed_this_month * account.session_fee
+    remaining_sessions = account.sessions_per_month - account.sessions_completed_this_month
+    
     context = {
         'account': account,
         'summary': summary,
@@ -162,6 +166,8 @@ def managed_account_detail(request, account_id):
         'recent_closed': recent_closed,
         'upcoming_expirations': upcoming_expirations,
         'recent_activity': recent_activity,
+        'session_fees_this_month': session_fees_this_month,
+        'remaining_sessions': remaining_sessions,
         'has_alerts': has_alerts,
         'is_manager': is_manager or is_staff,
         'is_client': is_client,
