@@ -80,6 +80,77 @@
         </div>
     </div>
 
+    <!-- Managed Options Trading Section (NEW) -->
+    {% if has_managed_accounts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fa fa-chart-line"></i> Your Managed Options Trading Accounts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3>{{ managed_accounts_count }}</h3>
+                                <p class="text-muted">Managed Accounts</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3>${{ managed_total_balance|floatformat:0 }}</h3>
+                                <p class="text-muted">Total Account Value</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 class="{% if managed_total_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ managed_total_pnl|floatformat:2 }}
+                                </h3>
+                                <p class="text-muted">Total P&L</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        {% for account in managed_accounts %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        {{ account.account_number }}
+                                        <span class="badge bg-secondary float-end">{{ account.get_fee_tier_display }}</span>
+                                    </h6>
+                                    <p class="mb-1"><strong>Balance:</strong> ${{ account.current_balance|floatformat:2 }}</p>
+                                    <p class="mb-1">
+                                        <strong>P&L:</strong> 
+                                        <span class="{% if account.total_profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                            ${{ account.total_profit_loss|floatformat:2 }}
+                                        </span>
+                                    </p>
+                                    <p class="mb-2"><strong>Open Positions:</strong> {{ account.open_positions_count }}</p>
+                                    <a href="{% url 'investing:client_account_detail' account.id %}" class="btn btn-sm btn-info w-100">
+                                        <i class="fa fa-eye"></i> View Account
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'investing:client_portal' %}" class="btn btn-primary">
+                            <i class="fa fa-briefcase"></i> View All Managed Accounts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Active Upgrade Offers -->
     {% if active_offers %}
     <div class="row mb-4">

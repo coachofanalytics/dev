@@ -26,8 +26,8 @@ def managed_accounts_list(request):
     """
     accounts = ManagedTradingAccount.objects.filter(
         status__in=['active', 'paused']
-    ).select_related('client', 'account_manager').prefetch_related(
-        'positions'
+    ).select_related('client', 'account_manager').annotate(
+        open_positions_count=Count('positions', filter=Q(positions__status='open'))
     ).order_by('-created_at')
     
     # Calculate aggregated statistics

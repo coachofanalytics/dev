@@ -84,7 +84,7 @@
                         </div>
                         <div class="col-6">
                             <p class="mb-0"><small class="text-muted">Open Positions</small></p>
-                            <p>{{ account.positions.filter(status='open').count }}</p>
+                            <p>{{ account.open_positions_count|default:0 }}</p>
                         </div>
                     </div>
                     

@@ -7,6 +7,7 @@ Read-only views for clients to monitor their managed trading accounts.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Count, Q
 from datetime import date, timedelta
 
 from ...models import ManagedTradingAccount, OptionsPosition
@@ -23,7 +24,9 @@ def client_portal(request):
     # Get all managed accounts for this client
     accounts = ManagedTradingAccount.objects.filter(
         client=request.user
-    ).select_related('account_manager').prefetch_related('positions').order_by('-created_at')
+    ).select_related('account_manager').annotate(
+        open_positions_count=Count('positions', filter=Q(positions__status='open'))
+    ).order_by('-created_at')
     
     # Calculate totals across all accounts
     total_invested = sum([acc.initial_capital for acc in accounts])

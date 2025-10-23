@@ -2627,15 +2627,16 @@ def send_upgrade_confirmation_email(investment, offer, additional_amount):
 @login_required
 def investment_dashboard(request):
     """Dashboard view for all investor types using Investor_Information model"""
-    from .models import Investor_Information
+    from .models import Investor_Information, ManagedTradingAccount
     from decimal import Decimal
+    from django.db.models import Count, Q
 
-    # Get user's investments from Investor_Information model
+    # Get user's investments from Investor_Information model (System 1: Invest IN CODA)
     investments = Investor_Information.objects.filter(investor=request.user).order_by(
         "-created_at"
     )
 
-    # Calculate summary statistics
+    # Calculate summary statistics for equity investments
     total_invested = sum(inv.amount_invested for inv in investments)
     total_current_value = sum(inv.current_value for inv in investments)
     total_returns_paid = sum(inv.total_returns_paid for inv in investments)
@@ -2651,8 +2652,21 @@ def investment_dashboard(request):
 
     # Get recent milestones (temporarily disabled until data exists)
     recent_milestones = []
+    
+    # NEW: Get managed trading accounts (System 2: CODA Manages Client Money)
+    managed_accounts = ManagedTradingAccount.objects.filter(
+        client=request.user
+    ).annotate(
+        open_positions_count=Count('positions', filter=Q(positions__status='open'))
+    )
+    
+    # Calculate managed trading summary
+    has_managed_accounts = managed_accounts.exists()
+    managed_total_balance = sum([acc.current_balance for acc in managed_accounts])
+    managed_total_pnl = sum([acc.total_profit_loss for acc in managed_accounts])
 
     context = {
+        # Equity investments (System 1)
         "investments": investments,
         "total_invested": total_invested,
         "total_current_value": total_current_value,
@@ -2663,6 +2677,13 @@ def investment_dashboard(request):
         "recent_performance": [],
         "active_offers": [],
         "user_type": "individual",
+        
+        # Managed trading (System 2) - NEW
+        "has_managed_accounts": has_managed_accounts,
+        "managed_accounts": managed_accounts,
+        "managed_accounts_count": managed_accounts.count(),
+        "managed_total_balance": managed_total_balance,
+        "managed_total_pnl": managed_total_pnl,
     }
 
     return render(request, "investing/investment_dashboard.html", context)
