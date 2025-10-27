@@ -301,9 +301,19 @@
                     <h5 class="mb-0">Quick Entry (Single Leg)</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">Use this for simple single-leg strategies like cash-secured puts or covered calls.</p>
-                    <a href="{% url 'investing:create_managed_position' %}?form_type=quick" class="btn btn-outline-primary">
-                        <i class="fa fa-bolt"></i> Open Quick Entry Form
+                    <div class="alert alert-info">
+                        <h6><i class="fa fa-info-circle"></i> Quick Entry Mode</h6>
+                        <p>For single-leg strategies (Cash-Secured Puts, Covered Calls), you can use the Multi-Leg Strategy tab and just fill in Leg 1.</p>
+                        <p><strong>Tip:</strong> Leave "Leg 2 Type" as "No Second Leg" for single-leg strategies.</p>
+                    </div>
+                    <p class="text-muted">The Multi-Leg Strategy tab already supports single-leg strategies:</p>
+                    <ul>
+                        <li>Fill in Leg 1 (Short Leg) only</li>
+                        <li>Leave Leg 2 empty or set Type to "No Second Leg"</li>
+                        <li>Capital will be calculated correctly</li>
+                    </ul>
+                    <a href="#multi-leg" class="btn btn-primary" data-bs-toggle="tab">
+                        <i class="fa fa-arrow-left"></i> Back to Multi-Leg Strategy
                     </a>
                 </div>
             </div>

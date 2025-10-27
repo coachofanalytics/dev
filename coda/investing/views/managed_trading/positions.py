@@ -92,12 +92,17 @@ def create_position(request, account_id=None):
                     legs.append(leg1)
                     
                     # Add second leg if present
-                    if form.cleaned_data.get('leg2_type'):
+                    leg2_type = form.cleaned_data.get('leg2_type')
+                    leg2_strike = form.cleaned_data.get('leg2_strike')
+                    leg2_contracts = form.cleaned_data.get('leg2_contracts')
+                    leg2_premium = form.cleaned_data.get('leg2_premium')
+                    
+                    if leg2_type and leg2_strike and leg2_contracts and leg2_premium:
                         leg2 = {
-                            'type': form.cleaned_data['leg2_type'],
-                            'strike': float(form.cleaned_data['leg2_strike']),
-                            'contracts': form.cleaned_data['leg2_contracts'],
-                            'premium': float(form.cleaned_data['leg2_premium']),
+                            'type': leg2_type,
+                            'strike': float(leg2_strike),
+                            'contracts': int(leg2_contracts),
+                            'premium': float(leg2_premium),
                             'delta': 0,  # Will be calculated
                             'theta': 0,  # Will be calculated
                         }
@@ -105,8 +110,18 @@ def create_position(request, account_id=None):
                     
                     # Calculate metrics
                     capital_required = form.calculate_capital_required(form.cleaned_data)
-                    premium_collected = sum(leg['premium'] * leg['contracts'] * 100 for leg in legs if 'short' in leg['type'])
-                    premium_paid = sum(leg['premium'] * leg['contracts'] * 100 for leg in legs if 'long' in leg['type'])
+                    
+                    # Calculate premium collected and paid with safety checks
+                    premium_collected = 0
+                    premium_paid = 0
+                    for leg in legs:
+                        premium = float(leg.get('premium', 0))
+                        contracts = int(leg.get('contracts', 0))
+                        if 'short' in leg['type']:
+                            premium_collected += premium * contracts * 100
+                        elif 'long' in leg['type']:
+                            premium_paid += premium * contracts * 100
+                    
                     net_credit = premium_collected - premium_paid
                     
                     position_data = {
