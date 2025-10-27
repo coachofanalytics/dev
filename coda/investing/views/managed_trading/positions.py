@@ -142,7 +142,12 @@ def create_position(request, account_id=None):
                     }
                 
                 # Create position using service
+                print(f"DEBUG: About to create position with data: {position_data}")
+                print(f"DEBUG: Account: {account.account_number}, Available: ${account.available_buying_power}")
+                
                 position = service.create_position(account, position_data)
+                
+                print(f"DEBUG: Position created successfully: {position.id}")
                 
                 messages.success(
                     request,
@@ -151,6 +156,9 @@ def create_position(request, account_id=None):
                 return redirect('investing:managed_account_detail', account_id=account.id)
                 
             except Exception as e:
+                print(f"DEBUG: Exception during position creation: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 messages.error(request, f'Error creating position: {str(e)}')
         else:
             print(f"DEBUG: Form is NOT valid. Errors: {form.errors}")
