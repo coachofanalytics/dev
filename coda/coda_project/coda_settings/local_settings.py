@@ -1,6 +1,76 @@
 """
 Local development settings for coda_project.
 Development-specific configurations that override base_settings.
+
+DATABASE CONFIGURATION:
+=======================
+
+By default, this file uses a CLONED production database for safe local development.
+
+USAGE OPTIONS:
+--------------
+
+1. **CLONED DATABASE (RECOMMENDED)** ⭐
+   - Uses local PostgreSQL clone of production
+   - Safe to test with real production data
+   - Isolated from production (no risk!)
+   
+   Setup:
+   ```powershell
+   # Run once to clone production database
+   .\scripts\clone_prod_database.ps1
+   
+   # Then just run Django normally (default behavior)
+   cd coda
+   python manage.py runserver
+   ```
+   
+   Environment variable: DB_TYPE='clone' (default)
+
+2. **SQLITE DATABASE**
+   - Lightweight, file-based database
+   - Good for quick testing without PostgreSQL
+   
+   Usage:
+   ```powershell
+   $env:DB_TYPE = 'sqlite'
+   cd coda
+   python manage.py runserver
+   ```
+
+3. **UAT DATABASE** (NOT recommended)
+   - Connects to Heroku UAT database
+   - Requires UAT_DATABASE_URL environment variable
+   
+   Usage:
+   ```powershell
+   $env:DB_TYPE = 'uat'
+   $env:UAT_DATABASE_URL = 'postgres://...'
+   cd coda
+   python manage.py runserver
+   ```
+
+4. **PRODUCTION DATABASE** ⚠️ NEVER USE FOR TESTING!
+   - Connects to real production database
+   - DANGEROUS - test changes affect real users!
+   
+   To prevent accidents, we default to 'clone' now.
+   
+   Only use if you absolutely must:
+   ```powershell
+   $env:DB_TYPE = 'prod'
+   $env:PROD_DATABASE_URL = 'postgres://...'
+   cd coda
+   python manage.py runserver
+   ```
+
+QUICK REFERENCE:
+----------------
+- Default: 'clone' (safe cloned production database)
+- Switch: Set $env:DB_TYPE = 'sqlite' or 'uat' or 'prod'
+- Verify: Check startup logs for database connection details
+
+For complete guide: docs/LOCAL_DEVELOPMENT_WITH_PROD_DATA.md
 """
 
 
@@ -26,11 +96,16 @@ SECURE_SSL_REDIRECT = False
 def get_database_config():
     """
     Get database configuration based on environment variables
-    Supports: SQLite (default), PostgreSQL (UAT), PostgreSQL (Production)
+    Supports: 
+    - 'clone': Local PostgreSQL clone of production (RECOMMENDED for development)
+    - 'sqlite': Local SQLite (default, lightweight)
+    - 'uat': Heroku UAT database (NOT recommended for local dev)
+    - 'prod': Heroku Production database (NEVER use for local dev!)
+    - 'postgres': Custom local PostgreSQL
     """
     # Environment variable controls
-    # DB_TYPE = os.environ.get('DB_TYPE', 'sqlite').lower()
-    DB_TYPE = 'prod'
+    # DB_TYPE = os.environ.get('DB_TYPE', 'clone').lower()  # Default to 'clone' for safety
+    DB_TYPE = 'clone'
     print("🗄️  DB_TYPE: ", DB_TYPE)
     USE_POSTGRESQL = os.environ.get('USE_POSTGRESQL', 'False').lower() == 'true'
    
@@ -42,6 +117,11 @@ def get_database_config():
     print("🗄️ Database Configuration:")
     print(f"   DB_TYPE: {DB_TYPE}")
     print(f"   USE_POSTGRESQL: {USE_POSTGRESQL}")
+   
+    # RECOMMENDED: Use cloned production database
+    if DB_TYPE == 'clone':
+        print("   ✅ Using CLONED production database (safe for development)")
+        return get_clone_config()
    
     # Determine which database to use
     if DB_TYPE in ['uat', 'prod', 'postgres'] or USE_POSTGRESQL:
@@ -93,6 +173,32 @@ def get_database_config():
         return get_sqlite_config()
 
 
+def get_clone_config():
+    """
+    Get configuration for local cloned production database
+    This is the RECOMMENDED setup for local development
+    """
+    print("   🎯 Using cloned production database")
+    print("   📍 Database: coda_prod_clone")
+    print("   📍 Host: localhost (PostgreSQL)")
+    print("   ✅ Safe to test - isolated from production!")
+    
+    return {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'coda_prod_clone',
+            'USER': 'postgres',  # Default Windows PostgreSQL user
+            'PASSWORD': 'MANAGER2030',  # Update if you set a password
+            'HOST': 'localhost',
+            'PORT': '5432',
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'connect_timeout': 10,
+            }
+        }
+    }
+
+
 def get_sqlite_config():
     """Get SQLite database configuration"""
     print("   📁 Using SQLite database for local development")
@@ -107,33 +213,31 @@ def get_sqlite_config():
 
 # Apply database configuration
 DATABASES = get_database_config()
-print("🗄️  DATABASES: ", DATABASES['default']['ENGINE'])
-print("🗄️  DATABASES: ", DATABASES['default']['NAME'])
-print("🗄️  DATABASES: ", DATABASES['default']['CONN_MAX_AGE'])
-# Only print PostgreSQL-specific fields if they exist (not for SQLite)
-if 'HOST' in DATABASES['default']:
-    print("🗄️  DATABASES: ", DATABASES['default']['HOST'])
-if 'PORT' in DATABASES['default']:
-    print("🗄️  DATABASES: ", DATABASES['default']['PORT'])
-if 'USER' in DATABASES['default']:
-    print("🗄️  DATABASES: ", DATABASES['default']['USER'])
-if 'PASSWORD' in DATABASES['default']:
-    print("🗄️  DATABASES: ", DATABASES['default']['PASSWORD'])
-# print("🗄️  DATABASES: ", DATABASES['default']['OPTIONS'])
-# print("🗄️  DATABASES: ", DATABASES['default']['TEST'])
-# print("🗄️  DATABASES: ", DATABASES['default']['TIME_ZONE'])
-# print("🗄️  DATABASES: ", DATABASES['default']['USER'])
-# print("🗄️  DATABASES: ", DATABASES['default']['PASSWORD'])
-# print("🗄️  DATABASES: ", DATABASES['default']['OPTIONS'])
-# print("🗄️  DATABASES: ", DATABASES['default']['TEST'])
-# print("🗄️  DATABASES: ", DATABASES['default']['TIME_ZONE'])
-# print("🗄️  DATABASES: ", DATABASES['default']['USER'])
-# Database connection info for debugging
-if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
-    print(f"   📁 SQLite file: {DATABASES['default']['NAME']}")
-else:
-    print(f"   🗄️ PostgreSQL: {DATABASES['default'].get('NAME', 'Unknown')}")
 
+# Display database info
+print("   " + "="*50)
+print("   🗄️  Database Details:")
+print(f"      Engine: {DATABASES['default']['ENGINE']}")
+print(f"      Name: {DATABASES['default']['NAME']}")
+
+if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    print(f"      Location: {DATABASES['default']['NAME']}")
+else:
+    # PostgreSQL database
+    print(f"      Host: {DATABASES['default'].get('HOST', 'N/A')}")
+    print(f"      Port: {DATABASES['default'].get('PORT', 'N/A')}")
+    print(f"      User: {DATABASES['default'].get('USER', 'N/A')}")
+    
+    # Warn if using production database
+    db_name = DATABASES['default']['NAME']
+    if 'prod' in db_name.lower() or 'd5ts3j5r06arts' in db_name:
+        print("   " + "="*50)
+        print("   ⚠️  WARNING: Using PRODUCTION database!")
+        print("   ⚠️  This is DANGEROUS - test changes will affect real users!")
+        print("   ⚠️  RECOMMENDED: Use DB_TYPE='clone' instead")
+        print("   " + "="*50)
+    elif db_name == 'coda_prod_clone':
+        print("      ✅ SAFE: Using cloned database (isolated from production)")
 
 print("   " + "="*50)
 # Email settings for local development
