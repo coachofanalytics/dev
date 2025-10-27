@@ -244,6 +244,9 @@ class PayslipConfig(models.Model):
     # Bonus configuration
     holiday_pay = models.DecimalField(max_digits=10, decimal_places=2, default=3000.00)
     night_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=500.00)
+    eom_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=1000.00, help_text="Employee of the Month bonus")
+    eoq_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=3000.00, help_text="Employee of the Quarter bonus")
+    eoy_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00, help_text="Employee of the Year bonus")
     
     # Deductions configuration
     computer_maintenance = models.DecimalField(max_digits=10, decimal_places=2, default=500.00)
