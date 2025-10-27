@@ -307,3 +307,168 @@ class TradingSessionAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+# ============================================================================
+# PHASE 6: CLIENT ONBOARDING & COMPLIANCE ADMIN
+# ============================================================================
+
+@admin.register(InvestorRiskProfile)
+class InvestorRiskProfileAdmin(admin.ModelAdmin):
+    list_display = [
+        'user',
+        'risk_category',
+        'risk_score',
+        'assessed_date',
+        'expires_date',
+        'is_current',
+        'is_expired_display'
+    ]
+    list_filter = ['risk_category', 'is_current', 'assessed_date']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
+    readonly_fields = ['assessed_date', 'last_updated', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Investor Information', {
+            'fields': ('user',)
+        }),
+        ('Risk Assessment', {
+            'fields': ('risk_score', 'risk_category', 'questionnaire_data')
+        }),
+        ('Recommended Tiers', {
+            'fields': ('recommended_tiers_display',),
+            'classes': ('collapse',)
+        }),
+        ('Validity', {
+            'fields': ('is_current', 'expires_date', 'assessed_date', 'last_updated')
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def is_expired_display(self, obj):
+        return obj.is_expired
+    is_expired_display.short_description = 'Expired?'
+    is_expired_display.boolean = True
+    
+    def recommended_tiers_display(self, obj):
+        return ', '.join(obj.recommended_tiers)
+    recommended_tiers_display.short_description = 'Recommended Tiers'
+
+
+@admin.register(ManagedTradingApplication)
+class ManagedTradingApplicationAdmin(admin.ModelAdmin):
+    list_display = [
+        'applied_date',
+        'user',
+        'initial_capital',
+        'fee_tier',
+        'status',
+        'risk_tier_match_display',
+        'capital_tier_match_display',
+        'contracts_signed_display',
+        'reviewed_by'
+    ]
+    list_filter = ['status', 'fee_tier', 'applied_date', 'all_contracts_signed']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
+    readonly_fields = [
+        'applied_date', 'created_at', 'updated_at',
+        'risk_tier_match_display', 'capital_tier_match_display',
+        'is_qualified_display'
+    ]
+    
+    fieldsets = (
+        ('Applicant Information', {
+            'fields': ('user', 'risk_profile')
+        }),
+        ('Investment Details', {
+            'fields': ('initial_capital', 'fee_tier', 'preferred_manager', 'funding_method')
+        }),
+        ('Qualification Status', {
+            'fields': (
+                'risk_tier_match_display',
+                'capital_tier_match_display',
+                'is_qualified_display'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Application Status', {
+            'fields': ('status', 'applied_date')
+        }),
+        ('Contract Status', {
+            'fields': ('contracts_generated', 'all_contracts_signed')
+        }),
+        ('Review', {
+            'fields': ('reviewed_by', 'reviewed_date', 'approval_notes', 'rejection_reason')
+        }),
+        ('Created Account', {
+            'fields': ('managed_account',),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def risk_tier_match_display(self, obj):
+        return obj.risk_tier_match
+    risk_tier_match_display.short_description = 'Risk/Tier Match?'
+    risk_tier_match_display.boolean = True
+    
+    def capital_tier_match_display(self, obj):
+        return obj.capital_tier_match
+    capital_tier_match_display.short_description = 'Capital Sufficient?'
+    capital_tier_match_display.boolean = True
+    
+    def contracts_signed_display(self, obj):
+        return obj.all_contracts_signed
+    contracts_signed_display.short_description = 'Contracts Signed?'
+    contracts_signed_display.boolean = True
+    
+    def is_qualified_display(self, obj):
+        return obj.is_qualified_for_auto_approval
+    is_qualified_display.short_description = 'Auto-Approval Qualified?'
+    is_qualified_display.boolean = True
+
+
+@admin.register(ManagedTradingContract)
+class ManagedTradingContractAdmin(admin.ModelAdmin):
+    list_display = [
+        'contract_type',
+        'application',
+        'managed_account',
+        'is_signed',
+        'signed_date',
+        'pdf_generated'
+    ]
+    list_filter = ['contract_type', 'is_signed', 'pdf_generated', 'signed_date']
+    search_fields = [
+        'application__user__username',
+        'application__user__first_name',
+        'application__user__last_name',
+        'title'
+    ]
+    readonly_fields = ['signed_date', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Contract Information', {
+            'fields': ('contract_type', 'title', 'application', 'managed_account')
+        }),
+        ('Contract Content', {
+            'fields': ('contract_text',)
+        }),
+        ('Signature', {
+            'fields': ('is_signed', 'signature_data', 'signed_date', 'signature_ip')
+        }),
+        ('PDF', {
+            'fields': ('pdf_generated', 'pdf_url'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
