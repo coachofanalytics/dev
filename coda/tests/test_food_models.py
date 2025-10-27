@@ -141,3 +141,4 @@ class TestFoodPriceHistory:
         expected = Decimal("-20.00")
         assert history.change_percentage == expected
 
+

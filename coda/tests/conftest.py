@@ -106,3 +106,4 @@ def low_stock_inventory(db, department):
         reorder_quantity=Decimal("30.0")
     )
 
+
