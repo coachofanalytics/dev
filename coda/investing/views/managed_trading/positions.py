@@ -109,14 +109,14 @@ def create_position(request, account_id=None):
                         legs.append(leg2)
                     
                     # Calculate metrics
-                    capital_required = form.calculate_capital_required(form.cleaned_data)
+                    capital_required = Decimal(str(form.calculate_capital_required(form.cleaned_data)))
                     
                     # Calculate premium collected and paid with safety checks
-                    premium_collected = 0
-                    premium_paid = 0
+                    premium_collected = Decimal('0.00')
+                    premium_paid = Decimal('0.00')
                     for leg in legs:
-                        premium = float(leg.get('premium', 0))
-                        contracts = int(leg.get('contracts', 0))
+                        premium = Decimal(str(leg.get('premium', 0)))
+                        contracts = Decimal(str(leg.get('contracts', 0)))
                         if 'short' in leg['type']:
                             premium_collected += premium * contracts * 100
                         elif 'long' in leg['type']:
