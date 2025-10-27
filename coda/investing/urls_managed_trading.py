@@ -13,6 +13,7 @@ from .views.managed_trading import (
     sessions,
     api,
     client,
+    onboarding,  # Phase 6
 )
 
 urlpatterns = [
@@ -97,5 +98,44 @@ urlpatterns = [
     path('managed/portal/accounts/<int:account_id>/', 
          client.client_account_detail, 
          name='client_account_detail'),
+    
+    # ========================================================================
+    # PHASE 6: CLIENT ONBOARDING & COMPLIANCE
+    # ========================================================================
+    
+    # Risk Assessment (Step 1)
+    path('managed/onboarding/risk-assessment/', 
+         onboarding.risk_assessment_view, 
+         name='risk_assessment'),
+    
+    # Application (Step 2)
+    path('managed/onboarding/apply/', 
+         onboarding.managed_trading_apply_view, 
+         name='managed_trading_apply'),
+    
+    path('managed/onboarding/application/<int:application_id>/', 
+         onboarding.application_detail_view, 
+         name='application_detail'),
+    
+    # Contract Review & Signing (Step 3)
+    path('managed/onboarding/application/<int:application_id>/contracts/', 
+         onboarding.contract_review_view, 
+         name='contract_review'),
+    
+    path('managed/onboarding/contracts/<int:contract_id>/sign/', 
+         onboarding.sign_contract_view, 
+         name='sign_contract'),
+    
+    # ========================================================================
+    # STAFF: APPLICATION REVIEW
+    # ========================================================================
+    
+    path('managed/staff/applications/pending/', 
+         onboarding.pending_applications_view, 
+         name='pending_applications'),
+    
+    path('managed/staff/applications/<int:application_id>/review/', 
+         onboarding.review_application_view, 
+         name='review_application'),
 ]
 

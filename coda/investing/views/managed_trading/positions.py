@@ -14,6 +14,7 @@ import json
 
 from ...models import ManagedTradingAccount, OptionsPosition
 from ...forms import OptionsPositionForm, ClosePositionForm, QuickPositionEntryForm
+from ...forms_enhanced import MultiLegOptionsForm, OptionPlayIntegrationForm
 from ...services import ManagedTradingService, OptionsMonitoringService
 
 
@@ -36,14 +37,19 @@ def create_position(request, account_id=None):
     
     if request.method == 'POST':
         # Determine which form was submitted
-        form_type = request.POST.get('form_type', 'quick')
+        form_type = request.POST.get('form_type', 'multi_leg')
+        print(f"DEBUG: POST request received, form_type: {form_type}")
+        print(f"DEBUG: POST data keys: {list(request.POST.keys())}")
         
         if form_type == 'quick':
             form = QuickPositionEntryForm(request.POST)
+        elif form_type == 'multi_leg':
+            form = MultiLegOptionsForm(request.POST)
         else:
             form = OptionsPositionForm(request.POST)
         
         if form.is_valid():
+            print(f"DEBUG: Form is valid, processing {form_type} form...")
             service = ManagedTradingService()
             try:
                 if form_type == 'quick':
@@ -69,6 +75,68 @@ def create_position(request, account_id=None):
                         'expiration_date': form.cleaned_data['expiration_date'],
                         'notes': form.cleaned_data.get('notes', '')
                     }
+                elif form_type == 'multi_leg':
+                    # Build position data from multi-leg form
+                    account = form.cleaned_data['managed_account']
+                    
+                    # Build legs array
+                    legs = []
+                    leg1 = {
+                        'type': form.cleaned_data['leg1_type'],
+                        'strike': float(form.cleaned_data['leg1_strike']),
+                        'contracts': form.cleaned_data['leg1_contracts'],
+                        'premium': float(form.cleaned_data['leg1_premium']),
+                        'delta': float(form.cleaned_data.get('delta', 0)),
+                        'theta': float(form.cleaned_data.get('theta', 0)),
+                    }
+                    legs.append(leg1)
+                    
+                    # Add second leg if present
+                    leg2_type = form.cleaned_data.get('leg2_type')
+                    leg2_strike = form.cleaned_data.get('leg2_strike')
+                    leg2_contracts = form.cleaned_data.get('leg2_contracts')
+                    leg2_premium = form.cleaned_data.get('leg2_premium')
+                    
+                    if leg2_type and leg2_strike and leg2_contracts and leg2_premium:
+                        leg2 = {
+                            'type': leg2_type,
+                            'strike': float(leg2_strike),
+                            'contracts': int(leg2_contracts),
+                            'premium': float(leg2_premium),
+                            'delta': 0,  # Will be calculated
+                            'theta': 0,  # Will be calculated
+                        }
+                        legs.append(leg2)
+                    
+                    # Calculate metrics
+                    capital_required = Decimal(str(form.calculate_capital_required(form.cleaned_data)))
+                    
+                    # Calculate premium collected and paid with safety checks
+                    premium_collected = Decimal('0.00')
+                    premium_paid = Decimal('0.00')
+                    for leg in legs:
+                        premium = Decimal(str(leg.get('premium', 0)))
+                        contracts = Decimal(str(leg.get('contracts', 0)))
+                        if 'short' in leg['type']:
+                            premium_collected += premium * contracts * 100
+                        elif 'long' in leg['type']:
+                            premium_paid += premium * contracts * 100
+                    
+                    net_credit = premium_collected - premium_paid
+                    
+                    position_data = {
+                        'symbol': form.cleaned_data['symbol'],
+                        'strategy': form.cleaned_data['strategy'],
+                        'positions': legs,
+                        'capital_required': capital_required,
+                        'premium_collected': net_credit,
+                        'max_profit': net_credit,
+                        'max_loss': capital_required - net_credit,
+                        'position_delta': form.cleaned_data.get('delta', Decimal('0.0000')),
+                        'position_theta': form.cleaned_data.get('theta', Decimal('0.0000')),
+                        'expiration_date': form.cleaned_data['expiration_date'],
+                        'notes': form.cleaned_data.get('notes', '')
+                    }
                 else:
                     # Use full form data
                     account = form.cleaned_data['managed_account']
@@ -89,7 +157,12 @@ def create_position(request, account_id=None):
                     }
                 
                 # Create position using service
+                print(f"DEBUG: About to create position with data: {position_data}")
+                print(f"DEBUG: Account: {account.account_number}, Available: ${account.available_buying_power}")
+                
                 position = service.create_position(account, position_data)
+                
+                print(f"DEBUG: Position created successfully: {position.id}")
                 
                 messages.success(
                     request,
@@ -98,20 +171,28 @@ def create_position(request, account_id=None):
                 return redirect('investing:managed_account_detail', account_id=account.id)
                 
             except Exception as e:
+                print(f"DEBUG: Exception during position creation: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 messages.error(request, f'Error creating position: {str(e)}')
+        else:
+            print(f"DEBUG: Form is NOT valid. Errors: {form.errors}")
+            print(f"DEBUG: Non-field errors: {form.non_field_errors()}")
+            for field, errors in form.errors.items():
+                print(f"DEBUG: {field}: {errors}")
     else:
         # Initialize form with account if provided
-        initial = {'account': account} if account else {}
-        form = QuickPositionEntryForm(initial=initial)
+        initial = {'managed_account': account} if account else {}
+        form = MultiLegOptionsForm(initial=initial)
     
     context = {
         'form': form,
         'account': account,
         'title': 'Create Position',
-        'form_type': 'quick'
+        'form_type': 'multi_leg'
     }
     
-    return render(request, 'investing/managed/create_position.html', context)
+    return render(request, 'investing/managed/create_position_enhanced.html', context)
 
 
 @staff_member_required

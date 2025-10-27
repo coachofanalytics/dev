@@ -1,0 +1,101 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Create Restock Request{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4><i class="fas fa-box"></i> Create Restock Request</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Note:</strong> Restock requests are usually created automatically when stock is low. 
+                        Use this form only if you need to manually request a restock.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.inventory.id_for_label }}">Inventory Item *</label>
+                            {{ form.inventory }}
+                            <small class="form-text text-muted">Only low stock items are shown</small>
+                            {% if form.inventory.errors %}
+                                <div class="text-danger">{{ form.inventory.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.requested_quantity.id_for_label }}">Requested Quantity *</label>
+                            {{ form.requested_quantity }}
+                            <small class="form-text text-muted">Amount to order</small>
+                            {% if form.requested_quantity.errors %}
+                                <div class="text-danger">{{ form.requested_quantity.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.rejection_reason.id_for_label }}">Notes (Optional)</label>
+                            {{ form.rejection_reason }}
+                            {% if form.rejection_reason.errors %}
+                                <div class="text-danger">{{ form.rejection_reason.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Request
+                            </button>
+                            <a href="{% url 'finance:food:dashboard' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5><i class="fas fa-route"></i> Restock Request Workflow:</h5>
+                    <ol>
+                        <li><strong>Request Created</strong> - You submit the request</li>
+                        <li><strong>Budget Request Generated</strong> - System creates budget request automatically</li>
+                        <li><strong>Estimated Cost Calculated</strong> - Based on current unit price</li>
+                        <li><strong>Approval Process</strong>:
+                            <ul>
+                                <li>If <strong>amount &lt; $50</strong>: Auto-approved ✅</li>
+                                <li>If <strong>amount ≥ $50</strong>: Manager approval required ⏳</li>
+                            </ul>
+                        </li>
+                        <li><strong>Fulfillment</strong> - Once approved, staff can record the purchase</li>
+                    </ol>
+                    <p class="text-success mb-0">
+                        <i class="fas fa-magic"></i> Complete automation via signals!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

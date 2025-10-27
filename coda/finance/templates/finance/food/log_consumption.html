@@ -1,0 +1,108 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Log Daily Consumption{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-clipboard-list"></i> Log Daily Food Consumption</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.inventory.id_for_label }}">Food Item</label>
+                            {{ form.inventory }}
+                            {% if form.inventory.errors %}
+                                <div class="text-danger">{{ form.inventory.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.quantity_consumed.id_for_label }}">Quantity Consumed</label>
+                            {{ form.quantity_consumed }}
+                            {% if form.quantity_consumed.errors %}
+                                <div class="text-danger">{{ form.quantity_consumed.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.consumption_type.id_for_label }}">Type</label>
+                            {{ form.consumption_type }}
+                            {% if form.consumption_type.errors %}
+                                <div class="text-danger">{{ form.consumption_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.consumption_date.id_for_label }}">Date</label>
+                            {{ form.consumption_date }}
+                            {% if form.consumption_date.errors %}
+                                <div class="text-danger">{{ form.consumption_date.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}">Notes (Optional)</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Log Consumption
+                            </button>
+                            <a href="{% url 'finance:food:dashboard' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>How it works:</h5>
+                    <ol>
+                        <li>Select the food item from your location's inventory</li>
+                        <li>Enter the quantity consumed today</li>
+                        <li>Select consumption type (Normal, Event, Waste, or Donation)</li>
+                        <li>Click "Log Consumption"</li>
+                    </ol>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-info-circle"></i> The system will automatically:
+                        <ul>
+                            <li>Decrease inventory quantity</li>
+                            <li>Update consumption rate</li>
+                            <li>Trigger restock request if stock is low</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

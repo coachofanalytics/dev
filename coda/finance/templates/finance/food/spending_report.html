@@ -1,0 +1,195 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Food Spending Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-bar"></i> Food Spending Report</h2>
+            {% if user_department %}
+            <p class="text-muted">Department: {{ user_department.name }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Date Filter -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <label class="mr-2">Date Range:</label>
+                        <input type="date" name="start_date" class="form-control mr-2" value="{{ start_date|date:'Y-m-d' }}" placeholder="Start Date">
+                        <input type="date" name="end_date" class="form-control mr-2" value="{{ end_date|date:'Y-m-d' }}" placeholder="End Date">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <a href="{% url 'finance:food:spending_report' %}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-redo"></i> Reset
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spending Summary -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-dollar-sign"></i> Total Spending</h5>
+                </div>
+                <div class="card-body">
+                    <h2>${{ spending_summary.total_spent|floatformat:2 }}</h2>
+                    <p class="text-muted mb-0">
+                        Total Purchases: {{ spending_summary.total_purchases }}
+                        <br>
+                        Department: {{ spending_summary.department }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {% if budget_comparison %}
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header {% if budget_comparison.status == 'under' %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <h5><i class="fas fa-balance-scale"></i> Budget vs Actual</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Budgeted:</strong><br>
+                            ${{ budget_comparison.budgeted|floatformat:2 }}
+                        </div>
+                        <div class="col-6">
+                            <strong>Actual:</strong><br>
+                            ${{ budget_comparison.actual|floatformat:2 }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Variance:</strong> 
+                            <span class="{% if budget_comparison.status == 'under' %}text-success{% else %}text-danger{% endif %}">
+                                ${{ budget_comparison.variance|floatformat:2 }} 
+                                ({{ budget_comparison.variance_percentage|floatformat:1 }}%)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Spending by Item -->
+    {% if spending_summary.by_item %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Spending by Food Item</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Food Item</th>
+                                    <th>Total Spent</th>
+                                    <th>Quantity Purchased</th>
+                                    <th>Purchase Count</th>
+                                    <th>Avg Price/Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item_name, data in spending_summary.by_item.items %}
+                                <tr>
+                                    <td><strong>{{ item_name }}</strong></td>
+                                    <td>${{ data.total_spent|floatformat:2 }}</td>
+                                    <td>{{ data.quantity_purchased|floatformat:2 }}</td>
+                                    <td>{{ data.purchase_count }}</td>
+                                    <td>${{ data.total_spent|floatformat:2 }}/{{ data.quantity_purchased|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Approvals -->
+    {% if pending_approvals %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-clock"></i> Pending Approvals Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>{{ pending_approvals.total_pending }}</h4>
+                            <p>Pending Requests</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>${{ pending_approvals.total_amount|floatformat:2 }}</h4>
+                            <p>Total Amount</p>
+                        </div>
+                    </div>
+                    
+                    {% if pending_approvals.by_location %}
+                    <hr>
+                    <h6>By Location:</h6>
+                    <ul>
+                        {% for location, data in pending_approvals.by_location.items %}
+                        <li>
+                            <strong>{{ location }}</strong>: 
+                            {{ data.count }} requests, 
+                            ${{ data.amount|floatformat:2 }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    {% if pending_approvals.urgent_count > 0 %}
+                    <div class="alert alert-danger mt-3 mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{{ pending_approvals.urgent_count }}</strong> urgent requests (out of stock items)
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Links -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Quick Links:</h5>
+                    <a href="{% url 'finance:food:dashboard' %}" class="btn btn-primary mr-2">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{% url 'finance:food:restock_requests' %}" class="btn btn-warning mr-2">
+                        <i class="fas fa-list"></i> View All Restock Requests
+                    </a>
+                    <a href="/admin/finance/" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i> Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

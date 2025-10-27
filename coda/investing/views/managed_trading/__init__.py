@@ -9,6 +9,7 @@ from . import monitoring
 from . import sessions
 from . import api
 from . import client
+from . import onboarding  # Phase 6: Client onboarding & compliance
 
 __all__ = [
     'accounts',
@@ -17,5 +18,6 @@ __all__ = [
     'sessions',
     'api',
     'client',
+    'onboarding',
 ]
 

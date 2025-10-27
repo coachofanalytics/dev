@@ -1,0 +1,172 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Record Food Purchase{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-shopping-cart"></i> Record Food Purchase</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.food_item.id_for_label }}">Food Item *</label>
+                                    {{ form.food_item }}
+                                    {% if form.food_item.errors %}
+                                        <div class="text-danger">{{ form.food_item.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.inventory.id_for_label }}">Inventory (Optional)</label>
+                                    {{ form.inventory }}
+                                    <small class="form-text text-muted">Link to specific inventory location</small>
+                                    {% if form.inventory.errors %}
+                                        <div class="text-danger">{{ form.inventory.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.quantity.id_for_label }}">Quantity *</label>
+                                    {{ form.quantity }}
+                                    {% if form.quantity.errors %}
+                                        <div class="text-danger">{{ form.quantity.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.unit_price.id_for_label }}">Unit Price *</label>
+                                    {{ form.unit_price }}
+                                    {% if form.unit_price.errors %}
+                                        <div class="text-danger">{{ form.unit_price.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.currency.id_for_label }}">Currency *</label>
+                                    {{ form.currency }}
+                                    {% if form.currency.errors %}
+                                        <div class="text-danger">{{ form.currency.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.supplier.id_for_label }}">Supplier *</label>
+                                    {{ form.supplier }}
+                                    {% if form.supplier.errors %}
+                                        <div class="text-danger">{{ form.supplier.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.payment_method.id_for_label }}">Payment Method *</label>
+                                    {{ form.payment_method }}
+                                    {% if form.payment_method.errors %}
+                                        <div class="text-danger">{{ form.payment_method.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.receipt_number.id_for_label }}">Receipt/Invoice Number</label>
+                                    {{ form.receipt_number }}
+                                    {% if form.receipt_number.errors %}
+                                        <div class="text-danger">{{ form.receipt_number.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.purchase_date.id_for_label }}">Purchase Date *</label>
+                                    {{ form.purchase_date }}
+                                    {% if form.purchase_date.errors %}
+                                        <div class="text-danger">{{ form.purchase_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}">Notes (Optional)</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> Record Purchase
+                            </button>
+                            <a href="{% url 'finance:food:dashboard' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5><i class="fas fa-magic"></i> Automatic Actions:</h5>
+                    <p class="mb-0">When you record a purchase, the system will automatically:</p>
+                    <ul>
+                        <li><strong>Create Transaction</strong> - Budget entry created automatically</li>
+                        <li><strong>Update Budget</strong> - Food & Accommodation category updated</li>
+                        <li><strong>Update Inventory</strong> - Stock quantity increased (if inventory selected)</li>
+                        <li><strong>Update Price</strong> - Current unit price updated if this is the latest purchase</li>
+                        <li><strong>Track History</strong> - Complete audit trail maintained</li>
+                    </ul>
+                    <p class="text-success mb-0">
+                        <i class="fas fa-check-circle"></i> <strong>Zero manual work required!</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

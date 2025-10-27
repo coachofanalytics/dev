@@ -1,0 +1,436 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Create Position - Enhanced{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fa fa-chart-line"></i> Create Options Position
+            </h1>
+        </div>
+    </div>
+
+    <!-- Form Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="formTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="multi-leg-tab" data-bs-toggle="tab" data-bs-target="#multi-leg" type="button" role="tab">
+                        <i class="fa fa-sitemap"></i> Multi-Leg Strategy
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ai-recommendations-tab" data-bs-toggle="tab" data-bs-target="#ai-recommendations" type="button" role="tab">
+                        <i class="fa fa-robot"></i> AI Recommendations
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="quick-entry-tab" data-bs-toggle="tab" data-bs-target="#quick-entry" type="button" role="tab">
+                        <i class="fa fa-bolt"></i> Quick Entry
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tab-content" id="formTabsContent">
+        <!-- Multi-Leg Strategy Tab -->
+        <div class="tab-pane fade show active" id="multi-leg" role="tabpanel">
+            <form method="post" id="multiLegForm">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="multi_leg">
+                
+                <div class="row">
+                    <!-- Left Column: Form Fields -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Position Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.managed_account.id_for_label }}">Account *</label>
+                                            {{ form.managed_account }}
+                                            {% if form.managed_account.errors %}
+                                                <div class="text-danger">{{ form.managed_account.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.symbol.id_for_label }}">Symbol *</label>
+                                            {{ form.symbol }}
+                                            {% if form.symbol.errors %}
+                                                <div class="text-danger">{{ form.symbol.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.strategy.id_for_label }}">Strategy *</label>
+                                            {{ form.strategy }}
+                                            {% if form.strategy.errors %}
+                                                <div class="text-danger">{{ form.strategy.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.expiration_date.id_for_label }}">Expiration Date *</label>
+                                            {{ form.expiration_date }}
+                                            {% if form.expiration_date.errors %}
+                                                <div class="text-danger">{{ form.expiration_date.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Leg 1 (Short Leg) -->
+                                <div class="card mt-3">
+                                    <div class="card-header bg-danger text-white">
+                                        <h6 class="mb-0">Leg 1 (Short Leg) *</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg1_type.id_for_label }}">Type</label>
+                                                    {{ form.leg1_type }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg1_strike.id_for_label }}">Strike Price</label>
+                                                    {{ form.leg1_strike }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg1_contracts.id_for_label }}">Contracts</label>
+                                                    {{ form.leg1_contracts }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg1_premium.id_for_label }}">Premium</label>
+                                                    {{ form.leg1_premium }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Leg 2 (Long Leg) - Optional -->
+                                <div class="card mt-3" id="leg2-card">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">Leg 2 (Long Leg) - Optional</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg2_type.id_for_label }}">Type</label>
+                                                    {{ form.leg2_type }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg2_strike.id_for_label }}">Strike Price</label>
+                                                    {{ form.leg2_strike }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg2_contracts.id_for_label }}">Contracts</label>
+                                                    {{ form.leg2_contracts }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label for="{{ form.leg2_premium.id_for_label }}">Premium</label>
+                                                    {{ form.leg2_premium }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Greeks -->
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.delta.id_for_label }}">Delta (Optional)</label>
+                                            {{ form.delta }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form.theta.id_for_label }}">Theta (Optional)</label>
+                                            {{ form.theta }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Notes -->
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.notes.id_for_label }}">Notes</label>
+                                    {{ form.notes }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Risk Preview -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Risk Preview</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <h4 class="text-success" id="max-profit">$0.00</h4>
+                                        <p class="text-muted">Max Profit</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4 class="text-danger" id="max-loss">$0.00</h4>
+                                        <p class="text-muted">Max Loss</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="row text-center mt-3">
+                                    <div class="col-6">
+                                        <h4 class="text-warning" id="capital-required">$0.00</h4>
+                                        <p class="text-muted">Capital Required</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4 class="text-info" id="risk-reward">0.00</h4>
+                                        <p class="text-muted">Risk/Reward</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <strong>Breakeven:</strong> <span id="breakeven">$0.00</span><br>
+                                            <strong>Net Credit:</strong> <span id="net-credit">$0.00</span>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 mt-3">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fa fa-check"></i> Create Position
+                                    </button>
+                                    <a href="{% if account %}{% url 'investing:managed_account_detail' account.id %}{% else %}{% url 'investing:managed_accounts_list' %}{% endif %}" class="btn btn-secondary">
+                                        <i class="fa fa-times"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- AI Recommendations Tab -->
+        <div class="tab-pane fade" id="ai-recommendations" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">AI-Powered Position Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label>Symbol</label>
+                                <input type="text" class="form-control" id="ai-symbol" placeholder="Enter symbol (e.g., AAPL)">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label>Strategy Filter</label>
+                                <select class="form-control" id="ai-strategy-filter">
+                                    <option value="all">All Strategies</option>
+                                    <option value="income">Income</option>
+                                    <option value="directional">Directional</option>
+                                    <option value="volatility">Volatility</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label>Risk Level</label>
+                                <select class="form-control" id="ai-risk-level">
+                                    <option value="low">Low Risk</option>
+                                    <option value="medium" selected>Medium Risk</option>
+                                    <option value="high">High Risk</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-primary" id="get-recommendations">
+                            <i class="fa fa-robot"></i> Get AI Recommendations
+                        </button>
+                    </div>
+
+                    <div id="recommendations-container">
+                        <div class="text-center text-muted">
+                            <i class="fa fa-robot fa-3x mb-3"></i>
+                            <p>Enter a symbol and click "Get AI Recommendations" to see top 5 positions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Entry Tab -->
+        <div class="tab-pane fade" id="quick-entry" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Entry (Single Leg)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fa fa-info-circle"></i> Quick Entry Mode</h6>
+                        <p>For single-leg strategies (Cash-Secured Puts, Covered Calls), you can use the Multi-Leg Strategy tab and just fill in Leg 1.</p>
+                        <p><strong>Tip:</strong> Leave "Leg 2 Type" as "No Second Leg" for single-leg strategies.</p>
+                    </div>
+                    <p class="text-muted">The Multi-Leg Strategy tab already supports single-leg strategies:</p>
+                    <ul>
+                        <li>Fill in Leg 1 (Short Leg) only</li>
+                        <li>Leave Leg 2 empty or set Type to "No Second Leg"</li>
+                        <li>Capital will be calculated correctly</li>
+                    </ul>
+                    <a href="#multi-leg" class="btn btn-primary" data-bs-toggle="tab">
+                        <i class="fa fa-arrow-left"></i> Back to Multi-Leg Strategy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time risk calculation
+function calculateRisk() {
+    const leg1Strike = parseFloat(document.getElementById('id_leg1_strike').value) || 0;
+    const leg1Contracts = parseInt(document.getElementById('id_leg1_contracts').value) || 0;
+    const leg1Premium = parseFloat(document.getElementById('id_leg1_premium').value) || 0;
+    
+    const leg2Type = document.getElementById('id_leg2_type').value;
+    const leg2Strike = parseFloat(document.getElementById('id_leg2_strike').value) || 0;
+    const leg2Contracts = parseInt(document.getElementById('id_leg2_contracts').value) || 0;
+    const leg2Premium = parseFloat(document.getElementById('id_leg2_premium').value) || 0;
+    
+    const strategy = document.getElementById('id_strategy').value;
+    
+    let capitalRequired = 0;
+    let maxProfit = 0;
+    let maxLoss = 0;
+    let netCredit = 0;
+    let breakeven = 0;
+    
+    // Check if there's a second leg
+    const hasSecondLeg = leg2Type && leg2Type !== '' && leg2Strike > 0 && leg2Contracts > 0;
+    
+    if (hasSecondLeg) {
+        // Multi-leg strategy (spread)
+        const strikeDiff = Math.abs(leg1Strike - leg2Strike);
+        capitalRequired = strikeDiff * leg1Contracts * 100;
+        netCredit = (leg1Premium - leg2Premium) * leg1Contracts * 100;
+        maxProfit = netCredit;
+        maxLoss = capitalRequired - netCredit;
+        breakeven = leg1Strike - (netCredit / (leg1Contracts * 100));
+    } else {
+        // Single leg strategy
+        if (strategy === 'cash_secured_put') {
+            capitalRequired = leg1Strike * leg1Contracts * 100;
+            netCredit = leg1Premium * leg1Contracts * 100;
+            maxProfit = netCredit;
+            maxLoss = capitalRequired - netCredit;
+            breakeven = leg1Strike - (netCredit / (leg1Contracts * 100));
+        } else if (strategy === 'covered_call') {
+            capitalRequired = leg1Strike * leg1Contracts * 100;
+            netCredit = leg1Premium * leg1Contracts * 100;
+            maxProfit = netCredit;
+            maxLoss = capitalRequired - netCredit;
+            breakeven = leg1Strike + (netCredit / (leg1Contracts * 100));
+        }
+    }
+    
+    // Update display
+    document.getElementById('max-profit').textContent = '$' + maxProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('max-loss').textContent = '$' + maxLoss.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('capital-required').textContent = '$' + capitalRequired.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('net-credit').textContent = '$' + netCredit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    
+    const riskReward = maxLoss > 0 ? (maxProfit / maxLoss).toFixed(4) : '0.0000';
+    document.getElementById('risk-reward').textContent = '1:' + riskReward;
+    
+    document.getElementById('breakeven').textContent = '$' + breakeven.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = ['id_leg1_strike', 'id_leg1_contracts', 'id_leg1_premium', 'id_leg2_type', 'id_leg2_strike', 'id_leg2_contracts', 'id_leg2_premium', 'id_strategy'];
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', calculateRisk);
+            element.addEventListener('change', calculateRisk);
+        }
+    });
+    
+    // Show/hide leg 2 based on strategy
+    const strategySelect = document.getElementById('id_strategy');
+    const leg2Card = document.getElementById('leg2-card');
+    
+    strategySelect.addEventListener('change', function() {
+        const multiLegStrategies = ['bull_put_spread', 'bear_call_spread', 'iron_condor', 'iron_butterfly'];
+        if (multiLegStrategies.includes(this.value)) {
+            leg2Card.style.display = 'block';
+        } else {
+            leg2Card.style.display = 'none';
+        }
+        calculateRisk();
+    });
+    
+    // Initial calculation
+    calculateRisk();
+});
+
+// AI Recommendations (placeholder)
+document.getElementById('get-recommendations').addEventListener('click', function() {
+    const symbol = document.getElementById('ai-symbol').value;
+    if (!symbol) {
+        alert('Please enter a symbol');
+        return;
+    }
+    
+    const container = document.getElementById('recommendations-container');
+    container.innerHTML = '<div class="text-center"><i class="fa fa-spinner fa-spin fa-2x"></i><p>Loading AI recommendations...</p></div>';
+    
+    // Simulate API call
+    setTimeout(() => {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <h6>AI Recommendations for ${symbol.toUpperCase()}</h6>
+                <p>This would show top 5 AI-recommended positions based on current market conditions, volatility, and risk parameters.</p>
+                <p><em>OptionPlay API integration coming soon!</em></p>
+            </div>
+        `;
+    }, 2000);
+});
+</script>
+{% endblock %}

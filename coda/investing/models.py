@@ -2361,3 +2361,365 @@ class TradingSession(TimeStampedModel):
     
     def __str__(self):
         return f"{self.managed_account.account_number} - {self.session_date.strftime('%Y-%m-%d')}"
+
+
+# ============================================================================
+# PHASE 6: CLIENT ONBOARDING & COMPLIANCE MODELS
+# ============================================================================
+
+class InvestorRiskProfile(TimeStampedModel):
+    """
+    Risk tolerance assessment for managed trading clients
+    Based on 10-question questionnaire scoring 0-100
+    """
+    
+    RISK_CATEGORY_CHOICES = [
+        ('conservative', 'Conservative (0-30)'),
+        ('moderate', 'Moderate (31-60)'),
+        ('aggressive', 'Aggressive (61-100)'),
+    ]
+    
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='risk_profile'
+    )
+    
+    # Questionnaire responses (stored as JSON)
+    questionnaire_data = models.JSONField(
+        help_text="All 10 question responses"
+    )
+    
+    # Calculated risk score (0-100)
+    risk_score = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Total score from questionnaire (0-100)"
+    )
+    
+    # Derived risk category
+    risk_category = models.CharField(
+        max_length=20,
+        choices=RISK_CATEGORY_CHOICES,
+        help_text="Conservative, Moderate, or Aggressive"
+    )
+    
+    # Assessment metadata
+    assessed_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When assessment was completed"
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+        help_text="Last time profile was updated"
+    )
+    
+    # Validity
+    is_current = models.BooleanField(
+        default=True,
+        help_text="Is this the current valid assessment?"
+    )
+    expires_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when reassessment is required (typically 1 year)"
+    )
+    
+    class Meta:
+        verbose_name = "Investor Risk Profile"
+        verbose_name_plural = "Investor Risk Profiles"
+        ordering = ['-assessed_date']
+    
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.risk_category} ({self.risk_score})"
+    
+    def save(self, *args, **kwargs):
+        # Auto-set expiry date (1 year from assessment)
+        if not self.expires_date:
+            self.expires_date = timezone.now().date() + timedelta(days=365)
+        super().save(*args, **kwargs)
+    
+    @property
+    def is_expired(self):
+        """Check if risk assessment has expired"""
+        if self.expires_date:
+            return timezone.now().date() > self.expires_date
+        return False
+    
+    @property
+    def recommended_tiers(self):
+        """Get recommended fee tiers based on risk category"""
+        if self.risk_category == 'conservative':
+            return ['starter', 'professional', 'consultative']
+        elif self.risk_category == 'moderate':
+            return ['professional', 'premium', 'consultative']
+        else:  # aggressive
+            return ['premium', 'consultative', 'co_invest']
+
+
+class ManagedTradingApplication(TimeStampedModel):
+    """
+    Client application for managed trading services
+    Includes capital commitment, tier selection, and approval workflow
+    """
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('withdrawn', 'Withdrawn by Client'),
+    ]
+    
+    FUNDING_METHOD_CHOICES = [
+        ('wire', 'Wire Transfer'),
+        ('ach', 'ACH Transfer'),
+        ('check', 'Check'),
+        ('crypto', 'Cryptocurrency'),
+    ]
+    
+    # Applicant
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='trading_applications'
+    )
+    
+    # Risk profile (required)
+    risk_profile = models.ForeignKey(
+        InvestorRiskProfile,
+        on_delete=models.PROTECT,
+        help_text="Must complete risk assessment first"
+    )
+    
+    # Investment details
+    initial_capital = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('5000.00'))],
+        help_text="Initial capital to invest (minimum $5,000)"
+    )
+    
+    fee_tier = models.CharField(
+        max_length=20,
+        choices=ManagedTradingAccount.FEE_TIER_CHOICES,
+        help_text="Selected fee tier"
+    )
+    
+    # Preferences
+    preferred_manager = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='managed_applications',
+        limit_choices_to={'is_staff': True},
+        help_text="Preferred account manager (optional)"
+    )
+    
+    funding_method = models.CharField(
+        max_length=20,
+        choices=FUNDING_METHOD_CHOICES,
+        default='wire'
+    )
+    
+    # Application status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    
+    applied_date = models.DateTimeField(
+        auto_now_add=True
+    )
+    
+    # Review
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_applications'
+    )
+    reviewed_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    
+    # Approval/Rejection
+    approval_notes = models.TextField(
+        blank=True,
+        help_text="Internal notes about approval decision"
+    )
+    rejection_reason = models.TextField(
+        blank=True,
+        help_text="Reason for rejection (shown to client)"
+    )
+    
+    # Contract status
+    contracts_generated = models.BooleanField(
+        default=False,
+        help_text="Have contracts been generated?"
+    )
+    all_contracts_signed = models.BooleanField(
+        default=False,
+        help_text="Have all required contracts been signed?"
+    )
+    
+    # Created account (after approval)
+    managed_account = models.OneToOneField(
+        ManagedTradingAccount,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='source_application',
+        help_text="Created managed trading account"
+    )
+    
+    class Meta:
+        verbose_name = "Managed Trading Application"
+        verbose_name_plural = "Managed Trading Applications"
+        ordering = ['-applied_date']
+        indexes = [
+            models.Index(fields=['status', '-applied_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.fee_tier} ({self.status})"
+    
+    @property
+    def risk_tier_match(self):
+        """Check if selected tier matches risk profile"""
+        recommended = self.risk_profile.recommended_tiers
+        return self.fee_tier in recommended
+    
+    @property
+    def capital_tier_match(self):
+        """Check if capital meets tier minimum"""
+        tier_minimums = {
+            'starter': Decimal('5000.00'),
+            'professional': Decimal('15000.00'),
+            'premium': Decimal('25000.00'),
+            'consultative': Decimal('50000.00'),
+            'co_invest': Decimal('100000.00'),
+        }
+        return self.initial_capital >= tier_minimums.get(self.fee_tier, Decimal('5000.00'))
+    
+    @property
+    def is_qualified_for_auto_approval(self):
+        """
+        Check if application qualifies for automatic approval
+        Criteria:
+        - Risk/tier match
+        - Capital meets minimum
+        - All contracts signed
+        - No red flags
+        """
+        return (
+            self.risk_tier_match and
+            self.capital_tier_match and
+            self.all_contracts_signed and
+            self.status == 'pending'
+        )
+
+
+class ManagedTradingContract(TimeStampedModel):
+    """
+    Contracts for managed trading (extends base contract system)
+    4 required contracts: IMA, Risk Disclosure, Fee Agreement, Terms
+    """
+    
+    CONTRACT_TYPE_CHOICES = [
+        ('ima', 'Investment Management Agreement'),
+        ('risk_disclosure', 'Options Trading Risk Disclosure'),
+        ('fee_agreement', 'Fee Schedule Agreement'),
+        ('terms', 'Terms of Service'),
+    ]
+    
+    # Link to application or account
+    application = models.ForeignKey(
+        ManagedTradingApplication,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='contracts',
+        help_text="Application this contract belongs to"
+    )
+    
+    managed_account = models.ForeignKey(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='contracts',
+        help_text="Account this contract belongs to (if approved)"
+    )
+    
+    # Contract details
+    contract_type = models.CharField(
+        max_length=20,
+        choices=CONTRACT_TYPE_CHOICES
+    )
+    
+    title = models.CharField(
+        max_length=200,
+        help_text="Contract title"
+    )
+    
+    # Contract content
+    contract_text = models.TextField(
+        help_text="Full contract text (can be HTML)"
+    )
+    
+    # Signature
+    is_signed = models.BooleanField(
+        default=False
+    )
+    signature_data = models.TextField(
+        blank=True,
+        help_text="Base64 encoded signature image"
+    )
+    signed_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    signature_ip = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text="IP address where contract was signed"
+    )
+    
+    # PDF generation
+    pdf_generated = models.BooleanField(
+        default=False
+    )
+    pdf_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="URL to signed PDF"
+    )
+    
+    class Meta:
+        verbose_name = "Managed Trading Contract"
+        verbose_name_plural = "Managed Trading Contracts"
+        ordering = ['contract_type']
+        unique_together = [['application', 'contract_type']]
+    
+    def __str__(self):
+        if self.application:
+            return f"{self.application.user.get_full_name()} - {self.get_contract_type_display()}"
+        return f"{self.title} - {self.get_contract_type_display()}"
+    
+    def sign(self, signature_data, ip_address=None):
+        """Sign the contract"""
+        self.is_signed = True
+        self.signature_data = signature_data
+        self.signed_date = timezone.now()
+        self.signature_ip = ip_address
+        self.save()
+        
+        # Check if all contracts for application are signed
+        if self.application:
+            all_signed = not self.application.contracts.filter(is_signed=False).exists()
+            if all_signed:
+                self.application.all_contracts_signed = True
+                self.application.save()

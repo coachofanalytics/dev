@@ -18,7 +18,7 @@ class MultiLegOptionsForm(forms.Form):
     
     # Account Selection
     managed_account = forms.ModelChoiceField(
-        queryset=ManagedTradingAccount.objects.filter(status='active'),
+        queryset=ManagedTradingAccount.objects.filter(status__in=['active', 'pending']),
         empty_label="Select Account",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -213,18 +213,30 @@ class MultiLegOptionsForm(forms.Form):
         leg1_contracts = cleaned_data.get('leg1_contracts', 0)
         leg2_strike = cleaned_data.get('leg2_strike', 0)
         leg2_contracts = cleaned_data.get('leg2_contracts', 0)
+        leg2_type = cleaned_data.get('leg2_type', '')
         
+        # If there's a second leg, it's a spread regardless of selected strategy
+        if leg2_type and leg2_strike and leg2_contracts:
+            # For spreads: (higher_strike - lower_strike) * contracts * 100
+            strike_diff = abs(leg1_strike - leg2_strike)
+            return strike_diff * leg1_contracts * 100
+        
+        # Single leg strategies
         if strategy == 'cash_secured_put':
             # For cash-secured put: strike * contracts * 100
             return leg1_strike * leg1_contracts * 100
         
+        elif strategy == 'covered_call':
+            # For covered call: need to own 100 shares per contract
+            return leg1_strike * leg1_contracts * 100
+        
         elif strategy in ['bull_put_spread', 'bear_call_spread']:
             # For spreads: (short_strike - long_strike) * contracts * 100
-            return (leg1_strike - leg2_strike) * leg1_contracts * 100
+            return abs(leg1_strike - leg2_strike) * leg1_contracts * 100
         
         elif strategy in ['iron_condor', 'iron_butterfly']:
             # For iron condor: (short_strike - long_strike) * contracts * 100
-            return (leg1_strike - leg2_strike) * leg1_contracts * 100
+            return abs(leg1_strike - leg2_strike) * leg1_contracts * 100
         
         return Decimal('0.00')
 
