@@ -114,10 +114,19 @@ def _handle_budget_edit_post(self, request, company, category, budgets):
 
 
 def _create_budget_request(self, request, company, category, updated_budgets):
-    """Create a budget request for approval."""
+    """
+    Create budget request and process with SmartApprovalService.
+    
+    This integrates Phase 2 tier-based auto-approval logic.
+    """
     try:
+        from finance.services.smart_approval_service import SmartApprovalService
+        
         # Calculate total amount
         total_amount = sum(budget.estimated_amount for budget in updated_budgets)
+        
+        # Get priority from form (default to medium if not provided)
+        priority = request.POST.get('priority', 'medium')
         
         # Create budget request
         budget_request = BudgetRequest.objects.create(
@@ -127,12 +136,33 @@ def _create_budget_request(self, request, company, category, updated_budgets):
             requester=request.user,
             department=request.user.userprofile.department if hasattr(request.user, 'userprofile') and request.user.userprofile.department else None,
             required_date=timezone.now().date(),
-            priority='medium'
+            priority=priority
         )
         
-        # Submit for approval (set status to submitted)
-        budget_request.status = 'submitted'
-        budget_request.save(update_fields=['status'])
+        # ✅ PROCESS WITH SMART APPROVAL SERVICE (Phase 2 Integration)
+        smart_service = SmartApprovalService()
+        approval_result = smart_service.process_budget_request(budget_request, auto_approver=None)
+        
+        # Log the result for tracking
+        self.log_info(
+            f"Budget request #{budget_request.id} processed: "
+            f"Status={approval_result['status']}, "
+            f"Reason={approval_result['reason']}, "
+            f"Approver={approval_result['approver']}"
+        )
+        
+        # Add result to messages for user feedback
+        if approval_result['approved']:
+            messages.success(
+                request,
+                f"✅ Budget request AUTO-APPROVED! Reason: {approval_result['reason']}"
+            )
+        else:
+            approver_info = approval_result.get('routing_reason', 'Manual approval required')
+            messages.info(
+                request,
+                f"📋 Budget request submitted for manual approval. {approver_info}"
+            )
         
         return budget_request
     

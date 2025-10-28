@@ -83,6 +83,67 @@
                 </div>
             </div>
 
+            <!-- Tier & Auto-Approval Information -->
+            <div class="card border-{% if category.approval_tier == 'A' %}success{% elif category.approval_tier == 'B' %}warning{% else %}info{% endif %} mb-4">
+                <div class="card-header bg-{% if category.approval_tier == 'A' %}success{% elif category.approval_tier == 'B' %}warning{% else %}info{% endif %} text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt"></i> Approval Information - Tier {{ category.approval_tier|default:"C" }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Category Type:</strong><br>
+                            {% if category.approval_tier == 'A' %}
+                                <span class="badge badge-success badge-lg">Tier A - Known/Recurring</span>
+                            {% elif category.approval_tier == 'B' %}
+                                <span class="badge badge-warning badge-lg">Tier B - Variable/Operational</span>
+                            {% else %}
+                                <span class="badge badge-info badge-lg">Tier C - Strategic/Discretionary</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Auto-Approval:</strong><br>
+                            {% if category.approval_tier == 'A' and category.auto_approve_enabled %}
+                                <i class="fas fa-check-circle text-success"></i> <strong>Eligible</strong>
+                                <small class="d-block text-muted">If within {{ category.variance_threshold|default:"20" }}% of typical amount</small>
+                            {% else %}
+                                <i class="fas fa-times-circle text-muted"></i> Manual Approval Required
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Typical Monthly:</strong><br>
+                            {% if category.typical_monthly_amount %}
+                                ${{ category.typical_monthly_amount|floatformat:2 }}
+                                <small class="d-block text-muted">Based on transaction history</small>
+                            {% else %}
+                                <span class="text-muted">Not yet calculated</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Expected Approver:</strong><br>
+                            {% if category.approval_tier == 'A' %}
+                                <i class="fas fa-robot text-success"></i> System (Auto)
+                                <small class="d-block text-muted">or Finance Manager if over variance</small>
+                            {% elif category.approval_tier == 'B' %}
+                                <i class="fas fa-user text-warning"></i> Department/Finance Manager
+                                <small class="d-block text-muted">Based on priority</small>
+                            {% else %}
+                                <i class="fas fa-user-tie text-info"></i> Senior Manager/Executive
+                                <small class="d-block text-muted">Strategic assessment required</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if category.approval_tier == 'A' and category.auto_approve_enabled %}
+                    <div class="alert alert-success mt-3 mb-0">
+                        <i class="fas fa-bolt"></i> <strong>Quick Approval Available!</strong> 
+                        This request may be auto-approved instantly if the amount is within typical range.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Existing Budgets Summary -->
             {% if existing_budgets %}
             <div class="alert alert-info">
@@ -105,20 +166,47 @@
             {% endif %}
 
             <!-- Budget Editing Form -->
-            <form id="budgetEditForm">
+            <form id="budgetEditForm" method="POST" action="{% url 'finance:save-budget-estimates' company.slug category.id %}">
                 {% csrf_token %}
                 
-                <!-- Justification -->
-                <div class="form-group mb-4">
-                    <label for="justification"><strong>Budget Justification</strong></label>
-                    <textarea 
-                        id="justification" 
-                        name="justification" 
-                        class="form-control" 
-                        rows="3" 
-                        placeholder="Explain the need for this budget allocation..."
-                        required
-                    ></textarea>
+                <div class="row">
+                    <!-- Justification -->
+                    <div class="col-md-8">
+                        <div class="form-group mb-4">
+                            <label for="justification"><strong>Budget Justification <span class="text-danger">*</span></strong></label>
+                            <textarea 
+                                id="justification" 
+                                name="justification" 
+                                class="form-control" 
+                                rows="3" 
+                                placeholder="Explain the need for this budget allocation..."
+                                required
+                            ></textarea>
+                            <small class="form-text text-muted">Provide a clear business justification for this budget request.</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Priority Selector -->
+                    <div class="col-md-4">
+                        <div class="form-group mb-4">
+                            <label for="priority"><strong>Request Priority <span class="text-danger">*</span></strong></label>
+                            <select id="priority" name="priority" class="form-control" required>
+                                <option value="low">🟢 Low - Routine/Non-Urgent</option>
+                                <option value="medium" selected>🟡 Medium - Standard Request</option>
+                                <option value="high">🟠 High - Important/Time-Sensitive</option>
+                                <option value="urgent">🔴 Urgent - Critical/Immediate</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                {% if category.approval_tier == 'B' %}
+                                    Priority affects approval routing (High → Dept Manager, Low → Finance Manager)
+                                {% elif category.approval_tier == 'C' %}
+                                    Priority affects approval level (High → Senior Manager, Low → Executive)
+                                {% else %}
+                                    Priority helps track request urgency
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Budget Items by Subcategory -->
@@ -177,22 +265,30 @@
 
                 <!-- Total Section -->
                 <div class="total-section">
-                    <div class="row">
-                        <div class="col-md-8">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
                             <h4><i class="fas fa-calculator"></i> Budget Summary</h4>
-                            <div class="row">
-                                <div class="col-md-6">
+                            <div class="mt-2">
+                                <div class="d-flex justify-content-between">
                                     <strong>Total Budget Request:</strong>
+                                    <span id="totalAmount" class="h4 text-primary mb-0">$0.00</span>
                                 </div>
-                                <div class="col-md-6">
-                                    <span id="totalAmount" class="h4 text-primary">$0.00</span>
-                                </div>
+                                <small class="text-muted">Total of all line items below</small>
                             </div>
                         </div>
-                        <div class="col-md-4 text-right">
-                            <button type="submit" class="btn btn-save">
-                                <i class="fas fa-save"></i> Save & Submit for Approval
-                            </button>
+                        <div class="col-md-6">
+                            <div class="text-center p-3 border-left">
+                                <button type="submit" class="btn btn-save btn-lg btn-block">
+                                    <i class="fas fa-paper-plane"></i> Submit Budget Request
+                                </button>
+                                <small class="text-muted mt-2 d-block">
+                                    {% if category.approval_tier == 'A' and category.auto_approve_enabled %}
+                                        ⚡ May be auto-approved instantly
+                                    {% else %}
+                                        Will be routed for manual approval
+                                    {% endif %}
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -262,6 +358,8 @@ $(document).ready(function() {
             alert('Please provide a justification for this budget request.');
             return;
         }
+        
+        const priority = $('#priority').val();
 
         // Show loading modal
         $('#loadingModal').modal('show');
@@ -276,7 +374,8 @@ $(document).ready(function() {
             },
             data: JSON.stringify({
                 line_items: lineItems,
-                justification: justification
+                justification: justification,
+                priority: priority
             }),
             success: function(response) {
                 $('#loadingModal').modal('hide');

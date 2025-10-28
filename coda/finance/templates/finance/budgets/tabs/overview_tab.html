@@ -6,19 +6,35 @@
         <h3 class="mb-0">
             <i class="fas fa-tachometer-alt"></i> Budget Overview
         </h3>
-        <div>
-            <a href="{% url 'finance:budget_request_form' %}" class="btn btn-primary">
-                <i class="fas fa-plus-circle"></i> Create Budget Request
-            </a>
-            <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-outline-secondary">
-                <i class="fas fa-list"></i> My Requests
-            </a>
-            <a href="{% url 'finance:budget_projection' subtitle='summary' %}" class="btn btn-success">
-                <i class="fas fa-project-diagram"></i> Budget Projection
-            </a>
-            <a href="{% url 'finance:projections-list' %}" class="btn btn-info">
-                <i class="fas fa-chart-line"></i> View Projections
-            </a>
+        <div class="btn-toolbar" role="toolbar">
+            <!-- Primary Actions -->
+            <div class="btn-group mr-2" role="group">
+                <a href="{% url 'finance:budget_request_form' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> New Budget Request
+                </a>
+                <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-list"></i> My Requests
+                </a>
+            </div>
+            
+            <!-- Analysis & Projections -->
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-chart-line"></i> Projections
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="{% url 'finance:budget_projection' subtitle='summary' %}">
+                        <i class="fas fa-project-diagram"></i> Generate Projection
+                    </a>
+                    <a class="dropdown-item" href="{% url 'finance:projections-list' %}">
+                        <i class="fas fa-list-alt"></i> View All Projections
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" onclick="generateBudgetProjections()">
+                        <i class="fas fa-magic"></i> Auto-Generate from Transactions
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
     
