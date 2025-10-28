@@ -1,0 +1,232 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Managed Trading Application{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fa fa-file-alt"></i> Managed Trading Application
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Risk Profile Summary -->
+                    <div class="alert alert-success">
+                        <h5><i class="fa fa-check-circle"></i> Risk Assessment Complete!</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Risk Score:</strong> {{ risk_profile.risk_score }}/100
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Category:</strong> {{ risk_profile.get_risk_category_display }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Recommended Tiers:</strong> {{ risk_profile.recommended_tiers|join:", "|title }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fee Tier Information -->
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <h5>📊 Fee Tiers Overview</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <h6 class="text-primary">Starter ($5K-$15K)</h6>
+                                        <ul class="small mb-0">
+                                            <li>10% profit share</li>
+                                            <li>Standard support</li>
+                                            <li>Weekly batches</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 h-100 {% if 'professional' in risk_profile.recommended_tiers %}border-success border-2{% endif %}">
+                                        <h6 class="text-success">Professional ($15K-$25K) 
+                                            {% if 'professional' in risk_profile.recommended_tiers %}
+                                            <span class="badge bg-success">Recommended</span>
+                                            {% endif %}
+                                        </h6>
+                                        <ul class="small mb-0">
+                                            <li>15% profit share</li>
+                                            <li>Priority support</li>
+                                            <li>Weekly batches</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 h-100 {% if 'premium' in risk_profile.recommended_tiers %}border-success border-2{% endif %}">
+                                        <h6 class="text-warning">Premium ($25K+)
+                                            {% if 'premium' in risk_profile.recommended_tiers %}
+                                            <span class="badge bg-success">Recommended</span>
+                                            {% endif %}
+                                        </h6>
+                                        <ul class="small mb-0">
+                                            <li>20% profit share</li>
+                                            <li>Premium support</li>
+                                            <li>Priority execution</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 h-100 {% if 'consultative' in risk_profile.recommended_tiers %}border-success border-2{% endif %}">
+                                        <h6 class="text-info">Consultative ($50K+)
+                                            {% if 'consultative' in risk_profile.recommended_tiers %}
+                                            <span class="badge bg-success">Recommended</span>
+                                            {% endif %}
+                                        </h6>
+                                        <ul class="small mb-0">
+                                            <li>$250/session + 20% profit</li>
+                                            <li>1-on-1 consultations</li>
+                                            <li>Max 4 sessions/month</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.initial_capital.id_for_label }}" class="form-label">
+                                    <strong>Initial Capital *</strong>
+                                </label>
+                                {{ form.initial_capital }}
+                                <small class="form-text text-muted">{{ form.initial_capital.help_text }}</small>
+                                {% if form.initial_capital.errors %}
+                                <div class="text-danger mt-1">{{ form.initial_capital.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fee_tier.id_for_label }}" class="form-label">
+                                    <strong>Fee Tier *</strong>
+                                </label>
+                                {{ form.fee_tier }}
+                                <small class="form-text text-muted">{{ form.fee_tier.help_text }}</small>
+                                {% if form.fee_tier.errors %}
+                                <div class="text-danger mt-1">{{ form.fee_tier.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.preferred_manager.id_for_label }}" class="form-label">
+                                    <strong>Preferred Account Manager</strong> (Optional)
+                                </label>
+                                {{ form.preferred_manager }}
+                                <small class="form-text text-muted">Leave blank for auto-assignment</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.funding_method.id_for_label }}" class="form-label">
+                                    <strong>Funding Method *</strong>
+                                </label>
+                                {{ form.funding_method }}
+                            </div>
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="alert alert-warning">
+                            <h6><i class="fa fa-info-circle"></i> What Happens Next?</h6>
+                            <ol class="mb-0">
+                                <li>Review and sign 4 digital contracts</li>
+                                <li>Automated qualification check</li>
+                                <li>If qualified → instant account approval!</li>
+                                <li>If manual review needed → decision within 24 hours</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <a href="{% url 'investing:investment_dashboard' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="fa fa-arrow-left"></i> Cancel
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-success w-100 btn-lg">
+                                    <i class="fa fa-paper-plane"></i> Submit Application
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Progress Indicator -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="progress-steps d-flex justify-content-between">
+                        <div class="step text-center">
+                            <div class="step-circle bg-success text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                ✓
+                            </div>
+                            <small>Risk Assessment</small>
+                        </div>
+                        <div class="step active text-center">
+                            <div class="step-circle bg-primary text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                2
+                            </div>
+                            <small><strong>Application</strong></small>
+                        </div>
+                        <div class="step text-center text-muted">
+                            <div class="step-circle bg-secondary text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                3
+                            </div>
+                            <small>Sign Contracts</small>
+                        </div>
+                        <div class="step text-center text-muted">
+                            <div class="step-circle bg-secondary text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                ✓
+                            </div>
+                            <small>Account Ready</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-steps {
+    position: relative;
+}
+
+.progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: #dee2e6;
+    z-index: -1;
+}
+
+.step.active .step-circle {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+</style>
+{% endblock %}
+

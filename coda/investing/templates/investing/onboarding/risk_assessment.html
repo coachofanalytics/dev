@@ -1,0 +1,160 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Risk Tolerance Assessment{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fa fa-clipboard-list"></i> Risk Tolerance Assessment
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if existing_profile %}
+                    <div class="alert alert-info">
+                        <h5><i class="fa fa-info-circle"></i> You already have a risk profile</h5>
+                        <p class="mb-2">
+                            <strong>Risk Score:</strong> {{ existing_profile.risk_score }}/100 
+                            ({{ existing_profile.get_risk_category_display }})
+                        </p>
+                        <p class="mb-2">
+                            <strong>Assessed:</strong> {{ existing_profile.assessed_date|date:"M d, Y" }}
+                        </p>
+                        <p class="mb-0">
+                            You can proceed to the application or retake the assessment if your risk tolerance has changed.
+                        </p>
+                        <div class="mt-3">
+                            <a href="{% url 'investing:managed_trading_apply' %}" class="btn btn-success">
+                                <i class="fa fa-arrow-right"></i> Proceed to Application
+                            </a>
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('questionnaire-form').style.display='block'; this.parentElement.parentElement.parentElement.style.display='none';">
+                                <i class="fa fa-redo"></i> Retake Assessment
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div id="questionnaire-form" {% if existing_profile %}style="display:none;"{% endif %}>
+                        <div class="alert alert-primary">
+                            <h5><i class="fa fa-lightbulb"></i> About This Assessment</h5>
+                            <p class="mb-0">
+                                This 10-question assessment helps us understand your investment experience and risk tolerance.
+                                Your answers will determine your risk score (0-100) and recommend appropriate fee tiers.
+                                This takes approximately <strong>3-5 minutes</strong>.
+                            </p>
+                        </div>
+
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            
+                            {% for field in form %}
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">{{ field.label }}</h5>
+                                    
+                                    {% for choice in field.field.choices %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" 
+                                               type="radio" 
+                                               name="{{ field.name }}" 
+                                               id="{{ field.name }}_{{ forloop.counter }}" 
+                                               value="{{ choice.0 }}"
+                                               {% if field.value == choice.0|stringformat:"s" %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ field.name }}_{{ forloop.counter }}">
+                                            {{ choice.1 }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    {% if field.errors %}
+                                    <div class="text-danger mt-2">
+                                        {{ field.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <a href="{% url 'investing:investment_dashboard' %}" class="btn btn-outline-secondary w-100">
+                                        <i class="fa fa-arrow-left"></i> Back to Dashboard
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                        <i class="fa fa-check-circle"></i> Submit Assessment
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Indicator -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="progress-steps d-flex justify-content-between">
+                        <div class="step active text-center">
+                            <div class="step-circle bg-primary text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                1
+                            </div>
+                            <small><strong>Risk Assessment</strong></small>
+                        </div>
+                        <div class="step text-center text-muted">
+                            <div class="step-circle bg-secondary text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                2
+                            </div>
+                            <small>Application</small>
+                        </div>
+                        <div class="step text-center text-muted">
+                            <div class="step-circle bg-secondary text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                3
+                            </div>
+                            <small>Sign Contracts</small>
+                        </div>
+                        <div class="step text-center text-muted">
+                            <div class="step-circle bg-secondary text-white rounded-circle mx-auto mb-2" style="width: 40px; height: 40px; line-height: 40px;">
+                                ✓
+                            </div>
+                            <small>Account Ready</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-steps {
+    position: relative;
+}
+
+.progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: #dee2e6;
+    z-index: -1;
+}
+
+.step.active .step-circle {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+</style>
+{% endblock %}
+
