@@ -14,6 +14,115 @@ User = get_user_model()
 # Create your models here.
 
 
+# ============================================================================
+# FEE TIER CONFIGURATION (Admin-editable)
+# ============================================================================
+
+class FeeTierConfiguration(TimeStampedModel):
+    """
+    Admin-editable configuration for managed trading fee tiers
+    Allows staff to update minimums, fees, descriptions without code changes
+    """
+    
+    TIER_CHOICES = [
+        ('starter', 'Starter'),
+        ('professional', 'Professional'),
+        ('premium', 'Premium'),
+        ('consultative', 'Consultative'),
+        ('co_invest', 'Co-Invest'),
+    ]
+    
+    tier_code = models.CharField(
+        max_length=20,
+        choices=TIER_CHOICES,
+        unique=True,
+        help_text="Internal tier code"
+    )
+    tier_name = models.CharField(
+        max_length=100,
+        help_text="Display name (e.g., 'Starter - AI Powered')"
+    )
+    minimum_capital = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Minimum capital required for this tier"
+    )
+    monthly_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fixed monthly fee (set to 0 if none)"
+    )
+    per_session_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fee per session (for consultative tier)"
+    )
+    profit_share_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Percentage of profits shared (e.g., 10 for 10%)"
+    )
+    max_sessions_per_month = models.IntegerField(
+        default=0,
+        help_text="Maximum sessions per month (0 if unlimited)"
+    )
+    short_description = models.CharField(
+        max_length=200,
+        help_text="Brief description for tier card"
+    )
+    
+    # Features description (for display)
+    features = models.JSONField(
+        default=list,
+        help_text="List of features (e.g., ['AI-driven trades', 'Real-time monitoring'])"
+    )
+    compatible_risk_levels = models.JSONField(
+        default=list,
+        help_text="Risk levels this tier is suitable for (e.g., ['low', 'medium'])"
+    )
+    
+    # Display order
+    display_order = models.IntegerField(
+        default=0,
+        help_text="Order to display on forms (lower = first)"
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Is this tier currently available?"
+    )
+    
+    class Meta:
+        verbose_name = "Fee Tier Configuration"
+        verbose_name_plural = "Fee Tier Configurations"
+        ordering = ['display_order', 'minimum_capital']
+    
+    def __str__(self):
+        return f"{self.tier_name} (${self.minimum_capital:,.0f}+)"
+    
+    def get_fee_display(self):
+        """Return formatted fee string for display"""
+        parts = []
+        if self.monthly_fee > 0:
+            parts.append(f"${self.monthly_fee:.0f}/month")
+        if self.per_session_fee > 0:
+            parts.append(f"${self.per_session_fee:.0f}/session")
+        if self.profit_share_percentage > 0:
+            parts.append(f"{self.profit_share_percentage:.0f}% profit")
+        return " + ".join(parts) if parts else "Custom"
+    
+    def get_features_list(self):
+        """Return features as a list"""
+        # Handle both list (JSONField) and string (TextField) formats
+        if isinstance(self.features, list):
+            return self.features
+        elif isinstance(self.features, str):
+            return [f.strip() for f in self.features.split(',') if f.strip()]
+        return []
+
+
 class Investor_Information(ContractBase, DocumentMixin, StatusMixin):
     """
     Unified model for all investor types in CODA
@@ -2406,6 +2515,135 @@ class TradingSession(TimeStampedModel):
 # PHASE 6: CLIENT ONBOARDING & COMPLIANCE MODELS
 # ============================================================================
 
+class FeeTierConfiguration(TimeStampedModel):
+    """
+    Configurable fee tier settings - editable in Django Admin
+    Allows staff to update tier minimums, fees, descriptions without code changes
+    """
+    
+    FEE_TIER_CHOICES = [
+        ('starter', 'Starter - Automated Execution'),
+        ('professional', 'Professional - Weekly Strategy'),
+        ('premium', 'Premium - Enhanced Support'),
+        ('consultative', 'Consultative - 1-on-1 Sessions'),
+        ('co_invest', 'Co-Investment - Partnership'),
+    ]
+    
+    # Tier identification
+    tier_code = models.CharField(
+        max_length=20,
+        choices=FEE_TIER_CHOICES,
+        unique=True,
+        help_text="Unique identifier for this tier"
+    )
+    tier_name = models.CharField(
+        max_length=100,
+        help_text="Display name (e.g., 'Starter - Automated Execution')"
+    )
+    
+    # Financial requirements
+    minimum_capital = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Minimum capital required for this tier"
+    )
+    
+    # Fee structure
+    monthly_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fixed monthly fee (set to 0 if none)"
+    )
+    profit_share_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Percentage of profits shared (e.g., 10 for 10%)"
+    )
+    per_session_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fee per session (for consultative tier)"
+    )
+    max_sessions_per_month = models.IntegerField(
+        default=0,
+        help_text="Maximum sessions per month (0 if unlimited)"
+    )
+    
+    # Descriptions for display
+    short_description = models.CharField(
+        max_length=200,
+        help_text="Brief description for tier card"
+    )
+    
+    # Features (stored as JSON for flexibility)
+    features = models.JSONField(
+        default=list,
+        help_text="List of features (e.g., ['AI-driven trades', 'Real-time monitoring'])"
+    )
+    
+    # Risk compatibility
+    compatible_risk_levels = models.JSONField(
+        default=list,
+        help_text="Risk levels this tier is suitable for (e.g., ['low', 'medium'])"
+    )
+    
+    # Active status
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Is this tier currently available?"
+    )
+    
+    # Display order
+    display_order = models.IntegerField(
+        default=0,
+        help_text="Order to display tiers (lower = first)"
+    )
+    
+    class Meta:
+        verbose_name = "Fee Tier Configuration"
+        verbose_name_plural = "Fee Tier Configurations"
+        ordering = ['display_order', 'minimum_capital']
+    
+    def __str__(self):
+        return f"{self.tier_name} (Min: ${self.minimum_capital:,.0f})"
+    
+    @property
+    def fee_display(self):
+        """Human-readable fee structure"""
+        parts = []
+        if self.monthly_fee > 0:
+            parts.append(f"${self.monthly_fee:.0f}/mo")
+        if self.per_session_fee > 0:
+            parts.append(f"${self.per_session_fee:.0f}/session")
+        if self.profit_share_percentage > 0:
+            parts.append(f"{self.profit_share_percentage:.0f}% profit")
+        return " + ".join(parts) if parts else "Custom"
+    
+    @classmethod
+    def get_tier_minimum(cls, tier_code):
+        """Get minimum capital for a tier (fallback to hardcoded if not found)"""
+        try:
+            config = cls.objects.get(tier_code=tier_code, is_active=True)
+            return config.minimum_capital
+        except cls.DoesNotExist:
+            # Fallback to hardcoded defaults
+            defaults = {
+                'starter': Decimal('5000.00'),
+                'professional': Decimal('15000.00'),
+                'premium': Decimal('25000.00'),
+                'consultative': Decimal('25000.00'),
+                'co_invest': Decimal('100000.00'),
+            }
+            return defaults.get(tier_code, Decimal('5000.00'))
+    
+    @classmethod
+    def get_all_active_tiers(cls):
+        """Get all active tier configurations"""
+        return cls.objects.filter(is_active=True).order_by('display_order', 'minimum_capital')
+
+
 class InvestorRiskProfile(TimeStampedModel):
     """
     Risk tolerance assessment for managed trading clients
@@ -2633,15 +2871,20 @@ class ManagedTradingApplication(TimeStampedModel):
     
     @property
     def capital_tier_match(self):
-        """Check if capital meets tier minimum"""
-        tier_minimums = {
-            'starter': Decimal('5000.00'),
-            'professional': Decimal('15000.00'),
-            'premium': Decimal('25000.00'),
-            'consultative': Decimal('50000.00'),
-            'co_invest': Decimal('100000.00'),
-        }
-        return self.initial_capital >= tier_minimums.get(self.fee_tier, Decimal('5000.00'))
+        """Check if capital meets tier minimum (using database configuration)"""
+        try:
+            tier_config = FeeTierConfiguration.objects.get(tier_code=self.fee_tier, is_active=True)
+            return self.initial_capital >= tier_config.minimum_capital
+        except FeeTierConfiguration.DoesNotExist:
+            # Fallback to hardcoded minimums if config not found
+            tier_minimums = {
+                'starter': Decimal('5000.00'),
+                'professional': Decimal('15000.00'),
+                'premium': Decimal('25000.00'),
+                'consultative': Decimal('25000.00'),
+                'co_invest': Decimal('100000.00'),
+            }
+            return self.initial_capital >= tier_minimums.get(self.fee_tier, Decimal('5000.00'))
     
     @property
     def is_qualified_for_auto_approval(self):

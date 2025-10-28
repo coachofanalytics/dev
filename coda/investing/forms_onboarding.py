@@ -254,16 +254,22 @@ class ManagedTradingApplicationForm(forms.ModelForm):
         tier = cleaned_data.get('fee_tier')
         
         if capital and tier:
-            # Check capital meets tier minimum
-            tier_minimums = {
-                'starter': Decimal('5000.00'),
-                'professional': Decimal('15000.00'),
-                'premium': Decimal('25000.00'),
-                'consultative': Decimal('50000.00'),
-                'co_invest': Decimal('100000.00'),
-            }
+            # Check capital meets tier minimum (using database configuration)
+            from .models import FeeTierConfiguration
+            try:
+                tier_config = FeeTierConfiguration.objects.get(tier_code=tier, is_active=True)
+                minimum = tier_config.minimum_capital
+            except FeeTierConfiguration.DoesNotExist:
+                # Fallback to hardcoded minimums
+                tier_minimums = {
+                    'starter': Decimal('5000.00'),
+                    'professional': Decimal('15000.00'),
+                    'premium': Decimal('25000.00'),
+                    'consultative': Decimal('25000.00'),
+                    'co_invest': Decimal('100000.00'),
+                }
+                minimum = tier_minimums.get(tier, Decimal('5000.00'))
             
-            minimum = tier_minimums.get(tier, Decimal('5000.00'))
             if capital < minimum:
                 raise ValidationError(
                     f"The {tier} tier requires a minimum of ${minimum:,.2f}. "

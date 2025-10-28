@@ -42,14 +42,21 @@ class ApplicationReviewService:
         
         # Check 3: Capital meets minimum
         if not application.capital_tier_match:
-            tier_minimums = {
-                'starter': Decimal('5000.00'),
-                'professional': Decimal('15000.00'),
-                'premium': Decimal('25000.00'),
-                'consultative': Decimal('50000.00'),
-                'co_invest': Decimal('100000.00'),
-            }
-            minimum = tier_minimums.get(application.fee_tier, Decimal('5000.00'))
+            # Get minimum from database configuration
+            from investing.models import FeeTierConfiguration
+            try:
+                tier_config = FeeTierConfiguration.objects.get(tier_code=application.fee_tier, is_active=True)
+                minimum = tier_config.minimum_capital
+            except FeeTierConfiguration.DoesNotExist:
+                # Fallback to hardcoded minimums
+                tier_minimums = {
+                    'starter': Decimal('5000.00'),
+                    'professional': Decimal('15000.00'),
+                    'premium': Decimal('25000.00'),
+                    'consultative': Decimal('25000.00'),
+                    'co_invest': Decimal('100000.00'),
+                }
+                minimum = tier_minimums.get(application.fee_tier, Decimal('5000.00'))
             return False, f"Capital ${application.initial_capital:,.2f} below tier minimum ${minimum:,.2f}"
         
         # Check 4: Application status is pending

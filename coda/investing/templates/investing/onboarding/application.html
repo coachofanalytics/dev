@@ -35,58 +35,28 @@
                         <div class="card-body">
                             <h5>📊 Fee Tiers Overview</h5>
                             <div class="row">
+                                {% for tier in tier_configs %}
                                 <div class="col-md-6 mb-3">
-                                    <div class="border rounded p-3 h-100">
-                                        <h6 class="text-primary">Starter ($5K-$15K)</h6>
-                                        <ul class="small mb-0">
-                                            <li>10% profit share</li>
-                                            <li>Standard support</li>
-                                            <li>Weekly batches</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="border rounded p-3 h-100 {% if 'professional' in risk_profile.recommended_tiers %}border-success border-2{% endif %}">
-                                        <h6 class="text-success">Professional ($15K-$25K) 
-                                            {% if 'professional' in risk_profile.recommended_tiers %}
+                                    <div class="border rounded p-3 h-100 {% if tier.tier_code in risk_profile.recommended_tiers %}border-success border-2{% endif %}">
+                                        <h6 class="{% if tier.tier_code == 'starter' %}text-primary{% elif tier.tier_code == 'professional' %}text-success{% elif tier.tier_code == 'premium' %}text-warning{% elif tier.tier_code == 'consultative' %}text-info{% else %}text-danger{% endif %}">
+                                            {{ tier.tier_name }} (${{ tier.minimum_capital|floatformat:"0" }}{% if tier.minimum_capital < 100000 %}K{% endif %}+)
+                                            {% if tier.tier_code in risk_profile.recommended_tiers %}
                                             <span class="badge bg-success">Recommended</span>
                                             {% endif %}
                                         </h6>
                                         <ul class="small mb-0">
-                                            <li>15% profit share</li>
-                                            <li>Priority support</li>
-                                            <li>Weekly batches</li>
+                                            <li>{{ tier.get_fee_display }}</li>
+                                            {% for feature in tier.get_features_list %}
+                                            <li>{{ feature }}</li>
+                                            {% endfor %}
                                         </ul>
                                     </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="border rounded p-3 h-100 {% if 'premium' in risk_profile.recommended_tiers %}border-success border-2{% endif %}">
-                                        <h6 class="text-warning">Premium ($25K+)
-                                            {% if 'premium' in risk_profile.recommended_tiers %}
-                                            <span class="badge bg-success">Recommended</span>
-                                            {% endif %}
-                                        </h6>
-                                        <ul class="small mb-0">
-                                            <li>20% profit share</li>
-                                            <li>Premium support</li>
-                                            <li>Priority execution</li>
-                                        </ul>
-                                    </div>
+                                {% empty %}
+                                <div class="col-12">
+                                    <div class="alert alert-warning">No tier configurations available. Please contact support.</div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="border rounded p-3 h-100 {% if 'consultative' in risk_profile.recommended_tiers %}border-success border-2{% endif %}">
-                                        <h6 class="text-info">Consultative ($50K+)
-                                            {% if 'consultative' in risk_profile.recommended_tiers %}
-                                            <span class="badge bg-success">Recommended</span>
-                                            {% endif %}
-                                        </h6>
-                                        <ul class="small mb-0">
-                                            <li>$250/session + 20% profit</li>
-                                            <li>1-on-1 consultations</li>
-                                            <li>Max 4 sessions/month</li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

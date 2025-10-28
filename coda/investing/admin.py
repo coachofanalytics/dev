@@ -33,6 +33,45 @@ admin.site.register(InvestmentUpgradeOffer)
 # MANAGED OPTIONS TRADING ADMIN
 # ============================================================================
 
+@admin.register(FeeTierConfiguration)
+class FeeTierConfigurationAdmin(admin.ModelAdmin):
+    list_display = [
+        'tier_name',
+        'tier_code',
+        'minimum_capital',
+        'monthly_fee',
+        'per_session_fee',
+        'profit_share_percentage',
+        'display_order',
+        'is_active'
+    ]
+    list_filter = ['is_active', 'tier_code']
+    list_editable = ['display_order', 'is_active']
+    search_fields = ['tier_name', 'tier_code']
+    ordering = ['display_order', 'minimum_capital']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('tier_code', 'tier_name', 'display_order', 'is_active')
+        }),
+        ('Capital Requirements', {
+            'fields': ('minimum_capital',)
+        }),
+        ('Fee Structure', {
+            'fields': ('monthly_fee', 'per_session_fee', 'profit_share_percentage', 'max_sessions_per_month')
+        }),
+        ('Features & Description', {
+            'fields': ('short_description', 'features', 'compatible_risk_levels'),
+            'description': 'Enter features as JSON list (e.g., ["AI-powered analysis", "Automated execution"])'
+        }),
+    )
+    
+    def get_readonly_fields(self, request, obj=None):
+        # Make tier_code readonly after creation to prevent breaking references
+        if obj:  # Editing existing object
+            return ['tier_code']
+        return []
+
 @admin.register(ManagedTradingAccount)
 class ManagedTradingAccountAdmin(admin.ModelAdmin):
     list_display = [
