@@ -10,6 +10,7 @@ from . import sessions
 from . import api
 from . import client
 from . import onboarding  # Phase 6: Client onboarding & compliance
+from . import batches  # Phase 7: Batch approval system
 
 __all__ = [
     'accounts',
@@ -19,5 +20,6 @@ __all__ = [
     'api',
     'client',
     'onboarding',
+    'batches',
 ]
 

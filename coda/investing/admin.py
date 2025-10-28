@@ -472,3 +472,68 @@ class ManagedTradingContractAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+# ============================================================================
+# PHASE 7: BATCH APPROVAL SYSTEM ADMIN
+# ============================================================================
+
+@admin.register(PositionBatch)
+class PositionBatchAdmin(admin.ModelAdmin):
+    list_display = [
+        'batch_number',
+        'managed_account',
+        'created_date',
+        'approval_deadline',
+        'status',
+        'total_positions',
+        'total_capital_required',
+        'hours_remaining',
+        'is_expired_display'
+    ]
+    list_filter = ['status', 'created_date', 'approval_deadline']
+    search_fields = ['batch_number', 'managed_account__account_number']
+    readonly_fields = [
+        'created_date', 'approved_date', 'created_at', 'updated_at',
+        'hours_remaining', 'time_remaining_display', 'is_expired_display'
+    ]
+    
+    fieldsets = (
+        ('Batch Information', {
+            'fields': ('batch_number', 'managed_account', 'status')
+        }),
+        ('Timing', {
+            'fields': (
+                'created_date', 'approval_deadline',
+                'hours_remaining', 'time_remaining_display', 'is_expired_display'
+            )
+        }),
+        ('Batch Summary', {
+            'fields': ('total_positions', 'total_capital_required')
+        }),
+        ('Client Approval', {
+            'fields': ('approved_date', 'approval_signature', 'approval_ip')
+        }),
+        ('Notifications', {
+            'fields': ('reminder_sent', 'timeout_notification_sent'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def time_remaining_display(self, obj):
+        if obj.status != 'pending':
+            return 'N/A'
+        hours = obj.hours_remaining
+        if hours <= 0:
+            return 'EXPIRED'
+        return f"{hours} hours"
+    time_remaining_display.short_description = 'Time Remaining'
+    
+    def is_expired_display(self, obj):
+        return obj.is_expired
+    is_expired_display.short_description = 'Expired?'
+    is_expired_display.boolean = True

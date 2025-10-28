@@ -1932,6 +1932,45 @@ class OptionsPosition(TimeStampedModel):
         related_name='positions'
     )
     
+    # Batch Linkage (Phase 7)
+    batch = models.ForeignKey(
+        'PositionBatch',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='positions',
+        help_text="Batch this position belongs to (if requires approval)"
+    )
+    
+    # Approval tracking
+    requires_client_approval = models.BooleanField(
+        default=True,
+        help_text="Does this position require client approval via batch?"
+    )
+    approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When position was approved (batch or session)"
+    )
+    approval_method = models.CharField(
+        max_length=20,
+        choices=[
+            ('batch', 'Batch Approval'),
+            ('session', 'Session Pre-Approved'),
+            ('manual', 'Manual Staff Approval'),
+        ],
+        blank=True,
+        help_text="How this position was approved"
+    )
+    approval_notes = models.TextField(
+        blank=True,
+        help_text="Notes about approval (e.g., session number)"
+    )
+    rejection_reason = models.TextField(
+        blank=True,
+        help_text="Reason for rejection (if applicable)"
+    )
+    
     # Position Details
     symbol = models.CharField(
         max_length=10,
@@ -2723,3 +2762,177 @@ class ManagedTradingContract(TimeStampedModel):
             if all_signed:
                 self.application.all_contracts_signed = True
                 self.application.save()
+
+
+# ============================================================================
+# PHASE 7: BATCH APPROVAL SYSTEM
+# ============================================================================
+
+class PositionBatch(TimeStampedModel):
+    """
+    Weekly batch of positions for client approval
+    Positions must be approved within 24 hours or auto-rejected
+    """
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Client Approval'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected by Client'),
+        ('expired', 'Expired (24hr timeout)'),
+        ('partial', 'Partially Approved'),
+    ]
+    
+    # Account
+    managed_account = models.ForeignKey(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        related_name='position_batches'
+    )
+    
+    # Batch identification
+    batch_number = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Format: BATCH-YYYY-Wxx (e.g., BATCH-2025-W47)"
+    )
+    
+    # Timing
+    created_date = models.DateTimeField(
+        auto_now_add=True
+    )
+    approval_deadline = models.DateTimeField(
+        help_text="Client must approve before this time (24 hours from creation)"
+    )
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    
+    # Client approval
+    approved_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    approval_signature = models.TextField(
+        blank=True,
+        help_text="Base64 encoded signature for batch approval"
+    )
+    approval_ip = models.GenericIPAddressField(
+        null=True,
+        blank=True
+    )
+    
+    # Batch summary
+    total_positions = models.IntegerField(
+        default=0,
+        help_text="Number of positions in batch"
+    )
+    total_capital_required = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Total capital required for all positions"
+    )
+    
+    # Notification tracking
+    reminder_sent = models.BooleanField(
+        default=False,
+        help_text="Was 12-hour reminder sent?"
+    )
+    timeout_notification_sent = models.BooleanField(
+        default=False,
+        help_text="Was timeout notification sent?"
+    )
+    
+    class Meta:
+        verbose_name = "Position Batch"
+        verbose_name_plural = "Position Batches"
+        ordering = ['-created_date']
+        indexes = [
+            models.Index(fields=['managed_account', '-created_date']),
+            models.Index(fields=['status', 'approval_deadline']),
+        ]
+    
+    def __str__(self):
+        return f"{self.batch_number} - {self.managed_account.account_number} ({self.status})"
+    
+    @property
+    def is_expired(self):
+        """Check if batch has passed approval deadline"""
+        return timezone.now() > self.approval_deadline and self.status == 'pending'
+    
+    @property
+    def time_remaining(self):
+        """Calculate time remaining until deadline"""
+        if self.status != 'pending':
+            return timedelta(0)
+        remaining = self.approval_deadline - timezone.now()
+        return remaining if remaining.total_seconds() > 0 else timedelta(0)
+    
+    @property
+    def hours_remaining(self):
+        """Get hours remaining as integer"""
+        return int(self.time_remaining.total_seconds() / 3600)
+    
+    @property
+    def is_pending(self):
+        """Check if batch is pending approval"""
+        return self.status == 'pending' and not self.is_expired
+    
+    def expire_batch(self):
+        """
+        Auto-reject all positions after 24-hour timeout
+        Called by cron job
+        """
+        self.status = 'expired'
+        self.save()
+        
+        # Reject all pending positions in batch
+        for position in self.positions.filter(status='pending'):
+            position.status = 'rejected'
+            position.rejection_reason = 'Batch approval timeout (24 hours) - automatically rejected'
+            position.save()
+        
+        return self.positions.count()
+    
+    def approve_all(self, signature_data, ip_address=None):
+        """
+        Approve all positions in batch
+        Called when client approves entire batch
+        """
+        self.status = 'approved'
+        self.approved_date = timezone.now()
+        self.approval_signature = signature_data
+        self.approval_ip = ip_address
+        self.save()
+        
+        # Open all positions
+        approved_count = 0
+        for position in self.positions.all():
+            if position.status == 'pending':
+                position.status = 'open'
+                position.approved_at = timezone.now()
+                position.save()
+                approved_count += 1
+        
+        return approved_count
+    
+    def reject_all(self, reason="Rejected by client"):
+        """Reject all positions in batch"""
+        self.status = 'rejected'
+        self.save()
+        
+        # Reject all positions
+        rejected_count = self.positions.update(
+            status='rejected',
+            rejection_reason=reason
+        )
+        
+        return rejected_count
+
+
+# Update OptionsPosition to link to batches
+# Add this field to the existing OptionsPosition model (find the model and add this field)

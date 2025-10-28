@@ -10,10 +10,18 @@ from .investment_service import InvestmentService
 from .managed_trading_service import ManagedTradingService
 from .options_monitoring_service import OptionsMonitoringService
 from .application_approval_service import ApplicationReviewService
+from .batch_approval_service import BatchApprovalService
+from .notification_service import NotificationService
+from .gotomeeting_service import GoToMeetingService
+from .performance_reporting_service import PerformanceReportingService
 
 __all__ = [
     'InvestmentService',
     'ManagedTradingService',
     'OptionsMonitoringService',
     'ApplicationReviewService',
+    'BatchApprovalService',
+    'NotificationService',
+    'GoToMeetingService',
+    'PerformanceReportingService',
 ]

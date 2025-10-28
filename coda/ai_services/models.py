@@ -95,6 +95,7 @@ class Editable(models.Model):
 		return self.name
 	
 class GotoMeetings(models.Model):
+    """DEPRECATED: Legacy model - kept for backward compatibility during migration"""
     meeting_topic = models.CharField(max_length=250, null=True, blank=True)
     meeting_id = models.CharField(max_length=100, null=True, blank=True)
     meeting_type = models.CharField(max_length=100, null=True, blank=True)
@@ -113,10 +114,269 @@ class GotoMeetings(models.Model):
     is_featured = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.meeting_topic
+        return self.meeting_topic or "Untitled Meeting"
 
     class Meta:
         db_table = 'getdata_gotomeetings'  # Use existing table name from old getdata app
+
+
+# ==================== NEW NORMALIZED MODELS (Phase 1) ====================
+
+class Meeting(models.Model):
+    """
+    Normalized meeting model - one record per meeting.
+    Replaces denormalized GotoMeetings model.
+    """
+    meeting_id = models.CharField(
+        max_length=100, 
+        unique=True, 
+        db_index=True,
+        help_text="Unique GoToMeeting ID"
+    )
+    topic = models.CharField(
+        max_length=500,
+        help_text="Meeting subject/topic"
+    )
+    meeting_type = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Type of meeting (e.g., General Meeting, 1-1 session)"
+    )
+    start_time = models.DateTimeField(
+        db_index=True,
+        help_text="Meeting start time (UTC)"
+    )
+    end_time = models.DateTimeField(
+        help_text="Meeting end time (UTC)"
+    )
+    duration_minutes = models.IntegerField(
+        default=0,
+        help_text="Total meeting duration in minutes"
+    )
+    recording_url = models.URLField(
+        max_length=1000,
+        blank=True,
+        null=True,
+        help_text="URL to meeting recording"
+    )
+    download_url = models.URLField(
+        max_length=1000,
+        blank=True,
+        null=True,
+        help_text="Direct download URL for recording"
+    )
+    is_recorded = models.BooleanField(
+        default=False,
+        help_text="Whether meeting was recorded"
+    )
+    google_drive_url = models.URLField(
+        max_length=1000,
+        blank=True,
+        null=True,
+        help_text="Google Drive URL if recording uploaded"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'gotomeeting_meeting'
+        ordering = ['-start_time']
+        indexes = [
+            models.Index(fields=['meeting_id']),
+            models.Index(fields=['start_time']),
+            models.Index(fields=['-start_time']),
+        ]
+        verbose_name = "GoToMeeting"
+        verbose_name_plural = "GoToMeetings"
+
+    def __str__(self):
+        return f"{self.topic} ({self.start_time.strftime('%Y-%m-%d %H:%M')})"
+    
+    @property
+    def attendee_count(self):
+        """Return number of attendees"""
+        return self.attendees.count()
+    
+    @property
+    def average_attendance_duration(self):
+        """Return average attendance duration in minutes"""
+        from django.db.models import Avg
+        avg = self.attendees.aggregate(Avg('duration_minutes'))
+        return avg['duration_minutes__avg'] or 0
+
+
+class MeetingAttendee(models.Model):
+    """
+    Individual attendee record for each meeting.
+    Normalized - no duplication of meeting data.
+    """
+    meeting = models.ForeignKey(
+        Meeting,
+        on_delete=models.CASCADE,
+        related_name='attendees',
+        help_text="Meeting this attendee participated in"
+    )
+    user = models.ForeignKey(
+        'accounts.CustomerUser',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='meeting_attendances',
+        help_text="Linked CODA user (if matched)"
+    )
+    attendee_name = models.CharField(
+        max_length=200,
+        help_text="Attendee's display name"
+    )
+    attendee_email = models.EmailField(
+        help_text="Attendee's email address"
+    )
+    duration_minutes = models.IntegerField(
+        default=0,
+        help_text="How long attendee stayed in meeting (minutes)"
+    )
+    is_organizer = models.BooleanField(
+        default=False,
+        help_text="Whether attendee was the meeting organizer"
+    )
+    task_points_awarded = models.BooleanField(
+        default=False,
+        help_text="Whether task points were awarded for this attendance"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'gotomeeting_attendee'
+        unique_together = [('meeting', 'attendee_email')]
+        ordering = ['-duration_minutes']
+        indexes = [
+            models.Index(fields=['attendee_email']),
+            models.Index(fields=['user']),
+        ]
+        verbose_name = "Meeting Attendee"
+        verbose_name_plural = "Meeting Attendees"
+
+    def __str__(self):
+        return f"{self.attendee_name} ({self.meeting.topic})"
+    
+    @property
+    def attendance_percentage(self):
+        """Calculate what percentage of meeting attendee participated in"""
+        if self.meeting.duration_minutes > 0:
+            return (self.duration_minutes / self.meeting.duration_minutes) * 100
+        return 0
+    
+    @property
+    def qualifies_for_points(self):
+        """Check if attendance qualifies for task points (>3 minutes)"""
+        return self.duration_minutes > 3
+
+
+class OAuthToken(models.Model):
+    """
+    Secure storage for OAuth tokens.
+    Replaces cache-based token storage for persistence across restarts.
+    """
+    service_name = models.CharField(
+        max_length=50,
+        default='gotomeeting',
+        unique=True,
+        help_text="Service name (gotomeeting, google_drive, etc.)"
+    )
+    access_token = models.TextField(
+        help_text="Encrypted access token"
+    )
+    refresh_token = models.TextField(
+        help_text="Encrypted refresh token"
+    )
+    token_type = models.CharField(
+        max_length=50,
+        default='Bearer',
+        help_text="Token type"
+    )
+    expires_at = models.DateTimeField(
+        help_text="When access token expires"
+    )
+    scope = models.TextField(
+        blank=True,
+        help_text="Token scope/permissions"
+    )
+    is_valid = models.BooleanField(
+        default=True,
+        help_text="Whether token is currently valid"
+    )
+    last_refreshed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When token was last refreshed"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'oauth_token'
+        verbose_name = "OAuth Token"
+        verbose_name_plural = "OAuth Tokens"
+
+    def __str__(self):
+        return f"{self.service_name} token (expires: {self.expires_at.strftime('%Y-%m-%d %H:%M')})"
+    
+    @property
+    def is_expired(self):
+        """Check if token is expired"""
+        from django.utils import timezone
+        return timezone.now() >= self.expires_at
+    
+    @property
+    def needs_refresh(self):
+        """Check if token should be refreshed (expires in <5 minutes)"""
+        from django.utils import timezone
+        from datetime import timedelta
+        return timezone.now() >= (self.expires_at - timedelta(minutes=5))
+
+
+class MeetingActivityMapping(models.Model):
+    """
+    Configurable mapping between meetings and task activities.
+    Replaces hardcoded activity_mapping dictionary.
+    """
+    meeting_id_pattern = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Meeting ID or pattern to match"
+    )
+    activity_name = models.CharField(
+        max_length=200,
+        help_text="Activity name for task management"
+    )
+    task_points = models.IntegerField(
+        default=0,
+        help_text="Task points to award for attendance"
+    )
+    min_duration_minutes = models.IntegerField(
+        default=3,
+        help_text="Minimum attendance duration to qualify for points"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this mapping is currently active"
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Description of this meeting type"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'meeting_activity_mapping'
+        ordering = ['activity_name']
+        verbose_name = "Meeting Activity Mapping"
+        verbose_name_plural = "Meeting Activity Mappings"
+
+    def __str__(self):
+        return f"{self.meeting_id_pattern} → {self.activity_name}"
 	
 class upwork_Transanctions(models.Model):
     date= models.CharField(max_length=250, null=True, blank=True)

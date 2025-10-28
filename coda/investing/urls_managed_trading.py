@@ -14,6 +14,7 @@ from .views.managed_trading import (
     api,
     client,
     onboarding,  # Phase 6
+    batches,  # Phase 7
 )
 
 urlpatterns = [
@@ -137,5 +138,32 @@ urlpatterns = [
     path('managed/staff/applications/<int:application_id>/review/', 
          onboarding.review_application_view, 
          name='review_application'),
+    
+    # ========================================================================
+    # PHASE 7: BATCH APPROVAL SYSTEM
+    # ========================================================================
+    
+    # Client: Batch Approval
+    path('managed/portal/approvals/batch/<int:batch_id>/', 
+         batches.batch_approval_view, 
+         name='batch_approval'),
+    
+    path('managed/portal/batches/', 
+         batches.client_batches_list, 
+         name='client_batches_list'),
+    
+    # Staff: Batch Management
+    path('managed/accounts/<int:account_id>/batches/create/', 
+         batches.staff_create_batch_view, 
+         name='staff_create_batch'),
+    
+    path('managed/staff/batches/', 
+         batches.staff_batches_list, 
+         name='staff_batches_list'),
+    
+    # AJAX: Batch Status Check
+    path('managed/api/batch/<int:batch_id>/status/', 
+         batches.ajax_check_batch_status, 
+         name='ajax_batch_status'),
 ]
 
