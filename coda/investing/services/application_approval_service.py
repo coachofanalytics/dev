@@ -79,11 +79,14 @@ class ApplicationReviewService:
             with transaction.atomic():
                 # Create managed trading account
                 trading_service = ManagedTradingService()
+                account_data = {
+                    'initial_capital': application.initial_capital,
+                    'fee_tier': application.fee_tier,
+                    'account_manager': application.preferred_manager or approved_by,
+                }
                 account = trading_service.create_managed_account(
-                    client=application.user,
-                    initial_capital=application.initial_capital,
-                    fee_tier=application.fee_tier,
-                    account_manager=application.preferred_manager or approved_by
+                    client_user=application.user,
+                    account_data=account_data
                 )
                 
                 # Update application
@@ -226,6 +229,9 @@ class ApplicationReviewService:
         
         approval_type = "automatically approved" if auto_approved else "approved"
         
+        # Get site URL or use default
+        site_url = getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')
+        
         message = f"""
 Dear {application.user.get_full_name()},
 
@@ -239,7 +245,7 @@ Account Details:
 
 Next Steps:
 1. Fund your account using {application.get_funding_method_display()}
-2. Review your account dashboard: {settings.SITE_URL}/investing/managed/portal/
+2. Review your account dashboard: {site_url}/investing/managed/portal/
 3. Your account manager will be in touch shortly
 
 Your account is now active and ready for trading!
@@ -277,7 +283,7 @@ What You Can Do:
 - Update your risk assessment if it has expired
 - Select a different fee tier that matches your risk profile
 - Increase your initial capital if it doesn't meet the tier minimum
-- Contact us if you have questions: {settings.SUPPORT_EMAIL}
+- Contact us if you have questions: {getattr(settings, 'SUPPORT_EMAIL', 'support@codanalytics.net')}
 
 You're welcome to resubmit your application once you've addressed these issues.
 

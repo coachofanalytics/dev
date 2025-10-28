@@ -215,7 +215,7 @@ Total Profit/Loss: ${report['total_profit_loss']:,.2f}
 {self._format_best_worst_trades(report)}
 
 View detailed performance:
-{settings.SITE_URL}/investing/managed/portal/
+{getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')}/investing/managed/portal/
 
 Questions? Contact your account manager or reply to this email.
 

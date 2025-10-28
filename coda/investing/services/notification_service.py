@@ -42,7 +42,7 @@ IMPORTANT: You must approve or reject this batch within 24 hours.
 If no action is taken, all positions will be automatically rejected.
 
 Click here to review and approve:
-{settings.SITE_URL}/investing/managed/portal/approvals/batch/{batch.id}/
+{getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')}/investing/managed/portal/approvals/batch/{batch.id}/
 
 Questions? Contact your account manager.
 
@@ -95,7 +95,7 @@ Batch Details:
 If no action is taken, all positions will be automatically rejected.
 
 Review batch now:
-{settings.SITE_URL}/investing/managed/portal/approvals/batch/{batch.id}/
+{getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')}/investing/managed/portal/approvals/batch/{batch.id}/
 
 Best regards,
 CODA Investment Team
@@ -143,7 +143,7 @@ To avoid timeouts in the future:
 
 Your trading manager will prepare new positions for next week's batch.
 
-Questions? Contact us at {settings.SUPPORT_EMAIL}
+Questions? Contact us at {getattr(settings, 'SUPPORT_EMAIL', 'support@codanalytics.net')}
 
 Best regards,
 CODA Investment Team
@@ -187,7 +187,7 @@ Batch Summary:
 All approved positions are now active and will be managed according to your trading rules.
 
 You can view your positions anytime:
-{settings.SITE_URL}/investing/managed/portal/
+{getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')}/investing/managed/portal/
 
 Weekly performance updates will be sent every Monday.
 

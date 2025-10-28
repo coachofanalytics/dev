@@ -1,0 +1,181 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Meeting Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-chart-line"></i> Meeting Analytics Dashboard</h2>
+            <p class="text-muted">PHASE 3 FEATURE: Comprehensive meeting insights and trends</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Meetings</h5>
+                    <h2>{{ total_meetings }}</h2>
+                    <small>{{ meetings_in_period }} in last {{ days_back }} days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Attendees</h5>
+                    <h2>{{ total_attendees }}</h2>
+                    <small>Unique attendance records</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Avg Duration</h5>
+                    <h2>{{ avg_meeting_duration }} min</h2>
+                    <small>{{ avg_attendees_per_meeting|floatformat:1 }} attendees/meeting</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Recording Rate</h5>
+                    <h2>{{ recording_rate }}%</h2>
+                    <small>{{ recorded_meetings }} meetings recorded</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meeting Types -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Meetings by Type</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Meeting Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for type in meeting_by_type %}
+                            <tr>
+                                <td>{{ type.meeting_type|default:"Unspecified" }}</td>
+                                <td>{{ type.count }}</td>
+                                <td>{{ type.count|mul:100|div:meetings_in_period|floatformat:1 }}%</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Attendees -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top Attendees (Last {{ days_back }} days)</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Meetings</th>
+                                <th>Total Minutes</th>
+                                <th>Avg Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendee in top_attendees %}
+                            <tr>
+                                <td>{{ attendee.attendee_name }}</td>
+                                <td>{{ attendee.meeting_count }}</td>
+                                <td>{{ attendee.total_minutes }}</td>
+                                <td>{{ attendee.avg_duration|floatformat:0 }} min</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Trends -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Weekly Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="weeklyTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Points Awarded -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5>Task Points Awarded: {{ points_awarded }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ points_awarded }} attendees have been awarded task points for meeting participation (>3 minutes attendance).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Weekly trends chart
+const ctx = document.getElementById('weeklyTrendsChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ weekly_trends|safe|map:'week'|list }},
+        datasets: [{
+            label: 'Meetings per Week',
+            data: {{ weekly_trends|safe|map:'count'|list }},
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
+

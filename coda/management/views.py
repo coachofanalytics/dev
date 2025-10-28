@@ -110,14 +110,27 @@ from googleapiclient.http import MediaIoBaseUpload
 import logging
 logger = logging.getLogger(__name__)
 
-API_CLIENT_ID = os.environ.get("API_CLIENT_ID")
-API_CLIENT_SECRET = os.environ.get("API_CLIENT_SECRET")
-API_REDIRECT_URI="https://www.codanalytics.net/management/oauth/callback/"
-API_AUTHORIZATION_URL="https://authentication.logmeininc.com/oauth/authorize"
-API_TOKEN_URL="https://authentication.logmeininc.com/oauth/token"
-
-TOKEN_CACHE_KEY = 'api_access_token'
-REFRESH_TOKEN_CACHE_KEY = 'api_refresh_token'
+# OAUTH CONSTANTS - Import from ai_services (Phase 1 improvements)
+# Removed duplicate definitions to prevent code duplication
+# Using improved versions from ai_services with:
+#   - Environment-aware redirect URIs
+#   - Better error handling
+#   - Proper logging
+from ai_services.views import (
+    get_oauth_redirect_uri,
+    get_authorization_url,
+    exchange_code_for_tokens,
+    refresh_access_token,
+    get_access_token,
+    API_CLIENT_ID,
+    API_CLIENT_SECRET,
+    API_AUTHORIZATION_URL,
+    API_TOKEN_URL,
+    TOKEN_CACHE_KEY,
+    REFRESH_TOKEN_CACHE_KEY,
+)
+# For backward compatibility
+API_REDIRECT_URI = get_oauth_redirect_uri()
 
 # User=settings.AUTH_USER_MODEL
 User = get_user_model()
@@ -2455,98 +2468,13 @@ def delete_assignment(request, assignment_id):
 
     return redirect('management:assignment_list')
 
-def get_authorization_url():
-    """
-    Constructs the authorization URL to redirect the user.
-    """
-    params = {
-        'client_id': API_CLIENT_ID,
-        'response_type': 'code',
-        'redirect_uri': API_REDIRECT_URI,
-        'state': 'random_state_string',  # Use a random string for security
-    }
-    from urllib.parse import urlencode
-    url = f"{API_AUTHORIZATION_URL}?{urlencode(params)}"
-    return url
 
-def exchange_code_for_tokens(auth_code):
-    """
-    Exchanges the authorization code for access and refresh tokens.
-    """
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-    }
-    data = {
-        'grant_type': 'authorization_code',
-        'code': auth_code,
-        'redirect_uri': API_REDIRECT_URI,
-    }
-    # Use HTTP Basic Auth with client_id and client_secret
-    auth = (API_CLIENT_ID, API_CLIENT_SECRET)
-    response = requests.post(API_TOKEN_URL, headers=headers, data=data, auth=auth)
-    
-    if response.status_code == 200:
-        token_data = response.json()
-        access_token = token_data.get('access_token')
-        refresh_token = token_data.get('refresh_token')
-        expires_in = token_data.get('expires_in', 3600)  # Default to 1 hour
-
-        # Cache the tokens with expiry
-        cache.set(TOKEN_CACHE_KEY, access_token, timeout=expires_in)
-        cache.set(REFRESH_TOKEN_CACHE_KEY, refresh_token, timeout=86400)  # Refresh token valid for 1 day (adjust as needed)
-        return True
-    else:
-        print(f"Error exchanging code for tokens: {response.status_code} {response.text}")
-        return False
-
-def refresh_access_token():
-    """
-    Uses the refresh token to obtain a new access token.
-    """
-    refresh_token = cache.get(REFRESH_TOKEN_CACHE_KEY)
-    if not refresh_token:
-        print("No refresh token available.")
-        return False
-
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-    }
-    data = {
-        'grant_type': 'refresh_token',
-        'refresh_token': refresh_token,
-    }
-    # Use HTTP Basic Auth with client_id and client_secret
-    auth = (API_CLIENT_ID, API_CLIENT_SECRET)
-    response = requests.post(API_TOKEN_URL, headers=headers, data=data, auth=auth)
-
-    if response.status_code == 200:
-        token_data = response.json()
-        access_token = token_data.get('access_token')
-        new_refresh_token = token_data.get('refresh_token', refresh_token)  # Some APIs return a new refresh token
-
-        expires_in = token_data.get('expires_in', 3600)  # Default to 1 hour
-
-        # Update the cached tokens
-        cache.set(TOKEN_CACHE_KEY, access_token, timeout=expires_in)
-        cache.set(REFRESH_TOKEN_CACHE_KEY, new_refresh_token, timeout=86400)  # Adjust as needed
-        return True
-    else:
-        print(f"Error refreshing access token: {response.status_code} {response.text}")
-        return False
-
-def get_access_token():
-    """
-    Retrieves a valid access token, refreshing it if necessary.
-    """
-    access_token = cache.get(TOKEN_CACHE_KEY)
-    if access_token:
-        return access_token
-    else:
-        # Attempt to refresh the token
-        if refresh_access_token():
-            return cache.get(TOKEN_CACHE_KEY)
-        else:
-            return None
+# ==================== OAUTH VIEWS ====================
+# NOTE: OAuth helper functions now imported from ai_services.views (Phase 1 improvements)
+# This eliminates code duplication and uses improved versions with:
+#   - Environment-aware redirect URIs
+#   - Better error handling
+#   - Proper logging instead of print()
 
 def oauth_login(request):
     """
