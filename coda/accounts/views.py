@@ -55,6 +55,7 @@ from mail.custom_email import send_email
 
 # from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 # from allauth.core.exceptions import ImmediateHttpResponse
+
 from django.http import HttpResponseRedirect
 from accounts.choices import UserCategory as CategoryChoices
 

@@ -150,16 +150,22 @@
                 <h5><i class="fas fa-info-circle"></i> Current Budget Status</h5>
                 <div class="row">
                     <div class="col-md-4">
-                        <strong>Total Estimated:</strong> ${{ total_estimated|floatformat:2 }}
+                        <strong>Total Estimated:</strong><br>
+                        <span class="h5">KES {{ total_estimated|floatformat:2 }}</span><br>
+                        <small class="text-success">≈ $ {% widthratio total_estimated 128 1 %} USD</small>
                     </div>
                     <div class="col-md-4">
-                        <strong>Total Actual:</strong> ${{ total_actual|floatformat:2 }}
+                        <strong>Total Actual:</strong><br>
+                        <span class="h5">KES {{ total_actual|floatformat:2 }}</span><br>
+                        <small class="text-success">≈ $ {% widthratio total_actual 128 1 %} USD</small>
                     </div>
                     <div class="col-md-4">
-                        <strong>Variance:</strong> 
-                        <span class="{% if total_actual > total_estimated %}text-danger{% else %}text-success{% endif %}">
-                            ${{ total_actual|add:total_estimated|floatformat:2 }}
+                        <strong>Variance:</strong><br>
+                        <span class="h5 {% if total_actual > total_estimated %}text-danger{% else %}text-success{% endif %}">
+                            KES {{ total_estimated|add:"-"|add:total_actual|floatformat:2 }}
                         </span>
+                        <br>
+                        <small class="text-muted">(Estimated - Actual)</small>
                     </div>
                 </div>
             </div>
@@ -230,32 +236,45 @@
                             </div>
                             <div class="form-group mb-0">
                                 <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">$</span>
-                                    </div>
+                                    <select class="form-control currency-selector" style="max-width: 90px;" 
+                                            data-item-id="{{ item.id }}">
+                                        <option value="KSH" selected>KSH</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
+                                    </select>
                                     <input 
                                         type="number" 
                                         class="form-control amount-input item-amount" 
                                         data-item-id="{{ item.id }}"
                                         data-subcategory="{{ subcategory_name }}"
                                         data-typical-amount="{{ item.typical_amount|default:0 }}"
+                                        data-currency="KSH"
+                                        value="{{ item.estimated_amount|default:item.total_amount|default:0 }}"
                                         placeholder="0.00"
                                         step="0.01"
                                         min="0"
                                     >
                                     <div class="input-group-append">
-                                        <span class="input-group-text">{{ item.unit_type }}</span>
+                                        <span class="input-group-text">{{ item.unit_type|default:"each" }}</span>
                                     </div>
                                 </div>
-                                {% if item.typical_amount %}
-                                <small class="text-muted">
-                                    Typical: ${{ item.typical_amount|floatformat:2 }}
-                                    <button type="button" class="btn btn-sm btn-outline-primary ml-2 use-typical" 
-                                            data-amount="{{ item.typical_amount }}">
-                                        Use Typical
-                                    </button>
-                                </small>
-                                {% endif %}
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    {% if item.typical_amount %}
+                                    <small class="text-muted">
+                                        Typical: KES {{ item.typical_amount|floatformat:2 }}
+                                        <button type="button" class="btn btn-sm btn-outline-primary ml-1 use-typical" 
+                                                data-amount="{{ item.typical_amount }}">
+                                            Use Typical
+                                        </button>
+                                    </small>
+                                    {% else %}
+                                    <small class="text-muted"></small>
+                                    {% endif %}
+                                    <small class="text-success usd-display">
+                                        ≈ $ <span class="usd-equivalent">0.00</span> USD
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -269,11 +288,15 @@
                         <div class="col-md-6">
                             <h4><i class="fas fa-calculator"></i> Budget Summary</h4>
                             <div class="mt-2">
-                                <div class="d-flex justify-content-between">
+                                <div class="d-flex justify-content-between align-items-center">
                                     <strong>Total Budget Request:</strong>
-                                    <span id="totalAmount" class="h4 text-primary mb-0">$0.00</span>
+                                    <div class="text-right">
+                                        <span id="totalAmount" class="h4 text-primary mb-0">KES 0.00</span>
+                                        <br>
+                                        <small class="text-success">≈ $ <span id="totalAmountUSD">0.00</span> USD</small>
+                                    </div>
                                 </div>
-                                <small class="text-muted">Total of all line items below</small>
+                                <small class="text-muted">Total of all line items below (auto-calculated)</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -323,9 +346,60 @@ $(document).ready(function() {
         updateTotals();
     });
 
+    // Exchange rates (update periodically)
+    const EXCHANGE_RATES = {
+        'KSH': 1,       // Base currency
+        'USD': 128.21,  // 1 USD = 128.21 KSH
+        'EUR': 138.45,  // 1 EUR = 138.45 KSH
+        'GBP': 161.23,  // 1 GBP = 161.23 KSH
+    };
+    
+    function convertToKSH(amount, currency) {
+        """Convert any currency to KSH"""
+        return amount * EXCHANGE_RATES[currency];
+    }
+    
+    function convertToUSD(kshAmount) {
+        """Convert KSH to USD for display"""
+        return (kshAmount / EXCHANGE_RATES['USD']).toFixed(2);
+    }
+    
+    // Currency selector changes
+    $('.currency-selector').on('change', function() {
+        const itemId = $(this).data('item-id');
+        const selectedCurrency = $(this).val();
+        const amountInput = $(this).closest('.budget-item').find('.item-amount');
+        
+        // Update the data attribute
+        amountInput.attr('data-currency', selectedCurrency);
+        
+        // Recalculate display
+        updateItemUSD(amountInput);
+        updateTotals();
+    });
+    
     // Amount input changes
     $('.item-amount').on('input', function() {
+        updateItemUSD($(this));
         updateTotals();
+    });
+    
+    function updateItemUSD(amountInput) {
+        """Update USD equivalent for a single item"""
+        const amount = parseFloat(amountInput.val()) || 0;
+        const currency = amountInput.closest('.budget-item').find('.currency-selector').val();
+        
+        // Convert to KSH first (if not already)
+        const kshAmount = convertToKSH(amount, currency);
+        
+        // Then to USD for display
+        const usdAmount = convertToUSD(kshAmount);
+        amountInput.closest('.budget-item').find('.usd-equivalent').text(usdAmount);
+    }
+    
+    // Initialize USD values on page load
+    $('.item-amount').each(function() {
+        updateItemUSD($(this));
     });
 
     // Form submission
@@ -338,12 +412,18 @@ $(document).ready(function() {
             if (amount > 0) {
                 const itemId = $(this).data('item-id');
                 const subcategoryName = $(this).find('.item-amount').data('subcategory');
+                const currency = $(this).find('.currency-selector').val();
+                
+                // Convert to KSH for storage (normalize all to base currency)
+                const amountInKSH = convertToKSH(amount, currency);
                 
                 lineItems.push({
                     item_id: itemId,
                     subcategory_name: subcategoryName,
                     item_name: $(this).find('.item-name').text().trim(),
-                    amount: amount
+                    amount: amountInKSH,  // Store in KSH
+                    original_amount: amount,  // Keep original for reference
+                    currency: currency  // Track what currency user entered
                 });
             }
         });
@@ -395,24 +475,34 @@ $(document).ready(function() {
     });
 
     function updateTotals() {
-        let total = 0;
+        let totalKSH = 0;
         
         // Update subcategory totals
         $('.subcategory-section').each(function() {
-            let subcategoryTotal = 0;
+            let subcategoryTotalKSH = 0;
             const subcategoryName = $(this).find('.subcategory-header').data('subcategory');
             
             $(this).find('.item-amount').each(function() {
                 const amount = parseFloat($(this).val()) || 0;
-                subcategoryTotal += amount;
+                const currency = $(this).closest('.budget-item').find('.currency-selector').val();
+                
+                // Convert to KSH for totaling
+                const amountInKSH = convertToKSH(amount, currency);
+                subcategoryTotalKSH += amountInKSH;
             });
             
-            $(this).find('.subcategory-total').text('$' + subcategoryTotal.toFixed(2));
-            total += subcategoryTotal;
+            // Display subcategory total in KSH
+            const subcategoryTotalUSD = convertToUSD(subcategoryTotalKSH);
+            $(this).find('.subcategory-total').text('KSH ' + subcategoryTotalKSH.toFixed(2) + ' ($ ' + subcategoryTotalUSD + ' USD)');
+            totalKSH += subcategoryTotalKSH;
         });
         
-        // Update grand total
-        $('#totalAmount').text('$' + total.toFixed(2));
+        // Update grand total in KSH
+        $('#totalAmount').text('KSH ' + totalKSH.toFixed(2));
+        
+        // Update grand total in USD
+        const totalUSD = convertToUSD(totalKSH);
+        $('#totalAmountUSD').text(totalUSD);
     }
 
     // Initialize totals

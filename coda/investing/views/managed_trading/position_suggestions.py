@@ -239,6 +239,7 @@ def create_batch_from_suggestions(request):
                     'strategy': suggestion.strategy,
                     'positions': suggestion.positions,
                     'expiration_date': suggestion.expiration_date,
+                    'capital_required': float(suggestion.capital_required),
                     'premium_collected': float(suggestion.premium_collected),
                     'max_profit': float(suggestion.max_profit),
                     'max_loss': float(suggestion.max_loss),
@@ -251,6 +252,11 @@ def create_batch_from_suggestions(request):
                 
                 # Create OptionsPosition using existing service
                 position = trading_service.create_position(account, position_data)
+                
+                # Set position to pending for batch approval
+                position.status = 'pending'
+                position.requires_client_approval = True
+                position.save()
                 
                 # Link suggestion to created position
                 suggestion.created_position = position

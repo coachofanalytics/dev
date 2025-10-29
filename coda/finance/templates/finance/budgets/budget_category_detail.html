@@ -5,6 +5,14 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'finance/css/budget-common.css' %}">
+<style>
+.metric-sublabel {
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-top: 5px;
+    display: block;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -52,19 +60,22 @@
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                       <div class="metric-value">KES {{ category_stats.total_estimated|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ category_stats.total_estimated|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {% widthratio category_stats.total_estimated 128 1 %} USD</div>
                 <div class="metric-label">Estimated Amount</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                       <div class="metric-value">KES {{ category_stats.total_actual|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ category_stats.total_actual|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {% widthratio category_stats.total_actual 128 1 %} USD</div>
                 <div class="metric-label">Actual Spent</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                       <div class="metric-value">KES {{ category_stats.average_amount|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ category_stats.average_amount|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {% widthratio category_stats.average_amount 128 1 %} USD</div>
                 <div class="metric-label">Average Amount</div>
             </div>
         </div>
@@ -76,25 +87,40 @@
         <div class="col-12">
             <h4>Subcategories</h4>
             {% for data in subcategory_data %}
-            <div class="card mb-3">
-                <div class="card-header">
+            <div class="card mb-3 {% if data.subcategory.name == 'Uncategorized' %}border-warning{% endif %}">
+                <div class="card-header {% if data.subcategory.name == 'Uncategorized' %}bg-warning text-dark{% endif %}">
                     <h5 class="mb-0">
-                        <i class="fas fa-folder me-2"></i>
+                        {% if data.subcategory.name == 'Uncategorized' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-folder me-2"></i>
+                        {% endif %}
                         {{ data.subcategory.name }}
+                        {% if data.subcategory.name == 'Uncategorized' %}
+                            <small class="float-right text-dark">⚠️ Need to assign subcategories</small>
+                        {% endif %}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Budget Count:</strong> {{ data.budget_count }}</p>
-                                           <p><strong>Estimated:</strong> KES {{ data.total_estimated|floatformat:2 }}</p>
-                                           <p><strong>Actual:</strong> KES {{ data.total_actual|floatformat:2 }}</p>
+                            <p><strong>Estimated:</strong><br>
+                                <span class="h6">KES {{ data.total_estimated|floatformat:2 }}</span><br>
+                                <small class="text-success">≈ $ {% widthratio data.total_estimated 128 1 %} USD</small>
+                            </p>
+                            <p><strong>Actual:</strong><br>
+                                <span class="h6">KES {{ data.total_actual|floatformat:2 }}</span><br>
+                                <small class="text-success">≈ $ {% widthratio data.total_actual 128 1 %} USD</small>
+                            </p>
                         </div>
                         <div class="col-md-6">
                             <p><strong>Variance:</strong> 
                                 <span class="{% if data.total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
                                     KES {{ data.total_variance|floatformat:2 }}
                                 </span>
+                                <br>
+                                <small class="text-muted">≈ $ {% widthratio data.total_variance 128 1 %} USD</small>
                             </p>
                             <p><strong>Variance %:</strong> 
                                 <span class="{% if data.total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
@@ -108,14 +134,15 @@
                     <h6 class="mt-4">Budget Items:</h6>
                     {% if data.budgets %}
                     <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
+                        <table class="table table-sm table-hover">
+                            <thead class="thead-light">
                                 <tr>
                                     <th>Item Name</th>
-                                    <th>Unit Price</th>
+                                    <th>Unit Price (KES)</th>
                                     <th>Quantity</th>
                                     <th>Cases</th>
-                                    <th>Total</th>
+                                    <th>Total (KES)</th>
+                                    <th>Total (USD)</th>
                                     <th>Actual Spent</th>
                                     <th>Actions</th>
                                 </tr>
@@ -146,6 +173,7 @@
                                         {% endif %}
                                     </td>
                                     <td><strong>KES {{ budget.calculated_total|default:0|floatformat:2 }}</strong></td>
+                                    <td class="text-success"><strong>$ {% widthratio budget.calculated_total|default:0 128 1 %}</strong></td>
                                     <td>
                                         {% if budget.actual_spent %}
                                             KES {{ budget.actual_spent|floatformat:2 }}

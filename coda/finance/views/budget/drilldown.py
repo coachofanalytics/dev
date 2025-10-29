@@ -147,6 +147,12 @@ def budget_category_detail(request, company_slug, category_id, company=None):
         # Get user department for filtering transactions
         user_department = view.get_user_department(request, company)
         
+        # Get ALL budgets for this category first
+        all_category_budgets = Budget.objects.filter(
+            company=company,
+            category=category
+        ).select_related('budget_lead', 'subcategory')
+        
         # Get subcategories with budget data
         subcategories = BudgetSubCategory.objects.filter(
             category=category
@@ -155,13 +161,8 @@ def budget_category_detail(request, company_slug, category_id, company=None):
         # Get budget data for each subcategory
         subcategory_data = []
         for subcategory in subcategories:
-            # Fix: Budget model may have different field relationships
-            # Try multiple possible relationships
-            budgets = Budget.objects.filter(
-                company=company,
-                category=category,
-                subcategory=subcategory
-            ).select_related('budget_lead')
+            # Get budgets for this specific subcategory
+            budgets = all_category_budgets.filter(subcategory=subcategory)
             
             # Calculate totals (handle None values)
             # If estimated_amount is None, calculate from unit_price * quantity * cases
@@ -209,6 +210,50 @@ def budget_category_detail(request, company_slug, category_id, company=None):
                 'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
                 'recent_transactions': recent_transactions,
                 'budget_count': budgets.count(),
+            })
+        
+        # Check for budgets without subcategory (uncategorized)
+        uncategorized_budgets = all_category_budgets.filter(subcategory__isnull=True)
+        
+        if uncategorized_budgets.exists():
+            # Calculate totals for uncategorized
+            total_estimated_uncat = 0
+            total_actual_uncat = sum(budget.actual_spent or 0 for budget in uncategorized_budgets)
+            
+            for budget in uncategorized_budgets:
+                if budget.estimated_amount is not None:
+                    total_estimated_uncat += budget.estimated_amount
+                elif budget.unit_price and budget.quantity and budget.cases:
+                    total_estimated_uncat += budget.unit_price * budget.quantity * budget.cases
+                elif budget.unit_price and budget.quantity:
+                    total_estimated_uncat += budget.unit_price * budget.quantity
+            
+            # Add calculated totals
+            budgets_with_totals_uncat = []
+            for budget in uncategorized_budgets:
+                if budget.estimated_amount is not None:
+                    budget.calculated_total = budget.estimated_amount
+                elif budget.unit_price and budget.quantity and budget.cases:
+                    budget.calculated_total = budget.unit_price * budget.quantity * budget.cases
+                elif budget.unit_price and budget.quantity:
+                    budget.calculated_total = budget.unit_price * budget.quantity
+                else:
+                    budget.calculated_total = 0
+                budgets_with_totals_uncat.append(budget)
+            
+            # Add to subcategory_data
+            from types import SimpleNamespace
+            uncategorized_subcategory = SimpleNamespace(name="Uncategorized", id=None)
+            
+            subcategory_data.append({
+                'subcategory': uncategorized_subcategory,
+                'budgets': budgets_with_totals_uncat,
+                'total_estimated': total_estimated_uncat,
+                'total_actual': total_actual_uncat,
+                'total_variance': total_actual_uncat - total_estimated_uncat,
+                'variance_percentage': ((total_actual_uncat - total_estimated_uncat) / total_estimated_uncat * 100) if total_estimated_uncat > 0 else 0,
+                'recent_transactions': [],  # No transaction filtering for uncategorized
+                'budget_count': uncategorized_budgets.count(),
             })
         
         # Get category-level statistics - Fix the filtering
