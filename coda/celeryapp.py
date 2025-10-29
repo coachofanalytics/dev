@@ -80,16 +80,30 @@ app.conf.update(
 )
 
 
+# Import celery beat schedule helper
+from celery.schedules import crontab
+
 # Celery Beat schedule (for periodic tasks)
 app.conf.beat_schedule = {
     'daily-meeting-sync': {
         'task': 'ai_services.tasks.daily_meeting_sync_task',
-        'schedule': crontab(hour=1, minute=0),  # 1 AM daily
+        'schedule': crontab(hour=1, minute=0),  # 1 AM UTC
+        'args': (),
+    },
+    'daily-position-fetch': {
+        'task': 'investing.tasks.daily_position_fetch_task',
+        'schedule': crontab(hour=14, minute=0),  # 9 AM EST = 14:00 UTC (during DST) / 15:00 UTC (standard)
+        'args': (),
+    },
+    'hourly-batch-timeout-check': {
+        'task': 'investing.tasks.process_batch_timeouts_task',
+        'schedule': crontab(minute=0),  # Every hour at :00
+        'args': (),
+    },
+    'weekly-position-summary': {
+        'task': 'investing.tasks.send_weekly_position_summary_task',
+        'schedule': crontab(day_of_week=1, hour=13, minute=0),  # Monday 8 AM EST = 13:00 UTC
         'args': (),
     },
 }
-
-
-# Import celery beat schedule helper
-from celery.schedules import crontab
 

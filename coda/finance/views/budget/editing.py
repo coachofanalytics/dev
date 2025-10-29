@@ -28,6 +28,10 @@ class BudgetEditingView(BaseFinanceView):
     
     def __init__(self):
         super().__init__()
+    
+    def log_error(self, message, exception):
+        """Log error with context"""
+        logger.error(f"{message}: {str(exception)}", exc_info=True)
 
 
 @login_required_finance
