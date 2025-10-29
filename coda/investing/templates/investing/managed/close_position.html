@@ -106,6 +106,25 @@ function updatePnlPreview() {
     pnlElement.className = pnl >= 0 ? 'mb-0 text-success' : 'mb-0 text-danger';
 }
 
+// Form submission debugging
+document.querySelector('form').addEventListener('submit', function(e) {
+    console.log('Form submitted!');
+    console.log('Exit Price:', document.getElementById('id_exit_price').value);
+    console.log('Exit Reason:', document.getElementById('id_exit_reason').value);
+    
+    // Validate required fields
+    const exitPrice = document.getElementById('id_exit_price').value;
+    const exitReason = document.getElementById('id_exit_reason').value;
+    
+    if (!exitPrice || !exitReason) {
+        e.preventDefault();
+        alert('Please fill in all required fields (Exit Price and Exit Reason)');
+        return false;
+    }
+    
+    console.log('Form validation passed, submitting...');
+});
+
 document.getElementById('id_exit_price').addEventListener('input', updatePnlPreview);
 updatePnlPreview();
 </script>
