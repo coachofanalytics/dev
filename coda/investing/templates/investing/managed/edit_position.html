@@ -59,17 +59,7 @@
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.entry_date.id_for_label }}" class="form-label">Entry Date *</label>
-                                    {{ form.entry_date }}
-                                    {% if form.entry_date.errors %}
-                                        <div class="text-danger">{{ form.entry_date.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="{{ form.expiration_date.id_for_label }}" class="form-label">Expiration Date *</label>
                                     {{ form.expiration_date }}
@@ -83,30 +73,53 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="{{ form.strike_price.id_for_label }}" class="form-label">Strike Price</label>
-                                    {{ form.strike_price }}
-                                    {% if form.strike_price.errors %}
-                                        <div class="text-danger">{{ form.strike_price.errors }}</div>
+                                    <label for="{{ form.positions.id_for_label }}" class="form-label">Position Size *</label>
+                                    {{ form.positions }}
+                                    {% if form.positions.errors %}
+                                        <div class="text-danger">{{ form.positions.errors }}</div>
                                     {% endif %}
+                                    <small class="text-muted">Number of contracts</small>
                                 </div>
                             </div>
                             
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="{{ form.contracts.id_for_label }}" class="form-label">Contracts *</label>
-                                    {{ form.contracts }}
-                                    {% if form.contracts.errors %}
-                                        <div class="text-danger">{{ form.contracts.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.premium_collected.id_for_label }}" class="form-label">Premium *</label>
+                                    <label for="{{ form.premium_collected.id_for_label }}" class="form-label">Premium Collected *</label>
                                     {{ form.premium_collected }}
                                     {% if form.premium_collected.errors %}
                                         <div class="text-danger">{{ form.premium_collected.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.capital_required.id_for_label }}" class="form-label">Capital Required</label>
+                                    {{ form.capital_required }}
+                                    {% if form.capital_required.errors %}
+                                        <div class="text-danger">{{ form.capital_required.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.max_profit.id_for_label }}" class="form-label">Max Profit</label>
+                                    {{ form.max_profit }}
+                                    {% if form.max_profit.errors %}
+                                        <div class="text-danger">{{ form.max_profit.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.max_loss.id_for_label }}" class="form-label">Max Loss</label>
+                                    {{ form.max_loss }}
+                                    {% if form.max_loss.errors %}
+                                        <div class="text-danger">{{ form.max_loss.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>

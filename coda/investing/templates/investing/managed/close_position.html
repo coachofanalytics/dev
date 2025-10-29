@@ -39,20 +39,36 @@
                     <form method="post">
                         {% csrf_token %}
                         
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h6><i class="fa fa-exclamation-triangle"></i> Please correct the following errors:</h6>
+                            {{ form.errors }}
+                        </div>
+                        {% endif %}
+                        
                         <div class="mb-3">
                             <label for="id_exit_price" class="form-label">Exit Price *</label>
                             {{ form.exit_price }}
+                            {% if form.exit_price.errors %}
+                                <div class="text-danger">{{ form.exit_price.errors }}</div>
+                            {% endif %}
                             <small class="form-text text-muted">Price to close position</small>
                         </div>
                         
                         <div class="mb-3">
                             <label for="id_exit_reason" class="form-label">Exit Reason *</label>
                             {{ form.exit_reason }}
+                            {% if form.exit_reason.errors %}
+                                <div class="text-danger">{{ form.exit_reason.errors }}</div>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
                             <label for="id_notes" class="form-label">Exit Notes</label>
                             {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">{{ form.notes.errors }}</div>
+                            {% endif %}
                         </div>
                         
                         <!-- P&L Preview -->
