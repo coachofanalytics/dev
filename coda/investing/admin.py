@@ -576,3 +576,97 @@ class PositionBatchAdmin(admin.ModelAdmin):
         return obj.is_expired
     is_expired_display.short_description = 'Expired?'
     is_expired_display.boolean = True
+
+
+# ============================================================================
+# POSITION AUTOMATION: SUGGESTED POSITIONS ADMIN
+# ============================================================================
+
+@admin.register(SuggestedPosition)
+class SuggestedPositionAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'strategy',
+        'source',
+        'probability_of_profit',
+        'premium_collected',
+        'dte',
+        'review_status',
+        'reviewed_by',
+        'fetched_at'
+    ]
+    list_filter = ['review_status', 'source', 'strategy', 'fetched_at']
+    search_fields = ['symbol', 'ai_reasoning', 'staff_notes']
+    readonly_fields = [
+        'fetched_at', 'reviewed_at', 'created_at', 'updated_at',
+        'risk_reward_ratio', 'meets_criteria'
+    ]
+    list_editable = []
+    ordering = ['-probability_of_profit', '-fetched_at']
+    
+    fieldsets = (
+        ('Position Details', {
+            'fields': ('symbol', 'strategy', 'positions', 'expiration_date', 'dte')
+        }),
+        ('Source Information', {
+            'fields': ('source', 'fetched_at', 'api_response_data')
+        }),
+        ('Financial Metrics', {
+            'fields': (
+                'premium_collected', 'capital_required',
+                'max_profit', 'max_loss', 'breakeven',
+                'risk_reward_ratio'
+            )
+        }),
+        ('High Probability Indicators', {
+            'fields': ('probability_of_profit', 'meets_criteria'),
+            'description': 'Criteria: 70%+ probability, $100+ premium, 30-60 DTE'
+        }),
+        ('Greeks', {
+            'fields': ('position_delta', 'position_theta', 'position_gamma', 'position_vega'),
+            'classes': ('collapse',)
+        }),
+        ('AI Analysis', {
+            'fields': ('ai_confidence', 'ai_reasoning'),
+            'classes': ('collapse',)
+        }),
+        ('Staff Review', {
+            'fields': (
+                'review_status', 'reviewed_by', 'reviewed_at',
+                'staff_notes', 'target_account'
+            )
+        }),
+        ('Conversion', {
+            'fields': ('created_position',),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['approve_selected', 'reject_selected']
+    
+    def approve_selected(self, request, queryset):
+        """Bulk approve selected suggestions"""
+        from django.utils import timezone
+        updated = queryset.filter(review_status='pending').update(
+            review_status='approved',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now()
+        )
+        self.message_user(request, f"Approved {updated} position(s)")
+    approve_selected.short_description = "✅ Approve selected suggestions"
+    
+    def reject_selected(self, request, queryset):
+        """Bulk reject selected suggestions"""
+        from django.utils import timezone
+        updated = queryset.filter(review_status='pending').update(
+            review_status='rejected',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+            staff_notes="Bulk rejected"
+        )
+        self.message_user(request, f"Rejected {updated} position(s)")
+    reject_selected.short_description = "❌ Reject selected suggestions"

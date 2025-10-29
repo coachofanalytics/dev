@@ -156,6 +156,38 @@ urlpatterns = [
          batches.client_batches_list, 
          name='client_batches_list'),
     
+    # ========================================================================
+    # PHASE 8: AUTOMATED POSITION SOURCING (Staff Only)
+    # ========================================================================
+    
+    # Staff: Review suggested positions
+    path('managed/staff/suggestions/', 
+         position_suggestions.suggested_positions_list, 
+         name='suggested_positions_list'),
+    
+    path('managed/staff/suggestions/<int:suggestion_id>/review/', 
+         position_suggestions.review_position, 
+         name='review_position'),
+    
+    # Staff: Fetch positions manually
+    path('managed/staff/suggestions/fetch-now/', 
+         position_suggestions.fetch_positions_now, 
+         name='fetch_positions_now'),
+    
+    # Staff: Create batch from approved suggestions
+    path('managed/staff/suggestions/create-batch/', 
+         position_suggestions.create_batch_from_suggestions, 
+         name='create_batch_from_suggestions'),
+    
+    # AJAX endpoints for quick actions
+    path('managed/api/suggestions/<int:suggestion_id>/approve/', 
+         position_suggestions.ajax_approve_position, 
+         name='ajax_approve_position'),
+    
+    path('managed/api/suggestions/<int:suggestion_id>/reject/', 
+         position_suggestions.ajax_reject_position, 
+         name='ajax_reject_position'),
+    
     # Staff: Batch Management
     path('managed/accounts/<int:account_id>/batches/create/', 
          batches.staff_create_batch_view, 

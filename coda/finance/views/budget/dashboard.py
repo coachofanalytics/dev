@@ -64,10 +64,17 @@ class BudgetDashboardView(BaseFinanceView):
                     # Calculate monthly average (assuming data over 12 months)
                     monthly_avg = total / 12 if total > 0 else Decimal('0.00')
                     
+                    # Convert to USD (1 USD = ~128 KES)
+                    KES_TO_USD_RATE = Decimal('0.0078')  # Approximate rate
+                    total_usd = total * KES_TO_USD_RATE
+                    monthly_avg_usd = monthly_avg * KES_TO_USD_RATE
+                    
                     category_summary[category.name] = {
                         'count': count,
                         'total': total,
+                        'total_usd': total_usd,
                         'monthly_avg': monthly_avg,
+                        'monthly_avg_usd': monthly_avg_usd,
                         'category_id': category.id
                     }
             
@@ -83,6 +90,11 @@ class BudgetDashboardView(BaseFinanceView):
             # Calculate monthly average (total / 12 months)
             monthly_average = total_estimated / 12 if total_estimated > 0 else Decimal('0.00')
             
+            # Convert to USD (1 USD = ~128 KES)
+            KES_TO_USD_RATE = Decimal('0.0078')
+            total_estimated_usd = total_estimated * KES_TO_USD_RATE
+            monthly_average_usd = monthly_average * KES_TO_USD_RATE
+            
             total_actual = Budget.objects.filter(budget_filter).aggregate(
                 total=Sum('actual_spent')
             )['total'] or Decimal('0.00')
@@ -95,13 +107,15 @@ class BudgetDashboardView(BaseFinanceView):
                     'recent_budgets': recent_budgets,
                     'total_budgets': total_budgets,
                     'active_budgets': total_budgets,  # Simplified - same as total
-                    'total_amount': {'total': total_estimated},
+                    'total_amount': {'total': total_estimated, 'total_usd': total_estimated_usd},
                     'monthly_average': monthly_average,
+                    'monthly_average_usd': monthly_average_usd,
                     'data_source': 'real_transactions',
                     'data_quality': f'{total_budgets} budget items tracked',
                     'statistics': {
                         'total_budgets': total_budgets,
                         'total_estimated': total_estimated,
+                        'total_estimated_usd': total_estimated_usd,
                         'total_actual': total_actual,
                         'total_variance': total_variance,
                         'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,

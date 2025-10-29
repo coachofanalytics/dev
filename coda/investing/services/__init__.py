@@ -14,6 +14,7 @@ from .batch_approval_service import BatchApprovalService
 from .notification_service import NotificationService
 from .gotomeeting_service import GoToMeetingService
 from .performance_reporting_service import PerformanceReportingService
+from .position_fetcher_service import PositionFetcherService
 
 __all__ = [
     'InvestmentService',
@@ -24,4 +25,5 @@ __all__ = [
     'NotificationService',
     'GoToMeetingService',
     'PerformanceReportingService',
+    'PositionFetcherService',
 ]

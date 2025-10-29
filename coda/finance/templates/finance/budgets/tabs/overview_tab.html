@@ -60,13 +60,15 @@
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                <div class="metric-value">${{ overview_data.total_amount.total|default:"0"|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ overview_data.total_amount.total|default:"0"|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {{ overview_data.total_amount.total_usd|default:"0"|floatformat:2 }}</div>
                 <div class="metric-label">Total Spending</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                <div class="metric-value">${{ overview_data.monthly_average|default:"0"|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ overview_data.monthly_average|default:"0"|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {{ overview_data.monthly_average_usd|default:"0"|floatformat:2 }}</div>
                 <div class="metric-label">Monthly Average</div>
             </div>
         </div>
@@ -90,29 +92,38 @@
                         <tr>
                             <th>Category</th>
                             <th>Transactions</th>
-                            <th>Total Amount</th>
-                            <th>Monthly Avg</th>
+                            <th>Total Amount (KES)</th>
+                            <th>Total Amount (USD)</th>
+                            <th>Monthly Avg (KES)</th>
+                            <th>Monthly Avg (USD)</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for category_name, data in overview_data.category_summary.items %}
                         <tr>
-                            <td><i class="fas fa-tag"></i> {{ category_name }}</td>
+                            <td><i class="fas fa-tag"></i> <strong>{{ category_name }}</strong></td>
                             <td>{{ data.count }}</td>
-                            <td>${{ data.total|floatformat:2 }}</td>
-                            <td>${{ data.monthly_avg|floatformat:2 }}</td>
+                            <td><strong>KES {{ data.total|floatformat:2 }}</strong></td>
+                            <td class="text-success"><strong>$ {{ data.total_usd|floatformat:2 }}</strong></td>
+                            <td>KES {{ data.monthly_avg|floatformat:2 }}</td>
+                            <td class="text-success">$ {{ data.monthly_avg_usd|floatformat:2 }}</td>
                             <td>
                                 {% if data.category_id %}
                                 <div class="btn-group btn-group-sm" role="group">
                                     <a href="{% url 'finance:budget-category-detail' company.slug data.category_id %}" 
-                                       class="btn btn-outline-primary" title="View Details">
-                                        <i class="fas fa-eye"></i>
+                                       class="btn btn-sm btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i> View
                                     </a>
                                     <a href="{% url 'finance:budget-category-edit' company.slug data.category_id %}" 
-                                       class="btn btn-outline-success" title="Edit Budget">
-                                        <i class="fas fa-edit"></i>
+                                       class="btn btn-sm btn-primary" title="Edit Budget">
+                                        <i class="fas fa-edit"></i> Edit
                                     </a>
+                                    <button type="button" class="btn btn-sm btn-success" 
+                                            onclick="submitCategoryForApproval('{{ category_name }}', {{ data.category_id }}, {{ data.total }})"
+                                            title="Submit for Approval">
+                                        <i class="fas fa-paper-plane"></i> Submit
+                                    </button>
                                 </div>
                                 {% else %}
                                 <span class="text-muted">No actions available</span>
@@ -164,6 +175,58 @@
 </div>
 
 <script>
+// Exchange rate (update periodically)
+const KES_TO_USD_RATE = 0.0078;  // 1 KES = 0.0078 USD (approx 128 KES = 1 USD)
+
+function convertKEStoUSD(kesAmount) {
+    return (kesAmount * KES_TO_USD_RATE).toFixed(2);
+}
+
+function submitCategoryForApproval(categoryName, categoryId, totalAmount) {
+    const message = `Submit ${categoryName} category for approval?\n\nTotal Amount: KES ${totalAmount.toLocaleString()} (USD $${convertKEStoUSD(totalAmount)})\n\nThis will create a budget request for management approval.`;
+    
+    if (confirm(message)) {
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        button.disabled = true;
+        
+        // Create budget request
+        fetch('{% url "finance:budget_request_form" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category_id: categoryId,
+                category_name: categoryName,
+                total_amount: totalAmount,
+                request_type: 'category_approval'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✅ Budget request submitted successfully!\n\nRequest ID: ${data.request_id}\nStatus: Pending Approval`);
+                // Redirect to request detail page
+                window.location.href = `/finance/budget-requests/${data.request_id}/`;
+            } else {
+                alert('Error submitting request: ' + data.error);
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error submitting request. Please try again or use "New Budget Request" button.');
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+        });
+    }
+}
+
 function generateBudgetProjections() {
     if (confirm('This will generate 2026 budget projections based on historical data. Continue?')) {
         // Show loading state

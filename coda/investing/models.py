@@ -3177,5 +3177,267 @@ class PositionBatch(TimeStampedModel):
         return rejected_count
 
 
+# ============================================================================
+# POSITION AUTOMATION: AUTO-FETCHED POSITIONS
+# ============================================================================
+
+class SuggestedPosition(TimeStampedModel):
+    """
+    Auto-fetched positions from OptionPlay/Thinkorswim pending staff review
+    
+    Workflow:
+    1. Daily fetch from APIs → Creates SuggestedPosition (status=pending)
+    2. Staff reviews/edits → Updates status to approved/modified/rejected
+    3. Staff creates batch → Converts to OptionsPosition objects
+    4. Client approves batch → Positions become active
+    """
+    
+    # Source tracking
+    SOURCE_CHOICES = [
+        ('optionplay', 'OptionPlay API'),
+        ('thinkorswim', 'Thinkorswim/TD Ameritrade'),
+        ('manual', 'Manual Entry'),
+    ]
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        help_text="Where this position was sourced from"
+    )
+    fetched_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When position was fetched from API"
+    )
+    
+    # Position Details (same structure as OptionsPosition)
+    symbol = models.CharField(
+        max_length=10,
+        help_text="Underlying stock ticker (e.g., AAPL, TSLA)"
+    )
+    
+    STRATEGY_CHOICES = [
+        ('short_put', 'Cash-Secured Short Put'),
+        ('covered_call', 'Covered Call'),
+        ('bull_put_spread', 'Bull Put Spread'),
+        ('bear_call_spread', 'Bear Call Spread'),
+        ('bull_call_spread', 'Bull Call Spread'),
+        ('bear_put_spread', 'Bear Put Spread'),
+        ('iron_condor', 'Iron Condor'),
+        ('long_call', 'Long Call'),
+        ('long_put', 'Long Put'),
+        ('other', 'Other Strategy')
+    ]
+    strategy = models.CharField(
+        max_length=30,
+        choices=STRATEGY_CHOICES,
+        help_text="Options strategy type"
+    )
+    
+    # Position Legs (JSON for multi-leg strategies)
+    positions = models.JSONField(
+        help_text="Array of position legs: [{type, strike, contracts, premium, delta, theta}]"
+    )
+    
+    # Dates
+    expiration_date = models.DateField(
+        help_text="Option expiration date"
+    )
+    dte = models.IntegerField(
+        help_text="Days to expiration (calculated at fetch time)"
+    )
+    
+    # Financial Metrics
+    premium_collected = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Total premium collected/paid"
+    )
+    capital_required = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Capital required for position"
+    )
+    max_profit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Maximum possible profit"
+    )
+    max_loss = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Maximum possible loss"
+    )
+    breakeven = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Breakeven price"
+    )
+    
+    # HIGH PROBABILITY INDICATORS (Key filtering criteria)
+    probability_of_profit = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Probability of profit % (e.g., 75.00 = 75%)"
+    )
+    
+    # Greeks (at position level)
+    position_delta = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position delta"
+    )
+    position_theta = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position theta (daily time decay)"
+    )
+    position_gamma = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position gamma"
+    )
+    position_vega = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position vega (volatility sensitivity)"
+    )
+    
+    # AI/API Metadata
+    api_response_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Raw API response for reference"
+    )
+    ai_confidence = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="AI confidence score (0-100)"
+    )
+    ai_reasoning = models.TextField(
+        blank=True,
+        help_text="Why AI recommended this position"
+    )
+    
+    # Staff Review
+    REVIEW_STATUS_CHOICES = [
+        ('pending', 'Pending Staff Review'),
+        ('approved', 'Approved by Staff'),
+        ('modified', 'Modified & Approved'),
+        ('rejected', 'Rejected by Staff'),
+        ('converted', 'Converted to Batch'),
+    ]
+    review_status = models.CharField(
+        max_length=20,
+        choices=REVIEW_STATUS_CHOICES,
+        default='pending',
+        help_text="Staff review status"
+    )
+    
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_suggested_positions',
+        limit_choices_to={'is_staff': True},
+        help_text="Staff member who reviewed this"
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When staff reviewed this position"
+    )
+    staff_notes = models.TextField(
+        blank=True,
+        help_text="Staff comments, modifications, or rejection reasons"
+    )
+    
+    # Link to created position (if approved and converted)
+    created_position = models.OneToOneField(
+        'OptionsPosition',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='source_suggestion',
+        help_text="Actual position created from this suggestion"
+    )
+    
+    # Target account (if pre-assigned by staff)
+    target_account = models.ForeignKey(
+        'ManagedTradingAccount',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='suggested_positions',
+        help_text="Which account this position is intended for (optional)"
+    )
+    
+    class Meta:
+        verbose_name = "Suggested Position"
+        verbose_name_plural = "Suggested Positions"
+        ordering = ['-probability_of_profit', '-fetched_at']
+        indexes = [
+            models.Index(fields=['review_status', '-fetched_at']),
+            models.Index(fields=['source', 'review_status']),
+            models.Index(fields=['-probability_of_profit']),
+        ]
+    
+    def __str__(self):
+        return f"{self.symbol} {self.strategy} ({self.probability_of_profit}% prob) - {self.get_review_status_display()}"
+    
+    @property
+    def risk_reward_ratio(self):
+        """Calculate risk/reward ratio"""
+        if self.max_loss and self.max_loss != 0:
+            return float(self.max_profit / abs(self.max_loss))
+        return 0.0
+    
+    @property
+    def meets_criteria(self):
+        """Check if position meets high-probability criteria"""
+        return (
+            self.probability_of_profit >= Decimal('70.00') and  # 70%+ probability
+            self.premium_collected >= Decimal('100.00') and     # $100+ premium
+            30 <= self.dte <= 60                                 # 30-60 DTE
+        )
+    
+    def approve(self, staff_user, notes=''):
+        """Approve this suggestion"""
+        self.review_status = 'approved'
+        self.reviewed_by = staff_user
+        self.reviewed_at = timezone.now()
+        if notes:
+            self.staff_notes = notes
+        self.save()
+    
+    def reject(self, staff_user, reason):
+        """Reject this suggestion"""
+        self.review_status = 'rejected'
+        self.reviewed_by = staff_user
+        self.reviewed_at = timezone.now()
+        self.staff_notes = reason
+        self.save()
+    
+    def modify(self, staff_user, updated_data, notes=''):
+        """Modify position details and mark as modified"""
+        # Update position details
+        for field, value in updated_data.items():
+            if hasattr(self, field):
+                setattr(self, field, value)
+        
+        self.review_status = 'modified'
+        self.reviewed_by = staff_user
+        self.reviewed_at = timezone.now()
+        self.staff_notes = f"Modified: {notes}" if notes else "Modified by staff"
+        self.save()
+
+
 # Update OptionsPosition to link to batches
 # Add this field to the existing OptionsPosition model (find the model and add this field)
