@@ -252,6 +252,45 @@ def close_position(request, position_id):
 
 
 @staff_member_required
+def edit_position(request, position_id):
+    """
+    Edit existing options position
+    
+    Allows modifying position details before or after entry
+    Permissions: Staff only
+    """
+    position = get_object_or_404(
+        OptionsPosition.objects.select_related('managed_account'),
+        id=position_id
+    )
+    
+    if position.status == 'closed':
+        messages.warning(request, 'Cannot edit closed positions')
+        return redirect('investing:managed_position_detail', position_id=position.id)
+    
+    if request.method == 'POST':
+        form = OptionsPositionForm(request.POST, instance=position)
+        if form.is_valid():
+            try:
+                updated_position = form.save()
+                messages.success(request, f'✓ Position updated: {updated_position.symbol}')
+                return redirect('investing:managed_account_detail', account_id=position.managed_account.id)
+            except Exception as e:
+                messages.error(request, f'Error updating position: {str(e)}')
+    else:
+        form = OptionsPositionForm(instance=position)
+    
+    context = {
+        'form': form,
+        'position': position,
+        'account': position.managed_account,
+        'title': f'Edit Position - {position.symbol}'
+    }
+    
+    return render(request, 'investing/managed/edit_position.html', context)
+
+
+@staff_member_required
 def positions_list(request):
     """
     List all positions across all accounts

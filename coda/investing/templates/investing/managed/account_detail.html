@@ -169,14 +169,20 @@
                             </td>
                             {% if is_manager %}
                             <td class="text-end">
-                                <a href="{% url 'investing:managed_position_detail' position.id %}" 
-                                   class="btn btn-sm btn-info">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="{% url 'investing:close_managed_position' position.id %}" 
-                                   class="btn btn-sm btn-danger">
-                                    <i class="fa fa-times"></i>
-                                </a>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'investing:managed_position_detail' position.id %}" 
+                                       class="btn btn-sm btn-info" title="View Details">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'investing:edit_managed_position' position.id %}" 
+                                       class="btn btn-sm btn-primary" title="Edit Position">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'investing:close_managed_position' position.id %}" 
+                                       class="btn btn-sm btn-danger" title="Close Position">
+                                        <i class="fa fa-times"></i>
+                                    </a>
+                                </div>
                             </td>
                             {% endif %}
                         </tr>

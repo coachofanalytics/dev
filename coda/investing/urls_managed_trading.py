@@ -56,6 +56,10 @@ urlpatterns = [
          positions.close_position, 
          name='close_managed_position'),
     
+    path('managed/positions/<int:position_id>/edit/', 
+         positions.edit_position, 
+         name='edit_managed_position'),
+    
     # ========================================================================
     # MONITORING & ALERTS (Staff Only)
     # ========================================================================

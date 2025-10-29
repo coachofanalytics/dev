@@ -33,6 +33,10 @@ class BudgetDashboardView(BaseFinanceView):
         self.estimation_service = BudgetEstimationService()
         self.consolidation_service = BudgetConsolidationService()
     
+    def log_error(self, message, exception):
+        """Log error with context"""
+        logger.error(f"{message}: {str(exception)}", exc_info=True)
+    
     def _get_overview_tab_data(self, company, department, estimation_service, consolidation_service):
         """Get data for Overview tab."""
         try:

@@ -59,12 +59,38 @@ def budget_category_edit(request, company_slug, category_id, company=None):
         if request.method == 'POST':
             return view._handle_budget_edit_post(request, company, category, budgets)
         
+        # Organize budgets by subcategory for the template
+        items_by_subcategory = {}
+        for budget in budgets:
+            subcategory_name = budget.subcategory.name if budget.subcategory else "Uncategorized"
+            if subcategory_name not in items_by_subcategory:
+                items_by_subcategory[subcategory_name] = []
+            items_by_subcategory[subcategory_name].append(budget)
+        
+        # Calculate totals if there are existing budgets
+        total_estimated = sum(b.estimated_amount or 0 for b in budgets)
+        total_actual = sum(b.actual_spent or 0 for b in budgets)  # Fixed: actual_spent, not actual_amount
+        existing_budgets = budgets.exists()
+        
+        # Get user department for display
+        user_department = None
+        try:
+            if hasattr(request.user, 'profile') and hasattr(request.user.profile, 'department'):
+                user_department = request.user.profile.department
+        except Exception:
+            pass
+        
         context = {
             'company': company,
             'category': category,
             'budgets': budgets,
             'subcategories': subcategories,
-            'form': BudgetEditForm(),
+            'items_by_subcategory': items_by_subcategory,
+            'existing_budgets': existing_budgets,
+            'total_estimated': total_estimated,
+            'total_actual': total_actual,
+            'user_department': user_department,
+            # 'form': BudgetEditForm(),  # Form not defined yet - TODO: Create if needed
         }
         
         return render(request, 'finance/budgets/budget_category_edit.html', context)

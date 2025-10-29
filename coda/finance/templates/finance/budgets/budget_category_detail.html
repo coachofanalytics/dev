@@ -22,10 +22,16 @@
                         <p class="mb-0">{{ category.description|default:"No description available" }}</p>
                     </div>
                     <div class="col-md-4 text-end">
-                        <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" 
-                           class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Dashboard
-                        </a>
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'finance:budget-category-edit' company.slug category.id %}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Edit Category Budget
+                            </a>
+                            <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -95,8 +101,8 @@
                     </div>
                     
                     <!-- Budget Items List with Edit Buttons -->
+                    <h6 class="mt-4">Budget Items:</h6>
                     {% if data.budgets %}
-                    <h6>Budget Items:</h6>
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
@@ -113,14 +119,40 @@
                             <tbody>
                                 {% for budget in data.budgets %}
                                 <tr>
-                                    <td>{{ budget.item_name }}</td>
-                                   <td>KES {{ budget.unit_price|floatformat:2 }}</td>
-                                   <td>{{ budget.quantity|floatformat:2 }}</td>
-                                   <td>{{ budget.cases }}</td>
-                                   <td>KES {{ budget.calculated_total|floatformat:2 }}</td>
-                                   <td>KES {{ budget.actual_spent|floatformat:2 }}</td>
+                                    <td><strong>{{ budget.item_name }}</strong></td>
                                     <td>
-                                        <a href="{% url 'finance:budget-item-edit' company.slug budget.id %}" class="btn btn-sm btn-primary">
+                                        {% if budget.unit_price %}
+                                            KES {{ budget.unit_price|floatformat:2 }}
+                                        {% else %}
+                                            <span class="text-muted">Not set</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if budget.quantity %}
+                                            {{ budget.quantity|floatformat:2 }}
+                                        {% else %}
+                                            <span class="text-muted">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if budget.cases %}
+                                            {{ budget.cases }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>KES {{ budget.calculated_total|default:0|floatformat:2 }}</strong></td>
+                                    <td>
+                                        {% if budget.actual_spent %}
+                                            KES {{ budget.actual_spent|floatformat:2 }}
+                                        {% else %}
+                                            <span class="text-muted">KES 0.00</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'finance:budget-item-edit' company.slug budget.id %}" 
+                                           class="btn btn-sm btn-primary" 
+                                           title="Edit this budget item">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
                                     </td>
@@ -128,6 +160,12 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>No budget items found.</strong> 
+                        Click the "Edit Category Budget" button above to add budget items.
                     </div>
                     {% endif %}
                     
