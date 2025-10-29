@@ -63,11 +63,18 @@ def suggested_positions_list(request):
         'total_premium': pending.aggregate(sum=models.Sum('premium_collected'))['sum'] or 0,
     }
     
+    # Get active managed trading accounts for batch creation
+    active_accounts = ManagedTradingAccount.objects.filter(
+        status='active',
+        trading_enabled=True
+    ).order_by('account_number')
+    
     context = {
         'pending_positions': pending,
         'approved_positions': approved,
         'rejected_positions': rejected,
         'stats': stats,
+        'active_accounts': active_accounts,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 

@@ -15,6 +15,7 @@ from .views.managed_trading import (
     client,
     onboarding,  # Phase 6
     batches,  # Phase 7
+    position_suggestions,  # Phase 8: Automated position sourcing
 )
 
 urlpatterns = [
