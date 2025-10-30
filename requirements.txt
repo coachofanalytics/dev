@@ -15,6 +15,7 @@ django-mptt==0.13.4
 django-storages==1.11.1
 django-timezone-field==5.0
 django-heroku==0.3.1
+heroku3==5.2.0
 
 # Authentication
 django-allauth==0.58.2
