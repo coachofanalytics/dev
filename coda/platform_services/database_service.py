@@ -51,7 +51,10 @@ class DatabaseService(HerokuService):
             return {'success': False, 'error': str(exc)}
 
     def _resolve_client_db_name_for_app(self, app_name: str) -> Dict[str, Any]:
-        """Try to resolve the client database 'name' for the given app via Client API."""
+        """Try to resolve the client database identifier for the given app via Client API.
+
+        Returns both 'client_id' (UUID) and 'client_name'.
+        """
         listing = self._list_postgres_client_databases()
         if not listing.get('success'):
             return listing
@@ -59,10 +62,10 @@ class DatabaseService(HerokuService):
         # Prefer exact app match
         for item in items:
             if item.get('app_name') == app_name:
-                return {'success': True, 'client_name': item.get('name')}
+                return {'success': True, 'client_name': item.get('name'), 'client_id': item.get('id')}
         # As fallback, return first Postgres DB
         if items:
-            return {'success': True, 'client_name': items[0].get('name')}
+            return {'success': True, 'client_name': items[0].get('name'), 'client_id': items[0].get('id')}
         return {'success': False, 'error': 'No Postgres databases visible to token'}
 
     def _get_postgres_db_identifier(self, app_name: str) -> Dict[str, Any]:
@@ -121,7 +124,7 @@ class DatabaseService(HerokuService):
         # Try Client API first
         resolved = self._resolve_client_db_name_for_app(app_name)
         if resolved.get('success'):
-            db_identifier = resolved.get('client_name')
+            db_identifier = resolved.get('client_id') or resolved.get('client_name')
         else:
             addon = self._get_postgres_db_identifier(app_name)
             if not addon.get('success'):
@@ -149,8 +152,11 @@ class DatabaseService(HerokuService):
         # Prefer Client API database name
         candidates: List[str] = []
         resolved = self._resolve_client_db_name_for_app(app_name)
-        if resolved.get('success') and resolved.get('client_name'):
-            candidates.append(resolved['client_name'])
+        if resolved.get('success'):
+            if resolved.get('client_id'):
+                candidates.append(resolved['client_id'])
+            if resolved.get('client_name'):
+                candidates.append(resolved['client_name'])
         # Fallback: identifiers via app addons/attachments
         addon = self._get_postgres_db_identifier(app_name)
         if addon.get('success'):
