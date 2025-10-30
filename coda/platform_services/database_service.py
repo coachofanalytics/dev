@@ -36,12 +36,35 @@ class DatabaseService(HerokuService):
         }
 
     def _get_postgres_db_identifier(self, app_name: str) -> Dict[str, Any]:
-        """Resolve the Postgres database identifier for the Postgres API.
+        """Resolve the identifier accepted by the Heroku Postgres API client endpoints.
 
-        The Postgres API expects the database UUID (the add-on id), not the human name.
-        Fallbacks try the add-on name if needed.
+        Priority:
+        1) Use addon-attachment name (e.g., 'DATABASE' or 'HEROKU_POSTGRESQL_CYAN')
+        2) Fallback to add-on name
+        3) As last resort, add-on id
         """
         try:
+            # First, try addon attachments to get canonical attachment name
+            att_resp = requests.get(
+                f'https://api.heroku.com/apps/{app_name}/addon-attachments',
+                headers=self._heroku_headers(),
+                timeout=30,
+            )
+            if att_resp.status_code == 200:
+                attachments = att_resp.json()
+                pg_attachments = [a for a in attachments if a.get('addon', {}).get('plan', {}).get('name', '').startswith('heroku-postgresql')]
+                if pg_attachments:
+                    # Prefer the primary 'DATABASE' attachment if present
+                    primary = next((a for a in pg_attachments if a.get('name') == 'DATABASE'), None)
+                    chosen = primary or pg_attachments[0]
+                    return {
+                        'success': True,
+                        'db_identifier': chosen.get('name'),
+                        'fallback_addon_id': chosen.get('addon', {}).get('id'),
+                        'fallback_addon_name': chosen.get('addon', {}).get('name'),
+                    }
+
+            # Fallback to addons list
             resp = requests.get(
                 f'https://api.heroku.com/apps/{app_name}/addons',
                 headers=self._heroku_headers(),
@@ -54,15 +77,13 @@ class DatabaseService(HerokuService):
                 plan = addon.get('plan', {})
                 plan_name = plan.get('name', '')
                 if plan_name.startswith('heroku-postgresql'):
-                    # Prefer add-on id for postgres API
                     return {
                         'success': True,
-                        'db_id': addon.get('id'),
-                        'db_name': addon.get('name'),
+                        'db_identifier': addon.get('name') or addon.get('id'),
                     }
             return {'success': False, 'error': 'No Heroku Postgres addon found'}
         except Exception as exc:  # pragma: no cover
-            logger.error('Failed to query addons: %s', exc)
+            logger.error('Failed to resolve postgres identifier: %s', exc)
             return {'success': False, 'error': str(exc)}
 
     def create_backup(self, app_name: str) -> Dict[str, Any]:
@@ -70,11 +91,11 @@ class DatabaseService(HerokuService):
         addon = self._get_postgres_db_identifier(app_name)
         if not addon.get('success'):
             return addon
-        db_id = addon.get('db_id') or addon.get('db_name')
+        db_identifier = addon.get('db_identifier') or addon.get('fallback_addon_name') or addon.get('fallback_addon_id')
         try:
             # Initiate capture
             resp = requests.post(
-                f'https://postgres-api.heroku.com/client/v11/databases/{db_id}/backups',
+                f'https://postgres-api.heroku.com/client/v11/databases/{db_identifier}/backups',
                 headers=self._postgres_headers(),
                 json={},
                 timeout=60,
@@ -93,10 +114,10 @@ class DatabaseService(HerokuService):
         addon = self._get_postgres_db_identifier(app_name)
         if not addon.get('success'):
             return addon
-        db_id = addon.get('db_id') or addon.get('db_name')
+        db_identifier = addon.get('db_identifier') or addon.get('fallback_addon_name') or addon.get('fallback_addon_id')
         try:
             resp = requests.get(
-                f'https://postgres-api.heroku.com/client/v11/databases/{db_id}/backups',
+                f'https://postgres-api.heroku.com/client/v11/databases/{db_identifier}/backups',
                 headers=self._postgres_headers(),
                 timeout=60,
             )
