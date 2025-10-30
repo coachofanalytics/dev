@@ -1,32 +1,32 @@
-from datetime import datetime,timedelta
+from datetime import timedelta
 from decimal import *
 from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import User  
 
 from django_countries.fields import CountryField
-from accounts.choices import CategoryChoices,SubCategoryChoices
+from accounts.choices import CategoryChoices, SubCategoryChoices
 
 
 # Create your models here.
 
+
 class UserGroups(Group):
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=True)
-    users = models.ManyToManyField('CustomerUser', related_name='user_groups')
+    users = models.ManyToManyField("CustomerUser", related_name="user_groups")
 
     class Meta:
         verbose_name_plural = "User Groups"
 
+
 class CustomerUser(AbstractUser):
     def get_category_display_name(self):
-        return dict(CategoryChoices.choices).get(self.category, 'Unknown')    
+        return dict(CategoryChoices.choices).get(self.category, "Unknown")
 
     # added this column here
     def get_subcategory_display_name(self):
-        return dict(SubCategoryChoices.choices).get(self.subcategory, 'Unknown')    
+        return dict(SubCategoryChoices.choices).get(self.subcategory, "Unknown")
 
     class Score(models.IntegerChoices):
         Male = 1
@@ -38,7 +38,7 @@ class CustomerUser(AbstractUser):
     date_joined = models.DateTimeField(default=timezone.now)
     email = models.CharField(max_length=255)
     gender = models.IntegerField(choices=Score.choices, blank=True, null=True)
-    phone = models.CharField(default="90001",max_length=255)
+    phone = models.CharField(default="90001", max_length=255)
     address = models.CharField(blank=True, null=True, max_length=255)
     city = models.CharField(blank=True, null=True, max_length=255)
     state = models.CharField(blank=True, null=True, max_length=255)
@@ -60,26 +60,25 @@ class CustomerUser(AbstractUser):
     # is_active = models.BooleanField('Is applicant', default=True)
     class Meta:
         ordering = ["-date_joined"]
-        #ordering = ["username"]
+        # ordering = ["username"]
         verbose_name_plural = "Users"
 
     @property
     def full_name(self):
-        fullname = f'{self.first_name},{self.last_name}'
+        fullname = f"{self.first_name},{self.last_name}"
         return fullname
-    
+
     @property
     def is_recent(self):
         return self.date_joined >= timezone.now() - timedelta(days=365)
-    
+
     @property
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
-    
 
 
-class LoginHistory (models.Model):
-    user = models.ForeignKey('CustomerUser', on_delete=models.CASCADE)
+class LoginHistory(models.Model):
+    user = models.ForeignKey("CustomerUser", on_delete=models.CASCADE)
     login_time = models.DateTimeField(null=True, blank=True)
     logout_time = models.DateTimeField(null=True, blank=True)
     start_time = models.TimeField(null=True, blank=True)
@@ -90,10 +89,11 @@ class LoginHistory (models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.login_time} to {self.logout_time}"
-    
+
 
 from django.db import models
 from django.utils.text import slugify
+
 
 class Department(models.Model):
     description = models.CharField(max_length=500, null=True, blank=True)
@@ -108,10 +108,10 @@ class Department(models.Model):
 
     def __str__(self):
         return self.description
-    
 
 
 from django.db import models
+
 
 class Credential(models.Model):
     department = models.CharField(max_length=255, null=False)
@@ -129,10 +129,9 @@ class Credential(models.Model):
     user_types = models.CharField(max_length=255, null=False)
 
     def __str__(self):
-        return self.name   
+        return self.name
 
-  
-    
+
 class TaskGroup(models.Model):
     title = models.CharField(max_length=55)
     description = models.TextField()
@@ -140,17 +139,15 @@ class TaskGroup(models.Model):
 
     def __str__(self):
         return self.title
-    
+
+
 class TeamMember(models.Model):  # 🔄 Renamed to singular (best practice)
     category = models.CharField(max_length=25)
-    title = models.CharField(max_length=255, blank=True)  
+    title = models.CharField(max_length=255, blank=True)
     description = models.TextField()
-    
+
     def __str__(self):
         return f"{self.title} ({self.category})"
-
-
-
 
 
 class CredentialCategory(models.Model):
@@ -164,11 +161,7 @@ class CredentialCategory(models.Model):
         return self.verbose_name or f"Credential Category {self.id}"
 
 
-from django.conf import settings 
-
-
 from django.db import models
-from django.conf import settings  # for referencing user model safely
 from accounts.models import CustomerUser  # adjust if it's in another app
 
 
@@ -182,9 +175,9 @@ class Tracker(models.Model):
     author = models.ForeignKey(
         CustomerUser,
         on_delete=models.CASCADE,
-        related_name='trackers',
+        related_name="trackers",
         null=True,
-        blank=True
+        blank=True,
     )
 
     employee = models.CharField(max_length=255)
@@ -194,7 +187,7 @@ class Tracker(models.Model):
     time = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
-        ordering = ['-login_date']
+        ordering = ["-login_date"]
         verbose_name = "Tracker"
         verbose_name_plural = "Trackers"
 
@@ -202,4 +195,33 @@ class Tracker(models.Model):
         return f"{self.task} - {self.category}"
 
 
-
+class Transaction(models.Model):
+    sender = models.ForeignKey(
+        "CustomerUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sent_transactions",
+    )
+    department = models.ForeignKey(
+        "Department",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="department_transactions",
+    )
+    receiver = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    type = models.CharField(max_length=100, null=True, blank=True)
+    activity_date = models.DateTimeField(default=timezone.now)
+    receipt_link = models.CharField(max_length=255, null=True, blank=True)
+    qty = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    transaction_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
+    description = models.TextField(null=True, blank=True)
+    # payment_method = models.CharField(max_length=50, choices=PAY_CHOICES)
+    # category = models.CharField(max_length=100, choices=CATEGORY_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
