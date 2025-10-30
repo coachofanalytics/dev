@@ -95,6 +95,7 @@ class DatabaseService(HerokuService):
                         'db_identifier': chosen.get('name'),
                         'fallback_addon_id': chosen.get('addon', {}).get('id'),
                         'fallback_addon_name': chosen.get('addon', {}).get('name'),
+                        'all_attachment_names': [a.get('name') for a in pg_attachments if a.get('name')],
                     }
 
             # Fallback to addons list
@@ -162,6 +163,8 @@ class DatabaseService(HerokuService):
         if addon.get('success'):
             if addon.get('db_identifier'):
                 candidates.append(addon['db_identifier'])
+            if addon.get('all_attachment_names'):
+                candidates.extend(addon['all_attachment_names'])
             if addon.get('fallback_addon_name'):
                 candidates.append(addon['fallback_addon_name'])
             if addon.get('fallback_addon_id'):
