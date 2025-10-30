@@ -114,28 +114,41 @@ class DatabaseService(HerokuService):
         addon = self._get_postgres_db_identifier(app_name)
         if not addon.get('success'):
             return addon
-        db_identifier = addon.get('db_identifier') or addon.get('fallback_addon_name') or addon.get('fallback_addon_id')
-        try:
-            resp = requests.get(
-                f'https://postgres-api.heroku.com/client/v11/databases/{db_identifier}/backups',
-                headers=self._postgres_headers(),
-                timeout=60,
-            )
-            if resp.status_code != 200:
-                return {'success': False, 'error': f'Backups API failed: {resp.status_code} {resp.text}'}
-            items = resp.json() if resp.text else []
-            # Normalize minimal fields
-            normalized = []
-            for b in items[:limit]:
-                normalized.append({
-                    'id': b.get('name') or b.get('id'),
-                    'created_at': b.get('created_at'),
-                    'status': b.get('finished_at') and 'finished' or 'running',
-                    'size': b.get('num_bytes'),
-                })
-            return {'success': True, 'backups': normalized}
-        except Exception as exc:  # pragma: no cover
-            logger.error('List backups failed: %s', exc)
-            return {'success': False, 'error': str(exc)}
+        candidates: List[str] = []
+        if addon.get('db_identifier'):
+            candidates.append(addon['db_identifier'])
+        if addon.get('fallback_addon_name'):
+            candidates.append(addon['fallback_addon_name'])
+        if addon.get('fallback_addon_id'):
+            candidates.append(addon['fallback_addon_id'])
+        # Common attachment/config var names
+        if 'DATABASE' not in candidates:
+            candidates.append('DATABASE')
+        if 'DATABASE_URL' not in candidates:
+            candidates.append('DATABASE_URL')
+
+        errors: List[str] = []
+        for cand in candidates:
+            try:
+                resp = requests.get(
+                    f'https://postgres-api.heroku.com/client/v11/databases/{cand}/backups',
+                    headers=self._postgres_headers(),
+                    timeout=60,
+                )
+                if resp.status_code == 200:
+                    items = resp.json() if resp.text else []
+                    normalized = []
+                    for b in items[:limit]:
+                        normalized.append({
+                            'id': b.get('name') or b.get('id'),
+                            'created_at': b.get('created_at'),
+                            'status': b.get('finished_at') and 'finished' or 'running',
+                            'size': b.get('num_bytes'),
+                        })
+                    return {'success': True, 'backups': normalized, 'identifier_used': cand}
+                errors.append(f"{cand}: {resp.status_code} {resp.text}")
+            except Exception as exc:  # pragma: no cover
+                errors.append(f"{cand}: {exc}")
+        return {'success': False, 'error': 'Backups API failed for all candidates: ' + ' | '.join(errors)}
 
 
