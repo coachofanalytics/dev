@@ -260,11 +260,4 @@ Acceptance Criteria:
 
 **See:** 03_ARCHITECTURE.md for system design
 
----
-
-## 📎 Appendices
-
-- Business Requirements Appendix (BRD): `01_ANALYSIS_APPENDIX_BRD.md`
-- Formal Requirements Appendix (FRD): `02_REQUIREMENTS_APPENDIX_FRD.md`
-
 
