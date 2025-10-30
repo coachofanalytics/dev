@@ -212,4 +212,11 @@ CODA needs a secure, efficient user registration system that:
 
 **See:** 02_REQUIREMENTS.md for detailed feature specifications
 
+---
+
+## 📎 Appendices
+
+- See detailed Business Requirements Appendix: `01_ANALYSIS_APPENDIX_BRD.md`
+- See Formal Requirements (FRD) Appendix: `02_REQUIREMENTS_APPENDIX_FRD.md`
+
 
