@@ -1,6 +1,8 @@
 import logging
 import os
+import subprocess
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 
 from .heroku_service import HerokuService
 import requests
@@ -10,10 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseService(HerokuService):
-    """Database backup and basic management using Heroku CLI.
+    """Database backup and management for PostgreSQL databases.
 
-    We invoke the official Heroku CLI for Postgres backups because the
-    heroku3 library does not expose the `pg:backups` interface directly.
+    Supports two backup strategies:
+    1. Heroku Postgres HTTP API (for Heroku-managed databases)
+    2. pg_dump (for any PostgreSQL database, including external RDS)
     """
 
     # --------------------
@@ -198,5 +201,84 @@ class DatabaseService(HerokuService):
             except Exception as exc:  # pragma: no cover
                 errors.append(f"{cand}: {exc}")
         return {'success': False, 'error': 'Backups API failed for all candidates: ' + ' | '.join(errors)}
+
+    # --------------------
+    # pg_dump-based backup (works with any PostgreSQL DB)
+    # --------------------
+    def create_pg_dump_backup(self, database_url: Optional[str] = None, output_path: Optional[str] = None) -> Dict[str, Any]:
+        """Create a PostgreSQL backup using pg_dump (works with RDS, Heroku Postgres, etc.).
+        
+        Args:
+            database_url: PostgreSQL connection URL (defaults to DATABASE_URL env var)
+            output_path: Where to save backup (defaults to /tmp/backup_<timestamp>.sql)
+        
+        Returns:
+            Dict with success, backup_path, and size
+        """
+        db_url = database_url or os.getenv('DATABASE_URL')
+        if not db_url:
+            return {'success': False, 'error': 'No DATABASE_URL provided'}
+        
+        if not output_path:
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            output_path = f'/tmp/backup_{timestamp}.sql'
+        
+        try:
+            # Run pg_dump
+            result = subprocess.run(
+                ['pg_dump', '--no-owner', '--no-acl', '-f', output_path, db_url],
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5 minutes
+            )
+            
+            if result.returncode != 0:
+                return {'success': False, 'error': f'pg_dump failed: {result.stderr}'}
+            
+            # Check file size
+            if os.path.exists(output_path):
+                size = os.path.getsize(output_path)
+                return {
+                    'success': True,
+                    'backup_path': output_path,
+                    'size_bytes': size,
+                    'size_mb': round(size / (1024 * 1024), 2),
+                }
+            return {'success': False, 'error': 'Backup file not created'}
+            
+        except FileNotFoundError:
+            return {'success': False, 'error': 'pg_dump not found. Install PostgreSQL client or add buildpack.'}
+        except subprocess.TimeoutExpired:
+            return {'success': False, 'error': 'pg_dump timed out after 5 minutes'}
+        except Exception as exc:  # pragma: no cover
+            logger.error('pg_dump backup failed: %s', exc)
+            return {'success': False, 'error': str(exc)}
+
+    def list_local_backups(self, backup_dir: str = '/tmp') -> Dict[str, Any]:
+        """List pg_dump backups in the specified directory."""
+        try:
+            backups = []
+            if not os.path.exists(backup_dir):
+                return {'success': True, 'backups': []}
+            
+            for filename in os.listdir(backup_dir):
+                if filename.startswith('backup_') and filename.endswith('.sql'):
+                    filepath = os.path.join(backup_dir, filename)
+                    stat = os.stat(filepath)
+                    backups.append({
+                        'filename': filename,
+                        'path': filepath,
+                        'size_bytes': stat.st_size,
+                        'size_mb': round(stat.st_size / (1024 * 1024), 2),
+                        'created_at': datetime.fromtimestamp(stat.st_ctime).isoformat(),
+                    })
+            
+            # Sort by creation time, newest first
+            backups.sort(key=lambda x: x['created_at'], reverse=True)
+            return {'success': True, 'backups': backups}
+            
+        except Exception as exc:  # pragma: no cover
+            logger.error('Failed to list local backups: %s', exc)
+            return {'success': False, 'error': str(exc)}
 
 
