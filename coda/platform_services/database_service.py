@@ -1,9 +1,9 @@
 import logging
-import shlex
-import subprocess
-from typing import Any, Dict, List
+import os
+from typing import Any, Dict, List, Optional
 
 from .heroku_service import HerokuService
+import requests
 
 
 logger = logging.getLogger(__name__)
@@ -16,53 +16,97 @@ class DatabaseService(HerokuService):
     heroku3 library does not expose the `pg:backups` interface directly.
     """
 
-    def _run_cli(self, args: List[str]) -> Dict[str, Any]:
-        """Run a Heroku CLI command and return stdout/stderr safely."""
+    # --------------------
+    # HTTP API helpers
+    # --------------------
+    def _heroku_headers(self) -> Dict[str, str]:
+        api_key = self.api_key or os.getenv('HEROKU_API_KEY')
+        return {
+            'Authorization': f'Bearer {api_key}' if api_key else '',
+            'Accept': 'application/vnd.heroku+json; version=3',
+            'Content-Type': 'application/json',
+        }
+
+    def _postgres_headers(self) -> Dict[str, str]:
+        api_key = self.api_key or os.getenv('HEROKU_API_KEY')
+        return {
+            'Authorization': f'Bearer {api_key}' if api_key else '',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+
+    def _get_postgres_addon_name(self, app_name: str) -> Dict[str, Any]:
+        """Find the Heroku Postgres add-on name attached to the app via Platform API."""
         try:
-            process = subprocess.run(
-                args,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-                text=True,
+            resp = requests.get(
+                f'https://api.heroku.com/apps/{app_name}/addons',
+                headers=self._heroku_headers(),
+                timeout=30,
             )
-            if process.returncode != 0:
-                return {'success': False, 'error': process.stderr.strip() or process.stdout.strip()}
-            return {'success': True, 'output': process.stdout}
+            if resp.status_code != 200:
+                return {'success': False, 'error': f'Addons API failed: {resp.status_code} {resp.text}'}
+            addons = resp.json()
+            for addon in addons:
+                plan = addon.get('plan', {})
+                plan_name = plan.get('name', '')
+                if plan_name.startswith('heroku-postgresql'):
+                    # Use the add-on name as database identifier for Postgres API
+                    return {'success': True, 'db_name': addon.get('name')}
+            return {'success': False, 'error': 'No Heroku Postgres addon found'}
         except Exception as exc:  # pragma: no cover
-            logger.error('Heroku CLI failed: %s', exc)
+            logger.error('Failed to query addons: %s', exc)
             return {'success': False, 'error': str(exc)}
 
     def create_backup(self, app_name: str) -> Dict[str, Any]:
-        """Create a database backup via Heroku CLI."""
-        cmd = shlex.split(f"heroku pg:backups:capture --app {app_name}")
-        result = self._run_cli(cmd)
-        if not result.get('success'):
-            return result
-        # Best-effort parse backup ID from output
-        backup_id = None
-        for line in result.get('output', '').splitlines():
-            if line.strip().startswith('Backing up '):
-                # Example: Backing up DATABASE to b001... done
-                parts = line.split('to ')
-                if len(parts) == 2:
-                    backup_id = parts[1].split()[0]
-        return {'success': True, 'backup_id': backup_id, 'raw': result.get('output')}
+        """Create a database backup via Heroku Postgres HTTP API."""
+        addon = self._get_postgres_addon_name(app_name)
+        if not addon.get('success'):
+            return addon
+        db_name = addon.get('db_name')
+        try:
+            # Initiate capture
+            resp = requests.post(
+                f'https://postgres-api.heroku.com/client/v11/databases/{db_name}/backups',
+                headers=self._postgres_headers(),
+                json={},
+                timeout=60,
+            )
+            if resp.status_code not in (200, 201, 202):
+                return {'success': False, 'error': f'Backup API failed: {resp.status_code} {resp.text}'}
+            data = resp.json() if resp.text else {}
+            backup_id: Optional[str] = data.get('name') or data.get('id')
+            return {'success': True, 'backup_id': backup_id or 'unknown', 'response': data}
+        except Exception as exc:  # pragma: no cover
+            logger.error('Backup creation failed: %s', exc)
+            return {'success': False, 'error': str(exc)}
 
     def list_backups(self, app_name: str, limit: int = 10) -> Dict[str, Any]:
-        """List recent backups via Heroku CLI and return normalized rows."""
-        cmd = shlex.split(f"heroku pg:backups --app {app_name}")
-        result = self._run_cli(cmd)
-        if not result.get('success'):
-            return result
-        rows = []
-        for line in result.get('output', '').splitlines():
-            # Skip headers and separators
-            if not line.strip() or line.lower().startswith('id  '):
-                continue
-            if set(line.strip()) == {'-'}:
-                continue
-            rows.append(line)
-        return {'success': True, 'backups': rows[:limit]}
+        """List recent backups via Heroku Postgres HTTP API."""
+        addon = self._get_postgres_addon_name(app_name)
+        if not addon.get('success'):
+            return addon
+        db_name = addon.get('db_name')
+        try:
+            resp = requests.get(
+                f'https://postgres-api.heroku.com/client/v11/databases/{db_name}/backups',
+                headers=self._postgres_headers(),
+                timeout=60,
+            )
+            if resp.status_code != 200:
+                return {'success': False, 'error': f'Backups API failed: {resp.status_code} {resp.text}'}
+            items = resp.json() if resp.text else []
+            # Normalize minimal fields
+            normalized = []
+            for b in items[:limit]:
+                normalized.append({
+                    'id': b.get('name') or b.get('id'),
+                    'created_at': b.get('created_at'),
+                    'status': b.get('finished_at') and 'finished' or 'running',
+                    'size': b.get('num_bytes'),
+                })
+            return {'success': True, 'backups': normalized}
+        except Exception as exc:  # pragma: no cover
+            logger.error('List backups failed: %s', exc)
+            return {'success': False, 'error': str(exc)}
 
 
