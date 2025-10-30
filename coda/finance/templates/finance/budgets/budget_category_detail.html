@@ -5,6 +5,14 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'finance/css/budget-common.css' %}">
+<style>
+.metric-sublabel {
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-top: 5px;
+    display: block;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -22,10 +30,20 @@
                         <p class="mb-0">{{ category.description|default:"No description available" }}</p>
                     </div>
                     <div class="col-md-4 text-end">
-                        <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" 
-                           class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Dashboard
-                        </a>
+                        <div class="btn-group-vertical d-grid gap-2" role="group">
+                            <a href="{% url 'finance:budget-category-edit' company.slug category.id %}" 
+                               class="btn btn-primary btn-lg">
+                                <i class="fas fa-edit"></i> Edit Category Budget
+                            </a>
+                            <button type="button" class="btn btn-success btn-lg"
+                                    onclick="submitCategoryForApproval()">
+                                <i class="fas fa-paper-plane"></i> Submit for Approval
+                            </button>
+                            <a href="{% url 'finance:unified-budget-dashboard' company.slug %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -42,19 +60,22 @@
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                       <div class="metric-value">KES {{ category_stats.total_estimated|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ category_stats.total_estimated|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {% widthratio category_stats.total_estimated 128 1 %} USD</div>
                 <div class="metric-label">Estimated Amount</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                       <div class="metric-value">KES {{ category_stats.total_actual|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ category_stats.total_actual|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {% widthratio category_stats.total_actual 128 1 %} USD</div>
                 <div class="metric-label">Actual Spent</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metric-card">
-                       <div class="metric-value">KES {{ category_stats.average_amount|floatformat:2 }}</div>
+                <div class="metric-value">KES {{ category_stats.average_amount|floatformat:2 }}</div>
+                <div class="metric-sublabel text-success">≈ $ {% widthratio category_stats.average_amount 128 1 %} USD</div>
                 <div class="metric-label">Average Amount</div>
             </div>
         </div>
@@ -66,25 +87,40 @@
         <div class="col-12">
             <h4>Subcategories</h4>
             {% for data in subcategory_data %}
-            <div class="card mb-3">
-                <div class="card-header">
+            <div class="card mb-3 {% if data.subcategory.name == 'Uncategorized' %}border-warning{% endif %}">
+                <div class="card-header {% if data.subcategory.name == 'Uncategorized' %}bg-warning text-dark{% endif %}">
                     <h5 class="mb-0">
-                        <i class="fas fa-folder me-2"></i>
+                        {% if data.subcategory.name == 'Uncategorized' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-folder me-2"></i>
+                        {% endif %}
                         {{ data.subcategory.name }}
+                        {% if data.subcategory.name == 'Uncategorized' %}
+                            <small class="float-right text-dark">⚠️ Need to assign subcategories</small>
+                        {% endif %}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Budget Count:</strong> {{ data.budget_count }}</p>
-                                           <p><strong>Estimated:</strong> KES {{ data.total_estimated|floatformat:2 }}</p>
-                                           <p><strong>Actual:</strong> KES {{ data.total_actual|floatformat:2 }}</p>
+                            <p><strong>Estimated:</strong><br>
+                                <span class="h6">KES {{ data.total_estimated|floatformat:2 }}</span><br>
+                                <small class="text-success">≈ $ {% widthratio data.total_estimated 128 1 %} USD</small>
+                            </p>
+                            <p><strong>Actual:</strong><br>
+                                <span class="h6">KES {{ data.total_actual|floatformat:2 }}</span><br>
+                                <small class="text-success">≈ $ {% widthratio data.total_actual 128 1 %} USD</small>
+                            </p>
                         </div>
                         <div class="col-md-6">
                             <p><strong>Variance:</strong> 
                                 <span class="{% if data.total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
                                     KES {{ data.total_variance|floatformat:2 }}
                                 </span>
+                                <br>
+                                <small class="text-muted">≈ $ {% widthratio data.total_variance 128 1 %} USD</small>
                             </p>
                             <p><strong>Variance %:</strong> 
                                 <span class="{% if data.total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
@@ -95,17 +131,18 @@
                     </div>
                     
                     <!-- Budget Items List with Edit Buttons -->
+                    <h6 class="mt-4">Budget Items:</h6>
                     {% if data.budgets %}
-                    <h6>Budget Items:</h6>
                     <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
+                        <table class="table table-sm table-hover">
+                            <thead class="thead-light">
                                 <tr>
                                     <th>Item Name</th>
-                                    <th>Unit Price</th>
+                                    <th>Unit Price (KES)</th>
                                     <th>Quantity</th>
                                     <th>Cases</th>
-                                    <th>Total</th>
+                                    <th>Total (KES)</th>
+                                    <th>Total (USD)</th>
                                     <th>Actual Spent</th>
                                     <th>Actions</th>
                                 </tr>
@@ -113,14 +150,41 @@
                             <tbody>
                                 {% for budget in data.budgets %}
                                 <tr>
-                                    <td>{{ budget.item_name }}</td>
-                                   <td>KES {{ budget.unit_price|floatformat:2 }}</td>
-                                   <td>{{ budget.quantity|floatformat:2 }}</td>
-                                   <td>{{ budget.cases }}</td>
-                                   <td>KES {{ budget.calculated_total|floatformat:2 }}</td>
-                                   <td>KES {{ budget.actual_spent|floatformat:2 }}</td>
+                                    <td><strong>{{ budget.item_name }}</strong></td>
                                     <td>
-                                        <a href="{% url 'finance:budget-item-edit' company.slug budget.id %}" class="btn btn-sm btn-primary">
+                                        {% if budget.unit_price %}
+                                            KES {{ budget.unit_price|floatformat:2 }}
+                                        {% else %}
+                                            <span class="text-muted">Not set</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if budget.quantity %}
+                                            {{ budget.quantity|floatformat:2 }}
+                                        {% else %}
+                                            <span class="text-muted">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if budget.cases %}
+                                            {{ budget.cases }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>KES {{ budget.calculated_total|default:0|floatformat:2 }}</strong></td>
+                                    <td class="text-success"><strong>$ {% widthratio budget.calculated_total|default:0 128 1 %}</strong></td>
+                                    <td>
+                                        {% if budget.actual_spent %}
+                                            KES {{ budget.actual_spent|floatformat:2 }}
+                                        {% else %}
+                                            <span class="text-muted">KES 0.00</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'finance:budget-item-edit' company.slug budget.id %}" 
+                                           class="btn btn-sm btn-primary" 
+                                           title="Edit this budget item">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
                                     </td>
@@ -128,6 +192,12 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>No budget items found.</strong> 
+                        Click the "Edit Category Budget" button above to add budget items.
                     </div>
                     {% endif %}
                     
@@ -139,7 +209,8 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th>Amount</th>
+                                    <th>Amount (KES)</th>
+                                    <th>Amount (USD)</th>
                                     <th>Description</th>
                                     <th>Vendor</th>
                                     <th>User</th>
@@ -149,8 +220,11 @@
                                 {% for transaction in data.recent_transactions %}
                                                <tr>
                                                    <td>{{ transaction.transaction_date|date:"M d, Y" }}</td>
-                                                   <td>KES {{ transaction.amount|floatformat:2 }}</td>
-                                                   <td>{{ transaction.description|truncatewords:10 }}</td>
+                                                   <td><strong>KES {{ transaction.amount|floatformat:2 }}</strong></td>
+                                                   <td class="text-success">
+                                                       <strong>$ {% widthratio transaction.amount 128 1 %}</strong>
+                                                   </td>
+                                                   <td>{{ transaction.description|truncatewords:15 }}</td>
                                                    <td>{{ transaction.vendor_supplier.username|default:transaction.receiver|default:"N/A" }}</td>
                                                    <td>{{ transaction.sender.username|default:"N/A" }}</td>
                                                </tr>
@@ -180,6 +254,25 @@
 {% block extra_js %}
 <script src="{% static 'finance/js/budget-common.js' %}"></script>
 <script>
+// Exchange rate constant
+const KES_TO_USD_RATE = 0.0078;  // 1 USD = ~128 KES
+
+function submitCategoryForApproval() {
+    const categoryName = '{{ category.name }}';
+    const categoryId = {{ category.id }};
+    const totalEstimated = {{ category_stats.total_estimated|default:0 }};
+    const totalUSD = (totalEstimated * KES_TO_USD_RATE).toFixed(2);
+    
+    const message = `Submit ${categoryName} for approval?\n\n` +
+                   `Total Estimated: KES ${totalEstimated.toLocaleString()} (USD $${totalUSD})\n\n` +
+                   `This will create a budget request for management approval.`;
+    
+    if (confirm(message)) {
+        // Redirect to budget request form with pre-filled data
+        window.location.href = `{% url 'finance:budget_request_form' %}?category_id=${categoryId}&category_name=${encodeURIComponent(categoryName)}&amount=${totalEstimated}`;
+    }
+}
+
 $(document).ready(function() {
     console.log('Budget Category Detail loaded successfully');
     console.log('Category: {{ category.name }}');

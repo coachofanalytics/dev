@@ -14,6 +14,115 @@ User = get_user_model()
 # Create your models here.
 
 
+# ============================================================================
+# FEE TIER CONFIGURATION (Admin-editable)
+# ============================================================================
+
+class FeeTierConfiguration(TimeStampedModel):
+    """
+    Admin-editable configuration for managed trading fee tiers
+    Allows staff to update minimums, fees, descriptions without code changes
+    """
+    
+    TIER_CHOICES = [
+        ('starter', 'Starter'),
+        ('professional', 'Professional'),
+        ('premium', 'Premium'),
+        ('consultative', 'Consultative'),
+        ('co_invest', 'Co-Invest'),
+    ]
+    
+    tier_code = models.CharField(
+        max_length=20,
+        choices=TIER_CHOICES,
+        unique=True,
+        help_text="Internal tier code"
+    )
+    tier_name = models.CharField(
+        max_length=100,
+        help_text="Display name (e.g., 'Starter - AI Powered')"
+    )
+    minimum_capital = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Minimum capital required for this tier"
+    )
+    monthly_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fixed monthly fee (set to 0 if none)"
+    )
+    per_session_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fee per session (for consultative tier)"
+    )
+    profit_share_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Percentage of profits shared (e.g., 10 for 10%)"
+    )
+    max_sessions_per_month = models.IntegerField(
+        default=0,
+        help_text="Maximum sessions per month (0 if unlimited)"
+    )
+    short_description = models.CharField(
+        max_length=200,
+        help_text="Brief description for tier card"
+    )
+    
+    # Features description (for display)
+    features = models.JSONField(
+        default=list,
+        help_text="List of features (e.g., ['AI-driven trades', 'Real-time monitoring'])"
+    )
+    compatible_risk_levels = models.JSONField(
+        default=list,
+        help_text="Risk levels this tier is suitable for (e.g., ['low', 'medium'])"
+    )
+    
+    # Display order
+    display_order = models.IntegerField(
+        default=0,
+        help_text="Order to display on forms (lower = first)"
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Is this tier currently available?"
+    )
+    
+    class Meta:
+        verbose_name = "Fee Tier Configuration"
+        verbose_name_plural = "Fee Tier Configurations"
+        ordering = ['display_order', 'minimum_capital']
+    
+    def __str__(self):
+        return f"{self.tier_name} (${self.minimum_capital:,.0f}+)"
+    
+    def get_fee_display(self):
+        """Return formatted fee string for display"""
+        parts = []
+        if self.monthly_fee > 0:
+            parts.append(f"${self.monthly_fee:.0f}/month")
+        if self.per_session_fee > 0:
+            parts.append(f"${self.per_session_fee:.0f}/session")
+        if self.profit_share_percentage > 0:
+            parts.append(f"{self.profit_share_percentage:.0f}% profit")
+        return " + ".join(parts) if parts else "Custom"
+    
+    def get_features_list(self):
+        """Return features as a list"""
+        # Handle both list (JSONField) and string (TextField) formats
+        if isinstance(self.features, list):
+            return self.features
+        elif isinstance(self.features, str):
+            return [f.strip() for f in self.features.split(',') if f.strip()]
+        return []
+
+
 class Investor_Information(ContractBase, DocumentMixin, StatusMixin):
     """
     Unified model for all investor types in CODA
@@ -1932,6 +2041,45 @@ class OptionsPosition(TimeStampedModel):
         related_name='positions'
     )
     
+    # Batch Linkage (Phase 7)
+    batch = models.ForeignKey(
+        'PositionBatch',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='positions',
+        help_text="Batch this position belongs to (if requires approval)"
+    )
+    
+    # Approval tracking
+    requires_client_approval = models.BooleanField(
+        default=True,
+        help_text="Does this position require client approval via batch?"
+    )
+    approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When position was approved (batch or session)"
+    )
+    approval_method = models.CharField(
+        max_length=20,
+        choices=[
+            ('batch', 'Batch Approval'),
+            ('session', 'Session Pre-Approved'),
+            ('manual', 'Manual Staff Approval'),
+        ],
+        blank=True,
+        help_text="How this position was approved"
+    )
+    approval_notes = models.TextField(
+        blank=True,
+        help_text="Notes about approval (e.g., session number)"
+    )
+    rejection_reason = models.TextField(
+        blank=True,
+        help_text="Reason for rejection (if applicable)"
+    )
+    
     # Position Details
     symbol = models.CharField(
         max_length=10,
@@ -2367,6 +2515,135 @@ class TradingSession(TimeStampedModel):
 # PHASE 6: CLIENT ONBOARDING & COMPLIANCE MODELS
 # ============================================================================
 
+class FeeTierConfiguration(TimeStampedModel):
+    """
+    Configurable fee tier settings - editable in Django Admin
+    Allows staff to update tier minimums, fees, descriptions without code changes
+    """
+    
+    FEE_TIER_CHOICES = [
+        ('starter', 'Starter - Automated Execution'),
+        ('professional', 'Professional - Weekly Strategy'),
+        ('premium', 'Premium - Enhanced Support'),
+        ('consultative', 'Consultative - 1-on-1 Sessions'),
+        ('co_invest', 'Co-Investment - Partnership'),
+    ]
+    
+    # Tier identification
+    tier_code = models.CharField(
+        max_length=20,
+        choices=FEE_TIER_CHOICES,
+        unique=True,
+        help_text="Unique identifier for this tier"
+    )
+    tier_name = models.CharField(
+        max_length=100,
+        help_text="Display name (e.g., 'Starter - Automated Execution')"
+    )
+    
+    # Financial requirements
+    minimum_capital = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Minimum capital required for this tier"
+    )
+    
+    # Fee structure
+    monthly_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fixed monthly fee (set to 0 if none)"
+    )
+    profit_share_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Percentage of profits shared (e.g., 10 for 10%)"
+    )
+    per_session_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Fee per session (for consultative tier)"
+    )
+    max_sessions_per_month = models.IntegerField(
+        default=0,
+        help_text="Maximum sessions per month (0 if unlimited)"
+    )
+    
+    # Descriptions for display
+    short_description = models.CharField(
+        max_length=200,
+        help_text="Brief description for tier card"
+    )
+    
+    # Features (stored as JSON for flexibility)
+    features = models.JSONField(
+        default=list,
+        help_text="List of features (e.g., ['AI-driven trades', 'Real-time monitoring'])"
+    )
+    
+    # Risk compatibility
+    compatible_risk_levels = models.JSONField(
+        default=list,
+        help_text="Risk levels this tier is suitable for (e.g., ['low', 'medium'])"
+    )
+    
+    # Active status
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Is this tier currently available?"
+    )
+    
+    # Display order
+    display_order = models.IntegerField(
+        default=0,
+        help_text="Order to display tiers (lower = first)"
+    )
+    
+    class Meta:
+        verbose_name = "Fee Tier Configuration"
+        verbose_name_plural = "Fee Tier Configurations"
+        ordering = ['display_order', 'minimum_capital']
+    
+    def __str__(self):
+        return f"{self.tier_name} (Min: ${self.minimum_capital:,.0f})"
+    
+    @property
+    def fee_display(self):
+        """Human-readable fee structure"""
+        parts = []
+        if self.monthly_fee > 0:
+            parts.append(f"${self.monthly_fee:.0f}/mo")
+        if self.per_session_fee > 0:
+            parts.append(f"${self.per_session_fee:.0f}/session")
+        if self.profit_share_percentage > 0:
+            parts.append(f"{self.profit_share_percentage:.0f}% profit")
+        return " + ".join(parts) if parts else "Custom"
+    
+    @classmethod
+    def get_tier_minimum(cls, tier_code):
+        """Get minimum capital for a tier (fallback to hardcoded if not found)"""
+        try:
+            config = cls.objects.get(tier_code=tier_code, is_active=True)
+            return config.minimum_capital
+        except cls.DoesNotExist:
+            # Fallback to hardcoded defaults
+            defaults = {
+                'starter': Decimal('5000.00'),
+                'professional': Decimal('15000.00'),
+                'premium': Decimal('25000.00'),
+                'consultative': Decimal('25000.00'),
+                'co_invest': Decimal('100000.00'),
+            }
+            return defaults.get(tier_code, Decimal('5000.00'))
+    
+    @classmethod
+    def get_all_active_tiers(cls):
+        """Get all active tier configurations"""
+        return cls.objects.filter(is_active=True).order_by('display_order', 'minimum_capital')
+
+
 class InvestorRiskProfile(TimeStampedModel):
     """
     Risk tolerance assessment for managed trading clients
@@ -2594,15 +2871,20 @@ class ManagedTradingApplication(TimeStampedModel):
     
     @property
     def capital_tier_match(self):
-        """Check if capital meets tier minimum"""
-        tier_minimums = {
-            'starter': Decimal('5000.00'),
-            'professional': Decimal('15000.00'),
-            'premium': Decimal('25000.00'),
-            'consultative': Decimal('50000.00'),
-            'co_invest': Decimal('100000.00'),
-        }
-        return self.initial_capital >= tier_minimums.get(self.fee_tier, Decimal('5000.00'))
+        """Check if capital meets tier minimum (using database configuration)"""
+        try:
+            tier_config = FeeTierConfiguration.objects.get(tier_code=self.fee_tier, is_active=True)
+            return self.initial_capital >= tier_config.minimum_capital
+        except FeeTierConfiguration.DoesNotExist:
+            # Fallback to hardcoded minimums if config not found
+            tier_minimums = {
+                'starter': Decimal('5000.00'),
+                'professional': Decimal('15000.00'),
+                'premium': Decimal('25000.00'),
+                'consultative': Decimal('25000.00'),
+                'co_invest': Decimal('100000.00'),
+            }
+            return self.initial_capital >= tier_minimums.get(self.fee_tier, Decimal('5000.00'))
     
     @property
     def is_qualified_for_auto_approval(self):
@@ -2723,3 +3005,439 @@ class ManagedTradingContract(TimeStampedModel):
             if all_signed:
                 self.application.all_contracts_signed = True
                 self.application.save()
+
+
+# ============================================================================
+# PHASE 7: BATCH APPROVAL SYSTEM
+# ============================================================================
+
+class PositionBatch(TimeStampedModel):
+    """
+    Weekly batch of positions for client approval
+    Positions must be approved within 24 hours or auto-rejected
+    """
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Client Approval'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected by Client'),
+        ('expired', 'Expired (24hr timeout)'),
+        ('partial', 'Partially Approved'),
+    ]
+    
+    # Account
+    managed_account = models.ForeignKey(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        related_name='position_batches'
+    )
+    
+    # Batch identification
+    batch_number = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Format: BATCH-YYYY-Wxx (e.g., BATCH-2025-W47)"
+    )
+    
+    # Timing
+    created_date = models.DateTimeField(
+        auto_now_add=True
+    )
+    approval_deadline = models.DateTimeField(
+        help_text="Client must approve before this time (24 hours from creation)"
+    )
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    
+    # Client approval
+    approved_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    approval_signature = models.TextField(
+        blank=True,
+        help_text="Base64 encoded signature for batch approval"
+    )
+    approval_ip = models.GenericIPAddressField(
+        null=True,
+        blank=True
+    )
+    
+    # Batch summary
+    total_positions = models.IntegerField(
+        default=0,
+        help_text="Number of positions in batch"
+    )
+    total_capital_required = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Total capital required for all positions"
+    )
+    
+    # Notification tracking
+    reminder_sent = models.BooleanField(
+        default=False,
+        help_text="Was 12-hour reminder sent?"
+    )
+    timeout_notification_sent = models.BooleanField(
+        default=False,
+        help_text="Was timeout notification sent?"
+    )
+    
+    class Meta:
+        verbose_name = "Position Batch"
+        verbose_name_plural = "Position Batches"
+        ordering = ['-created_date']
+        indexes = [
+            models.Index(fields=['managed_account', '-created_date']),
+            models.Index(fields=['status', 'approval_deadline']),
+        ]
+    
+    def __str__(self):
+        return f"{self.batch_number} - {self.managed_account.account_number} ({self.status})"
+    
+    @property
+    def is_expired(self):
+        """Check if batch has passed approval deadline"""
+        return timezone.now() > self.approval_deadline and self.status == 'pending'
+    
+    @property
+    def time_remaining(self):
+        """Calculate time remaining until deadline"""
+        if self.status != 'pending':
+            return timedelta(0)
+        remaining = self.approval_deadline - timezone.now()
+        return remaining if remaining.total_seconds() > 0 else timedelta(0)
+    
+    @property
+    def hours_remaining(self):
+        """Get hours remaining as integer"""
+        return int(self.time_remaining.total_seconds() / 3600)
+    
+    @property
+    def is_pending(self):
+        """Check if batch is pending approval"""
+        return self.status == 'pending' and not self.is_expired
+    
+    def expire_batch(self):
+        """
+        Auto-reject all positions after 24-hour timeout
+        Called by cron job
+        """
+        self.status = 'expired'
+        self.save()
+        
+        # Reject all pending positions in batch
+        for position in self.positions.filter(status='pending'):
+            position.status = 'rejected'
+            position.rejection_reason = 'Batch approval timeout (24 hours) - automatically rejected'
+            position.save()
+        
+        return self.positions.count()
+    
+    def approve_all(self, signature_data, ip_address=None):
+        """
+        Approve all positions in batch
+        Called when client approves entire batch
+        """
+        self.status = 'approved'
+        self.approved_date = timezone.now()
+        self.approval_signature = signature_data
+        self.approval_ip = ip_address
+        self.save()
+        
+        # Open all positions
+        approved_count = 0
+        for position in self.positions.all():
+            if position.status == 'pending':
+                position.status = 'open'
+                position.approved_at = timezone.now()
+                position.save()
+                approved_count += 1
+        
+        return approved_count
+    
+    def reject_all(self, reason="Rejected by client"):
+        """Reject all positions in batch"""
+        self.status = 'rejected'
+        self.save()
+        
+        # Reject all positions
+        rejected_count = self.positions.update(
+            status='rejected',
+            rejection_reason=reason
+        )
+        
+        return rejected_count
+
+
+# ============================================================================
+# POSITION AUTOMATION: AUTO-FETCHED POSITIONS
+# ============================================================================
+
+class SuggestedPosition(TimeStampedModel):
+    """
+    Auto-fetched positions from OptionPlay/Thinkorswim pending staff review
+    
+    Workflow:
+    1. Daily fetch from APIs → Creates SuggestedPosition (status=pending)
+    2. Staff reviews/edits → Updates status to approved/modified/rejected
+    3. Staff creates batch → Converts to OptionsPosition objects
+    4. Client approves batch → Positions become active
+    """
+    
+    # Source tracking
+    SOURCE_CHOICES = [
+        ('optionplay', 'OptionPlay API'),
+        ('thinkorswim', 'Thinkorswim/TD Ameritrade'),
+        ('manual', 'Manual Entry'),
+    ]
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        help_text="Where this position was sourced from"
+    )
+    fetched_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When position was fetched from API"
+    )
+    
+    # Position Details (same structure as OptionsPosition)
+    symbol = models.CharField(
+        max_length=10,
+        help_text="Underlying stock ticker (e.g., AAPL, TSLA)"
+    )
+    
+    STRATEGY_CHOICES = [
+        ('short_put', 'Cash-Secured Short Put'),
+        ('covered_call', 'Covered Call'),
+        ('bull_put_spread', 'Bull Put Spread'),
+        ('bear_call_spread', 'Bear Call Spread'),
+        ('bull_call_spread', 'Bull Call Spread'),
+        ('bear_put_spread', 'Bear Put Spread'),
+        ('iron_condor', 'Iron Condor'),
+        ('long_call', 'Long Call'),
+        ('long_put', 'Long Put'),
+        ('other', 'Other Strategy')
+    ]
+    strategy = models.CharField(
+        max_length=30,
+        choices=STRATEGY_CHOICES,
+        help_text="Options strategy type"
+    )
+    
+    # Position Legs (JSON for multi-leg strategies)
+    positions = models.JSONField(
+        help_text="Array of position legs: [{type, strike, contracts, premium, delta, theta}]"
+    )
+    
+    # Dates
+    expiration_date = models.DateField(
+        help_text="Option expiration date"
+    )
+    dte = models.IntegerField(
+        help_text="Days to expiration (calculated at fetch time)"
+    )
+    
+    # Financial Metrics
+    premium_collected = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Total premium collected/paid"
+    )
+    capital_required = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Capital required for position"
+    )
+    max_profit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Maximum possible profit"
+    )
+    max_loss = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Maximum possible loss"
+    )
+    breakeven = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Breakeven price"
+    )
+    
+    # HIGH PROBABILITY INDICATORS (Key filtering criteria)
+    probability_of_profit = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Probability of profit % (e.g., 75.00 = 75%)"
+    )
+    
+    # Greeks (at position level)
+    position_delta = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position delta"
+    )
+    position_theta = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position theta (daily time decay)"
+    )
+    position_gamma = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position gamma"
+    )
+    position_vega = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=Decimal('0.0000'),
+        help_text="Net position vega (volatility sensitivity)"
+    )
+    
+    # AI/API Metadata
+    api_response_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Raw API response for reference"
+    )
+    ai_confidence = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="AI confidence score (0-100)"
+    )
+    ai_reasoning = models.TextField(
+        blank=True,
+        help_text="Why AI recommended this position"
+    )
+    
+    # Staff Review
+    REVIEW_STATUS_CHOICES = [
+        ('pending', 'Pending Staff Review'),
+        ('approved', 'Approved by Staff'),
+        ('modified', 'Modified & Approved'),
+        ('rejected', 'Rejected by Staff'),
+        ('converted', 'Converted to Batch'),
+    ]
+    review_status = models.CharField(
+        max_length=20,
+        choices=REVIEW_STATUS_CHOICES,
+        default='pending',
+        help_text="Staff review status"
+    )
+    
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_suggested_positions',
+        limit_choices_to={'is_staff': True},
+        help_text="Staff member who reviewed this"
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When staff reviewed this position"
+    )
+    staff_notes = models.TextField(
+        blank=True,
+        help_text="Staff comments, modifications, or rejection reasons"
+    )
+    
+    # Link to created position (if approved and converted)
+    created_position = models.OneToOneField(
+        'OptionsPosition',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='source_suggestion',
+        help_text="Actual position created from this suggestion"
+    )
+    
+    # Target account (if pre-assigned by staff)
+    target_account = models.ForeignKey(
+        'ManagedTradingAccount',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='suggested_positions',
+        help_text="Which account this position is intended for (optional)"
+    )
+    
+    class Meta:
+        verbose_name = "Suggested Position"
+        verbose_name_plural = "Suggested Positions"
+        ordering = ['-probability_of_profit', '-fetched_at']
+        indexes = [
+            models.Index(fields=['review_status', '-fetched_at']),
+            models.Index(fields=['source', 'review_status']),
+            models.Index(fields=['-probability_of_profit']),
+        ]
+    
+    def __str__(self):
+        return f"{self.symbol} {self.strategy} ({self.probability_of_profit}% prob) - {self.get_review_status_display()}"
+    
+    @property
+    def risk_reward_ratio(self):
+        """Calculate risk/reward ratio"""
+        if self.max_loss and self.max_loss != 0:
+            return float(self.max_profit / abs(self.max_loss))
+        return 0.0
+    
+    @property
+    def meets_criteria(self):
+        """Check if position meets high-probability criteria"""
+        return (
+            self.probability_of_profit >= Decimal('70.00') and  # 70%+ probability
+            self.premium_collected >= Decimal('100.00') and     # $100+ premium
+            30 <= self.dte <= 60                                 # 30-60 DTE
+        )
+    
+    def approve(self, staff_user, notes=''):
+        """Approve this suggestion"""
+        self.review_status = 'approved'
+        self.reviewed_by = staff_user
+        self.reviewed_at = timezone.now()
+        if notes:
+            self.staff_notes = notes
+        self.save()
+    
+    def reject(self, staff_user, reason):
+        """Reject this suggestion"""
+        self.review_status = 'rejected'
+        self.reviewed_by = staff_user
+        self.reviewed_at = timezone.now()
+        self.staff_notes = reason
+        self.save()
+    
+    def modify(self, staff_user, updated_data, notes=''):
+        """Modify position details and mark as modified"""
+        # Update position details
+        for field, value in updated_data.items():
+            if hasattr(self, field):
+                setattr(self, field, value)
+        
+        self.review_status = 'modified'
+        self.reviewed_by = staff_user
+        self.reviewed_at = timezone.now()
+        self.staff_notes = f"Modified: {notes}" if notes else "Modified by staff"
+        self.save()
+
+
+# Update OptionsPosition to link to batches
+# Add this field to the existing OptionsPosition model (find the model and add this field)

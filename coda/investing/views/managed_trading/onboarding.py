@@ -126,9 +126,14 @@ def managed_trading_apply_view(request):
             risk_profile=risk_profile
         )
     
+    # Get tier configurations from database
+    from investing.models import FeeTierConfiguration
+    tier_configs = FeeTierConfiguration.objects.filter(is_active=True).order_by('display_order', 'minimum_capital')
+    
     context = {
         'form': form,
         'risk_profile': risk_profile,
+        'tier_configs': tier_configs,  # Pass database configs to template
     }
     return render(request, 'investing/onboarding/application.html', context)
 

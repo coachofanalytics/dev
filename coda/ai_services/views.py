@@ -215,20 +215,41 @@ class CashappMailDetailSlugView(DetailView):
 
 API_CLIENT_ID = os.environ.get("API_CLIENT_ID")
 API_CLIENT_SECRET = os.environ.get("API_CLIENT_SECRET")
-API_REDIRECT_URI="https://www.codanalytics.net/management/oauth/callback/"
 API_AUTHORIZATION_URL="https://authentication.logmeininc.com/oauth/authorize"
 API_TOKEN_URL="https://authentication.logmeininc.com/oauth/token"
 TOKEN_CACHE_KEY = 'api_access_token'
 REFRESH_TOKEN_CACHE_KEY = 'api_refresh_token'
 
+def get_oauth_redirect_uri():
+    """
+    Get OAuth redirect URI based on environment.
+    
+    PHASE 1 IMPROVEMENT: Environment-aware redirect URIs.
+    """
+    from django.conf import settings
+    
+    environment = getattr(settings, 'ENVIRONMENT', 'local')
+    
+    if environment == 'production':
+        return "https://www.codanalytics.net/management/oauth/callback/"
+    elif environment == 'staging':
+        return "https://codamakutano.herokuapp.com/management/oauth/callback/"
+    else:  # local/development
+        return "http://localhost:8000/management/oauth/callback/"
+
+# For backward compatibility (will be replaced in views)
+API_REDIRECT_URI = get_oauth_redirect_uri()
+
 def get_authorization_url():
     """
     Constructs the authorization URL to redirect the user.
+    
+    PHASE 1 IMPROVEMENT: Uses dynamic redirect URI based on environment.
     """
     params = {
         'client_id': API_CLIENT_ID,
         'response_type': 'code',
-        'redirect_uri': API_REDIRECT_URI,
+        'redirect_uri': get_oauth_redirect_uri(),  # Dynamic based on environment
         'state': 'random_state_string',  # Use a random string for security
     }
     from urllib.parse import urlencode
@@ -238,6 +259,8 @@ def get_authorization_url():
 def exchange_code_for_tokens(auth_code):
     """
     Exchanges the authorization code for access and refresh tokens.
+    
+    PHASE 1 IMPROVEMENT: Uses dynamic redirect URI and secure token storage.
     """
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -245,33 +268,47 @@ def exchange_code_for_tokens(auth_code):
     data = {
         'grant_type': 'authorization_code',
         'code': auth_code,
-        'redirect_uri': API_REDIRECT_URI,
+        'redirect_uri': get_oauth_redirect_uri(),  # Dynamic based on environment
     }
     # Use HTTP Basic Auth with client_id and client_secret
     auth = (API_CLIENT_ID, API_CLIENT_SECRET)
-    response = requests.post(API_TOKEN_URL, headers=headers, data=data, auth=auth)
     
-    if response.status_code == 200:
+    try:
+        response = requests.post(API_TOKEN_URL, headers=headers, data=data, auth=auth, timeout=10)
+        response.raise_for_status()
+        
         token_data = response.json()
         access_token = token_data.get('access_token')
         refresh_token = token_data.get('refresh_token')
         expires_in = token_data.get('expires_in', 3600)  # Default to 1 hour
 
-        # Cache the tokens with expiry
+        if not access_token or not refresh_token:
+            logger.error("OAuth response missing tokens")
+            return False
+
+        # Cache the tokens with expiry (still using cache for now - will move to DB in token service)
         cache.set(TOKEN_CACHE_KEY, access_token, timeout=expires_in)
-        cache.set(REFRESH_TOKEN_CACHE_KEY, refresh_token, timeout=86400)  # Refresh token valid for 1 day (adjust as needed)
+        cache.set(REFRESH_TOKEN_CACHE_KEY, refresh_token, timeout=86400)  # Refresh token valid for 1 day
+        
+        logger.info("✅ Successfully exchanged auth code for tokens")
         return True
-    else:
-        logger.debug(f"Error exchanging code for tokens: {response.status_code} {response.text}")
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"OAuth exchange failed: {e}", exc_info=True)
+        return False
+    except ValueError as e:
+        logger.error(f"Invalid OAuth response JSON: {e}", exc_info=True)
         return False
 
 def refresh_access_token():
     """
     Uses the refresh token to obtain a new access token.
+    
+    PHASE 1 IMPROVEMENT: Better error handling and logging.
     """
     refresh_token = cache.get(REFRESH_TOKEN_CACHE_KEY)
     if not refresh_token:
-        logger.debug("No refresh token available.")
+        logger.warning("No refresh token available - user needs to re-authenticate")
         return False
 
     headers = {
@@ -283,21 +320,33 @@ def refresh_access_token():
     }
     # Use HTTP Basic Auth with client_id and client_secret
     auth = (API_CLIENT_ID, API_CLIENT_SECRET)
-    response = requests.post(API_TOKEN_URL, headers=headers, data=data, auth=auth)
-
-    if response.status_code == 200:
+    
+    try:
+        response = requests.post(API_TOKEN_URL, headers=headers, data=data, auth=auth, timeout=10)
+        response.raise_for_status()
+        
         token_data = response.json()
         access_token = token_data.get('access_token')
         new_refresh_token = token_data.get('refresh_token', refresh_token)  # Some APIs return a new refresh token
+
+        if not access_token:
+            logger.error("Token refresh response missing access_token")
+            return False
 
         expires_in = token_data.get('expires_in', 3600)  # Default to 1 hour
 
         # Update the cached tokens
         cache.set(TOKEN_CACHE_KEY, access_token, timeout=expires_in)
-        cache.set(REFRESH_TOKEN_CACHE_KEY, new_refresh_token, timeout=86400)  # Adjust as needed
+        cache.set(REFRESH_TOKEN_CACHE_KEY, new_refresh_token, timeout=86400)
+        
+        logger.info("✅ Successfully refreshed access token")
         return True
-    else:
-        logger.debug(f"Error refreshing access token: {response.status_code} {response.text}")
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Token refresh failed: {e}", exc_info=True)
+        return False
+    except ValueError as e:
+        logger.error(f"Invalid token refresh response: {e}", exc_info=True)
         return False
 
 def get_access_token():
@@ -318,12 +367,25 @@ def get_access_token():
 # ## Get response
 
 def getmeetingresponse(startDate, endDate):
+    """
+    Fetch meetings from GoToMeeting API for date range.
+    
+    PHASE 1 IMPROVEMENT: Better error handling, timeouts, and logging.
+    
+    Args:
+        startDate: Start date string (YYYY-MM-DD)
+        endDate: End date string (YYYY-MM-DD)
+    
+    Returns:
+        List of meeting dicts with attendee info, or empty list on error
+    """
     startDateTime = f"{startDate}T00:00:00Z"
     endDateTime = f"{endDate}T23:59:00Z"
 
     access_token = get_access_token()
     if not access_token:
-        return redirect('management:oauth_login')
+        logger.warning("No access token available - redirecting to OAuth")
+        return []
 
     headers = {
         'Authorization': f'Bearer {access_token}'
@@ -331,168 +393,318 @@ def getmeetingresponse(startDate, endDate):
     urlGotoMeeting = "https://api.getgo.com/G2M/rest/historicalMeetings?startDate={}&endDate={}"
     urlMeeting = urlGotoMeeting.format(startDateTime, endDateTime)
 
-    response = requests.get(url=urlMeeting, headers=headers)
-    if response.status_code != 200:
-        # Handle error appropriately
-        return []
+    try:
+        response = requests.get(url=urlMeeting, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        jsonResponse = response.json()
+        myCleanResponse = []
+        
+        logger.info(f"📊 Fetched {len(jsonResponse)} meetings from API for {startDate} to {endDate}")
 
-    jsonResponse = response.json()
-    myCleanResponse = []
+        for meeting in jsonResponse:
+            try:
+                meeting_id = meeting.get('meetingId')
+                if not meeting_id:
+                    logger.warning("Meeting missing meetingId, skipping")
+                    continue
+                
+                recording = meeting.get('recording', {})
+                download_url = recording.get('downloadUrl') if recording else None
 
-    for meeting in jsonResponse:
-        meeting_id = meeting.get('meetingId')
-        recording = meeting.get('recording', {})
-        download_url = recording.get('downloadUrl') if recording else None
+                meeting_dict = {
+                    'meetingId': meeting_id,
+                    'downloadUrl': download_url or '',
+                    'subject': meeting.get('subject', 'Untitled Meeting'),
+                    'meetingType': meeting.get('meetingType', ''),
+                    'recording': recording.get('shareUrl') if recording else '',
+                    'startTime': meeting.get('startTime', ''),
+                    'endTime': meeting.get('endTime', ''),
+                    'duration': meeting.get('duration', 0),
+                    'email': meeting.get('email', ''),
+                    'attendeeNames': [],
+                    'attendee_Info': []
+                }
+                myCleanResponse.append(meeting_dict)
 
-        if download_url:
-            myCleanResponse.append({
-                'meetingId': meeting_id,
-                'downloadUrl': download_url,
-                # Add other necessary fields here
-                'subject': meeting.get('subject', ''),
-                'meetingType': meeting.get('meetingType', ''),
-                'recording': recording.get('shareUrl') if recording else '',
-                'startTime': meeting.get('startTime', ''),
-                'endTime': meeting.get('endTime', ''),
-                'duration': meeting.get('duration', '0'),
-                'email': meeting.get('email', ''),
-                # Add attendee information as needed
-                'attendeeNames': [],  # To be filled below
-                'attendee_Info': []   # To be filled below
-            })
+                # Fetch attendee information
+                try:
+                    urlGotoOneMeetingDetail = f"https://api.getgo.com/G2M/rest/meetings/{meeting_id}/attendees"
+                    meeting_response = requests.get(url=urlGotoOneMeetingDetail, headers=headers, timeout=10)
+                    
+                    if meeting_response.status_code == 200:
+                        attendees_response = meeting_response.json()
+                        attendee_names = [attendee.get("attendeeName", "Unknown") for attendee in attendees_response]
+                        attendee_info = [
+                            {
+                                "attendee_duration": attendee.get("duration", 0),
+                                "attendee_email": attendee.get("attendeeEmail", ''),
+                                "attendee_name": attendee.get("attendeeName", attendee.get("attendeeEmail", "Unknown"))
+                            }
+                            for attendee in attendees_response
+                            if attendee.get("startTime", '').startswith(startDate)
+                        ]
+
+                        # Update the last appended meeting with attendee info
+                        myCleanResponse[-1]['attendeeNames'] = attendee_names
+                        myCleanResponse[-1]['attendee_Info'] = attendee_info
+                        
+                        logger.debug(f"✅ Fetched {len(attendee_info)} attendees for meeting {meeting_id}")
+                    else:
+                        logger.warning(f"Failed to fetch attendees for meeting {meeting_id}: HTTP {meeting_response.status_code}")
+                
+                except requests.exceptions.RequestException as e:
+                    logger.error(f"Error fetching attendees for meeting {meeting_id}: {e}")
+                    # Continue processing other meetings even if one fails
+                    continue
+            
+            except Exception as e:
+                logger.error(f"Error processing meeting {meeting_id}: {e}", exc_info=True)
+                continue
+
+        logger.info(f"✅ Successfully processed {len(myCleanResponse)} meetings")
+        return myCleanResponse
+    
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            logger.error("OAuth token expired or invalid - user needs to re-authenticate")
         else:
-            logger.debug(f"Meeting ID: {meeting_id} has no download URL.")
-
-        # Fetch attendee information
-        if meeting_id:
-            urlGotoOneMeetingDetail = f"https://api.getgo.com/G2M/rest/meetings/{meeting_id}/attendees"
-            meeting_response = requests.get(url=urlGotoOneMeetingDetail, headers=headers)
-            if meeting_response.status_code == 200:
-                attendees_response = meeting_response.json()
-                attendee_names = [attendee.get("attendeeName") for attendee in attendees_response]
-                attendee_info = [
-                    {
-                        "attendee_duration": attendee.get("duration", '0'),
-                        "attendee_email": attendee.get("attendeeEmail", ''),
-                        "attendee_name": attendee.get("attendeeName", '')
-                    }
-                    for attendee in attendees_response
-                    if attendee.get("startTime", '').startswith(startDate)
-                ]
-
-                # Update the last appended meeting with attendee info
-                if myCleanResponse:
-                    myCleanResponse[-1]['attendeeNames'] = attendee_names
-                    myCleanResponse[-1]['attendee_Info'] = attendee_info
-            else:
-                logger.debug(f"Failed to fetch attendees for Meeting ID: {meeting_id}")
-
-    return myCleanResponse
+            logger.error(f"HTTP error fetching meetings: {e}")
+        return []
+    
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout fetching meetings from GoToMeeting API: {e}")
+        return []
+    
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Network error fetching meetings: {e}", exc_info=True)
+        return []
+    
+    except ValueError as e:
+        logger.error(f"Invalid JSON response from GoToMeeting API: {e}")
+        return []
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in getmeetingresponse: {e}", exc_info=True)
+        return []
 
 	
 def save_meeting_data(meeting_data):
-    """Persist meeting data. Accepts list of dicts or list of JSON bytes."""
+    """
+    Persist meeting data using normalized Meeting + MeetingAttendee models.
+    Accepts list of dicts or list of JSON bytes.
+    
+    PHASE 1 IMPROVEMENT: Uses normalized models with duplicate prevention.
+    """
     import json
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+    from ai_services.models import Meeting, MeetingAttendee
+    
+    meetings_created = 0
+    meetings_updated = 0
+    attendees_created = 0
+    attendees_updated = 0
+    
     for meeting_info in meeting_data:
-        # Normalize input: decode bytes -> str -> json -> dict
-        if isinstance(meeting_info, (bytes, bytearray)):
-            try:
-                meeting_info = json.loads(meeting_info.decode('utf-8', errors='ignore'))
-            except Exception:
-                # Skip invalid item
+        try:
+            # Normalize input: decode bytes -> str -> json -> dict
+            if isinstance(meeting_info, (bytes, bytearray)):
+                try:
+                    meeting_info = json.loads(meeting_info.decode('utf-8', errors='ignore'))
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to decode meeting bytes: {e}")
+                    continue
+            elif isinstance(meeting_info, str):
+                try:
+                    meeting_info = json.loads(meeting_info)
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse meeting JSON: {e}")
+                    continue
+            
+            if not isinstance(meeting_info, dict):
+                logger.warning(f"Unexpected meeting data type: {type(meeting_info)}")
                 continue
-        elif isinstance(meeting_info, str):
-            try:
-                meeting_info = json.loads(meeting_info)
-            except Exception:
-                # Skip invalid item
+            
+            # Extract meeting data
+            meeting_id = meeting_info.get('meetingId', '')
+            if not meeting_id:
+                logger.warning("Meeting missing meetingId, skipping")
                 continue
-        if not isinstance(meeting_info, dict):
-            # Skip unexpected shapes
-            continue
-        meeting_topic = meeting_info.get('subject', '')
-        meeting_id = meeting_info.get('meetingId', '')
-        meeting_type = meeting_info.get('meetingType', '')
-        recording = meeting_info.get('recording', '')
-        download_url = meeting_info.get('downloadUrl', '') 
-        meeting_start_time = meeting_info.get('startTime', '')
-        meeting_end_time = meeting_info.get('endTime', '')
-        meeting_duration = int(meeting_info.get('duration', '0'))
-        meeting_email = meeting_info.get('email', '')
-        attendee_names = meeting_info.get('attendeeNames', [])
-        attendee_info = meeting_info.get('attendee_Info', [])
-        task_category, created = TaskCategory.objects.get_or_create(
-            title='Meetings',
-            defaults={'description': 'Tasks related to meetings'}
-           )
-        task_group, created = TaskGroups.objects.get_or_create(
-            title='Group A',
-            defaults={'description': 'Default Group A'}
-            )
-
-        for attendee_data in attendee_info:
-            attendee_name = attendee_data.get('attendee_name', '').strip().lower()  
-            attendee_email = attendee_data.get('attendee_email', '').strip()
-            attendee_duration = int(attendee_data.get('attendee_duration', '0'))
-           
-
-            GotoMeetings.objects.create(
-                meeting_topic=meeting_topic,
+            
+            meeting_topic = meeting_info.get('subject', 'Untitled Meeting')
+            meeting_type = meeting_info.get('meetingType', '')
+            recording = meeting_info.get('recording', '')
+            download_url = meeting_info.get('downloadUrl', '')
+            
+            # Parse datetime strings properly
+            start_time_str = meeting_info.get('startTime', '')
+            end_time_str = meeting_info.get('endTime', '')
+            
+            start_time = parse_datetime(start_time_str) if start_time_str else timezone.now()
+            end_time = parse_datetime(end_time_str) if end_time_str else start_time
+            
+            # Make timezone-aware if naive
+            if start_time and timezone.is_naive(start_time):
+                start_time = timezone.make_aware(start_time)
+            if end_time and timezone.is_naive(end_time):
+                end_time = timezone.make_aware(end_time)
+            
+            # Calculate duration in minutes
+            if start_time and end_time and end_time > start_time:
+                duration_minutes = int((end_time - start_time).total_seconds() / 60)
+            else:
+                duration_minutes = int(meeting_info.get('duration', 0))
+            
+            # Create or update Meeting (DUPLICATE PREVENTION)
+            meeting, created = Meeting.objects.get_or_create(
                 meeting_id=meeting_id,
-                meeting_type=meeting_type,
-                recording=recording,
-                download_url=download_url,  
-                meeting_start_time=meeting_start_time,
-                meeting_end_time=meeting_end_time,
-                meeting_duration=meeting_duration,
-                meeting_email=meeting_email,
-                attendee_name=attendee_name,
-                attendee_email=attendee_email,
-                attendee_duration=attendee_duration
+                defaults={
+                    'topic': meeting_topic,
+                    'meeting_type': meeting_type,
+                    'start_time': start_time,
+                    'end_time': end_time,
+                    'duration_minutes': duration_minutes,
+                    'recording_url': recording,
+                    'download_url': download_url,
+                    'is_recorded': bool(recording),
+                }
             )
-
-            if attendee_duration > 3:
+            
+            if created:
+                meetings_created += 1
+                logger.info(f"✅ Created meeting: {meeting_topic} ({meeting_id})")
+            else:
+                meetings_updated += 1
+                # Update existing meeting with new data
+                Meeting.objects.filter(meeting_id=meeting_id).update(
+                    topic=meeting_topic,
+                    meeting_type=meeting_type,
+                    recording_url=recording or meeting.recording_url,
+                    download_url=download_url or meeting.download_url,
+                    is_recorded=bool(recording) or meeting.is_recorded,
+                )
+                logger.info(f"⏭️ Updated existing meeting: {meeting_topic} ({meeting_id})")
+            
+            # Process attendees
+            attendee_info = meeting_info.get('attendee_Info', [])
+            task_category, _ = TaskCategory.objects.get_or_create(
+                title='Meetings',
+                defaults={'description': 'Tasks related to meetings'}
+            )
+            
+            for attendee_data in attendee_info:
+                attendee_name = attendee_data.get('attendee_name', '').strip()
+                attendee_email = attendee_data.get('attendee_email', '').strip()
+                attendee_duration = int(attendee_data.get('attendee_duration', 0))
+                
+                if not attendee_email:
+                    logger.debug(f"Skipping attendee with no email: {attendee_name}")
+                    continue
+                
+                # Try to match to CODA user by email (better than username matching)
+                user = None
                 try:
-                    user = User.objects.filter(Q(username__iexact=attendee_name)).first()
-                except User.DoesNotExist:
-                    logger.debug(f"No matching user found for attendee name: {attendee_name}")
-                    continue 
-
-                try:
-                    activity_slug = slugify(f"{meeting_topic}_{attendee_name}")
-                    activity_name = activity_mapping.get(meeting_id)
+                    user = User.objects.filter(Q(email__iexact=attendee_email)).first()
+                    if not user:
+                        # Fallback: try username match
+                        user = User.objects.filter(Q(username__iexact=attendee_name.lower())).first()
+                except Exception as e:
+                    logger.debug(f"User lookup error for {attendee_email}: {e}")
+                
+                # Create or update MeetingAttendee (DUPLICATE PREVENTION)
+                attendee, attendee_created = MeetingAttendee.objects.get_or_create(
+                    meeting=meeting,
+                    attendee_email=attendee_email,
+                    defaults={
+                        'user': user,
+                        'attendee_name': attendee_name or attendee_email,
+                        'duration_minutes': attendee_duration,
+                        'is_organizer': False,
+                    }
+                )
+                
+                if attendee_created:
+                    attendees_created += 1
+                else:
+                    attendees_updated += 1
+                    # Update existing attendee
+                    MeetingAttendee.objects.filter(id=attendee.id).update(
+                        attendee_name=attendee_name or attendee.attendee_name,
+                        duration_minutes=attendee_duration,
+                        user=user or attendee.user,
+                    )
+                
+                # Task integration (only if attended >3 minutes and not already awarded)
+                if attendee.qualifies_for_points and not attendee.task_points_awarded:
+                    try:
+                        # Use MeetingActivityMapping if available, fallback to hardcoded dict
+                        from ai_services.models import MeetingActivityMapping
+                        mapping = MeetingActivityMapping.objects.filter(
+                            meeting_id_pattern=meeting_id,
+                            is_active=True
+                        ).first()
                         
-                    if activity_name:
-                        tasks = Task.objects.filter(activity_name=activity_name)
-                        if tasks.exists(): 
+                        if mapping:
+                            activity_name = mapping.activity_name
+                            min_duration = mapping.min_duration_minutes
+                        else:
+                            # Fallback to hardcoded mapping
+                            activity_name = activity_mapping.get(meeting_id)
+                            min_duration = 3
+                        
+                        if activity_name and attendee_duration >= min_duration and user:
+                            tasks = Task.objects.filter(activity_name=activity_name)
+                            
                             for task in tasks:
-                                logger.debug(user)
-                                TaskLinks.objects.create(
+                                # Create TaskLink
+                                TaskLinks.objects.get_or_create(
                                     task=task,
                                     added_by=user,
                                     link_name=slugify(f"{meeting_topic}_{attendee_name}"),
-                                    description=f"Attended meeting '{meeting_topic}' with ID {meeting_id}.",
-                                    link=recording,
-                                    linkpassword='No Password Needed',
-                                    drive_link=None,
-                                    is_active=True,
-                                    is_featured=True,
+                                    defaults={
+                                        'description': f"Attended meeting '{meeting_topic}' with ID {meeting_id}.",
+                                        'link': recording,
+                                        'linkpassword': 'No Password Needed',
+                                        'drive_link': None,
+                                        'is_active': True,
+                                        'is_featured': True,
+                                    }
                                 )
-
+                                
+                                # Award points
                                 task_values = Task.objects.filter(id=task.id).values("point", "mxpoint").first()
                                 if task_values:
-                                    points, maxpoints = task_values["point"], task_values["mxpoint"]
+                                    points = task_values["point"]
                                     Task.objects.filter(id=task.id).update(point=points + 1)
+                                
+                                # Mark as awarded
+                                attendee.task_points_awarded = True
+                                attendee.save(update_fields=['task_points_awarded'])
+                                
+                                logger.info(f"✅ Awarded task points to {attendee_name} for {meeting_topic}")
                         else:
-                            logger.debug(f"No tasks found with activity_name '{activity_name}'.")
-                    else:
-                        logger.debug(f"Meeting ID {meeting_id} not found in activity mapping.")
-                except:
-                     logger.debug('error occured')        
+                            logger.debug(f"No task mapping for meeting {meeting_id}")
+                    
+                    except Exception as e:
+                        logger.error(f"Error awarding task points for {attendee_name}: {e}", exc_info=True)
+        
+        except Exception as e:
+            logger.error(f"Error processing meeting: {e}", exc_info=True)
+            continue
+    
+    # Log summary
+    logger.info(f"📊 Meeting save summary: {meetings_created} created, {meetings_updated} updated, "
+                f"{attendees_created} attendees created, {attendees_updated} attendees updated")        
    
 
 @login_required
 def meetingFormView(request):
+    """
+    View for fetching and displaying GoToMeeting data.
+    
+    PHASE 1 IMPROVEMENT: Uses normalized Meeting + MeetingAttendee models.
+    """
     if request.method == 'POST':
         form = MeetingForm(request.POST)
         if form.is_valid():
@@ -501,19 +713,48 @@ def meetingFormView(request):
             start_datetime = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
             end_datetime = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
 
-            existing_meetings = GotoMeetings.objects.filter(
-                meeting_start_time__gte=start_datetime,
-                meeting_end_time__lte=end_datetime
-            )
+            # Check for existing meetings in NEW normalized model (with efficient query)
+            from ai_services.models import Meeting, MeetingAttendee
+            existing_meetings = Meeting.objects.filter(
+                start_time__gte=start_datetime,
+                start_time__lte=end_datetime
+            ).prefetch_related('attendees__user')
+            
             access_token = get_access_token()
             if not access_token:
                return redirect('management:oauth_login')
 
-
             if existing_meetings.exists():
-                allDataJsons = list(existing_meetings.values())
-                message = f"Meetings between {start_date} and {end_date} fetched from the database."
+                # Format data for template
+                allDataJsons = []
+                for meeting in existing_meetings:
+                    meeting_dict = {
+                        'meeting_id': meeting.meeting_id,
+                        'meeting_topic': meeting.topic,
+                        'meeting_type': meeting.meeting_type,
+                        'meeting_start_time': meeting.start_time.isoformat(),
+                        'meeting_end_time': meeting.end_time.isoformat(),
+                        'meeting_duration': meeting.duration_minutes,
+                        'recording': meeting.recording_url,
+                        'download_url': meeting.download_url,
+                        'is_recorded': meeting.is_recorded,
+                        'attendee_count': meeting.attendee_count,
+                        'attendees': [
+                            {
+                                'attendee_name': att.attendee_name,
+                                'attendee_email': att.attendee_email,
+                                'attendee_duration': att.duration_minutes,
+                                'attendance_percentage': att.attendance_percentage,
+                                'task_points_awarded': att.task_points_awarded,
+                            }
+                            for att in meeting.attendees.all()
+                        ]
+                    }
+                    allDataJsons.append(meeting_dict)
+                
+                message = f"Meetings between {start_date} and {end_date} fetched from the database ({existing_meetings.count()} meetings)."
             else:
+                # Fetch from API
                 allDataJsons = getmeetingresponse(
                     start_date.strftime('%Y-%m-%d'),
                     end_date.strftime('%Y-%m-%d')
@@ -521,15 +762,43 @@ def meetingFormView(request):
                 if not allDataJsons:
                     message = "No meetings found for the selected period."
                 else:
-                    # Save fetched data to the database
+                    # Save fetched data to the database (using new models)
                     save_meeting_data(allDataJsons)
-                    # Retrieve the newly saved data
-                    existing_meetings = GotoMeetings.objects.filter(
-                        meeting_start_time__gte=start_datetime,
-                        meeting_end_time__lte=end_datetime
-                    )
-                    allDataJsons = list(existing_meetings.values())
-                    message = f"Meetings between {start_date} and {end_date} fetched from the API and saved to the database."
+                    
+                    # Retrieve the newly saved data from new models
+                    existing_meetings = Meeting.objects.filter(
+                        start_time__gte=start_datetime,
+                        start_time__lte=end_datetime
+                    ).prefetch_related('attendees__user')
+                    
+                    # Format for template
+                    allDataJsons = []
+                    for meeting in existing_meetings:
+                        meeting_dict = {
+                            'meeting_id': meeting.meeting_id,
+                            'meeting_topic': meeting.topic,
+                            'meeting_type': meeting.meeting_type,
+                            'meeting_start_time': meeting.start_time.isoformat(),
+                            'meeting_end_time': meeting.end_time.isoformat(),
+                            'meeting_duration': meeting.duration_minutes,
+                            'recording': meeting.recording_url,
+                            'download_url': meeting.download_url,
+                            'is_recorded': meeting.is_recorded,
+                            'attendee_count': meeting.attendee_count,
+                            'attendees': [
+                                {
+                                    'attendee_name': att.attendee_name,
+                                    'attendee_email': att.attendee_email,
+                                    'attendee_duration': att.duration_minutes,
+                                    'attendance_percentage': att.attendance_percentage,
+                                    'task_points_awarded': att.task_points_awarded,
+                                }
+                                for att in meeting.attendees.all()
+                            ]
+                        }
+                        allDataJsons.append(meeting_dict)
+                    
+                    message = f"Meetings between {start_date} and {end_date} fetched from the API and saved to the database ({existing_meetings.count()} meetings)."
 
             # Prepare context for the template
             context = {
@@ -537,6 +806,7 @@ def meetingFormView(request):
                 'message': message,
                 'startDate': start_date,
                 'endDate': end_date,
+                'meeting_count': len(allDataJsons),
             }
 
             return render(request, 'ai_services/meetingList.html', context)

@@ -2654,6 +2654,8 @@ def investment_dashboard(request):
     recent_milestones = []
     
     # NEW: Get managed trading accounts (System 2: CODA Manages Client Money)
+    from .models import ManagedTradingApplication, PositionBatch
+    
     managed_accounts = ManagedTradingAccount.objects.filter(
         client=request.user
     ).annotate(
@@ -2662,8 +2664,21 @@ def investment_dashboard(request):
     
     # Calculate managed trading summary
     has_managed_accounts = managed_accounts.exists()
+    managed_accounts_count = managed_accounts.count()
     managed_total_balance = sum([acc.current_balance for acc in managed_accounts])
     managed_total_pnl = sum([acc.total_profit_loss for acc in managed_accounts])
+    
+    # Get pending applications
+    applications = ManagedTradingApplication.objects.filter(
+        user=request.user
+    ).order_by('-applied_date')
+    has_application = applications.exists()
+    
+    # Get pending batches (URGENT - needs approval)
+    pending_batches = PositionBatch.objects.filter(
+        managed_account__client=request.user,
+        status='pending'
+    ).order_by('approval_deadline')
 
     context = {
         # Equity investments (System 1)
@@ -2681,9 +2696,12 @@ def investment_dashboard(request):
         # Managed trading (System 2) - NEW
         "has_managed_accounts": has_managed_accounts,
         "managed_accounts": managed_accounts,
-        "managed_accounts_count": managed_accounts.count(),
+        "managed_accounts_count": managed_accounts_count,
         "managed_total_balance": managed_total_balance,
         "managed_total_pnl": managed_total_pnl,
+        "has_application": has_application,
+        "applications": applications,
+        "pending_batches": pending_batches,
     }
 
     return render(request, "investing/investment_dashboard.html", context)

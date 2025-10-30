@@ -1,0 +1,200 @@
+{% load static %}
+
+<!-- Editing Tab -->
+<div class="tab-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="fas fa-edit"></i> Budget Editing
+        </h3>
+        <div class="btn-toolbar" role="toolbar">
+            <!-- Primary Actions -->
+            <div class="btn-group mr-2" role="group">
+                <a href="{% url 'finance:budget_request_form' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> New Budget Request
+                </a>
+                <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-list"></i> All Requests
+                </a>
+            </div>
+            
+            <!-- Quick Edit Actions -->
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-tools"></i> Quick Edit
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" href="{% url 'finance:budget-category-edit' company.slug 1 %}">
+                    <i class="fas fa-tag"></i> Manage Categories
+                </a>
+                <a class="dropdown-item" href="{% url 'finance:budget-item-edit' company.slug 1 %}">
+                    <i class="fas fa-list-alt"></i> Manage Budget Items
+                </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'finance:budget-requests-list' company.slug %}">
+                        <i class="fas fa-list"></i> All Budget Requests
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if editing_data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ editing_data.error }}
+    </div>
+    {% else %}
+    
+    <!-- Categories Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4>
+                <i class="fas fa-tags"></i> Budget Categories
+                <small class="text-muted">({{ editing_data.categories|length }} categories)</small>
+            </h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in editing_data.categories %}
+                        <tr>
+                            <td>
+                                <i class="fas fa-tag text-primary"></i> 
+                                {{ category.name }}
+                            </td>
+                            <td>{{ category.description|default:"No description" }}</td>
+                            <td>
+                                {% if category.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'finance:budget-category-edit' company.slug category.id %}" 
+                                       class="btn btn-outline-primary" title="Edit Category">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'finance:budget-category-detail' company.slug category.id %}" 
+                                       class="btn btn-outline-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">
+                                <i class="fas fa-info-circle"></i> No categories found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Edits Section -->
+    <div class="row">
+        <div class="col-12">
+            <h4>
+                <i class="fas fa-history"></i> Recent Budget Edits
+                <small class="text-muted">(Last 20 modifications)</small>
+            </h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Budget Item</th>
+                            <th>Department</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Last Modified</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for budget in editing_data.recent_edits %}
+                        <tr>
+                            <td>
+                                <i class="fas fa-list-alt text-primary"></i> 
+                                {{ budget.item_name }}
+                            </td>
+                            <td>{{ budget.department.name }}</td>
+                            <td>{{ budget.category.name|default:"N/A" }}</td>
+                            <td>${{ budget.total_amount|default:"0"|floatformat:2 }}</td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ budget.updated_at|date:"M d, Y" }} at {{ budget.updated_at|time:"H:i" }}
+                                </small>
+                            </td>
+                            <td>
+                                {% if budget.status == 'approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif budget.status == 'pending' %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% elif budget.status == 'rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ budget.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'finance:budget-item-edit' company.slug budget.id %}" 
+                                       class="btn btn-outline-primary" title="Edit Budget">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'finance:budget_request_detail' budget.id %}" 
+                                       class="btn btn-outline-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                <i class="fas fa-info-circle"></i> No recent edits found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    {% endif %}
+</div>
+
+<script>
+$(document).ready(function() {
+    console.log('Editing tab loaded successfully');
+    
+    // Add hover effects to table rows
+    $('.table tbody tr').hover(
+        function() {
+            $(this).addClass('table-active');
+        },
+        function() {
+            $(this).removeClass('table-active');
+        }
+    );
+    
+    // Add click handlers for quick actions
+    $('.btn-group .btn').on('click', function(e) {
+        const action = $(this).attr('title');
+        console.log('Action clicked:', action);
+    });
+});
+</script>

@@ -14,6 +14,8 @@ from .views.managed_trading import (
     api,
     client,
     onboarding,  # Phase 6
+    batches,  # Phase 7
+    position_suggestions,  # Phase 8: Automated position sourcing
 )
 
 urlpatterns = [
@@ -54,6 +56,10 @@ urlpatterns = [
     path('managed/positions/<int:position_id>/close/', 
          positions.close_position, 
          name='close_managed_position'),
+    
+    path('managed/positions/<int:position_id>/edit/', 
+         positions.edit_position, 
+         name='edit_managed_position'),
     
     # ========================================================================
     # MONITORING & ALERTS (Staff Only)
@@ -137,5 +143,64 @@ urlpatterns = [
     path('managed/staff/applications/<int:application_id>/review/', 
          onboarding.review_application_view, 
          name='review_application'),
+    
+    # ========================================================================
+    # PHASE 7: BATCH APPROVAL SYSTEM
+    # ========================================================================
+    
+    # Client: Batch Approval
+    path('managed/portal/approvals/batch/<int:batch_id>/', 
+         batches.batch_approval_view, 
+         name='batch_approval'),
+    
+    path('managed/portal/batches/', 
+         batches.client_batches_list, 
+         name='client_batches_list'),
+    
+    # ========================================================================
+    # PHASE 8: AUTOMATED POSITION SOURCING (Staff Only)
+    # ========================================================================
+    
+    # Staff: Review suggested positions
+    path('managed/staff/suggestions/', 
+         position_suggestions.suggested_positions_list, 
+         name='suggested_positions_list'),
+    
+    path('managed/staff/suggestions/<int:suggestion_id>/review/', 
+         position_suggestions.review_position, 
+         name='review_position'),
+    
+    # Staff: Fetch positions manually
+    path('managed/staff/suggestions/fetch-now/', 
+         position_suggestions.fetch_positions_now, 
+         name='fetch_positions_now'),
+    
+    # Staff: Create batch from approved suggestions
+    path('managed/staff/suggestions/create-batch/', 
+         position_suggestions.create_batch_from_suggestions, 
+         name='create_batch_from_suggestions'),
+    
+    # AJAX endpoints for quick actions
+    path('managed/api/suggestions/<int:suggestion_id>/approve/', 
+         position_suggestions.ajax_approve_position, 
+         name='ajax_approve_position'),
+    
+    path('managed/api/suggestions/<int:suggestion_id>/reject/', 
+         position_suggestions.ajax_reject_position, 
+         name='ajax_reject_position'),
+    
+    # Staff: Batch Management
+    path('managed/accounts/<int:account_id>/batches/create/', 
+         batches.staff_create_batch_view, 
+         name='staff_create_batch'),
+    
+    path('managed/staff/batches/', 
+         batches.staff_batches_list, 
+         name='staff_batches_list'),
+    
+    # AJAX: Batch Status Check
+    path('managed/api/batch/<int:batch_id>/status/', 
+         batches.ajax_check_batch_status, 
+         name='ajax_batch_status'),
 ]
 

@@ -28,6 +28,10 @@ class BudgetEditingView(BaseFinanceView):
     
     def __init__(self):
         super().__init__()
+    
+    def log_error(self, message, exception):
+        """Log error with context"""
+        logger.error(f"{message}: {str(exception)}", exc_info=True)
 
 
 @login_required_finance
@@ -59,12 +63,38 @@ def budget_category_edit(request, company_slug, category_id, company=None):
         if request.method == 'POST':
             return view._handle_budget_edit_post(request, company, category, budgets)
         
+        # Organize budgets by subcategory for the template
+        items_by_subcategory = {}
+        for budget in budgets:
+            subcategory_name = budget.subcategory.name if budget.subcategory else "Uncategorized"
+            if subcategory_name not in items_by_subcategory:
+                items_by_subcategory[subcategory_name] = []
+            items_by_subcategory[subcategory_name].append(budget)
+        
+        # Calculate totals if there are existing budgets
+        total_estimated = sum(b.estimated_amount or 0 for b in budgets)
+        total_actual = sum(b.actual_spent or 0 for b in budgets)  # Fixed: actual_spent, not actual_amount
+        existing_budgets = budgets.exists()
+        
+        # Get user department for display
+        user_department = None
+        try:
+            if hasattr(request.user, 'profile') and hasattr(request.user.profile, 'department'):
+                user_department = request.user.profile.department
+        except Exception:
+            pass
+        
         context = {
             'company': company,
             'category': category,
             'budgets': budgets,
             'subcategories': subcategories,
-            'form': BudgetEditForm(),
+            'items_by_subcategory': items_by_subcategory,
+            'existing_budgets': existing_budgets,
+            'total_estimated': total_estimated,
+            'total_actual': total_actual,
+            'user_department': user_department,
+            # 'form': BudgetEditForm(),  # Form not defined yet - TODO: Create if needed
         }
         
         return render(request, 'finance/budgets/budget_category_edit.html', context)
@@ -114,10 +144,19 @@ def _handle_budget_edit_post(self, request, company, category, budgets):
 
 
 def _create_budget_request(self, request, company, category, updated_budgets):
-    """Create a budget request for approval."""
+    """
+    Create budget request and process with SmartApprovalService.
+    
+    This integrates Phase 2 tier-based auto-approval logic.
+    """
     try:
+        from finance.services.smart_approval_service import SmartApprovalService
+        
         # Calculate total amount
         total_amount = sum(budget.estimated_amount for budget in updated_budgets)
+        
+        # Get priority from form (default to medium if not provided)
+        priority = request.POST.get('priority', 'medium')
         
         # Create budget request
         budget_request = BudgetRequest.objects.create(
@@ -127,12 +166,33 @@ def _create_budget_request(self, request, company, category, updated_budgets):
             requester=request.user,
             department=request.user.userprofile.department if hasattr(request.user, 'userprofile') and request.user.userprofile.department else None,
             required_date=timezone.now().date(),
-            priority='medium'
+            priority=priority
         )
         
-        # Submit for approval (set status to submitted)
-        budget_request.status = 'submitted'
-        budget_request.save(update_fields=['status'])
+        # ✅ PROCESS WITH SMART APPROVAL SERVICE (Phase 2 Integration)
+        smart_service = SmartApprovalService()
+        approval_result = smart_service.process_budget_request(budget_request, auto_approver=None)
+        
+        # Log the result for tracking
+        self.log_info(
+            f"Budget request #{budget_request.id} processed: "
+            f"Status={approval_result['status']}, "
+            f"Reason={approval_result['reason']}, "
+            f"Approver={approval_result['approver']}"
+        )
+        
+        # Add result to messages for user feedback
+        if approval_result['approved']:
+            messages.success(
+                request,
+                f"✅ Budget request AUTO-APPROVED! Reason: {approval_result['reason']}"
+            )
+        else:
+            approver_info = approval_result.get('routing_reason', 'Manual approval required')
+            messages.info(
+                request,
+                f"📋 Budget request submitted for manual approval. {approver_info}"
+            )
         
         return budget_request
     

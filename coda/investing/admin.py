@@ -33,6 +33,45 @@ admin.site.register(InvestmentUpgradeOffer)
 # MANAGED OPTIONS TRADING ADMIN
 # ============================================================================
 
+@admin.register(FeeTierConfiguration)
+class FeeTierConfigurationAdmin(admin.ModelAdmin):
+    list_display = [
+        'tier_name',
+        'tier_code',
+        'minimum_capital',
+        'monthly_fee',
+        'per_session_fee',
+        'profit_share_percentage',
+        'display_order',
+        'is_active'
+    ]
+    list_filter = ['is_active', 'tier_code']
+    list_editable = ['display_order', 'is_active']
+    search_fields = ['tier_name', 'tier_code']
+    ordering = ['display_order', 'minimum_capital']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('tier_code', 'tier_name', 'display_order', 'is_active')
+        }),
+        ('Capital Requirements', {
+            'fields': ('minimum_capital',)
+        }),
+        ('Fee Structure', {
+            'fields': ('monthly_fee', 'per_session_fee', 'profit_share_percentage', 'max_sessions_per_month')
+        }),
+        ('Features & Description', {
+            'fields': ('short_description', 'features', 'compatible_risk_levels'),
+            'description': 'Enter features as JSON list (e.g., ["AI-powered analysis", "Automated execution"])'
+        }),
+    )
+    
+    def get_readonly_fields(self, request, obj=None):
+        # Make tier_code readonly after creation to prevent breaking references
+        if obj:  # Editing existing object
+            return ['tier_code']
+        return []
+
 @admin.register(ManagedTradingAccount)
 class ManagedTradingAccountAdmin(admin.ModelAdmin):
     list_display = [
@@ -472,3 +511,162 @@ class ManagedTradingContractAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+# ============================================================================
+# PHASE 7: BATCH APPROVAL SYSTEM ADMIN
+# ============================================================================
+
+@admin.register(PositionBatch)
+class PositionBatchAdmin(admin.ModelAdmin):
+    list_display = [
+        'batch_number',
+        'managed_account',
+        'created_date',
+        'approval_deadline',
+        'status',
+        'total_positions',
+        'total_capital_required',
+        'hours_remaining',
+        'is_expired_display'
+    ]
+    list_filter = ['status', 'created_date', 'approval_deadline']
+    search_fields = ['batch_number', 'managed_account__account_number']
+    readonly_fields = [
+        'created_date', 'approved_date', 'created_at', 'updated_at',
+        'hours_remaining', 'time_remaining_display', 'is_expired_display'
+    ]
+    
+    fieldsets = (
+        ('Batch Information', {
+            'fields': ('batch_number', 'managed_account', 'status')
+        }),
+        ('Timing', {
+            'fields': (
+                'created_date', 'approval_deadline',
+                'hours_remaining', 'time_remaining_display', 'is_expired_display'
+            )
+        }),
+        ('Batch Summary', {
+            'fields': ('total_positions', 'total_capital_required')
+        }),
+        ('Client Approval', {
+            'fields': ('approved_date', 'approval_signature', 'approval_ip')
+        }),
+        ('Notifications', {
+            'fields': ('reminder_sent', 'timeout_notification_sent'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def time_remaining_display(self, obj):
+        if obj.status != 'pending':
+            return 'N/A'
+        hours = obj.hours_remaining
+        if hours <= 0:
+            return 'EXPIRED'
+        return f"{hours} hours"
+    time_remaining_display.short_description = 'Time Remaining'
+    
+    def is_expired_display(self, obj):
+        return obj.is_expired
+    is_expired_display.short_description = 'Expired?'
+    is_expired_display.boolean = True
+
+
+# ============================================================================
+# POSITION AUTOMATION: SUGGESTED POSITIONS ADMIN
+# ============================================================================
+
+@admin.register(SuggestedPosition)
+class SuggestedPositionAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'strategy',
+        'source',
+        'probability_of_profit',
+        'premium_collected',
+        'dte',
+        'review_status',
+        'reviewed_by',
+        'fetched_at'
+    ]
+    list_filter = ['review_status', 'source', 'strategy', 'fetched_at']
+    search_fields = ['symbol', 'ai_reasoning', 'staff_notes']
+    readonly_fields = [
+        'fetched_at', 'reviewed_at', 'created_at', 'updated_at',
+        'risk_reward_ratio', 'meets_criteria'
+    ]
+    list_editable = []
+    ordering = ['-probability_of_profit', '-fetched_at']
+    
+    fieldsets = (
+        ('Position Details', {
+            'fields': ('symbol', 'strategy', 'positions', 'expiration_date', 'dte')
+        }),
+        ('Source Information', {
+            'fields': ('source', 'fetched_at', 'api_response_data')
+        }),
+        ('Financial Metrics', {
+            'fields': (
+                'premium_collected', 'capital_required',
+                'max_profit', 'max_loss', 'breakeven',
+                'risk_reward_ratio'
+            )
+        }),
+        ('High Probability Indicators', {
+            'fields': ('probability_of_profit', 'meets_criteria'),
+            'description': 'Criteria: 70%+ probability, $100+ premium, 30-60 DTE'
+        }),
+        ('Greeks', {
+            'fields': ('position_delta', 'position_theta', 'position_gamma', 'position_vega'),
+            'classes': ('collapse',)
+        }),
+        ('AI Analysis', {
+            'fields': ('ai_confidence', 'ai_reasoning'),
+            'classes': ('collapse',)
+        }),
+        ('Staff Review', {
+            'fields': (
+                'review_status', 'reviewed_by', 'reviewed_at',
+                'staff_notes', 'target_account'
+            )
+        }),
+        ('Conversion', {
+            'fields': ('created_position',),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['approve_selected', 'reject_selected']
+    
+    def approve_selected(self, request, queryset):
+        """Bulk approve selected suggestions"""
+        from django.utils import timezone
+        updated = queryset.filter(review_status='pending').update(
+            review_status='approved',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now()
+        )
+        self.message_user(request, f"Approved {updated} position(s)")
+    approve_selected.short_description = "✅ Approve selected suggestions"
+    
+    def reject_selected(self, request, queryset):
+        """Bulk reject selected suggestions"""
+        from django.utils import timezone
+        updated = queryset.filter(review_status='pending').update(
+            review_status='rejected',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+            staff_notes="Bulk rejected"
+        )
+        self.message_user(request, f"Rejected {updated} position(s)")
+    reject_selected.short_description = "❌ Reject selected suggestions"

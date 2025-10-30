@@ -33,6 +33,10 @@ class BudgetDashboardView(BaseFinanceView):
         self.estimation_service = BudgetEstimationService()
         self.consolidation_service = BudgetConsolidationService()
     
+    def log_error(self, message, exception):
+        """Log error with context"""
+        logger.error(f"{message}: {str(exception)}", exc_info=True)
+    
     def _get_overview_tab_data(self, company, department, estimation_service, consolidation_service):
         """Get data for Overview tab."""
         try:
@@ -50,12 +54,27 @@ class BudgetDashboardView(BaseFinanceView):
                     budget_filter, category=category
                 )
                 if cat_budgets.exists():
+                    # Calculate total
+                    total = sum(
+                        b.total_amount for b in cat_budgets 
+                        if hasattr(b, 'total_amount')
+                    )
+                    count = cat_budgets.count()
+                    
+                    # Calculate monthly average (assuming data over 12 months)
+                    monthly_avg = total / 12 if total > 0 else Decimal('0.00')
+                    
+                    # Convert to USD (1 USD = ~128 KES)
+                    KES_TO_USD_RATE = Decimal('0.0078')  # Approximate rate
+                    total_usd = total * KES_TO_USD_RATE
+                    monthly_avg_usd = monthly_avg * KES_TO_USD_RATE
+                    
                     category_summary[category.name] = {
-                        'count': cat_budgets.count(),
-                        'total': sum(
-                            b.total_amount for b in cat_budgets 
-                            if hasattr(b, 'total_amount')
-                        ),
+                        'count': count,
+                        'total': total,
+                        'total_usd': total_usd,
+                        'monthly_avg': monthly_avg,
+                        'monthly_avg_usd': monthly_avg_usd,
                         'category_id': category.id
                     }
             
@@ -68,6 +87,14 @@ class BudgetDashboardView(BaseFinanceView):
                 total=Sum(F('unit_price') * F('quantity') * Coalesce(F('cases'), 1), output_field=DecimalField())
             )['total'] or Decimal('0.00')
             
+            # Calculate monthly average (total / 12 months)
+            monthly_average = total_estimated / 12 if total_estimated > 0 else Decimal('0.00')
+            
+            # Convert to USD (1 USD = ~128 KES)
+            KES_TO_USD_RATE = Decimal('0.0078')
+            total_estimated_usd = total_estimated * KES_TO_USD_RATE
+            monthly_average_usd = monthly_average * KES_TO_USD_RATE
+            
             total_actual = Budget.objects.filter(budget_filter).aggregate(
                 total=Sum('actual_spent')
             )['total'] or Decimal('0.00')
@@ -78,9 +105,17 @@ class BudgetDashboardView(BaseFinanceView):
                 'overview_data': {
                     'category_summary': category_summary,
                     'recent_budgets': recent_budgets,
+                    'total_budgets': total_budgets,
+                    'active_budgets': total_budgets,  # Simplified - same as total
+                    'total_amount': {'total': total_estimated, 'total_usd': total_estimated_usd},
+                    'monthly_average': monthly_average,
+                    'monthly_average_usd': monthly_average_usd,
+                    'data_source': 'real_transactions',
+                    'data_quality': f'{total_budgets} budget items tracked',
                     'statistics': {
                         'total_budgets': total_budgets,
                         'total_estimated': total_estimated,
+                        'total_estimated_usd': total_estimated_usd,
                         'total_actual': total_actual,
                         'total_variance': total_variance,
                         'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
@@ -143,6 +178,125 @@ class BudgetDashboardView(BaseFinanceView):
         except Exception as e:
             self.log_error("Error getting estimation data", e)
             return {'estimation_data': {'error': str(e)}}
+    
+    def _get_approvals_tab_data(self, company, department, user):
+        """Get data for Approvals tab."""
+        try:
+            from ...models import BudgetRequest
+            
+            # Build filter
+            request_filter = Q(department__company=company, status='pending')
+            if department:
+                request_filter &= Q(department=department)
+            
+            # Get pending requests
+            pending_requests = BudgetRequest.objects.filter(request_filter).select_related(
+                'requester', 'department', 'budget_category'
+            ).order_by('-created_at')
+            
+            # Get user's pending requests
+            user_pending = BudgetRequest.objects.filter(
+                requester=user, status='pending'
+            ).count()
+            
+            return {
+                'approvals_data': {
+                    'total_pending': pending_requests.count(),
+                    'user_pending': user_pending,
+                    'pending_requests': pending_requests[:20],  # Limit to 20 for performance
+                }
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting approvals data", e)
+            return {'approvals_data': {'error': str(e)}}
+    
+    def _get_requests_tab_data(self, company, department, user):
+        """Get data for Requests tab."""
+        try:
+            from ...models import BudgetRequest
+            
+            # Build filter - show user's requests
+            request_filter = Q(requester=user)
+            if department:
+                request_filter &= Q(department=department)
+            
+            # Get all user's requests
+            budget_requests = BudgetRequest.objects.filter(request_filter).select_related(
+                'department', 'budget_category'
+            ).order_by('-created_at')
+            
+            # Calculate stats
+            total_requests = budget_requests.count()
+            pending_requests = budget_requests.filter(status='pending').count()
+            approved_requests = budget_requests.filter(status='approved').count()
+            rejected_requests = budget_requests.filter(status='rejected').count()
+            
+            return {
+                'budget_requests': budget_requests[:50],  # Limit for performance
+                'total_requests': total_requests,
+                'pending_requests': pending_requests,
+                'approved_requests': approved_requests,
+                'rejected_requests': rejected_requests,
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting requests data", e)
+            return {'budget_requests': [], 'total_requests': 0}
+    
+    def _get_projections_tab_data(self, company, department):
+        """Get data for Projections tab."""
+        try:
+            # Get projections for company
+            projections = BudgetEstimateProjection.objects.filter(
+                company=company, status='active'
+            ).order_by('-created_at')
+            
+            # Calculate stats
+            total_projections = projections.count()
+            total_amount = sum(p.total_estimate for p in projections if p.total_estimate) or Decimal('0.00')
+            monthly_average = total_amount / 12 if total_amount > 0 else Decimal('0.00')
+            
+            # Calculate average confidence (placeholder - adjust based on actual model)
+            avg_confidence = 85  # Default confidence
+            
+            return {
+                'projections_data': {
+                    'total_projections': total_projections,
+                    'total_amount': total_amount,
+                    'monthly_average': monthly_average,
+                    'avg_confidence': avg_confidence,
+                    'projections': projections[:20],  # Limit for performance
+                }
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting projections data", e)
+            return {'projections_data': {'error': str(e)}}
+    
+    def _get_editing_tab_data(self, company, department):
+        """Get data for Editing tab."""
+        try:
+            # Get categories for editing
+            categories = BudgetCategory.objects.all()
+            
+            # Get recent edits (budgets modified recently)
+            budget_filter = Q(company=company)
+            if department:
+                budget_filter &= Q(department=department)
+            
+            recent_edits = Budget.objects.filter(budget_filter).order_by('-updated_at')[:20]
+            
+            return {
+                'editing_data': {
+                    'categories': categories,
+                    'recent_edits': recent_edits,
+                }
+            }
+        
+        except Exception as e:
+            self.log_error("Error getting editing data", e)
+            return {'editing_data': {'error': str(e)}}
 
 
 @login_required_finance
@@ -184,6 +338,18 @@ def unified_budget_dashboard(request, company_slug, company=None):
             context.update(view._get_overview_tab_data(
                 company, user_department, view.estimation_service, view.consolidation_service
             ))
+        elif active_tab == 'approvals':
+            context.update(view._get_approvals_tab_data(
+                company, user_department, request.user
+            ))
+        elif active_tab == 'requests':
+            context.update(view._get_requests_tab_data(
+                company, user_department, request.user
+            ))
+        elif active_tab == 'projections':
+            context.update(view._get_projections_tab_data(
+                company, user_department
+            ))
         elif active_tab == 'planning':
             context.update(view._get_planning_tab_data(
                 company, user_department, view.estimation_service
@@ -195,6 +361,10 @@ def unified_budget_dashboard(request, company_slug, company=None):
         elif active_tab == 'estimation':
             context.update(view._get_estimation_tab_data(
                 company, user_department, view.estimation_service
+            ))
+        elif active_tab == 'editing':
+            context.update(view._get_editing_tab_data(
+                company, user_department
             ))
         else:
             context['active_tab'] = 'overview'

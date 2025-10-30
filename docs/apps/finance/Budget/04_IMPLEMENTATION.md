@@ -742,6 +742,10 @@ budget_requests = BudgetRequest.objects.filter(
 
 | Date | Change | File(s) | Developer | Ticket |
 |------|--------|---------|-----------|--------|
+| **Oct 28, 2025** | **Dashboard tab data methods added** | views/budget/dashboard.py | AI | #DASH-001 |
+| **Oct 28, 2025** | **SmartApprovalService integrated in submission** | views/budget/editing.py | AI | #APPROVAL-001 |
+| **Oct 28, 2025** | **UI improvements: tier info, priority selector** | templates/budgets/*.html | AI | #UX-001 |
+| **Oct 28, 2025** | **Button layout reorganized for better UX** | templates/budgets/tabs/overview_tab.html | AI | #UX-002 |
 | Oct 22, 2025 | Migrated to 7-doc structure | All budget docs | AI | #DOC-001 |
 | Oct 16, 2025 | Phase 2 COMPLETE - Tier system deployed | Multiple | CM | #PHASE2 |
 | Oct 16, 2025 | Added tier fields to BudgetCategory | models/budget.py | CM | #156 |
@@ -767,7 +771,7 @@ budget_requests = BudgetRequest.objects.filter(
 ---
 
 **Document Owner:** Development Team  
-**Last Major Update:** October 22, 2025  
+**Last Major Update:** October 28, 2025  
 **Next Review:** After Phase 3 implementation
 
 
