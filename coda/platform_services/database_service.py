@@ -35,6 +35,36 @@ class DatabaseService(HerokuService):
             'Content-Type': 'application/json',
         }
 
+    def _list_postgres_client_databases(self) -> Dict[str, Any]:
+        """Query Postgres Client API for all databases visible to the token."""
+        try:
+            resp = requests.get(
+                'https://postgres-api.heroku.com/client/v11/databases',
+                headers=self._postgres_headers(),
+                timeout=60,
+            )
+            if resp.status_code != 200:
+                return {'success': False, 'error': f'Client databases API failed: {resp.status_code} {resp.text}'}
+            return {'success': True, 'items': resp.json() or []}
+        except Exception as exc:  # pragma: no cover
+            logger.error('Failed to list client databases: %s', exc)
+            return {'success': False, 'error': str(exc)}
+
+    def _resolve_client_db_name_for_app(self, app_name: str) -> Dict[str, Any]:
+        """Try to resolve the client database 'name' for the given app via Client API."""
+        listing = self._list_postgres_client_databases()
+        if not listing.get('success'):
+            return listing
+        items: List[Dict[str, Any]] = listing.get('items', [])
+        # Prefer exact app match
+        for item in items:
+            if item.get('app_name') == app_name:
+                return {'success': True, 'client_name': item.get('name')}
+        # As fallback, return first Postgres DB
+        if items:
+            return {'success': True, 'client_name': items[0].get('name')}
+        return {'success': False, 'error': 'No Postgres databases visible to token'}
+
     def _get_postgres_db_identifier(self, app_name: str) -> Dict[str, Any]:
         """Resolve the identifier accepted by the Heroku Postgres API client endpoints.
 
@@ -88,10 +118,15 @@ class DatabaseService(HerokuService):
 
     def create_backup(self, app_name: str) -> Dict[str, Any]:
         """Create a database backup via Heroku Postgres HTTP API."""
-        addon = self._get_postgres_db_identifier(app_name)
-        if not addon.get('success'):
-            return addon
-        db_identifier = addon.get('db_identifier') or addon.get('fallback_addon_name') or addon.get('fallback_addon_id')
+        # Try Client API first
+        resolved = self._resolve_client_db_name_for_app(app_name)
+        if resolved.get('success'):
+            db_identifier = resolved.get('client_name')
+        else:
+            addon = self._get_postgres_db_identifier(app_name)
+            if not addon.get('success'):
+                return addon
+            db_identifier = addon.get('db_identifier') or addon.get('fallback_addon_name') or addon.get('fallback_addon_id')
         try:
             # Initiate capture
             resp = requests.post(
@@ -111,16 +146,20 @@ class DatabaseService(HerokuService):
 
     def list_backups(self, app_name: str, limit: int = 10) -> Dict[str, Any]:
         """List recent backups via Heroku Postgres HTTP API."""
-        addon = self._get_postgres_db_identifier(app_name)
-        if not addon.get('success'):
-            return addon
+        # Prefer Client API database name
         candidates: List[str] = []
-        if addon.get('db_identifier'):
-            candidates.append(addon['db_identifier'])
-        if addon.get('fallback_addon_name'):
-            candidates.append(addon['fallback_addon_name'])
-        if addon.get('fallback_addon_id'):
-            candidates.append(addon['fallback_addon_id'])
+        resolved = self._resolve_client_db_name_for_app(app_name)
+        if resolved.get('success') and resolved.get('client_name'):
+            candidates.append(resolved['client_name'])
+        # Fallback: identifiers via app addons/attachments
+        addon = self._get_postgres_db_identifier(app_name)
+        if addon.get('success'):
+            if addon.get('db_identifier'):
+                candidates.append(addon['db_identifier'])
+            if addon.get('fallback_addon_name'):
+                candidates.append(addon['fallback_addon_name'])
+            if addon.get('fallback_addon_id'):
+                candidates.append(addon['fallback_addon_id'])
         # Common attachment/config var names
         if 'DATABASE' not in candidates:
             candidates.append('DATABASE')
