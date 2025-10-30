@@ -130,10 +130,21 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label" for="subcategory">Subcategory</label>
-                        <select class="form-control" id="subcategory" name="subcategory" disabled>
-                            <option value="{{ budget.subcategory.id }}">{{ budget.subcategory.name }}</option>
+                        <select class="form-control" id="subcategory" name="subcategory">
+                            {% if budget.subcategory %}
+                            <option value="{{ budget.subcategory.id }}" selected>{{ budget.subcategory.name }}</option>
+                            {% else %}
+                            <option value="" selected>-- Select Subcategory --</option>
+                            {% endif %}
+                            {% for sc in subcategories %}
+                                {% if budget.subcategory and sc.id == budget.subcategory.id %}
+                                    {# already selected above #}
+                                {% else %}
+                                    <option value="{{ sc.id }}">{{ sc.name }}</option>
+                                {% endif %}
+                            {% endfor %}
                         </select>
-                        <small class="text-muted">Subcategory cannot be changed</small>
+                        <small class="text-muted">Tip: Assign the correct subcategory to categorize this item.</small>
                     </div>
                 </div>
                 <div class="col-md-6">

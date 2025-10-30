@@ -132,7 +132,7 @@
                     
                     <!-- Budget Items List with Edit Buttons -->
                     <h6 class="mt-4">Budget Items:</h6>
-                    {% if data.budgets %}
+                           {% if data.budgets %}
                     <div class="table-responsive">
                         <table class="table table-sm table-hover">
                             <thead class="thead-light">
@@ -193,12 +193,32 @@
                             </tbody>
                         </table>
                     </div>
-                    {% else %}
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>No budget items found.</strong> 
-                        Click the "Edit Category Budget" button above to add budget items.
-                    </div>
+                           {% else %}
+                           <div class="alert alert-warning">
+                               <i class="fas fa-exclamation-triangle"></i>
+                               <strong>No budget items found.</strong> You can add an inline monthly amount now.
+                               <div class="mt-2 d-flex align-items-center">
+                                   <input type="number" class="form-control" id="inline-amount-{{ data.subcategory.id|default:'none' }}" placeholder="KES {{ data.suggested_monthly_3m|floatformat:2 }}" value="{{ data.suggested_monthly_3m|floatformat:2 }}" style="max-width:200px; margin-right:8px;" step="0.01" min="0">
+                                   <button class="btn btn-sm btn-primary" onclick="saveInlineAmount('{{ company.slug }}', {{ category.id }}, '{{ data.subcategory.id|default:"" }}')">
+                                       <i class="fas fa-save"></i> Save
+                                   </button>
+                                   {% if data.suggested_last_month %}
+                                   <button class="btn btn-sm btn-outline-secondary ml-2" onclick="document.getElementById('inline-amount-{{ data.subcategory.id|default:'none' }}').value='{{ data.suggested_last_month|floatformat:2 }}'">
+                                       Use last month (KES {{ data.suggested_last_month|floatformat:2 }})
+                                   </button>
+                                   {% endif %}
+                                   {% if data.suggested_monthly_3m %}
+                                   <button class="btn btn-sm btn-outline-success ml-2" onclick="document.getElementById('inline-amount-{{ data.subcategory.id|default:'none' }}').value='{{ data.suggested_monthly_3m|floatformat:2 }}'">
+                                       Use 3‑month avg (KES {{ data.suggested_monthly_3m|floatformat:2 }})
+                                   </button>
+                                   {% endif %}
+                                   {% if data.suggested_monthly_12m %}
+                                   <button class="btn btn-sm btn-outline-info ml-2" onclick="document.getElementById('inline-amount-{{ data.subcategory.id|default:'none' }}').value='{{ data.suggested_monthly_12m|floatformat:2 }}'">
+                                       Use 12‑month avg (KES {{ data.suggested_monthly_12m|floatformat:2 }})
+                                   </button>
+                                   {% endif %}
+                               </div>
+                           </div>
                     {% endif %}
                     
                     <!-- Recent Transactions -->
@@ -278,5 +298,20 @@ $(document).ready(function() {
     console.log('Category: {{ category.name }}');
     console.log('Total budgets: {{ category_stats.total_budgets }}');
 });
+
+async function saveInlineAmount(companySlug, categoryId, subcategoryId) {
+    try {
+        const input = document.getElementById(`inline-amount-${subcategoryId || 'none'}`);
+        const amount = parseFloat(input.value || 0);
+        if (isNaN(amount) || amount <= 0) { alert('Enter a valid KES amount'); return; }
+        const resp = await fetch('{% url "finance:inline-set-subcategory-budget" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ company_slug: companySlug, category_id: categoryId, subcategory_id: subcategoryId || null, amount_kes: amount })
+        });
+        const data = await resp.json();
+        if (data.success) { location.reload(); } else { alert('Error: ' + data.error); }
+    } catch (e) { console.error(e); alert('Failed to save amount'); }
+}
 </script>
 {% endblock %}

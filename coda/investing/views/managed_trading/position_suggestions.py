@@ -131,6 +131,29 @@ def fetch_positions_now(request):
 
 
 @staff_member_required
+def fetch_positions_quick(request):
+    """
+    Quick GET trigger to fetch positions with default filters.
+    Useful fallback when modal submit is unavailable.
+    """
+    try:
+        fetcher = PositionFetcherService()
+        default_filters = fetcher._get_default_filters()
+        suggested = fetcher.fetch_high_probability_positions(default_filters)
+        avg_prob = (
+            sum(float(p.probability_of_profit) for p in suggested) / len(suggested)
+            if suggested else 0
+        )
+        messages.success(
+            request,
+            f"✅ Fetched {len(suggested)} position(s). Avg probability: {avg_prob:.1f}%"
+        )
+    except Exception as e:
+        logger.error(f"Quick fetch error: {e}", exc_info=True)
+        messages.error(request, f"❌ Fetch failed: {str(e)}")
+    return redirect('investing:suggested_positions_list')
+
+@staff_member_required
 def review_position(request, suggestion_id):
     """
     Review/edit a single suggested position

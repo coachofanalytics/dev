@@ -50,7 +50,7 @@
                             </div>
                         </div>
                         
-                        <!-- Purpose -->
+                        <!-- Purpose + Smart Item Lookup -->
                         <div class="form-group mb-3">
                             <label for="{{ form.purpose.id_for_label }}" class="form-label">
                                 <i class="fas fa-align-left"></i> Purpose & Justification *
@@ -72,6 +72,10 @@
                                         <i class="fas fa-magic"></i> Apply Suggestions
                                     </button>
                                 </div>
+                            </div>
+                            <!-- Item lookup suggestions -->
+                            <div id="item-lookup" class="mt-2" style="display:none;">
+                                <div class="list-group" id="item-lookup-list"></div>
                             </div>
                         </div>
                         
@@ -230,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentSuggestions = null;
     let suggestionTimeout = null;
     
-    // Debounced function to get suggestions
+    // Debounced function to get suggestions (semantic)
     function getSuggestions() {
         if (suggestionTimeout) {
             clearTimeout(suggestionTimeout);
@@ -332,6 +336,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for changes in purpose and department fields
     purposeField.addEventListener('input', getSuggestions);
     departmentField.addEventListener('change', getSuggestions);
+
+    // Lightweight item lookup to detect existing items / transactions
+    const lookupDiv = document.getElementById('item-lookup');
+    const lookupList = document.getElementById('item-lookup-list');
+    let lookupTimeout = null;
+    async function runItemLookup() {
+        if (lookupTimeout) clearTimeout(lookupTimeout);
+        lookupTimeout = setTimeout(async () => {
+            const q = purposeField.value.trim();
+            if (q.length < 3) { lookupDiv.style.display = 'none'; return; }
+            const categoryId = categoryField ? categoryField.value : '';
+            try {
+                const resp = await fetch(`/finance/api/item-lookup/?q=${encodeURIComponent(q)}&category=${encodeURIComponent(categoryId)}`);
+                const data = await resp.json();
+                if (!data.success || !data.suggestions || data.suggestions.length === 0) {
+                    lookupDiv.style.display = 'none';
+                    return;
+                }
+                lookupList.innerHTML = '';
+                data.suggestions.forEach((sug) => {
+                    const el = document.createElement('button');
+                    el.type = 'button';
+                    el.className = 'list-group-item list-group-item-action';
+                    el.innerHTML = `<div><strong>${sug.item_name}</strong> <small class="text-muted">(${sug.source}, ${(sug.confidence*100).toFixed(0)}%)</small></div>` +
+                                   (sug.category ? `<div>Category: ${sug.category}</div>` : '') +
+                                   (sug.subcategory ? `<div>Subcategory: ${sug.subcategory}</div>` : '') +
+                                   (sug.suggested_amount ? `<div>Suggested: KES ${Number(sug.suggested_amount).toLocaleString()}</div>` : '');
+                    el.addEventListener('click', () => {
+                        // Apply selection to form fields
+                        if (sug.category && categoryField) {
+                            const opts = categoryField.querySelectorAll('option');
+                            for (let o of opts) {
+                                if (o.textContent.trim() === sug.category) { categoryField.value = o.value; break; }
+                            }
+                        }
+                        if (sug.suggested_amount && amountField) {
+                            amountField.value = sug.suggested_amount;
+                        }
+                        lookupDiv.style.display = 'none';
+                    });
+                    lookupList.appendChild(el);
+                });
+                lookupDiv.style.display = 'block';
+            } catch (e) {
+                console.log('lookup error', e);
+                lookupDiv.style.display = 'none';
+            }
+        }, 600);
+    }
+    purposeField.addEventListener('input', runItemLookup);
 
     // Form submission
     form.addEventListener('submit', function(e) {

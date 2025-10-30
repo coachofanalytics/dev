@@ -96,19 +96,19 @@ class BudgetEstimationService(BaseFinanceService, BudgetServiceMixin):
             six_months_ago = now - timedelta(days=180)
             three_months_ago = now - timedelta(days=90)
             
-            # Analyze transaction data
+            # Analyze transaction data - filter by department's company
             transactions_1y = Transaction.objects.filter(
-                company=company,
+                department__company=company,
                 transaction_date__gte=one_year_ago
             ).count()
             
             transactions_6m = Transaction.objects.filter(
-                company=company,
+                department__company=company,
                 transaction_date__gte=six_months_ago
             ).count()
             
             transactions_3m = Transaction.objects.filter(
-                company=company,
+                department__company=company,
                 transaction_date__gte=three_months_ago
             ).count()
             

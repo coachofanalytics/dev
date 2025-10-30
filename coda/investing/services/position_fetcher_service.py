@@ -86,17 +86,20 @@ class PositionFetcherService:
             logger.info("🔄 Fetching positions from Thinkorswim...")
             positions = self._fetch_from_thinkorswim(filters)
             logger.info(f"✅ Thinkorswim returned {len(positions)} positions")
-            suggested_positions = self._save_suggested_positions(positions, source='thinkorswim')
-            return suggested_positions
+            if positions:
+                suggested_positions = self._save_suggested_positions(positions, source='thinkorswim')
+                return suggested_positions
+            else:
+                logger.warning("⚠️  Thinkorswim returned 0 positions; falling back to MOCK for testing")
         
         except Exception as e:
             logger.error(f"❌ Both APIs failed! OptionPlay and Thinkorswim unavailable: {e}")
             
-            # Last resort: Return mock data for testing
-            logger.info("🎭 Returning mock data for testing...")
-            mock_positions = self._get_mock_positions(filters)
-            suggested_positions = self._save_suggested_positions(mock_positions, source='manual')
-            return suggested_positions
+        # Last resort: Return mock data for testing
+        logger.info("🎭 Returning mock data for testing...")
+        mock_positions = self._get_mock_positions(filters)
+        suggested_positions = self._save_suggested_positions(mock_positions, source='manual')
+        return suggested_positions
     
     def _get_default_filters(self) -> Dict:
         """Default filtering criteria for high-probability positions"""

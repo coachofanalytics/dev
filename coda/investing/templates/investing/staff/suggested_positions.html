@@ -13,9 +13,9 @@
             <p class="text-muted">Review high-probability positions fetched from OptionPlay/Thinkorswim</p>
         </div>
         <div class="col-md-4 text-end">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fetchModal">
+            <a href="{% url 'investing:fetch_positions_quick' %}" class="btn btn-primary me-2">
                 🔄 Fetch New Positions
-            </button>
+            </a>
             <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-secondary">
                 ← Back to Accounts
             </a>
@@ -61,19 +61,19 @@
     <!-- Tabs: Pending / Approved / Rejected -->
     <ul class="nav nav-tabs mb-3" id="positionTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+            <a class="nav-link active" id="pending-tab" href="#pending" data-toggle="tab" data-bs-toggle="tab" role="tab" aria-controls="pending" aria-selected="true">
                 ⏳ Pending Review ({{ stats.total_pending }})
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button">
+            <a class="nav-link" id="approved-tab" href="#approved" data-toggle="tab" data-bs-toggle="tab" role="tab" aria-controls="approved" aria-selected="false">
                 ✅ Approved ({{ stats.total_approved }})
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button">
+            <a class="nav-link" id="rejected-tab" href="#rejected" data-toggle="tab" data-bs-toggle="tab" role="tab" aria-controls="rejected" aria-selected="false">
                 ❌ Rejected ({{ stats.total_rejected }})
-            </button>
+            </a>
         </li>
     </ul>
     
@@ -374,6 +374,13 @@ function updateSelectedCount() {
 // Listen to checkbox changes
 document.querySelectorAll('.batch-checkbox').forEach(cb => {
     cb.addEventListener('change', updateSelectedCount);
+});
+
+// Auto-select all approved when opening the Create Batch modal
+const createBatchModalEl = document.getElementById('createBatchModal');
+createBatchModalEl?.addEventListener('show.bs.modal', function () {
+    document.querySelectorAll('.batch-checkbox').forEach(cb => { cb.checked = true; });
+    updateSelectedCount();
 });
 
 // Quick approve position (AJAX)

@@ -120,6 +120,8 @@ class BudgetDashboardView(BaseFinanceView):
                         'total_variance': total_variance,
                         'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
                     }
+                ,
+                'has_projections': BudgetEstimateProjection.objects.filter(budget__company=company).exists()
                 }
             }
         
@@ -133,10 +135,10 @@ class BudgetDashboardView(BaseFinanceView):
             # Get budget categories for planning
             categories = BudgetCategory.objects.all()
             
-            # Get recent projections
+            # Get recent projections - filter through Budget to access company
             recent_projections = BudgetEstimateProjection.objects.filter(
-                company=company
-            ).order_by('-created_at')[:5]
+                budget__company=company
+            ).select_related('budget').order_by('-created_at')[:5]
             
             return {
                 'planning_data': {
@@ -247,26 +249,64 @@ class BudgetDashboardView(BaseFinanceView):
     def _get_projections_tab_data(self, company, department):
         """Get data for Projections tab."""
         try:
-            # Get projections for company
-            projections = BudgetEstimateProjection.objects.filter(
-                company=company, status='active'
-            ).order_by('-created_at')
-            
-            # Calculate stats
-            total_projections = projections.count()
-            total_amount = sum(p.total_estimate for p in projections if p.total_estimate) or Decimal('0.00')
+            # Get projections for company - filter through Budget to access company
+            raw_projections = BudgetEstimateProjection.objects.filter(
+                budget__company=company
+            ).select_related('budget', 'budget__category').order_by('-created_at')
+
+            # Build enriched projection rows
+            from datetime import timedelta
+            today = timezone.now().date()
+            twelve_months_ago = today - timedelta(days=365)
+            projections = []
+            total_amount = Decimal('0.00')
+            total_projected_monthly = Decimal('0.00')
+            total_historical = Decimal('0.00')
+
+            for p in raw_projections[:50]:
+                # historical monthly from transactions in last 12 months for the category
+                try:
+                    from ...models import Transaction
+                    tx_total = Transaction.objects.filter(
+                        category=p.budget.category,
+                        transaction_date__gte=twelve_months_ago
+                    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+                    historical_monthly = tx_total / 12
+                except Exception:
+                    historical_monthly = Decimal('0.00')
+
+                # projected monthly from budget unit_price if available, else derive from projected_amount
+                projected_monthly = p.budget.unit_price or (p.projected_amount / 12)
+
+                projections.append({
+                    'budget': p.budget,
+                    'historical_monthly': historical_monthly,
+                    'projected_monthly': projected_monthly,
+                    'projected_amount': p.projected_amount,
+                    'confidence_score': p.confidence_score,
+                    'projection_method': p.projection_method,
+                    'projection_date': p.projection_date,
+                })
+
+                total_amount += p.projected_amount or Decimal('0.00')
+                total_projected_monthly += projected_monthly or Decimal('0.00')
+                total_historical += historical_monthly or Decimal('0.00')
+
+            total_projections = len(projections)
             monthly_average = total_amount / 12 if total_amount > 0 else Decimal('0.00')
-            
-            # Calculate average confidence (placeholder - adjust based on actual model)
-            avg_confidence = 85  # Default confidence
-            
+            avg_confidence = (
+                sum((p.confidence_score or 0) for p in raw_projections) / raw_projections.count()
+            ) if raw_projections.exists() else Decimal('0.00')
+
             return {
                 'projections_data': {
                     'total_projections': total_projections,
                     'total_amount': total_amount,
                     'monthly_average': monthly_average,
                     'avg_confidence': avg_confidence,
-                    'projections': projections[:20],  # Limit for performance
+                    'projections': projections,  # enriched rows
+                    'total_projected_monthly': total_projected_monthly,
+                    'total_historical': total_historical,
                 }
             }
         

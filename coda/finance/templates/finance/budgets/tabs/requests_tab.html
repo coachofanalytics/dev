@@ -73,7 +73,7 @@
                             </td>
                             <td>{{ request.request_date|date:"M d, Y" }}</td>
                             <td>
-                                <a href="{% url 'finance:budget-request-detail' request.id %}" 
+                                <a href="{% url 'finance:budget-request-detail' company.slug request.id %}" 
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> View
                                 </a>

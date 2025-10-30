@@ -9,9 +9,15 @@
         <div class="btn-toolbar" role="toolbar">
             <!-- Primary Actions -->
             <div class="btn-group mr-2" role="group">
-                <a href="{% url 'finance:budget_request_form' %}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i> New Budget Request
-                </a>
+                       {% if not has_projections %}
+                       <a href="{% url 'finance:budget_request_form' %}" class="btn btn-primary">
+                           <i class="fas fa-plus-circle"></i> New Budget Request
+                       </a>
+                       {% else %}
+                       <a href="{% url 'finance:budget-requests-list' company.slug %}" class="btn btn-outline-secondary">
+                           <i class="fas fa-list"></i> View Requests
+                       </a>
+                       {% endif %}
                 <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-outline-primary">
                     <i class="fas fa-list"></i> My Requests
                 </a>

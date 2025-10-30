@@ -174,6 +174,11 @@ urlpatterns = [
     path('managed/staff/suggestions/fetch-now/', 
          position_suggestions.fetch_positions_now, 
          name='fetch_positions_now'),
+
+    # Staff: Quick fetch via GET (fallback)
+    path('managed/staff/suggestions/fetch-quick/', 
+         position_suggestions.fetch_positions_quick, 
+         name='fetch_positions_quick'),
     
     # Staff: Create batch from approved suggestions
     path('managed/staff/suggestions/create-batch/', 
