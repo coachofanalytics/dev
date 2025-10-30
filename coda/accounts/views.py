@@ -743,11 +743,11 @@ class ClientListView(FilteredListViewMixin, ListView):
 
         # Add client categories for template
         context["clients"] = {
-            "students": self.get_queryset().filter(category=4, is_active=True),
-            "jobsupport": self.get_queryset().filter(category=3, is_active=True),
-            "interview": self.get_queryset().filter(category=4, is_active=True),
+            "students": self.get_queryset().filter(category=2, is_active=True),  # STUDENT category
+            "jobsupport": self.get_queryset().filter(category=3, is_active=True),  # CONSULTANT category
+            "interview": self.get_queryset().filter(category=1, is_active=True),  # APPLICANT category (job interviews)
             "past": self.get_queryset().filter(
-                category__in=[1, 3, 4, 5, 6, 7], is_active=False
+                category__in=[1, 2, 3, 4, 5], is_active=False  # Updated to use valid categories
             ),
         }
 

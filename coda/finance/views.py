@@ -245,18 +245,18 @@ def loan_application_home(request):
     # Get user's loans through service
     user_loans_result = loan_service.get_user_loans(request.user)
 
-    if user_loans_result.get("success", False):
-        # Get loans from the service response
-        loan_data = user_loans_result.get("data", {})
-        user_loans = loan_data.get("applications", [])
+    if user_loans_result.get("status") == "success":
+        # Get loans from the service response (service returns 'loans' key directly)
+        user_loans_queryset = user_loans_result.get("loans")
         
-        # Convert to a queryset-like object for filtering
-        from django.db.models import Q
-        from finance.models import LoanApplication
-        
-        # Get actual LoanApplication objects for filtering
-        loan_ids = [loan["id"] for loan in user_loans]
-        user_loans_queryset = LoanApplication.objects.filter(id__in=loan_ids)
+        # Handle case where loans is a list instead of queryset
+        if isinstance(user_loans_queryset, list):
+            from finance.models import LoanApplication
+            loan_ids = [loan.id if hasattr(loan, 'id') else loan['id'] for loan in user_loans_queryset]
+            user_loans_queryset = LoanApplication.objects.filter(id__in=loan_ids)
+        elif user_loans_queryset is None:
+            from finance.models import LoanApplication
+            user_loans_queryset = LoanApplication.objects.none()
 
         # Separate loans by status for better display
         active_loans = user_loans_queryset.filter(status__in=["approved", "active", "overdue"])
