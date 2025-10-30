@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.contrib import messages
@@ -237,12 +237,22 @@ def unified_dashboard(request):
         # Get role-based links and buttons (similar to management system)
         role_based_links = get_role_based_links(request)
         
+        # Get quick actions and add backup button for admin users
+        quick_actions = get_quick_actions(user_role, request.user)
+        if user_role == 'admin' or request.user.is_staff or request.user.is_superuser:
+            # Add database backup action for admins
+            quick_actions.append({
+                'title': 'Database Backup',
+                'icon': 'fas fa-database',
+                'url': '/dashboard/admin/backup-database/',
+            })
+        
         # Simplified context without complex model queries for now
         context = {
             'user_role': user_role,
             'dashboard_config': dashboard_config,
             'role_based_links': role_based_links,
-            'quick_actions': get_quick_actions(user_role, request.user),
+            'quick_actions': quick_actions,
             'recent_activities': get_recent_activities(request.user),
             'notifications': get_user_notifications(request.user),
             'title': 'CODA Command Center - ' + dashboard_config["title"],
@@ -707,3 +717,59 @@ def unified_department_view(request, department_slug=None):
         # Debug: Return error details
         from django.http import HttpResponse
         return HttpResponse("Error in unified_department_view: " + str(e), status=500)
+
+
+# Admin utility views
+def is_admin_user(user):
+    """Check if user is admin/staff/superuser"""
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+@login_required
+@user_passes_test(is_admin_user)
+def backup_database(request):
+    """Trigger database backup to Google Drive (admin only)"""
+    if request.method == 'POST':
+        try:
+            from platform_services.database_service import DatabaseService
+            from platform_services.google_drive_service import GoogleDriveBackupService
+            
+            # Initialize services
+            db_service = DatabaseService()
+            drive_service = GoogleDriveBackupService()
+            
+            # Run backup workflow
+            logger.info(f"Database backup initiated by {request.user.username}")
+            result = drive_service.backup_and_upload(
+                database_service=db_service,
+                keep_count=2
+            )
+            
+            if result.get('success'):
+                messages.success(
+                    request,
+                    f"✅ Database backup completed successfully! "
+                    f"({result.get('backup_size_mb', 0)} MB uploaded to Google Drive)"
+                )
+                if result.get('deleted_count', 0) > 0:
+                    messages.info(
+                        request,
+                        f"🧹 Cleaned up {result['deleted_count']} old backup(s)"
+                    )
+            else:
+                error_msg = result.get('error', 'Unknown error')
+                messages.error(request, f"❌ Backup failed: {error_msg}")
+                logger.error(f"Backup failed for {request.user.username}: {error_msg}")
+            
+        except Exception as e:
+            messages.error(request, f"❌ Backup error: {str(e)}")
+            logger.error(f"Backup exception for {request.user.username}: {e}", exc_info=True)
+        
+        return redirect('dashboard:unified_dashboard')
+    
+    # GET request - show confirmation page
+    context = {
+        'title': 'Database Backup',
+        'user': request.user,
+    }
+    return render(request, 'unified_dashboard/backup_confirm.html', context)

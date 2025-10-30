@@ -24,5 +24,8 @@ urlpatterns = [
     
     # Service tracking
     path('services/<int:service_id>/access/', views.track_service_access, name='track_service_access'),
+    
+    # Admin utilities
+    path('admin/backup-database/', views.backup_database, name='backup_database'),
 ]
 

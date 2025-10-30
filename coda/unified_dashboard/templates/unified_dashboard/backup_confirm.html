@@ -1,0 +1,172 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Database Backup{% endblock %}
+
+{% block content %}
+<style>
+.backup-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #243865 0%, #001f3f 100%);
+    padding: 3rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.backup-card {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.backup-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #243865, #E7AD4A);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.backup-card h1 {
+    color: #243865;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.backup-info {
+    background: #f8f9fa;
+    border-left: 4px solid #E7AD4A;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.backup-info h3 {
+    color: #243865;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.backup-info ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.backup-info li {
+    margin-bottom: 0.5rem;
+    color: #5a6c7d;
+}
+
+.btn-backup {
+    background: linear-gradient(135deg, #243865, #E7AD4A);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 100%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-backup:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.btn-backup:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    color: white;
+}
+
+.loading-spinner {
+    display: none;
+    margin-left: 10px;
+}
+
+.backup-card.loading .loading-spinner {
+    display: inline-block;
+}
+</style>
+
+<div class="backup-container">
+    <div class="backup-card">
+        <div class="backup-icon">
+            <i class="fas fa-database"></i>
+        </div>
+        
+        <h1>Database Backup</h1>
+        
+        <div class="backup-info">
+            <h3><i class="fas fa-info-circle"></i> What will happen:</h3>
+            <ul>
+                <li>✅ Create a complete PostgreSQL database backup (~115 MB)</li>
+                <li>☁️ Upload backup to your Google Drive folder</li>
+                <li>🧹 Delete old backups (keep only last 2)</li>
+                <li>⏱️ Process takes approximately 2-3 minutes</li>
+            </ul>
+        </div>
+
+        <form method="post" id="backupForm">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-backup" id="backupBtn">
+                <i class="fas fa-cloud-upload-alt"></i> Start Backup Now
+                <span class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> Backing up...
+                </span>
+            </button>
+        </form>
+        
+        <a href="{% url 'dashboard:unified_dashboard' %}" class="btn btn-cancel">
+            <i class="fas fa-times"></i> Cancel
+        </a>
+
+        <div class="text-center mt-4 text-muted">
+            <small><i class="fas fa-lock"></i> Admin access required</small>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('backupForm').addEventListener('submit', function(e) {
+    const btn = document.getElementById('backupBtn');
+    const card = document.querySelector('.backup-card');
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    card.classList.add('loading');
+    
+    // Show progress message
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Backup in progress... Please wait (2-3 minutes)';
+});
+</script>
+{% endblock %}
+
