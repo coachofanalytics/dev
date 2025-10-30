@@ -35,8 +35,12 @@ class DatabaseService(HerokuService):
             'Content-Type': 'application/json',
         }
 
-    def _get_postgres_addon_name(self, app_name: str) -> Dict[str, Any]:
-        """Find the Heroku Postgres add-on name attached to the app via Platform API."""
+    def _get_postgres_db_identifier(self, app_name: str) -> Dict[str, Any]:
+        """Resolve the Postgres database identifier for the Postgres API.
+
+        The Postgres API expects the database UUID (the add-on id), not the human name.
+        Fallbacks try the add-on name if needed.
+        """
         try:
             resp = requests.get(
                 f'https://api.heroku.com/apps/{app_name}/addons',
@@ -50,8 +54,12 @@ class DatabaseService(HerokuService):
                 plan = addon.get('plan', {})
                 plan_name = plan.get('name', '')
                 if plan_name.startswith('heroku-postgresql'):
-                    # Use the add-on name as database identifier for Postgres API
-                    return {'success': True, 'db_name': addon.get('name')}
+                    # Prefer add-on id for postgres API
+                    return {
+                        'success': True,
+                        'db_id': addon.get('id'),
+                        'db_name': addon.get('name'),
+                    }
             return {'success': False, 'error': 'No Heroku Postgres addon found'}
         except Exception as exc:  # pragma: no cover
             logger.error('Failed to query addons: %s', exc)
@@ -59,14 +67,14 @@ class DatabaseService(HerokuService):
 
     def create_backup(self, app_name: str) -> Dict[str, Any]:
         """Create a database backup via Heroku Postgres HTTP API."""
-        addon = self._get_postgres_addon_name(app_name)
+        addon = self._get_postgres_db_identifier(app_name)
         if not addon.get('success'):
             return addon
-        db_name = addon.get('db_name')
+        db_id = addon.get('db_id') or addon.get('db_name')
         try:
             # Initiate capture
             resp = requests.post(
-                f'https://postgres-api.heroku.com/client/v11/databases/{db_name}/backups',
+                f'https://postgres-api.heroku.com/client/v11/databases/{db_id}/backups',
                 headers=self._postgres_headers(),
                 json={},
                 timeout=60,
@@ -82,13 +90,13 @@ class DatabaseService(HerokuService):
 
     def list_backups(self, app_name: str, limit: int = 10) -> Dict[str, Any]:
         """List recent backups via Heroku Postgres HTTP API."""
-        addon = self._get_postgres_addon_name(app_name)
+        addon = self._get_postgres_db_identifier(app_name)
         if not addon.get('success'):
             return addon
-        db_name = addon.get('db_name')
+        db_id = addon.get('db_id') or addon.get('db_name')
         try:
             resp = requests.get(
-                f'https://postgres-api.heroku.com/client/v11/databases/{db_name}/backups',
+                f'https://postgres-api.heroku.com/client/v11/databases/{db_id}/backups',
                 headers=self._postgres_headers(),
                 timeout=60,
             )
