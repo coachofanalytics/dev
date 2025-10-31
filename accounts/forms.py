@@ -120,13 +120,13 @@ class LoginForm(forms.Form):
 #             'agree': 'I agree to the terms and conditions'
 #         }
 
-<<<<<<< HEAD
+
 # form for account model
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
         fields = ('name',)
-=======
+
 class MembershipRegistrationForm(forms.Form):
     email = forms.EmailField(label="Email", required=True)
     first_name = forms.CharField(label="First Name", max_length=100, required=True)
@@ -144,4 +144,3 @@ class MembershipRegistrationForm(forms.Form):
     country = forms.CharField(label="Country", max_length=100, required=True)
     city = forms.CharField(label="City", max_length=100, required=True)
     accepted_terms = forms.BooleanField(label="I agree to the terms and conditions", required=True)
->>>>>>> origin/25.10_DC48K_UAT_FN

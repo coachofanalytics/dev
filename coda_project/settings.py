@@ -165,7 +165,7 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 #         "HOST": host
 #     }
 # }
-<<<<<<< HEAD
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -177,8 +177,6 @@ DATABASES = {
     }
 
 }
-=======
->>>>>>> origin/25.10_DC48K_UAT_FN
 
 # Local DB
 # DATABASES = {

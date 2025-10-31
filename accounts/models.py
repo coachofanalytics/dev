@@ -140,7 +140,6 @@ class Department(models.Model):
     # def get_absolute_url(self):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
-<<<<<<< HEAD
         return self.name  
 # account model
 class Account(models.Model): # make sure this exists
@@ -176,6 +175,4 @@ class AccountTeamMember(models.Model):
         verbose_name_plural = "Account Team Members"
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()} in {self.account.name}"
-=======
-        return self.name
->>>>>>> origin/25.10_DC48K_UAT_FN
+        

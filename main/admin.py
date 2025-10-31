@@ -14,12 +14,8 @@ admin.site.register(SubService)
 admin.site.register(News)
 admin.site.register(Gallery_image)
 admin.site.register(ContactUs)
-<<<<<<< HEAD
 admin.site.register(Donation_organisation)
 admin.site.register(ContactMessage)
-=======
 admin.site.register(Donation_organization)
-
->>>>>>> origin/25.10_DC48K_UAT_FN
-
+admin.site.register(Scholarship)
 

@@ -31,15 +31,15 @@ urlpatterns = [
     path('users/', views.users, name='accounts-users'),
     # path('users/', views.userslistview.as_view(), name='accounts-users'),
     path('processing/', views.userlist, name='processing-users'),
-<<<<<<< HEAD
-    path('user/<int:pk>/update/', UserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='user-update'),
-    path('superuser/<int:pk>/update/', SuperuserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='superuser-update'),
+#<<<<<<< HEAD
+    #path('user/<int:pk>/update/', UserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='user-update'),
+    #path('superuser/<int:pk>/update/', SuperuserUpdateView.as_view(template_name='accounts/admin/user_update_form.html'), name='superuser-update'),
     path('account-list/', views.account_list, name='account_list'),
     path('create-account/', views.create_account, name='create_account'),
-=======
+#=======
     path('user/<int:pk>/update/', user_update_view, name='user-update'),
     path('superuser/<int:pk>/update/', superuser_update_view, name='superuser-update'),
->>>>>>> origin/25.10_DC48K_UAT_FN
+#>>>>>>> origin/25.10_DC48K_UAT_FN
    
     path('thank/',views.thank, name='thank-you'),
 

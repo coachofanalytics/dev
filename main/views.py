@@ -8,18 +8,18 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-<<<<<<< HEAD
+#<<<<<<< HEAD
 from .models import Assets,Description, News, Page, Service, SubService,Team,Donation_organisation, ContactMessage
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from .forms import ContactForm, DonorForm, MessageForm
-=======
+##=======
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from django.views.decorators.csrf import csrf_exempt
 from main.forms import ContactForm
->>>>>>> origin/25.10_DC48K_UAT_FN
+#>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
 
 from django.urls import reverse_lazy
@@ -118,15 +118,15 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-<<<<<<< HEAD
+#<<<<<<< HEAD
     # Define page_instance for the home page or desired page
     page_instance = Page.objects.filter(page_name='Home').first()
     description = Description.objects.filter(page=page_instance)
-=======
+#=======
     # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page = page_instance)
->>>>>>> origin/25.10_DC48K_UAT_FN
+#>>>>>>> origin/25.10_DC48K_UAT_FN
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -315,7 +315,7 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 def donor_list(request):
     donations = Donation_organisation.objects.all()  # Remove is_donor filter
     return render(request, 'main/donor.html', {'donations': donations})
@@ -403,7 +403,7 @@ def add_message(request):
             "form": form,
         }
     return render(request, "main/add_message.html",context)
-=======
+#=======
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
@@ -430,4 +430,4 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
->>>>>>> origin/25.10_DC48K_UAT_FN
+#>>>>>>> origin/25.10_DC48K_UAT_FN

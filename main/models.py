@@ -162,7 +162,7 @@ class ContactUs(models.Model):
         return f"Message from {self.name} ({self.email})"
     
 
-<<<<<<< HEAD
+
 # donation model
 class Donation_organisation(models.Model):
     # DONATION_TYPE_CHOICES = [
@@ -201,7 +201,8 @@ class ContactMessage(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.name} => ({self.message})"
-=======
+
+
 class Donation_organization(models.Model):
     donor_name = models.CharField(max_length=100)
     email = models.EmailField(max_length=254)
@@ -224,4 +225,44 @@ class MedicalResourceInquiry(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.email})"
->>>>>>> origin/25.10_DC48K_UAT_FN
+
+
+# scholarship model
+
+class Scholarship(models.Model):
+    LEVEL_CHOICES =[
+        ('Undergraduate', 'Undergraduate'),
+        ('Masters','Masters'),
+        ('PhD', 'PhD'),
+        ('Vocational', 'Vocational'),
+    ]
+    FIELDS_CHOICES =[
+        ('STEM', 'STEM'),
+        ('Humanities','Humanities'),
+        ('Business', 'Business'),
+        ('Arts', 'Arts'),
+    ]
+    LOCATION_CHOICES =[
+        ('Kenya', 'Kenya'),
+        ('Global','Global'),
+        ('UK', 'UK'),
+        ('USA', 'USA'),
+    ]
+    STATUS_CHOICES =[
+        ('Open','Open'),
+        ('Closing Soon','Closing Soon'),
+        ('Closed', 'Closed'),
+    ]
+    title = models.CharField(max_length=200)
+    provider = models.CharField(max_length=200)
+    level = models.CharField(max_length=200, choices=LEVEL_CHOICES)
+    field = models.CharField(max_length=200, choices= FIELDS_CHOICES)
+    location = models.CharField(max_length=200,choices=LOCATION_CHOICES)
+    amount = models.CharField(max_length= 100)
+    deadline = models.DateField()
+    status = models.CharField(max_length=20, choices= STATUS_CHOICES)
+    class Meta:
+        ordering =['deadline']
+    def __str__(self):
+        return self.title
+    
