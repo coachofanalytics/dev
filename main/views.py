@@ -8,11 +8,12 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+from django.db.models import Q
 #<<<<<<< HEAD
-from .models import Assets,Description, News, Page, Service, SubService,Team,Donation_organisation, ContactMessage
+from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, MessageForm
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
 from accounts.models import CustomerUser
@@ -431,3 +432,34 @@ class DonationDeleteView(DeleteView):
 
 
 #>>>>>>> origin/25.10_DC48K_UAT_FN
+
+# Scholarship views
+
+def scholarship_search(request):
+    scholarships = Scholarship.objects.all()
+    form = ScholarshipSearchForm(request.GET or None)
+    if form.is_valid():
+        data = form.cleaned_data
+        # apply filter
+        if data['search_keyword']:
+            scholarships = scholarships.filter(
+                Q(title__icontains=data['search_keyword']) |
+                Q(provider__icontains=data['search_keyword']) 
+            )
+        if data['filter_level'] and data['filter_level'] != 'All':
+            scholarships = scholarships.filter(level=data['filter_level'])
+
+        if data['filter_field'] and data['filter_field'] != 'All':
+            scholarships = scholarships.filter(field=data['filter_field'])
+
+        if data['filter_location'] and data['filter_location'] != 'All':
+            scholarships = scholarships.filter(location=data['filter_location'])
+
+        if data['filter_status']:
+            scholarships = scholarships.filter(status='Closing soon')
+    context = {
+        'scholarships': scholarships,
+        'form': form,
+        'result_count': scholarships.count(),
+    }
+    return render(request, 'scholarship_app/scholarship_search.html',context)
