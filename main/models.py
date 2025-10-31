@@ -160,7 +160,9 @@ class ContactUs(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
+    
 
+<<<<<<< HEAD
 # donation model
 class Donation_organisation(models.Model):
     # DONATION_TYPE_CHOICES = [
@@ -199,3 +201,27 @@ class ContactMessage(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.name} => ({self.message})"
+=======
+class Donation_organization(models.Model):
+    donor_name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=254)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.donor_name} - {self.amount}"
+
+
+
+
+# Medical Resource Inquiry model at top-level
+class MedicalResourceInquiry(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.email})"
+>>>>>>> origin/25.10_DC48K_UAT_FN

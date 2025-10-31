@@ -28,8 +28,14 @@ class ContactForm(forms.ModelForm):
         super(ContactForm, self).__init__(*args, **kwargs)
         self.fields['user'].required=False
         self.fields['topic'].required=False
-        # self.fields['category'].required=False
-        # self.fields['sub_category'].required=False
+
+
+# Form for editing Donation_organization
+from .models import Donation_organization
+class DonationOrganizationForm(forms.ModelForm):
+    class Meta:
+        model = Donation_organization
+        fields = ['donor_name', 'email', 'amount', 'message']
 
 class DonorForm(forms.ModelForm):
     class Meta:

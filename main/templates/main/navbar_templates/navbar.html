@@ -148,10 +148,12 @@
                 
                         <!-- Healthcare Information -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Healthcare Information</a>
+                            <!-- Direct link to internal healthcare page -->
+                            <a href="/data/healthcare-info/">Healthcare Information</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Healthcare Services</a>
-                                <a href="#">Health Insurance Options</a>
+                                <!-- Anchor links into the healthcare page for quick access -->
+                                <a href="/data/healthcare-info/#healthcare-services">Healthcare Services</a>
+                                <a href="/data/healthcare-info/#health-insurance">Health Insurance Options</a>
                             </div>
                         </div>
                 
@@ -175,7 +177,7 @@
                 
                         <!-- Education and Training -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Education and Training</a>
+                            <a href="#">Education and Training</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Scholarships</a>
                                 <a href="#">Training Sessions</a>
@@ -188,6 +190,7 @@
             <li><a href="https://dc48k.org/membership/" class="navLin">MEMBERSHIP</a></li>
            
             <li><a href="https://dc48k.org/news/" class="navLin">NEWS</a></li>
+            <li><a href="{% url 'accounts:membership_registration' %}" class="navLin">MEMBERSHIP</a></li>
             <li><a href="https://dc48k.org/contact/" class="navLin">CONTACT US</a></li>
             <li class="dropdown">
                 <a href="https://dc48k.org/support/" class="navLin">SUPPORT</a>

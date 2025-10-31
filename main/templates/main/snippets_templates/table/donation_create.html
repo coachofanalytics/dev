@@ -1,0 +1,56 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Donation</title>
+    <style>
+        .form-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 400px;
+            margin: 2rem auto;
+        }
+        .form-container h1 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .form-container button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+        .form-container button:hover {
+            background: #0056b3;
+        }
+        .form-container a {
+            color: #888;
+            text-decoration: none;
+        }
+        .form-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Add Donation</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Add</button>
+            <a href="{% url 'main:donation' %}">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}

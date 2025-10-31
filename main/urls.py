@@ -11,10 +11,12 @@ urlpatterns = [
     path('team/', views.team_list, name='team_view'),
     path('history',views.History, name ='history'),
     path('services/', views.service_list, name='service_list'),
+    path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/', views.news_list, name='news_list'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
+<<<<<<< HEAD
     path('donors/', views.donor_list, name='donor_list'),
     path('add-donor/', views.add_donor, name='add_donor'),
     path('donor/<int:pk>/', views.donor_details, name='donor_details'),
@@ -27,6 +29,17 @@ urlpatterns = [
     path('add-message/', views.add_message, name='add_message'),  # New URL pattern for adding messages
 
 
+=======
+    path('donation/', views.donation_list, name='donation'),
+    path('donation/<int:pk>/', views.DonationDetailView.as_view(), name='donation_detail'),
+    path('donation/add/', views.DonationCreateView.as_view(), name='donation_add'),
+    path('donation/<int:pk>/edit/', views.DonationEditView.as_view(), name='donation_edit'),
+    path('donation/<int:pk>/delete/', views.DonationDeleteView.as_view(), name='donation_delete'),
+    
+  
+    
+    
+>>>>>>> origin/25.10_DC48K_UAT_FN
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),
@@ -38,5 +51,9 @@ urlpatterns = [
     path('403/', views.hendler403, name='403-error'),
     path('404/', views.hendler404, name='404-error'),
     path('500/', views.hendler500, name='500-error'),
+
+    path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
+
+    # Education pages removed — keep navbar buttons but links point to placeholders
 
 ]

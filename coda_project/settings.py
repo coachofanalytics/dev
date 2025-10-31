@@ -115,6 +115,8 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "main.context_processors.images",
                 "main.context_processors.googledriveurl",
+                "main.context_processors.services",
+                "main.context_processors.healthcare_images",
             ],
             # 'libraries': {
             #     'customfilters': 'application.templatetags.customfilters',
@@ -163,6 +165,7 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 #         "HOST": host
 #     }
 # }
+<<<<<<< HEAD
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -174,6 +177,8 @@ DATABASES = {
     }
 
 }
+=======
+>>>>>>> origin/25.10_DC48K_UAT_FN
 
 # Local DB
 # DATABASES = {
@@ -185,12 +190,19 @@ DATABASES = {
 #         "HOST": 'ce0lkuo944ch99.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  
 #     }
 # }
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-#     }
-# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR,"db.sqlite3"),
+    
+    }
+}
+import sys
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'coda_dev'
+    }
 
 
 db_from_env = dj_database_url.config(conn_max_age=600)

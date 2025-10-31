@@ -1,0 +1,186 @@
+{% extends 'main/base_templates/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Include Tailwind CDN and Inter font locally in the page to match the requested UI -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; color: #1f2937; }
+    .text-brand-blue { color: #1e40af; }
+    .bg-brand-blue { background-color: #1e40af; }
+    .text-brand-green { color: #0a926d; }
+    .bg-brand-green { background-color: #0a926d; }
+    .text-brand-red { color: #cc0000; }
+    .bg-brand-red { background-color: #cc0000; }
+    .main-heading { font-weight: 900; }
+    .service-block { margin-bottom: 4rem; padding-top: 2rem; padding-bottom: 2rem; }
+    .service-list li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+    .service-list li::before { content: ''; position: absolute; left: 0; top: 0.5rem; width: 0.5rem; height: 0.5rem; background-color: #1e40af; border-radius: 50%; }
+    .loading-placeholder { min-height: 280px; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-weight: 600; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .animate-pulse-custom { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+    .hero-image-container { overflow: hidden; display:flex; align-items:center; justify-content:center; }
+    .hero-image-container img { width:100%; height:100%; object-fit:cover; }
+</style>
+
+<!-- Main content (hero, sections, and JS-powered scholarship/training app) -->
+<div id="education-app" class="antialiased">
+    <!-- Navigation is provided by base template's navbar include -->
+
+    <main class="mx-auto pb-16">
+        <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
+                <div class="p-8 md:p-12 lg:p-16">
+                    <h1 class="text-5xl main-heading mb-4">EDUCATION & TRAINING</h1>
+                    <h2 class="text-xl font-medium text-gray-200 mb-8">Empower your future with access to scholarships, professional development, and skills training tailored for global success.</h2>
+                    <a href="#" onclick="setView('scholarship'); return false;" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300">FIND YOUR SCHOLARSHIP</a>
+                </div>
+                <div class="w-full h-full hero-image-container">
+                    <img id="image-hero" src="{% static 'main/img/education/education-hero.jpg' %}" alt="Education Hero" class="w-full h-full object-cover loading-placeholder" style="max-height:400px; min-height:400px;">
+                </div>
+            </div>
+        </header>
+
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
+            <h3 class="text-4xl main-heading text-gray-800 mb-4">Invest in Your Skills and Knowledge</h3>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto">Whether you are seeking advanced degrees, vocational training, or resources for your children, we bridge the gap by connecting you to vetted educational opportunities and funding.</p>
+        </section>
+
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div id="scholarships-landing" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div class="lg:order-1">
+                    <img id="image-scholarships" src="{% static 'main/img/education/scholarships.jpg' %}" alt="Scholarships and Financial Aid Image" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
+                <div class="lg:order-2">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Scholarships and Financial Aid</h3>
+                    <p class="text-gray-700 mb-6">We maintain a comprehensive, verified database of scholarships, grants, and financial aid specifically available to diaspora students globally and those studying in Kenya.</p>
+                    <ul class="service-list text-gray-600">
+                        <li>Database of international and Kenyan university scholarships</li>
+                        <li>Guidance on application processes and essay writing for aid</li>
+                        <li>Resources for student loans and financial literacy for students</li>
+                        <li>Assistance with foreign credential recognition and equivalency</li>
+                    </ul>
+                    <div class="mt-6">
+                        <a href="#" onclick="setView('scholarship'); return false;" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">View Scholarship Database</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="training-sessions" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div class="lg:order-1">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Professional Training and Skills</h3>
+                    <p class="text-gray-700 mb-6">Access continuous professional development programs, vocational training, and mentorship to enhance career prospects and facilitate re-entry into the Kenyan job market.</p>
+                    <ul class="service-list text-gray-600">
+                        <li>Exclusive webinars and workshops on digital skills and entrepreneurship</li>
+                        <li>Mentorship programs connecting diaspora professionals</li>
+                        <li>Information on vocational certifications and skill upgrading courses</li>
+                        <li>Career advisory and job placement assistance networks</li>
+                    </ul>
+                    <div class="mt-6">
+                        <a href="#" onclick="setView('training'); return false;" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">Register for Upcoming Courses</a>
+                    </div>
+                </div>
+                <div class="lg:order-2">
+                    <img id="image-training" src="{% static 'main/img/education/training.jpg' %}" alt="Professional Training Image" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
+            </div>
+
+            <div class="bg-brand-blue text-white p-8 md:p-12 rounded-xl shadow-2xl mt-16 text-center">
+                <h3 class="text-4xl font-extrabold mb-3">SEEKING CAREER GUIDANCE?</h3>
+                <p class="text-xl text-gray-200 mb-6">Connect with a Diaspora County 48 career mentor for personalized advice on global career transitions and opportunities back home.</p>
+                <a href="#" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">Request Mentorship Session</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scholarship and Training dynamic sections: they are injected into the page via JS and the same template; we expose an initial_view context variable to control which tab opens first -->
+    <div id="app-view-scholarship" style="display:none;">
+        <!-- The scholarship app markup will be generated/inserted by client JS below -->
+    </div>
+
+    <div id="app-view-training" style="display:none;">
+        <!-- The training app markup will be generated/inserted by client JS below -->
+    </div>
+
+    <!-- Client JS: simplified version from the provided UI. The JS will render mock scholarships and courses into the DOM. -->
+    <script>
+        const initialView = "{{ initial_view|default:'landing' }}";
+
+        function setView(viewName) {
+            document.getElementById('app-view-scholarship').style.display = viewName === 'scholarship' ? 'block' : 'none';
+            document.getElementById('app-view-training').style.display = viewName === 'training' ? 'block' : 'none';
+            // scroll to top to simulate navigation
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Small mock lists and renderers to provide the interactive experience without backend changes
+        const MOCK_SCHOLARSHIPS = [
+            { id:1, title: 'Global STEM Masters Fellowship', provider: 'The Diaspora Foundation', level: 'Masters', field: 'STEM', location: 'Global', deadline: '2025-11-15', amount: '$50,000', status: 'Open' },
+            { id:2, title: 'Kenyan Undergraduate Merit Grant', provider: 'County 48 Education Trust', level: 'Undergraduate', field: 'Humanities', location: 'Kenya', deadline: '2025-09-30', amount: 'KES 500,000', status: 'Closing Soon' }
+        ];
+
+        function renderScholarships() {
+            const container = document.getElementById('app-view-scholarship');
+            container.innerHTML = '';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8';
+            wrapper.innerHTML = `<h2 class="text-3xl font-bold mb-6 text-brand-blue">Scholarship Database</h2>`;
+            MOCK_SCHOLARSHIPS.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-6 rounded-xl shadow-lg mb-4';
+                div.innerHTML = `<h3 class="text-xl font-bold">${s.title}</h3><p class="text-sm text-gray-500">${s.provider}</p><p class="mt-2">Deadline: <strong class="text-brand-red">${s.deadline}</strong></p>`;
+                wrapper.appendChild(div);
+            });
+            container.appendChild(wrapper);
+        }
+
+        const MOCK_COURSES = [
+            { id:101, title: 'Modern Web Development (React & Node)', category: 'Digital Skills', duration: '12 Weeks', format: 'Online Live', enrollment: 'Open', start: '2025-11-01' },
+            { id:102, title: 'Financial Literacy for Diaspora Investors', category: 'Finance & Business', duration: '4 Weeks', format: 'Online Self-Paced', enrollment: 'Closing Soon', start: '2025-10-25' }
+        ];
+
+        function renderCourses() {
+            const container = document.getElementById('app-view-training');
+            container.innerHTML = '';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8';
+            wrapper.innerHTML = `<h2 class="text-3xl font-bold mb-6 text-brand-blue">Available Training Sessions</h2>`;
+            MOCK_COURSES.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-6 rounded-xl shadow-lg mb-4';
+                div.innerHTML = `<h3 class="text-xl font-bold">${c.title}</h3><p class="text-sm text-gray-500">${c.category}</p><p class="mt-2">Starts: <strong class="text-brand-green">${c.start}</strong></p>`;
+                wrapper.appendChild(div);
+            });
+            container.appendChild(wrapper);
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            // Render initial selections
+            if (initialView === 'scholarship') {
+                setView('scholarship');
+                renderScholarships();
+            } else if (initialView === 'training') {
+                setView('training');
+                renderCourses();
+            } else {
+                setView('landing');
+            }
+
+            // Kick off hero image placeholders (keeps UX similar to provided mock)
+            document.getElementById('image-hero').classList.remove('loading-placeholder');
+            const heroStatic = "{% static 'main/img/education/education-hero.jpg' %}";
+            const scholarshipsStatic = "{% static 'main/img/education/scholarships.jpg' %}";
+            const trainingStatic = "{% static 'main/img/education/training.jpg' %}";
+            // If the static images exist, the browser will load them; JS fallback updates src to ensure consistent behavior
+            document.getElementById('image-hero').src = heroStatic;
+            document.getElementById('image-scholarships').src = scholarshipsStatic;
+            document.getElementById('image-training').src = trainingStatic;
+        });
+    </script>
+
+</div>
+
+{% endblock %}

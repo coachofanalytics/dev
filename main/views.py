@@ -8,11 +8,33 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+<<<<<<< HEAD
 from .models import Assets,Description, News, Page, Service, SubService,Team,Donation_organisation, ContactMessage
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from .forms import ContactForm, DonorForm, MessageForm
+=======
+from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
+from accounts.models import CustomerUser
+from .utils import image_view,path_values
+from django.views.decorators.csrf import csrf_exempt
+from main.forms import ContactForm
+>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
+
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
+# Details Donation View
+class DonationDetailView(DetailView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_detail.html'
+# Create Donation View
+class DonationCreateView(CreateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_create.html'
+    success_url = reverse_lazy('main:donation')
 
 User=get_user_model()
 
@@ -52,6 +74,19 @@ def template_errors(request):
     return render(request, 'main/errors/template_error.html', context)
 
 
+
+@csrf_exempt
+def medical_resource_form(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        # Redirect using the named URL so it works regardless of include path
+        return redirect('main:healthcare_info')
+    return render(request, 'main/data/medical_resource_form.html')
+
+
 def general_errors(request):
     # return render(request, "main/errors/noresult.html")
     context={'message':'message'}
@@ -83,9 +118,15 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
+<<<<<<< HEAD
     # Define page_instance for the home page or desired page
     page_instance = Page.objects.filter(page_name='Home').first()
     description = Description.objects.filter(page=page_instance)
+=======
+    # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
+    page_instance, _ = Page.objects.get_or_create(page_name='Home')
+    description = Description.objects.filter(page = page_instance)
+>>>>>>> origin/25.10_DC48K_UAT_FN
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -121,7 +162,8 @@ def layout(request):
     return render(request, "main/home_templates/home.html",context)
 
 def History(request):
-    page_instance = Page.objects.get(page_name='About')
+    # Ensure About page exists to avoid crashes when the DB is empty
+    page_instance, _ = Page.objects.get_or_create(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
             
@@ -182,6 +224,69 @@ def service_list(request):
     return render(request, 'main/services.html', {'services': services})
 
 
+def healthcare_info(request):
+    """
+    Render the Healthcare Information page (per spec this page presents financial services content).
+    """
+    hero = {
+        'title': 'FINANCIAL SERVICES',
+        'subtitle': 'Secure your wealth, invest smart, and manage your cross-border finances with confidence.',
+        'cta_text': 'BOOK A FINANCIAL CONSULTATION',
+        'hero_image': 'main/img/healthcare/doctor.svg',
+    }
+
+    mission = {
+        'heading': 'Empowering Your Global Financial Future',
+        'paragraph': 'International finance, investments, and repatriating funds can be complex. Our platform provides trusted tools and expert guidance to help you manage wealth across borders with confidence and compliance.'
+    }
+
+    sections = [
+        {
+            'number': '1',
+            'title': 'Banking and Investment',
+            'description': 'Access strategic advice on managing assets both locally and in Kenya. Connect with trusted partners for banking, real estate, and portfolio growth opportunities.',
+            'bullets': [
+                'Diaspora-focused mortgage and loan referrals',
+                'Investment advisory for Kenyan stocks, bonds, and real estate',
+                'Guidance on setting up international and Kenyan bank accounts',
+                'Tax consultation and dual residency compliance',
+            ],
+            'cta_text': 'Explore Investment Portfolios',
+            'image': 'main/img/healthcare/patient.svg',
+            'align': 'left',
+        },
+        {
+            'number': '2',
+            'title': 'Remittances and Currency Exchange',
+            'description': 'Ensure your money gets home quickly, safely, and cost-effectively. We compare and vet providers for the best rates and lowest fees.',
+            'bullets': [
+                'Real-time currency exchange comparisons',
+                'Verified low-fee remittance partners',
+                'Guidance on large fund transfers and declarations',
+                'Alerts on economic and regulatory changes affecting transfers',
+            ],
+            'cta_text': 'View Remittance Calculator',
+            'image': 'main/img/healthcare/doctor.svg',
+            'align': 'right',
+        }
+    ]
+
+    contact_cta = {
+        'heading': 'URGENT MEDICAL ADVISORY',
+        'description': "For life-threatening emergencies, always dial your host country's local emergency number first.",
+        'cta_text': 'View Emergency Contacts by Country',
+    }
+
+    context = {
+        'hero': hero,
+        'mission': mission,
+        'sections': sections,
+        'contact_cta': contact_cta,
+    }
+
+    return render(request, 'main/data/healthcare_info.html', context)
+
+
 
 
 
@@ -210,6 +315,7 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+<<<<<<< HEAD
 def donor_list(request):
     donations = Donation_organisation.objects.all()  # Remove is_donor filter
     return render(request, 'main/donor.html', {'donations': donations})
@@ -297,3 +403,31 @@ def add_message(request):
             "form": form,
         }
     return render(request, "main/add_message.html",context)
+=======
+def education_landing(request):
+
+    initial_view = request.GET.get('view','landing')
+    context = {'initial_view': initial_view}
+    return render(request, 'main/education/education.html', context)
+
+
+def donation_list(request):
+    donations = Donation_organization.objects.all().order_by('-created_at')
+    return render(request,'main/snippets_templates/table/donation_list.html',{'donations': donations})
+
+
+# Edit Donation View
+class DonationEditView(UpdateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_edit.html'
+    success_url = reverse_lazy('main:donation')
+
+# Delete Donation View
+class DonationDeleteView(DeleteView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_confirm_delete.html'
+    success_url = reverse_lazy('main:donation')
+
+
+>>>>>>> origin/25.10_DC48K_UAT_FN
