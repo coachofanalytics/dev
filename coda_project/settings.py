@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "communities",
     'tailwind',
     'memberjoin',
+    'schoralship',
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

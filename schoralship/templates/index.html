@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scholarship & Training Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <nav class="bg-blue-700 p-4 text-white flex justify-between">
+    <h1 class="text-xl font-bold">Scholarship Database</h1>
+    <div>
+      <a href="#scholarships" class="px-3">Scholarships</a>
+      <a href="#training" class="px-3">Training</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="text-center py-16 bg-blue-100">
+    <h1 class="text-4xl font-bold text-blue-700">Welcome to the Scholarship & Training Portal</h1>
+    <p class="mt-4 text-gray-600">Find global opportunities easily!</p>
+  </section>
+
+  <!-- Scholarships Section -->
+  <section id="scholarships" class="py-12 container mx-auto px-6">
+    <h2 class="text-2xl font-bold mb-6 text-blue-700">🎓 Scholarships</h2>
+
+    <!-- Filters -->
+    <form method="get" class="flex flex-wrap gap-4 mb-8">
+      <select name="level" class="border p-2 rounded-lg">
+        {% for l in levels %}
+          <option value="{{ l }}" {% if request.GET.level == l %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="location" class="border p-2 rounded-lg">
+        <option value="All">All Locations</option>
+        {% for loc in locations %}
+          <option value="{{ loc }}" {% if request.GET.location == loc %}selected{% endif %}>{{ loc }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="field" class="border p-2 rounded-lg">
+        <option value="All">All Fields</option>
+        {% for f in fields %}
+          <option value="{{ f }}" {% if request.GET.field == f %}selected{% endif %}>{{ f }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Filter</button>
+    </form>
+
+    <!-- Scholarship Cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for s in scholarships %}
+      <div class="bg-white p-6 rounded-xl shadow-md">
+        <h3 class="text-xl font-bold text-blue-700">{{ s.title }}</h3>
+        <p class="text-gray-600">{{ s.provider }}</p>
+        <p class="text-sm text-gray-500">{{ s.level }} | {{ s.field }} | {{ s.location }}</p>
+        <p class="mt-2 text-green-600 font-semibold">Deadline: {{ s.deadline }}</p>
+        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm mt-2 inline-block">{{ s.status }}</span>
+      </div>
+      {% empty %}
+      <p class="text-gray-500">No scholarships found.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Training Section -->
+  <section id="training" class="py-12 bg-white container mx-auto px-6">
+    <h2 class="text-2xl font-bold mb-6 text-blue-700">🧑‍🏫 Training Opportunities</h2>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for c in courses %}
+      <div class="bg-blue-50 p-6 rounded-xl shadow-md">
+        <h3 class="text-xl font-bold text-blue-700">{{ c.title }}</h3>
+        <p class="text-gray-600">{{ c.category }}</p>
+        <p class="text-sm text-gray-500">{{ c.duration }} | {{ c.format }}</p>
+        <p class="mt-2 text-green-600 font-semibold">Start: {{ c.start_date }}</p>
+        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm mt-2 inline-block">{{ c.enrollment }}</span>
+      </div>
+      {% empty %}
+      <p class="text-gray-500">No training available.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-blue-700 text-white text-center py-4 mt-12">
+    &copy; {{ now|date:"Y" }} Scholarship Database. All rights reserved.
+  </footer>
+
+</body>
+</html>
