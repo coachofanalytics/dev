@@ -48,5 +48,7 @@ urlpatterns = [
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
 
     # Education pages removed — keep navbar buttons but links point to placeholders
+    # scholaship url
+    path('scholarship', views.scholarship_search, name='scholarship_search')
 
 ]
