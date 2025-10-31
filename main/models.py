@@ -230,6 +230,7 @@ class MedicalResourceInquiry(models.Model):
 # scholarship model
 
 class Scholarship(models.Model):
+    #start with filter
     LEVEL_CHOICES =[
         ('Undergraduate', 'Undergraduate'),
         ('Masters','Masters'),
