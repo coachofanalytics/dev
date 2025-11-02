@@ -670,3 +670,88 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"Rejected {updated} position(s)")
     reject_selected.short_description = "❌ Reject selected suggestions"
+
+
+@admin.register(OptionPlayRawData)
+class OptionPlayRawDataAdmin(admin.ModelAdmin):
+    """
+    Admin interface for manually uploaded OptionPlay CSV data
+    
+    Fallback when Playwright scraper fails:
+    1. Download CSV from OptionPlay.com
+    2. Upload via "Import CSV" button
+    3. Convert to SuggestedPositions
+    """
+    list_display = [
+        'symbol', 'strategy_type', 'sell_strike', 'buy_strike', 'premium',
+        'expiry', 'days_to_expiry', 'iv_rank', 'is_processed', 'uploaded_by', 'upload_date'
+    ]
+    list_filter = ['strategy_type', 'is_processed', 'upload_date', 'expiry']
+    search_fields = ['symbol', 'earnings_date']
+    readonly_fields = ['upload_date', 'processed_date', 'created_suggestion', 'calculated_dte']
+    ordering = ['-upload_date', 'symbol']
+    
+    fieldsets = (
+        ('Position Details', {
+            'fields': ('symbol', 'strategy_type', 'spread_strategy', 'option_type')
+        }),
+        ('Strikes & Pricing', {
+            'fields': ('stock_price', 'sell_strike', 'buy_strike', 'premium', 'width')
+        }),
+        ('Expiration', {
+            'fields': ('expiry', 'days_to_expiry', 'calculated_dte')
+        }),
+        ('Metrics', {
+            'fields': ('iv_rank', 'prem_width_ratio', 'raw_return', 'annualized_return', 'distance_to_strike'),
+            'classes': ('collapse',)
+        }),
+        ('Earnings', {
+            'fields': ('earnings_date', 'earnings_flag'),
+            'classes': ('collapse',)
+        }),
+        ('Upload Info', {
+            'fields': ('uploaded_by', 'upload_date', 'upload_notes')
+        }),
+        ('Processing Status', {
+            'fields': ('is_processed', 'processed_date', 'created_suggestion', 'processing_error')
+        }),
+        ('Raw Data', {
+            'fields': ('csv_row_data',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['convert_to_suggestions', 'delete_processed']
+    
+    def convert_to_suggestions(self, request, queryset):
+        """Convert selected raw data to SuggestedPositions"""
+        from investing.services.optionplay_converter import OptionPlayConverterService
+        
+        # Only convert unprocessed
+        to_convert = queryset.filter(is_processed=False)
+        
+        if not to_convert.exists():
+            self.message_user(request, "⚠️ No unprocessed data selected", level='warning')
+            return
+        
+        converter = OptionPlayConverterService()
+        suggestions, errors = converter.bulk_convert(to_convert)
+        
+        self.message_user(
+            request,
+            f"✅ Converted {len(suggestions)} positions to SuggestedPosition. Errors: {len(errors)}"
+        )
+        
+        if errors:
+            self.message_user(request, f"⚠️ Errors: {', '.join(errors[:5])}", level='warning')
+    
+    convert_to_suggestions.short_description = "🔄 Convert to SuggestedPositions"
+    
+    def delete_processed(self, request, queryset):
+        """Delete processed raw data (cleanup)"""
+        processed = queryset.filter(is_processed=True)
+        count = processed.count()
+        processed.delete()
+        self.message_user(request, f"🗑️ Deleted {count} processed records")
+    
+    delete_processed.short_description = "🗑️ Delete processed records"

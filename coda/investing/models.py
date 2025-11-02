@@ -3460,5 +3460,207 @@ class SuggestedPosition(TimeStampedModel):
         self.save()
 
 
-# Update OptionsPosition to link to batches
-# Add this field to the existing OptionsPosition model (find the model and add this field)
+# ============================================================================
+# OPTIONPLAY RAW DATA: Manual CSV Upload Fallback
+# ============================================================================
+
+class OptionPlayRawData(TimeStampedModel):
+    """
+    Raw data manually uploaded from OptionPlay CSV exports
+    Serves as fallback when Playwright scraper fails on Heroku
+    
+    Workflow:
+    1. Staff downloads CSV from OptionPlay.com
+    2. Uploads via Django admin
+    3. System converts to SuggestedPosition format
+    4. Regular approval workflow continues
+    
+    Supports 3 CSV formats:
+    - Credit Spreads (Bull Put, Bear Call)
+    - Short Puts (Cash-Secured)
+    - Covered Calls
+    """
+    
+    # Source tracking
+    STRATEGY_TYPE_CHOICES = [
+        ('credit_spread', 'Credit Spread'),
+        ('short_put', 'Short Put'),
+        ('covered_call', 'Covered Call'),
+    ]
+    strategy_type = models.CharField(
+        max_length=20,
+        choices=STRATEGY_TYPE_CHOICES,
+        help_text="Type of position from CSV"
+    )
+    
+    # Core position data
+    symbol = models.CharField(max_length=10, help_text="Stock ticker symbol")
+    
+    # Credit Spread specific fields
+    spread_strategy = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Bearish or Bullish (for credit spreads)"
+    )
+    option_type = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text="Call or Put (for credit spreads)"
+    )
+    stock_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Current stock price"
+    )
+    sell_strike = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Short leg strike price"
+    )
+    buy_strike = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Long leg strike price (null for naked short puts)"
+    )
+    
+    # Common fields
+    expiry = models.DateField(help_text="Option expiration date")
+    days_to_expiry = models.IntegerField(help_text="Days to expiration at upload time")
+    premium = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Premium collected per contract"
+    )
+    
+    # Spread metrics (for credit spreads)
+    width = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Spread width (for spreads only)"
+    )
+    prem_width_ratio = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Premium/Width ratio (%) - indicates edge"
+    )
+    
+    # Volatility and Greeks
+    iv_rank = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Implied Volatility Rank (%)"
+    )
+    
+    # Returns (for short puts/covered calls)
+    raw_return = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Return on capital if held to expiration (%)"
+    )
+    annualized_return = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Annualized return (%)"
+    )
+    distance_to_strike = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="% distance from current price to strike (negative = OTM)"
+    )
+    
+    # Earnings info
+    earnings_date = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Earnings date from CSV"
+    )
+    earnings_flag = models.CharField(
+        max_length=5,
+        blank=True,
+        help_text="Y/N - position includes earnings"
+    )
+    
+    # Upload tracking
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='uploaded_optionplay_data',
+        limit_choices_to={'is_staff': True}
+    )
+    upload_date = models.DateTimeField(auto_now_add=True)
+    upload_notes = models.TextField(blank=True, help_text="Notes about this upload batch")
+    
+    # Processing status
+    is_processed = models.BooleanField(
+        default=False,
+        help_text="Has this been converted to SuggestedPosition?"
+    )
+    processed_date = models.DateTimeField(null=True, blank=True)
+    created_suggestion = models.ForeignKey(
+        'SuggestedPosition',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='source_raw_data'
+    )
+    processing_error = models.TextField(blank=True, help_text="Error message if conversion failed")
+    
+    # Raw CSV data (for reference)
+    csv_row_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Original CSV row as JSON"
+    )
+    
+    class Meta:
+        verbose_name = "OptionPlay Raw Data"
+        verbose_name_plural = "OptionPlay Raw Data Uploads"
+        ordering = ['-upload_date', 'symbol']
+        indexes = [
+            models.Index(fields=['strategy_type', 'is_processed']),
+            models.Index(fields=['symbol', 'expiry']),
+            models.Index(fields=['is_processed', 'upload_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.symbol} {self.get_strategy_type_display()} - {self.expiry}"
+    
+    @property
+    def is_expired(self):
+        """Check if position is past expiration"""
+        return self.expiry < timezone.now().date()
+    
+    @property
+    def calculated_dte(self):
+        """Calculate current DTE"""
+        return (self.expiry - timezone.now().date()).days
+    
+    def convert_to_suggestion(self) -> 'SuggestedPosition':
+        """
+        Convert this raw data to a SuggestedPosition
+        
+        Returns:
+            SuggestedPosition instance
+        """
+        from .services.optionplay_converter import OptionPlayConverterService
+        converter = OptionPlayConverterService()
+        return converter.convert_raw_to_suggestion(self)

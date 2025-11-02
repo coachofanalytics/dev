@@ -20,8 +20,9 @@ from django.conf import settings
 from django.utils import timezone
 from typing import List, Dict, Optional
 
-from ..models import SuggestedPosition
+from ..models import SuggestedPosition, OptionPlayRawData
 from .optionplay_scraper import OptionPlayScraperService  # NEW: Web scraper
+from .optionplay_converter import OptionPlayConverterService  # NEW: CSV converter
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,19 @@ class PositionFetcherService:
         
         except Exception as e:
             logger.error(f"❌ Both APIs failed! OptionPlay and Thinkorswim unavailable: {e}")
+        
+        # Fallback to Database (manually uploaded CSV data)
+        try:
+            logger.info("📊 Trying database (OptionPlayRawData)...")
+            positions = self._fetch_from_database(filters)
+            if positions:
+                logger.info(f"✅ Database returned {len(positions)} positions")
+                suggested_positions = self._save_suggested_positions(positions, source='manual')
+                return suggested_positions
+            else:
+                logger.warning("⚠️  No unprocessed data in database")
+        except Exception as e:
+            logger.error(f"❌ Database fetch failed: {e}")
             
         # Last resort: Return mock data for testing
         logger.info("🎭 Returning mock data for testing...")
@@ -584,7 +598,72 @@ class PositionFetcherService:
         return suggested_positions
     
     # ========================================================================
-    # MOCK DATA (For Testing When APIs Unavailable)
+    # DATABASE FALLBACK (Manually Uploaded CSV Data)
+    # ========================================================================
+    
+    def _fetch_from_database(self, filters: Dict) -> List[Dict]:
+        """
+        Fetch positions from OptionPlayRawData table (manually uploaded CSVs)
+        
+        Fallback when APIs/scraper fail:
+        1. Staff downloads CSV from OptionPlay.com
+        2. Imports via: python manage.py import_optionplay_csv <type> <file>
+        3. System converts to SuggestedPosition format
+        """
+        try:
+            # Get unprocessed raw data (not expired)
+            raw_data_qs = OptionPlayRawData.objects.filter(
+                is_processed=False,
+                expiry__gte=timezone.now().date()
+            ).order_by('-iv_rank', '-premium')  # Best first
+            
+            if not raw_data_qs.exists():
+                logger.warning("📊 No unprocessed data in database")
+                return []
+            
+            # Filter by DTE range
+            dte_min = filters.get('dte_min', 30)
+            dte_max = filters.get('dte_max', 60)
+            filtered = [r for r in raw_data_qs if dte_min <= r.calculated_dte <= dte_max]
+            
+            # Limit
+            max_pos = filters.get('max_positions', 5)
+            filtered = filtered[:max_pos]
+            
+            # Convert to position dict format
+            converter = OptionPlayConverterService()
+            positions = []
+            
+            for raw_data in filtered:
+                try:
+                    if raw_data.strategy_type == 'credit_spread':
+                        pos_data = converter._convert_credit_spread(raw_data)
+                    elif raw_data.strategy_type == 'short_put':
+                        pos_data = converter._convert_short_put(raw_data)
+                    elif raw_data.strategy_type == 'covered_call':
+                        pos_data = converter._convert_covered_call(raw_data)
+                    else:
+                        continue
+                    
+                    positions.append(pos_data)
+                    
+                    # Mark processed
+                    raw_data.is_processed = True
+                    raw_data.processed_date = timezone.now()
+                    raw_data.save()
+                    
+                except Exception as e:
+                    logger.error(f"❌ Convert error {raw_data.symbol}: {e}")
+            
+            logger.info(f"📊 Database: {len(positions)} positions from uploaded CSVs")
+            return positions
+            
+        except Exception as e:
+            logger.error(f"❌ Database fetch failed: {e}")
+            return []
+    
+    # ========================================================================
+    # MOCK DATA (For Testing When All Sources Unavailable)
     # ========================================================================
     
     def _get_mock_positions(self, filters: Dict) -> List[Dict]:
