@@ -5,32 +5,49 @@
     <h2>{{ account.account_number }} - Account Details</h2>
     
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
                 <div class="card-body">
-                    <h6>Balance</h6>
-                    <h3>${{ summary.summary.current_balance|floatformat:2 }}</h3>
+                    <h6>Total Capital</h6>
+                    <h3>${{ account.initial_capital|floatformat:0 }}</h3>
+                    <small>Initial deposit</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6>Deployed</h6>
+                    <h3>${{ account.cash_reserved|floatformat:0 }}</h3>
+                    <small>Capital in use</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Available</h6>
+                    <h3>${{ account.cash_available|floatformat:0 }}</h3>
+                    <small>Ready to deploy</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
                 <div class="card-body">
                     <h6>P&L</h6>
-                    <h3 class="{% if summary.summary.total_profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    <h3 class="{% if summary.summary.total_profit_loss >= 0 %}text-white{% else %}text-warning{% endif %}">
                         ${{ summary.summary.total_profit_loss|floatformat:2 }}
                     </h3>
+                    <small>Total profit/loss</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6>Open Positions</h6>
-                    <h3>{{ summary.positions.open_count }}</h3>
-                </div>
-            </div>
-        </div>
+    </div>
+    
+    <!-- Open Positions Count -->
+    <div class="alert alert-info mb-4">
+        <strong>📊 Active Positions: {{ summary.positions.open_count }}</strong>
     </div>
     
     <div class="card">

@@ -1,12 +1,216 @@
 {% extends "main/base_templates/new_base.html" %}
 {% block title %}{{ title }}{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <h2>{{ position.symbol }} - {{ position.get_strategy_display }}</h2>
-    <p>Account: {{ account.account_number }}</p>
-    <p>Status: {{ position.status }}</p>
-    <p>P&L: ${{ position.unrealized_pnl|floatformat:2 }}</p>
-    <a href="{% url 'investing:managed_account_detail' account.id %}" class="btn btn-primary">Back to Account</a>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>{{ position.symbol }} - {{ position.get_strategy_display }}</h2>
+            <p class="text-muted">
+                Account: <strong>{{ account.account_number }}</strong> | 
+                Status: <span class="badge {% if position.status == 'open' %}bg-success{% elif position.status == 'closed' %}bg-secondary{% else %}bg-warning{% endif %}">
+                    {{ position.get_status_display }}
+                </span>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Position Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Premium Collected</h6>
+                    <h3 class="text-success">${{ position.premium_collected|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Capital Required</h6>
+                    <h3>${{ position.capital_required|floatformat:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">{% if position.status == 'open' %}Unrealized{% else %}Realized{% endif %} P&L</h6>
+                    <h3 class="{% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        ${{ position.unrealized_pnl|floatformat:2 }}
+                    </h3>
+                    {% if is_manager %}
+                    <button class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editPnLModal">
+                        ✏️ Edit P&L
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Expiration</h6>
+                    <h3>{{ position.expiration_date|date:"M d, Y" }}</h3>
+                    <small class="text-muted">{{ position.days_to_expiration }} days</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Position Legs -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Position Legs</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Strike</th>
+                        <th>Contracts</th>
+                        <th>Premium</th>
+                        <th>Delta</th>
+                        <th>Theta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leg in position.position_legs.all %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if leg.action == 'buy' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ leg.get_action_display }}
+                            </span>
+                            {{ leg.get_option_type_display }}
+                        </td>
+                        <td>${{ leg.strike_price }}</td>
+                        <td>{{ leg.contracts }}</td>
+                        <td>${{ leg.premium|floatformat:2 }}</td>
+                        <td>{{ leg.delta|floatformat:2 }}</td>
+                        <td>{{ leg.theta|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Activity Log -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Activity Log</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for act in activity %}
+                        <tr class="{% if act.activity_type == 'pnl_adjusted' %}table-warning{% endif %}">
+                            <td>{{ act.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if act.activity_type == 'pnl_adjusted' %}
+                                    <span class="badge bg-warning">P&L Adjusted</span>
+                                {% else %}
+                                    {{ act.get_activity_type_display }}
+                                {% endif %}
+                            </td>
+                            <td>{{ act.description }}</td>
+                            <td>{{ act.performed_by.get_full_name|default:"System" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No activity recorded</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="mb-3">
+        <a href="{% url 'investing:managed_account_detail' account.id %}" class="btn btn-secondary">
+            ← Back to Account
+        </a>
+        {% if is_manager and position.status == 'open' %}
+        <a href="{% url 'investing:close_managed_position' position.id %}" class="btn btn-danger">
+            Close Position
+        </a>
+        {% endif %}
+    </div>
 </div>
+
+<!-- MODAL: Edit P&L (Staff Only) -->
+{% if is_manager %}
+<div class="modal fade" id="editPnLModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">✏️ Edit Position P&L</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'investing:adjust_position_pnl' position.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Current Values:</strong><br>
+                        Premium Collected: <strong>${{ position.premium_collected|floatformat:2 }}</strong><br>
+                        Exit Premium: <strong>${{ position.exit_premium|default:"0.00"|floatformat:2 }}</strong><br>
+                        Current P&L: <strong class="{% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            ${{ position.unrealized_pnl|floatformat:2 }}
+                        </strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><strong>What to Adjust:</strong></label>
+                        <select name="adjustment_type" class="form-control" required id="adjustmentType">
+                            <option value="">-- Select --</option>
+                            <option value="premium">Premium Collected (Entry)</option>
+                            <option value="exit">Exit Premium (Close)</option>
+                        </select>
+                        <small class="text-muted">Choose which value to modify</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><strong>New Value:</strong></label>
+                        <input type="number" name="new_value" step="0.01" class="form-control" required placeholder="e.g., 150.00">
+                        <small class="text-muted">Enter the corrected premium amount</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Reason for Adjustment:</strong> <span class="text-danger">*</span></label>
+                        <textarea name="reason" class="form-control" rows="3" required 
+                                  placeholder="e.g., Early exit at better price; Rolled position; Adjustment trade; etc."></textarea>
+                        <small class="text-muted">This will be logged in the activity history for audit purposes</small>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Important:</strong> This adjustment will be logged with your name and timestamp. 
+                        Provide a clear reason for compliance and audit trail.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to adjust this P&L? This action will be logged.')">
+                        💾 Save Adjustment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 

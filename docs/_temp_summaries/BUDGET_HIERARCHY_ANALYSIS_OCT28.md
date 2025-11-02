@@ -312,3 +312,4 @@ Add read-only USD display below each item
 
 The good news: Your intuition is correct AND the code already implements it correctly! Just need to fix the display. 🎉
 
+

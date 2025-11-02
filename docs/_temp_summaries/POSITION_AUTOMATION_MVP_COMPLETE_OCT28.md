@@ -244,7 +244,6 @@ python manage.py fetch_positions --source optionplay --symbols SPY,QQQ,AAPL
 - `--dte-min` / `--dte-max` - DTE range (default: 30-60)
 - `--max-positions` - Max results (default: 5)
 - `--symbols` - Comma-separated tickers
-
 ---
 
 ### **6. Django Admin Integration**

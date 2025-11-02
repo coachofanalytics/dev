@@ -2301,15 +2301,16 @@ class TradingRule(TimeStampedModel):
     
     RULE_TYPE_CHOICES = [
         ('position_limit', 'Position Size Limit'),
+        ('position_size_percentage', 'Position Size % of Capital'),  # NEW: Industry standard
         ('risk_limit', 'Risk Limit'),
         ('profit_target', 'Profit Target'),
         ('stop_loss', 'Stop Loss'),
         ('time_based', 'Time-Based Rule'),
-        ('exposure_limit', 'Exposure Limit'),
+        ('exposure_limit', 'Total Exposure Limit'),
         ('custom', 'Custom Rule')
     ]
     rule_type = models.CharField(
-        max_length=20,
+        max_length=30,  # Increased from 20 to accommodate longer type names
         choices=RULE_TYPE_CHOICES
     )
     
@@ -2370,6 +2371,7 @@ class TradingActivity(TimeStampedModel):
         ('position_opened', 'Position Opened'),
         ('position_closed', 'Position Closed'),
         ('position_rolled', 'Position Rolled'),
+        ('pnl_adjusted', 'P&L Manually Adjusted'),  # NEW: For manual P&L edits
         ('alert_generated', 'Alert Generated'),
         ('rule_violated', 'Rule Violated'),
         ('rule_changed', 'Rule Changed'),
@@ -3145,23 +3147,42 @@ class PositionBatch(TimeStampedModel):
         """
         Approve all positions in batch
         Called when client approves entire batch
+        Deducts capital from account balance
         """
-        self.status = 'approved'
-        self.approved_date = timezone.now()
-        self.approval_signature = signature_data
-        self.approval_ip = ip_address
-        self.save()
+        from django.db import transaction
         
-        # Open all positions
-        approved_count = 0
-        for position in self.positions.all():
-            if position.status == 'pending':
-                position.status = 'open'
-                position.approved_at = timezone.now()
-                position.save()
-                approved_count += 1
-        
-        return approved_count
+        with transaction.atomic():
+            self.status = 'approved'
+            self.approved_date = timezone.now()
+            self.approval_signature = signature_data
+            self.approval_ip = ip_address
+            self.save()
+            
+            # Get account
+            account = self.managed_account
+            
+            # Open all positions and deduct balance
+            approved_count = 0
+            total_capital_deployed = Decimal('0.00')
+            
+            for position in self.positions.all():
+                if position.status == 'pending':
+                    position.status = 'open'
+                    position.approved_at = timezone.now()
+                    position.save()
+                    
+                    # Deduct capital from account
+                    account.cash_reserved += position.capital_required
+                    account.cash_available -= position.capital_required
+                    
+                    total_capital_deployed += position.capital_required
+                    approved_count += 1
+            
+            # Save account balance changes
+            if approved_count > 0:
+                account.save(update_fields=['cash_reserved', 'cash_available', 'updated_at'])
+            
+            return approved_count
     
     def reject_all(self, reason="Rejected by client"):
         """Reject all positions in batch"""

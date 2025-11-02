@@ -271,3 +271,4 @@ Certification Fee | KES 37,200   | $ 290.18    | [Edit]
 **Status:** ✅ **AMOUNTS NOW VISIBLE**  
 **Refresh your browser - the KES 67,200 will now be visible in the Uncategorized section!** 🎉
 
+

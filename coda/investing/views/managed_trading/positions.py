@@ -7,6 +7,7 @@ Views for creating, closing, and managing options positions.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from decimal import Decimal
 from datetime import date
@@ -370,8 +371,8 @@ def position_detail(request, position_id):
     service = OptionsMonitoringService()
     evaluation = service.evaluate_exit_criteria(position)
     
-    # Get related activity
-    activity = position.activities.all()[:10]
+    # Get related activity (including P&L adjustments)
+    activity = position.activities.all().order_by('-created_at')[:20]
     
     context = {
         'position': position,
@@ -383,4 +384,91 @@ def position_detail(request, position_id):
     }
     
     return render(request, 'investing/managed/position_detail.html', context)
+
+
+@staff_member_required
+@require_POST
+def adjust_position_pnl(request, position_id):
+    """
+    Manually adjust position P&L (Staff only)
+    
+    Used for:
+    - Early exits at different prices
+    - Manual corrections
+    - Adjusted positions
+    
+    Logs all changes with reason for audit trail
+    """
+    from ...models import TradingActivity
+    from decimal import Decimal
+    
+    position = get_object_or_404(OptionsPosition, id=position_id)
+    account = position.managed_account
+    
+    try:
+        # Get adjustment data
+        adjustment_type = request.POST.get('adjustment_type')  # 'premium' or 'exit'
+        new_value = Decimal(request.POST.get('new_value', '0'))
+        reason = request.POST.get('reason', '').strip()
+        
+        if not reason:
+            messages.error(request, 'Reason for adjustment is required')
+            return redirect('investing:managed_position_detail', position_id=position_id)
+        
+        # Calculate old P&L
+        old_pnl = position.unrealized_pnl if position.status == 'open' else position.realized_pnl
+        
+        # Apply adjustment
+        if adjustment_type == 'premium':
+            old_premium = position.premium_collected
+            position.premium_collected = new_value
+            field_changed = 'Premium Collected'
+            old_val = old_premium
+        elif adjustment_type == 'exit':
+            old_exit = position.exit_premium or Decimal('0')
+            position.exit_premium = new_value
+            field_changed = 'Exit Premium'
+            old_val = old_exit
+        else:
+            messages.error(request, 'Invalid adjustment type')
+            return redirect('investing:managed_position_detail', position_id=position_id)
+        
+        position.save()
+        
+        # Calculate new P&L
+        new_pnl = position.unrealized_pnl if position.status == 'open' else position.realized_pnl
+        
+        # Log the adjustment
+        TradingActivity.objects.create(
+            managed_account=account,
+            position=position,
+            activity_type='pnl_adjusted',
+            description=(
+                f"P&L manually adjusted by {request.user.get_full_name()}. "
+                f"{field_changed}: ${old_val:,.2f} → ${new_value:,.2f}. "
+                f"P&L changed: ${old_pnl:,.2f} → ${new_pnl:,.2f}. "
+                f"Reason: {reason}"
+            ),
+            performed_by=request.user,
+            data_snapshot={
+                'field_changed': field_changed,
+                'old_value': str(old_val),
+                'new_value': str(new_value),
+                'old_pnl': str(old_pnl),
+                'new_pnl': str(new_pnl),
+                'reason': reason,
+                'position_status': position.status
+            }
+        )
+        
+        messages.success(
+            request,
+            f"✅ P&L adjusted successfully. {field_changed} updated from ${old_val:,.2f} to ${new_value:,.2f}. "
+            f"New P&L: ${new_pnl:,.2f}"
+        )
+        
+    except Exception as e:
+        messages.error(request, f'Error adjusting P&L: {str(e)}')
+    
+    return redirect('investing:managed_position_detail', position_id=position_id)
 

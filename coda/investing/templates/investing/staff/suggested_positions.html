@@ -176,6 +176,7 @@
                             <th>Premium</th>
                             <th>Reviewed By</th>
                             <th>Notes</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -188,6 +189,11 @@
                             <td>${{ pos.premium_collected|floatformat:0 }}</td>
                             <td>{{ pos.reviewed_by.get_full_name }}</td>
                             <td>{{ pos.staff_notes|truncatewords:10 }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="addSinglePosition({{ pos.id }})">
+                                    ➕ Add to Account
+                                </button>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -378,10 +384,54 @@ document.querySelectorAll('.batch-checkbox').forEach(cb => {
 
 // Auto-select all approved when opening the Create Batch modal
 const createBatchModalEl = document.getElementById('createBatchModal');
-createBatchModalEl?.addEventListener('show.bs.modal', function () {
-    document.querySelectorAll('.batch-checkbox').forEach(cb => { cb.checked = true; });
-    updateSelectedCount();
+if (createBatchModalEl) {
+    createBatchModalEl.addEventListener('show.bs.modal', function () {
+        console.log('Modal opening, auto-selecting all approved positions...');
+        document.querySelectorAll('.batch-checkbox').forEach(cb => { cb.checked = true; });
+        updateSelectedCount();
+    });
+} else {
+    console.error('createBatchModal element not found!');
+}
+
+// Debug: log modal button click
+document.querySelector('[data-bs-target="#createBatchModal"]')?.addEventListener('click', function() {
+    console.log('Create Batch button clicked');
 });
+
+// Add single position to account (fallback)
+function addSinglePosition(positionId) {
+    const accountId = prompt('Enter target Account ID (e.g., 71):');
+    if (!accountId) return;
+    
+    console.log(`Adding position ${positionId} to account ${accountId}`);
+    
+    // Create a form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "investing:create_batch_from_suggestions" %}';
+    
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+    
+    const idsInput = document.createElement('input');
+    idsInput.type = 'hidden';
+    idsInput.name = 'suggestion_ids';
+    idsInput.value = positionId;
+    form.appendChild(idsInput);
+    
+    const accountInput = document.createElement('input');
+    accountInput.type = 'hidden';
+    accountInput.name = 'account_id';
+    accountInput.value = accountId;
+    form.appendChild(accountInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
 
 // Quick approve position (AJAX)
 function approvePosition(positionId) {

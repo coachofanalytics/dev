@@ -61,6 +61,10 @@ urlpatterns = [
          positions.edit_position, 
          name='edit_managed_position'),
     
+    path('managed/positions/<int:position_id>/adjust-pnl/', 
+         positions.adjust_position_pnl, 
+         name='adjust_position_pnl'),
+    
     # ========================================================================
     # MONITORING & ALERTS (Staff Only)
     # ========================================================================

@@ -273,8 +273,8 @@ def create_batch_from_suggestions(request):
                     'notes': f"Auto-fetched from {suggestion.get_source_display()}. {suggestion.ai_reasoning}"
                 }
                 
-                # Create OptionsPosition using existing service
-                position = trading_service.create_position(account, position_data)
+                # Create OptionsPosition using existing service (don't deduct balance yet)
+                position = trading_service.create_position(account, position_data, deduct_balance=False)
                 
                 # Set position to pending for batch approval
                 position.status = 'pending'

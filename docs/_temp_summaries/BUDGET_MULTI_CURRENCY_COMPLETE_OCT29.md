@@ -587,3 +587,4 @@ GBP:     £ 589.15
 
 🎉 **Your budget system is now world-class with multi-currency support!**
 
+

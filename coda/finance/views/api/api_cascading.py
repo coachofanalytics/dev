@@ -389,8 +389,13 @@ def bulk_apply_strategy(request):
 
         company = Company.objects.get(slug=company_slug)
         cat_qs = BudgetCategory.objects.all()
-        if category_id:
-            cat_qs = cat_qs.filter(id=category_id)
+        # Coerce category_id to integer if provided and valid
+        if category_id is not None:
+            try:
+                cat_qs = cat_qs.filter(id=int(category_id))
+            except (TypeError, ValueError):
+                # If a non-numeric came in (e.g., a name), fall back to name lookup
+                cat_qs = BudgetCategory.objects.filter(name=str(category_id))
 
         from django.utils import timezone
         from datetime import timedelta
@@ -403,41 +408,49 @@ def bulk_apply_strategy(request):
         for category in cat_qs:
             subcats = BudgetSubCategory.objects.filter(category=category)
             for sc in subcats:
-                base_qs = Transaction.objects.filter(subcategory=sc.name)
-                if strategy == 'last_month':
-                    total = sum(t.amount or 0 for t in base_qs.filter(transaction_date__gte=one_month_ago))
-                    monthly = total
-                elif strategy == 'avg_12m':
-                    total = sum(t.amount or 0 for t in base_qs.filter(transaction_date__gte=twelve_months_ago))
-                    monthly = (total / 12) if total else 0
-                else:  # avg_3m default
-                    total = sum(t.amount or 0 for t in base_qs.filter(transaction_date__gte=three_months_ago))
-                    monthly = (total / 3) if total else 0
+                try:
+                    base_qs = Transaction.objects.filter(subcategory=sc.name)
+                    if strategy == 'last_month':
+                        total = sum(t.amount or 0 for t in base_qs.filter(transaction_date__gte=one_month_ago))
+                        monthly = total
+                    elif strategy == 'avg_12m':
+                        total = sum(t.amount or 0 for t in base_qs.filter(transaction_date__gte=twelve_months_ago))
+                        monthly = (total / 12) if total else 0
+                    else:  # avg_3m default
+                        total = sum(t.amount or 0 for t in base_qs.filter(transaction_date__gte=three_months_ago))
+                        monthly = (total / 3) if total else 0
 
-                if monthly and monthly > 0:
-                    budget, _ = Budget.objects.update_or_create(
-                        company=company,
-                        category=category,
-                        subcategory=sc,
-                        item_name=f"{sc.name} - Planning",
-                        defaults={
-                            'unit_price': Decimal(str(monthly)),
-                            'quantity': Decimal('1'),
-                            'cases': 1,
-                            'timeframe': 'monthly',
-                            'status': 'draft',
-                            'is_active': False,
-                            'estimation_method': 'planning_strategy',
-                        }
-                    )
-                    created_or_updated += 1
+                    if monthly and monthly > 0:
+                        # Ensure we're passing proper instances
+                        if not isinstance(category, BudgetCategory):
+                            raise ValueError(f"category is not a BudgetCategory instance: {type(category)} = {category}")
+                        if not isinstance(sc, BudgetSubCategory):
+                            raise ValueError(f"subcategory is not a BudgetSubCategory instance: {type(sc)} = {sc}")
+                        
+                        budget, _ = Budget.objects.update_or_create(
+                            company=company,
+                            category=category,
+                            subcategory=sc,
+                            item_name=f"{sc.name} - Planning",
+                            defaults={
+                                'unit_price': Decimal(str(monthly)),
+                                'quantity': Decimal('1'),
+                                'cases': 1,
+                                'timeframe': 'monthly',
+                                'status': 'draft',
+                                'is_active': False,
+                                'estimation_method': 'planning_strategy',
+                            }
+                        )
+                        created_or_updated += 1
+                except Exception as e:
+                    # Log but don't fail entire bulk operation
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"bulk_apply_strategy error for {category.name if hasattr(category, 'name') else category}/{sc.name if hasattr(sc, 'name') else sc}: {type(e).__name__}: {e}")
+                    continue
 
         return JsonResponse({'success': True, 'items_applied': created_or_updated})
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': f'Unexpected error: {str(e)}'
-        }, status=500)
+        return JsonResponse({'success': False, 'error': f'{type(e).__name__}: {e}'}, status=400)
 
