@@ -24,6 +24,18 @@
     
     <p class="text-muted">Multi-timeframe budget planning and forecasting</p>
     
+    <!-- Quick Strategies -->
+    <div class="alert alert-info d-flex align-items-center justify-content-between">
+        <div>
+            <strong>Apply strategy to all subcategories:</strong>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="applyStrategy('last_month')">Use Last Month</button>
+            <button class="btn btn-sm btn-outline-success" onclick="applyStrategy('avg_3m')">Use 3‑Month Avg</button>
+            <button class="btn btn-sm btn-outline-info" onclick="applyStrategy('avg_12m')">Use 12‑Month Avg</button>
+        </div>
+    </div>
+    
     <!-- Planning Options -->
     <div class="row mb-4">
         <div class="col-md-3">
@@ -104,3 +116,24 @@
 
 
 
+<script>
+async function applyStrategy(strategy) {
+    if (!confirm(`Apply ${strategy.replace('_',' ')} to all subcategories?`)) return;
+    try {
+        const resp = await fetch('{% url "finance:bulk-apply-strategy" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ company_slug: '{{ company.slug }}', strategy })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            alert(`Applied to ${data.items_applied} items.`);
+            location.href='?tab=editing';
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch(e) {
+        console.error(e); alert('Failed to apply strategy');
+    }
+}
+</script>

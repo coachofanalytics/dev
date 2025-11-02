@@ -89,6 +89,19 @@ class BudgetDrillDownView(BaseFinanceView):
             budget.item_name = request.POST.get('item_name', budget.item_name)
             budget.description = request.POST.get('description', budget.description)
             
+            # Optional: update subcategory if provided (allows categorization)
+            subcategory_id = request.POST.get('subcategory')
+            if subcategory_id:
+                try:
+                    new_subcategory = BudgetSubCategory.objects.get(id=int(subcategory_id))
+                    # Ensure the subcategory belongs to the same category
+                    if new_subcategory.category_id == budget.category_id:
+                        budget.subcategory = new_subcategory
+                    else:
+                        messages.error(request, "Selected subcategory does not belong to the current category.")
+                except (BudgetSubCategory.DoesNotExist, ValueError):
+                    messages.error(request, "Invalid subcategory selected.")
+            
             # Update quantity, unit_price, and cases
             budget.quantity = Decimal(request.POST.get('quantity', budget.quantity))
             budget.unit_price = Decimal(request.POST.get('unit_price', budget.unit_price))
@@ -169,6 +182,39 @@ def budget_category_detail(request, company_slug, category_id, company=None):
             total_estimated = 0
             total_actual = sum(budget.actual_spent or 0 for budget in budgets)
             
+            # Suggested monthly amounts from transactions for this subcategory
+            try:
+                from datetime import timedelta
+                today = timezone.now().date()
+                three_months_ago = today - timedelta(days=90)
+                twelve_months_ago = today - timedelta(days=365)
+                one_month_ago = today - timedelta(days=30)
+
+                tx_3m = Transaction.objects.filter(
+                    subcategory=subcategory.name,
+                    transaction_date__gte=three_months_ago
+                )
+                tx_12m = Transaction.objects.filter(
+                    subcategory=subcategory.name,
+                    transaction_date__gte=twelve_months_ago
+                )
+                tx_last_month = Transaction.objects.filter(
+                    subcategory=subcategory.name,
+                    transaction_date__gte=one_month_ago
+                )
+
+                total_3m = sum(t.amount or 0 for t in tx_3m)
+                total_12m = sum(t.amount or 0 for t in tx_12m)
+                total_1m = sum(t.amount or 0 for t in tx_last_month)
+
+                suggested_monthly_3m = (total_3m / 3) if total_3m else 0
+                suggested_monthly_12m = (total_12m / 12) if total_12m else 0
+                suggested_last_month = total_1m
+            except Exception:
+                suggested_monthly_3m = 0
+                suggested_monthly_12m = 0
+                suggested_last_month = 0
+
             for budget in budgets:
                 if budget.estimated_amount is not None:
                     total_estimated += budget.estimated_amount
@@ -183,7 +229,7 @@ def budget_category_detail(request, company_slug, category_id, company=None):
             # Get recent transactions - filter by subcategory name
             # Note: Transaction.subcategory is CharField, not ForeignKey
             recent_transactions = Transaction.objects.filter(
-                subcategory=subcategory
+                subcategory=subcategory.name
             ).select_related('sender', 'category', 'department').order_by('-transaction_date')[:5]
             
             
@@ -210,6 +256,9 @@ def budget_category_detail(request, company_slug, category_id, company=None):
                 'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
                 'recent_transactions': recent_transactions,
                 'budget_count': budgets.count(),
+                'suggested_monthly_3m': suggested_monthly_3m,
+                'suggested_monthly_12m': suggested_monthly_12m,
+                'suggested_last_month': suggested_last_month,
             })
         
         # Check for budgets without subcategory (uncategorized)
@@ -379,18 +428,22 @@ def budget_item_edit(request, company_slug, item_id, company=None):
             **transaction_filter
         ).order_by('-transaction_date')[:10]
         
+        # Load subcategories for this category to allow reassignment
+        subcategories = BudgetSubCategory.objects.filter(category=budget.category).order_by('name')
+        
         context = {
             'company': company,
             'budget': budget,
             'recent_transactions': recent_transactions,
+            'subcategories': subcategories,
         }
         
         return render(request, 'finance/budgets/budget_item_edit.html', context)
     
     except Exception as e:
         view.handle_error(request, e, "Error loading budget item edit")
-        return redirect('finance:budget-category-detail', 
-                       company_slug=company_slug, category_id=budget.category.id)
+        # Avoid referencing 'budget' if it failed to load
+        return redirect('finance:unified-budget-dashboard', company_slug=company_slug)
 
 
 

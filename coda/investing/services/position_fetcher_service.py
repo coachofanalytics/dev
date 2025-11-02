@@ -20,7 +20,9 @@ from django.conf import settings
 from django.utils import timezone
 from typing import List, Dict, Optional
 
-from ..models import SuggestedPosition
+from ..models import SuggestedPosition, OptionPlayRawData
+from .optionplay_scraper import OptionPlayScraperService  # NEW: Web scraper
+from .optionplay_converter import OptionPlayConverterService  # NEW: CSV converter
 
 logger = logging.getLogger(__name__)
 
@@ -86,17 +88,33 @@ class PositionFetcherService:
             logger.info("🔄 Fetching positions from Thinkorswim...")
             positions = self._fetch_from_thinkorswim(filters)
             logger.info(f"✅ Thinkorswim returned {len(positions)} positions")
-            suggested_positions = self._save_suggested_positions(positions, source='thinkorswim')
-            return suggested_positions
+            if positions:
+                suggested_positions = self._save_suggested_positions(positions, source='thinkorswim')
+                return suggested_positions
+            else:
+                logger.warning("⚠️  Thinkorswim returned 0 positions; falling back to MOCK for testing")
         
         except Exception as e:
             logger.error(f"❌ Both APIs failed! OptionPlay and Thinkorswim unavailable: {e}")
+        
+        # Fallback to Database (manually uploaded CSV data)
+        try:
+            logger.info("📊 Trying database (OptionPlayRawData)...")
+            positions = self._fetch_from_database(filters)
+            if positions:
+                logger.info(f"✅ Database returned {len(positions)} positions")
+                suggested_positions = self._save_suggested_positions(positions, source='manual')
+                return suggested_positions
+            else:
+                logger.warning("⚠️  No unprocessed data in database")
+        except Exception as e:
+            logger.error(f"❌ Database fetch failed: {e}")
             
-            # Last resort: Return mock data for testing
-            logger.info("🎭 Returning mock data for testing...")
-            mock_positions = self._get_mock_positions(filters)
-            suggested_positions = self._save_suggested_positions(mock_positions, source='manual')
-            return suggested_positions
+        # Last resort: Return mock data for testing
+        logger.info("🎭 Returning mock data for testing...")
+        mock_positions = self._get_mock_positions(filters)
+        suggested_positions = self._save_suggested_positions(mock_positions, source='manual')
+        return suggested_positions
     
     def _get_default_filters(self) -> Dict:
         """Default filtering criteria for high-probability positions"""
@@ -121,10 +139,60 @@ class PositionFetcherService:
     
     def _fetch_from_optionplay(self, filters: Dict) -> List[Dict]:
         """
-        Fetch positions from OptionPlay API
+        Fetch positions from OptionPlay with intelligent fallback
         
-        API Endpoint: GET /v1/strategies/high-probability
-        Docs: https://api.optionplay.com/docs
+        Fallback Order (user preference):
+        1. ✅ OptionPlay API (primary - if configured)
+        2. ✅ Web Scraper (fallback - if API fails)
+        3. ❌ Raise exception (no mock data at this level)
+        """
+        # Try API first (PRIMARY)
+        if self.optionplay_api_key:
+            try:
+                logger.info("🔌 Attempting OptionPlay API...")
+                positions = self._fetch_from_optionplay_api(filters)
+                if positions:
+                    logger.info(f"✅ OptionPlay API returned {len(positions)} positions")
+                    return positions
+                else:
+                    logger.warning("⚠️  API returned 0 positions, trying scraper...")
+            except Exception as e:
+                logger.warning(f"⚠️  OptionPlay API failed: {e}, trying scraper...")
+        else:
+            logger.info("⚠️  OptionPlay API not configured, trying scraper...")
+        
+        # Fallback to Scraper (SECONDARY)
+        try:
+            logger.info("🕸️  Falling back to OptionPlay web scraper (Playwright)...")
+            scraper = OptionPlayScraperService()
+            
+            if not scraper.is_configured:
+                logger.warning("⚠️  Scraper not configured (OPTIONPLAY_USERNAME, OPTIONPLAY_PASSWORD)")
+                raise Exception("Scraper not configured")
+            
+            # Fetch from OptionPlay website
+            positions = scraper.fetch_all_positions(filters)
+            
+            if positions:
+                logger.info(f"✅ OptionPlay scraper returned {len(positions)} positions")
+                return positions
+            else:
+                logger.warning("⚠️  Scraper returned 0 positions")
+                raise Exception("No positions from scraper")
+        
+        except ImportError as e:
+            logger.error(f"❌ Playwright not installed: {e}")
+            logger.info("💡 Install with: pip install playwright beautifulsoup4 pandas && playwright install")
+            raise
+        
+        except Exception as e:
+            logger.error(f"❌ Both OptionPlay API and Scraper failed: {e}")
+            raise
+    
+    def _fetch_from_optionplay_api(self, filters: Dict) -> List[Dict]:
+        """
+        Fetch from OptionPlay API (fallback method)
+        Currently not available - kept for future use when API goes public
         """
         if not self.optionplay_api_key:
             logger.warning("⚠️  OPTIONPLAY_API_KEY not configured in settings")
@@ -145,7 +213,6 @@ class PositionFetcherService:
             'sort': 'probability_desc'
         }
         
-        # Add symbols if specified
         if 'symbols' in filters and filters['symbols']:
             params['symbols'] = ','.join(filters['symbols'])
         
@@ -154,30 +221,22 @@ class PositionFetcherService:
                 f"{self.optionplay_base_url}/strategies/high-probability",
                 headers=headers,
                 params=params,
-                timeout=30  # 30 seconds timeout
+                timeout=30
             )
             response.raise_for_status()
             
             data = response.json()
             positions = data.get('strategies', [])
             
-            # Normalize OptionPlay response to our format
+            # Normalize API response
             normalized = [self._normalize_optionplay_response(pos) for pos in positions]
-            
-            # Apply additional filters
             filtered = self._apply_filters(normalized, filters)
             
-            logger.info(f"✅ OptionPlay returned {len(filtered)} filtered positions")
+            logger.info(f"✅ OptionPlay API returned {len(filtered)} filtered positions")
             return filtered[:filters['max_positions']]
         
-        except requests.exceptions.Timeout:
-            logger.error("❌ OptionPlay API timeout (>30s)")
-            raise
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"❌ OptionPlay API error: {e.response.status_code} - {e.response.text}")
-            raise
         except Exception as e:
-            logger.error(f"❌ OptionPlay fetch failed: {e}")
+            logger.error(f"❌ OptionPlay API failed: {e}")
             raise
     
     def _normalize_optionplay_response(self, api_response: Dict) -> Dict:
@@ -539,7 +598,72 @@ class PositionFetcherService:
         return suggested_positions
     
     # ========================================================================
-    # MOCK DATA (For Testing When APIs Unavailable)
+    # DATABASE FALLBACK (Manually Uploaded CSV Data)
+    # ========================================================================
+    
+    def _fetch_from_database(self, filters: Dict) -> List[Dict]:
+        """
+        Fetch positions from OptionPlayRawData table (manually uploaded CSVs)
+        
+        Fallback when APIs/scraper fail:
+        1. Staff downloads CSV from OptionPlay.com
+        2. Imports via: python manage.py import_optionplay_csv <type> <file>
+        3. System converts to SuggestedPosition format
+        """
+        try:
+            # Get unprocessed raw data (not expired)
+            raw_data_qs = OptionPlayRawData.objects.filter(
+                is_processed=False,
+                expiry__gte=timezone.now().date()
+            ).order_by('-iv_rank', '-premium')  # Best first
+            
+            if not raw_data_qs.exists():
+                logger.warning("📊 No unprocessed data in database")
+                return []
+            
+            # Filter by DTE range
+            dte_min = filters.get('dte_min', 30)
+            dte_max = filters.get('dte_max', 60)
+            filtered = [r for r in raw_data_qs if dte_min <= r.calculated_dte <= dte_max]
+            
+            # Limit
+            max_pos = filters.get('max_positions', 5)
+            filtered = filtered[:max_pos]
+            
+            # Convert to position dict format
+            converter = OptionPlayConverterService()
+            positions = []
+            
+            for raw_data in filtered:
+                try:
+                    if raw_data.strategy_type == 'credit_spread':
+                        pos_data = converter._convert_credit_spread(raw_data)
+                    elif raw_data.strategy_type == 'short_put':
+                        pos_data = converter._convert_short_put(raw_data)
+                    elif raw_data.strategy_type == 'covered_call':
+                        pos_data = converter._convert_covered_call(raw_data)
+                    else:
+                        continue
+                    
+                    positions.append(pos_data)
+                    
+                    # Mark processed
+                    raw_data.is_processed = True
+                    raw_data.processed_date = timezone.now()
+                    raw_data.save()
+                    
+                except Exception as e:
+                    logger.error(f"❌ Convert error {raw_data.symbol}: {e}")
+            
+            logger.info(f"📊 Database: {len(positions)} positions from uploaded CSVs")
+            return positions
+            
+        except Exception as e:
+            logger.error(f"❌ Database fetch failed: {e}")
+            return []
+    
+    # ========================================================================
+    # MOCK DATA (For Testing When All Sources Unavailable)
     # ========================================================================
     
     def _get_mock_positions(self, filters: Dict) -> List[Dict]:

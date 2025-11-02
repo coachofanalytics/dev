@@ -221,4 +221,222 @@ CODA Investment Team
         # import twilio
         # client = twilio.rest.Client(settings.TWILIO_SID, settings.TWILIO_TOKEN)
         # client.messages.create(to=phone_number, from_=settings.TWILIO_FROM, body=message)
+    
+    # ========================================================================
+    # WHATSAPP INTEGRATION (Phase 3)
+    # ========================================================================
+    
+    def send_whatsapp_message(self, phone_number, template_name, template_params):
+        """
+        Send WhatsApp message using WhatsApp Business API
+        
+        Args:
+            phone_number: Client phone in international format (+1234567890)
+            template_name: Approved WhatsApp template name
+            template_params: Dict of template variables
+        
+        Templates Available:
+        - position_opened: New position notification
+        - position_closed: Position close alert with P&L
+        - batch_approval: New batch requires approval
+        - position_profit: Win notification
+        - position_loss: Loss notification
+        
+        Example:
+            service.send_whatsapp_message(
+                "+1234567890",
+                "position_closed",
+                {"symbol": "AAPL", "pnl": "+$150", "roi": "15%"}
+            )
+        """
+        if not phone_number:
+            logger.warning("WhatsApp: No phone number provided")
+            return False
+        
+        # Check if WhatsApp enabled
+        whatsapp_enabled = getattr(settings, 'WHATSAPP_ENABLED', False)
+        if not whatsapp_enabled:
+            logger.info(f"WhatsApp disabled - would send to {phone_number}: {template_name}")
+            return False
+        
+        try:
+            # Import WhatsApp client (lazy load)
+            from twilio.rest import Client as TwilioClient
+            
+            # Twilio credentials
+            account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', None)
+            auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', None)
+            whatsapp_from = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+            
+            if not account_sid or not auth_token:
+                logger.error("WhatsApp: Twilio credentials not configured")
+                return False
+            
+            # Initialize Twilio client
+            client = TwilioClient(account_sid, auth_token)
+            
+            # Format message from template
+            message_body = self._format_whatsapp_template(template_name, template_params)
+            
+            # Send WhatsApp message
+            message = client.messages.create(
+                from_=whatsapp_from,
+                body=message_body,
+                to=f'whatsapp:{phone_number}'
+            )
+            
+            logger.info(f"✅ WhatsApp sent to {phone_number}: {message.sid}")
+            return True
+            
+        except ImportError:
+            logger.warning("Twilio not installed - install with: pip install twilio")
+            return False
+        except Exception as e:
+            logger.error(f"❌ WhatsApp send failed to {phone_number}: {e}")
+            return False
+    
+    def send_telegram_message(self, chat_id, message, parse_mode='Markdown'):
+        """
+        Send Telegram message using Telegram Bot API
+        
+        Args:
+            chat_id: Telegram chat ID (user or group)
+            message: Message text (supports Markdown)
+            parse_mode: 'Markdown' or 'HTML'
+        
+        Example:
+            service.send_telegram_message(
+                chat_id=123456789,
+                message="*AAPL Closed*\nP&L: +$150 (15%)\n✅ WIN!"
+            )
+        """
+        if not chat_id:
+            logger.warning("Telegram: No chat_id provided")
+            return False
+        
+        telegram_enabled = getattr(settings, 'TELEGRAM_ENABLED', False)
+        if not telegram_enabled:
+            logger.info(f"Telegram disabled - would send to {chat_id}")
+            return False
+        
+        try:
+            import requests
+            
+            bot_token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
+            if not bot_token:
+                logger.error("Telegram: Bot token not configured")
+                return False
+            
+            # Telegram API endpoint
+            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+            
+            payload = {
+                'chat_id': chat_id,
+                'text': message,
+                'parse_mode': parse_mode
+            }
+            
+            response = requests.post(url, json=payload)
+            
+            if response.status_code == 200:
+                logger.info(f"✅ Telegram sent to {chat_id}")
+                return True
+            else:
+                logger.error(f"❌ Telegram failed: {response.text}")
+                return False
+        
+        except Exception as e:
+            logger.error(f"❌ Telegram send error: {e}")
+            return False
+    
+    def _format_whatsapp_template(self, template_name, params):
+        """
+        Format WhatsApp message from template
+        
+        Templates use simple string formatting for now
+        Later: Use WhatsApp approved message templates
+        """
+        templates = {
+            'position_opened': """
+🟢 *NEW POSITION OPENED*
+
+Symbol: {symbol}
+Strategy: {strategy}
+Contracts: {contracts}
+Premium: ${premium}
+Max Profit: ${max_profit}
+DTE: {dte} days
+
+Your position is now active!
+            """,
+            
+            'position_closed': """
+{status_emoji} *POSITION CLOSED*
+
+Symbol: {symbol}
+Strategy: {strategy}
+P&L: {pnl_display}
+ROI: {roi}%
+Days Held: {days_held}
+
+{result_message}
+            """,
+            
+            'position_profit': """
+✅ *WINNER!*
+
+{symbol} closed at +${profit} ({roi}% return)
+
+Premium collected: ${premium}
+Held for: {days_held} days
+Annualized: {annualized_return}%
+
+Great trade! 🎉
+            """,
+            
+            'position_loss': """
+⚠️ *Position Closed*
+
+{symbol}: ${loss} loss ({roi}%)
+
+This position didn't work out, but it's part of the strategy.
+Overall portfolio performance remains strong.
+
+Next positions coming soon!
+            """,
+            
+            'batch_approval': """
+📦 *NEW POSITIONS READY*
+
+{count} positions need your approval!
+
+Total Capital: ${capital}
+Approval Deadline: {deadline}
+
+Click to review:
+{link}
+
+Approve within 24 hours!
+            """,
+            
+            'batch_reminder': """
+⏰ *REMINDER: Batch Expires Soon!*
+
+{count} positions expire in {hours_left} hours
+
+Capital: ${capital}
+Deadline: {deadline}
+
+Please review ASAP:
+{link}
+            """,
+        }
+        
+        template = templates.get(template_name, "Message: {message}")
+        
+        try:
+            return template.format(**params)
+        except KeyError as e:
+            logger.error(f"Template formatting error: Missing parameter {e}")
+            return f"Error formatting message for {template_name}"
 

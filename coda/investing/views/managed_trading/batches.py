@@ -73,44 +73,59 @@ def batch_approval_view(request, batch_id):
         
         elif action == 'review_individually':
             # Client approves some, rejects others
-            approved_count = 0
-            rejected_count = 0
+            from django.db import transaction
             
-            for position in batch.positions.all():
-                position_action = request.POST.get(f'position_{position.id}')
+            with transaction.atomic():
+                approved_count = 0
+                rejected_count = 0
+                account = batch.managed_account
+                total_capital_deployed = Decimal('0.00')
                 
-                if position_action == 'approve':
-                    position.status = 'open'
-                    position.approved_at = timezone.now()
-                    position.approval_method = 'batch'
-                    position.save()
-                    approved_count += 1
+                for position in batch.positions.all():
+                    position_action = request.POST.get(f'position_{position.id}')
+                    
+                    if position_action == 'approve':
+                        position.status = 'open'
+                        position.approved_at = timezone.now()
+                        position.approval_method = 'batch'
+                        position.save()
+                        
+                        # Deduct capital from account
+                        account.cash_reserved += position.capital_required
+                        account.cash_available -= position.capital_required
+                        total_capital_deployed += position.capital_required
+                        
+                        approved_count += 1
+                    
+                    elif position_action == 'reject':
+                        position.status = 'rejected'
+                        position.rejection_reason = request.POST.get(
+                            f'rejection_reason_{position.id}',
+                            'Rejected by client'
+                        )
+                        position.save()
+                        rejected_count += 1
                 
-                elif position_action == 'reject':
-                    position.status = 'rejected'
-                    position.rejection_reason = request.POST.get(
-                        f'rejection_reason_{position.id}',
-                        'Rejected by client'
-                    )
-                    position.save()
-                    rejected_count += 1
-            
-            # Update batch status
-            if approved_count > 0 and rejected_count > 0:
-                batch.status = 'partial'
-            elif approved_count > 0:
-                batch.status = 'approved'
-            elif rejected_count > 0:
-                batch.status = 'rejected'
-            
-            batch.approved_date = timezone.now()
-            batch.approval_signature = signature_data
-            batch.approval_ip = ip_address
-            batch.save()
+                # Save account balance changes
+                if approved_count > 0:
+                    account.save(update_fields=['cash_reserved', 'cash_available', 'updated_at'])
+                
+                # Update batch status
+                if approved_count > 0 and rejected_count > 0:
+                    batch.status = 'partial'
+                elif approved_count > 0:
+                    batch.status = 'approved'
+                elif rejected_count > 0:
+                    batch.status = 'rejected'
+                
+                batch.approved_date = timezone.now()
+                batch.approval_signature = signature_data
+                batch.approval_ip = ip_address
+                batch.save()
             
             messages.success(
                 request,
-                f"Approved {approved_count} positions, Rejected {rejected_count} positions"
+                f"Approved {approved_count} positions, Rejected {rejected_count} positions. ${total_capital_deployed:,.2f} capital deployed."
             )
             return redirect('investing:client_portal')
     

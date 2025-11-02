@@ -1,0 +1,109 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}My Position Batches{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>📦 My Position Batches</h2>
+            <p class="text-muted">View all position batches sent for your approval</p>
+        </div>
+    </div>
+    
+    <!-- Pending Alert -->
+    {% if pending_count > 0 %}
+    <div class="alert alert-warning">
+        <strong>⚠️ You have {{ pending_count }} pending batch(es) awaiting approval!</strong>
+        <br>Click on a batch to review and approve/reject.
+    </div>
+    {% endif %}
+    
+    <!-- Batches Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5>All Batches</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Batch #</th>
+                            <th>Account</th>
+                            <th>Positions</th>
+                            <th>Premium</th>
+                            <th>Capital</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Deadline</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for batch in batches %}
+                        <tr class="{% if batch.status == 'pending' %}table-warning{% endif %}">
+                            <td><strong>{{ batch.batch_number }}</strong></td>
+                            <td>{{ batch.managed_account.account_number }}</td>
+                            <td>{{ batch.total_positions }}</td>
+                            <td class="text-success">${{ batch.total_premium_collected|floatformat:0 }}</td>
+                            <td>${{ batch.total_capital_required|floatformat:0 }}</td>
+                            <td>
+                                {% if batch.status == 'pending' %}
+                                    <span class="badge bg-warning">⏳ Pending</span>
+                                {% elif batch.status == 'approved' %}
+                                    <span class="badge bg-success">✅ Approved</span>
+                                {% elif batch.status == 'rejected' %}
+                                    <span class="badge bg-danger">❌ Rejected</span>
+                                {% elif batch.status == 'partial' %}
+                                    <span class="badge bg-info">🔄 Partial</span>
+                                {% elif batch.status == 'expired' %}
+                                    <span class="badge bg-secondary">⏰ Expired</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ batch.created_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if batch.status == 'pending' %}
+                                    <span class="{% if batch.hours_remaining < 6 %}text-danger{% else %}text-muted{% endif %}">
+                                        {{ batch.hours_remaining }}h left
+                                    </span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if batch.status == 'pending' %}
+                                    <a href="{% url 'investing:batch_approval' batch.id %}" class="btn btn-sm btn-warning">
+                                        Review Now
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'investing:batch_approval' batch.id %}" class="btn btn-sm btn-secondary">
+                                        View Details
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">
+                                No batches found. Your manager will send position batches for your approval.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{% url 'investing:client_portal' %}" class="btn btn-secondary">
+            ← Back to My Accounts
+        </a>
+    </div>
+</div>
+{% endblock %}
+

@@ -1984,6 +1984,26 @@ class ManagedTradingAccount(TimeStampedModel):
         help_text="Last date fees were calculated"
     )
     
+    # Notification Preferences (Phase 3: WhatsApp/Telegram)
+    whatsapp_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable WhatsApp notifications for position updates"
+    )
+    whatsapp_phone = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Client phone number in international format (+1234567890)"
+    )
+    telegram_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable Telegram notifications for position updates"
+    )
+    telegram_chat_id = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Client Telegram chat ID"
+    )
+    
     class Meta:
         verbose_name = "Managed Trading Account"
         verbose_name_plural = "Managed Trading Accounts"
@@ -2301,15 +2321,16 @@ class TradingRule(TimeStampedModel):
     
     RULE_TYPE_CHOICES = [
         ('position_limit', 'Position Size Limit'),
+        ('position_size_percentage', 'Position Size % of Capital'),  # NEW: Industry standard
         ('risk_limit', 'Risk Limit'),
         ('profit_target', 'Profit Target'),
         ('stop_loss', 'Stop Loss'),
         ('time_based', 'Time-Based Rule'),
-        ('exposure_limit', 'Exposure Limit'),
+        ('exposure_limit', 'Total Exposure Limit'),
         ('custom', 'Custom Rule')
     ]
     rule_type = models.CharField(
-        max_length=20,
+        max_length=30,  # Increased from 20 to accommodate longer type names
         choices=RULE_TYPE_CHOICES
     )
     
@@ -2370,6 +2391,7 @@ class TradingActivity(TimeStampedModel):
         ('position_opened', 'Position Opened'),
         ('position_closed', 'Position Closed'),
         ('position_rolled', 'Position Rolled'),
+        ('pnl_adjusted', 'P&L Manually Adjusted'),  # NEW: For manual P&L edits
         ('alert_generated', 'Alert Generated'),
         ('rule_violated', 'Rule Violated'),
         ('rule_changed', 'Rule Changed'),
@@ -3145,23 +3167,42 @@ class PositionBatch(TimeStampedModel):
         """
         Approve all positions in batch
         Called when client approves entire batch
+        Deducts capital from account balance
         """
-        self.status = 'approved'
-        self.approved_date = timezone.now()
-        self.approval_signature = signature_data
-        self.approval_ip = ip_address
-        self.save()
+        from django.db import transaction
         
-        # Open all positions
-        approved_count = 0
-        for position in self.positions.all():
-            if position.status == 'pending':
-                position.status = 'open'
-                position.approved_at = timezone.now()
-                position.save()
-                approved_count += 1
-        
-        return approved_count
+        with transaction.atomic():
+            self.status = 'approved'
+            self.approved_date = timezone.now()
+            self.approval_signature = signature_data
+            self.approval_ip = ip_address
+            self.save()
+            
+            # Get account
+            account = self.managed_account
+            
+            # Open all positions and deduct balance
+            approved_count = 0
+            total_capital_deployed = Decimal('0.00')
+            
+            for position in self.positions.all():
+                if position.status == 'pending':
+                    position.status = 'open'
+                    position.approved_at = timezone.now()
+                    position.save()
+                    
+                    # Deduct capital from account
+                    account.cash_reserved += position.capital_required
+                    account.cash_available -= position.capital_required
+                    
+                    total_capital_deployed += position.capital_required
+                    approved_count += 1
+            
+            # Save account balance changes
+            if approved_count > 0:
+                account.save(update_fields=['cash_reserved', 'cash_available', 'updated_at'])
+            
+            return approved_count
     
     def reject_all(self, reason="Rejected by client"):
         """Reject all positions in batch"""
@@ -3318,11 +3359,53 @@ class SuggestedPosition(TimeStampedModel):
         decimal_places=2,
         null=True,
         blank=True,
-        help_text="AI confidence score (0-100)"
+        help_text="AI confidence score (0-100) - DEPRECATED, use ai_score instead"
     )
     ai_reasoning = models.TextField(
         blank=True,
-        help_text="Why AI recommended this position"
+        help_text="Why AI recommended this position - DEPRECATED, use ai_recommendation instead"
+    )
+    
+    # AI Position Scoring (6-Factor Algorithm) - NEW
+    ai_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="AI position score (0-100) from 6-factor algorithm"
+    )
+    ai_rating = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        choices=[
+            ('EXCELLENT', 'Excellent (95-100)'),
+            ('GOOD', 'Good (85-94)'),
+            ('AVERAGE', 'Average (70-84)'),
+            ('BELOW_AVERAGE', 'Below Average (50-69)'),
+            ('POOR', 'Poor (0-49)'),
+        ],
+        help_text="AI rating based on score"
+    )
+    ai_breakdown = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Detailed breakdown of 6 scoring factors"
+    )
+    ai_recommendation = models.TextField(
+        blank=True,
+        help_text="AI recommendation text (approve/review/reject)"
+    )
+    ai_confidence_level = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        choices=[
+            ('HIGH', 'High Confidence'),
+            ('MEDIUM', 'Medium Confidence'),
+            ('LOW', 'Low Confidence'),
+        ],
+        help_text="Confidence level based on data availability"
     )
     
     # Staff Review
@@ -3439,5 +3522,414 @@ class SuggestedPosition(TimeStampedModel):
         self.save()
 
 
-# Update OptionsPosition to link to batches
-# Add this field to the existing OptionsPosition model (find the model and add this field)
+# ============================================================================
+# OPTIONPLAY RAW DATA: Manual CSV Upload Fallback
+# ============================================================================
+
+class OptionPlayRawData(TimeStampedModel):
+    """
+    Raw data manually uploaded from OptionPlay CSV exports
+    Serves as fallback when Playwright scraper fails on Heroku
+    
+    Workflow:
+    1. Staff downloads CSV from OptionPlay.com
+    2. Uploads via Django admin
+    3. System converts to SuggestedPosition format
+    4. Regular approval workflow continues
+    
+    Supports 3 CSV formats:
+    - Credit Spreads (Bull Put, Bear Call)
+    - Short Puts (Cash-Secured)
+    - Covered Calls
+    """
+    
+    # Source tracking
+    STRATEGY_TYPE_CHOICES = [
+        ('credit_spread', 'Credit Spread'),
+        ('short_put', 'Short Put'),
+        ('covered_call', 'Covered Call'),
+    ]
+    strategy_type = models.CharField(
+        max_length=20,
+        choices=STRATEGY_TYPE_CHOICES,
+        help_text="Type of position from CSV"
+    )
+    
+    # Core position data
+    symbol = models.CharField(max_length=10, help_text="Stock ticker symbol")
+    
+    # Credit Spread specific fields
+    spread_strategy = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Bearish or Bullish (for credit spreads)"
+    )
+    option_type = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text="Call or Put (for credit spreads)"
+    )
+    stock_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Current stock price"
+    )
+    sell_strike = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Short leg strike price"
+    )
+    buy_strike = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Long leg strike price (null for naked short puts)"
+    )
+    
+    # Common fields
+    expiry = models.DateField(help_text="Option expiration date")
+    days_to_expiry = models.IntegerField(help_text="Days to expiration at upload time")
+    premium = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Premium collected per contract"
+    )
+    
+    # Spread metrics (for credit spreads)
+    width = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Spread width (for spreads only)"
+    )
+    prem_width_ratio = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Premium/Width ratio (%) - indicates edge"
+    )
+    
+    # Volatility and Greeks
+    iv_rank = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Implied Volatility Rank (%)"
+    )
+    
+    # Returns (for short puts/covered calls)
+    raw_return = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Return on capital if held to expiration (%)"
+    )
+    annualized_return = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Annualized return (%)"
+    )
+    distance_to_strike = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="% distance from current price to strike (negative = OTM)"
+    )
+    
+    # Earnings info
+    earnings_date = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Earnings date from CSV"
+    )
+    earnings_flag = models.CharField(
+        max_length=5,
+        blank=True,
+        help_text="Y/N - position includes earnings"
+    )
+    
+    # Upload tracking
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='uploaded_optionplay_data',
+        limit_choices_to={'is_staff': True}
+    )
+    upload_date = models.DateTimeField(auto_now_add=True)
+    upload_notes = models.TextField(blank=True, help_text="Notes about this upload batch")
+    
+    # Processing status
+    is_processed = models.BooleanField(
+        default=False,
+        help_text="Has this been converted to SuggestedPosition?"
+    )
+    processed_date = models.DateTimeField(null=True, blank=True)
+    created_suggestion = models.ForeignKey(
+        'SuggestedPosition',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='source_raw_data'
+    )
+    processing_error = models.TextField(blank=True, help_text="Error message if conversion failed")
+    
+    # Raw CSV data (for reference)
+    csv_row_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Original CSV row as JSON"
+    )
+    
+    class Meta:
+        verbose_name = "OptionPlay Raw Data"
+        verbose_name_plural = "OptionPlay Raw Data Uploads"
+        ordering = ['-upload_date', 'symbol']
+        indexes = [
+            models.Index(fields=['strategy_type', 'is_processed']),
+            models.Index(fields=['symbol', 'expiry']),
+            models.Index(fields=['is_processed', 'upload_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.symbol} {self.get_strategy_type_display()} - {self.expiry}"
+    
+    @property
+    def is_expired(self):
+        """Check if position is past expiration"""
+        return self.expiry < timezone.now().date()
+    
+    @property
+    def calculated_dte(self):
+        """Calculate current DTE"""
+        return (self.expiry - timezone.now().date()).days
+    
+    def convert_to_suggestion(self) -> 'SuggestedPosition':
+        """
+        Convert this raw data to a SuggestedPosition
+        
+        Returns:
+            SuggestedPosition instance
+        """
+        from .services.optionplay_converter import OptionPlayConverterService
+        converter = OptionPlayConverterService()
+        return converter.convert_raw_to_suggestion(self)
+
+
+# ============================================================================
+# AI POSITION SCORING: MACHINE LEARNING FOR TRADE SELECTION
+# ============================================================================
+
+class OptionsPositionHistory(TimeStampedModel):
+    """
+    Historical outcomes of closed positions - enables ML-powered scoring
+    
+    Purpose:
+    - Track every position outcome (win/loss, ROI, duration)
+    - Learn which setups work best
+    - Train AI scoring model
+    - Improve future position selection
+    
+    Data Collection:
+    - Auto-populated when position closes (via signal)
+    - Captures entry conditions for ML features
+    - AI analyzes why position succeeded/failed
+    
+    ML Features:
+    - Symbol historical win rate
+    - Strategy effectiveness
+    - IV rank patterns
+    - Market condition correlation
+    - Earnings impact
+    
+    Based on: InvestmentAnalytics model (proven pattern)
+    """
+    
+    # Link to original position
+    position = models.OneToOneField(
+        OptionsPosition,
+        on_delete=models.CASCADE,
+        related_name='outcome_history',
+        help_text="Original position that was closed"
+    )
+    
+    # Outcome Metrics
+    was_profitable = models.BooleanField(
+        help_text="True if position made money"
+    )
+    actual_return_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Actual profit/loss in dollars"
+    )
+    actual_return_percentage = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="ROI as percentage of capital required"
+    )
+    days_held = models.IntegerField(
+        help_text="Number of days position was open"
+    )
+    annualized_return = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="Return annualized (ROI * 365 / days_held)"
+    )
+    
+    # Exit Details
+    exit_reason = models.CharField(
+        max_length=50,
+        choices=[
+            ('profit_target', 'Hit Profit Target'),
+            ('stop_loss', 'Hit Stop Loss'),
+            ('expiration', 'Held to Expiration'),
+            ('early_close', 'Early Close (Manual)'),
+            ('rolled', 'Rolled to New Position'),
+            ('market_conditions', 'Market Conditions Changed'),
+            ('other', 'Other Reason')
+        ],
+        default='expiration'
+    )
+    exit_notes = models.TextField(blank=True, help_text="Why position was closed")
+    
+    # Entry Conditions (ML Features - snapshot at entry time)
+    entry_iv_rank = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="IV Rank when position opened (0-100)"
+    )
+    entry_market_trend = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        choices=[
+            ('strong_bullish', 'Strong Bullish'),
+            ('bullish', 'Bullish'),
+            ('neutral', 'Neutral'),
+            ('bearish', 'Bearish'),
+            ('strong_bearish', 'Strong Bearish')
+        ],
+        help_text="Market trend at entry"
+    )
+    entry_vix = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="VIX level at entry"
+    )
+    entry_stock_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Stock price when position opened"
+    )
+    days_to_earnings = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Days until next earnings when opened"
+    )
+    
+    # Exit Conditions (for analysis)
+    exit_stock_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Stock price when closed"
+    )
+    max_profit_captured = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="% of max profit captured (50% = closed at 50% target)"
+    )
+    
+    # AI Analysis
+    ai_post_analysis = models.TextField(
+        blank=True,
+        help_text="AI-generated analysis of why position succeeded/failed"
+    )
+    ai_confidence_at_entry = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="AI confidence score when position was opened"
+    )
+    
+    # Performance Categorization
+    performance_category = models.CharField(
+        max_length=20,
+        choices=[
+            ('excellent', 'Excellent (>30% ROI)'),
+            ('good', 'Good (15-30% ROI)'),
+            ('average', 'Average (5-15% ROI)'),
+            ('poor', 'Poor (0-5% ROI)'),
+            ('loss', 'Loss (<0% ROI)')
+        ],
+        blank=True,
+        help_text="Auto-categorized performance"
+    )
+    
+    class Meta:
+        verbose_name = "Options Position History"
+        verbose_name_plural = "Options Position Histories"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['was_profitable', 'actual_return_percentage']),
+            models.Index(fields=['entry_market_trend', 'was_profitable']),
+            models.Index(fields=['performance_category']),
+            models.Index(fields=['exit_reason']),
+        ]
+    
+    def __str__(self):
+        profit_loss = "WIN" if self.was_profitable else "LOSS"
+        return f"{self.position.symbol} {self.position.strategy} - {profit_loss} ({self.actual_return_percentage}%)"
+    
+    @property
+    def risk_reward_realized(self):
+        """Actual risk/reward that was realized"""
+        if self.position.max_loss and self.position.max_loss > 0:
+            return abs(self.actual_return_amount / self.position.max_loss)
+        return Decimal('0')
+    
+    @property
+    def holding_efficiency(self):
+        """How efficiently was the position held? (annualized return / days held)"""
+        if self.days_held > 0:
+            return self.annualized_return / Decimal(str(self.days_held))
+        return Decimal('0')
+    
+    def save(self, *args, **kwargs):
+        """Auto-categorize performance on save"""
+        if self.actual_return_percentage:
+            roi = self.actual_return_percentage
+            if roi > 30:
+                self.performance_category = 'excellent'
+            elif roi > 15:
+                self.performance_category = 'good'
+            elif roi > 5:
+                self.performance_category = 'average'
+            elif roi > 0:
+                self.performance_category = 'poor'
+            else:
+                self.performance_category = 'loss'
+        
+        super().save(*args, **kwargs)

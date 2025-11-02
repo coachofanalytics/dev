@@ -1,0 +1,128 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Staff - All Position Batches{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>📦 All Position Batches (Staff View)</h2>
+            <p class="text-muted">Monitor all client batch approvals</p>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6>Pending Batches</h6>
+                    <h3>{{ pending_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6>Expiring Soon (< 6 hours)</h6>
+                    <h3>{{ expiring_soon }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>Total Batches (Last 50)</h6>
+                    <h3>{{ batches.count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Batches Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Recent Batches</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Batch #</th>
+                            <th>Client</th>
+                            <th>Account</th>
+                            <th>Positions</th>
+                            <th>Premium</th>
+                            <th>Capital</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Time Left</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for batch in batches %}
+                        <tr class="{% if batch.status == 'pending' and batch.hours_remaining < 6 %}table-danger{% elif batch.status == 'pending' %}table-warning{% endif %}">
+                            <td><strong>{{ batch.batch_number }}</strong></td>
+                            <td>{{ batch.managed_account.client.get_full_name }}</td>
+                            <td>{{ batch.managed_account.account_number }}</td>
+                            <td>{{ batch.total_positions }}</td>
+                            <td>${{ batch.total_premium_collected|floatformat:0 }}</td>
+                            <td>${{ batch.total_capital_required|floatformat:0 }}</td>
+                            <td>
+                                {% if batch.status == 'pending' %}
+                                    <span class="badge bg-warning">⏳ Pending</span>
+                                {% elif batch.status == 'approved' %}
+                                    <span class="badge bg-success">✅ Approved</span>
+                                {% elif batch.status == 'rejected' %}
+                                    <span class="badge bg-danger">❌ Rejected</span>
+                                {% elif batch.status == 'partial' %}
+                                    <span class="badge bg-info">🔄 Partial</span>
+                                {% elif batch.status == 'expired' %}
+                                    <span class="badge bg-secondary">⏰ Expired</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ batch.created_date|date:"M d H:i" }}</td>
+                            <td>
+                                {% if batch.status == 'pending' %}
+                                    <span class="{% if batch.hours_remaining < 6 %}text-danger fw-bold{% elif batch.hours_remaining < 12 %}text-warning{% else %}text-muted{% endif %}">
+                                        {{ batch.hours_remaining }}h
+                                    </span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'investing:batch_approval' batch.id %}" class="btn btn-sm btn-info">
+                                    View
+                                </a>
+                                <a href="{% url 'investing:managed_account_detail' batch.managed_account.id %}" class="btn btn-sm btn-secondary">
+                                    Account
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">
+                                No batches found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{% url 'investing:investment_dashboard' %}" class="btn btn-secondary">
+            ← Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+

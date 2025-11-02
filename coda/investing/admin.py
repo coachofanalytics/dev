@@ -127,6 +127,13 @@ class ManagedTradingAccountAdmin(admin.ModelAdmin):
         ('Trading Settings', {
             'fields': ('trading_enabled', 'auto_trading_enabled', 'activation_date', 'closure_date')
         }),
+        ('Notification Preferences (WhatsApp/Telegram)', {
+            'fields': (
+                'whatsapp_enabled', 'whatsapp_phone',
+                'telegram_enabled', 'telegram_chat_id'
+            ),
+            'description': 'Enable real-time alerts for position updates via WhatsApp and Telegram'
+        }),
         ('Performance Tracking', {
             'fields': (
                 'total_trades', 'winning_trades', 'losing_trades',
@@ -586,6 +593,7 @@ class PositionBatchAdmin(admin.ModelAdmin):
 class SuggestedPositionAdmin(admin.ModelAdmin):
     list_display = [
         'symbol',
+        'ai_score_display',  # NEW: Show AI score prominently
         'strategy',
         'source',
         'probability_of_profit',
@@ -595,14 +603,15 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
         'reviewed_by',
         'fetched_at'
     ]
-    list_filter = ['review_status', 'source', 'strategy', 'fetched_at']
-    search_fields = ['symbol', 'ai_reasoning', 'staff_notes']
+    list_filter = ['review_status', 'ai_rating', 'source', 'strategy', 'fetched_at']  # Added ai_rating filter
+    search_fields = ['symbol', 'ai_reasoning', 'ai_recommendation', 'staff_notes']
     readonly_fields = [
         'fetched_at', 'reviewed_at', 'created_at', 'updated_at',
-        'risk_reward_ratio', 'meets_criteria'
+        'risk_reward_ratio', 'meets_criteria', 
+        'ai_score', 'ai_rating', 'ai_breakdown', 'ai_recommendation', 'ai_confidence_level'  # NEW: AI fields readonly
     ]
     list_editable = []
-    ordering = ['-probability_of_profit', '-fetched_at']
+    ordering = ['-ai_score', '-probability_of_profit', '-fetched_at']  # Sort by AI score first!
     
     fieldsets = (
         ('Position Details', {
@@ -626,7 +635,14 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
             'fields': ('position_delta', 'position_theta', 'position_gamma', 'position_vega'),
             'classes': ('collapse',)
         }),
-        ('AI Analysis', {
+        ('AI Position Scoring (6-Factor Algorithm)', {
+            'fields': (
+                'ai_score', 'ai_rating', 'ai_confidence_level',
+                'ai_recommendation', 'ai_breakdown'
+            ),
+            'description': 'AI scores 0-100 using historical win rate, IV rank, greeks, risk/reward, earnings, liquidity'
+        }),
+        ('AI Analysis (Legacy)', {
             'fields': ('ai_confidence', 'ai_reasoning'),
             'classes': ('collapse',)
         }),
@@ -670,3 +686,191 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"Rejected {updated} position(s)")
     reject_selected.short_description = "❌ Reject selected suggestions"
+    
+    def ai_score_display(self, obj):
+        """Display AI score with stars and color coding"""
+        if not obj.ai_score:
+            return "N/A"
+        
+        score = obj.ai_score
+        stars = ""
+        if score >= 95:
+            stars = "⭐⭐⭐⭐⭐"
+            color = "#28a745"  # Green
+        elif score >= 85:
+            stars = "⭐⭐⭐⭐"
+            color = "#17a2b8"  # Blue
+        elif score >= 70:
+            stars = "⭐⭐⭐"
+            color = "#ffc107"  # Yellow
+        elif score >= 50:
+            stars = "⭐⭐"
+            color = "#fd7e14"  # Orange
+        else:
+            stars = "⭐"
+            color = "#dc3545"  # Red
+        
+        from django.utils.html import format_html
+        return format_html(
+            '<strong style="color: {}; font-size: 1.1em;">{}</strong><br><span>{}</span>',
+            color,
+            f"{score:.0f}/100",
+            stars
+        )
+    
+    ai_score_display.short_description = "🤖 AI Score"
+    ai_score_display.admin_order_field = 'ai_score'
+
+
+@admin.register(OptionPlayRawData)
+class OptionPlayRawDataAdmin(admin.ModelAdmin):
+    """
+    Admin interface for manually uploaded OptionPlay CSV data
+    
+    Fallback when Playwright scraper fails:
+    1. Download CSV from OptionPlay.com
+    2. Upload via "Import CSV" button
+    3. Convert to SuggestedPositions
+    """
+    list_display = [
+        'symbol', 'strategy_type', 'sell_strike', 'buy_strike', 'premium',
+        'expiry', 'days_to_expiry', 'iv_rank', 'is_processed', 'uploaded_by', 'upload_date'
+    ]
+    list_filter = ['strategy_type', 'is_processed', 'upload_date', 'expiry']
+    search_fields = ['symbol', 'earnings_date']
+    readonly_fields = ['upload_date', 'processed_date', 'created_suggestion', 'calculated_dte']
+    ordering = ['-upload_date', 'symbol']
+    
+    fieldsets = (
+        ('Position Details', {
+            'fields': ('symbol', 'strategy_type', 'spread_strategy', 'option_type')
+        }),
+        ('Strikes & Pricing', {
+            'fields': ('stock_price', 'sell_strike', 'buy_strike', 'premium', 'width')
+        }),
+        ('Expiration', {
+            'fields': ('expiry', 'days_to_expiry', 'calculated_dte')
+        }),
+        ('Metrics', {
+            'fields': ('iv_rank', 'prem_width_ratio', 'raw_return', 'annualized_return', 'distance_to_strike'),
+            'classes': ('collapse',)
+        }),
+        ('Earnings', {
+            'fields': ('earnings_date', 'earnings_flag'),
+            'classes': ('collapse',)
+        }),
+        ('Upload Info', {
+            'fields': ('uploaded_by', 'upload_date', 'upload_notes')
+        }),
+        ('Processing Status', {
+            'fields': ('is_processed', 'processed_date', 'created_suggestion', 'processing_error')
+        }),
+        ('Raw Data', {
+            'fields': ('csv_row_data',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['convert_to_suggestions', 'delete_processed']
+    
+    def convert_to_suggestions(self, request, queryset):
+        """Convert selected raw data to SuggestedPositions"""
+        from investing.services.optionplay_converter import OptionPlayConverterService
+        
+        # Only convert unprocessed
+        to_convert = queryset.filter(is_processed=False)
+        
+        if not to_convert.exists():
+            self.message_user(request, "⚠️ No unprocessed data selected", level='warning')
+            return
+        
+        converter = OptionPlayConverterService()
+        suggestions, errors = converter.bulk_convert(to_convert)
+        
+        self.message_user(
+            request,
+            f"✅ Converted {len(suggestions)} positions to SuggestedPosition. Errors: {len(errors)}"
+        )
+        
+        if errors:
+            self.message_user(request, f"⚠️ Errors: {', '.join(errors[:5])}", level='warning')
+    
+    convert_to_suggestions.short_description = "🔄 Convert to SuggestedPositions"
+    
+    def delete_processed(self, request, queryset):
+        """Delete processed raw data (cleanup)"""
+        processed = queryset.filter(is_processed=True)
+        count = processed.count()
+        processed.delete()
+        self.message_user(request, f"🗑️ Deleted {count} processed records")
+    
+    delete_processed.short_description = "🗑️ Delete processed records"
+
+
+@admin.register(OptionsPositionHistory)
+class OptionsPositionHistoryAdmin(admin.ModelAdmin):
+    """
+    Admin interface for historical position outcomes
+    
+    Purpose:
+    - Review past trades (wins/losses)
+    - Analyze ML features
+    - Train AI scoring model
+    """
+    list_display = [
+        'position_symbol', 'position_strategy', 'was_profitable', 
+        'actual_return_percentage', 'annualized_return', 'days_held', 
+        'performance_category', 'created_at'
+    ]
+    list_filter = [
+        'was_profitable', 'performance_category', 'exit_reason', 
+        'entry_market_trend', 'created_at'
+    ]
+    search_fields = [
+        'position__symbol', 'position__account__user__username', 
+        'exit_notes', 'ai_post_analysis'
+    ]
+    readonly_fields = [
+        'created_at', 'updated_at', 'risk_reward_realized', 'holding_efficiency'
+    ]
+    
+    fieldsets = (
+        ('Position Link', {
+            'fields': ('position',)
+        }),
+        ('Outcome', {
+            'fields': (
+                'was_profitable', 'actual_return_amount', 
+                'actual_return_percentage', 'annualized_return', 
+                'days_held', 'performance_category'
+            )
+        }),
+        ('Exit Details', {
+            'fields': ('exit_reason', 'exit_notes', 'exit_stock_price', 'max_profit_captured')
+        }),
+        ('Entry Conditions (ML Features)', {
+            'fields': (
+                'entry_iv_rank', 'entry_market_trend', 'entry_vix', 
+                'entry_stock_price', 'days_to_earnings'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('AI Analysis', {
+            'fields': ('ai_confidence_at_entry', 'ai_post_analysis'),
+            'classes': ('collapse',)
+        }),
+        ('Calculated Metrics', {
+            'fields': ('risk_reward_realized', 'holding_efficiency', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def position_symbol(self, obj):
+        return obj.position.symbol
+    position_symbol.short_description = 'Symbol'
+    position_symbol.admin_order_field = 'position__symbol'
+    
+    def position_strategy(self, obj):
+        return obj.position.strategy
+    position_strategy.short_description = 'Strategy'
+    position_strategy.admin_order_field = 'position__strategy'

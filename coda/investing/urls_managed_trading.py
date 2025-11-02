@@ -61,6 +61,10 @@ urlpatterns = [
          positions.edit_position, 
          name='edit_managed_position'),
     
+    path('managed/positions/<int:position_id>/adjust-pnl/', 
+         positions.adjust_position_pnl, 
+         name='adjust_position_pnl'),
+    
     # ========================================================================
     # MONITORING & ALERTS (Staff Only)
     # ========================================================================
@@ -174,6 +178,11 @@ urlpatterns = [
     path('managed/staff/suggestions/fetch-now/', 
          position_suggestions.fetch_positions_now, 
          name='fetch_positions_now'),
+
+    # Staff: Quick fetch via GET (fallback)
+    path('managed/staff/suggestions/fetch-quick/', 
+         position_suggestions.fetch_positions_quick, 
+         name='fetch_positions_quick'),
     
     # Staff: Create batch from approved suggestions
     path('managed/staff/suggestions/create-batch/', 

@@ -393,30 +393,49 @@ class Command(BaseCommand):
             try:
                 category = BudgetCategory.objects.get(id=cat_id)
                 
-                # Step 1: Get or create Budget for this category
-                budget, budget_created = Budget.objects.get_or_create(
-                    company=company,
-                    category=category,
-                    item_name=f"{proj['name']} - 2026 Projection",
-                    status='draft',
-                    defaults={
-                        'department': main_department,
-                        'budget_lead': default_user,
-                        'description': f"Auto-generated from {int(proj['historical_count'])} transactions. Monthly avg: ${proj['historical_monthly_avg']:,.2f}",
-                        'quantity': 1,
-                        'unit_price': proj['projected_monthly'],
-                        'cases': projection_months,  # Represents months
-                        'is_active': False,  # Don't include in current calculations
-                        'estimation_method': 'trend_analysis',
-                        'estimated_amount': proj['total_projection'],
-                        'estimation_confidence': 85.0,
-                        'estimation_source': 'Transaction history analysis',
-                        'start_date': datetime(2026, 1, 1),
-                        'end_date': datetime(2026, 12, 31),
-                        'budget_type': 'general',
-                        'timeframe': 'yearly'
-                    }
-                )
+                # Split by subcategory using historical transactions for this category (last 12 months)
+                from datetime import date
+                end_date = timezone.now().date()
+                start_date = end_date - timedelta(days=365)
+                tx = Transaction.objects.filter(category=category, transaction_date__gte=start_date, transaction_date__lte=end_date)
+                subcats = tx.values('subcategory').annotate(total=Sum('amount'))
+                # If we have no subcategory signals, fall back to a single category-level item
+                if not subcats:
+                    subcats = [{'subcategory': None, 'total': proj['projected_monthly'] * 12}]
+
+                for sc in subcats:
+                    label = sc['subcategory'] or 'General'
+                    monthly = (sc['total'] or Decimal('0')) / Decimal('12')
+                    # Apply same growth factor used in projections
+                    monthly = monthly * proj['growth_factor']
+                    # Map label to BudgetSubCategory if available
+                    subcategory = BudgetSubCategory.objects.filter(category=category, name__iexact=label).first()
+
+                    item_name = f"{label} - 2026 Projection"
+                    budget, budget_created = Budget.objects.get_or_create(
+                        company=company,
+                        category=category,
+                        subcategory=subcategory,
+                        item_name=item_name,
+                        status='draft',
+                        defaults={
+                            'department': main_department,
+                            'budget_lead': default_user,
+                            'description': f"Auto-generated from transactions. Monthly avg (adj): ${monthly:,.2f}",
+                            'quantity': 1,
+                            'unit_price': monthly,
+                            'cases': projection_months,
+                            'is_active': False,
+                            'estimation_method': 'trend_analysis',
+                            'estimated_amount': monthly * projection_months,
+                            'estimation_confidence': 85.0,
+                            'estimation_source': 'Transaction history analysis',
+                            'start_date': datetime(2026, 1, 1),
+                            'end_date': datetime(2026, 12, 31),
+                            'budget_type': 'general',
+                            'timeframe': 'yearly'
+                        }
+                    )
                 
                 # Step 2: Create BudgetEstimateProjection linked to Budget
                 projection_obj, proj_created = BudgetEstimateProjection.objects.update_or_create(

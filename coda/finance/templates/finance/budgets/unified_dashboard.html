@@ -82,55 +82,53 @@
     <div class="row">
         <div class="col-12">
             <ul class="nav nav-tabs mb-4" role="tablist">
-                <!-- Main Tabs (Left) -->
+                <!-- Flow-first Tabs (left-to-right): Projections → Planning → Edit → Approvals → Requests → Overview → Analytics → Estimation -->
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}" 
-                       href="?tab=overview{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i> Overview
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'approvals' %}active{% endif %}" 
-                       href="?tab=approvals{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-check-circle"></i> Approvals
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'requests' %}active{% endif %}" 
-                       href="?tab=requests{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-file-invoice-dollar"></i> Requests
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'projections' %}active{% endif %}" 
+                    <a class="nav-link {% if active_tab == 'projections' %}active{% endif %}"
                        href="?tab=projections{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
                         <i class="fas fa-chart-line"></i> Projections
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}" 
-                       href="?tab=analytics{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-chart-bar"></i> Analytics
-                    </a>
-                </li>
-                
-                <!-- Secondary Tabs (Right) -->
-                <li class="nav-item ms-auto">
-                    <a class="nav-link {% if active_tab == 'estimation' %}active{% endif %}" 
-                       href="?tab=estimation{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
-                        <i class="fas fa-robot"></i> Estimation
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'planning' %}active{% endif %}" 
+                    <a class="nav-link {% if active_tab == 'planning' %}active{% endif %}"
                        href="?tab=planning{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
                         <i class="fas fa-calendar-alt"></i> Planning
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'editing' %}active{% endif %}" 
+                    <a class="nav-link {% if active_tab == 'editing' %}active{% endif %}"
                        href="?tab=editing{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
                         <i class="fas fa-edit"></i> Edit
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'approvals' %}active{% endif %}"
+                       href="?tab=approvals{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-check-circle"></i> Approvals
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'requests' %}active{% endif %}"
+                       href="?tab=requests{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-file-invoice-dollar"></i> Requests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}"
+                       href="?tab=overview{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}"
+                       href="?tab=analytics{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                </li>
+                <li class="nav-item ms-auto">
+                    <a class="nav-link {% if active_tab == 'estimation' %}active{% endif %}"
+                       href="?tab=estimation{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}">
+                        <i class="fas fa-robot"></i> Estimation
                     </a>
                 </li>
             </ul>

@@ -141,7 +141,14 @@ class ManagedTradingService(BaseInvestingService):
         return account_number
     
     def _create_default_trading_rules(self, account: ManagedTradingAccount):
-        """Create standard trading rules for account"""
+        """
+        Create standard trading rules for account
+        
+        Industry Standards:
+        - Single position risk: 2-5% of total capital (we use 2% as conservative)
+        - Total portfolio exposure: 15-25% of capital
+        - Daily loss limit: 2% of capital
+        """
         default_rules = [
             {
                 'name': 'Max Position Size',
@@ -149,6 +156,24 @@ class ManagedTradingService(BaseInvestingService):
                 'config': {
                     'max_position_size': float(account.max_position_risk),
                     'max_contracts': 3
+                },
+                'priority': 1
+            },
+            {
+                'name': 'Position Sizing - % of Capital',
+                'type': 'position_size_percentage',
+                'config': {
+                    'max_percentage_per_position': 2.0,  # Industry standard: 2-5%, we use 2%
+                    'description': 'No single position can use more than 2% of total capital'
+                },
+                'priority': 1  # High priority - critical risk control
+            },
+            {
+                'name': 'Total Portfolio Exposure',
+                'type': 'exposure_limit',
+                'config': {
+                    'max_total_exposure_percentage': 15.0,  # 15% of total capital deployed
+                    'description': 'Total capital deployed cannot exceed 15% of account value'
                 },
                 'priority': 1
             },
@@ -205,7 +230,8 @@ class ManagedTradingService(BaseInvestingService):
     def create_position(
         self,
         account: ManagedTradingAccount,
-        position_data: Dict
+        position_data: Dict,
+        deduct_balance: bool = True
     ) -> OptionsPosition:
         """
         Create new options position
@@ -216,6 +242,8 @@ class ManagedTradingService(BaseInvestingService):
                 Required: symbol, strategy, positions (JSONField),
                          capital_required, premium_collected, max_profit, max_loss,
                          expiration_date
+            deduct_balance: Whether to deduct balance immediately (default True)
+                           Set to False for pending positions that require client approval
         
         Returns:
             OptionsPosition instance
@@ -261,28 +289,30 @@ class ManagedTradingService(BaseInvestingService):
                     status='open'
                 )
                 
-                # Update account balances
-                account.cash_reserved += capital_required
-                account.cash_available -= capital_required
-                account.save(update_fields=['cash_reserved', 'cash_available', 'updated_at'])
-                
-                # Log activity
-                TradingActivity.objects.create(
-                    managed_account=account,
-                    position=position,
-                    activity_type='position_opened',
-                    description=f'Opened {position.symbol} {position.get_strategy_display()} position',
-                    performed_by=account.account_manager,
-                    data_snapshot={
-                        'symbol': position.symbol,
-                        'strategy': position.strategy,
-                        'capital_required': str(capital_required),
-                        'premium_collected': str(position.premium_collected),
-                        'expiration_date': str(position.expiration_date)
-                    }
-                )
-                
-                logger.info(f"Created position {position.id} for account {account.account_number}")
+                # Update account balances (only if not pending approval)
+                if deduct_balance:
+                    account.cash_reserved += capital_required
+                    account.cash_available -= capital_required
+                    account.save(update_fields=['cash_reserved', 'cash_available', 'updated_at'])
+                    
+                    # Log activity
+                    TradingActivity.objects.create(
+                        managed_account=account,
+                        position=position,
+                        activity_type='position_opened',
+                        description=f'Opened {position.symbol} {position.get_strategy_display()} position',
+                        performed_by=account.account_manager,
+                        data_snapshot={
+                            'symbol': position.symbol,
+                            'strategy': position.strategy,
+                            'capital_required': str(capital_required),
+                            'premium_collected': str(position.premium_collected),
+                            'expiration_date': str(position.expiration_date)
+                        }
+                    )
+                    logger.info(f"Created and opened position {position.id} for account {account.account_number}")
+                else:
+                    logger.info(f"Created pending position {position.id} for account {account.account_number} (balance not deducted)")
                 
                 return position
                 
@@ -295,15 +325,23 @@ class ManagedTradingService(BaseInvestingService):
         account: ManagedTradingAccount,
         position_data: Dict
     ):
-        """Validate position against account trading rules"""
+        """
+        Validate position against account trading rules
+        
+        Enforces:
+        - Position size limits (absolute dollar amount)
+        - Position size as % of capital (industry standard: 2-5%)
+        - Total portfolio exposure limits
+        """
         active_rules = account.trading_rules.filter(is_active=True)
         
         capital_required = Decimal(str(position_data['capital_required']))
+        total_capital = account.initial_capital  # Use initial capital for % calculations
         
         for rule in active_rules:
             config = rule.rule_config
             
-            # Position size limit
+            # Position size limit (absolute)
             if rule.rule_type == 'position_limit':
                 max_size = Decimal(str(config.get('max_position_size', 0)))
                 if capital_required > max_size:
@@ -311,15 +349,34 @@ class ManagedTradingService(BaseInvestingService):
                         f'Position size ${capital_required:,.2f} exceeds limit ${max_size:,.2f}'
                     )
             
-            # Total risk exposure
-            elif rule.rule_type == 'exposure_limit':
-                current_exposure = account.current_risk_exposure
-                max_exposure = Decimal(str(config.get('max_total_exposure', 100)))
-                new_risk = (capital_required / account.current_balance) * 100
+            # Position size as % of capital (INDUSTRY STANDARD)
+            elif rule.rule_type == 'position_size_percentage':
+                max_percentage = Decimal(str(config.get('max_percentage_per_position', 2.0)))
+                position_percentage = (capital_required / total_capital) * 100
                 
-                if (current_exposure + new_risk) > max_exposure:
+                if position_percentage > max_percentage:
                     raise ValidationError(
-                        f'Total risk exposure would exceed {max_exposure}%'
+                        f'Position size ${capital_required:,.2f} is {position_percentage:.2f}% of capital. '
+                        f'Maximum allowed: {max_percentage}% (${(total_capital * max_percentage / 100):,.2f}). '
+                        f'Industry standard: No single position should exceed 2-5% of total capital.'
+                    )
+            
+            # Total portfolio exposure
+            elif rule.rule_type == 'exposure_limit':
+                # Calculate current + new exposure
+                current_deployed = account.cash_reserved
+                max_exposure_pct = Decimal(str(config.get('max_total_exposure_percentage', 15.0)))
+                max_exposure_amount = (total_capital * max_exposure_pct) / 100
+                
+                new_total_deployed = current_deployed + capital_required
+                new_exposure_pct = (new_total_deployed / total_capital) * 100
+                
+                if new_total_deployed > max_exposure_amount:
+                    raise ValidationError(
+                        f'Total capital deployed would be ${new_total_deployed:,.2f} ({new_exposure_pct:.2f}% of capital). '
+                        f'Maximum allowed: {max_exposure_pct}% (${max_exposure_amount:,.2f}). '
+                        f'Currently deployed: ${current_deployed:,.2f}. '
+                        f'This position requires: ${capital_required:,.2f}.'
                     )
     
     def close_position(

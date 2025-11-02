@@ -1,0 +1,206 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block page_title %}Review Suggested Position{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h2>📝 Review Suggested Position</h2>
+            <p class="text-muted mb-0">Check details, edit if needed, then approve or reject.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'investing:suggested_positions_list' %}" class="btn btn-secondary">← Back to Suggestions</a>
+        </div>
+    </div>
+
+    <!-- AI Score Section (NEW) -->
+    {% if suggestion.ai_score %}
+    <div class="card mb-3 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">🤖 AI Position Analysis</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <h1 style="font-size: 3em; margin: 0; {% if suggestion.ai_score >= 85 %}color: #28a745;{% elif suggestion.ai_score >= 70 %}color: #17a2b8;{% elif suggestion.ai_score >= 50 %}color: #ffc107;{% else %}color: #dc3545;{% endif %}">
+                        {{ suggestion.ai_score|floatformat:0 }}
+                    </h1>
+                    <p class="text-muted mb-0">out of 100</p>
+                    <div style="font-size: 1.5em; color: #ffd700; margin-top: 10px;">
+                        {% if suggestion.ai_score >= 95 %}⭐⭐⭐⭐⭐{% elif suggestion.ai_score >= 85 %}⭐⭐⭐⭐{% elif suggestion.ai_score >= 70 %}⭐⭐⭐{% elif suggestion.ai_score >= 50 %}⭐⭐{% else %}⭐{% endif %}
+                    </div>
+                    <span class="badge {% if suggestion.ai_rating == 'EXCELLENT' %}bg-success{% elif suggestion.ai_rating == 'GOOD' %}bg-primary{% elif suggestion.ai_rating == 'AVERAGE' %}bg-info{% elif suggestion.ai_rating == 'BELOW_AVERAGE' %}bg-warning{% else %}bg-danger{% endif %} mt-2" style="font-size: 1.1em;">
+                        {{ suggestion.ai_rating }}
+                    </span>
+                </div>
+                <div class="col-md-9">
+                    <div class="alert {% if suggestion.ai_score >= 85 %}alert-success{% elif suggestion.ai_score >= 70 %}alert-info{% elif suggestion.ai_score >= 50 %}alert-warning{% else %}alert-danger{% endif %} mb-3">
+                        <strong>AI Recommendation:</strong> {{ suggestion.ai_recommendation }}
+                    </div>
+                    
+                    {% if suggestion.ai_breakdown %}
+                    <h6>Score Breakdown:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small>
+                                <div class="mb-1">
+                                    📈 Historical Win Rate: <strong>{{ suggestion.ai_breakdown.historical_win_rate|floatformat:0 }}/100</strong> (30% weight)
+                                </div>
+                                <div class="mb-1">
+                                    💨 IV Rank: <strong>{{ suggestion.ai_breakdown.iv_rank_optimization|floatformat:0 }}/100</strong> (20% weight)
+                                </div>
+                                <div class="mb-1">
+                                    📊 Greeks Profile: <strong>{{ suggestion.ai_breakdown.greeks_profile|floatformat:0 }}/100</strong> (15% weight)
+                                </div>
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small>
+                                <div class="mb-1">
+                                    💰 Risk/Reward: <strong>{{ suggestion.ai_breakdown.risk_reward_ratio|floatformat:0 }}/100</strong> (15% weight)
+                                </div>
+                                <div class="mb-1">
+                                    📅 Earnings Safety: <strong>{{ suggestion.ai_breakdown.earnings_safety|floatformat:0 }}/100</strong> (10% weight)
+                                </div>
+                                <div class="mb-1">
+                                    💧 Liquidity: <strong>{{ suggestion.ai_breakdown.liquidity_score|floatformat:0 }}/100</strong> (10% weight)
+                                </div>
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <p class="text-muted mb-0 mt-2">
+                        <small>Confidence: <strong>{{ suggestion.ai_confidence_level }}</strong></small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card mb-3">
+        <div class="card-header">
+            <strong>{{ suggestion.symbol }}</strong>
+            <span class="badge bg-info ms-2">{{ suggestion.get_strategy_display }}</span>
+            <span class="badge bg-primary ms-2">{{ suggestion.probability_of_profit }}% POP</span>
+            <span class="badge bg-success ms-2">${{ suggestion.premium_collected|floatformat:0 }} premium</span>
+            <span class="badge bg-secondary ms-2">{{ suggestion.dte }} DTE</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr><th>Expiration</th><td>{{ suggestion.expiration_date }}</td></tr>
+                            <tr><th>Capital Required</th><td>${{ suggestion.capital_required|floatformat:0 }}</td></tr>
+                            <tr><th>Max Profit</th><td class="text-success">${{ suggestion.max_profit|floatformat:0 }}</td></tr>
+                            <tr><th>Max Loss</th><td class="text-danger">${{ suggestion.max_loss|floatformat:0 }}</td></tr>
+                            <tr><th>Breakeven</th><td>${{ suggestion.breakeven|floatformat:2 }}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr><th>Δ (Delta)</th><td>{{ suggestion.position_delta }}</td></tr>
+                            <tr><th>Θ (Theta)</th><td>{{ suggestion.position_theta }}</td></tr>
+                            <tr><th>Γ (Gamma)</th><td>{{ suggestion.position_gamma }}</td></tr>
+                            <tr><th>Vega</th><td>{{ suggestion.position_vega }}</td></tr>
+                            <tr><th>Source</th><td>{{ suggestion.get_source_display }}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <h5>Legs</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Strike</th>
+                                <th>Contracts</th>
+                                <th>Premium</th>
+                                <th>Delta</th>
+                                <th>Theta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leg in legs %}
+                            <tr>
+                                <td>{{ leg.type }}</td>
+                                <td>{{ leg.strike }}</td>
+                                <td>{{ leg.contracts }}</td>
+                                <td>{{ leg.premium }}</td>
+                                <td>{{ leg.delta }}</td>
+                                <td>{{ leg.theta }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-muted">No leg details available.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if suggestion.ai_reasoning %}
+            <div class="alert alert-info mt-3">
+                <strong>AI Reasoning:</strong> {{ suggestion.ai_reasoning }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve">
+                        <input type="hidden" name="notes" value="Approved from review page">
+                        <button type="submit" class="btn btn-success w-100">✅ Approve</button>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <form method="post" action="" onsubmit="return confirm('Reject this suggestion?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        <input type="text" name="rejection_reason" class="form-control mb-2" placeholder="Reason (optional)">
+                        <button type="submit" class="btn btn-danger w-100">❌ Reject</button>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="modify">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small mb-0">Premium ($)</label>
+                                <input type="number" step="0.01" class="form-control" name="premium_collected" value="{{ suggestion.premium_collected }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-0">Capital ($)</label>
+                                <input type="number" step="0.01" class="form-control" name="capital_required" value="{{ suggestion.capital_required }}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small mb-0">Notes</label>
+                                <input type="text" class="form-control" name="modification_notes" placeholder="Why modified?">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-2">✏️ Modify & Approve</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+

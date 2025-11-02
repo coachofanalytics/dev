@@ -35,16 +35,16 @@ def suggested_positions_list(request):
     - Review status
     - Actions (Edit, Approve, Reject)
     """
-    # Get all pending suggestions
+    # Get all pending suggestions (sorted by AI score first!)
     pending = SuggestedPosition.objects.filter(
         review_status='pending'
-    ).order_by('-probability_of_profit', '-fetched_at')
+    ).order_by('-ai_score', '-probability_of_profit', '-fetched_at')
     
     # Get approved suggestions not yet converted to batch
     approved = SuggestedPosition.objects.filter(
         review_status__in=['approved', 'modified'],
         created_position__isnull=True  # Not yet converted
-    ).order_by('-probability_of_profit')
+    ).order_by('-ai_score', '-probability_of_profit')
     
     # Get recently rejected (last 7 days)
     from datetime import timedelta
@@ -55,12 +55,19 @@ def suggested_positions_list(request):
     ).order_by('-reviewed_at')
     
     # Statistics
+    from django.db.models import Avg, Sum, Count, Q
+    
     stats = {
         'total_pending': pending.count(),
         'total_approved': approved.count(),
         'total_rejected': rejected.count(),
-        'avg_probability': pending.aggregate(avg=models.Avg('probability_of_profit'))['avg'] or 0,
-        'total_premium': pending.aggregate(sum=models.Sum('premium_collected'))['sum'] or 0,
+        'avg_probability': pending.aggregate(avg=Avg('probability_of_profit'))['avg'] or 0,
+        'total_premium': pending.aggregate(sum=Sum('premium_collected'))['sum'] or 0,
+        # AI Scoring Stats
+        'avg_ai_score': pending.aggregate(avg=Avg('ai_score'))['avg'] or 0,
+        'top_score': pending.aggregate(max=Avg('ai_score'))['max'] or 0,
+        'excellent_count': pending.filter(ai_rating='EXCELLENT').count(),
+        'good_count': pending.filter(ai_rating='GOOD').count(),
     }
     
     # Get active managed trading accounts for batch creation
@@ -129,6 +136,29 @@ def fetch_positions_now(request):
     
     return redirect('investing:suggested_positions_list')
 
+
+@staff_member_required
+def fetch_positions_quick(request):
+    """
+    Quick GET trigger to fetch positions with default filters.
+    Useful fallback when modal submit is unavailable.
+    """
+    try:
+        fetcher = PositionFetcherService()
+        default_filters = fetcher._get_default_filters()
+        suggested = fetcher.fetch_high_probability_positions(default_filters)
+        avg_prob = (
+            sum(float(p.probability_of_profit) for p in suggested) / len(suggested)
+            if suggested else 0
+        )
+        messages.success(
+            request,
+            f"✅ Fetched {len(suggested)} position(s). Avg probability: {avg_prob:.1f}%"
+        )
+    except Exception as e:
+        logger.error(f"Quick fetch error: {e}", exc_info=True)
+        messages.error(request, f"❌ Fetch failed: {str(e)}")
+    return redirect('investing:suggested_positions_list')
 
 @staff_member_required
 def review_position(request, suggestion_id):
@@ -250,8 +280,8 @@ def create_batch_from_suggestions(request):
                     'notes': f"Auto-fetched from {suggestion.get_source_display()}. {suggestion.ai_reasoning}"
                 }
                 
-                # Create OptionsPosition using existing service
-                position = trading_service.create_position(account, position_data)
+                # Create OptionsPosition using existing service (don't deduct balance yet)
+                position = trading_service.create_position(account, position_data, deduct_balance=False)
                 
                 # Set position to pending for batch approval
                 position.status = 'pending'
