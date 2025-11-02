@@ -41,10 +41,12 @@ google-auth-oauthlib==1.1.0
 google-auth-httplib2==0.2.0
 google-api-python-client==2.108.0
 
-# Data Processing (Lightweight versions)
-# Note: numpy and pandas are heavy - consider alternatives if not essential
-# numpy==1.26.4  # 108MB - only include if absolutely necessary
-# pandas==2.2.3  # 73MB - only include if absolutely necessary
+# Data Processing & Web Scraping (for OptionPlay integration)
+# Note: Required for real-time position fetching from OptionPlay
+pandas==2.2.3  # 73MB - Required for OptionPlay scraper
+beautifulsoup4==4.12.2  # HTML parsing for web scraping
+lxml==4.9.3  # Fast XML/HTML parser
+playwright==1.40.0  # Browser automation for OptionPlay scraping
 
 # File Processing
 python-docx==0.8.11
