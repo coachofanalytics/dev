@@ -127,6 +127,13 @@ class ManagedTradingAccountAdmin(admin.ModelAdmin):
         ('Trading Settings', {
             'fields': ('trading_enabled', 'auto_trading_enabled', 'activation_date', 'closure_date')
         }),
+        ('Notification Preferences (WhatsApp/Telegram)', {
+            'fields': (
+                'whatsapp_enabled', 'whatsapp_phone',
+                'telegram_enabled', 'telegram_chat_id'
+            ),
+            'description': 'Enable real-time alerts for position updates via WhatsApp and Telegram'
+        }),
         ('Performance Tracking', {
             'fields': (
                 'total_trades', 'winning_trades', 'losing_trades',

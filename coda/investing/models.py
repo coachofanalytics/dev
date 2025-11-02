@@ -1984,6 +1984,26 @@ class ManagedTradingAccount(TimeStampedModel):
         help_text="Last date fees were calculated"
     )
     
+    # Notification Preferences (Phase 3: WhatsApp/Telegram)
+    whatsapp_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable WhatsApp notifications for position updates"
+    )
+    whatsapp_phone = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Client phone number in international format (+1234567890)"
+    )
+    telegram_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable Telegram notifications for position updates"
+    )
+    telegram_chat_id = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Client Telegram chat ID"
+    )
+    
     class Meta:
         verbose_name = "Managed Trading Account"
         verbose_name_plural = "Managed Trading Accounts"
