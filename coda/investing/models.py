@@ -3339,11 +3339,53 @@ class SuggestedPosition(TimeStampedModel):
         decimal_places=2,
         null=True,
         blank=True,
-        help_text="AI confidence score (0-100)"
+        help_text="AI confidence score (0-100) - DEPRECATED, use ai_score instead"
     )
     ai_reasoning = models.TextField(
         blank=True,
-        help_text="Why AI recommended this position"
+        help_text="Why AI recommended this position - DEPRECATED, use ai_recommendation instead"
+    )
+    
+    # AI Position Scoring (6-Factor Algorithm) - NEW
+    ai_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="AI position score (0-100) from 6-factor algorithm"
+    )
+    ai_rating = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        choices=[
+            ('EXCELLENT', 'Excellent (95-100)'),
+            ('GOOD', 'Good (85-94)'),
+            ('AVERAGE', 'Average (70-84)'),
+            ('BELOW_AVERAGE', 'Below Average (50-69)'),
+            ('POOR', 'Poor (0-49)'),
+        ],
+        help_text="AI rating based on score"
+    )
+    ai_breakdown = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Detailed breakdown of 6 scoring factors"
+    )
+    ai_recommendation = models.TextField(
+        blank=True,
+        help_text="AI recommendation text (approve/review/reject)"
+    )
+    ai_confidence_level = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        choices=[
+            ('HIGH', 'High Confidence'),
+            ('MEDIUM', 'Medium Confidence'),
+            ('LOW', 'Low Confidence'),
+        ],
+        help_text="Confidence level based on data availability"
     )
     
     # Staff Review

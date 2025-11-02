@@ -52,13 +52,16 @@ class OptionPlayConverterService:
                 **suggestion_data
             )
             
+            # AI Scoring (NEW)
+            self._score_position(suggestion, raw_data)
+            
             # Mark raw data as processed
             raw_data.is_processed = True
             raw_data.processed_date = timezone.now()
             raw_data.created_suggestion = suggestion
             raw_data.save()
             
-            logger.info(f"✅ Converted {raw_data.symbol} to SuggestedPosition #{suggestion.id}")
+            logger.info(f"✅ Converted {raw_data.symbol} to SuggestedPosition #{suggestion.id} (AI Score: {suggestion.ai_score})")
             return suggestion
             
         except Exception as e:
@@ -354,4 +357,49 @@ class OptionPlayConverterService:
                 return False
         
         return True
+    
+    def _score_position(self, suggestion, raw_data=None):
+        """
+        Score SuggestedPosition using AI Position Scoring Service
+        
+        Args:
+            suggestion: SuggestedPosition instance
+            raw_data: Optional OptionPlayRawData for additional context
+        """
+        from investing.services.position_scoring_service import PositionScoringService
+        
+        try:
+            scorer = PositionScoringService()
+            
+            # Build position data dict for scoring
+            position_data = {
+                'symbol': suggestion.symbol,
+                'strategy': suggestion.get_strategy_display(),  # Human-readable
+                'premium': suggestion.premium_collected or Decimal('0'),
+                'max_loss': suggestion.max_loss or Decimal('1'),
+                'dte': suggestion.dte,
+                'iv_rank': raw_data.iv_rank if raw_data else None,
+                'days_to_earnings': None,  # TODO: integrate earnings calendar
+                'volume': None,  # TODO: integrate market data API
+                'open_interest': None,
+            }
+            
+            # Get AI score
+            score_result = scorer.score_position(position_data)
+            
+            # Update suggestion with AI scoring
+            suggestion.ai_score = score_result['score']
+            suggestion.ai_rating = score_result['rating']
+            # Convert Decimal to float for JSON serialization
+            suggestion.ai_breakdown = {k: float(v) for k, v in score_result['breakdown'].items()}
+            suggestion.ai_recommendation = score_result['recommendation']
+            suggestion.ai_confidence_level = score_result['confidence']
+            suggestion.save()
+            
+            logger.info(f"  🤖 AI Scored: {score_result['score']}/100 ({score_result['rating']})")
+            
+        except Exception as e:
+            logger.error(f"  ❌ AI Scoring failed for {suggestion.symbol}: {e}")
+            # Don't fail the entire conversion if scoring fails
+            pass
 
