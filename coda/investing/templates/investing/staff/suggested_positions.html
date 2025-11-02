@@ -24,7 +24,7 @@
     
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h3>{{ stats.total_pending }}</h3>
@@ -32,23 +32,39 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h3>{{ stats.total_approved }}</h3>
-                    <p class="mb-0">Approved (Ready for Batch)</p>
+                    <p class="mb-0">Approved</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-body text-center">
+                    <h3>{{ stats.avg_ai_score|floatformat:1 }}</h3>
+                    <p class="mb-0">🤖 Avg AI Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                <div class="card-body text-center">
+                    <h3>{{ stats.excellent_count }}</h3>
+                    <p class="mb-0">⭐ Excellent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h3>{{ stats.avg_probability|floatformat:1 }}%</h3>
-                    <p class="mb-0">Avg Probability</p>
+                    <p class="mb-0">Avg Prob</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h3>${{ stats.total_premium|floatformat:0 }}</h3>
@@ -87,6 +103,7 @@
                     <thead class="table-light">
                         <tr>
                             <th><input type="checkbox" id="selectAllPending"></th>
+                            <th>🤖 AI Score</th>
                             <th>Source</th>
                             <th>Symbol</th>
                             <th>Strategy</th>
@@ -96,49 +113,60 @@
                             <th>Max Profit</th>
                             <th>Max Loss</th>
                             <th>R:R</th>
-                            <th>Criteria</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for pos in pending_positions %}
-                        <tr>
+                        <tr class="{% if pos.ai_rating == 'EXCELLENT' %}table-success{% elif pos.ai_rating == 'GOOD' %}table-info{% elif pos.ai_rating == 'POOR' %}table-danger{% endif %}">
                             <td><input type="checkbox" class="position-checkbox" data-id="{{ pos.id }}"></td>
+                            <td>
+                                {% if pos.ai_score %}
+                                <div style="min-width: 120px;">
+                                    <strong style="font-size: 1.2em; {% if pos.ai_score >= 85 %}color: #28a745;{% elif pos.ai_score >= 70 %}color: #17a2b8;{% elif pos.ai_score >= 50 %}color: #ffc107;{% else %}color: #dc3545;{% endif %}">
+                                        {{ pos.ai_score|floatformat:0 }}/100
+                                    </strong>
+                                    <br>
+                                    <span style="color: #ffd700; font-size: 0.9em;">
+                                        {% if pos.ai_score >= 95 %}⭐⭐⭐⭐⭐{% elif pos.ai_score >= 85 %}⭐⭐⭐⭐{% elif pos.ai_score >= 70 %}⭐⭐⭐{% elif pos.ai_score >= 50 %}⭐⭐{% else %}⭐{% endif %}
+                                    </span>
+                                    <br>
+                                    <small class="badge {% if pos.ai_rating == 'EXCELLENT' %}bg-success{% elif pos.ai_rating == 'GOOD' %}bg-primary{% elif pos.ai_rating == 'AVERAGE' %}bg-info{% elif pos.ai_rating == 'BELOW_AVERAGE' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ pos.ai_rating }}
+                                    </small>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="badge {% if pos.source == 'optionplay' %}bg-primary{% elif pos.source == 'thinkorswim' %}bg-info{% else %}bg-secondary{% endif %}">
                                     {{ pos.get_source_display }}
                                 </span>
                             </td>
                             <td><strong>{{ pos.symbol }}</strong></td>
-                            <td>{{ pos.get_strategy_display }}</td>
+                            <td><small>{{ pos.get_strategy_display }}</small></td>
                             <td>
                                 <span class="badge bg-success">{{ pos.probability_of_profit }}%</span>
                             </td>
                             <td>${{ pos.premium_collected|floatformat:0 }}</td>
                             <td>
                                 <span class="badge {% if pos.dte < 40 %}bg-warning{% else %}bg-secondary{% endif %}">
-                                    {{ pos.dte }} days
+                                    {{ pos.dte }}d
                                 </span>
                             </td>
-                            <td class="text-success">${{ pos.max_profit|floatformat:0 }}</td>
-                            <td class="text-danger">${{ pos.max_loss|floatformat:0 }}</td>
-                            <td>{{ pos.risk_reward_ratio|floatformat:2 }}</td>
-                            <td>
-                                {% if pos.meets_criteria %}
-                                <span class="badge bg-success">✅ YES</span>
-                                {% else %}
-                                <span class="badge bg-danger">❌ NO</span>
-                                {% endif %}
-                            </td>
+                            <td class="text-success"><small>${{ pos.max_profit|floatformat:0 }}</small></td>
+                            <td class="text-danger"><small>${{ pos.max_loss|floatformat:0 }}</small></td>
+                            <td><small>{{ pos.risk_reward_ratio|floatformat:2 }}</small></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-success" onclick="approvePosition({{ pos.id }})">
+                                    <button class="btn btn-success" onclick="approvePosition({{ pos.id }})" title="Approve">
                                         ✅
                                     </button>
-                                    <a href="{% url 'investing:review_position' pos.id %}" class="btn btn-primary">
-                                        ✏️
+                                    <a href="{% url 'investing:review_position' pos.id %}" class="btn btn-primary" title="Review Details">
+                                        👁️
                                     </a>
-                                    <button class="btn btn-danger" onclick="rejectPosition({{ pos.id }})">
+                                    <button class="btn btn-danger" onclick="rejectPosition({{ pos.id }})" title="Reject">
                                         ❌
                                     </button>
                                 </div>
@@ -170,6 +198,7 @@
                     <thead class="table-light">
                         <tr>
                             <th><input type="checkbox" id="selectAllApproved"></th>
+                            <th>🤖 AI Score</th>
                             <th>Symbol</th>
                             <th>Strategy</th>
                             <th>Probability</th>
@@ -181,14 +210,24 @@
                     </thead>
                     <tbody>
                         {% for pos in approved_positions %}
-                        <tr>
+                        <tr class="{% if pos.ai_rating == 'EXCELLENT' %}table-success{% elif pos.ai_rating == 'GOOD' %}table-info{% endif %}">
                             <td><input type="checkbox" class="batch-checkbox" data-id="{{ pos.id }}"></td>
+                            <td>
+                                {% if pos.ai_score %}
+                                <strong style="color: #28a745; font-size: 1.1em;">{{ pos.ai_score|floatformat:0 }}</strong>
+                                <span style="color: #ffd700;">
+                                    {% if pos.ai_score >= 95 %}⭐⭐⭐⭐⭐{% elif pos.ai_score >= 85 %}⭐⭐⭐⭐{% elif pos.ai_score >= 70 %}⭐⭐⭐{% else %}⭐⭐{% endif %}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
                             <td><strong>{{ pos.symbol }}</strong></td>
-                            <td>{{ pos.get_strategy_display }}</td>
+                            <td><small>{{ pos.get_strategy_display }}</small></td>
                             <td><span class="badge bg-success">{{ pos.probability_of_profit }}%</span></td>
                             <td>${{ pos.premium_collected|floatformat:0 }}</td>
-                            <td>{{ pos.reviewed_by.get_full_name }}</td>
-                            <td>{{ pos.staff_notes|truncatewords:10 }}</td>
+                            <td><small>{{ pos.reviewed_by.get_full_name }}</small></td>
+                            <td><small>{{ pos.staff_notes|truncatewords:10 }}</small></td>
                             <td>
                                 <button class="btn btn-sm btn-primary" onclick="addSinglePosition({{ pos.id }})">
                                     ➕ Add to Account

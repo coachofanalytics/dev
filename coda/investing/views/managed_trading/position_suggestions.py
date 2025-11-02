@@ -35,16 +35,16 @@ def suggested_positions_list(request):
     - Review status
     - Actions (Edit, Approve, Reject)
     """
-    # Get all pending suggestions
+    # Get all pending suggestions (sorted by AI score first!)
     pending = SuggestedPosition.objects.filter(
         review_status='pending'
-    ).order_by('-probability_of_profit', '-fetched_at')
+    ).order_by('-ai_score', '-probability_of_profit', '-fetched_at')
     
     # Get approved suggestions not yet converted to batch
     approved = SuggestedPosition.objects.filter(
         review_status__in=['approved', 'modified'],
         created_position__isnull=True  # Not yet converted
-    ).order_by('-probability_of_profit')
+    ).order_by('-ai_score', '-probability_of_profit')
     
     # Get recently rejected (last 7 days)
     from datetime import timedelta
@@ -55,12 +55,19 @@ def suggested_positions_list(request):
     ).order_by('-reviewed_at')
     
     # Statistics
+    from django.db.models import Avg, Sum, Count, Q
+    
     stats = {
         'total_pending': pending.count(),
         'total_approved': approved.count(),
         'total_rejected': rejected.count(),
-        'avg_probability': pending.aggregate(avg=models.Avg('probability_of_profit'))['avg'] or 0,
-        'total_premium': pending.aggregate(sum=models.Sum('premium_collected'))['sum'] or 0,
+        'avg_probability': pending.aggregate(avg=Avg('probability_of_profit'))['avg'] or 0,
+        'total_premium': pending.aggregate(sum=Sum('premium_collected'))['sum'] or 0,
+        # AI Scoring Stats
+        'avg_ai_score': pending.aggregate(avg=Avg('ai_score'))['avg'] or 0,
+        'top_score': pending.aggregate(max=Avg('ai_score'))['max'] or 0,
+        'excellent_count': pending.filter(ai_rating='EXCELLENT').count(),
+        'good_count': pending.filter(ai_rating='GOOD').count(),
     }
     
     # Get active managed trading accounts for batch creation

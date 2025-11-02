@@ -586,6 +586,7 @@ class PositionBatchAdmin(admin.ModelAdmin):
 class SuggestedPositionAdmin(admin.ModelAdmin):
     list_display = [
         'symbol',
+        'ai_score_display',  # NEW: Show AI score prominently
         'strategy',
         'source',
         'probability_of_profit',
@@ -595,14 +596,15 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
         'reviewed_by',
         'fetched_at'
     ]
-    list_filter = ['review_status', 'source', 'strategy', 'fetched_at']
-    search_fields = ['symbol', 'ai_reasoning', 'staff_notes']
+    list_filter = ['review_status', 'ai_rating', 'source', 'strategy', 'fetched_at']  # Added ai_rating filter
+    search_fields = ['symbol', 'ai_reasoning', 'ai_recommendation', 'staff_notes']
     readonly_fields = [
         'fetched_at', 'reviewed_at', 'created_at', 'updated_at',
-        'risk_reward_ratio', 'meets_criteria'
+        'risk_reward_ratio', 'meets_criteria', 
+        'ai_score', 'ai_rating', 'ai_breakdown', 'ai_recommendation', 'ai_confidence_level'  # NEW: AI fields readonly
     ]
     list_editable = []
-    ordering = ['-probability_of_profit', '-fetched_at']
+    ordering = ['-ai_score', '-probability_of_profit', '-fetched_at']  # Sort by AI score first!
     
     fieldsets = (
         ('Position Details', {
@@ -626,7 +628,14 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
             'fields': ('position_delta', 'position_theta', 'position_gamma', 'position_vega'),
             'classes': ('collapse',)
         }),
-        ('AI Analysis', {
+        ('AI Position Scoring (6-Factor Algorithm)', {
+            'fields': (
+                'ai_score', 'ai_rating', 'ai_confidence_level',
+                'ai_recommendation', 'ai_breakdown'
+            ),
+            'description': 'AI scores 0-100 using historical win rate, IV rank, greeks, risk/reward, earnings, liquidity'
+        }),
+        ('AI Analysis (Legacy)', {
             'fields': ('ai_confidence', 'ai_reasoning'),
             'classes': ('collapse',)
         }),
@@ -670,6 +679,40 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"Rejected {updated} position(s)")
     reject_selected.short_description = "❌ Reject selected suggestions"
+    
+    def ai_score_display(self, obj):
+        """Display AI score with stars and color coding"""
+        if not obj.ai_score:
+            return "N/A"
+        
+        score = obj.ai_score
+        stars = ""
+        if score >= 95:
+            stars = "⭐⭐⭐⭐⭐"
+            color = "#28a745"  # Green
+        elif score >= 85:
+            stars = "⭐⭐⭐⭐"
+            color = "#17a2b8"  # Blue
+        elif score >= 70:
+            stars = "⭐⭐⭐"
+            color = "#ffc107"  # Yellow
+        elif score >= 50:
+            stars = "⭐⭐"
+            color = "#fd7e14"  # Orange
+        else:
+            stars = "⭐"
+            color = "#dc3545"  # Red
+        
+        from django.utils.html import format_html
+        return format_html(
+            '<strong style="color: {}; font-size: 1.1em;">{}</strong><br><span>{}</span>',
+            color,
+            f"{score:.0f}/100",
+            stars
+        )
+    
+    ai_score_display.short_description = "🤖 AI Score"
+    ai_score_display.admin_order_field = 'ai_score'
 
 
 @admin.register(OptionPlayRawData)

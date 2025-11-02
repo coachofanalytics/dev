@@ -15,6 +15,72 @@
         </div>
     </div>
 
+    <!-- AI Score Section (NEW) -->
+    {% if suggestion.ai_score %}
+    <div class="card mb-3 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">🤖 AI Position Analysis</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <h1 style="font-size: 3em; margin: 0; {% if suggestion.ai_score >= 85 %}color: #28a745;{% elif suggestion.ai_score >= 70 %}color: #17a2b8;{% elif suggestion.ai_score >= 50 %}color: #ffc107;{% else %}color: #dc3545;{% endif %}">
+                        {{ suggestion.ai_score|floatformat:0 }}
+                    </h1>
+                    <p class="text-muted mb-0">out of 100</p>
+                    <div style="font-size: 1.5em; color: #ffd700; margin-top: 10px;">
+                        {% if suggestion.ai_score >= 95 %}⭐⭐⭐⭐⭐{% elif suggestion.ai_score >= 85 %}⭐⭐⭐⭐{% elif suggestion.ai_score >= 70 %}⭐⭐⭐{% elif suggestion.ai_score >= 50 %}⭐⭐{% else %}⭐{% endif %}
+                    </div>
+                    <span class="badge {% if suggestion.ai_rating == 'EXCELLENT' %}bg-success{% elif suggestion.ai_rating == 'GOOD' %}bg-primary{% elif suggestion.ai_rating == 'AVERAGE' %}bg-info{% elif suggestion.ai_rating == 'BELOW_AVERAGE' %}bg-warning{% else %}bg-danger{% endif %} mt-2" style="font-size: 1.1em;">
+                        {{ suggestion.ai_rating }}
+                    </span>
+                </div>
+                <div class="col-md-9">
+                    <div class="alert {% if suggestion.ai_score >= 85 %}alert-success{% elif suggestion.ai_score >= 70 %}alert-info{% elif suggestion.ai_score >= 50 %}alert-warning{% else %}alert-danger{% endif %} mb-3">
+                        <strong>AI Recommendation:</strong> {{ suggestion.ai_recommendation }}
+                    </div>
+                    
+                    {% if suggestion.ai_breakdown %}
+                    <h6>Score Breakdown:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small>
+                                <div class="mb-1">
+                                    📈 Historical Win Rate: <strong>{{ suggestion.ai_breakdown.historical_win_rate|floatformat:0 }}/100</strong> (30% weight)
+                                </div>
+                                <div class="mb-1">
+                                    💨 IV Rank: <strong>{{ suggestion.ai_breakdown.iv_rank_optimization|floatformat:0 }}/100</strong> (20% weight)
+                                </div>
+                                <div class="mb-1">
+                                    📊 Greeks Profile: <strong>{{ suggestion.ai_breakdown.greeks_profile|floatformat:0 }}/100</strong> (15% weight)
+                                </div>
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small>
+                                <div class="mb-1">
+                                    💰 Risk/Reward: <strong>{{ suggestion.ai_breakdown.risk_reward_ratio|floatformat:0 }}/100</strong> (15% weight)
+                                </div>
+                                <div class="mb-1">
+                                    📅 Earnings Safety: <strong>{{ suggestion.ai_breakdown.earnings_safety|floatformat:0 }}/100</strong> (10% weight)
+                                </div>
+                                <div class="mb-1">
+                                    💧 Liquidity: <strong>{{ suggestion.ai_breakdown.liquidity_score|floatformat:0 }}/100</strong> (10% weight)
+                                </div>
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <p class="text-muted mb-0 mt-2">
+                        <small>Confidence: <strong>{{ suggestion.ai_confidence_level }}</strong></small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="card mb-3">
         <div class="card-header">
             <strong>{{ suggestion.symbol }}</strong>
