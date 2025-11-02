@@ -52,6 +52,29 @@ class Command(BaseCommand):
             default=1,
             help='ID of user who uploaded (default: 1)'
         )
+        parser.add_argument(
+            '--min-premium',
+            type=float,
+            default=1.0,
+            help='Minimum premium to convert (default: $1.00)'
+        )
+        parser.add_argument(
+            '--min-iv',
+            type=float,
+            default=20.0,
+            help='Minimum IV rank to convert (default: 20%%)'
+        )
+        parser.add_argument(
+            '--symbols',
+            type=str,
+            help='Comma-separated list of symbols to convert (e.g., AAPL,MSFT,TSLA)'
+        )
+        parser.add_argument(
+            '--max-positions',
+            type=int,
+            default=10,
+            help='Maximum positions to convert (default: 10)'
+        )
     
     def handle(self, *args, **options):
         strategy_type = options['strategy_type']
@@ -95,17 +118,38 @@ class Command(BaseCommand):
         
         # Auto-convert if requested
         if auto_convert and imported:
-            self.stdout.write(self.style.SUCCESS(f"\n🔄 Converting to SuggestedPositions..."))
+            self.stdout.write(self.style.SUCCESS(f"\n🔄 Converting to SuggestedPositions with filters..."))
+            
+            # Build filters from command options
+            filters = {
+                'min_premium': Decimal(str(options['min_premium'])),
+                'min_iv_rank': Decimal(str(options['min_iv'])),
+                'max_positions': options['max_positions'],
+                'dte_min': 30,  # Default range
+                'dte_max': 60,
+            }
+            
+            # Add symbol filter if provided
+            if options['symbols']:
+                symbols_list = [s.strip().upper() for s in options['symbols'].split(',')]
+                filters['symbols'] = symbols_list
+                self.stdout.write(f"   📍 Filtering for symbols: {', '.join(symbols_list)}")
+            
+            self.stdout.write(f"   💵 Min Premium: ${filters['min_premium']}")
+            self.stdout.write(f"   📊 Min IV Rank: {filters['min_iv_rank']}%")
+            self.stdout.write(f"   🎯 Max Positions: {filters['max_positions']}")
+            
             converter = OptionPlayConverterService()
             
             raw_data_ids = [r.id for r in imported]
             raw_data_qs = OptionPlayRawData.objects.filter(id__in=raw_data_ids)
             
-            suggestions, conv_errors = converter.bulk_convert(raw_data_qs)
+            suggestions, conv_errors = converter.bulk_convert(raw_data_qs, filters=filters)
             
-            self.stdout.write(self.style.SUCCESS(f"✅ Converted {len(suggestions)} positions"))
+            self.stdout.write(self.style.SUCCESS(f"\n✅ Converted {len(suggestions)} positions (from {len(imported)} imported)"))
+            self.stdout.write(f"   Filtered out: {len(imported) - len(suggestions) - len(conv_errors)}")
             if conv_errors:
-                self.stdout.write(self.style.WARNING(f"⚠️ Conversion errors: {len(conv_errors)}"))
+                self.stdout.write(self.style.WARNING(f"   Errors: {len(conv_errors)}"))
         
         self.stdout.write("\n" + "=" * 60 + "\n")
     

@@ -253,27 +253,105 @@ class OptionPlayConverterService:
             'ai_reasoning': f"OptionPlay Covered Call. Stock: ${stock_price}, Strike: ${strike}, Premium: ${premium}"
         }
     
-    def bulk_convert(self, queryset) -> List:
+    def bulk_convert(self, queryset, filters: Dict = None) -> List:
         """
         Convert multiple OptionPlayRawData to SuggestedPositions
         
         Args:
             queryset: QuerySet of OptionPlayRawData
+            filters: Optional filters to apply BEFORE conversion:
+                {
+                    'min_premium': 100,  # Minimum $100 premium
+                    'min_iv_rank': 20,   # Minimum 20% IV rank
+                    'dte_min': 30,       # Minimum 30 DTE
+                    'dte_max': 60,       # Maximum 60 DTE
+                    'max_positions': 10, # Limit conversions
+                    'symbols': ['AAPL', 'MSFT', ...]  # Specific symbols only
+                }
         
         Returns:
             List of created SuggestedPosition instances
         """
         suggestions = []
         errors = []
+        skipped = []
+        
+        # Apply filters BEFORE conversion
+        if filters:
+            queryset = self._apply_filters_to_raw_data(queryset, filters)
         
         for raw_data in queryset:
             try:
+                # Additional validation before conversion
+                if not self._should_convert(raw_data, filters):
+                    skipped.append(f"{raw_data.symbol}: Filtered out")
+                    continue
+                
                 suggestion = self.convert_raw_to_suggestion(raw_data)
                 suggestions.append(suggestion)
+                
             except Exception as e:
                 errors.append(f"{raw_data.symbol}: {str(e)}")
                 logger.error(f"❌ Conversion failed for {raw_data.symbol}: {e}")
         
-        logger.info(f"✅ Converted {len(suggestions)} positions, {len(errors)} errors")
+        logger.info(f"✅ Converted {len(suggestions)} positions, {len(errors)} errors, {len(skipped)} filtered out")
         return suggestions, errors
+    
+    def _apply_filters_to_raw_data(self, queryset, filters: Dict):
+        """Apply filters to raw data queryset before conversion"""
+        filtered = queryset
+        
+        # Filter by premium
+        if 'min_premium' in filters:
+            min_prem = Decimal(str(filters['min_premium']))
+            filtered = filtered.filter(premium__gte=min_prem)
+        
+        # Filter by IV rank
+        if 'min_iv_rank' in filters:
+            min_iv = Decimal(str(filters['min_iv_rank']))
+            filtered = filtered.filter(iv_rank__gte=min_iv)
+        
+        # Filter by symbols (whitelist)
+        if 'symbols' in filters and filters['symbols']:
+            filtered = filtered.filter(symbol__in=filters['symbols'])
+        
+        # Limit number
+        if 'max_positions' in filters:
+            filtered = filtered[:filters['max_positions']]
+        
+        return filtered
+    
+    def _should_convert(self, raw_data, filters: Dict = None) -> bool:
+        """
+        Validate if raw data should be converted
+        
+        Checks:
+        - Not expired
+        - DTE in range
+        - Meets quality thresholds
+        """
+        # Check expiration
+        if raw_data.is_expired:
+            return False
+        
+        # Check DTE range
+        if filters:
+            dte = raw_data.calculated_dte
+            dte_min = filters.get('dte_min', 0)
+            dte_max = filters.get('dte_max', 999)
+            
+            if not (dte_min <= dte <= dte_max):
+                return False
+        
+        # Quality checks
+        # Avoid extremely low premiums (< $0.50)
+        if raw_data.premium < Decimal('0.50'):
+            return False
+        
+        # Avoid penny stocks for spreads (stock price < $10)
+        if raw_data.stock_price and raw_data.stock_price < Decimal('10.00'):
+            if raw_data.strategy_type in ['credit_spread', 'covered_call']:
+                return False
+        
+        return True
 
