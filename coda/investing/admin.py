@@ -755,3 +755,72 @@ class OptionPlayRawDataAdmin(admin.ModelAdmin):
         self.message_user(request, f"🗑️ Deleted {count} processed records")
     
     delete_processed.short_description = "🗑️ Delete processed records"
+
+
+@admin.register(OptionsPositionHistory)
+class OptionsPositionHistoryAdmin(admin.ModelAdmin):
+    """
+    Admin interface for historical position outcomes
+    
+    Purpose:
+    - Review past trades (wins/losses)
+    - Analyze ML features
+    - Train AI scoring model
+    """
+    list_display = [
+        'position_symbol', 'position_strategy', 'was_profitable', 
+        'actual_return_percentage', 'annualized_return', 'days_held', 
+        'performance_category', 'created_at'
+    ]
+    list_filter = [
+        'was_profitable', 'performance_category', 'exit_reason', 
+        'entry_market_trend', 'created_at'
+    ]
+    search_fields = [
+        'position__symbol', 'position__account__user__username', 
+        'exit_notes', 'ai_post_analysis'
+    ]
+    readonly_fields = [
+        'created_at', 'updated_at', 'risk_reward_realized', 'holding_efficiency'
+    ]
+    
+    fieldsets = (
+        ('Position Link', {
+            'fields': ('position',)
+        }),
+        ('Outcome', {
+            'fields': (
+                'was_profitable', 'actual_return_amount', 
+                'actual_return_percentage', 'annualized_return', 
+                'days_held', 'performance_category'
+            )
+        }),
+        ('Exit Details', {
+            'fields': ('exit_reason', 'exit_notes', 'exit_stock_price', 'max_profit_captured')
+        }),
+        ('Entry Conditions (ML Features)', {
+            'fields': (
+                'entry_iv_rank', 'entry_market_trend', 'entry_vix', 
+                'entry_stock_price', 'days_to_earnings'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('AI Analysis', {
+            'fields': ('ai_confidence_at_entry', 'ai_post_analysis'),
+            'classes': ('collapse',)
+        }),
+        ('Calculated Metrics', {
+            'fields': ('risk_reward_realized', 'holding_efficiency', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def position_symbol(self, obj):
+        return obj.position.symbol
+    position_symbol.short_description = 'Symbol'
+    position_symbol.admin_order_field = 'position__symbol'
+    
+    def position_strategy(self, obj):
+        return obj.position.strategy
+    position_strategy.short_description = 'Strategy'
+    position_strategy.admin_order_field = 'position__strategy'

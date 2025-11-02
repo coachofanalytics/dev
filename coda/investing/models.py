@@ -3664,3 +3664,210 @@ class OptionPlayRawData(TimeStampedModel):
         from .services.optionplay_converter import OptionPlayConverterService
         converter = OptionPlayConverterService()
         return converter.convert_raw_to_suggestion(self)
+
+
+# ============================================================================
+# AI POSITION SCORING: MACHINE LEARNING FOR TRADE SELECTION
+# ============================================================================
+
+class OptionsPositionHistory(TimeStampedModel):
+    """
+    Historical outcomes of closed positions - enables ML-powered scoring
+    
+    Purpose:
+    - Track every position outcome (win/loss, ROI, duration)
+    - Learn which setups work best
+    - Train AI scoring model
+    - Improve future position selection
+    
+    Data Collection:
+    - Auto-populated when position closes (via signal)
+    - Captures entry conditions for ML features
+    - AI analyzes why position succeeded/failed
+    
+    ML Features:
+    - Symbol historical win rate
+    - Strategy effectiveness
+    - IV rank patterns
+    - Market condition correlation
+    - Earnings impact
+    
+    Based on: InvestmentAnalytics model (proven pattern)
+    """
+    
+    # Link to original position
+    position = models.OneToOneField(
+        OptionsPosition,
+        on_delete=models.CASCADE,
+        related_name='outcome_history',
+        help_text="Original position that was closed"
+    )
+    
+    # Outcome Metrics
+    was_profitable = models.BooleanField(
+        help_text="True if position made money"
+    )
+    actual_return_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Actual profit/loss in dollars"
+    )
+    actual_return_percentage = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="ROI as percentage of capital required"
+    )
+    days_held = models.IntegerField(
+        help_text="Number of days position was open"
+    )
+    annualized_return = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="Return annualized (ROI * 365 / days_held)"
+    )
+    
+    # Exit Details
+    exit_reason = models.CharField(
+        max_length=50,
+        choices=[
+            ('profit_target', 'Hit Profit Target'),
+            ('stop_loss', 'Hit Stop Loss'),
+            ('expiration', 'Held to Expiration'),
+            ('early_close', 'Early Close (Manual)'),
+            ('rolled', 'Rolled to New Position'),
+            ('market_conditions', 'Market Conditions Changed'),
+            ('other', 'Other Reason')
+        ],
+        default='expiration'
+    )
+    exit_notes = models.TextField(blank=True, help_text="Why position was closed")
+    
+    # Entry Conditions (ML Features - snapshot at entry time)
+    entry_iv_rank = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="IV Rank when position opened (0-100)"
+    )
+    entry_market_trend = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        choices=[
+            ('strong_bullish', 'Strong Bullish'),
+            ('bullish', 'Bullish'),
+            ('neutral', 'Neutral'),
+            ('bearish', 'Bearish'),
+            ('strong_bearish', 'Strong Bearish')
+        ],
+        help_text="Market trend at entry"
+    )
+    entry_vix = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="VIX level at entry"
+    )
+    entry_stock_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Stock price when position opened"
+    )
+    days_to_earnings = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Days until next earnings when opened"
+    )
+    
+    # Exit Conditions (for analysis)
+    exit_stock_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Stock price when closed"
+    )
+    max_profit_captured = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="% of max profit captured (50% = closed at 50% target)"
+    )
+    
+    # AI Analysis
+    ai_post_analysis = models.TextField(
+        blank=True,
+        help_text="AI-generated analysis of why position succeeded/failed"
+    )
+    ai_confidence_at_entry = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="AI confidence score when position was opened"
+    )
+    
+    # Performance Categorization
+    performance_category = models.CharField(
+        max_length=20,
+        choices=[
+            ('excellent', 'Excellent (>30% ROI)'),
+            ('good', 'Good (15-30% ROI)'),
+            ('average', 'Average (5-15% ROI)'),
+            ('poor', 'Poor (0-5% ROI)'),
+            ('loss', 'Loss (<0% ROI)')
+        ],
+        blank=True,
+        help_text="Auto-categorized performance"
+    )
+    
+    class Meta:
+        verbose_name = "Options Position History"
+        verbose_name_plural = "Options Position Histories"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['was_profitable', 'actual_return_percentage']),
+            models.Index(fields=['entry_market_trend', 'was_profitable']),
+            models.Index(fields=['performance_category']),
+            models.Index(fields=['exit_reason']),
+        ]
+    
+    def __str__(self):
+        profit_loss = "WIN" if self.was_profitable else "LOSS"
+        return f"{self.position.symbol} {self.position.strategy} - {profit_loss} ({self.actual_return_percentage}%)"
+    
+    @property
+    def risk_reward_realized(self):
+        """Actual risk/reward that was realized"""
+        if self.position.max_loss and self.position.max_loss > 0:
+            return abs(self.actual_return_amount / self.position.max_loss)
+        return Decimal('0')
+    
+    @property
+    def holding_efficiency(self):
+        """How efficiently was the position held? (annualized return / days held)"""
+        if self.days_held > 0:
+            return self.annualized_return / Decimal(str(self.days_held))
+        return Decimal('0')
+    
+    def save(self, *args, **kwargs):
+        """Auto-categorize performance on save"""
+        if self.actual_return_percentage:
+            roi = self.actual_return_percentage
+            if roi > 30:
+                self.performance_category = 'excellent'
+            elif roi > 15:
+                self.performance_category = 'good'
+            elif roi > 5:
+                self.performance_category = 'average'
+            elif roi > 0:
+                self.performance_category = 'poor'
+            else:
+                self.performance_category = 'loss'
+        
+        super().save(*args, **kwargs)
