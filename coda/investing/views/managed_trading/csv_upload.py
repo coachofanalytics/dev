@@ -309,6 +309,7 @@ def csv_import_and_score(request):
         min_iv = Decimal(request.POST.get('min_iv', '0'))
         max_dte = int(request.POST.get('max_dte', '365'))
         max_positions = int(request.POST.get('max_positions', '100'))
+        max_capital = Decimal(request.POST.get('max_capital', '999999'))  # Default: no limit
         auto_convert = request.POST.get('auto_convert') == 'on'
         auto_score = request.POST.get('auto_score') == 'on'
         symbol_filter = request.POST.get('symbol_filter', '').strip()
@@ -321,6 +322,7 @@ def csv_import_and_score(request):
         logger.info(f"Min Premium: ${min_premium}")
         logger.info(f"Min IV Rank: {min_iv}%")
         logger.info(f"Max DTE: {max_dte} days")
+        logger.info(f"Max Capital/Position: ${max_capital} (for spread trading)")
         logger.info(f"Max Positions: {max_positions}")
         logger.info(f"Auto-Convert: {auto_convert}")
         logger.info(f"Auto-Score: {auto_score}")
@@ -376,6 +378,7 @@ def csv_import_and_score(request):
             'premium': 0,
             'iv_rank': 0,
             'dte': 0,
+            'capital': 0,
             'symbol': 0,
         }
         rejected_samples = []  # Store first 5 rejected for debugging
@@ -399,6 +402,11 @@ def csv_import_and_score(request):
                 iv_rank_val = _clean_decimal_value(iv_rank_str)
                 dte = _clean_int_value(dte_str)
                 
+                # Calculate capital requirement (for short puts: strike × 100)
+                sell_strike_str = mapped_data.get('sell_strike', '') or '0'
+                sell_strike = _clean_decimal_value(sell_strike_str)
+                capital_required = sell_strike * 100  # Short put capital requirement
+                
                 # Filter checks with detailed tracking
                 filter_failed = False
                 filter_reason = []
@@ -416,6 +424,11 @@ def csv_import_and_score(request):
                 if dte > max_dte:
                     filter_reasons['dte'] += 1
                     filter_reason.append(f"DTE {dte} > {max_dte}")
+                    filter_failed = True
+                
+                if capital_required > max_capital:
+                    filter_reasons['capital'] += 1
+                    filter_reason.append(f"Capital ${capital_required:,.0f} > ${max_capital} (Strike: ${sell_strike})")
                     filter_failed = True
                 
                 if allowed_symbols and symbol not in allowed_symbols:
@@ -526,6 +539,7 @@ def csv_import_and_score(request):
             logger.info(f"   Premium too low: {filter_reasons['premium']}")
             logger.info(f"   IV Rank too low: {filter_reasons['iv_rank']}")
             logger.info(f"   DTE too high: {filter_reasons['dte']}")
+            logger.info(f"   Capital too high: {filter_reasons['capital']} (strike × 100 > ${max_capital})")
             logger.info(f"   Symbol not allowed: {filter_reasons['symbol']}")
             
             if rejected_samples:
@@ -533,6 +547,13 @@ def csv_import_and_score(request):
                 for i, sample in enumerate(rejected_samples, 1):
                     logger.info(f"   {i}. {sample['symbol']}: Premium=${sample['premium']}, IV={sample['iv_rank']}%, DTE={sample['dte']}")
                     logger.info(f"      Reasons: {', '.join(sample['reasons'])}")
+            
+            # Special note about capital filtering for spread trading
+            if filter_reasons['capital'] > 0:
+                logger.info(f"\n💡 TIP: {filter_reasons['capital']} positions filtered due to capital requirements.")
+                logger.info(f"   These short puts require strike × 100 > ${max_capital}")
+                logger.info(f"   Consider converting to credit spreads with 5-10 point widths")
+                logger.info(f"   Example: $150 strike → Sell $150/Buy $145 spread = $500 capital")
         
         logger.info("=" * 80)
         

@@ -132,6 +132,12 @@
                             <input type="number" name="max_dte" id="max_dte" class="form-control" value="35" step="1" min="1">
                             <small class="text-muted">Suggested: 25-35 days | Your avg: {{ stats.avg_dte|floatformat:0 }} days</small>
                         </div>
+                        
+                        <div class="form-group">
+                            <label>Maximum Capital per Position ($)</label>
+                            <input type="number" name="max_capital" id="max_capital" class="form-control" value="600" step="50" min="100">
+                            <small class="text-muted">For spreads: Width × 100 × multiplier. Keep ≤ $600 for capital efficiency</small>
+                        </div>
                     </div>
                     
                     <div class="col-md-6">
@@ -258,35 +264,38 @@
 <script>
 console.log('🔧 CSV Upload Wizard - Step 2 Auto (Streamlined)');
 
-// Filter Presets Configuration
+// Filter Presets Configuration (Optimized for $600 Max Capital / Spread Trading)
 const filterPresets = {
     conservative: {
         name: 'Conservative',
-        description: '🛡️ <strong>Conservative:</strong> Highest win rate (~80%). Focus on safety over returns.<br>• IV Rank ≥ 45% (strong premium)<br>• Return ≥ 90% (good income)<br>• DTE 30-35 days<br>• Max 10 positions',
+        description: '🛡️ <strong>Conservative (Spreads):</strong> Highest win rate (~80%). Capital efficient.<br>• IV Rank ≥ 45% (strong premium)<br>• Premium ≥ $2.50<br>• Capital ≤ $600 (5-10 wide spreads)<br>• DTE 30-35 days<br>• Max 10 positions<br><br><em>$6,000 total capital deployed across 10 positions</em>',
         values: {
             min_premium: 2.50,
             min_iv: 45,
             max_dte: 35,
+            max_capital: 600,
             max_positions: 10
         }
     },
     balanced: {
         name: 'Balanced (Recommended)',
-        description: '⚖️ <strong>Balanced:</strong> Best risk/reward ratio. Industry standard for income trading.<br>• IV Rank ≥ 35% (balanced premium)<br>• Return ≥ 80% (solid income)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Recommended for most traders</em>',
+        description: '⚖️ <strong>Balanced (Spreads):</strong> Best risk/reward for $600/position limit.<br>• IV Rank ≥ 35% (balanced premium)<br>• Premium ≥ $2.00<br>• Capital ≤ $600 (5-10 wide spreads)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>$7,200 total capital • Optimized for small accounts • Industry standard ratios</em>',
         values: {
             min_premium: 2.00,
             min_iv: 35,
             max_dte: 35,
+            max_capital: 600,
             max_positions: 12
         }
     },
     aggressive: {
         name: 'Aggressive',
-        description: '🚀 <strong>Aggressive:</strong> Higher returns, higher risk. For experienced traders.<br>• IV Rank ≥ 30% (accept lower vol)<br>• Return ≥ 100% (high income required)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>Allocate smaller position sizes</em>',
+        description: '🚀 <strong>Aggressive (Spreads):</strong> Higher returns with managed capital.<br>• IV Rank ≥ 30% (accept lower vol)<br>• Premium ≥ $1.50<br>• Capital ≤ $600 (tighter spreads OK)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>$9,000 total capital • For experienced traders</em>',
         values: {
             min_premium: 1.50,
             min_iv: 30,
             max_dte: 35,
+            max_capital: 600,
             max_positions: 15
         }
     },
@@ -312,6 +321,7 @@ document.getElementById('filter_preset').addEventListener('change', function() {
         document.getElementById('min_premium').value = config.values.min_premium;
         document.getElementById('min_iv').value = config.values.min_iv;
         document.getElementById('max_dte').value = config.values.max_dte;
+        document.getElementById('max_capital').value = config.values.max_capital;
         document.getElementById('max_positions').value = config.values.max_positions;
         
         console.log('✅ Filter values updated:', config.values);
@@ -325,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Track manual changes (switch to custom if user modifies)
 let manualChange = false;
-['min_premium', 'min_iv', 'max_dte', 'max_positions'].forEach(function(fieldId) {
+['min_premium', 'min_iv', 'max_dte', 'max_capital', 'max_positions'].forEach(function(fieldId) {
     const field = document.getElementById(fieldId);
     if (field) {
         field.addEventListener('input', function() {
