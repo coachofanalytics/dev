@@ -17,6 +17,7 @@ from .views.managed_trading import (
     batches,  # Phase 7
     position_suggestions,  # Phase 8: Automated position sourcing
     csv_upload,  # CSV Upload Wizard (Enhanced with Cross-Validation)
+    webhooks,  # Phase 9: Real-time WhatsApp approval
 )
 
 urlpatterns = [
@@ -228,5 +229,17 @@ urlpatterns = [
     path('managed/staff/upload-csv/import/', 
          csv_upload.csv_import_and_score, 
          name='csv_import_and_score'),
+    
+    # ========================================================================
+    # WEBHOOKS: Real-Time Approval (Phase 9)
+    # ========================================================================
+    
+    path('webhooks/whatsapp/', 
+         webhooks.whatsapp_webhook, 
+         name='whatsapp_webhook'),
+    
+    path('webhooks/whatsapp/status/', 
+         webhooks.whatsapp_status_callback, 
+         name='whatsapp_status_callback'),
 ]
 

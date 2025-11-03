@@ -3112,6 +3112,49 @@ class PositionBatch(TimeStampedModel):
         help_text="Was timeout notification sent?"
     )
     
+    # Real-time notification tracking (Phase 9: Real-time Client Approval)
+    whatsapp_notification_sent = models.BooleanField(
+        default=False,
+        help_text="Was WhatsApp notification sent?"
+    )
+    whatsapp_notification_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When WhatsApp notification was sent"
+    )
+    sms_notification_sent = models.BooleanField(
+        default=False,
+        help_text="Was SMS notification sent?"
+    )
+    sms_notification_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When SMS notification was sent"
+    )
+    
+    # Approval method tracking
+    APPROVAL_METHOD_CHOICES = [
+        ('whatsapp', 'WhatsApp Reply'),
+        ('sms', 'SMS Reply'),
+        ('portal', 'Client Portal'),
+        ('email', 'Email Link'),
+        ('phone', 'Phone Call'),
+    ]
+    approval_method = models.CharField(
+        max_length=20,
+        choices=APPROVAL_METHOD_CHOICES,
+        blank=True,
+        help_text="How client approved this batch"
+    )
+    
+    # Quick approval token (for WhatsApp/SMS replies)
+    approval_token = models.CharField(
+        max_length=100,
+        blank=True,
+        unique=True,
+        help_text="Token for quick approval via WhatsApp/SMS"
+    )
+    
     class Meta:
         verbose_name = "Position Batch"
         verbose_name_plural = "Position Batches"
