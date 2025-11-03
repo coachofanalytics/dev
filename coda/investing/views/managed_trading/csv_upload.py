@@ -744,9 +744,14 @@ def csv_import_and_score(request):
                     score_result = scorer.score_position(position_data)
                     
                     # Update suggestion with AI score
+                    # Convert Decimals to floats for JSON serialization
+                    breakdown = score_result['breakdown']
+                    if isinstance(breakdown, dict):
+                        breakdown = {k: float(v) if isinstance(v, Decimal) else v for k, v in breakdown.items()}
+                    
                     suggestion.ai_score = score_result['score']
                     suggestion.ai_rating = score_result['rating']
-                    suggestion.ai_breakdown = score_result['breakdown']
+                    suggestion.ai_breakdown = breakdown  # Now JSON-serializable
                     suggestion.ai_recommendation = score_result['recommendation']
                     suggestion.ai_confidence_level = score_result['confidence']
                     suggestion.save()
