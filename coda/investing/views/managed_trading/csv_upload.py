@@ -425,8 +425,10 @@ def csv_import_and_score(request):
                 capital_required = spread_width * 100  # Spread capital = width × 100
                 
                 # Calculate Return on Capital (ROC in decimal format: 0.40 = 40%)
+                # NOTE: Premium is per share, need to multiply by 100 for contract value
+                premium_total = premium * 100  # $3.65/share × 100 = $365 contract
                 if capital_required > 0:
-                    roc = premium / capital_required  # Keep as decimal (0.57 = 57%)
+                    roc = premium_total / capital_required  # $365 / $500 = 0.73 (73%)
                 else:
                     roc = Decimal('0')
                 
@@ -452,7 +454,7 @@ def csv_import_and_score(request):
                 # NEW: Filter by Return on Capital (capital efficiency!)
                 if roc < min_roc:
                     filter_reasons['roc'] += 1
-                    filter_reason.append(f"ROC {roc*100:.1f}% < {min_roc*100:.1f}% (${premium} premium on ${capital_required} capital)")
+                    filter_reason.append(f"ROC {roc*100:.1f}% < {min_roc*100:.1f}% (${premium_total} premium on ${capital_required} capital)")
                     filter_failed = True
                 
                 if allowed_symbols and symbol not in allowed_symbols:
@@ -470,7 +472,7 @@ def csv_import_and_score(request):
                     if len(rejected_samples) < 5:
                         rejected_samples.append({
                             'symbol': symbol,
-                            'premium': premium,
+                            'premium': premium_total,  # Store total contract value for display
                             'iv_rank': iv_rank_val,
                             'dte': dte,
                             'roc': roc,
@@ -481,8 +483,9 @@ def csv_import_and_score(request):
                     continue
                 
                 # Create OptionPlayRawData
-                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium}, ROC: {roc*100:.1f}%, {spread_width}pt spread)")
+                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium_total}, ROC: {roc*100:.1f}%, {spread_width}pt spread)")
                 logger.debug(f"       Capital: ${capital_required}, Suggested Spread: Sell ${sell_strike}/Buy ${sell_strike - spread_width}")
+                logger.debug(f"       ESTIMATED for client review: Collect ${premium_total}, Risk ${capital_required}, {roc*100:.1f}% return")
                 raw_data = _create_raw_data_from_mapped(mapped_data, strategy_type)
                 imported_ids.append(raw_data.id)
                 
@@ -575,17 +578,18 @@ def csv_import_and_score(request):
                 for i, sample in enumerate(rejected_samples, 1):
                     logger.info(f"   {i}. {sample['symbol']}: Premium=${sample['premium']}, IV={sample['iv_rank']*100:.1f}%, DTE={sample['dte']}")
                     logger.info(f"       ROC: {sample['roc']*100:.1f}% (${sample['premium']} premium / ${sample['capital']} capital)")
-                    logger.info(f"       Suggested {sample['spread_width']}-point spread")
+                    logger.info(f"       Suggested {sample['spread_width']}-point spread (ESTIMATED for screening)")
                     logger.info(f"       Reasons: {', '.join(sample['reasons'])}")
             
             # Special note about ROC filtering
             if filter_reasons['roc'] > 0:
-                logger.info(f"\n💡 CAPITAL EFFICIENCY TIP:")
+                logger.info(f"\n💡 CAPITAL EFFICIENCY & CLIENT RISK DISCLOSURE:")
                 logger.info(f"   {filter_reasons['roc']} positions filtered for low Return on Capital (< {min_roc*100:.1f}%)")
-                logger.info(f"   ROC = Premium / Capital (stored as decimal: 0.57 = 57%)")
+                logger.info(f"   ROC = (Premium × 100) / Capital (contract values: 0.57 = 57%)")
                 logger.info(f"   Example:")
-                logger.info(f"      Good: $4 premium on $700 spread = 0.57 ROC (57%) ✅")
-                logger.info(f"      Poor: $2 premium on $600 spread = 0.33 ROC (33%) ❌")
+                logger.info(f"      Good: $4/share ($400) on $700 spread = 0.57 ROC (57%) ✅")
+                logger.info(f"      Poor: $2/share ($200) on $600 spread = 0.33 ROC (33%) ❌")
+                logger.info(f"   ⚠️ NOTE: Estimates for screening. Actual execution prices will vary.")
                 logger.info(f"   Lower ROC filter to see more positions (try 0.30-0.35)")
         
         logger.info("=" * 80)

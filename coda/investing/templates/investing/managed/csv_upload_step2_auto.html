@@ -136,7 +136,11 @@
                         <div class="form-group">
                             <label>Minimum Return on Capital (ROC, decimal)</label>
                             <input type="number" name="min_roc" id="min_roc" class="form-control" value="0.40" step="0.05" min="0" max="2">
-                            <small class="text-muted">Decimal: 0.40 = 40% ROC. Premium / Capital. Higher = better efficiency</small>
+                            <small class="text-muted">
+                                <strong>Screening Estimate:</strong> 0.40 = 40% ROC. (Premium × 100) / Capital.<br>
+                                <em>Example: $3.65/share ($365) ÷ $500 spread = 73% ROC ✅</em><br>
+                                ⚠️ Estimates for client review - actual execution prices vary
+                            </small>
                         </div>
                         
                         <div class="form-group">
@@ -292,7 +296,7 @@ const filterPresets = {
     },
     balanced: {
         name: 'Balanced (Recommended)',
-        description: '⚖️ <strong>Balanced:</strong> Best capital efficiency. Takes good positions regardless of size.<br>• IV Rank ≥ 0.35 (35% in Excel)<br>• Premium ≥ $2.00<br>• ROC ≥ 0.40 (40% efficiency)<br>• Spread Width: Auto (5 points)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Example: $4 premium on $700 spread = 0.57 ROC ✅</em>',
+        description: '⚖️ <strong>Balanced:</strong> Best capital efficiency for client approval.<br>• IV Rank ≥ 0.35 (35% in Excel)<br>• Premium ≥ $2.00/share ($200 total)<br>• ROC ≥ 0.40 (40% efficiency)<br>• Spread Width: Auto (5 points)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Example: $4/share ($400) on $700 spread = 57% ROC ✅</em><br><small>⚠️ Estimates for screening - actual prices vary at execution</small>',
         values: {
             min_premium: 2.00,
             min_iv: 0.35,  // Excel decimal: 0.35 = 35%

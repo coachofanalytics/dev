@@ -138,11 +138,13 @@
             <div class="alert alert-success">
                 <h5><i class="fa fa-check-circle"></i> Success!</h5>
                 <p class="mb-0">
-                    <strong>{{ imported_count }} positions</strong> imported successfully.
+                    <strong>{{ imported_count }} positions</strong> imported successfully (estimated risk-return for client review).
                     {% if auto_score and scored_count > 0 %}
                     <br><strong>{{ scored_count }} positions</strong> have been AI-scored and are ready for review.
                     {% endif %}
                 </p>
+                <hr>
+                <p class="mb-0"><small><strong>⚠️ Important:</strong> All capital and premium estimates are based on mid-prices for screening purposes. Actual execution prices will vary. Present these to clients as preliminary risk-return estimates before entering live trades.</small></p>
             </div>
             
             <!-- Next Actions -->
