@@ -580,6 +580,19 @@ def csv_import_and_score(request):
         
         logger.info("=" * 80)
         
+        # Calculate near-miss positions if nothing was imported
+        near_miss_positions = []
+        if len(imported_ids) == 0 and filtered_count > 0:
+            logger.info("🔍 No positions imported - calculating near-miss positions...")
+            near_miss_positions = _find_near_miss_positions(
+                rejected_samples, 
+                min_premium, 
+                min_iv, 
+                max_dte, 
+                min_roc
+            )
+            logger.info(f"✅ Found {len(near_miss_positions)} near-miss positions")
+        
         # Show results
         context = {
             'imported_count': len(imported_ids),
@@ -592,6 +605,8 @@ def csv_import_and_score(request):
             'deleted_count': deleted_count,
             'archived_count': archived_count,
             'import_mode': import_mode,
+            'filter_breakdown': filter_reasons,  # Pass filter breakdown to template
+            'near_miss_positions': near_miss_positions,  # Pass near-miss positions
             'title': 'CSV Upload - Complete'
         }
         
@@ -609,6 +624,73 @@ def csv_import_and_score(request):
 
 
 # Helper functions
+
+def _find_near_miss_positions(rejected_samples, min_premium, min_iv, max_dte, min_roc):
+    """
+    Find the best near-miss positions that came closest to passing filters
+    
+    Scores each position by how many filters it passed
+    Returns top 2-3 with suggestions on how to adjust filters
+    """
+    if not rejected_samples:
+        return []
+    
+    near_misses = []
+    
+    for sample in rejected_samples:
+        # Calculate how many filters this position passed
+        score = 0
+        suggestions = []
+        
+        # Check premium
+        if sample['premium'] >= min_premium:
+            score += 1
+        else:
+            diff = min_premium - sample['premium']
+            suggestions.append(f"Lower min premium by ${diff:.2f} (to ${sample['premium']:.2f})")
+        
+        # Check IV rank
+        if sample['iv_rank'] >= min_iv:
+            score += 1
+        else:
+            diff = min_iv - sample['iv_rank']
+            suggestions.append(f"Lower min IV rank by {diff:.1f}% (to {sample['iv_rank']:.1f}%)")
+        
+        # Check DTE
+        if sample['dte'] <= max_dte:
+            score += 1
+        else:
+            diff = sample['dte'] - max_dte
+            suggestions.append(f"Increase max DTE by {diff} days (to {sample['dte']} days)")
+        
+        # Check ROC
+        if sample['roc'] >= min_roc:
+            score += 1
+        else:
+            diff = min_roc - sample['roc']
+            suggestions.append(f"Lower min ROC by {diff:.1f}% (to {sample['roc']:.1f}%)")
+        
+        # Add to near misses if it passed at least 2 out of 4 filters
+        if score >= 2:
+            near_misses.append({
+                'symbol': sample['symbol'],
+                'premium': sample['premium'],
+                'iv_rank': sample['iv_rank'],
+                'dte': sample['dte'],
+                'roc': sample['roc'],
+                'capital': sample['capital'],
+                'spread_width': sample['spread_width'],
+                'score': score,
+                'reasons': sample['reasons'],
+                'suggestions': suggestions
+            })
+    
+    # Sort by score (best first), then by ROC (highest first)
+    near_misses.sort(key=lambda x: (x['score'], x['roc']), reverse=True)
+    
+    # Return top 3
+    return near_misses[:3]
+
 
 def _calculate_spread_width(strike_price, width_choice='auto'):
     """
