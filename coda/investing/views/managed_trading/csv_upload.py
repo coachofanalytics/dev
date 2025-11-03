@@ -309,20 +309,22 @@ def csv_import_and_score(request):
         min_iv = Decimal(request.POST.get('min_iv', '0'))
         max_dte = int(request.POST.get('max_dte', '365'))
         max_positions = int(request.POST.get('max_positions', '100'))
-        max_capital = Decimal(request.POST.get('max_capital', '999999'))  # Default: no limit
+        min_roc = Decimal(request.POST.get('min_roc', '0'))  # Minimum Return on Capital %
+        spread_width_choice = request.POST.get('spread_width', 'auto')
         auto_convert = request.POST.get('auto_convert') == 'on'
         auto_score = request.POST.get('auto_score') == 'on'
         symbol_filter = request.POST.get('symbol_filter', '').strip()
         import_mode = request.POST.get('import_mode', 'add')  # add, replace, cleanup
         
         logger.info("=" * 80)
-        logger.info("📊 IMPORT SETTINGS")
+        logger.info("📊 IMPORT SETTINGS (Capital Efficiency Mode)")
         logger.info("=" * 80)
         logger.info(f"Import Mode: {import_mode.upper()}")
         logger.info(f"Min Premium: ${min_premium}")
         logger.info(f"Min IV Rank: {min_iv}%")
         logger.info(f"Max DTE: {max_dte} days")
-        logger.info(f"Max Capital/Position: ${max_capital} (for spread trading)")
+        logger.info(f"Min ROC (Return on Capital): {min_roc}% (Premium/Capital × 100)")
+        logger.info(f"Spread Width: {spread_width_choice}")
         logger.info(f"Max Positions: {max_positions}")
         logger.info(f"Auto-Convert: {auto_convert}")
         logger.info(f"Auto-Score: {auto_score}")
@@ -378,7 +380,7 @@ def csv_import_and_score(request):
             'premium': 0,
             'iv_rank': 0,
             'dte': 0,
-            'capital': 0,
+            'roc': 0,  # Return on Capital filter
             'symbol': 0,
         }
         rejected_samples = []  # Store first 5 rejected for debugging
@@ -402,10 +404,21 @@ def csv_import_and_score(request):
                 iv_rank_val = _clean_decimal_value(iv_rank_str)
                 dte = _clean_int_value(dte_str)
                 
-                # Calculate capital requirement (for short puts: strike × 100)
+                # Calculate spread width and capital efficiency
                 sell_strike_str = mapped_data.get('sell_strike', '') or '0'
                 sell_strike = _clean_decimal_value(sell_strike_str)
-                capital_required = sell_strike * 100  # Short put capital requirement
+                
+                # Determine optimal spread width
+                spread_width = _calculate_spread_width(sell_strike, spread_width_choice)
+                
+                # Calculate capital requirement for spread
+                capital_required = spread_width * 100  # Spread capital = width × 100
+                
+                # Calculate Return on Capital (ROC %)
+                if capital_required > 0:
+                    roc = (premium / capital_required) * 100
+                else:
+                    roc = Decimal('0')
                 
                 # Filter checks with detailed tracking
                 filter_failed = False
@@ -426,9 +439,10 @@ def csv_import_and_score(request):
                     filter_reason.append(f"DTE {dte} > {max_dte}")
                     filter_failed = True
                 
-                if capital_required > max_capital:
-                    filter_reasons['capital'] += 1
-                    filter_reason.append(f"Capital ${capital_required:,.0f} > ${max_capital} (Strike: ${sell_strike})")
+                # NEW: Filter by Return on Capital (capital efficiency!)
+                if roc < min_roc:
+                    filter_reasons['roc'] += 1
+                    filter_reason.append(f"ROC {roc:.1f}% < {min_roc}% (${premium} premium on ${capital_required} capital)")
                     filter_failed = True
                 
                 if allowed_symbols and symbol not in allowed_symbols:
@@ -449,12 +463,16 @@ def csv_import_and_score(request):
                             'premium': premium,
                             'iv_rank': iv_rank_val,
                             'dte': dte,
+                            'roc': roc,
+                            'capital': capital_required,
+                            'spread_width': spread_width,
                             'reasons': filter_reason
                         })
                     continue
                 
                 # Create OptionPlayRawData
-                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium})")
+                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium}, ROC: {roc:.1f}%, {spread_width}pt spread)")
+                logger.debug(f"       Capital: ${capital_required}, Suggested Spread: Sell ${sell_strike}/Buy ${sell_strike - spread_width}")
                 raw_data = _create_raw_data_from_mapped(mapped_data, strategy_type)
                 imported_ids.append(raw_data.id)
                 
@@ -539,21 +557,26 @@ def csv_import_and_score(request):
             logger.info(f"   Premium too low: {filter_reasons['premium']}")
             logger.info(f"   IV Rank too low: {filter_reasons['iv_rank']}")
             logger.info(f"   DTE too high: {filter_reasons['dte']}")
-            logger.info(f"   Capital too high: {filter_reasons['capital']} (strike × 100 > ${max_capital})")
+            logger.info(f"   ROC too low: {filter_reasons['roc']} (capital efficiency below {min_roc}%)")
             logger.info(f"   Symbol not allowed: {filter_reasons['symbol']}")
             
             if rejected_samples:
                 logger.info("\n❌ SAMPLE REJECTED POSITIONS (first 5):")
                 for i, sample in enumerate(rejected_samples, 1):
                     logger.info(f"   {i}. {sample['symbol']}: Premium=${sample['premium']}, IV={sample['iv_rank']}%, DTE={sample['dte']}")
-                    logger.info(f"      Reasons: {', '.join(sample['reasons'])}")
+                    logger.info(f"       ROC: {sample['roc']:.1f}% (${sample['premium']} premium / ${sample['capital']} capital)")
+                    logger.info(f"       Suggested {sample['spread_width']}-point spread")
+                    logger.info(f"       Reasons: {', '.join(sample['reasons'])}")
             
-            # Special note about capital filtering for spread trading
-            if filter_reasons['capital'] > 0:
-                logger.info(f"\n💡 TIP: {filter_reasons['capital']} positions filtered due to capital requirements.")
-                logger.info(f"   These short puts require strike × 100 > ${max_capital}")
-                logger.info(f"   Consider converting to credit spreads with 5-10 point widths")
-                logger.info(f"   Example: $150 strike → Sell $150/Buy $145 spread = $500 capital")
+            # Special note about ROC filtering
+            if filter_reasons['roc'] > 0:
+                logger.info(f"\n💡 CAPITAL EFFICIENCY TIP:")
+                logger.info(f"   {filter_reasons['roc']} positions filtered for low Return on Capital (< {min_roc}%)")
+                logger.info(f"   ROC = Premium / Capital × 100")
+                logger.info(f"   Example:")
+                logger.info(f"      Good: $4 premium on $700 spread = 57% ROC ✅")
+                logger.info(f"      Poor: $2 premium on $600 spread = 33% ROC ❌")
+                logger.info(f"   Lower ROC filter to see more positions (try 30-35%)")
         
         logger.info("=" * 80)
         
@@ -586,6 +609,33 @@ def csv_import_and_score(request):
 
 
 # Helper functions
+
+def _calculate_spread_width(strike_price, width_choice='auto'):
+    """
+    Calculate optimal spread width based on strike price
+    
+    Industry standards:
+    - $0-50: 3-5 points
+    - $50-100: 5 points
+    - $100-200: 5-7 points
+    - $200+: 7-10 points
+    """
+    if width_choice != 'auto':
+        try:
+            return int(width_choice)
+        except:
+            pass
+    
+    # Auto-calculate based on strike
+    if strike_price < 50:
+        return 5
+    elif strike_price < 100:
+        return 5
+    elif strike_price < 200:
+        return 7
+    else:
+        return 10
+
 
 def _clean_decimal_value(value_str):
     """Clean and convert string to Decimal, handling $, %, commas, spaces"""

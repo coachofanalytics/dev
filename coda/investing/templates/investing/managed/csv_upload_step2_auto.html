@@ -134,9 +134,21 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Maximum Capital per Position ($)</label>
-                            <input type="number" name="max_capital" id="max_capital" class="form-control" value="600" step="50" min="100">
-                            <small class="text-muted">For spreads: Width × 100 × multiplier. Keep ≤ $600 for capital efficiency</small>
+                            <label>Minimum Return on Capital (ROC %)</label>
+                            <input type="number" name="min_roc" id="min_roc" class="form-control" value="40" step="5" min="0" max="200">
+                            <small class="text-muted">Premium / Capital × 100. Higher = better efficiency. Aim for 40%+</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Suggested Spread Width (points)</label>
+                            <select name="spread_width" id="spread_width" class="form-control">
+                                <option value="auto" selected>Auto (Based on Strike)</option>
+                                <option value="3">3 points (tight)</option>
+                                <option value="5">5 points (balanced)</option>
+                                <option value="7">7 points (medium)</option>
+                                <option value="10">10 points (wide)</option>
+                            </select>
+                            <small class="text-muted">For converting to credit spreads. Auto: 5 points for most strikes</small>
                         </div>
                     </div>
                     
@@ -264,38 +276,41 @@
 <script>
 console.log('🔧 CSV Upload Wizard - Step 2 Auto (Streamlined)');
 
-// Filter Presets Configuration (Optimized for $600 Max Capital / Spread Trading)
+// Filter Presets Configuration (Capital Efficiency Focus)
 const filterPresets = {
     conservative: {
         name: 'Conservative',
-        description: '🛡️ <strong>Conservative (Spreads):</strong> Highest win rate (~80%). Capital efficient.<br>• IV Rank ≥ 45% (strong premium)<br>• Premium ≥ $2.50<br>• Capital ≤ $600 (5-10 wide spreads)<br>• DTE 30-35 days<br>• Max 10 positions<br><br><em>$6,000 total capital deployed across 10 positions</em>',
+        description: '🛡️ <strong>Conservative:</strong> Highest win rate (~80%). Focus on quality over returns.<br>• IV Rank ≥ 45% (strong premium)<br>• Premium ≥ $2.50<br>• ROC ≥ 50% (great capital efficiency)<br>• Spread Width: Auto (5-7 points)<br>• DTE 30-35 days<br>• Max 10 positions<br><br><em>Example: $2.50 premium on $500 spread = 50% ROC ✅</em>',
         values: {
             min_premium: 2.50,
             min_iv: 45,
             max_dte: 35,
-            max_capital: 600,
+            min_roc: 50,
+            spread_width: 'auto',
             max_positions: 10
         }
     },
     balanced: {
         name: 'Balanced (Recommended)',
-        description: '⚖️ <strong>Balanced (Spreads):</strong> Best risk/reward for $600/position limit.<br>• IV Rank ≥ 35% (balanced premium)<br>• Premium ≥ $2.00<br>• Capital ≤ $600 (5-10 wide spreads)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>$7,200 total capital • Optimized for small accounts • Industry standard ratios</em>',
+        description: '⚖️ <strong>Balanced:</strong> Best capital efficiency. Takes good positions regardless of size.<br>• IV Rank ≥ 35% (balanced premium)<br>• Premium ≥ $2.00<br>• ROC ≥ 40% (solid efficiency)<br>• Spread Width: Auto (5 points)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Example: $4 premium on $700 spread = 57% ROC ✅ Better than $2 on $400 (50% ROC)</em>',
         values: {
             min_premium: 2.00,
             min_iv: 35,
             max_dte: 35,
-            max_capital: 600,
+            min_roc: 40,
+            spread_width: 'auto',
             max_positions: 12
         }
     },
     aggressive: {
         name: 'Aggressive',
-        description: '🚀 <strong>Aggressive (Spreads):</strong> Higher returns with managed capital.<br>• IV Rank ≥ 30% (accept lower vol)<br>• Premium ≥ $1.50<br>• Capital ≤ $600 (tighter spreads OK)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>$9,000 total capital • For experienced traders</em>',
+        description: '🚀 <strong>Aggressive:</strong> Maximum capital efficiency. Accept higher capital if returns justify it.<br>• IV Rank ≥ 30% (accept lower vol)<br>• Premium ≥ $1.50<br>• ROC ≥ 35% (efficient minimum)<br>• Spread Width: Auto (tighter OK)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>Example: $5 premium on $1000 spread = 50% ROC ✅ Size doesn\'t matter if ROC is good</em>',
         values: {
             min_premium: 1.50,
             min_iv: 30,
             max_dte: 35,
-            max_capital: 600,
+            min_roc: 35,
+            spread_width: 'auto',
             max_positions: 15
         }
     },
@@ -321,7 +336,8 @@ document.getElementById('filter_preset').addEventListener('change', function() {
         document.getElementById('min_premium').value = config.values.min_premium;
         document.getElementById('min_iv').value = config.values.min_iv;
         document.getElementById('max_dte').value = config.values.max_dte;
-        document.getElementById('max_capital').value = config.values.max_capital;
+        document.getElementById('min_roc').value = config.values.min_roc;
+        document.getElementById('spread_width').value = config.values.spread_width;
         document.getElementById('max_positions').value = config.values.max_positions;
         
         console.log('✅ Filter values updated:', config.values);
@@ -335,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Track manual changes (switch to custom if user modifies)
 let manualChange = false;
-['min_premium', 'min_iv', 'max_dte', 'max_capital', 'max_positions'].forEach(function(fieldId) {
+['min_premium', 'min_iv', 'max_dte', 'min_roc', 'spread_width', 'max_positions'].forEach(function(fieldId) {
     const field = document.getElementById(fieldId);
     if (field) {
         field.addEventListener('input', function() {
