@@ -226,6 +226,111 @@
                     </div>
                 </div>
                 
+                <!-- Tier 2: Final Selection Filters (Collapsible, Advanced) -->
+                <div class="card mt-4 border-info">
+                    <div class="card-header bg-info text-white" style="cursor: pointer;" data-toggle="collapse" data-target="#tier2Filters">
+                        <h5 class="mb-0">
+                            <i class="fa fa-trophy"></i> Tier 2: Final Selection (Advanced - Optional)
+                            <small class="float-right"><i class="fa fa-chevron-down"></i></small>
+                        </h5>
+                        <small>Filter 60+ positions → Select top 10-25 for client review</small>
+                    </div>
+                    <div id="tier2Filters" class="collapse">
+                        <div class="card-body">
+                            <div class="alert alert-info mb-3">
+                                <strong>💡 How Tier 2 Works:</strong><br>
+                                Tier 1 filters find <em>quality positions</em> (typically 50-100).<br>
+                                Tier 2 narrows to <em>best positions for client approval</em> (10-25).<br>
+                                Uses hard filters + AI ranking for final selection.
+                            </div>
+                            
+                            <div class="custom-control custom-switch mb-3">
+                                <input type="checkbox" class="custom-control-input" id="tier2_enabled" name="tier2_enabled">
+                                <label class="custom-control-label" for="tier2_enabled">
+                                    <strong>🎯 Enable Tier 2 Final Selection</strong>
+                                </label>
+                            </div>
+                            
+                            <div id="tier2Options" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="border-top pt-2">Risk Reduction Filters</h6>
+                                        
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="exclude_earnings" name="exclude_earnings" checked>
+                                            <label class="custom-control-label" for="exclude_earnings">
+                                                <strong>📅 Exclude Earnings Positions</strong>
+                                                <br><small class="text-muted">Avoid positions with earnings in DTE window (safer)</small>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="custom-control custom-checkbox mt-2">
+                                            <input type="checkbox" class="custom-control-input" id="blue_chip_only" name="blue_chip_only" checked>
+                                            <label class="custom-control-label" for="blue_chip_only">
+                                                <strong>🏆 Blue Chip Companies Only</strong>
+                                                <br><small class="text-muted">FAANG, Mag 7, S&P 100 stocks (~80 symbols)</small>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="form-group mt-3">
+                                            <label>Stock Price Range (Liquidity)</label>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <input type="number" name="min_stock_price" class="form-control" value="40" step="10" min="10">
+                                                    <small class="text-muted">Min: $40</small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="number" name="max_stock_price" class="form-control" value="600" step="50" min="50">
+                                                    <small class="text-muted">Max: $600</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Minimum Distance OTM (Safety Margin, decimal)</label>
+                                            <input type="number" name="min_distance_otm" class="form-control" value="0.03" step="0.01" min="0" max="0.20">
+                                            <small class="text-muted">0.03 = 3% OTM (strike 3% below stock for puts)</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h6 class="border-top pt-2">Final Selection Method</h6>
+                                        
+                                        <div class="form-group">
+                                            <label>Ranking/Sorting Method</label>
+                                            <select name="tier2_ranking" class="form-control">
+                                                <option value="ai_score">🤖 AI Score (6-factor algorithm) - Recommended</option>
+                                                <option value="roc">💰 ROC (Capital Efficiency)</option>
+                                                <option value="premium">💵 Premium (Highest Income)</option>
+                                                <option value="balanced">⚖️ Balanced (ROC + Premium + IV)</option>
+                                            </select>
+                                            <small class="text-muted">
+                                                AI Score considers: historical win rate, IV rank, greeks, risk/reward, earnings, liquidity
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Max Final Positions (for Client Review)</label>
+                                            <input type="number" name="tier2_max_positions" class="form-control" value="12" step="1" min="5" max="25">
+                                            <small class="text-muted">Select top 5-25 positions after ranking (recommended: 10-15)</small>
+                                        </div>
+                                        
+                                        <div class="alert alert-success mt-3">
+                                            <strong>📊 Expected Flow:</strong><br>
+                                            <small>
+                                                {{ total_rows }} rows<br>
+                                                → Tier 1: ~60 quality positions<br>
+                                                → Tier 2: Top 10-15 blue chip positions<br>
+                                                → Client approval & execution
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="d-flex justify-content-between mt-4">
                     <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-secondary">
                         <i class="fa fa-arrow-left"></i> Upload Different File
@@ -370,20 +475,45 @@ let manualChange = false;
     }
 });
 
+// Tier 2 toggle
+document.getElementById('tier2_enabled').addEventListener('change', function() {
+    const tier2Options = document.getElementById('tier2Options');
+    if (this.checked) {
+        tier2Options.style.display = 'block';
+        console.log('✅ Tier 2 Final Selection ENABLED');
+    } else {
+        tier2Options.style.display = 'none';
+        console.log('⏭️  Tier 2 Final Selection DISABLED');
+    }
+});
+
 // Form submission
 document.querySelector('form').addEventListener('submit', function(e) {
     console.log('='.repeat(80));
-    console.log('🚀 IMPORT & SCORE STARTED');
+    console.log('🚀 IMPORT & SCORE STARTED (Two-Tier Filtering)');
     console.log('='.repeat(80));
     
     const preset = document.getElementById('filter_preset').value;
-    console.log('📊 Using Preset:', filterPresets[preset].name);
-    console.log('Filters:', {
+    console.log('📊 Tier 1 Preset:', filterPresets[preset].name);
+    console.log('Tier 1 Filters:', {
         min_premium: document.getElementById('min_premium').value,
         min_iv: document.getElementById('min_iv').value,
         max_dte: document.getElementById('max_dte').value,
+        min_roc: document.getElementById('min_roc').value,
         max_positions: document.getElementById('max_positions').value
     });
+    
+    const tier2Enabled = document.getElementById('tier2_enabled').checked;
+    if (tier2Enabled) {
+        console.log('📊 Tier 2 ENABLED:', {
+            exclude_earnings: document.getElementById('exclude_earnings').checked,
+            blue_chip_only: document.getElementById('blue_chip_only').checked,
+            ranking: document.querySelector('[name="tier2_ranking"]').value,
+            max_final: document.querySelector('[name="tier2_max_positions"]').value
+        });
+    } else {
+        console.log('⏭️  Tier 2 DISABLED');
+    }
     
     document.getElementById('progressIndicator').style.display = 'block';
     document.getElementById('importBtn').disabled = true;

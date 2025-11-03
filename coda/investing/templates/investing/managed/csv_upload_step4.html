@@ -29,23 +29,51 @@
             </div>
             {% endif %}
             
+            <!-- Two-Tier Filter Flow Summary -->
+            {% if tier2_enabled %}
+            <div class="alert alert-primary">
+                <h5><i class="fa fa-filter"></i> Two-Tier Filtering Active</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <strong>Tier 1 (Quality)</strong><br>
+                        <span class="badge badge-success">{{ tier1_passed }} passed</span>
+                        <span class="badge badge-secondary">{{ tier1_filtered }} filtered</span>
+                    </div>
+                    <div class="col-md-1">
+                        <i class="fa fa-arrow-right" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Tier 2 (Final)</strong><br>
+                        <span class="badge badge-info">{{ tier2_filtered }} filtered</span>
+                    </div>
+                    <div class="col-md-1">
+                        <i class="fa fa-arrow-right" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Final Import</strong><br>
+                        <span class="badge badge-success">{{ imported_count }} imported</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- Filter Analysis (if many filtered) -->
-            {% if imported_count == 0 and filtered_count > 0 %}
+            {% if imported_count == 0 and tier1_filtered > 0 %}
             <div class="alert alert-danger">
-                <h5><i class="fa fa-exclamation-triangle"></i> All {{ filtered_count }} Positions Were Filtered Out!</h5>
-                <p><strong>Your filters might be too strict.</strong> Here's what happened:</p>
+                <h5><i class="fa fa-exclamation-triangle"></i> All {{ tier1_filtered }} Positions Were Filtered Out!</h5>
+                <p><strong>Your Tier 1 filters might be too strict.</strong> Here's what happened:</p>
                 <ul class="mb-3">
-                    {% if filter_breakdown.premium > 0 %}
-                    <li><strong>Premium too low:</strong> {{ filter_breakdown.premium }} positions (try lowering min premium to $1.50)</li>
+                    {% if tier1_breakdown.premium > 0 %}
+                    <li><strong>Premium too low:</strong> {{ tier1_breakdown.premium }} positions (try lowering min premium to $1.50)</li>
                     {% endif %}
-                    {% if filter_breakdown.iv_rank > 0 %}
-                    <li><strong>IV Rank too low:</strong> {{ filter_breakdown.iv_rank }} positions (try lowering to 25-30%)</li>
+                    {% if tier1_breakdown.iv_rank > 0 %}
+                    <li><strong>IV Rank too low:</strong> {{ tier1_breakdown.iv_rank }} positions (try lowering to 25-30%)</li>
                     {% endif %}
-                    {% if filter_breakdown.dte > 0 %}
-                    <li><strong>DTE too high:</strong> {{ filter_breakdown.dte }} positions (try increasing max to 45 days)</li>
+                    {% if tier1_breakdown.dte > 0 %}
+                    <li><strong>DTE too high:</strong> {{ tier1_breakdown.dte }} positions (try increasing max to 45 days)</li>
                     {% endif %}
-                    {% if filter_breakdown.roc > 0 %}
-                    <li><strong>ROC too low:</strong> {{ filter_breakdown.roc }} positions (try lowering to 30-35%)</li>
+                    {% if tier1_breakdown.roc > 0 %}
+                    <li><strong>ROC too low:</strong> {{ tier1_breakdown.roc }} positions (try lowering to 30-35%)</li>
                     {% endif %}
                 </ul>
                 <div class="mt-3">
@@ -59,29 +87,32 @@
                     {% endif %}
                 </div>
             </div>
-            {% elif filtered_count > imported_count and imported_count > 0 %}
+            {% elif tier1_passed > imported_count and imported_count > 0 %}
             <div class="alert alert-info">
-                <h5><i class="fa fa-info-circle"></i> {{ filtered_count }} Positions Were Filtered Out</h5>
-                <p>You could potentially get more positions by adjusting filters:</p>
+                <h5><i class="fa fa-info-circle"></i> Filter Summary</h5>
+                <p><strong>Tier 1:</strong> {{ tier1_passed }} positions passed quality filters</p>
+                {% if tier2_enabled %}
+                <p><strong>Tier 2:</strong> {{ tier2_filtered }} filtered, {{ imported_count }} selected for import</p>
                 <button type="button" class="btn btn-sm btn-info" data-toggle="collapse" data-target="#filterDetails">
-                    Show Filter Breakdown
+                    Show Tier 2 Filter Breakdown
                 </button>
                 <div id="filterDetails" class="collapse mt-2">
                     <ul>
-                        {% if filter_breakdown.premium > 0 %}
-                        <li>Premium too low: {{ filter_breakdown.premium }} positions</li>
+                        {% if tier2_breakdown.earnings > 0 %}
+                        <li>Has earnings in window: {{ tier2_breakdown.earnings }} positions</li>
                         {% endif %}
-                        {% if filter_breakdown.iv_rank > 0 %}
-                        <li>IV Rank too low: {{ filter_breakdown.iv_rank }} positions</li>
+                        {% if tier2_breakdown.blue_chip > 0 %}
+                        <li>Not blue chip: {{ tier2_breakdown.blue_chip }} positions</li>
                         {% endif %}
-                        {% if filter_breakdown.dte > 0 %}
-                        <li>DTE too high: {{ filter_breakdown.dte }} positions</li>
+                        {% if tier2_breakdown.stock_price > 0 %}
+                        <li>Stock price out of range: {{ tier2_breakdown.stock_price }} positions</li>
                         {% endif %}
-                        {% if filter_breakdown.roc > 0 %}
-                        <li>ROC too low: {{ filter_breakdown.roc }} positions</li>
+                        {% if tier2_breakdown.distance_otm > 0 %}
+                        <li>Too close to strike: {{ tier2_breakdown.distance_otm }} positions</li>
                         {% endif %}
                     </ul>
                 </div>
+                {% endif %}
             </div>
             {% endif %}
             

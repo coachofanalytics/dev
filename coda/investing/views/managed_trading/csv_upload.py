@@ -313,8 +313,8 @@ def csv_import_and_score(request):
             messages.error(request, 'Session expired. Please start over.')
             return redirect('investing:csv_upload_wizard')
         
-        # Get filter parameters
-        logger.info("🔧 Reading filter parameters...")
+        # Get Tier 1 filter parameters (Quality Filters)
+        logger.info("🔧 Reading Tier 1 filter parameters (Quality)...")
         min_premium = Decimal(request.POST.get('min_premium', '0'))
         min_iv = Decimal(request.POST.get('min_iv', '0'))
         max_dte = int(request.POST.get('max_dte', '365'))
@@ -326,19 +326,41 @@ def csv_import_and_score(request):
         symbol_filter = request.POST.get('symbol_filter', '').strip()
         import_mode = request.POST.get('import_mode', 'add')  # add, replace, cleanup
         
+        # Get Tier 2 filter parameters (Final Selection)
+        tier2_enabled = request.POST.get('tier2_enabled') == 'on'
+        exclude_earnings = request.POST.get('exclude_earnings') == 'on'
+        blue_chip_only = request.POST.get('blue_chip_only') == 'on'
+        min_stock_price = Decimal(request.POST.get('min_stock_price', '40'))
+        max_stock_price = Decimal(request.POST.get('max_stock_price', '600'))
+        min_distance_otm = Decimal(request.POST.get('min_distance_otm', '0.03'))  # 3% OTM
+        tier2_ranking = request.POST.get('tier2_ranking', 'ai_score')  # ai_score, roc, balanced
+        tier2_max_positions = int(request.POST.get('tier2_max_positions', '12'))
+        
         logger.info("=" * 80)
-        logger.info("📊 IMPORT SETTINGS (Capital Efficiency Mode)")
+        logger.info("📊 IMPORT SETTINGS (Two-Tier Filtering)")
         logger.info("=" * 80)
         logger.info(f"Import Mode: {import_mode.upper()}")
-        logger.info(f"Min Premium: ${min_premium}")
-        logger.info(f"Min IV Rank: {min_iv*100:.1f}% (Excel: {min_iv})")
-        logger.info(f"Max DTE: {max_dte} days")
-        logger.info(f"Min ROC: {min_roc*100:.1f}% (Excel: {min_roc})")
-        logger.info(f"Spread Width: {spread_width_choice}")
-        logger.info(f"Max Positions: {max_positions}")
+        logger.info("")
+        logger.info("TIER 1 (Quality Filters):")
+        logger.info(f"  Min Premium: ${min_premium}")
+        logger.info(f"  Min IV Rank: {min_iv*100:.1f}% (Excel: {min_iv})")
+        logger.info(f"  Max DTE: {max_dte} days")
+        logger.info(f"  Min ROC: {min_roc*100:.1f}% (Excel: {min_roc})")
+        logger.info(f"  Spread Width: {spread_width_choice}")
+        logger.info(f"  Max Tier 1 Positions: {max_positions}")
+        logger.info(f"  Symbol Filter: {symbol_filter or 'None (all symbols)'}")
+        logger.info("")
+        logger.info(f"TIER 2 (Final Selection): {'ENABLED' if tier2_enabled else 'DISABLED'}")
+        if tier2_enabled:
+            logger.info(f"  Exclude Earnings: {exclude_earnings}")
+            logger.info(f"  Blue Chip Only: {blue_chip_only}")
+            logger.info(f"  Stock Price Range: ${min_stock_price} - ${max_stock_price}")
+            logger.info(f"  Min Distance OTM: {min_distance_otm*100:.0f}%")
+            logger.info(f"  Ranking Method: {tier2_ranking.upper()}")
+            logger.info(f"  Max Final Positions: {tier2_max_positions}")
+        logger.info("")
         logger.info(f"Auto-Convert: {auto_convert}")
         logger.info(f"Auto-Score: {auto_score}")
-        logger.info(f"Symbol Filter: {symbol_filter or 'None (all symbols)'}")
         logger.info("=" * 80)
         
         # Parse symbol filter
@@ -379,19 +401,27 @@ def csv_import_and_score(request):
         else:  # 'add' mode
             logger.info("➕ ADD MODE: Keeping existing data, adding new positions")
         
-        # Import with filters
-        logger.info("📥 Starting import process...")
-        imported_ids = []
-        filtered_count = 0
+        # Import with TWO-TIER filtering
+        logger.info("📥 Starting import process (Two-Tier Filtering)...")
+        tier1_passed = []  # Positions that pass quality filters
+        tier1_filtered = 0
+        tier2_filtered = 0
         error_count = 0
         
-        # Filter debugging
-        filter_reasons = {
+        # Tier 1 filter debugging
+        tier1_reasons = {
             'premium': 0,
             'iv_rank': 0,
             'dte': 0,
-            'roc': 0,  # Return on Capital filter
+            'roc': 0,
             'symbol': 0,
+        }
+        # Tier 2 filter debugging
+        tier2_reasons = {
+            'earnings': 0,
+            'blue_chip': 0,
+            'stock_price': 0,
+            'distance_otm': 0,
         }
         rejected_samples = []  # Store first 5 rejected for debugging
         
@@ -432,62 +462,79 @@ def csv_import_and_score(request):
                 else:
                     roc = Decimal('0')
                 
-                # Filter checks with detailed tracking
-                filter_failed = False
-                filter_reason = []
+                # TIER 1: Quality filter checks with detailed tracking
+                tier1_failed = False
+                tier1_reason = []
                 
                 if premium < min_premium:
-                    filter_reasons['premium'] += 1
-                    filter_reason.append(f"Premium ${premium} < ${min_premium}")
-                    filter_failed = True
+                    tier1_reasons['premium'] += 1
+                    tier1_reason.append(f"Premium ${premium} < ${min_premium}")
+                    tier1_failed = True
                 
                 if iv_rank_val < min_iv:
-                    filter_reasons['iv_rank'] += 1
-                    filter_reason.append(f"IV {iv_rank_val*100:.1f}% < {min_iv*100:.1f}%")
-                    filter_failed = True
+                    tier1_reasons['iv_rank'] += 1
+                    tier1_reason.append(f"IV {iv_rank_val*100:.1f}% < {min_iv*100:.1f}%")
+                    tier1_failed = True
                 
                 if dte > max_dte:
-                    filter_reasons['dte'] += 1
-                    filter_reason.append(f"DTE {dte} > {max_dte}")
-                    filter_failed = True
+                    tier1_reasons['dte'] += 1
+                    tier1_reason.append(f"DTE {dte} > {max_dte}")
+                    tier1_failed = True
                 
-                # NEW: Filter by Return on Capital (capital efficiency!)
+                # Filter by Return on Capital (capital efficiency!)
                 if roc < min_roc:
-                    filter_reasons['roc'] += 1
-                    filter_reason.append(f"ROC {roc*100:.1f}% < {min_roc*100:.1f}% (${premium_total} premium on ${capital_required} capital)")
-                    filter_failed = True
+                    tier1_reasons['roc'] += 1
+                    tier1_reason.append(f"ROC {roc*100:.1f}% < {min_roc*100:.1f}% (${premium_total} premium on ${capital_required} capital)")
+                    tier1_failed = True
                 
                 if allowed_symbols and symbol not in allowed_symbols:
-                    filter_reasons['symbol'] += 1
-                    filter_reason.append(f"Symbol {symbol} not allowed")
-                    filter_failed = True
+                    tier1_reasons['symbol'] += 1
+                    tier1_reason.append(f"Symbol {symbol} not allowed")
+                    tier1_failed = True
                 
-                if len(imported_ids) >= max_positions:
-                    filter_failed = True
-                    filter_reason.append(f"Max positions reached ({max_positions})")
+                if len(tier1_passed) >= max_positions:
+                    tier1_failed = True
+                    tier1_reason.append(f"Max Tier 1 positions reached ({max_positions})")
                 
-                if filter_failed:
-                    filtered_count += 1
+                if tier1_failed:
+                    tier1_filtered += 1
                     # Store first 5 rejections for debugging
                     if len(rejected_samples) < 5:
                         rejected_samples.append({
                             'symbol': symbol,
-                            'premium': premium_total,  # Store total contract value for display
+                            'premium': premium_total,
                             'iv_rank': iv_rank_val,
                             'dte': dte,
                             'roc': roc,
                             'capital': capital_required,
                             'spread_width': spread_width,
-                            'reasons': filter_reason
+                            'reasons': tier1_reason
                         })
                     continue
                 
-                # Create OptionPlayRawData
-                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium_total}, ROC: {roc*100:.1f}%, {spread_width}pt spread)")
-                logger.debug(f"       Capital: ${capital_required}, Suggested Spread: Sell ${sell_strike}/Buy ${sell_strike - spread_width}")
-                logger.debug(f"       ESTIMATED for client review: Collect ${premium_total}, Risk ${capital_required}, {roc*100:.1f}% return")
-                raw_data = _create_raw_data_from_mapped(mapped_data, strategy_type)
-                imported_ids.append(raw_data.id)
+                # Passed Tier 1! Store position data for Tier 2 evaluation
+                stock_price_val = _clean_decimal_value(mapped_data.get('price', '0'))
+                distance_val = _clean_decimal_value(mapped_data.get('distance_to_strike', '0'))
+                earnings_flag_val = mapped_data.get('earnings_flag', 'N').strip().upper()
+                
+                position_data = {
+                    'mapped_data': mapped_data,
+                    'symbol': symbol,
+                    'premium_total': premium_total,
+                    'roc': roc,
+                    'spread_width': spread_width,
+                    'capital_required': capital_required,
+                    'sell_strike': sell_strike,
+                    'stock_price': stock_price_val,
+                    'distance': distance_val,
+                    'earnings_flag': earnings_flag_val,
+                    'iv_rank': iv_rank_val,
+                    'dte': dte,
+                }
+                
+                tier1_passed.append(position_data)
+                
+                logger.debug(f"  ✅ Tier 1 PASS - Row {idx}: {symbol} (Premium: ${premium_total}, ROC: {roc*100:.1f}%, {spread_width}pt spread)")
                 
                 # Progress logging
                 if idx % 10 == 0:
@@ -499,11 +546,149 @@ def csv_import_and_score(request):
                 continue
         
         logger.info("=" * 80)
-        logger.info("📊 IMPORT COMPLETE")
+        logger.info("📊 TIER 1 COMPLETE (Quality Filters)")
         logger.info("=" * 80)
-        logger.info(f"✅ Imported: {len(imported_ids)} positions")
-        logger.info(f"🔍 Filtered: {filtered_count} positions")
+        logger.info(f"✅ Passed Tier 1: {len(tier1_passed)} positions")
+        logger.info(f"🔍 Filtered Tier 1: {tier1_filtered} positions")
         logger.info(f"❌ Errors: {error_count} positions")
+        logger.info("=" * 80)
+        
+        # TIER 2: Apply final selection filters (if enabled)
+        final_positions = []
+        
+        if tier2_enabled and tier1_passed:
+            logger.info("")
+            logger.info("=" * 80)
+            logger.info("🎯 TIER 2: FINAL SELECTION (Blue Chip + AI Ranking)")
+            logger.info("=" * 80)
+            
+            # Define blue chip symbol list
+            BLUE_CHIP_SYMBOLS = [
+                # Mega Tech (Mag 7)
+                'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'AMZN', 'META', 'TSLA', 'NVDA',
+                # Large Tech
+                'NFLX', 'ORCL', 'INTU', 'QCOM', 'AMAT', 'AMD', 'MU', 'LRCX', 'SNPS', 'AVGO', 'CRM', 'ADBE',
+                # Finance/Crypto
+                'COIN', 'JPM', 'BAC', 'GS', 'MS', 'V', 'MA',
+                # Consumer
+                'DIS', 'ABNB', 'SPOT', 'BABA', 'TGT', 'ROST', 'TJX', 'NKE', 'SBUX',
+                # Industrial/Materials
+                'DE', 'CEG', 'AEM', 'NEM', 'GDX', 'GLD',
+                # Semiconductor
+                'ARM', 'MRVL', 'WDC', 'NTAP',
+                # Healthcare
+                'GILD', 'NVO', 'UNH', 'JNJ',
+                # Luxury/Auto
+                'RACE', 'AZO', 'F', 'GM',
+                # Enterprise
+                'CW', 'ACN', 'CSCO', 'ANET', 'NOW',
+                # ETFs
+                'IBIT', 'GDXJ',
+                # Others
+                'STZ', 'CF', 'GLW', 'ETN', 'TXRH', 'TTWO', 'FICO', 'ARGX', 'SE', 'APP', 'AFRM', 'ZM', 'WPM',
+                'SMCI', 'IONQ', 'CRWV', 'TTD', 'CORZ', 'SOUN', 'HOOD', 'DELL', 'BIDU'
+            ]
+            
+            # Apply Tier 2 hard filters
+            tier2_candidates = []
+            for pos in tier1_passed:
+                tier2_failed = False
+                tier2_reason = []
+                
+                # Filter: Exclude earnings
+                if exclude_earnings and pos['earnings_flag'] == 'Y':
+                    tier2_reasons['earnings'] += 1
+                    tier2_reason.append("Has earnings in window")
+                    tier2_failed = True
+                
+                # Filter: Blue chip only
+                if blue_chip_only and pos['symbol'] not in BLUE_CHIP_SYMBOLS:
+                    tier2_reasons['blue_chip'] += 1
+                    tier2_reason.append("Not a blue chip symbol")
+                    tier2_failed = True
+                
+                # Filter: Stock price range
+                if not (min_stock_price <= pos['stock_price'] <= max_stock_price):
+                    tier2_reasons['stock_price'] += 1
+                    tier2_reason.append(f"Stock price ${pos['stock_price']} outside range")
+                    tier2_failed = True
+                
+                # Filter: Minimum distance OTM (safety margin)
+                # Distance is negative for OTM puts (-4% = 4% below stock)
+                if pos['distance'] > -min_distance_otm:  # e.g., -0.02 > -0.03 means too close
+                    tier2_reasons['distance_otm'] += 1
+                    tier2_reason.append(f"Only {abs(pos['distance'])*100:.1f}% OTM (want ≥{min_distance_otm*100:.0f}%)")
+                    tier2_failed = True
+                
+                if tier2_failed:
+                    tier2_filtered += 1
+                    logger.debug(f"  🔍 Tier 2 FILTERED: {pos['symbol']} - {', '.join(tier2_reason)}")
+                else:
+                    tier2_candidates.append(pos)
+                    logger.debug(f"  ✅ Tier 2 PASS: {pos['symbol']}")
+            
+            logger.info(f"✅ Passed Tier 2 hard filters: {len(tier2_candidates)} positions")
+            logger.info(f"🔍 Filtered Tier 2: {tier2_filtered} positions")
+            
+            # Now rank/sort Tier 2 candidates
+            if tier2_candidates:
+                logger.info(f"📊 Ranking {len(tier2_candidates)} positions by: {tier2_ranking.upper()}")
+                
+                if tier2_ranking == 'roc':
+                    # Sort by ROC (highest first)
+                    tier2_candidates.sort(key=lambda x: x['roc'], reverse=True)
+                    logger.info("  Sorted by ROC (capital efficiency)")
+                    
+                elif tier2_ranking == 'premium':
+                    # Sort by premium (highest income first)
+                    tier2_candidates.sort(key=lambda x: x['premium_total'], reverse=True)
+                    logger.info("  Sorted by Premium (highest income)")
+                    
+                elif tier2_ranking == 'ai_score':
+                    # AI scoring (most sophisticated)
+                    logger.info("  🤖 AI Scoring positions...")
+                    # Will be done after import
+                    pass
+                
+                else:  # 'balanced'
+                    # Balanced score: ROC + Premium + IV
+                    for pos in tier2_candidates:
+                        pos['balanced_score'] = (
+                            float(pos['roc']) * 0.4 +  # ROC weight: 40%
+                            (float(pos['premium_total']) / 10) * 0.3 +  # Premium weight: 30%
+                            float(pos['iv_rank']) * 100 * 0.3  # IV weight: 30%
+                        )
+                    tier2_candidates.sort(key=lambda x: x['balanced_score'], reverse=True)
+                    logger.info("  Sorted by Balanced Score (ROC + Premium + IV)")
+                
+                # Select top N positions
+                final_positions = tier2_candidates[:tier2_max_positions]
+                logger.info(f"🎯 Selected TOP {len(final_positions)} positions for import")
+            else:
+                logger.warning("⚠️  No positions passed Tier 2 filters!")
+                final_positions = []
+        else:
+            # Tier 2 disabled - use all Tier 1 positions
+            logger.info("⏭️  Tier 2 filters disabled - using all Tier 1 positions")
+            final_positions = tier1_passed[:max_positions]  # Respect max_positions
+        
+        logger.info("=" * 80)
+        logger.info("💾 IMPORTING FINAL POSITIONS TO DATABASE")
+        logger.info("=" * 80)
+        
+        # Now actually create the database records for final positions
+        imported_ids = []
+        for pos in final_positions:
+            try:
+                logger.debug(f"  💾 Importing: {pos['symbol']} (Premium: ${pos['premium_total']}, ROC: {pos['roc']*100:.1f}%)")
+                logger.debug(f"       ESTIMATED for client review: Collect ${pos['premium_total']}, Risk ${pos['capital_required']}, {pos['roc']*100:.1f}% return")
+                raw_data = _create_raw_data_from_mapped(pos['mapped_data'], strategy_type)
+                imported_ids.append(raw_data.id)
+            except Exception as e:
+                logger.error(f"  ❌ Error importing {pos['symbol']}: {str(e)}")
+                error_count += 1
+        
+        logger.info(f"✅ Successfully imported {len(imported_ids)} positions to database")
         logger.info("=" * 80)
         
         # Step 2: Convert to SuggestedPositions (if enabled)
@@ -551,27 +736,44 @@ def csv_import_and_score(request):
         
         # Final summary
         logger.info("=" * 80)
-        logger.info("🎉 FINAL SUMMARY")
+        logger.info("🎉 FINAL SUMMARY (Two-Tier Filtering)")
         logger.info("=" * 80)
         if deleted_count > 0:
             logger.info(f"🗑️  Deleted (Replace Mode): {deleted_count}")
         if archived_count > 0:
             logger.info(f"🧹 Archived (Expired): {archived_count}")
         logger.info(f"Total Rows Processed: {len(csv_data)}")
+        logger.info(f"")
+        logger.info(f"TIER 1 (Quality):")
+        logger.info(f"  ✅ Passed: {len(tier1_passed)} positions")
+        logger.info(f"  🔍 Filtered: {tier1_filtered} positions")
+        if tier2_enabled:
+            logger.info(f"")
+            logger.info(f"TIER 2 (Final Selection):")
+            logger.info(f"  ✅ Passed: {len(final_positions)} positions")
+            logger.info(f"  🔍 Filtered: {tier2_filtered} positions")
+        logger.info(f"")
         logger.info(f"✅ Successfully Imported: {len(imported_ids)}")
         logger.info(f"🔄 Converted to Suggestions: {len(converted_ids)}")
         logger.info(f"🤖 AI Scored: {scored_count}")
-        logger.info(f"🔍 Filtered Out: {filtered_count}")
         logger.info(f"❌ Errors: {error_count}")
         
-        # Show filter breakdown
-        if filtered_count > 0:
-            logger.info("\n📊 FILTER BREAKDOWN:")
-            logger.info(f"   Premium too low: {filter_reasons['premium']}")
-            logger.info(f"   IV Rank too low: {filter_reasons['iv_rank']}")
-            logger.info(f"   DTE too high: {filter_reasons['dte']}")
-            logger.info(f"   ROC too low: {filter_reasons['roc']} (capital efficiency below {min_roc*100:.1f}%)")
-            logger.info(f"   Symbol not allowed: {filter_reasons['symbol']}")
+        # Show Tier 1 filter breakdown
+        if tier1_filtered > 0:
+            logger.info("\n📊 TIER 1 FILTER BREAKDOWN:")
+            logger.info(f"   Premium too low: {tier1_reasons['premium']}")
+            logger.info(f"   IV Rank too low: {tier1_reasons['iv_rank']}")
+            logger.info(f"   DTE too high: {tier1_reasons['dte']}")
+            logger.info(f"   ROC too low: {tier1_reasons['roc']} (capital efficiency below {min_roc*100:.1f}%)")
+            logger.info(f"   Symbol not allowed: {tier1_reasons['symbol']}")
+        
+        # Show Tier 2 filter breakdown
+        if tier2_enabled and tier2_filtered > 0:
+            logger.info("\n📊 TIER 2 FILTER BREAKDOWN:")
+            logger.info(f"   Has earnings: {tier2_reasons['earnings']}")
+            logger.info(f"   Not blue chip: {tier2_reasons['blue_chip']}")
+            logger.info(f"   Stock price out of range: {tier2_reasons['stock_price']}")
+            logger.info(f"   Too close to strike: {tier2_reasons['distance_otm']}")
             
             if rejected_samples:
                 logger.info("\n❌ SAMPLE REJECTED POSITIONS (first 5):")
@@ -582,9 +784,9 @@ def csv_import_and_score(request):
                     logger.info(f"       Reasons: {', '.join(sample['reasons'])}")
             
             # Special note about ROC filtering
-            if filter_reasons['roc'] > 0:
+            if tier1_reasons['roc'] > 0:
                 logger.info(f"\n💡 CAPITAL EFFICIENCY & CLIENT RISK DISCLOSURE:")
-                logger.info(f"   {filter_reasons['roc']} positions filtered for low Return on Capital (< {min_roc*100:.1f}%)")
+                logger.info(f"   {tier1_reasons['roc']} positions filtered for low Return on Capital (< {min_roc*100:.1f}%)")
                 logger.info(f"   ROC = (Premium × 100) / Capital (contract values: 0.57 = 57%)")
                 logger.info(f"   Example:")
                 logger.info(f"      Good: $4/share ($400) on $700 spread = 0.57 ROC (57%) ✅")
@@ -596,7 +798,7 @@ def csv_import_and_score(request):
         
         # Calculate near-miss positions if nothing was imported
         near_miss_positions = []
-        if len(imported_ids) == 0 and filtered_count > 0:
+        if len(imported_ids) == 0 and tier1_filtered > 0:
             logger.info("🔍 No positions imported - calculating near-miss positions...")
             near_miss_positions = _find_near_miss_positions(
                 rejected_samples, 
@@ -610,7 +812,10 @@ def csv_import_and_score(request):
         # Show results
         context = {
             'imported_count': len(imported_ids),
-            'filtered_count': filtered_count,
+            'tier1_passed': len(tier1_passed),
+            'tier1_filtered': tier1_filtered,
+            'tier2_enabled': tier2_enabled,
+            'tier2_filtered': tier2_filtered,
             'error_count': error_count,
             'converted_count': len(converted_ids),
             'scored_count': scored_count,
@@ -619,8 +824,9 @@ def csv_import_and_score(request):
             'deleted_count': deleted_count,
             'archived_count': archived_count,
             'import_mode': import_mode,
-            'filter_breakdown': filter_reasons,  # Pass filter breakdown to template
-            'near_miss_positions': near_miss_positions,  # Pass near-miss positions
+            'tier1_breakdown': tier1_reasons,
+            'tier2_breakdown': tier2_reasons,
+            'near_miss_positions': near_miss_positions,
             'title': 'CSV Upload - Complete'
         }
         
