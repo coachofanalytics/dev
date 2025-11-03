@@ -1,0 +1,171 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block page_content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-0">🎯 KILLER SYSTEM: Multi-CSV Cross-Validation</h2>
+                    <p class="text-muted">Upload multiple OptionPlay files for high-conviction position selection</p>
+                </div>
+                <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-secondary">
+                    <i class="fa fa-arrow-left"></i> Back to Accounts
+                </a>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card mb-4 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">💡 How It Works:</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>1. Cross-Validation</h6>
+                            <p class="small">Upload Short Puts + Covered Calls to find symbols in <strong>BOTH</strong> lists = High conviction!</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>2. AI Scoring</h6>
+                            <p class="small">+50pts for 2 strategies, +30pts for high IV, +25pts no earnings = automatic ranking</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>3. Smart Filtering</h6>
+                            <p class="small">Filter by score (70+, 80+, 90+), exclude earnings, minimum IV - get top 10-15 positions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📤 Step 1: Upload OptionPlay CSV Files</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-info">
+                            <strong>📋 Instructions:</strong>
+                            <ul class="mb-0">
+                                <li>Upload at least <strong>2 files</strong> for cross-validation (Short Puts + Covered Calls recommended)</li>
+                                <li>Files can be CSV or Excel (.xlsx)</li>
+                                <li>System auto-detects file type from headers</li>
+                                <li><strong>Required:</strong> Short Puts + Covered Calls for best results!</li>
+                            </ul>
+                        </div>
+
+                        <!-- Short Puts Upload -->
+                        <div class="form-group">
+                            <label for="short_puts_file">
+                                <strong>📊 Short Puts CSV</strong>
+                                <span class="badge badge-success">Recommended</span>
+                            </label>
+                            <div class="custom-file">
+                                <input type="file" 
+                                       class="custom-file-input" 
+                                       id="short_puts_file" 
+                                       name="short_puts_file" 
+                                       accept=".csv,.xlsx,.xls">
+                                <label class="custom-file-label" for="short_puts_file">Choose Short Puts file...</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                <strong>Example:</strong> ShortPuts_20251102_v1.csv from OptionPlay
+                            </small>
+                        </div>
+
+                        <!-- Covered Calls Upload -->
+                        <div class="form-group">
+                            <label for="covered_calls_file">
+                                <strong>📊 Covered Calls CSV</strong>
+                                <span class="badge badge-success">Recommended</span>
+                            </label>
+                            <div class="custom-file">
+                                <input type="file" 
+                                       class="custom-file-input" 
+                                       id="covered_calls_file" 
+                                       name="covered_calls_file" 
+                                       accept=".csv,.xlsx,.xls">
+                                <label class="custom-file-label" for="covered_calls_file">Choose Covered Calls file...</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                <strong>Example:</strong> CoveredCalls_20251103_v1.csv from OptionPlay
+                            </small>
+                        </div>
+
+                        <!-- Credit Spreads Upload -->
+                        <div class="form-group">
+                            <label for="credit_spreads_file">
+                                <strong>📊 Credit Spreads CSV</strong>
+                                <span class="badge badge-info">Optional</span>
+                            </label>
+                            <div class="custom-file">
+                                <input type="file" 
+                                       class="custom-file-input" 
+                                       id="credit_spreads_file" 
+                                       name="credit_spreads_file" 
+                                       accept=".csv,.xlsx,.xls">
+                                <label class="custom-file-label" for="credit_spreads_file">Choose Credit Spreads file...</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                <strong>Example:</strong> CreditSpread_20251103_v1.csv from OptionPlay
+                            </small>
+                        </div>
+
+                        <hr>
+
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Important:</strong> For best results, upload <strong>Short Puts + Covered Calls</strong>. 
+                            Symbols appearing in BOTH files = high conviction trades!
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">
+                            <i class="fa fa-upload"></i> Analyze Files & Calculate Scores
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="card mt-4 border-info">
+                <div class="card-body">
+                    <h5 class="card-title">🎯 What You'll Get:</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Cross-Validation Scores:</h6>
+                            <ul>
+                                <li>🏆 <strong>Score 90-100:</strong> Ultra-high conviction (all 3 strategies)</li>
+                                <li>💎 <strong>Score 70-89:</strong> High conviction (2 strategies + good metrics)</li>
+                                <li>⭐ <strong>Score 50-69:</strong> Good (1-2 strategies)</li>
+                                <li>⚠️ <strong>Score <50:</strong> Lower conviction</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Filter Options:</h6>
+                            <ul>
+                                <li>Minimum score threshold</li>
+                                <li>Require 2+ strategies</li>
+                                <li>Exclude earnings positions</li>
+                                <li>Minimum IV rank</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update custom file input labels with selected filenames
+document.querySelectorAll('.custom-file-input').forEach(function(input) {
+    input.addEventListener('change', function(e) {
+        var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file...';
+        var label = e.target.nextElementSibling;
+        label.textContent = fileName;
+    });
+});
+</script>
+{% endblock %}
+

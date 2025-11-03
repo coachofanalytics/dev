@@ -1,0 +1,193 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block page_content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">🎯 KILLER SYSTEM: Ranked Positions</h2>
+            <p class="text-muted">Showing {{ filtered_count }} of {{ total_symbols }} symbols</p>
+        </div>
+        <a href="{% url 'investing:killer_system_upload' %}" class="btn btn-secondary">
+            <i class="fa fa-upload"></i> Upload New Files
+        </a>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ total_symbols }}</h3>
+                    <small>Total Symbols</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ sp_cc_overlap }}</h3>
+                    <small>In Both SP + CC</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ all_three_overlap }}</h3>
+                    <small>All 3 Strategies</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ filtered_count }}</h3>
+                    <small>After Filters</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">🔍 Filter & Rank</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Minimum Score</label>
+                            <input type="number" name="min_score" class="form-control" value="70" min="0" max="200">
+                            <small class="text-muted">Higher = more conviction</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Minimum Strategies</label>
+                            <select name="min_strategies" class="form-control">
+                                <option value="1">1+ (All symbols)</option>
+                                <option value="2" selected>2+ (High conviction)</option>
+                                <option value="3">3 (Ultra high!)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Minimum IV Rank %</label>
+                            <input type="number" name="min_iv" class="form-control" value="30" min="0" max="100">
+                            <small class="text-muted">Higher IV = better premium</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="exclude_earnings" name="exclude_earnings" checked>
+                                <label class="custom-control-label" for="exclude_earnings">
+                                    Exclude Earnings Positions
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block mt-2">
+                                <i class="fa fa-filter"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">📊 Top Ranked Positions ({{ filtered_count }} total)</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Symbol</th>
+                            <th>Score</th>
+                            <th>Strategies</th>
+                            <th>IV Rank</th>
+                            <th>ROC %</th>
+                            <th>Earnings</th>
+                            <th>Breakdown</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in scored_symbols %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ item.symbol }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if item.score >= 90 %}success{% elif item.score >= 70 %}primary{% elif item.score >= 50 %}warning{% else %}secondary{% endif %} badge-lg">
+                                    {{ item.score }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ item.strategy_count }} 
+                                {% if item.strategy_count == 3 %}🏆{% elif item.strategy_count == 2 %}💎{% else %}⭐{% endif %}
+                                <br>
+                                <small class="text-muted">{{ item.strategies|join:", " }}</small>
+                            </td>
+                            <td>{{ item.iv_rank|default:"N/A" }}%</td>
+                            <td>{{ item.roc|default:"N/A" }}%</td>
+                            <td>
+                                {% if item.earnings_flag == 'Y' %}
+                                    <span class="badge badge-warning">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-success">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" 
+                                        data-toggle="collapse" 
+                                        data-target="#breakdown-{{ forloop.counter }}">
+                                    Details
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="collapse" id="breakdown-{{ forloop.counter }}">
+                            <td colspan="8" class="bg-light">
+                                <strong>Score Breakdown:</strong><br>
+                                {% for key, value in item.breakdown.items %}
+                                    <span class="badge badge-secondary">{{ value }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <h5>No positions match your filters</h5>
+                                <p>Try lowering the minimum score or unchecking "Exclude Earnings"</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4">
+        <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-success btn-lg">
+            <i class="fa fa-check"></i> Use These Positions
+        </a>
+        <a href="{% url 'investing:killer_system_upload' %}" class="btn btn-secondary btn-lg">
+            <i class="fa fa-upload"></i> Upload New Files
+        </a>
+    </div>
+</div>
+{% endblock %}
+

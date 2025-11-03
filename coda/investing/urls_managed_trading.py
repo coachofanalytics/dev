@@ -17,6 +17,7 @@ from .views.managed_trading import (
     batches,  # Phase 7
     position_suggestions,  # Phase 8: Automated position sourcing
     csv_upload,  # CSV Upload Wizard
+    multi_csv_killer_system,  # KILLER SYSTEM: Multi-CSV Cross-Validation
 )
 
 urlpatterns = [
@@ -228,5 +229,17 @@ urlpatterns = [
     path('managed/staff/upload-csv/import/', 
          csv_upload.csv_import_and_score, 
          name='csv_import_and_score'),
+    
+    # ========================================================================
+    # KILLER SYSTEM: Multi-CSV Cross-Validation (Phase 9)
+    # ========================================================================
+    
+    path('managed/staff/killer-system/', 
+         multi_csv_killer_system.killer_system_upload, 
+         name='killer_system_upload'),
+    
+    path('managed/staff/killer-system/filter/', 
+         multi_csv_killer_system.killer_system_filter, 
+         name='killer_system_filter'),
 ]
 

@@ -176,33 +176,37 @@
                         
                         <h6 class="mt-3">Data Management</h6>
                         
-                        <div class="alert alert-secondary mb-3">
-                            <strong>Current Database:</strong>
-                            {{ existing_total }} positions 
-                            ({{ existing_active }} active, {{ existing_expired }} expired)
+                        <div class="alert alert-info mb-3">
+                            <strong>💡 Data Management Strategy:</strong><br>
+                            <div class="ml-3 mt-2">
+                                <strong>📦 Raw Data:</strong> {{ existing_raw_total }} (just CSV import data)<br>
+                                <strong>✨ Suggested Positions:</strong> {{ existing_suggested_total }} (AI suggestions awaiting review)<br>
+                                <strong class="text-success">🎯 Client Positions: Never deleted</strong> (your real approved trades are safe!)
+                            </div>
                         </div>
                         
                         <div class="custom-control custom-radio">
-                            <input type="radio" class="custom-control-input" id="import_mode_add" name="import_mode" value="add" checked>
-                            <label class="custom-control-label" for="import_mode_add">
-                                <strong>➕ Add to Existing</strong>
-                                <br><small class="text-muted">Keep all {{ existing_total }} positions, add {{ total_rows }} new ones</small>
+                            <input type="radio" class="custom-control-input" id="import_mode_replace" name="import_mode" value="replace" checked>
+                            <label class="custom-control-label" for="import_mode_replace">
+                                <strong>🔄 Replace All (Recommended)</strong>
+                                <span class="badge badge-success">Fresh Suggestions</span>
+                                <br><small class="text-muted">Delete {{ existing_raw_total }} raw + {{ existing_suggested_total }} stale suggestions, import {{ total_rows }} fresh from market</small>
                             </label>
                         </div>
                         
                         <div class="custom-control custom-radio mt-2">
-                            <input type="radio" class="custom-control-input" id="import_mode_replace" name="import_mode" value="replace">
-                            <label class="custom-control-label" for="import_mode_replace">
-                                <strong>🔄 Replace All (Fresh Import)</strong>
-                                <br><small class="text-danger">⚠️ DELETE all {{ existing_total }} old positions, import {{ total_rows }} new</small>
+                            <input type="radio" class="custom-control-input" id="import_mode_add" name="import_mode" value="add">
+                            <label class="custom-control-label" for="import_mode_add">
+                                <strong>➕ Add to Existing</strong>
+                                <br><small class="text-warning">⚠️ Keep all {{ existing_suggested_total }} old suggestions + add {{ total_rows }} new (database will grow!)</small>
                             </label>
                         </div>
                         
                         <div class="custom-control custom-radio mt-2">
                             <input type="radio" class="custom-control-input" id="import_mode_cleanup" name="import_mode" value="cleanup">
                             <label class="custom-control-label" for="import_mode_cleanup">
-                                <strong>🧹 Smart Cleanup + Import (Recommended)</strong>
-                                <br><small class="text-success">Archive {{ existing_expired }} expired, keep {{ existing_active }} active, add {{ total_rows }} new</small>
+                                <strong>🧹 Smart Cleanup + Import</strong>
+                                <br><small class="text-muted">Delete suggestions >7 days old, keep recent, add {{ total_rows }} new</small>
                             </label>
                         </div>
                         

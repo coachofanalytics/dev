@@ -9,6 +9,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.db.models import Q
 from decimal import Decimal
 from datetime import datetime, date
 import csv
@@ -158,13 +159,26 @@ def csv_upload_wizard(request):
             logger.info("📊 Calculating CSV statistics...")
             stats = _calculate_csv_stats(all_rows, field_mapping)
             
-            # Get existing data counts for cleanup context
+            # Get existing data counts for cleanup context (BOTH tables!)
             from django.utils import timezone
-            existing_total = OptionPlayRawData.objects.count()
-            existing_expired = OptionPlayRawData.objects.filter(expiry__lt=timezone.now().date()).count()
-            existing_active = existing_total - existing_expired
+            from datetime import timedelta
             
-            logger.info(f"📊 Existing data: {existing_total} total ({existing_active} active, {existing_expired} expired)")
+            # OptionPlayRawData counts
+            existing_raw_total = OptionPlayRawData.objects.count()
+            existing_raw_expired = OptionPlayRawData.objects.filter(expiry__lt=timezone.now().date()).count()
+            existing_raw_active = existing_raw_total - existing_raw_expired
+            
+            # SuggestedPositions counts
+            existing_suggested_total = SuggestedPosition.objects.count()
+            cutoff_date = timezone.now() - timedelta(days=7)  # 7 days (suggestions go stale fast!)
+            existing_suggested_old = SuggestedPosition.objects.filter(
+                Q(expiration_date__lt=timezone.now().date()) |  # Expired
+                Q(fetched_at__lt=cutoff_date)  # Older than 7 days
+            ).count()
+            existing_suggested_active = existing_suggested_total - existing_suggested_old
+            
+            logger.info(f"📊 Existing OptionPlayRawData: {existing_raw_total} total ({existing_raw_active} active, {existing_raw_expired} expired)")
+            logger.info(f"📊 Existing SuggestedPositions: {existing_suggested_total} total ({existing_suggested_active} active, {existing_suggested_old} old/expired >7 days)")
             
             logger.info("=" * 80)
             logger.info("📊 UPLOAD SUMMARY")
@@ -198,9 +212,14 @@ def csv_upload_wizard(request):
                 'skipped_rows': header_row_index,
                 'field_mapping': field_mapping,
                 'stats': stats_with_percentages,
-                'existing_total': existing_total,
-                'existing_active': existing_active,
-                'existing_expired': existing_expired,
+                # OptionPlayRawData counts
+                'existing_raw_total': existing_raw_total,
+                'existing_raw_active': existing_raw_active,
+                'existing_raw_expired': existing_raw_expired,
+                # SuggestedPositions counts
+                'existing_suggested_total': existing_suggested_total,
+                'existing_suggested_active': existing_suggested_active,
+                'existing_suggested_old': existing_suggested_old,
             }
             
             logger.info("✅ Rendering Step 2 (Confirm & Filter) - Skipping manual mapping")
@@ -371,35 +390,65 @@ def csv_import_and_score(request):
             allowed_symbols = None
             logger.info("✅ All symbols allowed")
         
-        # Handle data cleanup based on import mode
-        deleted_count = 0
+        # Handle data cleanup based on import mode (for BOTH tables!)
+        deleted_raw_count = 0
+        deleted_suggested_count = 0
         archived_count = 0
         
         if import_mode == 'replace':
-            logger.info("🗑️  REPLACE MODE: Deleting ALL old OptionPlayRawData...")
-            old_count = OptionPlayRawData.objects.count()
+            logger.info("🗑️  REPLACE MODE: Fresh market data - deleting stale suggestions...")
+            logger.info("   ℹ️  NOTE: Client-approved positions (OptionsPosition) are NEVER deleted!")
+            
+            # Delete old OptionPlayRawData (just CSV import data)
+            old_raw_count = OptionPlayRawData.objects.count()
             OptionPlayRawData.objects.all().delete()
-            deleted_count = old_count
-            logger.info(f"✅ Deleted {deleted_count} old positions")
+            deleted_raw_count = old_raw_count
+            logger.info(f"   ✅ Deleted {deleted_raw_count} old OptionPlayRawData (CSV import data)")
+            
+            # Delete old SuggestedPositions (stale AI suggestions - market has moved!)
+            old_suggested_count = SuggestedPosition.objects.count()
+            SuggestedPosition.objects.all().delete()
+            deleted_suggested_count = old_suggested_count
+            logger.info(f"   ✅ Deleted {deleted_suggested_count} old SuggestedPositions (stale suggestions)")
+            
+            logger.info(f"✅ Total deleted: {deleted_raw_count + deleted_suggested_count} positions (fresh start!)")
             
         elif import_mode == 'cleanup':
-            logger.info("🧹 CLEANUP MODE: Archiving expired positions...")
+            logger.info("🧹 CLEANUP MODE: Archiving expired from BOTH tables...")
             from django.utils import timezone
+            from datetime import timedelta
+            from django.db.models import Q
             
-            # Delete expired positions (expiry in the past)
-            expired = OptionPlayRawData.objects.filter(expiry__lt=timezone.now().date())
-            expired_count = expired.count()
+            # Delete expired OptionPlayRawData
+            expired_raw = OptionPlayRawData.objects.filter(expiry__lt=timezone.now().date())
+            expired_raw_count = expired_raw.count()
             
-            if expired_count > 0:
-                logger.info(f"   Found {expired_count} expired positions")
-                expired.delete()
-                archived_count = expired_count
-                logger.info(f"✅ Archived {archived_count} expired positions")
+            if expired_raw_count > 0:
+                logger.info(f"   Found {expired_raw_count} expired OptionPlayRawData")
+                expired_raw.delete()
+                archived_count += expired_raw_count
+            
+            # Delete old/expired SuggestedPositions (older than 7 days or expired)
+            # Market moves fast - suggestions go stale quickly!
+            cutoff_date = timezone.now() - timedelta(days=7)
+            old_suggested = SuggestedPosition.objects.filter(
+                Q(expiration_date__lt=timezone.now().date()) |  # Expired
+                Q(fetched_at__lt=cutoff_date)  # Older than 7 days
+            )
+            old_suggested_count = old_suggested.count()
+            
+            if old_suggested_count > 0:
+                logger.info(f"   Found {old_suggested_count} old/expired SuggestedPositions (>7 days)")
+                old_suggested.delete()
+                archived_count += old_suggested_count
+            
+            if archived_count > 0:
+                logger.info(f"✅ Archived {archived_count} total positions")
             else:
                 logger.info("   No expired positions found")
         
         else:  # 'add' mode
-            logger.info("➕ ADD MODE: Keeping existing data, adding new positions")
+            logger.info("➕ ADD MODE: Keeping existing data in BOTH tables, adding new positions")
         
         # Import with TWO-TIER filtering
         logger.info("📥 Starting import process (Two-Tier Filtering)...")
