@@ -869,10 +869,15 @@ def csv_import_and_score(request):
                 try:
                     suggestion = SuggestedPosition.objects.get(id=suggestion_id)
                     
-                    # Fetch technical indicators
-                    tech_data = get_technical_indicators(suggestion.symbol)
+                    # Fetch technical indicators (with error handling for network issues)
+                    try:
+                        tech_data = get_technical_indicators(suggestion.symbol)
+                    except Exception as fetch_error:
+                        logger.warning(f"  ⚠️  yfinance fetch failed for {suggestion.symbol}: {str(fetch_error)}")
+                        logger.warning(f"      (This is usually a network/rate limit issue - will retry on next upload)")
+                        continue
                     
-                    if tech_data:
+                    if tech_data and tech_data.get('available'):
                         # Store technical data in notes field for now
                         tech_notes = (
                             f"RSI: {tech_data['rsi']:.1f} ({tech_data['rsi_signal']}), "
@@ -917,7 +922,8 @@ def csv_import_and_score(request):
                             suggestion.ai_score = cv_boost
                         
                         # Add note about cross-validation (if not already added by technical analysis)
-                        if 'Cross-Validated' not in (suggestion.notes or ''):
+                        current_notes = suggestion.notes or ''
+                        if 'Cross-Validated' not in current_notes:
                             cv_note = f"\n💎 Cross-Validated: Symbol appears in multiple OptionPlay lists = HIGH CONVICTION!"
                             if suggestion.notes:
                                 suggestion.notes += cv_note
@@ -1011,8 +1017,9 @@ def csv_import_and_score(request):
         logger.info("=" * 80)
         logger.info("🎉 FINAL SUMMARY (Two-Tier Filtering)")
         logger.info("=" * 80)
+        deleted_count = deleted_raw_count + deleted_suggested_count  # Combined count
         if deleted_count > 0:
-            logger.info(f"🗑️  Deleted (Replace Mode): {deleted_count}")
+            logger.info(f"🗑️  Deleted (Replace Mode): {deleted_count} (Raw: {deleted_raw_count}, Suggested: {deleted_suggested_count})")
         if archived_count > 0:
             logger.info(f"🧹 Archived (Expired): {archived_count}")
         logger.info(f"Total Rows Processed: {len(csv_data)}")

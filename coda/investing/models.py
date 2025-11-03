@@ -3151,6 +3151,7 @@ class PositionBatch(TimeStampedModel):
     approval_token = models.CharField(
         max_length=100,
         blank=True,
+        null=True,
         unique=True,
         help_text="Token for quick approval via WhatsApp/SMS"
     )
@@ -3483,6 +3484,12 @@ class SuggestedPosition(TimeStampedModel):
     staff_notes = models.TextField(
         blank=True,
         help_text="Staff comments, modifications, or rejection reasons"
+    )
+    
+    # System-generated notes (technical analysis, cross-validation, etc.)
+    notes = models.TextField(
+        blank=True,
+        help_text="System-generated notes (technical analysis, cross-validation, flow signals, etc.)"
     )
     
     # Link to created position (if approved and converted)

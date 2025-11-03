@@ -18,6 +18,7 @@ from .views.managed_trading import (
     position_suggestions,  # Phase 8: Automated position sourcing
     csv_upload,  # CSV Upload Wizard (Enhanced with Cross-Validation)
     webhooks,  # Phase 9: Real-time WhatsApp approval
+    multi_file_analyzer,  # Phase 9: Multi-file flow analyzer (manual Unusual Whales)
 )
 
 urlpatterns = [
@@ -241,5 +242,17 @@ urlpatterns = [
     path('webhooks/whatsapp/status/', 
          webhooks.whatsapp_status_callback, 
          name='whatsapp_status_callback'),
+    
+    # ========================================================================
+    # MULTI-FILE FLOW ANALYZER: Manual Unusual Whales Workflow (Phase 9)
+    # ========================================================================
+    
+    path('managed/staff/flow-analyzer/', 
+         multi_file_analyzer.multi_file_flow_analyzer, 
+         name='multi_file_analyzer'),
+    
+    path('managed/staff/flow-analyzer/results/', 
+         multi_file_analyzer.multi_file_analyzer_results, 
+         name='multi_file_analyzer_results'),
 ]
 

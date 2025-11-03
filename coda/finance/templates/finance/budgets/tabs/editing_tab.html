@@ -118,7 +118,8 @@
                             <th>Budget Item</th>
                             <th>Department</th>
                             <th>Category</th>
-                            <th>Amount</th>
+                            <th>Amount (KES)</th>
+                            <th>Amount (USD)</th>
                             <th>Last Modified</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -133,7 +134,8 @@
                             </td>
                             <td>{{ budget.department.name }}</td>
                             <td>{{ budget.category.name|default:"N/A" }}</td>
-                            <td>${{ budget.total_amount|default:"0"|floatformat:2 }}</td>
+                            <td>KES {{ budget.total_amount|default:"0"|floatformat:2 }}</td>
+                            <td><small class="text-muted">$  {{ budget.total_amount|default:"0"|floatformat:2|mul:0.0077 }}</small></td>
                             <td>
                                 <small class="text-muted">
                                     {{ budget.updated_at|date:"M d, Y" }} at {{ budget.updated_at|time:"H:i" }}
@@ -165,7 +167,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center text-muted">
+                            <td colspan="8" class="text-center text-muted">
                                 <i class="fas fa-info-circle"></i> No recent edits found
                             </td>
                         </tr>

@@ -1,0 +1,127 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Flow Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fa fa-trophy"></i> Flow Analysis Results</h4>
+            <p class="mb-0 small">Analyzed {{ file_count }} files ({{ optionplay_count }} OptionPlay + {{ file_count|add:"-"|add:optionplay_count }} Unusual Whales)</p>
+        </div>
+        <div class="card-body">
+            <!-- Summary Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h2>{{ green_signals|length }}</h2>
+                            <p class="mb-0">🟢 ENTER NOW</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h2>{{ yellow_signals|length }}</h2>
+                            <p class="mb-0">🟡 OK TO ENTER</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body text-center">
+                            <h2>{{ red_signals|length }}</h2>
+                            <p class="mb-0">🔴 SKIP/WAIT</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h2>{{ scored_symbols|length }}</h2>
+                            <p class="mb-0">Total Symbols</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Table -->
+            <h5 class="border-top pt-3">Ranked Positions (Highest Conviction First)</h5>
+            
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Symbol</th>
+                        <th>Score</th>
+                        <th>Signal</th>
+                        <th>OptionPlay</th>
+                        <th>Flow Confirmations</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for symbol in scored_symbols %}
+                    <tr class="{% if symbol.signal == 'green' %}table-success{% elif symbol.signal == 'yellow' %}table-warning{% else %}table-danger{% endif %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ symbol.symbol }}</strong></td>
+                        <td><span class="badge badge-dark">{{ symbol.total_score }}/100</span></td>
+                        <td>{{ symbol.signal_text }}</td>
+                        <td>
+                            {% if symbol.optionplay_appearances > 0 %}
+                                <span class="badge badge-success">{{ symbol.optionplay_appearances }} file{{ symbol.optionplay_appearances|pluralize }}</span>
+                                <br><small class="text-muted">{{ symbol.optionplay_files|join:", "|title }}</small>
+                            {% else %}
+                                <span class="badge badge-secondary">Not screened</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if symbol.dark_pool_detected %}<span class="badge badge-info">Dark Pool</span>{% endif %}
+                            {% if symbol.options_flow_detected %}<span class="badge badge-info">Options Flow</span>{% endif %}
+                            {% if symbol.unusual_activity_detected %}<span class="badge badge-warning">Unusual</span>{% endif %}
+                            {% if symbol.lit_flow_detected %}<span class="badge badge-secondary">Lit Flow</span>{% endif %}
+                            
+                            {% if not symbol.dark_pool_detected and not symbol.options_flow_detected and not symbol.unusual_activity_detected %}
+                                <span class="text-muted small">No flow data</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ symbol.recommendation }}</small>
+                            {% if symbol.details %}
+                            <button class="btn btn-sm btn-link" data-toggle="collapse" data-target="#details{{ forloop.counter }}">
+                                <i class="fa fa-info-circle"></i> Details
+                            </button>
+                            <div id="details{{ forloop.counter }}" class="collapse small mt-2">
+                                <ul class="mb-0">
+                                    {% for detail in symbol.details %}
+                                    <li>{{ detail }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No symbols found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Actions -->
+            <div class="text-center mt-4">
+                <a href="{% url 'investing:multi_file_analyzer' %}" class="btn btn-secondary">
+                    <i class="fa fa-upload"></i> Upload More Files
+                </a>
+                <a href="{% url 'investing:position_suggestions_list' %}" class="btn btn-primary">
+                    <i class="fa fa-list"></i> View Suggested Positions
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

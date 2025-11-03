@@ -1,7 +1,7 @@
 # CODA Project - Documentation Index
 
-**Last Updated:** October 13, 2025  
-**Structure:** Feature-based, 4 docs per feature
+**Last Updated:** November 3, 2025  
+**Structure:** Hybrid - Cross-cutting concerns (01-07) + App-specific features (apps/)
 
 ---
 
@@ -9,20 +9,27 @@
 
 ### For New Developers:
 1. ⭐ **READ:** [01_GETTING_STARTED/CURSOR_AI_GUIDE.md](01_GETTING_STARTED/CURSOR_AI_GUIDE.md)
-2. **Understand:** [02_ARCHITECTURE/](02_ARCHITECTURE/) - System overview
-3. **Review:** [03_PROJECT_MANAGEMENT/PROJECT_HISTORY_TIMELINE.md](03_PROJECT_MANAGEMENT/PROJECT_HISTORY_TIMELINE.md)
-4. **Then:** Pick your app/feature below
+2. **Quick Start:** [quick_guides/QUICK_START_LOCAL_DEVELOPMENT.md](quick_guides/QUICK_START_LOCAL_DEVELOPMENT.md)
+3. **Understand:** [02_ARCHITECTURE/](02_ARCHITECTURE/) - System overview
+4. **Review:** [03_PROJECT_MANAGEMENT/PROJECT_HISTORY_TIMELINE.md](03_PROJECT_MANAGEMENT/PROJECT_HISTORY_TIMELINE.md)
+5. **Then:** Pick your app/feature below
 
 ### For Cursor AI (Every Session):
 1. ⭐ **ALWAYS READ:** [01_GETTING_STARTED/CURSOR_AI_GUIDE.md](01_GETTING_STARTED/CURSOR_AI_GUIDE.md)
-2. **Then Read:** Feature-specific docs in [apps/finance/](#finance-app)
+2. **Then Read:** Feature-specific docs in [apps/](#apps-documentation)
 3. **Follow:** Development workflow in the guide
 4. **Remember:** Never deploy to production without user permission!
 
 ### For Feature Work:
-1. Pick your app: [Finance](#finance-app) | Investing | Management
+1. Pick your app: [Finance](#finance-app) | [Investing](#investing-app) | [Management](#management-app)
 2. Pick your feature within that app
 3. Read feature README → IMPLEMENTATION → TESTING
+
+### For Quick Tasks:
+1. ⚡ **Browse:** [quick_guides/](quick_guides/) - Fast reference for common tasks
+2. **Upload Data:** [quick_guides/HOW_TO_UPLOAD_OPTIONPLAY_CSV.md](quick_guides/HOW_TO_UPLOAD_OPTIONPLAY_CSV.md)
+3. **Test UAT:** [quick_guides/UAT_TESTING_GUIDE.md](quick_guides/UAT_TESTING_GUIDE.md)
+4. **Setup WhatsApp:** [quick_guides/QUICK_TWILIO_SETUP.md](quick_guides/QUICK_TWILIO_SETUP.md)
 
 ### For Deployment:
 1. ⚠️ **Check:** [05_DEPLOYMENT/KNOWN_ISSUES.md](05_DEPLOYMENT/KNOWN_ISSUES.md)
@@ -36,18 +43,33 @@
 ```
 docs/
 ├── README.md                       ⭐ You are here
+├── WHY_ERRORS_HAPPEN.md           ⚠️ Root cause analysis & prevention
+│
+├── quick_guides/                  ⚡ Fast reference (8 guides)
+│   ├── README.md
+│   ├── UAT_TESTING_GUIDE.md
+│   ├── HOW_TO_UPLOAD_OPTIONPLAY_CSV.md
+│   ├── QUICK_START_UAT_TESTING.md
+│   ├── WHATSAPP_TELEGRAM_SETUP_GUIDE.md
+│   ├── QUICK_TWILIO_SETUP.md
+│   └── ... (3 more)
 │
 ├── 01_GETTING_STARTED/            🚀 Start here
 │   ├── CURSOR_AI_GUIDE.md         ⭐ AI development guide
 │   ├── WORKING_WITH_AI.md
+│   ├── LOCAL_DEVELOPMENT_WITH_PROD_DATA.md
 │   └── setup_development_environment.py
 │
 ├── 02_ARCHITECTURE/               🏗️ System architecture
 │   ├── README.md
-│   └── TECHNICAL_DOCS.md
+│   ├── TECHNICAL_DOCS.md
+│   └── PLATFORM_EXCELLENCE_STRATEGY.md
 │
 ├── 03_PROJECT_MANAGEMENT/         📊 History & roadmap
 │   ├── README.md
+│   ├── PROJECT_HISTORY_TIMELINE.md
+│   ├── COMPLETE_SESSION_SUMMARY_OCT22_2025.md
+│   └── ... (session summaries)
 │   └── PROJECT_HISTORY_TIMELINE.md
 │
 ├── 04_TESTING/                    🧪 Testing strategy

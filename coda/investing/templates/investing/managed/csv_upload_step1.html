@@ -116,24 +116,58 @@
                         <!-- Optional Files for Cross-Validation -->
                         <div class="alert alert-warning mb-3">
                             <strong>💎 Optional: Cross-Validation (Recommended for $30k+ capital)</strong>
-                            <p class="small mb-0 mt-2">Upload 1-2 additional files to find symbols in BOTH lists = HIGH CONVICTION! 
+                            <p class="small mb-0 mt-2">Upload 1-2 additional OptionPlay files to find symbols in BOTH lists = HIGH CONVICTION! 
                             System will auto-detect overlaps and boost scores.</p>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="small text-muted">Additional File 1 (Optional):</label>
+                                <label class="small text-muted">Additional OptionPlay File 1 (Optional):</label>
                                 <div class="custom-file">
                                     <input type="file" class="custom-file-input" id="csvFile2" name="csv_file_2" accept=".csv,.xlsx,.xls">
                                     <label class="custom-file-label" for="csvFile2">Choose file...</label>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="small text-muted">Additional File 2 (Optional):</label>
+                                <label class="small text-muted">Additional OptionPlay File 2 (Optional):</label>
                                 <div class="custom-file">
                                     <input type="file" class="custom-file-input" id="csvFile3" name="csv_file_3" accept=".csv,.xlsx,.xls">
                                     <label class="custom-file-label" for="csvFile3">Choose file...</label>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Unusual Whales Files (Optional) -->
+                        <div class="alert alert-info mb-3 mt-4">
+                            <strong>⚡ Optional: Unusual Whales Flow Data (Timing Signals)</strong>
+                            <p class="small mb-0 mt-2">Upload manually downloaded Unusual Whales files for entry timing (buy/sell flow detection). 
+                            These files help identify when to enter positions based on institutional activity.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Options Flow (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="whalesFlow" name="whales_flow" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="whalesFlow">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Institutional call/put buying</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Dark Pool (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="whalesDarkPool" name="whales_dark_pool" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="whalesDarkPool">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Institutional stock accumulation</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Lit Flow (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="whalesLitFlow" name="whales_lit_flow" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="whalesLitFlow">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Market sentiment</small>
                             </div>
                         </div>
                         
@@ -185,6 +219,22 @@ document.getElementById('csvFile2').addEventListener('change', function(e) {
 });
 
 document.getElementById('csvFile3').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+// Unusual Whales file handlers
+document.getElementById('whalesFlow').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+document.getElementById('whalesDarkPool').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+document.getElementById('whalesLitFlow').addEventListener('change', function(e) {
     handleFileSelection(this, null, null);
     updateSubmitButton();
 });
