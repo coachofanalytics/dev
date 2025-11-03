@@ -158,6 +158,14 @@ def csv_upload_wizard(request):
             logger.info("📊 Calculating CSV statistics...")
             stats = _calculate_csv_stats(all_rows, field_mapping)
             
+            # Get existing data counts for cleanup context
+            from django.utils import timezone
+            existing_total = OptionPlayRawData.objects.count()
+            existing_expired = OptionPlayRawData.objects.filter(expiry__lt=timezone.now().date()).count()
+            existing_active = existing_total - existing_expired
+            
+            logger.info(f"📊 Existing data: {existing_total} total ({existing_active} active, {existing_expired} expired)")
+            
             logger.info("=" * 80)
             logger.info("📊 UPLOAD SUMMARY")
             logger.info("=" * 80)
@@ -180,6 +188,9 @@ def csv_upload_wizard(request):
                 'skipped_rows': header_row_index,
                 'field_mapping': field_mapping,
                 'stats': stats,
+                'existing_total': existing_total,
+                'existing_active': existing_active,
+                'existing_expired': existing_expired,
             }
             
             logger.info("✅ Rendering Step 2 (Confirm & Filter) - Skipping manual mapping")
@@ -301,10 +312,12 @@ def csv_import_and_score(request):
         auto_convert = request.POST.get('auto_convert') == 'on'
         auto_score = request.POST.get('auto_score') == 'on'
         symbol_filter = request.POST.get('symbol_filter', '').strip()
+        import_mode = request.POST.get('import_mode', 'add')  # add, replace, cleanup
         
         logger.info("=" * 80)
-        logger.info("📊 FILTER SETTINGS")
+        logger.info("📊 IMPORT SETTINGS")
         logger.info("=" * 80)
+        logger.info(f"Import Mode: {import_mode.upper()}")
         logger.info(f"Min Premium: ${min_premium}")
         logger.info(f"Min IV Rank: {min_iv}%")
         logger.info(f"Max DTE: {max_dte} days")
@@ -321,6 +334,36 @@ def csv_import_and_score(request):
         else:
             allowed_symbols = None
             logger.info("✅ All symbols allowed")
+        
+        # Handle data cleanup based on import mode
+        deleted_count = 0
+        archived_count = 0
+        
+        if import_mode == 'replace':
+            logger.info("🗑️  REPLACE MODE: Deleting ALL old OptionPlayRawData...")
+            old_count = OptionPlayRawData.objects.count()
+            OptionPlayRawData.objects.all().delete()
+            deleted_count = old_count
+            logger.info(f"✅ Deleted {deleted_count} old positions")
+            
+        elif import_mode == 'cleanup':
+            logger.info("🧹 CLEANUP MODE: Archiving expired positions...")
+            from django.utils import timezone
+            
+            # Delete expired positions (expiry in the past)
+            expired = OptionPlayRawData.objects.filter(expiry__lt=timezone.now().date())
+            expired_count = expired.count()
+            
+            if expired_count > 0:
+                logger.info(f"   Found {expired_count} expired positions")
+                expired.delete()
+                archived_count = expired_count
+                logger.info(f"✅ Archived {archived_count} expired positions")
+            else:
+                logger.info("   No expired positions found")
+        
+        else:  # 'add' mode
+            logger.info("➕ ADD MODE: Keeping existing data, adding new positions")
         
         # Import with filters
         logger.info("📥 Starting import process...")
@@ -428,6 +471,10 @@ def csv_import_and_score(request):
         logger.info("=" * 80)
         logger.info("🎉 FINAL SUMMARY")
         logger.info("=" * 80)
+        if deleted_count > 0:
+            logger.info(f"🗑️  Deleted (Replace Mode): {deleted_count}")
+        if archived_count > 0:
+            logger.info(f"🧹 Archived (Expired): {archived_count}")
         logger.info(f"Total Rows Processed: {len(csv_data)}")
         logger.info(f"✅ Successfully Imported: {len(imported_ids)}")
         logger.info(f"🔄 Converted to Suggestions: {len(converted_ids)}")
@@ -445,6 +492,9 @@ def csv_import_and_score(request):
             'scored_count': scored_count,
             'auto_convert': auto_convert,
             'auto_score': auto_score,
+            'deleted_count': deleted_count,
+            'archived_count': archived_count,
+            'import_mode': import_mode,
             'title': 'CSV Upload - Complete'
         }
         

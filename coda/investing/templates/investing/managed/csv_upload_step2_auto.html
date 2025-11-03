@@ -138,7 +138,43 @@
                             </small>
                         </div>
                         
-                        <div class="custom-control custom-checkbox mt-3">
+                        <h6 class="mt-3">Data Management</h6>
+                        
+                        <div class="alert alert-secondary mb-3">
+                            <strong>Current Database:</strong>
+                            {{ existing_total }} positions 
+                            ({{ existing_active }} active, {{ existing_expired }} expired)
+                        </div>
+                        
+                        <div class="custom-control custom-radio">
+                            <input type="radio" class="custom-control-input" id="import_mode_add" name="import_mode" value="add" checked>
+                            <label class="custom-control-label" for="import_mode_add">
+                                <strong>➕ Add to Existing</strong>
+                                <br><small class="text-muted">Keep all {{ existing_total }} positions, add {{ total_rows }} new ones</small>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-radio mt-2">
+                            <input type="radio" class="custom-control-input" id="import_mode_replace" name="import_mode" value="replace">
+                            <label class="custom-control-label" for="import_mode_replace">
+                                <strong>🔄 Replace All (Fresh Import)</strong>
+                                <br><small class="text-danger">⚠️ DELETE all {{ existing_total }} old positions, import {{ total_rows }} new</small>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-radio mt-2">
+                            <input type="radio" class="custom-control-input" id="import_mode_cleanup" name="import_mode" value="cleanup">
+                            <label class="custom-control-label" for="import_mode_cleanup">
+                                <strong>🧹 Smart Cleanup + Import (Recommended)</strong>
+                                <br><small class="text-success">Archive {{ existing_expired }} expired, keep {{ existing_active }} active, add {{ total_rows }} new</small>
+                            </label>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>AI Processing</h6>
+                        
+                        <div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="auto_convert" name="auto_convert" checked>
                             <label class="custom-control-label" for="auto_convert">
                                 <strong>Auto-convert to Suggested Positions</strong>

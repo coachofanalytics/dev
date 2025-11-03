@@ -16,6 +16,19 @@
             <h4 class="mb-0"><i class="fa fa-check-circle"></i> Import Complete!</h4>
         </div>
         <div class="card-body">
+            <!-- Cleanup Summary (if applicable) -->
+            {% if deleted_count > 0 or archived_count > 0 %}
+            <div class="alert alert-warning">
+                <h5><i class="fa fa-broom"></i> Data Cleanup Performed</h5>
+                {% if deleted_count > 0 %}
+                <p class="mb-0"><strong>🗑️ Deleted:</strong> {{ deleted_count }} old positions (Replace mode)</p>
+                {% endif %}
+                {% if archived_count > 0 %}
+                <p class="mb-0"><strong>🧹 Archived:</strong> {{ archived_count }} expired positions (Cleanup mode)</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            
             <!-- Results Summary -->
             <div class="row text-center mb-4">
                 <div class="col-md-3">
