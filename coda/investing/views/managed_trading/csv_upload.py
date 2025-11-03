@@ -988,19 +988,19 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
     raw_data = OptionPlayRawData.objects.create(
         strategy_type=strategy_type,
         symbol=mapped_data.get('symbol', '').upper().strip(),
-        underlying_price=_clean_decimal_value(mapped_data.get('price', '0')),
+        stock_price=_clean_decimal_value(mapped_data.get('price', '0')),
         sell_strike=_clean_decimal_value(mapped_data.get('sell_strike', '0')),
         buy_strike=_clean_decimal_value(mapped_data.get('buy_strike', '0')) if mapped_data.get('buy_strike') else None,
         premium=_clean_decimal_value(mapped_data.get('premium', '0')),
         expiry=expiry,
-        dte=_clean_int_value(mapped_data.get('dte', '30')),
+        days_to_expiry=_clean_int_value(mapped_data.get('dte', '30')),
         iv_rank=_clean_decimal_value(mapped_data.get('iv_rank', '0')),  # Excel: 0.28 (28%)
-        annual_return=_clean_decimal_value(mapped_data.get('annual_return', '0')),  # Excel: 1.29 (129%)
+        annualized_return=_clean_decimal_value(mapped_data.get('annual_return', '0')),  # Excel: 1.29 (129%)
         distance_to_strike=_clean_decimal_value(mapped_data.get('distance_to_strike', '0')),  # Excel: -0.03 (-3%)
         width=_clean_decimal_value(mapped_data.get('width', '0')) if mapped_data.get('width') else None,
         premium_to_width_ratio=_clean_decimal_value(mapped_data.get('prem_width', '0')) if mapped_data.get('prem_width') else None,
-        earnings_flag=mapped_data.get('earnings_flag', 'N').strip().upper() == 'Y',
-        notes=f"Imported from CSV"
+        earnings_flag=mapped_data.get('earnings_flag', 'N').strip().upper(),  # CharField: 'Y' or 'N'
+        notes=f"Imported from CSV - estimated spread for client review"
     )
     
     return raw_data
