@@ -179,6 +179,12 @@
                     {% if cv_boost_count > 0 %}
                     <br><strong>💎 {{ cv_boost_count }} positions</strong> cross-validated (appeared in multiple files = HIGH CONVICTION)!
                     {% endif %}
+                    {% if flow_count > 0 %}
+                    <br><strong>⚡ {{ flow_count }} positions</strong> analyzed with Unusual Whales flow data (TIMING SIGNALS)!
+                    {% endif %}
+                    {% if not uw_enabled and converted_count > 0 %}
+                    <br><em class="text-muted small">💡 Add Unusual Whales API key to get real-time buy/sell flow signals for better entry timing!</em>
+                    {% endif %}
                 </p>
                 <hr>
                 <p class="mb-0"><small><strong>⚠️ Important:</strong> All capital and premium estimates are based on mid-prices for screening purposes. Actual execution prices will vary. Present these to clients as preliminary risk-return estimates before entering live trades.</small></p>

@@ -21,6 +21,7 @@ from ...models import OptionPlayRawData, SuggestedPosition
 from ...services.optionplay_converter import OptionPlayConverterService
 from ...services.position_scoring_service import PositionScoringService
 from ...services.technical_analysis_service import get_technical_indicators
+from ...services.unusual_whales_service import UnusualWhalesService
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -933,6 +934,71 @@ def csv_import_and_score(request):
             if cv_boost_count > 0:
                 logger.info(f"✅ Cross-validation complete: {cv_boost_count}/{len(converted_ids)} positions boosted")
         
+        # Step 6: Unusual Whales Flow Scoring (if API key configured)
+        flow_count = 0
+        uw_service = UnusualWhalesService()
+        if uw_service.is_enabled() and converted_ids:
+            logger.info("💎 Fetching Unusual Whales flow data for timing signals...")
+            logger.info("   Use Case: Heavy buying → GREEN LIGHT | Heavy selling → RED LIGHT")
+            
+            # Get unique symbols
+            positions = SuggestedPosition.objects.filter(id__in=converted_ids)
+            symbols = list(positions.values_list('symbol', flat=True).distinct())
+            
+            # Fetch flow data for all symbols at once (batch)
+            flow_data_map = uw_service.get_flow_summary_for_symbols(symbols, max_symbols=20)
+            
+            # Add flow signals to each position
+            for position in positions:
+                if position.symbol in flow_data_map:
+                    flow_data = flow_data_map[position.symbol]
+                    
+                    # Add flow notes
+                    flow_notes = f"\n\n💎 Unusual Whales Flow:\n"
+                    flow_notes += f"  • Flow Score: {flow_data['flow_score']:.0f}/100\n"
+                    flow_notes += f"  • Sentiment: {flow_data['sentiment'].upper()} ({flow_data['sentiment_score']:.0f}%)\n"
+                    flow_notes += f"  • Unusual Calls: {flow_data.get('unusual_calls', 0)}\n"
+                    flow_notes += f"  • Unusual Puts: {flow_data.get('unusual_puts', 0)}\n"
+                    
+                    # Determine timing indicator
+                    flow_score = flow_data['flow_score']
+                    if flow_score >= 75:
+                        timing = '🟢 ENTER NOW (Heavy buying flow detected!)'
+                        ai_boost = 20
+                    elif flow_score >= 50:
+                        timing = '🟡 OK TO ENTER (Normal flow)'
+                        ai_boost = 10
+                    else:
+                        timing = '🔴 WAIT/SKIP (Heavy selling flow detected!)'
+                        ai_boost = -20
+                    
+                    flow_notes += f"  • Timing: {timing}\n"
+                    
+                    # Append to notes
+                    if position.notes:
+                        position.notes += flow_notes
+                    else:
+                        position.notes = flow_notes
+                    
+                    # Boost AI score
+                    if position.ai_score:
+                        position.ai_score += ai_boost
+                    else:
+                        position.ai_score = 50 + ai_boost
+                    
+                    position.save()
+                    
+                    flow_count += 1
+                    logger.debug(f"  ✅ {position.symbol}: Flow {flow_score:.0f}/100, Timing: {timing[:20]}, AI boost {ai_boost:+d}")
+            
+            if flow_count > 0:
+                logger.info(f"✅ Unusual Whales flow scoring complete: {flow_count}/{len(converted_ids)} positions")
+            else:
+                logger.warning("⚠️  No flow data available (check API key or symbols may have no unusual activity)")
+        elif not uw_service.is_enabled():
+            logger.info("ℹ️  Unusual Whales disabled (no API key) - skipping flow scoring")
+            logger.info("   💡 Add API key to get TIMING signals (buy/sell flow detection)")
+        
         # Clear session
         logger.info("🧹 Clearing session data...")
         request.session.pop('csv_data', None)
@@ -1026,8 +1092,10 @@ def csv_import_and_score(request):
             'error_count': error_count,
             'converted_count': len(converted_ids),
             'scored_count': scored_count,
-            'technical_count': technical_count,  # NEW: Technical analysis count
-            'cv_boost_count': cv_boost_count if 'cv_boost_count' in locals() else 0,  # NEW: Cross-validation count
+            'technical_count': technical_count,  # Technical analysis count
+            'cv_boost_count': cv_boost_count if 'cv_boost_count' in locals() else 0,  # Cross-validation count
+            'flow_count': flow_count if 'flow_count' in locals() else 0,  # Unusual Whales flow count
+            'uw_enabled': uw_service.is_enabled() if 'uw_service' in locals() else False,
             'auto_convert': auto_convert,
             'auto_score': auto_score,
             'deleted_count': deleted_count,
