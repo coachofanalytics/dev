@@ -26,6 +26,12 @@
                 <strong>Total Rows:</strong> {{ total_rows }}<br>
                 <strong>Detected Strategy:</strong> 
                 <span class="badge badge-primary">{{ strategy_type|upper }}</span>
+                {% if skipped_rows > 0 %}
+                <br><strong>Auto-Detected:</strong> 
+                <span class="badge badge-success">
+                    <i class="fa fa-check-circle"></i> Skipped {{ skipped_rows }} title row{{ skipped_rows|pluralize }}
+                </span>
+                {% endif %}
             </div>
             
             <!-- CSV Preview -->

@@ -59,10 +59,55 @@ def csv_upload_wizard(request):
             file_data = csv_file.read().decode('utf-8')
             logger.info(f"✅ File decoded successfully ({len(file_data)} characters)")
             
+            # Smart header detection - skip title rows
+            logger.info("🔍 Detecting header row (skipping title rows if present)...")
+            lines = file_data.split('\n')
+            header_row_index = 0
+            
+            # Look for the row with actual column headers
+            for i, line in enumerate(lines[:10]):  # Check first 10 rows
+                if not line.strip():
+                    continue
+                    
+                # Split line to check for known column names
+                fields = [f.strip().strip('"').strip("'") for f in line.split(',')]
+                non_empty = [f for f in fields if f]
+                
+                logger.debug(f"  Row {i}: {len(non_empty)} non-empty fields, Sample: {non_empty[:3]}")
+                
+                # Check if this row contains expected header keywords
+                headers_found = sum(1 for f in fields if any(keyword in f.lower() for keyword in 
+                    ['symbol', 'strike', 'expiry', 'premium', 'price', 'action', 'dte', 'days']))
+                
+                if headers_found >= 3:  # Found at least 3 expected headers
+                    header_row_index = i
+                    logger.info(f"✅ Header row detected at line {i + 1} (found {headers_found} known headers)")
+                    logger.info(f"   Headers preview: {', '.join(non_empty[:5])}")
+                    break
+            
+            # Skip rows before the header
+            if header_row_index > 0:
+                logger.info(f"⏭️  Skipping {header_row_index} title/empty rows before header")
+                file_data = '\n'.join(lines[header_row_index:])
+            
             csv_reader = csv.DictReader(io.StringIO(file_data))
             
             # Get headers and preview data
             headers = csv_reader.fieldnames
+            
+            # Clean headers (remove empty or None headers)
+            headers_cleaned = [h for h in headers if h and h.strip()]
+            if len(headers_cleaned) < len(headers):
+                logger.warning(f"⚠️  Removed {len(headers) - len(headers_cleaned)} empty headers")
+                # Recreate reader with cleaned data
+                cleaned_lines = [','.join(headers_cleaned)]
+                for row in csv_reader:
+                    values = [row.get(h, '') for h in headers_cleaned]
+                    cleaned_lines.append(','.join(values))
+                file_data = '\n'.join(cleaned_lines)
+                csv_reader = csv.DictReader(io.StringIO(file_data))
+                headers = headers_cleaned
+            
             logger.info(f"📋 CSV Headers detected: {headers}")
             logger.info(f"📊 Number of columns: {len(headers)}")
             
@@ -111,7 +156,8 @@ def csv_upload_wizard(request):
                 'total_rows': len(all_rows),
                 'filename': csv_file.name,
                 'strategy_type': strategy_type,
-                'title': 'CSV Upload - Step 2: Preview & Map Fields'
+                'title': 'CSV Upload - Step 2: Preview & Map Fields',
+                'skipped_rows': header_row_index,  # Number of title rows skipped
             }
             
             logger.info("✅ Rendering Step 2 (Preview & Map)")
