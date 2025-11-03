@@ -71,19 +71,158 @@ heroku run "cd coda && python manage.py migrate investing XXXX" --app codamakuta
 
 ---
 
-## 📊 Go-Live Plan
+## 📊 DEPLOYMENT HISTORY
 
-### **Week 1: UAT Testing**
-- Deploy to UAT
-- Internal testing
-- Client UAT
-- Fix any issues
+### **🚀 Phase 1-5 Deployment** - October 27, 2025
+**Release:** v946  
+**Status:** ✅ Successfully Deployed to UAT
 
-### **Week 2: Production Launch**
-- Deploy to production
-- Execute first client trades
-- Monitor closely
-- 24/7 availability
+**What Was Deployed:**
+- ✅ Database Models: `ManagedTradingAccount`, `OptionsPosition`, `TradingRule`, `TradingActivity`, `TradingSession`
+- ✅ Service Layer: `ManagedTradingService`, `OptionsMonitoringService`, `OptionPlayIntegrationService`
+- ✅ Views & Forms: 6 staff view files, multi-leg options forms
+- ✅ Templates: 14 HTML templates (12 staff + 2 client)
+- ✅ URLs: 30+ URL patterns configured
+- ✅ Dashboard Integration: 8 quick-access buttons
+
+**Deployment Steps:**
+1. Documentation consolidation (17 files → 7-doc structure)
+2. Pre-deployment verification (all tests passed)
+3. Git push to UAT (commit e0de6fff1)
+4. Database migrations applied
+5. Static files collected
+6. URL verification completed
+7. Manual testing passed
+
+**Results:**
+- ✅ All tables created successfully
+- ✅ All URLs accessible
+- ✅ Staff dashboard operational
+- ✅ Client portal accessible
+- ✅ No critical errors
+
+---
+
+### **🚀 Phase 6 Deployment** - October 27, 2025 (Later)
+**Release:** v949  
+**Status:** ✅ Successfully Deployed to UAT
+
+**What Was Deployed:**
+- ✅ New Models: `InvestorRiskProfile`, `ManagedTradingApplication`, `ManagedTradingContract`
+- ✅ Forms: Risk assessment, application, contract signing forms
+- ✅ Service: `ApplicationReviewService` with auto-approval logic
+- ✅ Views: 7 onboarding views (risk, apply, contracts, signatures)
+- ✅ URLs: 10 new onboarding patterns
+
+**Critical Fix:**
+- Fixed Heroku settings to use `heroku_settings.py` instead of `local_settings.py`
+- Resolved DATABASE_URL connection issue
+
+**Results:**
+- ✅ 3 new tables created
+- ✅ Complete onboarding workflow operational
+- ✅ Digital contract signing working
+- ✅ Auto-approval logic functional
+
+---
+
+### **🔧 P&L Editing Feature** - October 2025
+**Migration:** `0007_add_pnl_adjustment_activity.py`  
+**Status:** ✅ Successfully Deployed
+
+**What Was Implemented:**
+- ✅ Added 'pnl_adjusted' activity type to `TradingActivity`
+- ✅ New view: `adjust_position_pnl()` (staff-only, POST)
+- ✅ URL pattern: `/managed/positions/<id>/adjust-pnl/`
+- ✅ Enhanced position detail template with edit modal
+- ✅ Full audit trail logging (old/new values, reasons)
+
+**Features:**
+- Manual P&L adjustment for entry premium or exit premium
+- Required reason field for all adjustments
+- Activity log highlights (yellow background for adjustments)
+- Staff-only permission control
+
+**Results:**
+- ✅ Staff can correct data entry errors
+- ✅ Full audit trail maintained
+- ✅ No data integrity issues
+
+---
+
+### **🤖 AI Position Scoring** - November 2, 2025
+**Release:** v976  
+**Status:** ✅ Successfully Deployed to UAT
+
+**What Was Deployed:**
+- ✅ New Model: `OptionsPositionHistory` (ML training dataset)
+- ✅ AI Fields on `SuggestedPosition`: `ai_score`, `ai_rating`, `ai_breakdown`, `ai_recommendation`
+- ✅ Services: `PositionScoringService`, `PositionHistoryCollector`
+- ✅ Signal-based automation for history collection and scoring
+- ✅ Staff UI enhancements: star ratings, color-coding, 6-factor breakdown
+
+**Migration:** `0009_add_position_history_model.py`, `0010_add_ai_scoring_fields.py`
+
+**Test Results:**
+- ✅ 499 real positions scored successfully
+- ✅ Score distribution: 0 excellent, 0 good, 1 average, 150 below-avg, 348 poor
+- ✅ Algorithm correctly identified poor positions (bond ETFs, low premiums)
+
+**Results:**
+- ✅ AI scoring operational
+- ✅ Staff can sort by AI score
+- ✅ 6-factor breakdown visible
+- ✅ Auto-scoring via signals working
+
+---
+
+### **📱 WhatsApp/Telegram Notifications** - November 2, 2025
+**Release:** v982  
+**Status:** ✅ 95% Deployed (credentials needed)
+
+**What Was Deployed:**
+- ✅ Added fields to `ManagedTradingAccount`: `whatsapp_enabled`, `whatsapp_phone`, `telegram_enabled`, `telegram_chat_id`
+- ✅ Extended `NotificationService` with WhatsApp and Telegram methods
+- ✅ Created 6 message templates for position events
+- ✅ Signal-based triggers for position open/close and batch approvals
+- ✅ Admin configuration for notification preferences
+
+**Migration:** `0011_add_whatsapp_telegram_notifications.py`
+
+**Dependencies Added:**
+- ✅ `twilio==8.10.0` for WhatsApp integration
+
+**Remaining:**
+- ⏳ User needs to configure Twilio credentials (3 minutes)
+
+**Results:**
+- ✅ Code deployed and tested locally
+- ✅ Ready for production use once credentials configured
+- ✅ Sandbox testing successful
+
+---
+
+## 📈 DEPLOYMENT STATISTICS
+
+| Metric | Count |
+|--------|-------|
+| **Total Deployments** | 5 major releases |
+| **Heroku Releases** | v946, v949, v976, v982 |
+| **Migrations Applied** | 11 migrations |
+| **New Tables Created** | 12 tables |
+| **URL Patterns Added** | 40+ patterns |
+| **Templates Created** | 20+ templates |
+| **Success Rate** | 100% (no rollbacks needed) |
+
+---
+
+## 📋 DETAILED DEPLOYMENT DOCS
+
+For detailed deployment information, see:
+- **[deployment_history/DEPLOYMENT_SUCCESS_OCT27.md](deployment_history/DEPLOYMENT_SUCCESS_OCT27.md)** - Phase 1-5 deployment
+- **[deployment_history/PHASE6_DEPLOYMENT_SUCCESS.md](deployment_history/PHASE6_DEPLOYMENT_SUCCESS.md)** - Phase 6 onboarding
+- **[deployment_history/PNL_EDITING_FEATURE.md](deployment_history/PNL_EDITING_FEATURE.md)** - P&L editing implementation
+- **[deployment_history/COMPLETE_SYSTEM_DEPLOYED.md](deployment_history/COMPLETE_SYSTEM_DEPLOYED.md)** - Complete system status
 
 ---
 
