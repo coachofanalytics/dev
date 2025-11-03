@@ -733,7 +733,7 @@ def csv_import_and_score(request):
                         'strategy': suggestion.get_strategy_display(),
                         'premium': suggestion.premium_collected or Decimal('0'),
                         'max_loss': suggestion.max_loss or Decimal('1'),
-                        'dte': suggestion.calculated_dte,
+                        'dte': suggestion.dte,  # Use 'dte' field, not 'calculated_dte' property
                         'iv_rank': float(iv_rank_pct) if iv_rank_pct else None,  # Convert to percentage!
                         'days_to_earnings': None,
                         'volume': None,
