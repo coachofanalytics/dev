@@ -1,0 +1,295 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tasks"></i> Reset Employee Tasks
+                    </h4>
+                    <p class="mb-0 mt-2">Select employees to move tasks to history and reset points</p>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Instructions -->
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Instructions:</h5>
+                        <ol class="mb-0">
+                            <li>Select the employees you want to process</li>
+                            <li>Click "Preview Changes" to see what will happen</li>
+                            <li>Review the preview carefully</li>
+                            <li>Click "Confirm Reset" to apply changes</li>
+                        </ol>
+                        <hr>
+                        <p class="mb-0"><strong>Note:</strong> Test accounts (like coda_info) are highlighted in yellow. Consider excluding them from reset.</p>
+                    </div>
+
+                    <form method="post" id="resetTasksForm">
+                        {% csrf_token %}
+                        
+                        <!-- Select All / None Controls -->
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">
+                                <i class="fas fa-check-double"></i> Select All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="selectNone">
+                                <i class="fas fa-times"></i> Deselect All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info" id="selectActiveOnly">
+                                <i class="fas fa-filter"></i> Select Active Only (Exclude Test Accounts)
+                            </button>
+                        </div>
+
+                        <!-- Employee List -->
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="employeeTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="50">
+                                            <input type="checkbox" id="selectAllCheckbox">
+                                        </th>
+                                        <th>Employee</th>
+                                        <th>Email</th>
+                                        <th>Current Tasks</th>
+                                        <th>Total Points</th>
+                                        <th>History Records</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for emp in employees %}
+                                    <tr class="{% if emp.is_test_account %}table-warning{% endif %}">
+                                        <td>
+                                            <input type="checkbox" 
+                                                   name="selected_employees" 
+                                                   value="{{ emp.id }}"
+                                                   class="employee-checkbox"
+                                                   data-is-test="{{ emp.is_test_account|yesno:'true,false' }}">
+                                        </td>
+                                        <td>
+                                            <strong>{{ emp.username }}</strong>
+                                            {% if emp.is_test_account %}
+                                                <span class="badge bg-warning text-dark">Test Account</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ emp.email }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ emp.task_count }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ emp.total_points }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ emp.history_count }}</span>
+                                        </td>
+                                        <td>
+                                            {% if emp.task_count > 0 %}
+                                                <span class="badge bg-success">Has Tasks</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-dark">No Tasks</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            No employees with tasks found
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="alert alert-secondary" id="selectionSummary">
+                            <strong>Selection:</strong> 
+                            <span id="selectedCount">0</span> employee(s) selected
+                            | <span id="totalTasksCount">0</span> total tasks will be moved
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'management:tasks' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            
+                            <div>
+                                <button type="submit" name="action" value="preview" class="btn btn-info">
+                                    <i class="fas fa-eye"></i> Preview Changes
+                                </button>
+                                <button type="submit" name="action" value="confirm" class="btn btn-danger" id="confirmBtn" disabled>
+                                    <i class="fas fa-check"></i> Confirm Reset
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Preview Results (shown after preview) -->
+                    {% if preview_data %}
+                    <div class="mt-4">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Preview: What Will Happen</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6>The following changes will be applied:</h6>
+                                <ul>
+                                    <li><strong>{{ preview_data.employees_count }}</strong> employees will be processed</li>
+                                    <li><strong>{{ preview_data.tasks_count }}</strong> tasks will be moved to TaskHistory</li>
+                                    <li>Task points will be reset to <strong>0</strong></li>
+                                    <li>Employee group levels will be recalculated</li>
+                                </ul>
+
+                                <h6 class="mt-3">Employees to Process:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Tasks to Move</th>
+                                                <th>Points to Reset</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for emp in preview_data.employees %}
+                                            <tr>
+                                                <td>{{ emp.username }}</td>
+                                                <td>{{ emp.tasks }}</td>
+                                                <td>{{ emp.points }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="alert alert-danger mt-3">
+                                    <strong>⚠️ Warning:</strong> This action cannot be undone! 
+                                    Make sure you've reviewed the list carefully.
+                                </div>
+
+                                <!-- Enable confirm button after preview -->
+                                <script>
+                                    document.getElementById('confirmBtn').disabled = false;
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Success Results -->
+                    {% if success_data %}
+                    <div class="mt-4">
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle"></i> Tasks Reset Successfully!</h5>
+                            <ul class="mb-0">
+                                <li><strong>{{ success_data.employees_processed }}</strong> employees processed</li>
+                                <li><strong>{{ success_data.tasks_moved }}</strong> tasks moved to TaskHistory</li>
+                                <li><strong>{{ success_data.tasks_updated }}</strong> tasks updated</li>
+                            </ul>
+                        </div>
+                        
+                        <a href="{% url 'management:reset_tasks_select' %}" class="btn btn-primary">
+                            <i class="fas fa-redo"></i> Reset More Tasks
+                        </a>
+                        <a href="{% url 'management:tasks' %}" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> View Tasks
+                        </a>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Select All
+    $('#selectAll, #selectAllCheckbox').click(function() {
+        $('.employee-checkbox').prop('checked', true);
+        updateSelectionSummary();
+    });
+
+    // Select None
+    $('#selectNone').click(function() {
+        $('.employee-checkbox').prop('checked', false);
+        $('#selectAllCheckbox').prop('checked', false);
+        updateSelectionSummary();
+    });
+
+    // Select Active Only (exclude test accounts)
+    $('#selectActiveOnly').click(function() {
+        $('.employee-checkbox').each(function() {
+            const isTest = $(this).data('is-test');
+            $(this).prop('checked', isTest === false);
+        });
+        updateSelectionSummary();
+    });
+
+    // Update summary when checkboxes change
+    $('.employee-checkbox').change(function() {
+        updateSelectionSummary();
+    });
+
+    // Update selection summary
+    function updateSelectionSummary() {
+        const selectedCount = $('.employee-checkbox:checked').length;
+        let totalTasks = 0;
+
+        $('.employee-checkbox:checked').each(function() {
+            const row = $(this).closest('tr');
+            const tasksText = row.find('td:eq(3) .badge').text();
+            totalTasks += parseInt(tasksText) || 0;
+        });
+
+        $('#selectedCount').text(selectedCount);
+        $('#totalTasksCount').text(totalTasks);
+    }
+
+    // Initialize summary
+    updateSelectionSummary();
+
+    // Confirm before reset
+    $('#resetTasksForm').submit(function(e) {
+        const action = $('button[type="submit"]:focus').val();
+        
+        if (action === 'confirm') {
+            const selectedCount = $('.employee-checkbox:checked').length;
+            if (selectedCount === 0) {
+                e.preventDefault();
+                alert('Please select at least one employee.');
+                return false;
+            }
+
+            if (!confirm(`Are you sure you want to reset tasks for ${selectedCount} employee(s)? This cannot be undone!`)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+});
+</script>
+
+<style>
+.table-warning {
+    background-color: #fff3cd !important;
+}
+
+.employee-checkbox {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+#employeeTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
+{% endblock %}
+

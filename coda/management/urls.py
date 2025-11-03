@@ -1,6 +1,7 @@
 from django.urls import path
 from django.shortcuts import render
 from management import views
+from management import views_task_reset_selective
 from management.views import (
                         TaskDetailView,
                         TaskUpdateView,TaskDeleteView,UsertaskUpdateView,
@@ -43,7 +44,10 @@ urlpatterns = [
     path("confirm_employee_contract/", views.confirm_employee_contract, name="confirm_employee_contract"),
     path('tasks/', TaskListView.as_view(), name='tasks'),
     path('payroll/',views.payslip, name='user_pay'),
-    path("reset_tasks/",views.reset_task,name="reset_tasks"),
+    # Updated task reset - selective interface
+    path("reset_tasks/select/", views_task_reset_selective.reset_tasks_select, name="reset_tasks_select"),
+    # Old reset_tasks redirects to new interface
+    path("reset_tasks/", views_task_reset_selective.reset_all_tasks, name="reset_tasks"),
     path('score_report/', views.score_report, name='score_report'),
     path('tasks/<int:pk>/', TaskDetailView.as_view(), name='taskdetail'),
     path('newevidence/<int:taskid>', views.newevidence, name='new_evidence'),
