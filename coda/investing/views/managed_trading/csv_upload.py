@@ -178,6 +178,16 @@ def csv_upload_wizard(request):
             logger.info(f"Strategy: {strategy_type}")
             logger.info("=" * 80)
             
+            # Calculate percentage display values for template
+            stats_with_percentages = {
+                'avg_premium': stats['avg_premium'],
+                'avg_iv': stats['avg_iv'],
+                'avg_iv_pct': float(stats['avg_iv'] * 100),  # 0.28 → 28% for display
+                'avg_dte': stats['avg_dte'],
+                'unique_symbols': stats['unique_symbols'],
+                'symbols_list': stats['symbols_list'],
+            }
+            
             context = {
                 'headers': headers,
                 'preview_rows': preview_rows[:5],  # First 5 for preview
@@ -187,7 +197,7 @@ def csv_upload_wizard(request):
                 'title': 'CSV Upload - Step 2: Confirm & Filter',
                 'skipped_rows': header_row_index,
                 'field_mapping': field_mapping,
-                'stats': stats,
+                'stats': stats_with_percentages,
                 'existing_total': existing_total,
                 'existing_active': existing_active,
                 'existing_expired': existing_expired,
