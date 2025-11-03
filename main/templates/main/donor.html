@@ -1,0 +1,46 @@
+
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Donation List</h1>
+
+    {% if donations %}
+        <table class="table table-bordered table-striped table-hover shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Donor Name</th>
+                    <th>Email</th>
+                    <th>Amount</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donation in donations %}
+                <tr>
+                    <td>{{ donation.donor_name }}</td>
+                    <td>{{ donation.email }}</td>
+                    <td>{{ donation.amount }}</td>
+                    <td>{{ donation.message|default:"—" }}</td>
+                    <td>{{ donation.created_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'main:donor_details' donation.id %}" class="btn btn-sm btn-info">Details</a>
+                        <a href="{% url 'main:edit_donor' donation.id %}" class="btn btn-sm btn-primary">Edit</a>
+                        <a href="{% url 'main:delete_donor' donation.id %}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this donation?');">
+                           Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">No donations have been made yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
