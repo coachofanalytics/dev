@@ -173,6 +173,9 @@
                     {% if auto_score and scored_count > 0 %}
                     <br><strong>{{ scored_count }} positions</strong> have been AI-scored and are ready for review.
                     {% endif %}
+                    {% if technical_count > 0 %}
+                    <br><strong>🎯 {{ technical_count }} positions</strong> enhanced with technical analysis (RSI, MA, Volume)!
+                    {% endif %}
                 </p>
                 <hr>
                 <p class="mb-0"><small><strong>⚠️ Important:</strong> All capital and premium estimates are based on mid-prices for screening purposes. Actual execution prices will vary. Present these to clients as preliminary risk-return estimates before entering live trades.</small></p>

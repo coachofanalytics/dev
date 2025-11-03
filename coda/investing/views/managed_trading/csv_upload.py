@@ -20,6 +20,7 @@ import logging
 from ...models import OptionPlayRawData, SuggestedPosition
 from ...services.optionplay_converter import OptionPlayConverterService
 from ...services.position_scoring_service import PositionScoringService
+from ...services.technical_analysis_service import get_technical_indicators
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -814,6 +815,46 @@ def csv_import_and_score(request):
             
             logger.info(f"✅ AI Scoring complete: {scored_count}/{len(converted_ids)} positions scored")
         
+        # Step 4: Add Technical Analysis (yfinance) to top positions
+        technical_count = 0
+        if converted_ids:
+            logger.info("📊 Adding technical analysis (yfinance) to positions...")
+            for idx, suggestion_id in enumerate(converted_ids[:20], 1):  # Only top 20 to avoid rate limits
+                try:
+                    suggestion = SuggestedPosition.objects.get(id=suggestion_id)
+                    
+                    # Fetch technical indicators
+                    tech_data = get_technical_indicators(suggestion.symbol)
+                    
+                    if tech_data:
+                        # Store technical data in notes field for now
+                        tech_notes = (
+                            f"RSI: {tech_data['rsi']:.1f} ({tech_data['rsi_signal']}), "
+                            f"Price ${tech_data['current_price']} vs MA ${tech_data['ma_50']} ({tech_data['price_vs_ma']}), "
+                            f"Volume: {tech_data['volume_ratio']:.1f}x avg"
+                        )
+                        
+                        # Append to existing notes
+                        if suggestion.notes:
+                            suggestion.notes += f"\n\nTechnical: {tech_notes}"
+                        else:
+                            suggestion.notes = f"Technical: {tech_notes}"
+                        
+                        # Boost AI score based on technical signals
+                        if suggestion.ai_score and tech_data['technical_score'] > 0:
+                            suggestion.ai_score += tech_data['technical_score']
+                        
+                        suggestion.save()
+                        
+                        technical_count += 1
+                        logger.debug(f"  ✅ {suggestion.symbol}: RSI {tech_data['rsi']:.1f}, +{tech_data['technical_score']} pts")
+                    
+                except Exception as e:
+                    logger.warning(f"  ⚠️  Technical analysis failed for {suggestion.symbol}: {str(e)}")
+                    continue
+            
+            logger.info(f"✅ Technical analysis complete: {technical_count}/{min(len(converted_ids), 20)} positions")
+        
         # Clear session
         logger.info("🧹 Clearing session data...")
         request.session.pop('csv_data', None)
@@ -906,6 +947,7 @@ def csv_import_and_score(request):
             'error_count': error_count,
             'converted_count': len(converted_ids),
             'scored_count': scored_count,
+            'technical_count': technical_count,  # NEW: Technical analysis count
             'auto_convert': auto_convert,
             'auto_score': auto_score,
             'deleted_count': deleted_count,
