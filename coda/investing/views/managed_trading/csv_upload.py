@@ -717,10 +717,43 @@ def csv_import_and_score(request):
             for idx, suggestion_id in enumerate(converted_ids, 1):
                 try:
                     suggestion = SuggestedPosition.objects.get(id=suggestion_id)
-                    scored = scorer.score_position(suggestion)
-                    if scored and scored.ai_score:
-                        scored_count += 1
-                        logger.debug(f"  ✅ Scored {idx}/{len(converted_ids)}: {suggestion.symbol} (Score: {scored.ai_score})")
+                    
+                    # Get the raw data to access IV rank
+                    raw_data = OptionPlayRawData.objects.filter(
+                        symbol=suggestion.symbol,
+                        expiry=suggestion.expiration_date
+                    ).first()
+                    
+                    # Build position data dict for AI scorer
+                    # NOTE: AI scorer expects IV as percentage (0-100), but we store as decimal (0-1)
+                    iv_rank_pct = (raw_data.iv_rank * 100) if raw_data and raw_data.iv_rank else None
+                    
+                    position_data = {
+                        'symbol': suggestion.symbol,
+                        'strategy': suggestion.get_strategy_display(),
+                        'premium': suggestion.premium_collected or Decimal('0'),
+                        'max_loss': suggestion.max_loss or Decimal('1'),
+                        'dte': suggestion.calculated_dte,
+                        'iv_rank': float(iv_rank_pct) if iv_rank_pct else None,  # Convert to percentage!
+                        'days_to_earnings': None,
+                        'volume': None,
+                        'open_interest': None,
+                    }
+                    
+                    # Score the position
+                    score_result = scorer.score_position(position_data)
+                    
+                    # Update suggestion with AI score
+                    suggestion.ai_score = score_result['score']
+                    suggestion.ai_rating = score_result['rating']
+                    suggestion.ai_breakdown = score_result['breakdown']
+                    suggestion.ai_recommendation = score_result['recommendation']
+                    suggestion.ai_confidence_level = score_result['confidence']
+                    suggestion.save()
+                    
+                    scored_count += 1
+                    logger.debug(f"  ✅ Scored {idx}/{len(converted_ids)}: {suggestion.symbol} (Score: {score_result['score']}, Rating: {score_result['rating']})")
+                    
                 except Exception as e:
                     logger.error(f"  ❌ Scoring error for ID {suggestion_id}: {str(e)}")
                     continue
