@@ -538,7 +538,7 @@ def csv_import_and_score(request):
                 
                 # Progress logging
                 if idx % 10 == 0:
-                    logger.info(f"  📊 Progress: {idx}/{len(csv_data)} rows processed, {len(imported_ids)} imported")
+                    logger.info(f"  📊 Progress: {idx}/{len(csv_data)} rows processed, {len(tier1_passed)} passed Tier 1")
                 
             except Exception as e:
                 logger.error(f"  ❌ Row {idx}: Error importing - {str(e)}")
