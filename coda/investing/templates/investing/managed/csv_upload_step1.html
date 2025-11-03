@@ -74,12 +74,18 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fa fa-upload"></i> Step 1: Upload OptionPlay CSV</h4>
+                    <h4 class="mb-0"><i class="fa fa-upload"></i> Step 1: Upload OptionPlay File</h4>
                 </div>
                 <div class="card-body">
                     <!-- Instructions -->
                     <div class="alert alert-info">
-                        <h5><i class="fa fa-info-circle"></i> Supported CSV Types</h5>
+                        <h5><i class="fa fa-info-circle"></i> Supported File Types</h5>
+                        <ul class="mb-0">
+                            <li><strong>Excel Files</strong> - .xlsx, .xls (recommended)</li>
+                            <li><strong>CSV Files</strong> - .csv (comma-separated)</li>
+                        </ul>
+                        <hr>
+                        <h6>Supported Position Types:</h6>
                         <ul class="mb-0">
                             <li><strong>Credit Spreads</strong> - Bull/Bear put/call spreads</li>
                             <li><strong>Short Puts</strong> - Cash-secured put positions</li>
@@ -98,9 +104,9 @@
                         
                         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFile').click()">
                             <i class="fa fa-cloud-upload fa-4x text-primary mb-3"></i>
-                            <h5>Drag & Drop CSV File Here</h5>
+                            <h5>Drag & Drop Excel or CSV File Here</h5>
                             <p class="text-muted">or click to browse</p>
-                            <input type="file" name="csv_file" id="csvFile" accept=".csv" style="display: none;" required>
+                            <input type="file" name="csv_file" id="csvFile" accept=".csv,.xlsx,.xls" style="display: none;" required>
                             <div id="fileName" class="mt-3 text-success" style="display: none;">
                                 <i class="fa fa-file-csv"></i> <span id="fileNameText"></span>
                             </div>
@@ -115,10 +121,11 @@
                     
                     <!-- Help Text -->
                     <div class="mt-4">
-                        <h6>Expected CSV Format:</h6>
+                        <h6>Expected Format:</h6>
                         <small class="text-muted">
                             <strong>Required columns:</strong> Symbol, Premium, Expiry, DTE<br>
                             <strong>Recommended:</strong> IV Rank, Strike Price(s), Returns<br>
+                            <strong>📊 Excel files:</strong> Will auto-detect headers and skip title rows<br>
                             <strong>Headers will be mapped in next step</strong>
                         </small>
                     </div>
@@ -154,10 +161,13 @@ csvFile.addEventListener('change', function(e) {
         console.log('  - Type:', file.type);
         console.log('  - Last Modified:', new Date(file.lastModified));
         
-        // Validate CSV
-        if (!file.name.endsWith('.csv')) {
+        // Validate file type
+        const validExtensions = ['.csv', '.xlsx', '.xls'];
+        const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        
+        if (!hasValidExtension) {
             console.error('❌ Invalid file type:', file.name);
-            alert('Please select a CSV file (.csv extension required)');
+            alert('Please select a CSV (.csv) or Excel (.xlsx, .xls) file');
             this.value = '';
             return;
         }
@@ -197,13 +207,16 @@ uploadZone.addEventListener('drop', function(e) {
         const file = files[0];
         console.log('📥 Dropped file:', file.name, '(' + (file.size / 1024).toFixed(2) + ' KB)');
         
-        if (file.name.endsWith('.csv')) {
+        const validExtensions = ['.csv', '.xlsx', '.xls'];
+        const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        
+        if (hasValidExtension) {
             csvFile.files = files;
             const event = new Event('change');
             csvFile.dispatchEvent(event);
         } else {
             console.error('❌ Invalid file type dropped:', file.name);
-            alert('Please drop a CSV file (.csv extension required)');
+            alert('Please drop a CSV (.csv) or Excel (.xlsx, .xls) file');
         }
     } else {
         console.warn('⚠️ No files dropped');

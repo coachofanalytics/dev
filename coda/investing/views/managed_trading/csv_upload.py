@@ -15,6 +15,8 @@ import csv
 import io
 import json
 import logging
+import pandas as pd
+from openpyxl import load_workbook
 
 from ...models import OptionPlayRawData, SuggestedPosition
 from ...services.optionplay_converter import OptionPlayConverterService
@@ -45,19 +47,26 @@ def csv_upload_wizard(request):
         logger.info(f"📁 Content type: {csv_file.content_type}")
         
         # Validate file type
-        if not csv_file.name.endswith('.csv'):
+        file_extension = csv_file.name.lower().split('.')[-1]
+        valid_extensions = ['csv', 'xlsx', 'xls']
+        
+        if file_extension not in valid_extensions:
             logger.error(f"❌ Invalid file type: {csv_file.name}")
-            messages.error(request, 'Please upload a CSV file')
+            messages.error(request, 'Please upload a CSV (.csv) or Excel (.xlsx, .xls) file')
             return render(request, 'investing/managed/csv_upload_step1.html')
         
-        logger.info("✅ File type validated (CSV)")
+        logger.info(f"✅ File type validated: {file_extension.upper()}")
         
         try:
-            logger.info("📖 Reading CSV file...")
-            
-            # Read CSV
-            file_data = csv_file.read().decode('utf-8')
-            logger.info(f"✅ File decoded successfully ({len(file_data)} characters)")
+            # Determine how to read the file based on extension
+            if file_extension in ['xlsx', 'xls']:
+                logger.info("📖 Reading Excel file...")
+                file_data = _read_excel_to_csv_string(csv_file, file_extension)
+                logger.info(f"✅ Excel converted to CSV format ({len(file_data)} characters)")
+            else:
+                logger.info("📖 Reading CSV file...")
+                file_data = csv_file.read().decode('utf-8')
+                logger.info(f"✅ File decoded successfully ({len(file_data)} characters)")
             
             # Smart header detection - skip title rows
             logger.info("🔍 Detecting header row (skipping title rows if present)...")
@@ -163,18 +172,30 @@ def csv_upload_wizard(request):
             logger.info("✅ Rendering Step 2 (Preview & Map)")
             return render(request, 'investing/managed/csv_upload_step2.html', context)
             
+        except ValueError as e:
+            # User-friendly error for .xls or format issues
+            logger.error(f"❌ Value error: {str(e)}")
+            messages.error(request, str(e))
+            return render(request, 'investing/managed/csv_upload_step1.html')
         except UnicodeDecodeError as e:
             logger.error(f"❌ Unicode decode error: {str(e)}")
-            logger.error("💡 Tip: Try saving the CSV with UTF-8 encoding")
-            messages.error(request, f'Error reading CSV (encoding issue): {str(e)}. Try saving with UTF-8 encoding.')
+            logger.error("💡 Tip: Try saving the file with UTF-8 encoding")
+            messages.error(request, f'Error reading file (encoding issue): {str(e)}. Try saving with UTF-8 encoding.')
             return render(request, 'investing/managed/csv_upload_step1.html')
         except csv.Error as e:
             logger.error(f"❌ CSV parsing error: {str(e)}")
             messages.error(request, f'Error parsing CSV: {str(e)}')
             return render(request, 'investing/managed/csv_upload_step1.html')
+        except ImportError as e:
+            logger.error(f"❌ Import error (missing library): {str(e)}")
+            if 'xlrd' in str(e).lower():
+                messages.error(request, 'Legacy .xls format not supported. Please save your file as .xlsx in Excel and try again.')
+            else:
+                messages.error(request, f'Missing required library: {str(e)}')
+            return render(request, 'investing/managed/csv_upload_step1.html')
         except Exception as e:
             logger.error(f"❌ Unexpected error: {str(e)}", exc_info=True)
-            messages.error(request, f'Error reading CSV: {str(e)}')
+            messages.error(request, f'Error reading file: {str(e)}')
             return render(request, 'investing/managed/csv_upload_step1.html')
     
     logger.info("📄 Rendering Step 1 (Upload Form)")
@@ -428,6 +449,49 @@ def csv_import_and_score(request):
 
 
 # Helper functions
+
+def _read_excel_to_csv_string(excel_file, file_extension):
+    """
+    Read Excel file (.xlsx or .xls) and convert to CSV string format
+    
+    Handles:
+    - Multiple sheets (reads first sheet)
+    - Title rows (preserves them for header detection)
+    - Data formatting
+    """
+    try:
+        logger.info("📊 Reading Excel file with pandas...")
+        
+        # Read Excel with pandas (openpyxl engine for .xlsx)
+        if file_extension == 'xlsx':
+            df = pd.read_excel(excel_file, sheet_name=0, header=None, engine='openpyxl')
+            logger.info(f"✅ Excel (.xlsx) loaded: {len(df)} rows, {len(df.columns)} columns")
+        else:  # xls (legacy format)
+            # Try reading with xlrd (if available), otherwise suggest conversion
+            try:
+                df = pd.read_excel(excel_file, sheet_name=0, header=None, engine='xlrd')
+                logger.info(f"✅ Excel (.xls) loaded: {len(df)} rows, {len(df.columns)} columns")
+            except ImportError:
+                logger.error("❌ xlrd not installed - cannot read .xls files")
+                raise ValueError("Legacy .xls format not supported. Please save as .xlsx in Excel and try again.")
+        
+        # Convert DataFrame to CSV string
+        csv_buffer = io.StringIO()
+        df.to_csv(csv_buffer, index=False, header=False)
+        csv_string = csv_buffer.getvalue()
+        
+        logger.info(f"✅ Converted to CSV format ({len(csv_string)} characters)")
+        logger.info(f"📊 Preview: {csv_string[:200]}...")  # First 200 chars
+        
+        return csv_string
+        
+    except ValueError as e:
+        # Re-raise ValueError for user-friendly messages
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error reading Excel file: {str(e)}", exc_info=True)
+        raise
+
 
 def _detect_strategy_type(filename, headers):
     """Auto-detect strategy type from filename or headers"""
