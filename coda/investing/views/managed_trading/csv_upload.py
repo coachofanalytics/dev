@@ -15,8 +15,6 @@ import csv
 import io
 import json
 import logging
-import pandas as pd
-from openpyxl import load_workbook
 
 from ...models import OptionPlayRawData, SuggestedPosition
 from ...services.optionplay_converter import OptionPlayConverterService
@@ -143,11 +141,22 @@ def csv_upload_wizard(request):
             request.session['csv_headers'] = headers
             request.session['csv_filename'] = csv_file.name
             
+            # Auto-map columns intelligently
+            logger.info("🤖 Auto-mapping columns to database fields...")
+            field_mapping = _auto_map_columns(headers)
+            
+            # Store mapping in session
+            request.session['field_mapping'] = field_mapping
+            
             # Detect strategy type from filename or first row
             logger.info("🔍 Detecting strategy type...")
             strategy_type = _detect_strategy_type(csv_file.name, headers)
             request.session['strategy_type'] = strategy_type
             logger.info(f"✅ Strategy detected: {strategy_type}")
+            
+            # Calculate statistics for filter suggestions
+            logger.info("📊 Calculating CSV statistics...")
+            stats = _calculate_csv_stats(all_rows, field_mapping)
             
             logger.info("=" * 80)
             logger.info("📊 UPLOAD SUMMARY")
@@ -156,21 +165,25 @@ def csv_upload_wizard(request):
             logger.info(f"Size: {csv_file.size / 1024:.2f} KB")
             logger.info(f"Rows: {total_rows}")
             logger.info(f"Columns: {len(headers)}")
+            logger.info(f"Mapped: {len([v for v in field_mapping.values() if v != 'skip'])}")
+            logger.info(f"Skipped: {len([v for v in field_mapping.values() if v == 'skip'])}")
             logger.info(f"Strategy: {strategy_type}")
             logger.info("=" * 80)
             
             context = {
                 'headers': headers,
-                'preview_rows': preview_rows,
+                'preview_rows': preview_rows[:5],  # First 5 for preview
                 'total_rows': len(all_rows),
                 'filename': csv_file.name,
                 'strategy_type': strategy_type,
-                'title': 'CSV Upload - Step 2: Preview & Map Fields',
-                'skipped_rows': header_row_index,  # Number of title rows skipped
+                'title': 'CSV Upload - Step 2: Confirm & Filter',
+                'skipped_rows': header_row_index,
+                'field_mapping': field_mapping,
+                'stats': stats,
             }
             
-            logger.info("✅ Rendering Step 2 (Preview & Map)")
-            return render(request, 'investing/managed/csv_upload_step2.html', context)
+            logger.info("✅ Rendering Step 2 (Confirm & Filter) - Skipping manual mapping")
+            return render(request, 'investing/managed/csv_upload_step2_auto.html', context)
             
         except ValueError as e:
             # User-friendly error for .xls or format issues
@@ -450,6 +463,79 @@ def csv_import_and_score(request):
 
 # Helper functions
 
+def _auto_map_columns(headers):
+    """
+    Intelligently auto-map CSV columns to model fields
+    
+    Returns dict: {csv_column: model_field}
+    """
+    mapping = {}
+    
+    for header in headers:
+        header_lower = header.lower().strip()
+        
+        # Symbol
+        if 'symbol' in header_lower and 'unique' not in header_lower:
+            mapping[header] = 'symbol'
+        
+        # Prices
+        elif 'stock price' in header_lower or 'underlying price' in header_lower:
+            mapping[header] = 'price'
+        elif 'mid price' in header_lower or 'premium' in header_lower and 'width' not in header_lower:
+            mapping[header] = 'premium'
+        
+        # Strikes
+        elif 'strike price' in header_lower or ('strike' in header_lower and 'distance' not in header_lower):
+            mapping[header] = 'sell_strike'
+        elif 'sell strike' in header_lower:
+            mapping[header] = 'sell_strike'
+        elif 'buy strike' in header_lower:
+            mapping[header] = 'buy_strike'
+        
+        # Dates
+        elif 'expir' in header_lower and 'days' not in header_lower:
+            mapping[header] = 'expiry'
+        elif 'days to expir' in header_lower or header_lower == 'dte':
+            mapping[header] = 'dte'
+        
+        # Metrics
+        elif 'iv rank' in header_lower or 'implied volatility rank' in header_lower:
+            mapping[header] = 'iv_rank'
+        elif 'annual' in header_lower and 'return' in header_lower:
+            mapping[header] = 'annual_return'
+        elif 'distance' in header_lower and 'strike' in header_lower:
+            mapping[header] = 'distance_to_strike'
+        elif 'width' in header_lower and 'prem' not in header_lower:
+            mapping[header] = 'width'
+        elif ('prem' in header_lower or 'premium') and 'width' in header_lower:
+            mapping[header] = 'prem_width'
+        
+        # Earnings
+        elif 'earnings flag' in header_lower:
+            mapping[header] = 'earnings_flag'
+        elif 'earnings date' in header_lower:
+            mapping[header] = 'skip'  # We use earnings_flag, not date
+        
+        # Skip unnecessary columns
+        elif any(skip_word in header_lower for skip_word in ['action', 'bid', 'ask', 'unique']):
+            mapping[header] = 'skip'
+        
+        # Unknown - skip by default
+        else:
+            mapping[header] = 'skip'
+    
+    logger.info("🤖 Auto-mapped columns:")
+    for csv_col, model_field in mapping.items():
+        if model_field != 'skip':
+            logger.info(f"   {csv_col} → {model_field}")
+    
+    skipped = [k for k, v in mapping.items() if v == 'skip']
+    if skipped:
+        logger.info(f"⏭️  Skipping columns: {', '.join(skipped)}")
+    
+    return mapping
+
+
 def _read_excel_to_csv_string(excel_file, file_extension):
     """
     Read Excel file (.xlsx or .xls) and convert to CSV string format
@@ -461,6 +547,12 @@ def _read_excel_to_csv_string(excel_file, file_extension):
     """
     try:
         logger.info("📊 Reading Excel file with pandas...")
+        
+        # Lazy import pandas to avoid breaking local dev if not installed
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("pandas library required for Excel file uploads. Please install: pip install pandas")
         
         # Read Excel with pandas (openpyxl engine for .xlsx)
         if file_extension == 'xlsx':
@@ -487,6 +579,9 @@ def _read_excel_to_csv_string(excel_file, file_extension):
         
     except ValueError as e:
         # Re-raise ValueError for user-friendly messages
+        raise
+    except ImportError as e:
+        # Re-raise ImportError for library issues
         raise
     except Exception as e:
         logger.error(f"❌ Error reading Excel file: {str(e)}", exc_info=True)
@@ -518,23 +613,35 @@ def _calculate_csv_stats(csv_data, field_mapping):
     dtes = []
     symbols = set()
     
+    # Get mapped field names
+    premium_field = next((k for k, v in field_mapping.items() if v == 'premium'), None)
+    iv_field = next((k for k, v in field_mapping.items() if v == 'iv_rank'), None)
+    dte_field = next((k for k, v in field_mapping.items() if v == 'dte'), None)
+    symbol_field = next((k for k, v in field_mapping.items() if v == 'symbol'), None)
+    
     for row in csv_data:
         try:
-            # Get mapped fields
-            premium_field = next((k for k, v in field_mapping.items() if v == 'premium'), None)
-            iv_field = next((k for k, v in field_mapping.items() if v == 'iv_rank'), None)
-            dte_field = next((k for k, v in field_mapping.items() if v == 'dte'), None)
-            symbol_field = next((k for k, v in field_mapping.items() if v == 'symbol'), None)
-            
             if premium_field and row.get(premium_field):
-                premiums.append(Decimal(row[premium_field].replace('$', '').strip()))
+                value = str(row[premium_field]).replace('$', '').replace(',', '').strip()
+                if value:
+                    premiums.append(Decimal(value))
+            
             if iv_field and row.get(iv_field):
-                ivs.append(Decimal(row[iv_field].replace('%', '').strip()))
+                value = str(row[iv_field]).replace('%', '').strip()
+                if value:
+                    ivs.append(Decimal(value))
+            
             if dte_field and row.get(dte_field):
-                dtes.append(int(row[dte_field]))
+                value = str(row[dte_field]).strip()
+                if value:
+                    dtes.append(int(float(value)))
+            
             if symbol_field and row.get(symbol_field):
-                symbols.add(row[symbol_field].strip().upper())
-        except:
+                value = str(row[symbol_field]).strip().upper()
+                if value:
+                    symbols.add(value)
+        except Exception as e:
+            logger.debug(f"    Error calculating stats for row: {e}")
             continue
     
     return {

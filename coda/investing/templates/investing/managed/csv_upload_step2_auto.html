@@ -1,0 +1,225 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load investing_extras %}
+
+{% block title %}CSV Upload - Confirm & Filter{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="wizard-steps">
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Upload</div>
+        <div class="wizard-step active"><i class="fa fa-check-double"></i> Auto-Mapped</div>
+        <div class="wizard-step"><i class="fa fa-filter"></i> Filters & Import</div>
+        <div class="wizard-step"><i class="fa fa-check"></i> Complete</div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fa fa-robot"></i> Step 2: Auto-Detected Fields & Filters</h4>
+        </div>
+        <div class="card-body">
+            <!-- File Info -->
+            <div class="alert alert-success">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>File:</strong> {{ filename }}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Rows:</strong> {{ total_rows }}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Strategy:</strong> 
+                        <span class="badge badge-primary">{{ strategy_type|upper }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        {% if skipped_rows > 0 %}
+                        <strong>Auto-Detected:</strong> 
+                        <span class="badge badge-success">
+                            <i class="fa fa-check-circle"></i> Skipped {{ skipped_rows }} title row{{ skipped_rows|pluralize }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Mapped:</strong>
+                        <span class="badge badge-info">{{ field_mapping|length }} columns</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Auto-Mapped Fields Summary -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5><i class="fa fa-magic"></i> Auto-Mapped Fields</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>CSV Column</th>
+                                <th>Maps To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for csv_col, model_field in field_mapping.items %}
+                                {% if model_field != 'skip' %}
+                                <tr>
+                                    <td>{{ csv_col }}</td>
+                                    <td><span class="badge badge-success">{{ model_field }}</span></td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5><i class="fa fa-chart-bar"></i> Data Statistics</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Avg Premium:</th>
+                            <td>${{ stats.avg_premium|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Avg IV Rank:</th>
+                            <td>{{ stats.avg_iv|floatformat:1 }}%</td>
+                        </tr>
+                        <tr>
+                            <th>Avg DTE:</th>
+                            <td>{{ stats.avg_dte|floatformat:0 }} days</td>
+                        </tr>
+                        <tr>
+                            <th>Unique Symbols:</th>
+                            <td>{{ stats.unique_symbols }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Quality Filters Form -->
+            <form method="post" action="{% url 'investing:csv_import_and_score' %}">
+                {% csrf_token %}
+                
+                <h5 class="border-top pt-3"><i class="fa fa-filter"></i> Quality Filters</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Minimum Premium</label>
+                            <input type="number" name="min_premium" class="form-control" value="2.00" step="0.01" min="0">
+                            <small class="text-muted">Suggested: $2.00+ | Your avg: ${{ stats.avg_premium|floatformat:2 }}</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Minimum IV Rank</label>
+                            <input type="number" name="min_iv" class="form-control" value="40" step="1" min="0" max="100">
+                            <small class="text-muted">Suggested: 40%+ | Your avg: {{ stats.avg_iv|floatformat:1 }}%</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Maximum DTE (Days to Expiration)</label>
+                            <input type="number" name="max_dte" class="form-control" value="60" step="1" min="1">
+                            <small class="text-muted">Suggested: 30-60 days | Your avg: {{ stats.avg_dte|floatformat:0 }} days</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Maximum Positions to Import</label>
+                            <input type="number" name="max_positions" class="form-control" value="20" step="1" min="1" max="100">
+                            <small class="text-muted">Limit: 1-100 positions ({{ total_rows }} available)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Symbol Filter (Optional)</label>
+                            <input type="text" name="symbol_filter" class="form-control" placeholder="AAPL,MSFT,GOOGL">
+                            <small class="text-muted">
+                                Leave blank for all. Top symbols:
+                                {% for symbol in stats.symbols_list|slice:":8" %}
+                                    <span class="badge badge-secondary">{{ symbol }}</span>
+                                {% endfor %}
+                            </small>
+                        </div>
+                        
+                        <div class="custom-control custom-checkbox mt-3">
+                            <input type="checkbox" class="custom-control-input" id="auto_convert" name="auto_convert" checked>
+                            <label class="custom-control-label" for="auto_convert">
+                                <strong>Auto-convert to Suggested Positions</strong>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-checkbox mt-2">
+                            <input type="checkbox" class="custom-control-input" id="auto_score" name="auto_score" checked>
+                            <label class="custom-control-label" for="auto_score">
+                                <strong>🤖 AI Score Positions</strong>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Upload Different File
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg" id="importBtn">
+                        <i class="fa fa-play"></i> Import & Score {{ total_rows }} Positions
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Progress indicator -->
+            <div id="progressIndicator" style="display: none;" class="mt-4">
+                <div class="alert alert-info">
+                    <h5><i class="fa fa-spinner fa-spin"></i> Processing...</h5>
+                    <p id="progressText">Importing and scoring positions...</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        This may take 30-60 seconds for large files. Check console (F12) for progress.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+</style>
+
+<script>
+console.log('🔧 CSV Upload Wizard - Step 2 Auto (Streamlined)');
+
+// Form submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    console.log('='.repeat(80));
+    console.log('🚀 IMPORT & SCORE STARTED');
+    console.log('='.repeat(80));
+    
+    document.getElementById('progressIndicator').style.display = 'block';
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('importBtn').innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+    
+    console.log('⏳ Server processing {{ total_rows }} positions...');
+});
+</script>
+{% endblock %}
+
