@@ -15,17 +15,20 @@
 
 ## 🎯 **DOCUMENTATION INDEX**
 
+### **Core Documentation** (This Folder):
+
 | Document | Purpose | Status |
 |----------|---------|--------|
 | **[README.md](./README.md)** | Overview & quick start (this file) | ✅ |
-| **[COMPLETE_IMPLEMENTATION.md](./COMPLETE_IMPLEMENTATION.md)** | Full technical implementation (613 lines) | ✅ |
-| **[CSV_IMPORT_IMPLEMENTATION.md](./CSV_IMPORT_IMPLEMENTATION.md)** | CSV import system details | ✅ |
-| **[DATA_ANALYSIS.md](./DATA_ANALYSIS.md)** | OptionPlay data analysis | ✅ |
 | **[POSITION_FETCHING_INTEGRATION.md](./POSITION_FETCHING_INTEGRATION.md)** | Position fetching & scraper integration | ✅ |
+| **[SCRAPER_SETUP_GUIDE.md](./SCRAPER_SETUP_GUIDE.md)** | OptionPlay scraper setup | ✅ |
+| **[SESSION_SUMMARY_NOV02.md](./SESSION_SUMMARY_NOV02.md)** | AI scoring final summary | ✅ |
+| **[COMPLETE_SESSION_NOV02.md](./COMPLETE_SESSION_NOV02.md)** | Complete session achievements | ✅ |
 
-**Quick Reference Guides** (in `coda/docs/`):
+### **Quick Reference Guides** (in `coda/docs/`):
 - `UAT_TESTING_GUIDE.md` - How to test on UAT
-- `HOW_TO_UPLOAD_OPTIONPLAY_CSV.md` - CSV upload guide
+- `HOW_TO_UPLOAD_OPTIONPLAY_CSV.md` - CSV upload guide (435 lines, comprehensive)
+- `OPTIONPLAY_CSV_IMPORT_GUIDE.md` - CSV import reference
 - `QUICK_START_UAT_TESTING.md` - 5-minute demo
 
 ---

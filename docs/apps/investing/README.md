@@ -37,7 +37,10 @@ This directory contains all documentation for the CODA Investing app, organized 
 
 **Documentation**:
 - [README.md](./AIPositionScoring/README.md) - Quick start & overview
-- [COMPLETE_IMPLEMENTATION.md](./AIPositionScoring/COMPLETE_IMPLEMENTATION.md) - Full technical details (613 lines)
+- [POSITION_FETCHING_INTEGRATION.md](./AIPositionScoring/POSITION_FETCHING_INTEGRATION.md) - Position fetching & scraper details
+- [SCRAPER_SETUP_GUIDE.md](./AIPositionScoring/SCRAPER_SETUP_GUIDE.md) - OptionPlay scraper setup
+- [SESSION_SUMMARY_NOV02.md](./AIPositionScoring/SESSION_SUMMARY_NOV02.md) - Final implementation summary
+- [COMPLETE_SESSION_NOV02.md](./AIPositionScoring/COMPLETE_SESSION_NOV02.md) - Complete achievements
 
 **Key Features**:
 - ✅ 6-factor AI algorithm (Historical win rate, IV rank, Greeks, R/R, Earnings, Liquidity)
@@ -45,6 +48,8 @@ This directory contains all documentation for the CODA Investing app, organized 
 - ✅ Auto-scoring via signals
 - ✅ Beautiful staff UI
 - ✅ 499 positions tested
+- ✅ CSV import system
+- ✅ Web scraper fallback
 
 **Status**: ✅ Complete and Deployed to UAT (v976) - Nov 2, 2025
 
@@ -99,10 +104,12 @@ This directory contains all documentation for the CODA Investing app, organized 
 - **Account Management**: `ManagedOptionsTrading/README.md`
 
 ### **By Task**:
-- **Testing on UAT**: `coda/docs/UAT_TESTING_GUIDE_NOV02.md`
+- **Testing on UAT**: `coda/docs/UAT_TESTING_GUIDE.md`
 - **Upload CSV Data**: `coda/docs/HOW_TO_UPLOAD_OPTIONPLAY_CSV.md`
 - **Setup WhatsApp**: `coda/docs/QUICK_TWILIO_SETUP.md`
+- **Setup Telegram**: `coda/docs/WHATSAPP_TELEGRAM_SETUP_GUIDE.md`
 - **Quick Demo**: `coda/docs/QUICK_START_UAT_TESTING.md`
+- **Twilio Credentials**: `coda/docs/TWILIO_CREDENTIALS_QUICK_GUIDE.md`
 
 ### **By Role**:
 - **Developers**: See IMPLEMENTATION.md files in each folder

@@ -151,14 +151,28 @@ def csv_upload_wizard(request):
                 cross_validation_symbols.extend(symbols_3)
                 logger.info(f"✅ Found {len(symbols_3)} symbols in file 3")
             
-            # Store cross-validation symbols (unique)
+            # Store cross-validation symbols (unique) and file info
+            cv_file_info = []
+            if request.FILES.get('csv_file_2'):
+                cv_file_info.append({
+                    'name': request.FILES['csv_file_2'].name,
+                    'symbols': len(symbols_2) if 'symbols_2' in locals() else 0
+                })
+            if request.FILES.get('csv_file_3'):
+                cv_file_info.append({
+                    'name': request.FILES['csv_file_3'].name,
+                    'symbols': len(symbols_3) if 'symbols_3' in locals() else 0
+                })
+            
             if cross_validation_symbols:
                 unique_cv_symbols = list(set(cross_validation_symbols))
                 request.session['cross_validation_symbols'] = unique_cv_symbols
+                request.session['cv_file_info'] = cv_file_info
                 logger.info(f"💎 Cross-validation enabled: {len(unique_cv_symbols)} unique symbols from additional files")
                 logger.info(f"   Symbols will receive +50 points if they appear in multiple files")
             else:
                 request.session.pop('cross_validation_symbols', None)
+                request.session.pop('cv_file_info', None)
             
             # Store CSV data in session for next step
             logger.info("💾 Storing data in session...")
@@ -226,6 +240,10 @@ def csv_upload_wizard(request):
                 'symbols_list': stats['symbols_list'],
             }
             
+            # Get cross-validation info
+            cv_symbols = request.session.get('cross_validation_symbols', [])
+            cv_files = request.session.get('cv_file_info', [])
+            
             context = {
                 'headers': headers,
                 'preview_rows': preview_rows[:5],  # First 5 for preview
@@ -244,6 +262,10 @@ def csv_upload_wizard(request):
                 'existing_suggested_total': existing_suggested_total,
                 'existing_suggested_active': existing_suggested_active,
                 'existing_suggested_old': existing_suggested_old,
+                # Cross-validation info
+                'cv_enabled': len(cv_symbols) > 0,
+                'cv_symbol_count': len(cv_symbols),
+                'cv_files': cv_files,
             }
             
             logger.info("✅ Rendering Step 2 (Confirm & Filter) - Skipping manual mapping")

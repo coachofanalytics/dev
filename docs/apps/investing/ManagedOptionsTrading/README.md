@@ -361,6 +361,27 @@ This directory contains complete documentation for the CODA Managed Options Trad
 
 ---
 
+## 📚 **ADDITIONAL FEATURE GUIDES**
+
+### **Trading Strategy Guides:**
+- **[CAPITAL_EFFICIENCY_GUIDE.md](CAPITAL_EFFICIENCY_GUIDE.md)** - Return on Capital (ROC) filtering strategy
+- **[FILTER_PRESETS_GUIDE.md](FILTER_PRESETS_GUIDE.md)** - Conservative, Aggressive, Balanced filter presets
+- **[PREMIUM_SPREAD_RATIO_GUIDE.md](PREMIUM_SPREAD_RATIO_GUIDE.md)** - Premium-to-spread ratio optimization
+- **[SPREAD_CAPITAL_GUIDE.md](SPREAD_CAPITAL_GUIDE.md)** - Spread trading capital management
+
+### **Integration & Enhancement Guides:**
+- **[UNUSUAL_WHALES_INTEGRATION.md](UNUSUAL_WHALES_INTEGRATION.md)** - Options flow integration analysis
+- **[VISION_AND_ROADMAP.md](VISION_AND_ROADMAP.md)** - Path to world-class trading platform
+- **[FUTURE_ENHANCEMENTS_PLAN.md](FUTURE_ENHANCEMENTS_PLAN.md)** - AI platform implementation plan
+
+### **Deployment & Operations:**
+- **[PNL_EDITING_FEATURE.md](PNL_EDITING_FEATURE.md)** - P&L editing implementation details
+- **[COMPLETE_SYSTEM_DEPLOYED.md](COMPLETE_SYSTEM_DEPLOYED.md)** - Complete system deployment summary
+- **[DEPLOYMENT_SUCCESS_OCT27.md](DEPLOYMENT_SUCCESS_OCT27.md)** - October 27 deployment details
+- **[PHASE6_DEPLOYMENT_SUCCESS.md](PHASE6_DEPLOYMENT_SUCCESS.md)** - Phase 6 deployment summary
+
+---
+
 ## 📞 Support & Resources
 
 ### **For Development Questions:**
