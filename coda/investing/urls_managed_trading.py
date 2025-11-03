@@ -16,6 +16,7 @@ from .views.managed_trading import (
     onboarding,  # Phase 6
     batches,  # Phase 7
     position_suggestions,  # Phase 8: Automated position sourcing
+    csv_upload,  # CSV Upload Wizard
 )
 
 urlpatterns = [
@@ -211,5 +212,21 @@ urlpatterns = [
     path('managed/api/batch/<int:batch_id>/status/', 
          batches.ajax_check_batch_status, 
          name='ajax_batch_status'),
+    
+    # ========================================================================
+    # CSV UPLOAD WIZARD (Staff Only)
+    # ========================================================================
+    
+    path('managed/staff/upload-csv/', 
+         csv_upload.csv_upload_wizard, 
+         name='csv_upload_wizard'),
+    
+    path('managed/staff/upload-csv/process-mapping/', 
+         csv_upload.csv_process_mapping, 
+         name='csv_process_mapping'),
+    
+    path('managed/staff/upload-csv/import/', 
+         csv_upload.csv_import_and_score, 
+         name='csv_import_and_score'),
 ]
 

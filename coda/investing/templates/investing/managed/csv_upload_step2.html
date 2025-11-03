@@ -1,0 +1,137 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}CSV Upload - Preview & Map{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Wizard Steps -->
+    <div class="wizard-steps">
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Upload</div>
+        <div class="wizard-step active"><i class="fa fa-table"></i> Preview & Map</div>
+        <div class="wizard-step"><i class="fa fa-filter"></i> Filters</div>
+        <div class="wizard-step"><i class="fa fa-robot"></i> AI Score</div>
+        <div class="wizard-step"><i class="fa fa-check"></i> Complete</div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fa fa-table"></i> Step 2: Preview & Map Fields</h4>
+        </div>
+        <div class="card-body">
+            <!-- File Info -->
+            <div class="alert alert-info">
+                <strong>File:</strong> {{ filename }}<br>
+                <strong>Total Rows:</strong> {{ total_rows }}<br>
+                <strong>Detected Strategy:</strong> 
+                <span class="badge badge-primary">{{ strategy_type|upper }}</span>
+            </div>
+            
+            <!-- CSV Preview -->
+            <h5>CSV Preview (First 5 Rows)</h5>
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            {% for header in headers %}
+                            <th>{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview_rows %}
+                        <tr>
+                            {% for header in headers %}
+                            <td>{{ row|lookup:header }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Field Mapping Form -->
+            <h5>Map CSV Columns to Database Fields</h5>
+            <form method="post" action="{% url 'investing:csv_process_mapping' %}">
+                {% csrf_token %}
+                
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>CSV Column</th>
+                                <th>Maps To</th>
+                                <th>Example Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for header in headers %}
+                            <tr>
+                                <td><strong>{{ header }}</strong></td>
+                                <td>
+                                    <select name="map_{{ header }}" class="form-control">
+                                        <option value="skip">-- Skip --</option>
+                                        <option value="symbol" {% if 'symbol' in header|lower %}selected{% endif %}>Symbol</option>
+                                        <option value="price" {% if 'price' in header|lower and 'strike' not in header|lower %}selected{% endif %}>Underlying Price</option>
+                                        <option value="sell_strike" {% if 'sell' in header|lower and 'strike' in header|lower %}selected{% endif %}>Sell Strike</option>
+                                        <option value="buy_strike" {% if 'buy' in header|lower and 'strike' in header|lower %}selected{% endif %}>Buy Strike</option>
+                                        <option value="premium" {% if 'premium' in header|lower %}selected{% endif %}>Premium</option>
+                                        <option value="expiry" {% if 'expir' in header|lower %}selected{% endif %}>Expiry Date</option>
+                                        <option value="dte" {% if 'dte' in header|lower %}selected{% endif %}>Days to Expiration</option>
+                                        <option value="iv_rank" {% if 'iv' in header|lower or 'rank' in header|lower %}selected{% endif %}>IV Rank</option>
+                                        <option value="annual_return" {% if 'ann' in header|lower and 'return' in header|lower %}selected{% endif %}>Annual Return %</option>
+                                        <option value="distance_to_strike" {% if 'dist' in header|lower %}selected{% endif %}>Distance to Strike %</option>
+                                        <option value="width" {% if 'width' in header|lower %}selected{% endif %}>Spread Width</option>
+                                        <option value="prem_width" {% if 'prem' in header|lower and 'width' in header|lower %}selected{% endif %}>Premium/Width Ratio</option>
+                                        <option value="earnings_flag" {% if 'earn' in header|lower %}selected{% endif %}>Earnings Flag</option>
+                                    </select>
+                                </td>
+                                <td class="text-muted">
+                                    {% if preview_rows %}
+                                        {{ preview_rows.0|lookup:header|truncatechars:30 }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fa fa-arrow-right"></i> Next: Set Quality Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+</style>
+{% endblock %}
+

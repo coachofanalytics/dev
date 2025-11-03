@@ -1,0 +1,129 @@
+{% extends "main/base_templates/new_base.html" %}
+
+{% block title %}CSV Upload - Complete{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="wizard-steps">
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Upload</div>
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Map</div>
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Filters</div>
+        <div class="wizard-step completed"><i class="fa fa-check"></i> AI Score</div>
+        <div class="wizard-step active"><i class="fa fa-trophy"></i> Complete</div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fa fa-check-circle"></i> Import Complete!</h4>
+        </div>
+        <div class="card-body">
+            <!-- Results Summary -->
+            <div class="row text-center mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-success">{{ imported_count }}</h2>
+                            <p class="mb-0">Imported</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if auto_convert %}
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-info">{{ converted_count }}</h2>
+                            <p class="mb-0">Converted</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if auto_score %}
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-warning">{{ scored_count }}</h2>
+                            <p class="mb-0">AI Scored</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-muted">{{ filtered_count }}</h2>
+                            <p class="mb-0">Filtered Out</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if error_count > 0 %}
+            <div class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle"></i> 
+                <strong>{{ error_count }} rows</strong> had errors and were skipped
+            </div>
+            {% endif %}
+            
+            <div class="alert alert-success">
+                <h5><i class="fa fa-check-circle"></i> Success!</h5>
+                <p class="mb-0">
+                    <strong>{{ imported_count }} positions</strong> imported successfully.
+                    {% if auto_score and scored_count > 0 %}
+                    <br><strong>{{ scored_count }} positions</strong> have been AI-scored and are ready for review.
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Next Actions -->
+            <div class="card bg-light mt-4">
+                <div class="card-body">
+                    <h5>What's Next?</h5>
+                    <div class="d-grid gap-2">
+                        {% if scored_count > 0 %}
+                        <a href="{% url 'investing:suggested_positions_list' %}" class="btn btn-primary btn-lg">
+                            <i class="fa fa-star"></i> Review AI-Scored Positions
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-outline-primary">
+                            <i class="fa fa-upload"></i> Upload Another CSV
+                        </a>
+                        
+                        <a href="{% url 'investing:staff_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fa fa-home"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+</style>
+{% endblock %}
+

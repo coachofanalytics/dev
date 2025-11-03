@@ -1,0 +1,152 @@
+{% extends "main/base_templates/new_base.html" %}
+
+{% block title %}CSV Upload - Quality Filters{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="wizard-steps">
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Upload</div>
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Map</div>
+        <div class="wizard-step active"><i class="fa fa-filter"></i> Filters</div>
+        <div class="wizard-step"><i class="fa fa-robot"></i> AI Score</div>
+        <div class="wizard-step"><i class="fa fa-check"></i> Complete</div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0"><i class="fa fa-filter"></i> Step 3: Quality Filters & AI Scoring</h4>
+        </div>
+        <div class="card-body">
+            <!-- CSV Statistics -->
+            <div class="alert alert-secondary">
+                <h5>CSV Statistics (for reference)</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Total Rows:</strong> {{ total_rows }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Avg Premium:</strong> ${{ stats.avg_premium|floatformat:2 }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Avg IV:</strong> {{ stats.avg_iv|floatformat:1 }}%
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Unique Symbols:</strong> {{ stats.unique_symbols }}
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post" action="{% url 'investing:csv_import_and_score' %}">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Quality Filters -->
+                    <div class="col-md-6">
+                        <h5>Quality Filters</h5>
+                        
+                        <div class="form-group">
+                            <label>Minimum Premium</label>
+                            <input type="number" name="min_premium" class="form-control" value="2.00" step="0.01" min="0">
+                            <small class="text-muted">Suggested: $2.00+ for good edge</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Minimum IV Rank</label>
+                            <input type="number" name="min_iv" class="form-control" value="40" step="1" min="0" max="100">
+                            <small class="text-muted">Suggested: 40%+ for high volatility</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Maximum DTE (Days to Expiration)</label>
+                            <input type="number" name="max_dte" class="form-control" value="60" step="1" min="1">
+                            <small class="text-muted">Suggested: 30-60 days</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Maximum Positions to Import</label>
+                            <input type="number" name="max_positions" class="form-control" value="20" step="1" min="1" max="100">
+                            <small class="text-muted">Limit: 1-100 positions</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Symbol Filter & Options -->
+                    <div class="col-md-6">
+                        <h5>Symbol Filter (Optional)</h5>
+                        
+                        <div class="form-group">
+                            <label>Allowed Symbols (comma-separated)</label>
+                            <input type="text" name="symbol_filter" class="form-control" placeholder="AAPL,MSFT,GOOGL,META,NVDA">
+                            <small class="text-muted">Leave blank for all symbols. Top symbols shown below:</small>
+                            <div class="mt-2">
+                                {% for symbol in stats.symbols_list|slice:":10" %}
+                                    <span class="badge badge-secondary">{{ symbol }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4">AI Processing</h5>
+                        
+                        <div class="custom-control custom-checkbox mb-3">
+                            <input type="checkbox" class="custom-control-input" id="auto_convert" name="auto_convert" checked>
+                            <label class="custom-control-label" for="auto_convert">
+                                <strong>Auto-convert to Suggested Positions</strong>
+                                <br><small class="text-muted">Creates reviewable position suggestions</small>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-checkbox mb-3">
+                            <input type="checkbox" class="custom-control-input" id="auto_score" name="auto_score" checked>
+                            <label class="custom-control-label" for="auto_score">
+                                <strong>🤖 AI Score Positions</strong>
+                                <br><small class="text-muted">Analyze with 6-factor scoring algorithm</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning mt-4">
+                    <h6><i class="fa fa-exclamation-triangle"></i> Import Preview</h6>
+                    <p class="mb-0">
+                        With current filters, approximately <strong id="estimatedCount">{{ total_rows }}</strong> positions will be imported.
+                        <br>Filters will reduce this number based on quality criteria.
+                    </p>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Upload
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fa fa-play"></i> Import & Score Positions
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+</style>
+{% endblock %}
+

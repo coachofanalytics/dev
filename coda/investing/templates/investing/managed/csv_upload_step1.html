@@ -1,0 +1,174 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Upload OptionPlay CSV - Step 1{% endblock %}
+
+{% block extra_css %}
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+    position: relative;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+.upload-zone {
+    border: 3px dashed #007bff;
+    border-radius: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.upload-zone:hover {
+    background: #e7f3ff;
+    border-color: #0056b3;
+}
+.upload-zone.dragover {
+    background: #d4edff;
+    border-color: #0056b3;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Wizard Steps -->
+    <div class="wizard-steps">
+        <div class="wizard-step active">
+            <i class="fa fa-upload"></i> Upload CSV
+        </div>
+        <div class="wizard-step">
+            <i class="fa fa-table"></i> Preview & Map
+        </div>
+        <div class="wizard-step">
+            <i class="fa fa-filter"></i> Quality Filters
+        </div>
+        <div class="wizard-step">
+            <i class="fa fa-robot"></i> AI Scoring
+        </div>
+        <div class="wizard-step">
+            <i class="fa fa-check"></i> Complete
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fa fa-upload"></i> Step 1: Upload OptionPlay CSV</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Instructions -->
+                    <div class="alert alert-info">
+                        <h5><i class="fa fa-info-circle"></i> Supported CSV Types</h5>
+                        <ul class="mb-0">
+                            <li><strong>Credit Spreads</strong> - Bull/Bear put/call spreads</li>
+                            <li><strong>Short Puts</strong> - Cash-secured put positions</li>
+                            <li><strong>Covered Calls</strong> - Covered call positions</li>
+                        </ul>
+                        <hr>
+                        <p class="mb-0">
+                            <strong>Sample Files:</strong> 
+                            <code>C:\Users\admin\Desktop\project\coda\Opions_play_automation\</code>
+                        </p>
+                    </div>
+                    
+                    <!-- Upload Form -->
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        
+                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFile').click()">
+                            <i class="fa fa-cloud-upload fa-4x text-primary mb-3"></i>
+                            <h5>Drag & Drop CSV File Here</h5>
+                            <p class="text-muted">or click to browse</p>
+                            <input type="file" name="csv_file" id="csvFile" accept=".csv" style="display: none;" required>
+                            <div id="fileName" class="mt-3 text-success" style="display: none;">
+                                <i class="fa fa-file-csv"></i> <span id="fileNameText"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                <i class="fa fa-arrow-right"></i> Next: Preview & Map Fields
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Help Text -->
+                    <div class="mt-4">
+                        <h6>Expected CSV Format:</h6>
+                        <small class="text-muted">
+                            <strong>Required columns:</strong> Symbol, Premium, Expiry, DTE<br>
+                            <strong>Recommended:</strong> IV Rank, Strike Price(s), Returns<br>
+                            <strong>Headers will be mapped in next step</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const uploadZone = document.getElementById('uploadZone');
+const csvFile = document.getElementById('csvFile');
+const submitBtn = document.getElementById('submitBtn');
+const fileName = document.getElementById('fileName');
+const fileNameText = document.getElementById('fileNameText');
+
+// File selection handler
+csvFile.addEventListener('change', function(e) {
+    if (this.files.length > 0) {
+        const file = this.files[0];
+        fileNameText.textContent = file.name;
+        fileName.style.display = 'block';
+        submitBtn.disabled = false;
+    }
+});
+
+// Drag & drop handlers
+uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+});
+
+uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].name.endsWith('.csv')) {
+        csvFile.files = files;
+        const event = new Event('change');
+        csvFile.dispatchEvent(event);
+    } else {
+        alert('Please drop a CSV file');
+    }
+});
+</script>
+{% endblock %}
+
