@@ -122,9 +122,9 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Minimum IV Rank (%)</label>
-                            <input type="number" name="min_iv" id="min_iv" class="form-control" value="35" step="1" min="0" max="100">
-                            <small class="text-muted">Suggested: 35%+ | Your avg: {{ stats.avg_iv|floatformat:1 }}%</small>
+                            <label>Minimum IV Rank (Excel decimal format)</label>
+                            <input type="number" name="min_iv" id="min_iv" class="form-control" value="0.35" step="0.01" min="0" max="1">
+                            <small class="text-muted">Excel format: 0.35 = 35% | Your avg: {{ stats.avg_iv|floatformat:2 }} ({{ stats.avg_iv|multiply:100|floatformat:0 }}%)</small>
                         </div>
                         
                         <div class="form-group">
@@ -134,9 +134,9 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Minimum Return on Capital (ROC %)</label>
-                            <input type="number" name="min_roc" id="min_roc" class="form-control" value="40" step="5" min="0" max="200">
-                            <small class="text-muted">Premium / Capital × 100. Higher = better efficiency. Aim for 40%+</small>
+                            <label>Minimum Return on Capital (ROC, decimal)</label>
+                            <input type="number" name="min_roc" id="min_roc" class="form-control" value="0.40" step="0.05" min="0" max="2">
+                            <small class="text-muted">Decimal: 0.40 = 40% ROC. Premium / Capital. Higher = better efficiency</small>
                         </div>
                         
                         <div class="form-group">
@@ -276,47 +276,47 @@
 <script>
 console.log('🔧 CSV Upload Wizard - Step 2 Auto (Streamlined)');
 
-// Filter Presets Configuration (Capital Efficiency Focus)
+// Filter Presets Configuration (Decimal Format - Excel Compatible)
 const filterPresets = {
     conservative: {
         name: 'Conservative',
-        description: '🛡️ <strong>Conservative:</strong> Highest win rate (~80%). Focus on quality over returns.<br>• IV Rank ≥ 45% (strong premium)<br>• Premium ≥ $2.50<br>• ROC ≥ 50% (great capital efficiency)<br>• Spread Width: Auto (5-7 points)<br>• DTE 30-35 days<br>• Max 10 positions<br><br><em>Example: $2.50 premium on $500 spread = 50% ROC ✅</em>',
+        description: '🛡️ <strong>Conservative:</strong> Highest win rate (~80%). Focus on quality over returns.<br>• IV Rank ≥ 0.45 (45% in Excel)<br>• Premium ≥ $2.50<br>• ROC ≥ 0.50 (50% efficiency)<br>• Spread Width: Auto (5-7 points)<br>• DTE 30-35 days<br>• Max 10 positions<br><br><em>Example: $2.50 premium on $500 spread = 0.50 ROC ✅</em>',
         values: {
             min_premium: 2.50,
-            min_iv: 45,
+            min_iv: 0.45,  // Excel decimal: 0.45 = 45%
             max_dte: 35,
-            min_roc: 50,
+            min_roc: 0.50,  // Decimal: 0.50 = 50% ROC
             spread_width: 'auto',
             max_positions: 10
         }
     },
     balanced: {
         name: 'Balanced (Recommended)',
-        description: '⚖️ <strong>Balanced:</strong> Best capital efficiency. Takes good positions regardless of size.<br>• IV Rank ≥ 35% (balanced premium)<br>• Premium ≥ $2.00<br>• ROC ≥ 40% (solid efficiency)<br>• Spread Width: Auto (5 points)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Example: $4 premium on $700 spread = 57% ROC ✅ Better than $2 on $400 (50% ROC)</em>',
+        description: '⚖️ <strong>Balanced:</strong> Best capital efficiency. Takes good positions regardless of size.<br>• IV Rank ≥ 0.35 (35% in Excel)<br>• Premium ≥ $2.00<br>• ROC ≥ 0.40 (40% efficiency)<br>• Spread Width: Auto (5 points)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Example: $4 premium on $700 spread = 0.57 ROC ✅</em>',
         values: {
             min_premium: 2.00,
-            min_iv: 35,
+            min_iv: 0.35,  // Excel decimal: 0.35 = 35%
             max_dte: 35,
-            min_roc: 40,
+            min_roc: 0.40,  // Decimal: 0.40 = 40% ROC
             spread_width: 'auto',
             max_positions: 12
         }
     },
     aggressive: {
         name: 'Aggressive',
-        description: '🚀 <strong>Aggressive:</strong> Maximum capital efficiency. Accept higher capital if returns justify it.<br>• IV Rank ≥ 30% (accept lower vol)<br>• Premium ≥ $1.50<br>• ROC ≥ 35% (efficient minimum)<br>• Spread Width: Auto (tighter OK)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>Example: $5 premium on $1000 spread = 50% ROC ✅ Size doesn\'t matter if ROC is good</em>',
+        description: '🚀 <strong>Aggressive:</strong> Maximum capital efficiency. Accept higher capital if returns justify it.<br>• IV Rank ≥ 0.30 (30% in Excel)<br>• Premium ≥ $1.50<br>• ROC ≥ 0.35 (35% efficiency)<br>• Spread Width: Auto (tighter OK)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>Note: All values in Excel decimal format (0.30 = 30%)</em>',
         values: {
             min_premium: 1.50,
-            min_iv: 30,
+            min_iv: 0.30,  // Excel decimal: 0.30 = 30%
             max_dte: 35,
-            min_roc: 35,
+            min_roc: 0.35,  // Decimal: 0.35 = 35% ROC
             spread_width: 'auto',
             max_positions: 15
         }
     },
     custom: {
         name: 'Custom',
-        description: '🔧 <strong>Custom:</strong> Set your own filter values based on your strategy.',
+        description: '🔧 <strong>Custom:</strong> Set your own filter values. Remember: Use Excel decimal format (0.35 = 35%).',
         values: null  // Don't change values
     }
 };

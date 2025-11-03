@@ -321,9 +321,9 @@ def csv_import_and_score(request):
         logger.info("=" * 80)
         logger.info(f"Import Mode: {import_mode.upper()}")
         logger.info(f"Min Premium: ${min_premium}")
-        logger.info(f"Min IV Rank: {min_iv}%")
+        logger.info(f"Min IV Rank: {min_iv*100:.1f}% (Excel: {min_iv})")
         logger.info(f"Max DTE: {max_dte} days")
-        logger.info(f"Min ROC (Return on Capital): {min_roc}% (Premium/Capital × 100)")
+        logger.info(f"Min ROC: {min_roc*100:.1f}% (Excel: {min_roc})")
         logger.info(f"Spread Width: {spread_width_choice}")
         logger.info(f"Max Positions: {max_positions}")
         logger.info(f"Auto-Convert: {auto_convert}")
@@ -401,7 +401,7 @@ def csv_import_and_score(request):
                 
                 # Clean and convert values using helper functions
                 premium = _clean_decimal_value(premium_str)
-                iv_rank_val = _clean_decimal_value(iv_rank_str)
+                iv_rank_val = _clean_decimal_value(iv_rank_str)  # Keep Excel decimal format (0.28)
                 dte = _clean_int_value(dte_str)
                 
                 # Calculate spread width and capital efficiency
@@ -414,9 +414,9 @@ def csv_import_and_score(request):
                 # Calculate capital requirement for spread
                 capital_required = spread_width * 100  # Spread capital = width × 100
                 
-                # Calculate Return on Capital (ROC %)
+                # Calculate Return on Capital (ROC in decimal format: 0.40 = 40%)
                 if capital_required > 0:
-                    roc = (premium / capital_required) * 100
+                    roc = premium / capital_required  # Keep as decimal (0.57 = 57%)
                 else:
                     roc = Decimal('0')
                 
@@ -431,7 +431,7 @@ def csv_import_and_score(request):
                 
                 if iv_rank_val < min_iv:
                     filter_reasons['iv_rank'] += 1
-                    filter_reason.append(f"IV {iv_rank_val}% < {min_iv}%")
+                    filter_reason.append(f"IV {iv_rank_val*100:.1f}% < {min_iv*100:.1f}%")
                     filter_failed = True
                 
                 if dte > max_dte:
@@ -442,7 +442,7 @@ def csv_import_and_score(request):
                 # NEW: Filter by Return on Capital (capital efficiency!)
                 if roc < min_roc:
                     filter_reasons['roc'] += 1
-                    filter_reason.append(f"ROC {roc:.1f}% < {min_roc}% (${premium} premium on ${capital_required} capital)")
+                    filter_reason.append(f"ROC {roc*100:.1f}% < {min_roc*100:.1f}% (${premium} premium on ${capital_required} capital)")
                     filter_failed = True
                 
                 if allowed_symbols and symbol not in allowed_symbols:
@@ -471,7 +471,7 @@ def csv_import_and_score(request):
                     continue
                 
                 # Create OptionPlayRawData
-                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium}, ROC: {roc:.1f}%, {spread_width}pt spread)")
+                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium}, ROC: {roc*100:.1f}%, {spread_width}pt spread)")
                 logger.debug(f"       Capital: ${capital_required}, Suggested Spread: Sell ${sell_strike}/Buy ${sell_strike - spread_width}")
                 raw_data = _create_raw_data_from_mapped(mapped_data, strategy_type)
                 imported_ids.append(raw_data.id)
@@ -557,26 +557,26 @@ def csv_import_and_score(request):
             logger.info(f"   Premium too low: {filter_reasons['premium']}")
             logger.info(f"   IV Rank too low: {filter_reasons['iv_rank']}")
             logger.info(f"   DTE too high: {filter_reasons['dte']}")
-            logger.info(f"   ROC too low: {filter_reasons['roc']} (capital efficiency below {min_roc}%)")
+            logger.info(f"   ROC too low: {filter_reasons['roc']} (capital efficiency below {min_roc*100:.1f}%)")
             logger.info(f"   Symbol not allowed: {filter_reasons['symbol']}")
             
             if rejected_samples:
                 logger.info("\n❌ SAMPLE REJECTED POSITIONS (first 5):")
                 for i, sample in enumerate(rejected_samples, 1):
-                    logger.info(f"   {i}. {sample['symbol']}: Premium=${sample['premium']}, IV={sample['iv_rank']}%, DTE={sample['dte']}")
-                    logger.info(f"       ROC: {sample['roc']:.1f}% (${sample['premium']} premium / ${sample['capital']} capital)")
+                    logger.info(f"   {i}. {sample['symbol']}: Premium=${sample['premium']}, IV={sample['iv_rank']*100:.1f}%, DTE={sample['dte']}")
+                    logger.info(f"       ROC: {sample['roc']*100:.1f}% (${sample['premium']} premium / ${sample['capital']} capital)")
                     logger.info(f"       Suggested {sample['spread_width']}-point spread")
                     logger.info(f"       Reasons: {', '.join(sample['reasons'])}")
             
             # Special note about ROC filtering
             if filter_reasons['roc'] > 0:
                 logger.info(f"\n💡 CAPITAL EFFICIENCY TIP:")
-                logger.info(f"   {filter_reasons['roc']} positions filtered for low Return on Capital (< {min_roc}%)")
-                logger.info(f"   ROC = Premium / Capital × 100")
+                logger.info(f"   {filter_reasons['roc']} positions filtered for low Return on Capital (< {min_roc*100:.1f}%)")
+                logger.info(f"   ROC = Premium / Capital (stored as decimal: 0.57 = 57%)")
                 logger.info(f"   Example:")
-                logger.info(f"      Good: $4 premium on $700 spread = 57% ROC ✅")
-                logger.info(f"      Poor: $2 premium on $600 spread = 33% ROC ❌")
-                logger.info(f"   Lower ROC filter to see more positions (try 30-35%)")
+                logger.info(f"      Good: $4 premium on $700 spread = 0.57 ROC (57%) ✅")
+                logger.info(f"      Poor: $2 premium on $600 spread = 0.33 ROC (33%) ❌")
+                logger.info(f"   Lower ROC filter to see more positions (try 0.30-0.35)")
         
         logger.info("=" * 80)
         
@@ -720,7 +720,13 @@ def _calculate_spread_width(strike_price, width_choice='auto'):
 
 
 def _clean_decimal_value(value_str):
-    """Clean and convert string to Decimal, handling $, %, commas, spaces"""
+    """
+    Clean and convert string to Decimal, handling $, %, commas, spaces
+    
+    Note: Excel stores percentages as decimals (0.28 = 28%)
+    We keep this format - don't convert!
+    Filters should use decimal format too (0.35 instead of 35)
+    """
     if not value_str:
         return Decimal('0')
     
@@ -923,6 +929,7 @@ def _calculate_csv_stats(csv_data, field_mapping):
             if iv_field and row.get(iv_field):
                 value = str(row[iv_field]).replace('%', '').strip()
                 if value:
+                    # Keep Excel decimal format (0.28 = 28%)
                     ivs.append(Decimal(value))
             
             if dte_field and row.get(dte_field):
@@ -963,6 +970,7 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
             expiry = date.today()
     
     # Create raw data - use helper functions to clean values
+    # Note: Excel percentage format (0.28 = 28%) is kept as-is
     raw_data = OptionPlayRawData.objects.create(
         strategy_type=strategy_type,
         symbol=mapped_data.get('symbol', '').upper().strip(),
@@ -972,9 +980,9 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
         premium=_clean_decimal_value(mapped_data.get('premium', '0')),
         expiry=expiry,
         dte=_clean_int_value(mapped_data.get('dte', '30')),
-        iv_rank=_clean_decimal_value(mapped_data.get('iv_rank', '0')),
-        annual_return=_clean_decimal_value(mapped_data.get('annual_return', '0')),
-        distance_to_strike=_clean_decimal_value(mapped_data.get('distance_to_strike', '0')),
+        iv_rank=_clean_decimal_value(mapped_data.get('iv_rank', '0')),  # Excel: 0.28 (28%)
+        annual_return=_clean_decimal_value(mapped_data.get('annual_return', '0')),  # Excel: 1.29 (129%)
+        distance_to_strike=_clean_decimal_value(mapped_data.get('distance_to_strike', '0')),  # Excel: -0.03 (-3%)
         width=_clean_decimal_value(mapped_data.get('width', '0')) if mapped_data.get('width') else None,
         premium_to_width_ratio=_clean_decimal_value(mapped_data.get('prem_width', '0')) if mapped_data.get('prem_width') else None,
         earnings_flag=mapped_data.get('earnings_flag', 'N').strip().upper() == 'Y',
