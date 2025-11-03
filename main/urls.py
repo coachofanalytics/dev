@@ -38,9 +38,11 @@ urlpatterns = [
     path('500/', views.hendler500, name='500-error'),
 
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
-    # Restore education landing URL so existing templates/third-party links that reverse
-    # 'education_landing' won't break. The page content may be minimal or removed by UI,
-    # but keeping this route avoids NoReverseMatch errors.
-    path('data/education-training/', views.education_landing, name='education_landing'),
 
-]
+    # Education and training views
+
+    path('education/', views.education_landing, name = 'education_landing'),
+    path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
+    path('education/training/',views.education_landing, name = 'education_training'),
+
+]    
