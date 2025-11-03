@@ -135,13 +135,41 @@ const submitBtn = document.getElementById('submitBtn');
 const fileName = document.getElementById('fileName');
 const fileNameText = document.getElementById('fileNameText');
 
+// Debug logging
+console.log('🔧 CSV Upload Wizard - Step 1 Initialized');
+console.log('Upload zone:', uploadZone);
+console.log('File input:', csvFile);
+
 // File selection handler
 csvFile.addEventListener('change', function(e) {
+    console.log('📁 File selected:', e);
+    
     if (this.files.length > 0) {
         const file = this.files[0];
-        fileNameText.textContent = file.name;
+        
+        // Debug file info
+        console.log('✅ File details:');
+        console.log('  - Name:', file.name);
+        console.log('  - Size:', (file.size / 1024).toFixed(2), 'KB');
+        console.log('  - Type:', file.type);
+        console.log('  - Last Modified:', new Date(file.lastModified));
+        
+        // Validate CSV
+        if (!file.name.endsWith('.csv')) {
+            console.error('❌ Invalid file type:', file.name);
+            alert('Please select a CSV file (.csv extension required)');
+            this.value = '';
+            return;
+        }
+        
+        // Show file info
+        fileNameText.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
         fileName.style.display = 'block';
         submitBtn.disabled = false;
+        
+        console.log('✅ File validated and ready for upload');
+    } else {
+        console.warn('⚠️ No file selected');
     }
 });
 
@@ -149,26 +177,54 @@ csvFile.addEventListener('change', function(e) {
 uploadZone.addEventListener('dragover', function(e) {
     e.preventDefault();
     this.classList.add('dragover');
+    console.log('📂 File dragged over upload zone');
 });
 
 uploadZone.addEventListener('dragleave', function(e) {
     e.preventDefault();
     this.classList.remove('dragover');
+    console.log('📂 File dragged away from upload zone');
 });
 
 uploadZone.addEventListener('drop', function(e) {
     e.preventDefault();
     this.classList.remove('dragover');
     
+    console.log('📥 File dropped:', e.dataTransfer.files);
+    
     const files = e.dataTransfer.files;
-    if (files.length > 0 && files[0].name.endsWith('.csv')) {
-        csvFile.files = files;
-        const event = new Event('change');
-        csvFile.dispatchEvent(event);
+    if (files.length > 0) {
+        const file = files[0];
+        console.log('📥 Dropped file:', file.name, '(' + (file.size / 1024).toFixed(2) + ' KB)');
+        
+        if (file.name.endsWith('.csv')) {
+            csvFile.files = files;
+            const event = new Event('change');
+            csvFile.dispatchEvent(event);
+        } else {
+            console.error('❌ Invalid file type dropped:', file.name);
+            alert('Please drop a CSV file (.csv extension required)');
+        }
     } else {
-        alert('Please drop a CSV file');
+        console.warn('⚠️ No files dropped');
     }
 });
+
+// Form submission debug
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    console.log('🚀 Form submission started');
+    console.log('📤 Uploading file:', csvFile.files[0].name);
+    console.log('📊 File size:', (csvFile.files[0].size / 1024).toFixed(2), 'KB');
+    
+    // Show loading indicator
+    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Uploading...';
+    submitBtn.disabled = true;
+    
+    console.log('⏳ Please wait while file is being uploaded and processed...');
+});
+
+// Page load complete
+console.log('✅ CSV Upload Wizard ready for file selection');
 </script>
 {% endblock %}
 

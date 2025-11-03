@@ -14,10 +14,15 @@ from datetime import datetime, date
 import csv
 import io
 import json
+import logging
 
 from ...models import OptionPlayRawData, SuggestedPosition
 from ...services.optionplay_converter import OptionPlayConverterService
 from ...services.position_scoring_service import PositionScoringService
+
+# Configure logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 @staff_member_required
@@ -28,37 +33,77 @@ def csv_upload_wizard(request):
     GET: Show upload form
     POST: Accept CSV, show preview
     """
+    logger.info("=" * 80)
+    logger.info("🚀 CSV UPLOAD WIZARD - STEP 1")
+    logger.info("=" * 80)
+    
     if request.method == 'POST' and request.FILES.get('csv_file'):
         csv_file = request.FILES['csv_file']
         
+        logger.info(f"📥 File received: {csv_file.name}")
+        logger.info(f"📊 File size: {csv_file.size / 1024:.2f} KB ({csv_file.size} bytes)")
+        logger.info(f"📁 Content type: {csv_file.content_type}")
+        
         # Validate file type
         if not csv_file.name.endswith('.csv'):
+            logger.error(f"❌ Invalid file type: {csv_file.name}")
             messages.error(request, 'Please upload a CSV file')
             return render(request, 'investing/managed/csv_upload_step1.html')
         
+        logger.info("✅ File type validated (CSV)")
+        
         try:
+            logger.info("📖 Reading CSV file...")
+            
             # Read CSV
             file_data = csv_file.read().decode('utf-8')
+            logger.info(f"✅ File decoded successfully ({len(file_data)} characters)")
+            
             csv_reader = csv.DictReader(io.StringIO(file_data))
             
             # Get headers and preview data
             headers = csv_reader.fieldnames
+            logger.info(f"📋 CSV Headers detected: {headers}")
+            logger.info(f"📊 Number of columns: {len(headers)}")
+            
             preview_rows = []
             all_rows = []
             
+            logger.info("📊 Processing CSV rows...")
             for i, row in enumerate(csv_reader):
                 all_rows.append(row)
                 if i < 5:  # Preview first 5 rows
                     preview_rows.append(row)
+                
+                # Log progress every 100 rows
+                if (i + 1) % 100 == 0:
+                    logger.debug(f"  ... processed {i + 1} rows")
+            
+            total_rows = len(all_rows)
+            logger.info(f"✅ CSV processing complete: {total_rows} rows read")
+            logger.info(f"📋 Preview rows: {len(preview_rows)}")
             
             # Store CSV data in session for next step
+            logger.info("💾 Storing data in session...")
             request.session['csv_data'] = json.dumps(all_rows)
             request.session['csv_headers'] = headers
             request.session['csv_filename'] = csv_file.name
             
             # Detect strategy type from filename or first row
+            logger.info("🔍 Detecting strategy type...")
             strategy_type = _detect_strategy_type(csv_file.name, headers)
             request.session['strategy_type'] = strategy_type
+            logger.info(f"✅ Strategy detected: {strategy_type}")
+            
+            logger.info("=" * 80)
+            logger.info("📊 UPLOAD SUMMARY")
+            logger.info("=" * 80)
+            logger.info(f"Filename: {csv_file.name}")
+            logger.info(f"Size: {csv_file.size / 1024:.2f} KB")
+            logger.info(f"Rows: {total_rows}")
+            logger.info(f"Columns: {len(headers)}")
+            logger.info(f"Strategy: {strategy_type}")
+            logger.info("=" * 80)
             
             context = {
                 'headers': headers,
@@ -69,12 +114,24 @@ def csv_upload_wizard(request):
                 'title': 'CSV Upload - Step 2: Preview & Map Fields'
             }
             
+            logger.info("✅ Rendering Step 2 (Preview & Map)")
             return render(request, 'investing/managed/csv_upload_step2.html', context)
             
+        except UnicodeDecodeError as e:
+            logger.error(f"❌ Unicode decode error: {str(e)}")
+            logger.error("💡 Tip: Try saving the CSV with UTF-8 encoding")
+            messages.error(request, f'Error reading CSV (encoding issue): {str(e)}. Try saving with UTF-8 encoding.')
+            return render(request, 'investing/managed/csv_upload_step1.html')
+        except csv.Error as e:
+            logger.error(f"❌ CSV parsing error: {str(e)}")
+            messages.error(request, f'Error parsing CSV: {str(e)}')
+            return render(request, 'investing/managed/csv_upload_step1.html')
         except Exception as e:
+            logger.error(f"❌ Unexpected error: {str(e)}", exc_info=True)
             messages.error(request, f'Error reading CSV: {str(e)}')
             return render(request, 'investing/managed/csv_upload_step1.html')
     
+    logger.info("📄 Rendering Step 1 (Upload Form)")
     context = {
         'title': 'CSV Upload - Step 1: Upload File'
     }
@@ -135,17 +192,28 @@ def csv_import_and_score(request):
     
     POST: Apply filters, import, convert, score
     """
+    logger.info("=" * 80)
+    logger.info("🚀 CSV UPLOAD WIZARD - STEP 3: IMPORT & SCORE")
+    logger.info("=" * 80)
+    
     try:
         # Get session data
+        logger.info("📋 Retrieving session data...")
         csv_data = json.loads(request.session.get('csv_data', '[]'))
         field_mapping = request.session.get('field_mapping', {})
         strategy_type = request.session.get('strategy_type', 'short_put')
         
+        logger.info(f"✅ CSV rows in session: {len(csv_data)}")
+        logger.info(f"✅ Field mappings: {len(field_mapping)}")
+        logger.info(f"✅ Strategy type: {strategy_type}")
+        
         if not csv_data or not field_mapping:
+            logger.error("❌ Session data missing")
             messages.error(request, 'Session expired. Please start over.')
             return redirect('investing:csv_upload_wizard')
         
         # Get filter parameters
+        logger.info("🔧 Reading filter parameters...")
         min_premium = Decimal(request.POST.get('min_premium', '0'))
         min_iv = Decimal(request.POST.get('min_iv', '0'))
         max_dte = int(request.POST.get('max_dte', '365'))
@@ -154,18 +222,33 @@ def csv_import_and_score(request):
         auto_score = request.POST.get('auto_score') == 'on'
         symbol_filter = request.POST.get('symbol_filter', '').strip()
         
+        logger.info("=" * 80)
+        logger.info("📊 FILTER SETTINGS")
+        logger.info("=" * 80)
+        logger.info(f"Min Premium: ${min_premium}")
+        logger.info(f"Min IV Rank: {min_iv}%")
+        logger.info(f"Max DTE: {max_dte} days")
+        logger.info(f"Max Positions: {max_positions}")
+        logger.info(f"Auto-Convert: {auto_convert}")
+        logger.info(f"Auto-Score: {auto_score}")
+        logger.info(f"Symbol Filter: {symbol_filter or 'None (all symbols)'}")
+        logger.info("=" * 80)
+        
         # Parse symbol filter
         if symbol_filter:
             allowed_symbols = [s.strip().upper() for s in symbol_filter.split(',')]
+            logger.info(f"✅ Allowed symbols: {allowed_symbols}")
         else:
             allowed_symbols = None
+            logger.info("✅ All symbols allowed")
         
         # Import with filters
+        logger.info("📥 Starting import process...")
         imported_ids = []
         filtered_count = 0
         error_count = 0
         
-        for row_data in csv_data:
+        for idx, row_data in enumerate(csv_data, 1):
             try:
                 # Map fields
                 mapped_data = {}
@@ -197,43 +280,81 @@ def csv_import_and_score(request):
                     continue
                 
                 # Create OptionPlayRawData
+                logger.debug(f"  ✅ Row {idx}: Importing {symbol} (Premium: ${premium})")
                 raw_data = _create_raw_data_from_mapped(mapped_data, strategy_type)
                 imported_ids.append(raw_data.id)
                 
+                # Progress logging
+                if idx % 10 == 0:
+                    logger.info(f"  📊 Progress: {idx}/{len(csv_data)} rows processed, {len(imported_ids)} imported")
+                
             except Exception as e:
+                logger.error(f"  ❌ Row {idx}: Error importing - {str(e)}")
                 error_count += 1
                 continue
+        
+        logger.info("=" * 80)
+        logger.info("📊 IMPORT COMPLETE")
+        logger.info("=" * 80)
+        logger.info(f"✅ Imported: {len(imported_ids)} positions")
+        logger.info(f"🔍 Filtered: {filtered_count} positions")
+        logger.info(f"❌ Errors: {error_count} positions")
+        logger.info("=" * 80)
         
         # Step 2: Convert to SuggestedPositions (if enabled)
         converted_ids = []
         if auto_convert and imported_ids:
+            logger.info("🔄 Converting to SuggestedPositions...")
             converter = OptionPlayConverterService()
-            for raw_id in imported_ids:
+            for idx, raw_id in enumerate(imported_ids, 1):
                 try:
                     raw_data = OptionPlayRawData.objects.get(id=raw_id)
                     suggestion = converter.convert_raw_to_suggestion(raw_data)
                     if suggestion:
                         converted_ids.append(suggestion.id)
+                        logger.debug(f"  ✅ Converted {idx}/{len(imported_ids)}: {raw_data.symbol}")
                 except Exception as e:
+                    logger.error(f"  ❌ Conversion error for ID {raw_id}: {str(e)}")
                     continue
+            
+            logger.info(f"✅ Conversion complete: {len(converted_ids)}/{len(imported_ids)} positions converted")
         
         # Step 3: AI Score (if enabled)
         scored_count = 0
         if auto_score and converted_ids:
+            logger.info("🤖 AI Scoring positions...")
             scorer = PositionScoringService()
-            for suggestion_id in converted_ids:
+            for idx, suggestion_id in enumerate(converted_ids, 1):
                 try:
                     suggestion = SuggestedPosition.objects.get(id=suggestion_id)
                     scored = scorer.score_position(suggestion)
                     if scored and scored.ai_score:
                         scored_count += 1
+                        logger.debug(f"  ✅ Scored {idx}/{len(converted_ids)}: {suggestion.symbol} (Score: {scored.ai_score})")
                 except Exception as e:
+                    logger.error(f"  ❌ Scoring error for ID {suggestion_id}: {str(e)}")
                     continue
+            
+            logger.info(f"✅ AI Scoring complete: {scored_count}/{len(converted_ids)} positions scored")
         
         # Clear session
+        logger.info("🧹 Clearing session data...")
         request.session.pop('csv_data', None)
         request.session.pop('csv_headers', None)
         request.session.pop('field_mapping', None)
+        logger.info("✅ Session cleared")
+        
+        # Final summary
+        logger.info("=" * 80)
+        logger.info("🎉 FINAL SUMMARY")
+        logger.info("=" * 80)
+        logger.info(f"Total Rows Processed: {len(csv_data)}")
+        logger.info(f"✅ Successfully Imported: {len(imported_ids)}")
+        logger.info(f"🔄 Converted to Suggestions: {len(converted_ids)}")
+        logger.info(f"🤖 AI Scored: {scored_count}")
+        logger.info(f"🔍 Filtered Out: {filtered_count}")
+        logger.info(f"❌ Errors: {error_count}")
+        logger.info("=" * 80)
         
         # Show results
         context = {
@@ -247,9 +368,15 @@ def csv_import_and_score(request):
             'title': 'CSV Upload - Complete'
         }
         
+        logger.info("✅ Rendering Step 4 (Results)")
         return render(request, 'investing/managed/csv_upload_step4.html', context)
         
     except Exception as e:
+        logger.error("=" * 80)
+        logger.error("❌ CRITICAL ERROR IN IMPORT PROCESS")
+        logger.error("=" * 80)
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        logger.error("=" * 80)
         messages.error(request, f'Import error: {str(e)}')
         return redirect('investing:csv_upload_wizard')
 

@@ -116,11 +116,26 @@
                     <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-secondary">
                         <i class="fa fa-arrow-left"></i> Back to Upload
                     </a>
-                    <button type="submit" class="btn btn-success btn-lg">
+                    <button type="submit" class="btn btn-success btn-lg" id="importBtn">
                         <i class="fa fa-play"></i> Import & Score Positions
                     </button>
                 </div>
             </form>
+            
+            <!-- Progress indicator (hidden by default) -->
+            <div id="progressIndicator" style="display: none;" class="mt-4">
+                <div class="alert alert-info">
+                    <h5><i class="fa fa-spinner fa-spin"></i> Processing...</h5>
+                    <p id="progressText">Uploading CSV and processing data...</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        Please wait. This may take a minute for large files.
+                        <br>Check browser console (F12) for detailed progress.
+                    </small>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -148,5 +163,40 @@
     color: white;
 }
 </style>
+
+<script>
+console.log('🔧 CSV Upload Wizard - Step 3 Initialized');
+
+// Form submission handler
+document.querySelector('form').addEventListener('submit', function(e) {
+    console.log('='.repeat(80));
+    console.log('🚀 IMPORT PROCESS STARTED');
+    console.log('='.repeat(80));
+    
+    const formData = new FormData(this);
+    
+    // Log filter settings
+    console.log('📊 Filter Settings:');
+    console.log('  - Min Premium: $' + formData.get('min_premium'));
+    console.log('  - Min IV Rank: ' + formData.get('min_iv') + '%');
+    console.log('  - Max DTE: ' + formData.get('max_dte') + ' days');
+    console.log('  - Max Positions: ' + formData.get('max_positions'));
+    console.log('  - Auto-Convert: ' + (formData.get('auto_convert') ? 'Yes' : 'No'));
+    console.log('  - Auto-Score: ' + (formData.get('auto_score') ? 'Yes' : 'No'));
+    console.log('  - Symbol Filter: ' + (formData.get('symbol_filter') || 'None (all symbols)'));
+    
+    // Show progress indicator
+    document.getElementById('progressIndicator').style.display = 'block';
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('importBtn').innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+    
+    console.log('⏳ Submitting form to server...');
+    console.log('📊 Server will process CSV and log detailed progress');
+    console.log('🔍 Check server logs (Heroku logs) for backend processing details');
+    console.log('='.repeat(80));
+});
+
+console.log('✅ Step 3 ready for import');
+</script>
 {% endblock %}
 
