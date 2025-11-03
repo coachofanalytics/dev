@@ -46,6 +46,38 @@
                 </div>
             </div>
             
+            <!-- Cross-Validation Info (if additional files uploaded) -->
+            {% if cv_enabled %}
+            <div class="alert alert-warning mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-1 text-center">
+                        <i class="fa fa-gem fa-3x text-warning"></i>
+                    </div>
+                    <div class="col-md-11">
+                        <h5 class="mb-2">💎 Cross-Validation Enabled!</h5>
+                        <p class="mb-2">
+                            <strong>{{ cv_symbol_count }} unique symbols</strong> detected from additional files. 
+                            Positions appearing in <strong>MULTIPLE</strong> files will receive <strong class="text-success">+50 bonus points</strong> = HIGH CONVICTION!
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Primary File:</strong> {{ filename }} ({{ total_rows }} positions)
+                            </div>
+                            {% for cv_file in cv_files %}
+                            <div class="col-md-6">
+                                <strong>Additional File {{ forloop.counter }}:</strong> {{ cv_file.name }} ({{ cv_file.symbols }} symbols)
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <hr class="my-2">
+                        <p class="small mb-0">
+                            <strong>Example:</strong> If AAPL appears in both your Short Puts AND Covered Calls, it means OptionPlay has confidence in AAPL's price range → lower risk, higher probability!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- Auto-Mapped Fields Summary -->
             <div class="row mb-4">
                 <div class="col-md-6">
