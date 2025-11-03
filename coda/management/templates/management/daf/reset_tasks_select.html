@@ -18,13 +18,19 @@
                     <div class="alert alert-info">
                         <h5><i class="fas fa-info-circle"></i> Instructions:</h5>
                         <ol class="mb-0">
-                            <li>Select the employees you want to process</li>
+                            <li>Review the employees shown below (only those with points > 0)</li>
+                            <li>Employees with tasks are <strong>auto-selected</strong> (test accounts excluded)</li>
                             <li>Click "Preview Changes" to see what will happen</li>
                             <li>Review the preview carefully</li>
                             <li>Click "Confirm Reset" to apply changes</li>
                         </ol>
                         <hr>
-                        <p class="mb-0"><strong>Note:</strong> Test accounts (like coda_info) are highlighted in yellow. Consider excluding them from reset.</p>
+                        <p class="mb-0">
+                            <strong>Important:</strong> 
+                            <br>• Only employees with <strong>points > 0</strong> are shown (need reset)
+                            <br>• Employees with 0 points have already been reset (not shown)
+                            <br>• Test accounts (like coda_info) are highlighted in yellow
+                        </p>
                     </div>
 
                     <form method="post" id="resetTasksForm">
@@ -67,7 +73,8 @@
                                                    name="selected_employees" 
                                                    value="{{ emp.id }}"
                                                    class="employee-checkbox"
-                                                   data-is-test="{{ emp.is_test_account|yesno:'true,false' }}">
+                                                   data-is-test="{{ emp.is_test_account|yesno:'true,false' }}"
+                                                   {% if emp.auto_select %}checked{% endif %}>
                                         </td>
                                         <td>
                                             <strong>{{ emp.username }}</strong>
@@ -251,8 +258,20 @@ $(document).ready(function() {
         $('#totalTasksCount').text(totalTasks);
     }
 
-    // Initialize summary
+    // Initialize summary on page load
     updateSelectionSummary();
+    
+    // Show message if no employees need reset
+    const totalEmployees = $('.employee-checkbox').length;
+    if (totalEmployees === 0) {
+        $('#employeeTable tbody').html(
+            '<tr><td colspan="7" class="text-center text-success py-4">' +
+            '<i class="fas fa-check-circle fa-3x mb-3"></i><br>' +
+            '<h5>All tasks are already reset!</h5>' +
+            '<p>No employees have tasks with points > 0</p>' +
+            '</td></tr>'
+        );
+    }
 
     // Confirm before reset
     $('#resetTasksForm').submit(function(e) {

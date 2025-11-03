@@ -66,16 +66,22 @@ def reset_tasks_select(request):
             }
             
             for employee in selected_employees:
-                tasks = Task.objects.filter(employee=employee).exclude(employee__email=None)
+                # Only count tasks with points > 0 (skip already reset tasks)
+                tasks = Task.objects.filter(
+                    employee=employee,
+                    point__gt=0  # Only tasks with points will be moved
+                ).exclude(employee__email=None)
                 task_count = tasks.count()
                 total_points = tasks.aggregate(total=Sum('point'))['total'] or Decimal('0')
                 
-                preview_data['tasks_count'] += task_count
-                preview_data['employees'].append({
-                    'username': employee.username,
-                    'tasks': task_count,
-                    'points': total_points
-                })
+                # Only show employee in preview if they have tasks to move
+                if task_count > 0:
+                    preview_data['tasks_count'] += task_count
+                    preview_data['employees'].append({
+                        'username': employee.username,
+                        'tasks': task_count,
+                        'points': total_points
+                    })
             
             # Get all employees again for the form
             employees = get_employees_with_tasks(TEST_ACCOUNT_PATTERNS)
@@ -90,11 +96,13 @@ def reset_tasks_select(request):
             # Actually perform the reset for selected employees only
             try:
                 # Filter tasks to only process selected employees
+                # ONLY process tasks with points > 0 (skip already reset tasks)
                 tasks_to_move = Task.objects.filter(
-                    employee__in=selected_employees
+                    employee__in=selected_employees,
+                    point__gt=0  # Only move tasks with points greater than 0
                 ).exclude(employee__email=None)
                 
-                # Create TaskHistory records
+                # Create TaskHistory records (only for tasks with points)
                 bulk_history = []
                 for task in tasks_to_move:
                     bulk_history.append(
@@ -117,7 +125,7 @@ def reset_tasks_select(request):
                 
                 TaskHistory.objects.bulk_create(bulk_history)
                 
-                # Reset points to 0 for selected employees
+                # Reset points to 0 for tasks that were moved
                 updated_tasks = []
                 for task in tasks_to_move:
                     task.point = 0
@@ -181,6 +189,11 @@ def get_employees_with_tasks(test_patterns):
         task_count = tasks.count()
         total_points = tasks.aggregate(total=Sum('point'))['total'] or Decimal('0')
         
+        # SKIP employees with 0 points - they've already been reset
+        # Only show employees who actually need reset
+        if total_points <= 0:
+            continue
+        
         # Get history count
         history_count = TaskHistory.objects.filter(employee=employee).count()
         
@@ -190,6 +203,13 @@ def get_employees_with_tasks(test_patterns):
             for pattern in test_patterns
         )
         
+        # Auto-select if: has tasks AND has points > 0 AND not a test account
+        should_auto_select = (
+            task_count > 0 and 
+            total_points > 0 and 
+            not is_test
+        )
+        
         employees_data.append({
             'id': employee.id,
             'username': employee.username,
@@ -197,7 +217,8 @@ def get_employees_with_tasks(test_patterns):
             'task_count': task_count,
             'total_points': total_points,
             'history_count': history_count,
-            'is_test_account': is_test
+            'is_test_account': is_test,
+            'auto_select': should_auto_select
         })
     
     # Sort: non-test accounts first, then by username
