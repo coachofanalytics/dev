@@ -371,6 +371,15 @@ def csv_import_and_score(request):
         filtered_count = 0
         error_count = 0
         
+        # Filter debugging
+        filter_reasons = {
+            'premium': 0,
+            'iv_rank': 0,
+            'dte': 0,
+            'symbol': 0,
+        }
+        rejected_samples = []  # Store first 5 rejected for debugging
+        
         for idx, row_data in enumerate(csv_data, 1):
             try:
                 # Map fields
@@ -384,22 +393,47 @@ def csv_import_and_score(request):
                 iv = Decimal(mapped_data.get('iv_rank', '0') or '0')
                 dte = int(mapped_data.get('dte', '365') or '365')
                 symbol = mapped_data.get('symbol', '').upper()
+                iv_rank = mapped_data.get('iv_rank')
                 
-                # Filter checks
+                # Filter checks with detailed tracking
+                filter_failed = False
+                filter_reason = []
+                
                 if premium < min_premium:
-                    filtered_count += 1
-                    continue
-                if iv < min_iv:
-                    filtered_count += 1
-                    continue
-                if dte > max_dte:
-                    filtered_count += 1
-                    continue
+                    filter_reasons['premium'] += 1
+                    filter_reason.append(f"Premium ${premium} < ${min_premium}")
+                    filter_failed = True
+                
+                if iv_rank is not None and iv_rank < min_iv:
+                    filter_reasons['iv_rank'] += 1
+                    filter_reason.append(f"IV {iv_rank}% < {min_iv}%")
+                    filter_failed = True
+                
+                if dte is not None and dte > max_dte:
+                    filter_reasons['dte'] += 1
+                    filter_reason.append(f"DTE {dte} > {max_dte}")
+                    filter_failed = True
+                
                 if allowed_symbols and symbol not in allowed_symbols:
-                    filtered_count += 1
-                    continue
+                    filter_reasons['symbol'] += 1
+                    filter_reason.append(f"Symbol {symbol} not allowed")
+                    filter_failed = True
+                
                 if len(imported_ids) >= max_positions:
+                    filter_failed = True
+                    filter_reason.append(f"Max positions reached ({max_positions})")
+                
+                if filter_failed:
                     filtered_count += 1
+                    # Store first 5 rejections for debugging
+                    if len(rejected_samples) < 5:
+                        rejected_samples.append({
+                            'symbol': symbol,
+                            'premium': premium,
+                            'iv_rank': iv_rank,
+                            'dte': dte,
+                            'reasons': filter_reason
+                        })
                     continue
                 
                 # Create OptionPlayRawData
@@ -481,6 +515,21 @@ def csv_import_and_score(request):
         logger.info(f"🤖 AI Scored: {scored_count}")
         logger.info(f"🔍 Filtered Out: {filtered_count}")
         logger.info(f"❌ Errors: {error_count}")
+        
+        # Show filter breakdown
+        if filtered_count > 0:
+            logger.info("\n📊 FILTER BREAKDOWN:")
+            logger.info(f"   Premium too low: {filter_reasons['premium']}")
+            logger.info(f"   IV Rank too low: {filter_reasons['iv_rank']}")
+            logger.info(f"   DTE too high: {filter_reasons['dte']}")
+            logger.info(f"   Symbol not allowed: {filter_reasons['symbol']}")
+            
+            if rejected_samples:
+                logger.info("\n❌ SAMPLE REJECTED POSITIONS (first 5):")
+                for i, sample in enumerate(rejected_samples, 1):
+                    logger.info(f"   {i}. {sample['symbol']}: Premium=${sample['premium']}, IV={sample['iv_rank']}%, DTE={sample['dte']}")
+                    logger.info(f"      Reasons: {', '.join(sample['reasons'])}")
+        
         logger.info("=" * 80)
         
         # Show results

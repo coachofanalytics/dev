@@ -361,3 +361,4 @@ heroku run "cd coda && python manage.py verify_ai_scoring_uat" --app codamakutan
 
 **AI Scoring is LIVE and WORKING!** 🎉🤖⭐
 
+
