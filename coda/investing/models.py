@@ -3709,11 +3709,15 @@ class OptionPlayRawData(TimeStampedModel):
     @property
     def is_expired(self):
         """Check if position is past expiration"""
+        if not self.expiry:
+            return False
         return self.expiry < timezone.now().date()
     
     @property
     def calculated_dte(self):
         """Calculate current DTE"""
+        if not self.expiry:
+            return None
         return (self.expiry - timezone.now().date()).days
     
     def convert_to_suggestion(self) -> 'SuggestedPosition':
