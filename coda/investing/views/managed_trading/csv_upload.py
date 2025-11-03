@@ -1204,7 +1204,7 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
         annualized_return=_clean_decimal_value(mapped_data.get('annual_return', '0')),  # Excel: 1.29 (129%)
         distance_to_strike=_clean_decimal_value(mapped_data.get('distance_to_strike', '0')),  # Excel: -0.03 (-3%)
         width=_clean_decimal_value(mapped_data.get('width', '0')) if mapped_data.get('width') else None,
-        premium_to_width_ratio=_clean_decimal_value(mapped_data.get('prem_width', '0')) if mapped_data.get('prem_width') else None,
+        prem_width_ratio=_clean_decimal_value(mapped_data.get('prem_width', '0')) if mapped_data.get('prem_width') else None,  # Correct field name
         earnings_flag=mapped_data.get('earnings_flag', 'N').strip().upper(),  # CharField: 'Y' or 'N'
         notes=f"Imported from CSV - estimated spread for client review"
     )
