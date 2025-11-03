@@ -8,11 +8,19 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+from django.db.models import Q
+#<<<<<<< HEAD
+from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
+from accounts.models import CustomerUser
+from .utils import image_view,path_values
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
+##=======
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from django.views.decorators.csrf import csrf_exempt
 from main.forms import ContactForm
+#>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
 
 from django.urls import reverse_lazy
@@ -111,9 +119,15 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
+#<<<<<<< HEAD
+    # Define page_instance for the home page or desired page
+    page_instance = Page.objects.filter(page_name='Home').first()
+    description = Description.objects.filter(page=page_instance)
+#=======
     # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page = page_instance)
+#>>>>>>> origin/25.10_DC48K_UAT_FN
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -302,6 +316,95 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+#<<<<<<< HEAD
+def donor_list(request):
+    donations = Donation_organisation.objects.all()  # Remove is_donor filter
+    return render(request, 'main/donor.html', {'donations': donations})
+def donor_details(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    return render(request, 'main/donor_details.html', {'donation': donation})
+def add_donor(request):
+    if request.method == "POST":
+        form = DonorForm(request.POST, request.FILES)
+        message=f'Thank You for your donation, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = DonorForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_donor.html",context)
+def edit_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        form = DonorForm(request.POST, instance=donation)
+        if form.is_valid():
+            form.save()
+            return redirect('main:donor_list')
+    else:
+        form = DonorForm(instance=donation)
+    return render(request, 'main/edit_donor.html', {'form': form, 'donation': donation})
+def delete_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        donation.delete()
+        return redirect('main:donor_list')
+    return render(request, 'main/delete_donor.html', {'donation': donation})
+
+# contact message list view
+def message_list(request):
+    messages = ContactMessage.objects.all()  # Fetch all contact messages
+    return render(request, 'main/snippets_templates/table/contact_message_list.html', {'messages': messages})
+# contact message detail view
+def message_details(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    return render(request, 'main/message_details.html', {'message': message})
+# contact message edit view
+def edit_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        form = MessageForm(request.POST, instance=message)
+        if form.is_valid():
+            form.save()
+            return redirect('main:message_list')
+    else:
+        form = MessageForm(instance=message)
+    return render(request, 'main/edit_message.html', {'form': form, 'message': message})
+# contact message delete view
+def delete_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        message.delete()
+        return redirect('main:message_list')
+    return render(request, 'main/delete_message.html', {'message': message})
+
+# add contact message view (if needed)
+def add_message(request):
+    if request.method == "POST":
+        form = MessageForm(request.POST, request.FILES)
+        message=f'Thank You, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = MessageForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_message.html",context)
+#=======
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
@@ -328,3 +431,35 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
+#>>>>>>> origin/25.10_DC48K_UAT_FN
+
+# Scholarship views
+
+def scholarship_search(request):
+    scholarships = Scholarship.objects.all()
+    form = ScholarshipSearchForm(request.GET or None)
+    if form.is_valid():
+        data = form.cleaned_data
+        # apply filter
+        if data['search_keyword']:
+            scholarships = scholarships.filter(
+                Q(title__icontains=data['search_keyword']) |
+                Q(provider__icontains=data['search_keyword']) 
+            )
+        if data['filter_level'] and data['filter_level'] != 'All':
+            scholarships = scholarships.filter(level=data['filter_level'])
+
+        if data['filter_field'] and data['filter_field'] != 'All':
+            scholarships = scholarships.filter(field=data['filter_field'])
+
+        if data['filter_location'] and data['filter_location'] != 'All':
+            scholarships = scholarships.filter(location=data['filter_location'])
+
+        if data['filter_status']:
+            scholarships = scholarships.filter(status='Closing soon')
+    context = {
+        'scholarships': scholarships,
+        'form': form,
+        'result_count': scholarships.count(),
+    }
+    return render(request, 'scholarship_app/scholarship_search.html',context)

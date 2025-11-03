@@ -1,0 +1,69 @@
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+        .text-brand-blue { color: #1e40af; } 
+        .bg-brand-blue { background-color: #1e40af; }
+        /* UPDATED: Green color changed to Teal (#0a926d) */
+        .text-brand-green { color: #0a926d; } 
+        .bg-brand-green { background-color: #0a926d; }
+        .text-brand-red { color: #cc0000; }
+        .bg-brand-red { background-color: #cc0000; } 
+        .main-heading { font-weight: 900; } 
+        
+        /* Service Block Styling */
+        .service-block {
+            margin-bottom: 4rem;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        /* Custom List Styling */
+        .service-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .service-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: #1e40af; /* Blue dot for community/connection */
+            border-radius: 50%;
+        }
+
+        /* Custom Loading Indicator Style for images */
+        .loading-placeholder {
+            min-height: 280px; 
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-custom {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Hero Image Container ensures the image stays in its column */
+        .hero-image-container {
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
