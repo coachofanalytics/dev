@@ -99,31 +99,45 @@
                 
                 <h5 class="border-top pt-3"><i class="fa fa-filter"></i> Quality Filters</h5>
                 
+                <!-- Filter Preset Selector -->
+                <div class="alert alert-info">
+                    <div class="form-group mb-2">
+                        <label><strong>🎯 Filter Preset (Industry Standard)</strong></label>
+                        <select class="form-control" id="filter_preset">
+                            <option value="balanced">✓ Balanced (Recommended) - 65-80% win rate</option>
+                            <option value="conservative">Conservative - 80%+ win rate, lower returns</option>
+                            <option value="aggressive">Aggressive - Higher returns, more risk</option>
+                            <option value="custom">Custom - Set your own values</option>
+                        </select>
+                    </div>
+                    <small id="preset_description" style="display: block; margin-top: 8px;"></small>
+                </div>
+                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Minimum Premium</label>
-                            <input type="number" name="min_premium" class="form-control" value="2.00" step="0.01" min="0">
+                            <input type="number" name="min_premium" id="min_premium" class="form-control" value="2.00" step="0.01" min="0">
                             <small class="text-muted">Suggested: $2.00+ | Your avg: ${{ stats.avg_premium|floatformat:2 }}</small>
                         </div>
                         
                         <div class="form-group">
-                            <label>Minimum IV Rank</label>
-                            <input type="number" name="min_iv" class="form-control" value="40" step="1" min="0" max="100">
-                            <small class="text-muted">Suggested: 40%+ | Your avg: {{ stats.avg_iv|floatformat:1 }}%</small>
+                            <label>Minimum IV Rank (%)</label>
+                            <input type="number" name="min_iv" id="min_iv" class="form-control" value="35" step="1" min="0" max="100">
+                            <small class="text-muted">Suggested: 35%+ | Your avg: {{ stats.avg_iv|floatformat:1 }}%</small>
                         </div>
                         
                         <div class="form-group">
                             <label>Maximum DTE (Days to Expiration)</label>
-                            <input type="number" name="max_dte" class="form-control" value="60" step="1" min="1">
-                            <small class="text-muted">Suggested: 30-60 days | Your avg: {{ stats.avg_dte|floatformat:0 }} days</small>
+                            <input type="number" name="max_dte" id="max_dte" class="form-control" value="35" step="1" min="1">
+                            <small class="text-muted">Suggested: 25-35 days | Your avg: {{ stats.avg_dte|floatformat:0 }} days</small>
                         </div>
                     </div>
                     
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Maximum Positions to Import</label>
-                            <input type="number" name="max_positions" class="form-control" value="20" step="1" min="1" max="100">
+                            <input type="number" name="max_positions" id="max_positions" class="form-control" value="12" step="1" min="1" max="100">
                             <small class="text-muted">Limit: 1-100 positions ({{ total_rows }} available)</small>
                         </div>
                         
@@ -244,11 +258,102 @@
 <script>
 console.log('🔧 CSV Upload Wizard - Step 2 Auto (Streamlined)');
 
+// Filter Presets Configuration
+const filterPresets = {
+    conservative: {
+        name: 'Conservative',
+        description: '🛡️ <strong>Conservative:</strong> Highest win rate (~80%). Focus on safety over returns.<br>• IV Rank ≥ 45% (strong premium)<br>• Return ≥ 90% (good income)<br>• DTE 30-35 days<br>• Max 10 positions',
+        values: {
+            min_premium: 2.50,
+            min_iv: 45,
+            max_dte: 35,
+            max_positions: 10
+        }
+    },
+    balanced: {
+        name: 'Balanced (Recommended)',
+        description: '⚖️ <strong>Balanced:</strong> Best risk/reward ratio. Industry standard for income trading.<br>• IV Rank ≥ 35% (balanced premium)<br>• Return ≥ 80% (solid income)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Recommended for most traders</em>',
+        values: {
+            min_premium: 2.00,
+            min_iv: 35,
+            max_dte: 35,
+            max_positions: 12
+        }
+    },
+    aggressive: {
+        name: 'Aggressive',
+        description: '🚀 <strong>Aggressive:</strong> Higher returns, higher risk. For experienced traders.<br>• IV Rank ≥ 30% (accept lower vol)<br>• Return ≥ 100% (high income required)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>Allocate smaller position sizes</em>',
+        values: {
+            min_premium: 1.50,
+            min_iv: 30,
+            max_dte: 35,
+            max_positions: 15
+        }
+    },
+    custom: {
+        name: 'Custom',
+        description: '🔧 <strong>Custom:</strong> Set your own filter values based on your strategy.',
+        values: null  // Don't change values
+    }
+};
+
+// Handle preset selection
+document.getElementById('filter_preset').addEventListener('change', function() {
+    const preset = this.value;
+    const config = filterPresets[preset];
+    
+    console.log(`📊 Filter Preset Selected: ${config.name}`);
+    
+    // Update description
+    document.getElementById('preset_description').innerHTML = config.description;
+    
+    // Update form values if not custom
+    if (config.values) {
+        document.getElementById('min_premium').value = config.values.min_premium;
+        document.getElementById('min_iv').value = config.values.min_iv;
+        document.getElementById('max_dte').value = config.values.max_dte;
+        document.getElementById('max_positions').value = config.values.max_positions;
+        
+        console.log('✅ Filter values updated:', config.values);
+    }
+});
+
+// Initialize with balanced preset
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('filter_preset').dispatchEvent(new Event('change'));
+});
+
+// Track manual changes (switch to custom if user modifies)
+let manualChange = false;
+['min_premium', 'min_iv', 'max_dte', 'max_positions'].forEach(function(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.addEventListener('input', function() {
+            if (!manualChange && document.getElementById('filter_preset').value !== 'custom') {
+                console.log('👤 Manual change detected - switching to Custom preset');
+                manualChange = true;
+                document.getElementById('filter_preset').value = 'custom';
+                document.getElementById('preset_description').innerHTML = filterPresets.custom.description;
+                manualChange = false;
+            }
+        });
+    }
+});
+
 // Form submission
 document.querySelector('form').addEventListener('submit', function(e) {
     console.log('='.repeat(80));
     console.log('🚀 IMPORT & SCORE STARTED');
     console.log('='.repeat(80));
+    
+    const preset = document.getElementById('filter_preset').value;
+    console.log('📊 Using Preset:', filterPresets[preset].name);
+    console.log('Filters:', {
+        min_premium: document.getElementById('min_premium').value,
+        min_iv: document.getElementById('min_iv').value,
+        max_dte: document.getElementById('max_dte').value,
+        max_positions: document.getElementById('max_positions').value
+    });
     
     document.getElementById('progressIndicator').style.display = 'block';
     document.getElementById('importBtn').disabled = true;
