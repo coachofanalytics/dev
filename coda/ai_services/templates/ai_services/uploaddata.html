@@ -25,6 +25,35 @@
         <p>
             Upload only a CSV File, Check field formats to minimize errors during upload.
         </p>
+        
+        <!-- OptionPlay CSV Wizard - Featured Section -->
+        {% if request.user.is_staff %}
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card border-primary shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-chart-line"></i> OptionPlay CSV Upload Wizard
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">
+                            <strong>Professional CSV import for options trading positions</strong><br>
+                            Includes field mapping, quality filters, and AI scoring. Perfect for credit spreads, short puts, and covered calls.
+                        </p>
+                        <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-magic"></i> Launch CSV Wizard
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                        <small class="d-block text-muted mt-2">
+                            <i class="fas fa-info-circle"></i> Multi-step wizard with drag-drop upload, field mapping, filters, and AI scoring
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <div class="row text-center">
             {% for category, apps in categories.items %}
                 <div class="col-md-3" id="gi">
