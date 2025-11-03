@@ -99,13 +99,41 @@
                     <form method="post" enctype="multipart/form-data" id="uploadForm">
                         {% csrf_token %}
                         
-                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFile').click()">
-                            <i class="fa fa-cloud-upload fa-4x text-primary mb-3"></i>
-                            <h5>Drag & Drop Excel or CSV File Here</h5>
-                            <p class="text-muted">or click to browse</p>
-                            <input type="file" name="csv_file" id="csvFile" accept=".csv,.xlsx,.xls" style="display: none;" required>
-                            <div id="fileName" class="mt-3 text-success" style="display: none;">
-                                <i class="fa fa-file-csv"></i> <span id="fileNameText"></span>
+                        <!-- Primary File (Required) -->
+                        <div class="mb-4">
+                            <label class="font-weight-bold mb-2">Primary File (Required):</label>
+                            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFile').click()">
+                                <i class="fa fa-cloud-upload fa-3x text-primary mb-2"></i>
+                                <h6>Drag & Drop Excel or CSV File Here</h6>
+                                <p class="text-muted small mb-0">or click to browse</p>
+                                <input type="file" name="csv_file" id="csvFile" accept=".csv,.xlsx,.xls" style="display: none;" required>
+                                <div id="fileName" class="mt-2 text-success" style="display: none;">
+                                    <i class="fa fa-file-csv"></i> <span id="fileNameText"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Optional Files for Cross-Validation -->
+                        <div class="alert alert-warning mb-3">
+                            <strong>💎 Optional: Cross-Validation (Recommended for $30k+ capital)</strong>
+                            <p class="small mb-0 mt-2">Upload 1-2 additional files to find symbols in BOTH lists = HIGH CONVICTION! 
+                            System will auto-detect overlaps and boost scores.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="small text-muted">Additional File 1 (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="csvFile2" name="csv_file_2" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="csvFile2">Choose file...</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small text-muted">Additional File 2 (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="csvFile3" name="csv_file_3" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="csvFile3">Choose file...</label>
+                                </div>
                             </div>
                         </div>
                         
@@ -144,41 +172,73 @@ console.log('🔧 CSV Upload Wizard - Step 1 Initialized');
 console.log('Upload zone:', uploadZone);
 console.log('File input:', csvFile);
 
-// File selection handler
+// File selection handler for primary file
 csvFile.addEventListener('change', function(e) {
-    console.log('📁 File selected:', e);
-    
-    if (this.files.length > 0) {
-        const file = this.files[0];
-        
-        // Debug file info
-        console.log('✅ File details:');
-        console.log('  - Name:', file.name);
-        console.log('  - Size:', (file.size / 1024).toFixed(2), 'KB');
-        console.log('  - Type:', file.type);
-        console.log('  - Last Modified:', new Date(file.lastModified));
+    handleFileSelection(this, 'fileName', 'fileNameText');
+    updateSubmitButton();
+});
+
+// File selection handlers for optional files
+document.getElementById('csvFile2').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+document.getElementById('csvFile3').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+function handleFileSelection(input, displayDiv, displayText) {
+    if (input.files.length > 0) {
+        const file = input.files[0];
         
         // Validate file type
         const validExtensions = ['.csv', '.xlsx', '.xls'];
         const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
         
         if (!hasValidExtension) {
-            console.error('❌ Invalid file type:', file.name);
             alert('Please select a CSV (.csv) or Excel (.xlsx, .xls) file');
-            this.value = '';
+            input.value = '';
             return;
         }
         
-        // Show file info
-        fileNameText.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
-        fileName.style.display = 'block';
-        submitBtn.disabled = false;
-        
-        console.log('✅ File validated and ready for upload');
-    } else {
-        console.warn('⚠️ No file selected');
+        // Show file info for primary file
+        if (displayDiv && displayText) {
+            const displayElement = document.getElementById(displayDiv);
+            const textElement = document.getElementById(displayText);
+            textElement.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+            displayElement.style.display = 'block';
+        } else {
+            // Update custom file label for optional files
+            const label = input.nextElementSibling;
+            label.innerHTML = '<i class="fa fa-check-circle text-success"></i> ' + file.name;
+        }
     }
-});
+}
+
+function updateSubmitButton() {
+    const primaryFile = document.getElementById('csvFile').files.length > 0;
+    const file2 = document.getElementById('csvFile2').files.length > 0;
+    const file3 = document.getElementById('csvFile3').files.length > 0;
+    
+    const additionalCount = (file2 ? 1 : 0) + (file3 ? 1 : 0);
+    
+    if (primaryFile) {
+        submitBtn.disabled = false;
+        if (additionalCount > 0) {
+            submitBtn.innerHTML = '<i class="fa fa-arrow-right"></i> Next: Analyze ' + (1 + additionalCount) + ' Files & Cross-Validate';
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-success');
+        } else {
+            submitBtn.innerHTML = '<i class="fa fa-arrow-right"></i> Next: Preview & Map Fields';
+            submitBtn.classList.remove('btn-success');
+            submitBtn.classList.add('btn-primary');
+        }
+    } else {
+        submitBtn.disabled = true;
+    }
+}
 
 // Drag & drop handlers
 uploadZone.addEventListener('dragover', function(e) {

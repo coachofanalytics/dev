@@ -137,6 +137,29 @@ def csv_upload_wizard(request):
             logger.info(f"✅ CSV processing complete: {total_rows} rows read")
             logger.info(f"📋 Preview rows: {len(preview_rows)}")
             
+            # Process optional files for cross-validation
+            cross_validation_symbols = []
+            if request.FILES.get('csv_file_2'):
+                logger.info("📊 Processing additional file 2 for cross-validation...")
+                symbols_2 = _extract_symbols_from_file(request.FILES['csv_file_2'])
+                cross_validation_symbols.extend(symbols_2)
+                logger.info(f"✅ Found {len(symbols_2)} symbols in file 2")
+            
+            if request.FILES.get('csv_file_3'):
+                logger.info("📊 Processing additional file 3 for cross-validation...")
+                symbols_3 = _extract_symbols_from_file(request.FILES['csv_file_3'])
+                cross_validation_symbols.extend(symbols_3)
+                logger.info(f"✅ Found {len(symbols_3)} symbols in file 3")
+            
+            # Store cross-validation symbols (unique)
+            if cross_validation_symbols:
+                unique_cv_symbols = list(set(cross_validation_symbols))
+                request.session['cross_validation_symbols'] = unique_cv_symbols
+                logger.info(f"💎 Cross-validation enabled: {len(unique_cv_symbols)} unique symbols from additional files")
+                logger.info(f"   Symbols will receive +50 points if they appear in multiple files")
+            else:
+                request.session.pop('cross_validation_symbols', None)
+            
             # Store CSV data in session for next step
             logger.info("💾 Storing data in session...")
             request.session['csv_data'] = json.dumps(all_rows)
@@ -855,11 +878,45 @@ def csv_import_and_score(request):
             
             logger.info(f"✅ Technical analysis complete: {technical_count}/{min(len(converted_ids), 20)} positions")
         
+        # Step 5: Cross-validation boost for ALL positions (if multiple files uploaded)
+        cv_boost_count = 0
+        cross_validation_symbols = request.session.get('cross_validation_symbols', [])
+        if cross_validation_symbols and converted_ids:
+            logger.info("💎 Applying cross-validation boost to all positions...")
+            for suggestion_id in converted_ids:
+                try:
+                    suggestion = SuggestedPosition.objects.get(id=suggestion_id)
+                    if suggestion.symbol in cross_validation_symbols:
+                        cv_boost = 50  # High conviction = +50 points!
+                        if suggestion.ai_score:
+                            suggestion.ai_score += cv_boost
+                        else:
+                            suggestion.ai_score = cv_boost
+                        
+                        # Add note about cross-validation (if not already added by technical analysis)
+                        if 'Cross-Validated' not in (suggestion.notes or ''):
+                            cv_note = f"\n💎 Cross-Validated: Symbol appears in multiple OptionPlay lists = HIGH CONVICTION!"
+                            if suggestion.notes:
+                                suggestion.notes += cv_note
+                            else:
+                                suggestion.notes = cv_note
+                        
+                        suggestion.save()
+                        cv_boost_count += 1
+                        logger.debug(f"  💎 {suggestion.symbol}: Cross-validation boost +{cv_boost} pts")
+                except Exception as e:
+                    logger.warning(f"  ⚠️  Cross-validation boost failed for ID {suggestion_id}: {str(e)}")
+                    continue
+            
+            if cv_boost_count > 0:
+                logger.info(f"✅ Cross-validation complete: {cv_boost_count}/{len(converted_ids)} positions boosted")
+        
         # Clear session
         logger.info("🧹 Clearing session data...")
         request.session.pop('csv_data', None)
         request.session.pop('csv_headers', None)
         request.session.pop('field_mapping', None)
+        request.session.pop('cross_validation_symbols', None)  # Clear cross-validation data
         logger.info("✅ Session cleared")
         
         # Final summary
@@ -948,6 +1005,7 @@ def csv_import_and_score(request):
             'converted_count': len(converted_ids),
             'scored_count': scored_count,
             'technical_count': technical_count,  # NEW: Technical analysis count
+            'cv_boost_count': cv_boost_count if 'cv_boost_count' in locals() else 0,  # NEW: Cross-validation count
             'auto_convert': auto_convert,
             'auto_score': auto_score,
             'deleted_count': deleted_count,
@@ -1235,6 +1293,69 @@ def _read_excel_to_csv_string(excel_file, file_extension):
     except Exception as e:
         logger.error(f"❌ Error reading Excel file: {str(e)}", exc_info=True)
         raise
+
+
+def _extract_symbols_from_file(file):
+    """
+    Extract unique symbols from an optional CSV/Excel file for cross-validation.
+    
+    Returns: List of unique symbol strings (uppercase)
+    """
+    symbols = set()
+    
+    try:
+        file_extension = file.name.lower().split('.')[-1]
+        
+        # Read file based on extension
+        if file_extension in ['xlsx', 'xls']:
+            file_data = _read_excel_to_csv_string(file, file_extension)
+        else:
+            file_data = file.read().decode('utf-8')
+        
+        # Parse CSV
+        lines = file_data.split('\n')
+        header_row_index = 0
+        
+        # Find header row (same logic as main upload)
+        for i, line in enumerate(lines[:10]):
+            if not line.strip():
+                continue
+            fields = [f.strip().strip('"').strip("'") for f in line.split(',')]
+            headers_found = sum(1 for f in fields if any(keyword in f.lower() for keyword in 
+                ['symbol', 'strike', 'expiry', 'premium', 'price', 'action', 'dte', 'days']))
+            if headers_found >= 3:
+                header_row_index = i
+                break
+        
+        # Skip title rows
+        if header_row_index > 0:
+            file_data = '\n'.join(lines[header_row_index:])
+        
+        csv_reader = csv.DictReader(io.StringIO(file_data))
+        
+        # Find symbol column (flexible - could be 'Symbol', 'symbol', 'Ticker', etc.)
+        symbol_field = None
+        for field in csv_reader.fieldnames:
+            if field and 'symbol' in field.lower():
+                symbol_field = field
+                break
+        
+        if not symbol_field:
+            logger.warning(f"⚠️  No 'symbol' column found in {file.name}, skipping cross-validation")
+            return []
+        
+        # Extract symbols
+        for row in csv_reader:
+            symbol = row.get(symbol_field, '').strip().upper()
+            if symbol and len(symbol) <= 10:  # Valid ticker symbols are 1-10 chars
+                symbols.add(symbol)
+        
+        logger.info(f"✅ Extracted {len(symbols)} unique symbols from {file.name}")
+        return list(symbols)
+        
+    except Exception as e:
+        logger.warning(f"⚠️  Error extracting symbols from {file.name}: {str(e)}, skipping cross-validation")
+        return []
 
 
 def _detect_strategy_type(filename, headers):
