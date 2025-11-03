@@ -388,12 +388,16 @@ def csv_import_and_score(request):
                     value = row_data.get(csv_field, '').strip()
                     mapped_data[model_field] = value
                 
-                # Apply quality filters
-                premium = Decimal(mapped_data.get('premium', '0') or '0')
-                iv = Decimal(mapped_data.get('iv_rank', '0') or '0')
-                dte = int(mapped_data.get('dte', '365') or '365')
-                symbol = mapped_data.get('symbol', '').upper()
-                iv_rank = mapped_data.get('iv_rank')
+                # Apply quality filters - convert to proper types
+                premium_str = mapped_data.get('premium', '') or '0'
+                iv_rank_str = mapped_data.get('iv_rank', '') or '0'
+                dte_str = mapped_data.get('dte', '') or '365'
+                symbol = mapped_data.get('symbol', '').upper().strip()
+                
+                # Clean and convert values using helper functions
+                premium = _clean_decimal_value(premium_str)
+                iv_rank_val = _clean_decimal_value(iv_rank_str)
+                dte = _clean_int_value(dte_str)
                 
                 # Filter checks with detailed tracking
                 filter_failed = False
@@ -404,12 +408,12 @@ def csv_import_and_score(request):
                     filter_reason.append(f"Premium ${premium} < ${min_premium}")
                     filter_failed = True
                 
-                if iv_rank is not None and iv_rank < min_iv:
+                if iv_rank_val < min_iv:
                     filter_reasons['iv_rank'] += 1
-                    filter_reason.append(f"IV {iv_rank}% < {min_iv}%")
+                    filter_reason.append(f"IV {iv_rank_val}% < {min_iv}%")
                     filter_failed = True
                 
-                if dte is not None and dte > max_dte:
+                if dte > max_dte:
                     filter_reasons['dte'] += 1
                     filter_reason.append(f"DTE {dte} > {max_dte}")
                     filter_failed = True
@@ -430,7 +434,7 @@ def csv_import_and_score(request):
                         rejected_samples.append({
                             'symbol': symbol,
                             'premium': premium,
-                            'iv_rank': iv_rank,
+                            'iv_rank': iv_rank_val,
                             'dte': dte,
                             'reasons': filter_reason
                         })
@@ -561,6 +565,44 @@ def csv_import_and_score(request):
 
 
 # Helper functions
+
+def _clean_decimal_value(value_str):
+    """Clean and convert string to Decimal, handling $, %, commas, spaces"""
+    if not value_str:
+        return Decimal('0')
+    
+    # Convert to string and clean
+    cleaned = str(value_str).strip()
+    # Remove $, %, commas
+    cleaned = cleaned.replace('$', '').replace('%', '').replace(',', '').strip()
+    
+    # Handle empty or non-numeric
+    if not cleaned or cleaned == '':
+        return Decimal('0')
+    
+    try:
+        return Decimal(cleaned)
+    except (ValueError, TypeError):
+        return Decimal('0')
+
+
+def _clean_int_value(value_str):
+    """Clean and convert string to int"""
+    if not value_str:
+        return 0
+    
+    cleaned = str(value_str).strip()
+    # Remove $, %, commas
+    cleaned = cleaned.replace('$', '').replace('%', '').replace(',', '').strip()
+    
+    if not cleaned or cleaned == '':
+        return 0
+    
+    try:
+        return int(float(cleaned))  # Use float first to handle decimals
+    except (ValueError, TypeError):
+        return 0
+
 
 def _auto_map_columns(headers):
     """
@@ -767,23 +809,23 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
         except:
             expiry = date.today()
     
-    # Create raw data
+    # Create raw data - use helper functions to clean values
     raw_data = OptionPlayRawData.objects.create(
         strategy_type=strategy_type,
-        symbol=mapped_data.get('symbol', '').upper(),
-        underlying_price=Decimal(mapped_data.get('price', '0') or '0'),
-        sell_strike=Decimal(mapped_data.get('sell_strike', '0') or '0'),
-        buy_strike=Decimal(mapped_data.get('buy_strike', '0') or '0') if mapped_data.get('buy_strike') else None,
-        premium=Decimal(mapped_data.get('premium', '0') or '0'),
+        symbol=mapped_data.get('symbol', '').upper().strip(),
+        underlying_price=_clean_decimal_value(mapped_data.get('price', '0')),
+        sell_strike=_clean_decimal_value(mapped_data.get('sell_strike', '0')),
+        buy_strike=_clean_decimal_value(mapped_data.get('buy_strike', '0')) if mapped_data.get('buy_strike') else None,
+        premium=_clean_decimal_value(mapped_data.get('premium', '0')),
         expiry=expiry,
-        dte=int(mapped_data.get('dte', '30') or '30'),
-        iv_rank=Decimal(mapped_data.get('iv_rank', '0') or '0'),
-        annual_return=Decimal(mapped_data.get('annual_return', '0') or '0'),
-        distance_to_strike=Decimal(mapped_data.get('distance_to_strike', '0') or '0'),
-        width=Decimal(mapped_data.get('width', '0') or '0') if mapped_data.get('width') else None,
-        premium_to_width_ratio=Decimal(mapped_data.get('prem_width', '0') or '0') if mapped_data.get('prem_width') else None,
-        earnings_flag=mapped_data.get('earnings_flag', 'N') == 'Y',
-        notes=f"Imported from CSV: {request.session.get('csv_filename', 'unknown')}"
+        dte=_clean_int_value(mapped_data.get('dte', '30')),
+        iv_rank=_clean_decimal_value(mapped_data.get('iv_rank', '0')),
+        annual_return=_clean_decimal_value(mapped_data.get('annual_return', '0')),
+        distance_to_strike=_clean_decimal_value(mapped_data.get('distance_to_strike', '0')),
+        width=_clean_decimal_value(mapped_data.get('width', '0')) if mapped_data.get('width') else None,
+        premium_to_width_ratio=_clean_decimal_value(mapped_data.get('prem_width', '0')) if mapped_data.get('prem_width') else None,
+        earnings_flag=mapped_data.get('earnings_flag', 'N').strip().upper() == 'Y',
+        notes=f"Imported from CSV"
     )
     
     return raw_data
