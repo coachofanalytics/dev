@@ -412,7 +412,7 @@ def get_contract_body(contract_type, application):
             'starter': '10% profit share',
             'professional': '15% profit share',
             'premium': '20% profit share + priority support',
-            'consultative': '$250/session + 20% profit share',
+            'consultative': '$420/month + 10% bonus',
             'co_invest': '30% profit share + CODA co-investment'
         }
         fee_structure = tier_fees.get(application.fee_tier, '10% profit share')
