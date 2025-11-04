@@ -322,17 +322,21 @@ def create_batch_from_suggestions(request):
 @staff_member_required
 def ajax_approve_position(request, suggestion_id):
     """AJAX endpoint: Quick approve a position"""
-    if request.method == 'POST':
-        suggestion = get_object_or_404(SuggestedPosition, id=suggestion_id)
-        notes = request.POST.get('notes', '')
-        suggestion.approve(request.user, notes)
+    try:
+        if request.method == 'POST':
+            suggestion = get_object_or_404(SuggestedPosition, id=suggestion_id)
+            notes = request.POST.get('notes', '')
+            suggestion.approve(request.user, notes)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Approved {suggestion.symbol} {suggestion.strategy}'
+            })
         
-        return JsonResponse({
-            'success': True,
-            'message': f'Approved {suggestion.symbol} {suggestion.strategy}'
-        })
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+        return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+    except Exception as e:
+        logger.error(f"Approval error: {str(e)}")
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 @staff_member_required

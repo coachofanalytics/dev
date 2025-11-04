@@ -74,6 +74,20 @@
         </div>
     </div>
     
+    <!-- Quick Actions Bar -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="alert alert-info d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                <div>
+                    <strong>🤖 Quick Automation:</strong> Auto-approve EXCELLENT positions (score ≥95) and distribute top 3-6 to client accounts
+                </div>
+                <button onclick="bulkApproveExcellent()" class="btn btn-light btn-lg">
+                    <i class="fa fa-magic"></i> ✨ Approve EXCELLENT & Distribute
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Tabs: Pending / Approved / Rejected -->
     <ul class="nav nav-tabs mb-3" id="positionTabs" role="tablist">
         <li class="nav-item" role="presentation">
@@ -525,6 +539,74 @@ function rejectPosition(positionId) {
         console.error('Error:', error);
         alert('❌ Rejection failed: ' + error);
     });
+}
+
+// Bulk approve EXCELLENT positions and distribute to accounts
+function bulkApproveExcellent() {
+    if (!confirm('🤖 Auto-approve all EXCELLENT positions (score ≥95) and distribute top 3-6 to client accounts?\n\nThis will:\n✅ Approve EXCELLENT positions\n📦 Distribute to accounts with <2 positions\n📱 Send client notifications\n\nContinue?')) {
+        return;
+    }
+    
+    // Show loading indicator
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+    button.disabled = true;
+    
+    fetch('/investing/managed/api/bulk-approve-excellent/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            min_score: 95,
+            top_n: 6,
+            auto_distribute: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        if (data.success) {
+            const msg = `✅ SUCCESS!\n\n` +
+                `Approved: ${data.approved_count} positions\n` +
+                `Distributed: ${data.distributed_count} positions\n` +
+                `Accounts: ${data.batch_count} batches created\n` +
+                `Notifications: ${data.notifications_sent} sent\n\n` +
+                `New Status:\n` +
+                `  Pending: ${data.pending_remaining}\n` +
+                `  Approved: ${data.approved_total}`;
+            alert(msg);
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        console.error('Error:', error);
+        alert('❌ Bulk approval failed: ' + error);
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 </script>
 

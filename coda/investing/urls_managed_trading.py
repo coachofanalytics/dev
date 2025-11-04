@@ -19,6 +19,7 @@ from .views.managed_trading import (
     csv_upload,  # CSV Upload Wizard (Enhanced with Cross-Validation)
     webhooks,  # Phase 9: Real-time WhatsApp approval
     multi_file_analyzer,  # Phase 9: Multi-file flow analyzer (manual Unusual Whales)
+    api_bulk_actions,  # Phase 9: Bulk approval and distribution
 )
 
 urlpatterns = [
@@ -200,6 +201,11 @@ urlpatterns = [
     path('managed/api/suggestions/<int:suggestion_id>/reject/', 
          position_suggestions.ajax_reject_position, 
          name='ajax_reject_position'),
+    
+    # Bulk actions API
+    path('managed/api/bulk-approve-excellent/', 
+         api_bulk_actions.bulk_approve_excellent, 
+         name='bulk_approve_excellent_api'),
     
     # Staff: Batch Management
     path('managed/accounts/<int:account_id>/batches/create/', 

@@ -22,6 +22,8 @@ from ...services.optionplay_converter import OptionPlayConverterService
 from ...services.position_scoring_service import PositionScoringService
 from ...services.technical_analysis_service import get_technical_indicators
 from ...services.unusual_whales_service import UnusualWhalesService
+from ...services.spread_builder import SpreadBuilderService
+from ...services.auto_approval_service import AutoApprovalService
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -174,6 +176,39 @@ def csv_upload_wizard(request):
             else:
                 request.session.pop('cross_validation_symbols', None)
                 request.session.pop('cv_file_info', None)
+            
+            # Process Unusual Whales files for flow scoring (NEW!)
+            whales_symbols = {}
+            whales_file_count = 0
+            
+            if request.FILES.get('whalesFlow'):
+                logger.info("🐋 Processing Unusual Whales Options Flow file...")
+                flow_symbols = _extract_symbols_from_file(request.FILES['whalesFlow'])
+                whales_symbols['options_flow'] = flow_symbols
+                whales_file_count += 1
+                logger.info(f"   ✅ Found {len(flow_symbols)} symbols in Options Flow")
+            
+            if request.FILES.get('whalesDarkPool'):
+                logger.info("🐋 Processing Unusual Whales Dark Pool file...")
+                darkpool_symbols = _extract_symbols_from_file(request.FILES['whalesDarkPool'])
+                whales_symbols['dark_pool'] = darkpool_symbols
+                whales_file_count += 1
+                logger.info(f"   ✅ Found {len(darkpool_symbols)} symbols in Dark Pool")
+            
+            if request.FILES.get('whalesLitFlow'):
+                logger.info("🐋 Processing Unusual Whales Lit Flow file...")
+                litflow_symbols = _extract_symbols_from_file(request.FILES['whalesLitFlow'])
+                whales_symbols['lit_flow'] = litflow_symbols
+                whales_file_count += 1
+                logger.info(f"   ✅ Found {len(litflow_symbols)} symbols in Lit Flow")
+            
+            if whales_symbols:
+                request.session['whales_symbols'] = whales_symbols
+                logger.info(f"🐋 Unusual Whales enabled: {whales_file_count} files processed")
+                logger.info(f"   Symbols will receive flow-based scoring boosts/penalties")
+            else:
+                request.session.pop('whales_symbols', None)
+                logger.info("ℹ️  No Unusual Whales files uploaded - will use OptionPlay scoring only")
             
             # Store CSV data in session for next step
             logger.info("💾 Storing data in session...")
@@ -787,6 +822,124 @@ def csv_import_and_score(request):
         logger.info(f"✅ Successfully imported {len(imported_ids)} positions to database")
         logger.info("=" * 80)
         
+        # Step 1.5: Auto-convert single-leg to spreads (NEW!)
+        spread_converted_ids = []
+        logger.info(f"🔍 Spread builder check: imported_ids={len(imported_ids)}, strategy_type='{strategy_type}'")
+        
+        if imported_ids and strategy_type in ['short_put', 'covered_call', 'short_call']:
+            logger.info("=" * 80)
+            logger.info("🔄 SPREAD BUILDER: Converting single-leg to spreads")
+            logger.info("=" * 80)
+            
+            spread_builder = SpreadBuilderService()
+            
+            # Fetch all imported raw data
+            imported_raw_data = OptionPlayRawData.objects.filter(id__in=imported_ids)
+            
+            # Track ID replacements (don't modify list while iterating!)
+            ids_to_remove = []
+            ids_to_add = []
+            
+            for raw_data in imported_raw_data:
+                try:
+                    # Prepare position dict for spread builder
+                    # Use correct field names from OptionPlayRawData model
+                    raw_position_dict = {
+                        'symbol': raw_data.symbol,
+                        'strike': raw_data.sell_strike,  # Sell strike
+                        'premium': raw_data.premium,  # Already per-contract premium
+                        'expiry': raw_data.expiry,
+                        'quantity': 1,  # Default to 1 contract
+                        'dte': raw_data.days_to_expiry if hasattr(raw_data, 'days_to_expiry') else 30,
+                        'iv_rank': raw_data.iv_rank,
+                        'underlying_price': raw_data.stock_price if hasattr(raw_data, 'stock_price') else None,
+                    }
+                    
+                    # Try to convert to spread
+                    spread_data = spread_builder.convert_position_to_spread(
+                        raw_position=raw_position_dict,
+                        strategy_type=strategy_type,
+                        spread_width_strategy=spread_width_choice,
+                        account_info=None  # Could add account check for covered calls
+                    )
+                    
+                    if spread_data:
+                        # Create NEW OptionPlayRawData for the spread
+                        # Only use fields that exist in the model!
+                        spread_raw_data = OptionPlayRawData(
+                            # Basic info
+                            symbol=spread_data['symbol'],
+                            strategy_type=spread_data['strategy'],  # 'bull_put_spread', not in CHOICES! Need to add
+                            
+                            # Dates
+                            expiry=spread_data['expiration_date'],
+                            days_to_expiry=raw_data.days_to_expiry,
+                            
+                            # Spread legs (both strikes)
+                            sell_strike=Decimal(str(spread_data['positions'][0]['strike'])),  # Short leg
+                            buy_strike=Decimal(str(spread_data['positions'][1]['strike'])),   # Long leg
+                            
+                            # Premium (net credit)
+                            premium=Decimal(str(spread_data['premium_collected'])),
+                            
+                            # Spread width
+                            width=Decimal(str(spread_data.get('width', 0))),
+                            
+                            # Market data (copy from original)
+                            stock_price=raw_data.stock_price,
+                            iv_rank=raw_data.iv_rank,
+                            earnings_date=raw_data.earnings_date if hasattr(raw_data, 'earnings_date') else '',
+                            earnings_flag=raw_data.earnings_flag if hasattr(raw_data, 'earnings_flag') else '',
+                            
+                            # Tracking
+                            uploaded_by=raw_data.uploaded_by,
+                            
+                            # Notes about conversion
+                            upload_notes=f"AUTO-CONVERTED SPREAD: {spread_data.get('conversion_note', '')}. "
+                                        f"SELL ${spread_data['positions'][0]['strike']} PUT, "
+                                        f"BUY ${spread_data['positions'][1]['strike']} PUT. "
+                                        f"Width: ${spread_data.get('width', 0)}. "
+                                        f"Net Credit: ${spread_data['premium_collected']:.2f}. "
+                                        f"Max Loss: ${spread_data['max_loss']:.2f}. "
+                                        f"Capital: ${spread_data['capital_required']:.2f} (vs ${raw_data.sell_strike * 100:.0f} for naked put)",
+                        )
+                        
+                        spread_raw_data.save()
+                        spread_converted_ids.append(spread_raw_data.id)
+                        
+                        logger.info(f"   ✅ Created spread version for {raw_data.symbol}")
+                        
+                        # Track for replacement (don't modify list while iterating!)
+                        ids_to_remove.append(raw_data.id)
+                        ids_to_add.append(spread_raw_data.id)
+                        
+                        # Delete the original single-leg version (keep only spread)
+                        raw_data.delete()
+                        
+                except Exception as e:
+                    logger.error(f"   ❌ Spread conversion error for {raw_data.symbol}: {e}")
+                    # Keep original if conversion fails
+                    continue
+            
+            # Update imported_ids list after iteration completes
+            for old_id in ids_to_remove:
+                if old_id in imported_ids:
+                    imported_ids.remove(old_id)
+            imported_ids.extend(ids_to_add)
+            
+            if spread_converted_ids:
+                logger.info(f"✅ Spread conversion complete: {len(spread_converted_ids)} positions converted to spreads")
+                logger.info(f"   💾 Updated imported_ids: Now using spread IDs ({len(imported_ids)} total)")
+                
+                # Calculate capital saved
+                # Original capital would have been sell_strike * 100 per position
+                # New capital is max_loss from spreads (much lower!)
+                logger.info(f"   💰 Capital efficiency: Spreads use ~98% less capital than naked puts!")
+            else:
+                logger.info("   ℹ️  No positions converted to spreads (already spreads or conversion not applicable)")
+            
+            logger.info("=" * 80)
+        
         # Step 2: Convert to SuggestedPositions (if enabled)
         converted_ids = []
         if auto_convert and imported_ids:
@@ -822,7 +975,14 @@ def csv_import_and_score(request):
                     
                     # Build position data dict for AI scorer
                     # NOTE: AI scorer expects IV as percentage (0-100), but we store as decimal (0-1)
-                    iv_rank_pct = (raw_data.iv_rank * 100) if raw_data and raw_data.iv_rank else None
+                    # IV Rank: Check if already percentage or decimal
+                    if raw_data and raw_data.iv_rank:
+                        if raw_data.iv_rank <= 1:
+                            iv_rank_pct = float(raw_data.iv_rank * 100)  # 0.32 → 32
+                        else:
+                            iv_rank_pct = float(raw_data.iv_rank)  # Already 32
+                    else:
+                        iv_rank_pct = None
                     
                     position_data = {
                         'symbol': suggestion.symbol,
@@ -830,7 +990,7 @@ def csv_import_and_score(request):
                         'premium': suggestion.premium_collected or Decimal('0'),
                         'max_loss': suggestion.max_loss or Decimal('1'),
                         'dte': suggestion.dte,  # Use 'dte' field, not 'calculated_dte' property
-                        'iv_rank': float(iv_rank_pct) if iv_rank_pct else None,  # Convert to percentage!
+                        'iv_rank': iv_rank_pct,  # Already converted above
                         'days_to_earnings': None,
                         'volume': None,
                         'open_interest': None,
@@ -894,11 +1054,17 @@ def csv_import_and_score(request):
                         # Boost AI score based on technical signals
                         if suggestion.ai_score and tech_data['technical_score'] > 0:
                             suggestion.ai_score += tech_data['technical_score']
+                            
+                            # ✅ CRITICAL FIX: Recalculate rating after score boost!
+                            # (PositionScoringService already imported at top)
+                            temp_scorer = PositionScoringService()
+                            new_rating = temp_scorer._get_rating(min(suggestion.ai_score, 100))  # Cap at 100
+                            suggestion.ai_rating = new_rating
                         
                         suggestion.save()
                         
                         technical_count += 1
-                        logger.debug(f"  ✅ {suggestion.symbol}: RSI {tech_data['rsi']:.1f}, +{tech_data['technical_score']} pts")
+                        logger.debug(f"  ✅ {suggestion.symbol}: RSI {tech_data['rsi']:.1f}, +{tech_data['technical_score']} pts → Score: {suggestion.ai_score}, Rating: {suggestion.ai_rating}")
                     
                 except Exception as e:
                     logger.warning(f"  ⚠️  Technical analysis failed for {suggestion.symbol}: {str(e)}")
@@ -921,6 +1087,12 @@ def csv_import_and_score(request):
                         else:
                             suggestion.ai_score = cv_boost
                         
+                        # ✅ CRITICAL FIX: Recalculate rating after score boost!
+                        # (PositionScoringService already imported at top)
+                        temp_scorer = PositionScoringService()
+                        new_rating = temp_scorer._get_rating(min(suggestion.ai_score, 100))  # Cap at 100
+                        suggestion.ai_rating = new_rating
+                        
                         # Add note about cross-validation (if not already added by technical analysis)
                         current_notes = suggestion.notes or ''
                         if 'Cross-Validated' not in current_notes:
@@ -932,13 +1104,90 @@ def csv_import_and_score(request):
                         
                         suggestion.save()
                         cv_boost_count += 1
-                        logger.debug(f"  💎 {suggestion.symbol}: Cross-validation boost +{cv_boost} pts")
+                        logger.debug(f"  💎 {suggestion.symbol}: Cross-validation boost +{cv_boost} pts → Score: {suggestion.ai_score}, Rating: {new_rating}")
                 except Exception as e:
                     logger.warning(f"  ⚠️  Cross-validation boost failed for ID {suggestion_id}: {str(e)}")
                     continue
             
             if cv_boost_count > 0:
                 logger.info(f"✅ Cross-validation complete: {cv_boost_count}/{len(converted_ids)} positions boosted")
+        
+        # Step 5.5: Manual Unusual Whales Flow Scoring (from uploaded CSVs) - NEW!
+        manual_whales_count = 0
+        whales_symbols = request.session.get('whales_symbols', {})
+        
+        if whales_symbols and converted_ids:
+            logger.info("🐋 Applying Unusual Whales flow scoring from manually uploaded files...")
+            
+            for idx, suggestion_id in enumerate(converted_ids, 1):
+                try:
+                    suggestion = SuggestedPosition.objects.get(id=suggestion_id)
+                    symbol = suggestion.symbol
+                    
+                    # Check if symbol appears in Whales files
+                    in_options_flow = symbol in whales_symbols.get('options_flow', [])
+                    in_dark_pool = symbol in whales_symbols.get('dark_pool', [])
+                    in_lit_flow = symbol in whales_symbols.get('lit_flow', [])
+                    
+                    if any([in_options_flow, in_dark_pool, in_lit_flow]):
+                        # Build flow notes
+                        flow_notes = f"\n\n🐋 Unusual Whales Flow (Manual CSVs):\n"
+                        boost = 0
+                        
+                        if in_options_flow:
+                            flow_notes += "  • ✅ Options Flow detected (institutional options activity)\n"
+                            boost += 20
+                        
+                        if in_dark_pool:
+                            flow_notes += "  • ✅ Dark Pool activity (institutional accumulation)\n"
+                            boost += 20
+                        
+                        if in_lit_flow:
+                            flow_notes += "  • ✅ Lit Flow detected (market interest)\n"
+                            boost += 10
+                        
+                        # Determine timing based on number of confirmations
+                        confirmations = sum([in_options_flow, in_dark_pool, in_lit_flow])
+                        if confirmations >= 2:
+                            timing = '🟢 ENTER NOW (Multiple Whales confirmations!)'
+                            flow_notes += f"  • Timing: {timing}\n"
+                        elif confirmations == 1:
+                            timing = '🟡 OK TO ENTER (Single Whales confirmation)'
+                            flow_notes += f"  • Timing: {timing}\n"
+                        
+                        # Append to notes
+                        if suggestion.notes:
+                            suggestion.notes += flow_notes
+                        else:
+                            suggestion.notes = flow_notes
+                        
+                        # Boost AI score
+                        if suggestion.ai_score:
+                            suggestion.ai_score += boost
+                        else:
+                            suggestion.ai_score = 50 + boost
+                        
+                        # ✅ CRITICAL FIX: Recalculate rating after score boost!
+                        # (PositionScoringService already imported at top)
+                        temp_scorer = PositionScoringService()
+                        new_rating = temp_scorer._get_rating(min(suggestion.ai_score, 100))  # Cap at 100
+                        suggestion.ai_rating = new_rating
+                        
+                        suggestion.save()
+                        manual_whales_count += 1
+                        
+                        logger.debug(f"  🐋 {symbol}: Whales boost +{boost} pts → Score: {suggestion.ai_score}, Rating: {new_rating}")
+                        
+                except Exception as e:
+                    logger.warning(f"  ⚠️  Manual Whales scoring failed for ID {suggestion_id}: {str(e)}")
+                    continue
+            
+            if manual_whales_count > 0:
+                logger.info(f"✅ Manual Unusual Whales scoring complete: {manual_whales_count}/{len(converted_ids)} positions received flow boosts")
+            else:
+                logger.info("   ℹ️  No symbols matched Unusual Whales files (different symbols or empty files)")
+        elif not whales_symbols:
+            logger.info("ℹ️  No Unusual Whales files uploaded - skipping manual flow scoring")
         
         # Step 6: Unusual Whales Flow Scoring (if API key configured)
         flow_count = 0
@@ -1005,12 +1254,211 @@ def csv_import_and_score(request):
             logger.info("ℹ️  Unusual Whales disabled (no API key) - skipping flow scoring")
             logger.info("   💡 Add API key to get TIMING signals (buy/sell flow detection)")
         
+        # Step 6: Smart Duplicate Ranking (NEW! - Auto-select best when same symbol appears multiple times)
+        duplicate_count = 0
+        database_duplicate_count = 0
+        if converted_ids:
+            logger.info("=" * 80)
+            logger.info("🎯 SMART RANKING: Detecting and ranking duplicate symbols")
+            logger.info("=" * 80)
+            
+            # Group positions by symbol
+            from collections import defaultdict
+            symbol_groups = defaultdict(list)
+            
+            for suggestion_id in converted_ids:
+                try:
+                    suggestion = SuggestedPosition.objects.get(id=suggestion_id)
+                    symbol_groups[suggestion.symbol].append(suggestion)
+                except Exception as e:
+                    logger.warning(f"  ⚠️  Could not load suggestion {suggestion_id}: {e}")
+                    continue
+            
+            # Check for existing positions in database (not just current upload)
+            logger.info("🔍 Checking for existing positions in database...")
+            for symbol in symbol_groups.keys():
+                existing_positions = SuggestedPosition.objects.filter(
+                    symbol=symbol,
+                    review_status__in=['pending', 'approved']  # Don't check rejected/converted
+                ).exclude(
+                    id__in=converted_ids  # Exclude current upload
+                )
+                
+                if existing_positions.exists():
+                    database_duplicate_count += existing_positions.count()
+                    logger.info(f"  ⚠️  {symbol}: {existing_positions.count()} existing position(s) found in database!")
+                    
+                    # Add existing positions to comparison
+                    for existing_pos in existing_positions:
+                        symbol_groups[symbol].append(existing_pos)
+                        
+                        # Mark as existing (not new upload)
+                        if not hasattr(existing_pos, '_is_existing'):
+                            existing_pos._is_existing = True
+                        
+                        logger.info(f"      • {existing_pos.strategy} ({existing_pos.review_status}, "
+                                  f"Score: {existing_pos.ai_score or 'N/A'}, "
+                                  f"Created: {existing_pos.created_at.strftime('%Y-%m-%d') if hasattr(existing_pos, 'created_at') else 'Unknown'})")
+            
+            if database_duplicate_count > 0:
+                logger.info(f"  📊 Total: {database_duplicate_count} existing positions will be included in ranking")
+            else:
+                logger.info(f"  ✅ No existing positions found - all symbols are new")
+            logger.info("")
+            
+            # Process duplicates
+            for symbol, positions in symbol_groups.items():
+                if len(positions) <= 1:
+                    continue  # No duplicates
+                
+                logger.info(f"📊 {symbol}: Found {len(positions)} positions - ranking...")
+                
+                # Calculate ranking score for each position
+                ranked_positions = []
+                for pos in positions:
+                    # Ranking criteria (weighted)
+                    ai_score = float(pos.ai_score or 0)
+                    
+                    # Risk/Reward ratio (higher is better)
+                    if pos.max_loss and pos.max_loss != 0:
+                        rr_ratio = float(pos.max_profit / abs(pos.max_loss)) if pos.max_profit else 0
+                    else:
+                        rr_ratio = 0
+                    
+                    # DTE preference (shorter is better for faster profit realization)
+                    dte_score = 100 - min(pos.dte, 100) if pos.dte else 0  # 24 DTE = 76, 45 DTE = 55
+                    
+                    # Premium size (higher is better)
+                    premium_score = min(float(pos.premium_collected or 0) / 10, 100)  # Cap at 100
+                    
+                    # Combined ranking score
+                    ranking_score = (
+                        ai_score * 0.4 +           # 40% AI score
+                        rr_ratio * 20 * 0.3 +      # 30% R:R ratio (scaled)
+                        dte_score * 0.2 +          # 20% DTE preference
+                        premium_score * 0.1        # 10% premium size
+                    )
+                    
+                    ranked_positions.append({
+                        'position': pos,
+                        'ranking_score': ranking_score,
+                        'ai_score': ai_score,
+                        'rr_ratio': rr_ratio,
+                        'dte': pos.dte,
+                        'premium': float(pos.premium_collected or 0),
+                        'strategy': pos.strategy
+                    })
+                
+                # Sort by ranking score (highest first)
+                ranked_positions.sort(key=lambda x: x['ranking_score'], reverse=True)
+                
+                # Mark best as "recommended", others as "alternative"
+                best = ranked_positions[0]
+                alternatives = ranked_positions[1:]
+                
+                # Update best position
+                best_pos = best['position']
+                is_existing_best = hasattr(best_pos, '_is_existing') and best_pos._is_existing
+                
+                recommendation_note = (
+                    f"\n\n🏆 RECOMMENDED: Best option for {symbol}\n"
+                    f"  • Ranking Score: {best['ranking_score']:.1f}/100\n"
+                    f"  • AI Score: {best['ai_score']:.0f}, R:R: {best['rr_ratio']:.2f}, DTE: {best['dte']}d\n"
+                    f"  • {len(alternatives)} alternative(s) available but this has better metrics\n"
+                )
+                
+                if is_existing_best:
+                    recommendation_note += f"  • ℹ️  This is an EXISTING position (already in database) - still the best option!"
+                else:
+                    existing_count = sum(1 for alt in alternatives if hasattr(alt['position'], '_is_existing') and alt['position']._is_existing)
+                    if existing_count > 0:
+                        recommendation_note += f"  • ✨ NEW upload beats {existing_count} existing position(s) in database!"
+                if best_pos.notes:
+                    best_pos.notes += recommendation_note
+                else:
+                    best_pos.notes = recommendation_note
+                best_pos.save()
+                
+                logger.info(f"  🏆 BEST: {best['strategy']} (Score: {best['ranking_score']:.1f}, R:R: {best['rr_ratio']:.2f}, DTE: {best['dte']}d, Premium: ${best['premium']:.0f})")
+                
+                # Update alternatives with comparison notes
+                for idx, alt in enumerate(alternatives, 1):
+                    alt_pos = alt['position']
+                    is_existing_alt = hasattr(alt_pos, '_is_existing') and alt_pos._is_existing
+                    
+                    alt_note = (
+                        f"\n\n⚠️  ALTERNATIVE #{idx}: Not the best option for {symbol}\n"
+                        f"  • Ranking Score: {alt['ranking_score']:.1f}/100 (vs {best['ranking_score']:.1f} for best)\n"
+                        f"  • This: {alt['strategy']}, R:R {alt['rr_ratio']:.2f}, {alt['dte']}d, ${alt['premium']:.0f}\n"
+                        f"  • Best: {best['strategy']}, R:R {best['rr_ratio']:.2f}, {best['dte']}d, ${best['premium']:.0f}\n"
+                    )
+                    
+                    if is_existing_alt:
+                        alt_note += f"  • ℹ️  This is an EXISTING position - consider closing it if you approve the better one\n"
+                    else:
+                        alt_note += f"  • ⚠️  NEW upload - consider rejecting this and approving the recommended position instead\n"
+                    if alt_pos.notes:
+                        alt_pos.notes += alt_note
+                    else:
+                        alt_pos.notes = alt_note
+                    alt_pos.save()
+                    
+                    logger.info(f"  ⚠️  ALT #{idx}: {alt['strategy']} (Score: {alt['ranking_score']:.1f}, R:R: {alt['rr_ratio']:.2f}, DTE: {alt['dte']}d, Premium: ${alt['premium']:.0f})")
+                
+                duplicate_count += len(positions)
+                logger.info("")
+            
+            if duplicate_count > 0:
+                logger.info(f"✅ Smart ranking complete: {duplicate_count} positions in {len([s for s in symbol_groups.values() if len(s) > 1])} duplicate groups ranked")
+            else:
+                logger.info("ℹ️  No duplicate symbols found - all positions are unique")
+            
+            logger.info("=" * 80)
+        
+        # Step 7: Auto-Approval & Distribution Pipeline (NEW!)
+        auto_approval_enabled = request.POST.get('auto_approval_enabled') == 'on'
+        auto_distribution_enabled = request.POST.get('auto_distribution_enabled') == 'on'
+        
+        logger.info(f"🤖 Auto-Approval Setting: {auto_approval_enabled} (checkbox: {request.POST.get('auto_approval_enabled')})")
+        logger.info(f"📦 Auto-Distribution Setting: {auto_distribution_enabled} (checkbox: {request.POST.get('auto_distribution_enabled')})")
+        
+        auto_approved_count = 0
+        auto_distributed_count = 0
+        batches_created = 0
+        notifications_sent = 0
+        
+        if auto_approval_enabled and converted_ids:
+            logger.info("=" * 80)
+            logger.info("🤖 AUTO-APPROVAL PIPELINE: Starting automation")
+            logger.info("=" * 80)
+            
+            auto_service = AutoApprovalService()
+            
+            try:
+                # Run full pipeline
+                pipeline_result = auto_service.run_full_pipeline(
+                    suggestion_ids=converted_ids,
+                    staff_user=request.user,
+                    auto_distribute=auto_distribution_enabled,
+                    notify_clients=True  # Always notify if distributing
+                )
+                
+                auto_approved_count = len(pipeline_result['approval_result']['approved'])
+                auto_distributed_count = pipeline_result['distribution_result'].get('total_distributed', 0)
+                batches_created = pipeline_result['batch_result'].get('batch_count', 0)
+                notifications_sent = pipeline_result.get('notifications_sent', 0)
+                
+            except Exception as e:
+                logger.error(f"❌ Auto-approval pipeline error: {e}")
+                # Continue even if automation fails - positions are still imported
+        
         # Clear session
         logger.info("🧹 Clearing session data...")
         request.session.pop('csv_data', None)
         request.session.pop('csv_headers', None)
         request.session.pop('field_mapping', None)
         request.session.pop('cross_validation_symbols', None)  # Clear cross-validation data
+        request.session.pop('whales_symbols', None)  # Clear Whales data
         logger.info("✅ Session cleared")
         
         # Final summary
@@ -1034,8 +1482,20 @@ def csv_import_and_score(request):
             logger.info(f"  🔍 Filtered: {tier2_filtered} positions")
         logger.info(f"")
         logger.info(f"✅ Successfully Imported: {len(imported_ids)}")
+        if spread_converted_ids:
+            logger.info(f"🔄 Converted to Spreads: {len(spread_converted_ids)} (auto-spread builder)")
         logger.info(f"🔄 Converted to Suggestions: {len(converted_ids)}")
         logger.info(f"🤖 AI Scored: {scored_count}")
+        if manual_whales_count > 0:
+            logger.info(f"🐋 Manual Whales Scoring: {manual_whales_count} positions received flow boosts")
+        if duplicate_count > 0:
+            duplicate_groups = len([s for s, p in symbol_groups.items() if len(p) > 1])
+            logger.info(f"🎯 Smart Ranking: {duplicate_count} positions in {duplicate_groups} duplicate groups ranked")
+        if auto_approved_count > 0:
+            logger.info(f"✅ Auto-Approved: {auto_approved_count} positions (score ≥60)")
+        if auto_distributed_count > 0:
+            logger.info(f"📦 Auto-Distributed: {auto_distributed_count} positions to {batches_created} accounts")
+            logger.info(f"📱 Client Notifications: {notifications_sent} sent")
         logger.info(f"❌ Errors: {error_count}")
         
         # Show Tier 1 filter breakdown
@@ -1102,9 +1562,15 @@ def csv_import_and_score(request):
             'technical_count': technical_count,  # Technical analysis count
             'cv_boost_count': cv_boost_count if 'cv_boost_count' in locals() else 0,  # Cross-validation count
             'flow_count': flow_count if 'flow_count' in locals() else 0,  # Unusual Whales flow count
+            'manual_whales_count': manual_whales_count if 'manual_whales_count' in locals() else 0,  # Manual Whales CSV scoring
+            'spread_converted_count': len(spread_converted_ids) if 'spread_converted_ids' in locals() else 0,  # Spread conversions
             'uw_enabled': uw_service.is_enabled() if 'uw_service' in locals() else False,
             'auto_convert': auto_convert,
             'auto_score': auto_score,
+            'auto_approved_count': auto_approved_count,  # NEW: Auto-approval count
+            'auto_distributed_count': auto_distributed_count,  # NEW: Auto-distribution count
+            'batches_created': batches_created,  # NEW: Batches created
+            'notifications_sent': notifications_sent,  # NEW: Notifications sent
             'deleted_count': deleted_count,
             'archived_count': archived_count,
             'import_mode': import_mode,
@@ -1314,6 +1780,10 @@ def _auto_map_columns(headers):
         elif ('prem' in header_lower or 'premium') and 'width' in header_lower:
             mapping[header] = 'prem_width'
         
+        # Strategy type (for credit spreads CSV)
+        elif header_lower == 'type' or header_lower == 'strategy':
+            mapping[header] = 'type'
+        
         # Earnings
         elif 'earnings flag' in header_lower:
             mapping[header] = 'earnings_flag'
@@ -1459,6 +1929,7 @@ def _detect_strategy_type(filename, headers):
     """Auto-detect strategy type from filename or headers"""
     filename_lower = filename.lower()
     
+    # Credit spreads - will be refined per-row based on Type column
     if 'credit' in filename_lower or 'spread' in filename_lower:
         return 'credit_spread'
     elif 'short_put' in filename_lower or 'put' in filename_lower:
@@ -1466,8 +1937,13 @@ def _detect_strategy_type(filename, headers):
     elif 'covered_call' in filename_lower or 'call' in filename_lower:
         return 'covered_call'
     
-    # Check headers
+    # Check headers for spread indicators
     if any('spread' in h.lower() for h in headers):
+        return 'credit_spread'
+    
+    # Check if has sell/buy strikes (indicates spread)
+    header_lower = [h.lower() for h in headers]
+    if 'sell strike' in ' '.join(header_lower) and 'buy strike' in ' '.join(header_lower):
         return 'credit_spread'
     
     return 'short_put'  # Default
@@ -1536,10 +2012,23 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
         except:
             expiry = date.today()
     
+    # Determine actual strategy type for credit spreads
+    actual_strategy_type = strategy_type
+    if strategy_type == 'credit_spread':
+        # Refine based on Type column
+        spread_type = mapped_data.get('type', '').lower().strip()
+        if 'put' in spread_type or 'bullish' in spread_type:
+            actual_strategy_type = 'bull_put_spread'
+        elif 'call' in spread_type or 'bearish' in spread_type:
+            actual_strategy_type = 'bear_call_spread'
+        else:
+            # Default to bull put spread if unclear
+            actual_strategy_type = 'bull_put_spread'
+    
     # Create raw data - use helper functions to clean values
     # Note: Excel percentage format (0.28 = 28%) is kept as-is
     raw_data = OptionPlayRawData.objects.create(
-        strategy_type=strategy_type,
+        strategy_type=actual_strategy_type,
         symbol=mapped_data.get('symbol', '').upper().strip(),
         stock_price=_clean_decimal_value(mapped_data.get('price', '0')),
         sell_strike=_clean_decimal_value(mapped_data.get('sell_strike', '0')),

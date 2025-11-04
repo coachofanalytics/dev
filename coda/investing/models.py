@@ -3596,11 +3596,15 @@ class OptionPlayRawData(TimeStampedModel):
     # Source tracking
     STRATEGY_TYPE_CHOICES = [
         ('credit_spread', 'Credit Spread'),
+        ('bull_put_spread', 'Bull Put Spread'),
+        ('bear_call_spread', 'Bear Call Spread'),
+        ('iron_condor', 'Iron Condor'),
         ('short_put', 'Short Put'),
         ('covered_call', 'Covered Call'),
+        ('short_call', 'Short Call'),
     ]
     strategy_type = models.CharField(
-        max_length=20,
+        max_length=30,  # Increased from 20 to fit 'bull_put_spread'
         choices=STRATEGY_TYPE_CHOICES,
         help_text="Type of position from CSV"
     )

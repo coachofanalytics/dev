@@ -101,7 +101,35 @@
                                 <br><small class="text-muted">Analyze with 6-factor scoring algorithm</small>
                             </label>
                         </div>
+                        
+                        <div class="custom-control custom-checkbox mb-3">
+                            <input type="checkbox" class="custom-control-input" id="auto_approval_enabled" name="auto_approval_enabled" checked>
+                            <label class="custom-control-label" for="auto_approval_enabled">
+                                <strong>✅ Auto-Approve Above-Average Positions</strong>
+                                <br><small class="text-muted">Automatically approve positions with score ≥60 (saves staff time!)</small>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-checkbox mb-3">
+                            <input type="checkbox" class="custom-control-input" id="auto_distribution_enabled" name="auto_distribution_enabled" checked>
+                            <label class="custom-control-label" for="auto_distribution_enabled">
+                                <strong>📦 Auto-Distribute Top 3 to Accounts</strong>
+                                <br><small class="text-muted">Send top 3 positions to accounts with &lt;2 active positions</small>
+                            </label>
+                        </div>
                     </div>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                    <h6><i class="fa fa-magic"></i> Full Automation Enabled!</h6>
+                    <p class="mb-0">
+                        With auto-approval + auto-distribution checked:
+                        <br>• Positions scored ≥60 will be <strong>auto-approved</strong>
+                        <br>• Top 3 approved positions will be <strong>distributed to accounts</strong> with &lt;2 positions
+                        <br>• <strong>Batches created</strong> and sent to clients for approval
+                        <br>• <strong>WhatsApp notifications</strong> sent automatically
+                        <br><br><strong>Result:</strong> Zero manual work after upload! 🎉
+                    </p>
                 </div>
                 
                 <div class="alert alert-warning mt-4">
