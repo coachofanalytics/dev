@@ -6,8 +6,8 @@ This is the main settings file that imports from base_settings.py
 import os
 
 # Determine environment
-# ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
-ENVIRONMENT = 'local'  # Commented out - use environment variable or default to 'local'
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+# ENVIRONMENT = 'local'  # Commented out - use environment variable or default to 'local'
 
 print(f"Loading settings for environment: {ENVIRONMENT}")
 
