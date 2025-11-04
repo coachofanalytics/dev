@@ -58,10 +58,12 @@
                                             <input type="checkbox" id="selectAllCheckbox">
                                         </th>
                                         <th>Employee</th>
+                                        <th>Type</th>
                                         <th>Email</th>
-                                        <th>Current Tasks</th>
-                                        <th>Total Points</th>
-                                        <th>History Records</th>
+                                        <th>Tasks</th>
+                                        <th>Points</th>
+                                        <th>History</th>
+                                        <th>33% Compliance</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -79,10 +81,17 @@
                                         <td>
                                             <strong>{{ emp.username }}</strong>
                                             {% if emp.is_test_account %}
-                                                <span class="badge bg-warning text-dark">Test Account</span>
+                                                <span class="badge bg-warning text-dark">Test</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ emp.email }}</td>
+                                        <td>
+                                            {% if emp.is_paid %}
+                                                <span class="badge bg-success">{{ emp.employee_type }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ emp.employee_type }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ emp.email }}</small></td>
                                         <td>
                                             <span class="badge bg-info">{{ emp.task_count }}</span>
                                         </td>
@@ -93,16 +102,27 @@
                                             <span class="badge bg-secondary">{{ emp.history_count }}</span>
                                         </td>
                                         <td>
-                                            {% if emp.task_count > 0 %}
-                                                <span class="badge bg-success">Has Tasks</span>
+                                            {% if emp.is_compliant %}
+                                                <span class="badge bg-success">✅ {{ emp.completion_rate|floatformat:1 }}%</span>
+                                            {% elif emp.completion_rate > 0 %}
+                                                <span class="badge bg-warning text-dark">⚠️ {{ emp.completion_rate|floatformat:1 }}%</span>
                                             {% else %}
-                                                <span class="badge bg-light text-dark">No Tasks</span>
+                                                <span class="badge bg-danger">❌ 0%</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if emp.is_paid and emp.is_compliant %}
+                                                <span class="badge bg-success">💰 Paid & Compliant</span>
+                                            {% elif emp.is_paid %}
+                                                <span class="badge bg-warning text-dark">⏸️ Paid - Hold</span>
+                                            {% else %}
+                                                <span class="badge bg-info">📚 Practicing</span>
                                             {% endif %}
                                         </td>
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">
+                                        <td colspan="9" class="text-center text-muted">
                                             No employees with tasks found
                                         </td>
                                     </tr>
@@ -265,7 +285,7 @@ $(document).ready(function() {
     const totalEmployees = $('.employee-checkbox').length;
     if (totalEmployees === 0) {
         $('#employeeTable tbody').html(
-            '<tr><td colspan="7" class="text-center text-success py-4">' +
+            '<tr><td colspan="9" class="text-center text-success py-4">' +
             '<i class="fas fa-check-circle fa-3x mb-3"></i><br>' +
             '<h5>All tasks are already reset!</h5>' +
             '<p>No employees have tasks with points > 0</p>' +

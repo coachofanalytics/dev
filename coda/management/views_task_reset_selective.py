@@ -1,6 +1,11 @@
 """
 Selective Task Reset View
 Allows admins to select which employees should have their tasks reset
+
+Features:
+- Shows PAID vs PRACTICING employees
+- Checks 33% compliance rule
+- Filters for only employees who need reset (points > 0)
 """
 
 from django.shortcuts import render, redirect
@@ -9,6 +14,8 @@ from django.contrib import messages
 from django.db.models import Sum, Count, Q
 from django.contrib.auth import get_user_model
 from management.models import Task, TaskHistory
+from management.services.employee_compliance_service import EmployeeComplianceService
+from accounts.choices import UserCategory as CategoryChoices, ApplicantSubCategoryChoices
 from coda_project.task import dump_data
 from decimal import Decimal
 from unittest.mock import Mock
@@ -19,6 +26,29 @@ User = get_user_model()
 def is_admin_or_superuser(user):
     """Check if user is admin or superuser"""
     return user.is_authenticated and (user.is_admin or user.is_superuser or user.is_staff)
+
+
+def get_employee_type(employee):
+    """
+    Determine employee type for display.
+    
+    Returns: tuple (type_name, is_paid)
+    """
+    if employee.category == CategoryChoices.APPLICANT:
+        if employee.sub_category == ApplicantSubCategoryChoices.FULL_TIME:
+            return ("Full-Time", True)
+        elif employee.sub_category == ApplicantSubCategoryChoices.PART_TIME:
+            return ("Part-Time", False)
+        elif employee.sub_category == ApplicantSubCategoryChoices.CONTRACTOR:
+            return ("Contractor", True)
+        else:
+            return ("Applicant", False)
+    elif employee.category == CategoryChoices.STUDENT:
+        return ("Student", False)
+    elif hasattr(CategoryChoices, 'GENERAL_USER') and employee.category == CategoryChoices.GENERAL_USER:
+        return ("General User", False)
+    else:
+        return ("Other", False)
 
 
 @login_required
@@ -169,6 +199,12 @@ def get_employees_with_tasks(test_patterns):
     """
     Get all active staff employees with their task statistics.
     
+    Includes:
+    - Employee type (Full-time, Student, etc.)
+    - Paid status (Yes/No)
+    - 33% compliance check
+    - Only shows employees with points > 0
+    
     Args:
         test_patterns: List of username patterns to identify test accounts
         
@@ -176,6 +212,10 @@ def get_employees_with_tasks(test_patterns):
         List of employee dictionaries with task stats
     """
     employees_data = []
+    
+    # Initialize compliance service
+    compliance_service = EmployeeComplianceService()
+    target_month, target_year = compliance_service.get_current_target_month_year()
     
     # Get all active staff employees
     employees = User.objects.filter(
@@ -197,23 +237,41 @@ def get_employees_with_tasks(test_patterns):
         # Get history count
         history_count = TaskHistory.objects.filter(employee=employee).count()
         
+        # Determine employee type and paid status
+        employee_type, is_paid = get_employee_type(employee)
+        
+        # Check 33% compliance for previous month
+        compliance = compliance_service.check_33_percent_compliance(
+            employee, target_month, target_year
+        )
+        
         # Check if test account
         is_test = any(
             pattern.lower() in employee.username.lower() 
             for pattern in test_patterns
         )
         
-        # Auto-select if: has tasks AND has points > 0 AND not a test account
+        # Auto-select if:
+        # - Has tasks AND points > 0
+        # - Is a PAID employee (Full-time)
+        # - NOT a test account
+        # - Has history (is active)
         should_auto_select = (
             task_count > 0 and 
             total_points > 0 and 
-            not is_test
+            is_paid and  # NEW: Only auto-select paid employees
+            not is_test and
+            history_count > 0  # NEW: Has history (active employee)
         )
         
         employees_data.append({
             'id': employee.id,
             'username': employee.username,
             'email': employee.email,
+            'employee_type': employee_type,  # NEW
+            'is_paid': is_paid,  # NEW
+            'is_compliant': compliance['is_compliant'],  # NEW
+            'completion_rate': compliance['completion_rate'],  # NEW
             'task_count': task_count,
             'total_points': total_points,
             'history_count': history_count,
@@ -221,8 +279,12 @@ def get_employees_with_tasks(test_patterns):
             'auto_select': should_auto_select
         })
     
-    # Sort: non-test accounts first, then by username
-    employees_data.sort(key=lambda x: (x['is_test_account'], x['username']))
+    # Sort: paid first, then non-test accounts, then by username
+    employees_data.sort(key=lambda x: (
+        not x['is_paid'],  # Paid employees first
+        x['is_test_account'],  # Then non-test
+        x['username']  # Then alphabetically
+    ))
     
     return employees_data
 
