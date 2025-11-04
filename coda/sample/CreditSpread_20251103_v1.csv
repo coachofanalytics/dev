@@ -1,0 +1,5 @@
+﻿Credit Spread File - OptionsPlay,,,,,,,,,,,
+Symbol,Strategy,Type,Price,Sell Strike,Buy Strike,Expiry,Premium,Width,Prem/Width,IV Rank,Earnings Date
+XBI,Bullish,Put,109.39  $,109.00  $,102.00  $,12/19/2025,2.36  $,7.00  $,34%,14%,
+KO,Bullish,Put,67.78  $,67.50  $,65.00  $,12/19/2025,0.84  $,2.50  $,33.6%,20%,02/10/2026 (99) AM
+COP,Bearish,Call,88.62  $,90.00  $,95.00  $,12/19/2025,1.67  $,5.00  $,33.4%,24%,11/06/2025 (3) AM

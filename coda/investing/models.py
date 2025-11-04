@@ -3112,6 +3112,50 @@ class PositionBatch(TimeStampedModel):
         help_text="Was timeout notification sent?"
     )
     
+    # Real-time notification tracking (Phase 9: Real-time Client Approval)
+    whatsapp_notification_sent = models.BooleanField(
+        default=False,
+        help_text="Was WhatsApp notification sent?"
+    )
+    whatsapp_notification_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When WhatsApp notification was sent"
+    )
+    sms_notification_sent = models.BooleanField(
+        default=False,
+        help_text="Was SMS notification sent?"
+    )
+    sms_notification_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When SMS notification was sent"
+    )
+    
+    # Approval method tracking
+    APPROVAL_METHOD_CHOICES = [
+        ('whatsapp', 'WhatsApp Reply'),
+        ('sms', 'SMS Reply'),
+        ('portal', 'Client Portal'),
+        ('email', 'Email Link'),
+        ('phone', 'Phone Call'),
+    ]
+    approval_method = models.CharField(
+        max_length=20,
+        choices=APPROVAL_METHOD_CHOICES,
+        blank=True,
+        help_text="How client approved this batch"
+    )
+    
+    # Quick approval token (for WhatsApp/SMS replies)
+    approval_token = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        unique=True,
+        help_text="Token for quick approval via WhatsApp/SMS"
+    )
+    
     class Meta:
         verbose_name = "Position Batch"
         verbose_name_plural = "Position Batches"
@@ -3442,6 +3486,12 @@ class SuggestedPosition(TimeStampedModel):
         help_text="Staff comments, modifications, or rejection reasons"
     )
     
+    # System-generated notes (technical analysis, cross-validation, etc.)
+    notes = models.TextField(
+        blank=True,
+        help_text="System-generated notes (technical analysis, cross-validation, flow signals, etc.)"
+    )
+    
     # Link to created position (if approved and converted)
     created_position = models.OneToOneField(
         'OptionsPosition',
@@ -3546,11 +3596,15 @@ class OptionPlayRawData(TimeStampedModel):
     # Source tracking
     STRATEGY_TYPE_CHOICES = [
         ('credit_spread', 'Credit Spread'),
+        ('bull_put_spread', 'Bull Put Spread'),
+        ('bear_call_spread', 'Bear Call Spread'),
+        ('iron_condor', 'Iron Condor'),
         ('short_put', 'Short Put'),
         ('covered_call', 'Covered Call'),
+        ('short_call', 'Short Call'),
     ]
     strategy_type = models.CharField(
-        max_length=20,
+        max_length=30,  # Increased from 20 to fit 'bull_put_spread'
         choices=STRATEGY_TYPE_CHOICES,
         help_text="Type of position from CSV"
     )
@@ -3709,11 +3763,15 @@ class OptionPlayRawData(TimeStampedModel):
     @property
     def is_expired(self):
         """Check if position is past expiration"""
+        if not self.expiry:
+            return False
         return self.expiry < timezone.now().date()
     
     @property
     def calculated_dte(self):
         """Calculate current DTE"""
+        if not self.expiry:
+            return None
         return (self.expiry - timezone.now().date()).days
     
     def convert_to_suggestion(self) -> 'SuggestedPosition':

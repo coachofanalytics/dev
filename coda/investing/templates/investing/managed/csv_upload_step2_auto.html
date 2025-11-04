@@ -1,0 +1,562 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load investing_extras %}
+
+{% block title %}CSV Upload - Confirm & Filter{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="wizard-steps">
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Upload</div>
+        <div class="wizard-step active"><i class="fa fa-check-double"></i> Auto-Mapped</div>
+        <div class="wizard-step"><i class="fa fa-filter"></i> Filters & Import</div>
+        <div class="wizard-step"><i class="fa fa-check"></i> Complete</div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fa fa-robot"></i> Step 2: Auto-Detected Fields & Filters</h4>
+        </div>
+        <div class="card-body">
+            <!-- File Info -->
+            <div class="alert alert-success">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>File:</strong> {{ filename }}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Rows:</strong> {{ total_rows }}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Strategy:</strong> 
+                        <span class="badge badge-primary">{{ strategy_type|upper }}</span>
+                    </div>
+                    <div class="col-md-3">
+                        {% if skipped_rows > 0 %}
+                        <strong>Auto-Detected:</strong> 
+                        <span class="badge badge-success">
+                            <i class="fa fa-check-circle"></i> Skipped {{ skipped_rows }} title row{{ skipped_rows|pluralize }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Mapped:</strong>
+                        <span class="badge badge-info">{{ field_mapping|length }} columns</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cross-Validation Info (if additional files uploaded) -->
+            {% if cv_enabled %}
+            <div class="alert alert-warning mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-1 text-center">
+                        <i class="fa fa-gem fa-3x text-warning"></i>
+                    </div>
+                    <div class="col-md-11">
+                        <h5 class="mb-2">💎 Cross-Validation Enabled!</h5>
+                        <p class="mb-2">
+                            <strong>{{ cv_symbol_count }} unique symbols</strong> detected from additional files. 
+                            Positions appearing in <strong>MULTIPLE</strong> files will receive <strong class="text-success">+50 bonus points</strong> = HIGH CONVICTION!
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Primary File:</strong> {{ filename }} ({{ total_rows }} positions)
+                            </div>
+                            {% for cv_file in cv_files %}
+                            <div class="col-md-6">
+                                <strong>Additional File {{ forloop.counter }}:</strong> {{ cv_file.name }} ({{ cv_file.symbols }} symbols)
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <hr class="my-2">
+                        <p class="small mb-0">
+                            <strong>Example:</strong> If AAPL appears in both your Short Puts AND Covered Calls, it means OptionPlay has confidence in AAPL's price range → lower risk, higher probability!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Auto-Mapped Fields Summary -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5><i class="fa fa-magic"></i> Auto-Mapped Fields</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>CSV Column</th>
+                                <th>Maps To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for csv_col, model_field in field_mapping.items %}
+                                {% if model_field != 'skip' %}
+                                <tr>
+                                    <td>{{ csv_col }}</td>
+                                    <td><span class="badge badge-success">{{ model_field }}</span></td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5><i class="fa fa-chart-bar"></i> Data Statistics</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Avg Premium:</th>
+                            <td>${{ stats.avg_premium|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Avg IV Rank:</th>
+                            <td>{{ stats.avg_iv|floatformat:1 }}%</td>
+                        </tr>
+                        <tr>
+                            <th>Avg DTE:</th>
+                            <td>{{ stats.avg_dte|floatformat:0 }} days</td>
+                        </tr>
+                        <tr>
+                            <th>Unique Symbols:</th>
+                            <td>{{ stats.unique_symbols }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Quality Filters Form -->
+            <form method="post" action="{% url 'investing:csv_import_and_score' %}">
+                {% csrf_token %}
+                
+                <h5 class="border-top pt-3"><i class="fa fa-filter"></i> Quality Filters</h5>
+                
+                <!-- Filter Preset Selector -->
+                <div class="alert alert-info">
+                    <div class="form-group mb-2">
+                        <label><strong>🎯 Filter Preset (Industry Standard)</strong></label>
+                        <select class="form-control" id="filter_preset">
+                            <option value="balanced">✓ Balanced (Recommended) - 65-80% win rate</option>
+                            <option value="conservative">Conservative - 80%+ win rate, lower returns</option>
+                            <option value="aggressive">Aggressive - Higher returns, more risk</option>
+                            <option value="custom">Custom - Set your own values</option>
+                        </select>
+                    </div>
+                    <small id="preset_description" style="display: block; margin-top: 8px;"></small>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Minimum Premium</label>
+                            <input type="number" name="min_premium" id="min_premium" class="form-control" value="2.00" step="0.01" min="0">
+                            <small class="text-muted">Suggested: $2.00+ | Your avg: ${{ stats.avg_premium|floatformat:2 }}</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Minimum IV Rank (Excel decimal format)</label>
+                            <input type="number" name="min_iv" id="min_iv" class="form-control" value="0.35" step="0.01" min="0" max="1">
+                            <small class="text-muted">Excel format: 0.35 = 35% | Your avg: {{ stats.avg_iv|floatformat:2 }} ({{ stats.avg_iv_pct|floatformat:0 }}%)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Maximum DTE (Days to Expiration)</label>
+                            <input type="number" name="max_dte" id="max_dte" class="form-control" value="35" step="1" min="1">
+                            <small class="text-muted">Suggested: 25-35 days | Your avg: {{ stats.avg_dte|floatformat:0 }} days</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Minimum Return on Capital (ROC, decimal)</label>
+                            <input type="number" name="min_roc" id="min_roc" class="form-control" value="0.40" step="0.05" min="0" max="2">
+                            <small class="text-muted">
+                                <strong>Screening Estimate:</strong> 0.40 = 40% ROC. (Premium × 100) / Capital.<br>
+                                <em>Example: $3.65/share ($365) ÷ $500 spread = 73% ROC ✅</em><br>
+                                ⚠️ Estimates for client review - actual execution prices vary
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Suggested Spread Width (points)</label>
+                            <select name="spread_width" id="spread_width" class="form-control">
+                                <option value="auto" selected>Auto (Based on Strike)</option>
+                                <option value="3">3 points (tight)</option>
+                                <option value="5">5 points (balanced)</option>
+                                <option value="7">7 points (medium)</option>
+                                <option value="10">10 points (wide)</option>
+                            </select>
+                            <small class="text-muted">For converting to credit spreads. Auto: 5 points for most strikes</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Maximum Positions to Import</label>
+                            <input type="number" name="max_positions" id="max_positions" class="form-control" value="12" step="1" min="1" max="100">
+                            <small class="text-muted">Limit: 1-100 positions ({{ total_rows }} available)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Symbol Filter (Optional)</label>
+                            <input type="text" name="symbol_filter" class="form-control" placeholder="AAPL,MSFT,GOOGL">
+                            <small class="text-muted">
+                                Leave blank for all. Top symbols:
+                                {% for symbol in stats.symbols_list|slice:":8" %}
+                                    <span class="badge badge-secondary">{{ symbol }}</span>
+                                {% endfor %}
+                            </small>
+                        </div>
+                        
+                        <h6 class="mt-3">Data Management</h6>
+                        
+                        <div class="alert alert-info mb-3">
+                            <strong>💡 Data Management Strategy:</strong><br>
+                            <div class="ml-3 mt-2">
+                                <strong>📦 Raw Data:</strong> {{ existing_raw_total }} (just CSV import data)<br>
+                                <strong>✨ Suggested Positions:</strong> {{ existing_suggested_total }} (AI suggestions awaiting review)<br>
+                                <strong class="text-success">🎯 Client Positions: Never deleted</strong> (your real approved trades are safe!)
+                            </div>
+                        </div>
+                        
+                        <div class="custom-control custom-radio">
+                            <input type="radio" class="custom-control-input" id="import_mode_replace" name="import_mode" value="replace" checked>
+                            <label class="custom-control-label" for="import_mode_replace">
+                                <strong>🔄 Replace All (Recommended)</strong>
+                                <span class="badge badge-success">Fresh Suggestions</span>
+                                <br><small class="text-muted">Delete {{ existing_raw_total }} raw + {{ existing_suggested_total }} stale suggestions, import {{ total_rows }} fresh from market</small>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-radio mt-2">
+                            <input type="radio" class="custom-control-input" id="import_mode_add" name="import_mode" value="add">
+                            <label class="custom-control-label" for="import_mode_add">
+                                <strong>➕ Add to Existing</strong>
+                                <br><small class="text-warning">⚠️ Keep all {{ existing_suggested_total }} old suggestions + add {{ total_rows }} new (database will grow!)</small>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-radio mt-2">
+                            <input type="radio" class="custom-control-input" id="import_mode_cleanup" name="import_mode" value="cleanup">
+                            <label class="custom-control-label" for="import_mode_cleanup">
+                                <strong>🧹 Smart Cleanup + Import</strong>
+                                <br><small class="text-muted">Delete suggestions >7 days old, keep recent, add {{ total_rows }} new</small>
+                            </label>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>AI Processing</h6>
+                        
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="auto_convert" name="auto_convert" checked>
+                            <label class="custom-control-label" for="auto_convert">
+                                <strong>Auto-convert to Suggested Positions</strong>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-control custom-checkbox mt-2">
+                            <input type="checkbox" class="custom-control-input" id="auto_score" name="auto_score" checked>
+                            <label class="custom-control-label" for="auto_score">
+                                <strong>🤖 AI Score Positions</strong>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tier 2: Final Selection Filters (Collapsible, Advanced) -->
+                <div class="card mt-4 border-info">
+                    <div class="card-header bg-info text-white" style="cursor: pointer;" data-toggle="collapse" data-target="#tier2Filters">
+                        <h5 class="mb-0">
+                            <i class="fa fa-trophy"></i> Tier 2: Final Selection (Advanced - Optional)
+                            <small class="float-right"><i class="fa fa-chevron-down"></i></small>
+                        </h5>
+                        <small>Filter 60+ positions → Select top 10-25 for client review</small>
+                    </div>
+                    <div id="tier2Filters" class="collapse">
+                        <div class="card-body">
+                            <div class="alert alert-info mb-3">
+                                <strong>💡 How Tier 2 Works:</strong><br>
+                                Tier 1 filters find <em>quality positions</em> (typically 50-100).<br>
+                                Tier 2 narrows to <em>best positions for client approval</em> (10-25).<br>
+                                Uses hard filters + AI ranking for final selection.
+                            </div>
+                            
+                            <div class="custom-control custom-switch mb-3">
+                                <input type="checkbox" class="custom-control-input" id="tier2_enabled" name="tier2_enabled">
+                                <label class="custom-control-label" for="tier2_enabled">
+                                    <strong>🎯 Enable Tier 2 Final Selection</strong>
+                                </label>
+                            </div>
+                            
+                            <div id="tier2Options" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="border-top pt-2">Risk Reduction Filters</h6>
+                                        
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="exclude_earnings" name="exclude_earnings" checked>
+                                            <label class="custom-control-label" for="exclude_earnings">
+                                                <strong>📅 Exclude Earnings Positions</strong>
+                                                <br><small class="text-muted">Avoid positions with earnings in DTE window (safer)</small>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="custom-control custom-checkbox mt-2">
+                                            <input type="checkbox" class="custom-control-input" id="blue_chip_only" name="blue_chip_only" checked>
+                                            <label class="custom-control-label" for="blue_chip_only">
+                                                <strong>🏆 Blue Chip Companies Only</strong>
+                                                <br><small class="text-muted">FAANG, Mag 7, S&P 100 stocks (~80 symbols)</small>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="form-group mt-3">
+                                            <label>Stock Price Range (Liquidity)</label>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <input type="number" name="min_stock_price" class="form-control" value="40" step="10" min="10">
+                                                    <small class="text-muted">Min: $40</small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="number" name="max_stock_price" class="form-control" value="600" step="50" min="50">
+                                                    <small class="text-muted">Max: $600</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Minimum Distance OTM (Safety Margin, decimal)</label>
+                                            <input type="number" name="min_distance_otm" class="form-control" value="0.03" step="0.01" min="0" max="0.20">
+                                            <small class="text-muted">0.03 = 3% OTM (strike 3% below stock for puts)</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h6 class="border-top pt-2">Final Selection Method</h6>
+                                        
+                                        <div class="form-group">
+                                            <label>Ranking/Sorting Method</label>
+                                            <select name="tier2_ranking" class="form-control">
+                                                <option value="ai_score">🤖 AI Score (6-factor algorithm) - Recommended</option>
+                                                <option value="roc">💰 ROC (Capital Efficiency)</option>
+                                                <option value="premium">💵 Premium (Highest Income)</option>
+                                                <option value="balanced">⚖️ Balanced (ROC + Premium + IV)</option>
+                                            </select>
+                                            <small class="text-muted">
+                                                AI Score considers: historical win rate, IV rank, greeks, risk/reward, earnings, liquidity
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Max Final Positions (for Client Review)</label>
+                                            <input type="number" name="tier2_max_positions" class="form-control" value="12" step="1" min="5" max="25">
+                                            <small class="text-muted">Select top 5-25 positions after ranking (recommended: 10-15)</small>
+                                        </div>
+                                        
+                                        <div class="alert alert-success mt-3">
+                                            <strong>📊 Expected Flow:</strong><br>
+                                            <small>
+                                                {{ total_rows }} rows<br>
+                                                → Tier 1: ~60 quality positions<br>
+                                                → Tier 2: Top 10-15 blue chip positions<br>
+                                                → Client approval & execution
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Upload Different File
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg" id="importBtn">
+                        <i class="fa fa-play"></i> Import & Score {{ total_rows }} Positions
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Progress indicator -->
+            <div id="progressIndicator" style="display: none;" class="mt-4">
+                <div class="alert alert-info">
+                    <h5><i class="fa fa-spinner fa-spin"></i> Processing...</h5>
+                    <p id="progressText">Importing and scoring positions...</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        This may take 30-60 seconds for large files. Check console (F12) for progress.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+</style>
+
+<script>
+console.log('🔧 CSV Upload Wizard - Step 2 Auto (Streamlined)');
+
+// Filter Presets Configuration (Decimal Format - Excel Compatible)
+const filterPresets = {
+    conservative: {
+        name: 'Conservative',
+        description: '🛡️ <strong>Conservative:</strong> Highest win rate (~80%). Focus on quality over returns.<br>• IV Rank ≥ 0.45 (45% in Excel)<br>• Premium ≥ $2.50<br>• ROC ≥ 0.50 (50% efficiency)<br>• Spread Width: Auto (5-7 points)<br>• DTE 30-35 days<br>• Max 10 positions<br><br><em>Example: $2.50 premium on $500 spread = 0.50 ROC ✅</em>',
+        values: {
+            min_premium: 2.50,
+            min_iv: 0.45,  // Excel decimal: 0.45 = 45%
+            max_dte: 35,
+            min_roc: 0.50,  // Decimal: 0.50 = 50% ROC
+            spread_width: 'auto',
+            max_positions: 10
+        }
+    },
+    balanced: {
+        name: 'Balanced (Recommended)',
+        description: '⚖️ <strong>Balanced:</strong> Best capital efficiency for client approval.<br>• IV Rank ≥ 0.35 (35% in Excel)<br>• Premium ≥ $2.00/share ($200 total)<br>• ROC ≥ 0.40 (40% efficiency)<br>• Spread Width: Auto (5 points)<br>• DTE 25-35 days<br>• Max 12 positions<br><br><em>Example: $4/share ($400) on $700 spread = 57% ROC ✅</em><br><small>⚠️ Estimates for screening - actual prices vary at execution</small>',
+        values: {
+            min_premium: 2.00,
+            min_iv: 0.35,  // Excel decimal: 0.35 = 35%
+            max_dte: 35,
+            min_roc: 0.40,  // Decimal: 0.40 = 40% ROC
+            spread_width: 'auto',
+            max_positions: 12
+        }
+    },
+    aggressive: {
+        name: 'Aggressive',
+        description: '🚀 <strong>Aggressive:</strong> Maximum capital efficiency. Accept higher capital if returns justify it.<br>• IV Rank ≥ 0.30 (30% in Excel)<br>• Premium ≥ $1.50<br>• ROC ≥ 0.35 (35% efficiency)<br>• Spread Width: Auto (tighter OK)<br>• DTE 25-35 days<br>• Max 15 positions<br><br><em>Note: All values in Excel decimal format (0.30 = 30%)</em>',
+        values: {
+            min_premium: 1.50,
+            min_iv: 0.30,  // Excel decimal: 0.30 = 30%
+            max_dte: 35,
+            min_roc: 0.35,  // Decimal: 0.35 = 35% ROC
+            spread_width: 'auto',
+            max_positions: 15
+        }
+    },
+    custom: {
+        name: 'Custom',
+        description: '🔧 <strong>Custom:</strong> Set your own filter values. Remember: Use Excel decimal format (0.35 = 35%).',
+        values: null  // Don't change values
+    }
+};
+
+// Handle preset selection
+document.getElementById('filter_preset').addEventListener('change', function() {
+    const preset = this.value;
+    const config = filterPresets[preset];
+    
+    console.log(`📊 Filter Preset Selected: ${config.name}`);
+    
+    // Update description
+    document.getElementById('preset_description').innerHTML = config.description;
+    
+    // Update form values if not custom
+    if (config.values) {
+        document.getElementById('min_premium').value = config.values.min_premium;
+        document.getElementById('min_iv').value = config.values.min_iv;
+        document.getElementById('max_dte').value = config.values.max_dte;
+        document.getElementById('min_roc').value = config.values.min_roc;
+        document.getElementById('spread_width').value = config.values.spread_width;
+        document.getElementById('max_positions').value = config.values.max_positions;
+        
+        console.log('✅ Filter values updated:', config.values);
+    }
+});
+
+// Initialize with balanced preset
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('filter_preset').dispatchEvent(new Event('change'));
+});
+
+// Track manual changes (switch to custom if user modifies)
+let manualChange = false;
+['min_premium', 'min_iv', 'max_dte', 'min_roc', 'spread_width', 'max_positions'].forEach(function(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.addEventListener('input', function() {
+            if (!manualChange && document.getElementById('filter_preset').value !== 'custom') {
+                console.log('👤 Manual change detected - switching to Custom preset');
+                manualChange = true;
+                document.getElementById('filter_preset').value = 'custom';
+                document.getElementById('preset_description').innerHTML = filterPresets.custom.description;
+                manualChange = false;
+            }
+        });
+    }
+});
+
+// Tier 2 toggle
+document.getElementById('tier2_enabled').addEventListener('change', function() {
+    const tier2Options = document.getElementById('tier2Options');
+    if (this.checked) {
+        tier2Options.style.display = 'block';
+        console.log('✅ Tier 2 Final Selection ENABLED');
+    } else {
+        tier2Options.style.display = 'none';
+        console.log('⏭️  Tier 2 Final Selection DISABLED');
+    }
+});
+
+// Form submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    console.log('='.repeat(80));
+    console.log('🚀 IMPORT & SCORE STARTED (Two-Tier Filtering)');
+    console.log('='.repeat(80));
+    
+    const preset = document.getElementById('filter_preset').value;
+    console.log('📊 Tier 1 Preset:', filterPresets[preset].name);
+    console.log('Tier 1 Filters:', {
+        min_premium: document.getElementById('min_premium').value,
+        min_iv: document.getElementById('min_iv').value,
+        max_dte: document.getElementById('max_dte').value,
+        min_roc: document.getElementById('min_roc').value,
+        max_positions: document.getElementById('max_positions').value
+    });
+    
+    const tier2Enabled = document.getElementById('tier2_enabled').checked;
+    if (tier2Enabled) {
+        console.log('📊 Tier 2 ENABLED:', {
+            exclude_earnings: document.getElementById('exclude_earnings').checked,
+            blue_chip_only: document.getElementById('blue_chip_only').checked,
+            ranking: document.querySelector('[name="tier2_ranking"]').value,
+            max_final: document.querySelector('[name="tier2_max_positions"]').value
+        });
+    } else {
+        console.log('⏭️  Tier 2 DISABLED');
+    }
+    
+    document.getElementById('progressIndicator').style.display = 'block';
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('importBtn').innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+    
+    console.log('⏳ Server processing {{ total_rows }} positions...');
+});
+</script>
+{% endblock %}
+

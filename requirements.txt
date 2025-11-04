@@ -48,6 +48,7 @@ pandas==2.2.3  # 73MB - Required for OptionPlay scraper
 beautifulsoup4==4.12.2  # HTML parsing for web scraping
 lxml==4.9.3  # Fast XML/HTML parser
 playwright==1.40.0  # Browser automation for OptionPlay scraping
+yfinance==0.2.32  # FREE stock data - RSI, MA, volume for technical confirmation
 
 # File Processing
 python-docx==0.8.11

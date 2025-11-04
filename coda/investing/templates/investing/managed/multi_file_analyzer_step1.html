@@ -1,0 +1,163 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Multi-File Flow Analyzer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fa fa-chart-line"></i> Multi-File Flow Analyzer</h4>
+            <p class="mb-0 small">Upload OptionPlay + Unusual Whales CSVs for instant cross-validation & timing signals</p>
+        </div>
+        <div class="card-body">
+            <!-- Instructions -->
+            <div class="alert alert-info">
+                <h5><i class="fa fa-info-circle"></i> How It Works</h5>
+                <ol class="mb-0">
+                    <li>Download CSVs from OptionPlay (3 files) + Unusual Whales (4 files)</li>
+                    <li>Upload all 7 files here at once</li>
+                    <li>System cross-references symbols and generates entry signals</li>
+                    <li>Get ranked list with 🟢 GREEN (enter), 🟡 YELLOW (maybe), 🔴 RED (skip)</li>
+                </ol>
+                <hr>
+                <p class="mb-0"><strong>💡 Minimum:</strong> At least 1 OptionPlay file required. Unusual Whales files optional but recommended!</p>
+            </div>
+            
+            <!-- Upload Form -->
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                
+                <!-- OptionPlay Files -->
+                <h5 class="border-top pt-3"><i class="fa fa-layer-group"></i> OptionPlay Files (At Least 1 Required)</h5>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="font-weight-bold">Short Puts:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input optionplay-file" id="shortputs" name="optionplay_shortputs" accept=".csv,.xlsx,.xls">
+                            <label class="custom-file-label" for="shortputs">Choose file...</label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="font-weight-bold">Covered Calls:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input optionplay-file" id="coveredcalls" name="optionplay_coveredcalls" accept=".csv,.xlsx,.xls">
+                            <label class="custom-file-label" for="coveredcalls">Choose file...</label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="font-weight-bold">Credit Spreads:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input optionplay-file" id="creditspreads" name="optionplay_creditspreads" accept=".csv,.xlsx,.xls">
+                            <label class="custom-file-label" for="creditspreads">Choose file...</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Unusual Whales Files -->
+                <h5 class="border-top pt-3"><i class="fa fa-water"></i> Unusual Whales Files (Optional - Highly Recommended!)</h5>
+                <p class="text-muted small">Download these from your Unusual Whales dashboard (Platform subscription)</p>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="font-weight-bold">Options Flow:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input whales-file" id="optionsflow" name="whales_options_flow" accept=".csv">
+                            <label class="custom-file-label" for="optionsflow">Choose file...</label>
+                        </div>
+                        <small class="text-muted">Options → Live Options Flow (last 24hr, premium >$100k)</small>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="font-weight-bold">Dark Pool:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input whales-file" id="darkpool" name="whales_dark_pool" accept=".csv">
+                            <label class="custom-file-label" for="darkpool">Choose file...</label>
+                        </div>
+                        <small class="text-muted">Market → Dark Pool (last 24hr, top 50)</small>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="font-weight-bold">Lit Flow:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input whales-file" id="litflow" name="whales_lit_flow" accept=".csv">
+                            <label class="custom-file-label" for="litflow">Choose file...</label>
+                        </div>
+                        <small class="text-muted">Market → Lit Flow (last 24hr, top 50)</small>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="font-weight-bold">Unusual Activity:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input whales-file" id="unusualactivity" name="whales_unusual_activity" accept=".csv">
+                            <label class="custom-file-label" for="unusualactivity">Choose file...</label>
+                        </div>
+                        <small class="text-muted">Options → Unusual Activity (today, top 50)</small>
+                    </div>
+                </div>
+                
+                <!-- File Counter -->
+                <div class="alert alert-secondary text-center" id="fileCounter">
+                    <strong>Files Selected:</strong> <span id="fileCount">0</span> / 7
+                    <span id="optionplayCount" class="ml-3">(OptionPlay: 0)</span>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                        <i class="fa fa-chart-line"></i> Analyze Files & Generate Signals
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update file input labels and counters
+document.querySelectorAll('.custom-file-input').forEach(function(input) {
+    input.addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            var fileName = e.target.files[0].name;
+            var label = e.target.nextElementSibling;
+            label.innerHTML = '<i class="fa fa-check-circle text-success"></i> ' + fileName;
+        }
+        updateFileCounter();
+    });
+});
+
+function updateFileCounter() {
+    var totalCount = 0;
+    var optionplayCount = 0;
+    
+    document.querySelectorAll('.custom-file-input').forEach(function(input) {
+        if (input.files.length > 0) {
+            totalCount++;
+            if (input.classList.contains('optionplay-file')) {
+                optionplayCount++;
+            }
+        }
+    });
+    
+    document.getElementById('fileCount').textContent = totalCount;
+    document.getElementById('optionplayCount').textContent = '(OptionPlay: ' + optionplayCount + ')';
+    
+    var submitBtn = document.getElementById('submitBtn');
+    if (optionplayCount > 0) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-secondary');
+        submitBtn.classList.add('btn-success');
+        submitBtn.innerHTML = '<i class="fa fa-chart-line"></i> Analyze ' + totalCount + ' Files & Generate Signals';
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.remove('btn-success');
+        submitBtn.classList.add('btn-secondary');
+        submitBtn.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Upload at least 1 OptionPlay file';
+    }
+}
+</script>
+{% endblock %}
+

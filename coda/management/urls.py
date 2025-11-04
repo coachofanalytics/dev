@@ -14,6 +14,9 @@ from management.views_enhanced_dashboard import (
                         request_help, report_issue, load_more_tasks, submit_evidence,
                         task_leaderboard, task_history_view, tier_analytics
                      )
+# Import task reset selective views
+from management.views_task_reset_selective import reset_tasks_select, reset_all_tasks
+
 # Import insights views from views directory (temporarily commented for testing)
 # from management.views import insights_views
 
@@ -43,7 +46,10 @@ urlpatterns = [
     path("confirm_employee_contract/", views.confirm_employee_contract, name="confirm_employee_contract"),
     path('tasks/', TaskListView.as_view(), name='tasks'),
     path('payroll/',views.payslip, name='user_pay'),
-    path("reset_tasks/",views.reset_task,name="reset_tasks"),
+    # Updated task reset - selective interface
+    path("reset_tasks/select/", reset_tasks_select, name="reset_tasks_select"),
+    # Old reset_tasks redirects to new interface
+    path("reset_tasks/", reset_all_tasks, name="reset_tasks"),
     path('score_report/', views.score_report, name='score_report'),
     path('tasks/<int:pk>/', TaskDetailView.as_view(), name='taskdetail'),
     path('newevidence/<int:taskid>', views.newevidence, name='new_evidence'),

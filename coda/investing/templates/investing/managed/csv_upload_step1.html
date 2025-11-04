@@ -1,0 +1,350 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Upload OptionPlay CSV - Step 1{% endblock %}
+
+{% block extra_css %}
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+    position: relative;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+.upload-zone {
+    border: 3px dashed #007bff;
+    border-radius: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.upload-zone:hover {
+    background: #e7f3ff;
+    border-color: #0056b3;
+}
+.upload-zone.dragover {
+    background: #d4edff;
+    border-color: #0056b3;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Wizard Steps -->
+    <div class="wizard-steps">
+        <div class="wizard-step active">
+            <i class="fa fa-upload"></i> Upload
+        </div>
+        <div class="wizard-step">
+            <i class="fa fa-magic"></i> Auto-Map
+        </div>
+        <div class="wizard-step">
+            <i class="fa fa-filter"></i> Filter & Import
+        </div>
+        <div class="wizard-step">
+            <i class="fa fa-trophy"></i> Complete
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fa fa-upload"></i> Step 1: Upload OptionPlay File</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Instructions -->
+                    <div class="alert alert-info">
+                        <h5><i class="fa fa-info-circle"></i> Supported File Types</h5>
+                        <ul class="mb-0">
+                            <li><strong>Excel Files</strong> - .xlsx, .xls (recommended)</li>
+                            <li><strong>CSV Files</strong> - .csv (comma-separated)</li>
+                        </ul>
+                        <hr>
+                        <h6>Supported Position Types:</h6>
+                        <ul class="mb-0">
+                            <li><strong>Credit Spreads</strong> - Bull/Bear put/call spreads</li>
+                            <li><strong>Short Puts</strong> - Cash-secured put positions</li>
+                            <li><strong>Covered Calls</strong> - Covered call positions</li>
+                        </ul>
+                        <hr>
+                        <p class="mb-2"><strong>💎 NEW: Technical Analysis Integration!</strong></p>
+                        <p class="small mb-0">
+                            Each position now includes <strong>RSI, Moving Averages, Volume</strong> analysis for better entry timing!
+                        </p>
+                    </div>
+                    
+                    <!-- Upload Form -->
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        
+                        <!-- Primary File (Required) -->
+                        <div class="mb-4">
+                            <label class="font-weight-bold mb-2">Primary File (Required):</label>
+                            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFile').click()">
+                                <i class="fa fa-cloud-upload fa-3x text-primary mb-2"></i>
+                                <h6>Drag & Drop Excel or CSV File Here</h6>
+                                <p class="text-muted small mb-0">or click to browse</p>
+                                <input type="file" name="csv_file" id="csvFile" accept=".csv,.xlsx,.xls" style="display: none;" required>
+                                <div id="fileName" class="mt-2 text-success" style="display: none;">
+                                    <i class="fa fa-file-csv"></i> <span id="fileNameText"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Optional Files for Cross-Validation -->
+                        <div class="alert alert-warning mb-3">
+                            <strong>💎 Optional: Cross-Validation (Recommended for $30k+ capital)</strong>
+                            <p class="small mb-0 mt-2">Upload 1-2 additional OptionPlay files to find symbols in BOTH lists = HIGH CONVICTION! 
+                            System will auto-detect overlaps and boost scores.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="small text-muted">Additional OptionPlay File 1 (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="csvFile2" name="csv_file_2" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="csvFile2">Choose file...</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small text-muted">Additional OptionPlay File 2 (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="csvFile3" name="csv_file_3" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="csvFile3">Choose file...</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Unusual Whales Files (Optional) -->
+                        <div class="alert alert-info mb-3 mt-4">
+                            <strong>⚡ Optional: Unusual Whales Flow Data (Timing Signals)</strong>
+                            <p class="small mb-0 mt-2">Upload manually downloaded Unusual Whales files for entry timing (buy/sell flow detection). 
+                            These files help identify when to enter positions based on institutional activity.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Options Flow (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="whalesFlow" name="whales_flow" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="whalesFlow">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Institutional call/put buying</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Dark Pool (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="whalesDarkPool" name="whales_dark_pool" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="whalesDarkPool">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Institutional stock accumulation</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Lit Flow (Optional):</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="whalesLitFlow" name="whales_lit_flow" accept=".csv,.xlsx,.xls">
+                                    <label class="custom-file-label" for="whalesLitFlow">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Market sentiment</small>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                <i class="fa fa-arrow-right"></i> Next: Preview & Map Fields
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Help Text -->
+                    <div class="mt-4">
+                        <h6>Expected Format:</h6>
+                        <small class="text-muted">
+                            <strong>Required columns:</strong> Symbol, Premium, Expiry, DTE<br>
+                            <strong>Recommended:</strong> IV Rank, Strike Price(s), Returns<br>
+                            <strong>📊 Excel files:</strong> Will auto-detect headers and skip title rows<br>
+                            <strong>Headers will be mapped in next step</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const uploadZone = document.getElementById('uploadZone');
+const csvFile = document.getElementById('csvFile');
+const submitBtn = document.getElementById('submitBtn');
+const fileName = document.getElementById('fileName');
+const fileNameText = document.getElementById('fileNameText');
+
+// Debug logging
+console.log('🔧 CSV Upload Wizard - Step 1 Initialized');
+console.log('Upload zone:', uploadZone);
+console.log('File input:', csvFile);
+
+// File selection handler for primary file
+csvFile.addEventListener('change', function(e) {
+    handleFileSelection(this, 'fileName', 'fileNameText');
+    updateSubmitButton();
+});
+
+// File selection handlers for optional files
+document.getElementById('csvFile2').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+document.getElementById('csvFile3').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+// Unusual Whales file handlers
+document.getElementById('whalesFlow').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+document.getElementById('whalesDarkPool').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+document.getElementById('whalesLitFlow').addEventListener('change', function(e) {
+    handleFileSelection(this, null, null);
+    updateSubmitButton();
+});
+
+function handleFileSelection(input, displayDiv, displayText) {
+    if (input.files.length > 0) {
+        const file = input.files[0];
+        
+        // Validate file type
+        const validExtensions = ['.csv', '.xlsx', '.xls'];
+        const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        
+        if (!hasValidExtension) {
+            alert('Please select a CSV (.csv) or Excel (.xlsx, .xls) file');
+            input.value = '';
+            return;
+        }
+        
+        // Show file info for primary file
+        if (displayDiv && displayText) {
+            const displayElement = document.getElementById(displayDiv);
+            const textElement = document.getElementById(displayText);
+            textElement.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+            displayElement.style.display = 'block';
+        } else {
+            // Update custom file label for optional files
+            const label = input.nextElementSibling;
+            label.innerHTML = '<i class="fa fa-check-circle text-success"></i> ' + file.name;
+        }
+    }
+}
+
+function updateSubmitButton() {
+    const primaryFile = document.getElementById('csvFile').files.length > 0;
+    const file2 = document.getElementById('csvFile2').files.length > 0;
+    const file3 = document.getElementById('csvFile3').files.length > 0;
+    
+    const additionalCount = (file2 ? 1 : 0) + (file3 ? 1 : 0);
+    
+    if (primaryFile) {
+        submitBtn.disabled = false;
+        if (additionalCount > 0) {
+            submitBtn.innerHTML = '<i class="fa fa-arrow-right"></i> Next: Analyze ' + (1 + additionalCount) + ' Files & Cross-Validate';
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-success');
+        } else {
+            submitBtn.innerHTML = '<i class="fa fa-arrow-right"></i> Next: Preview & Map Fields';
+            submitBtn.classList.remove('btn-success');
+            submitBtn.classList.add('btn-primary');
+        }
+    } else {
+        submitBtn.disabled = true;
+    }
+}
+
+// Drag & drop handlers
+uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('dragover');
+    console.log('📂 File dragged over upload zone');
+});
+
+uploadZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    console.log('📂 File dragged away from upload zone');
+});
+
+uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    
+    console.log('📥 File dropped:', e.dataTransfer.files);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        const file = files[0];
+        console.log('📥 Dropped file:', file.name, '(' + (file.size / 1024).toFixed(2) + ' KB)');
+        
+        const validExtensions = ['.csv', '.xlsx', '.xls'];
+        const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        
+        if (hasValidExtension) {
+            csvFile.files = files;
+            const event = new Event('change');
+            csvFile.dispatchEvent(event);
+        } else {
+            console.error('❌ Invalid file type dropped:', file.name);
+            alert('Please drop a CSV (.csv) or Excel (.xlsx, .xls) file');
+        }
+    } else {
+        console.warn('⚠️ No files dropped');
+    }
+});
+
+// Form submission debug
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    console.log('🚀 Form submission started');
+    console.log('📤 Uploading file:', csvFile.files[0].name);
+    console.log('📊 File size:', (csvFile.files[0].size / 1024).toFixed(2), 'KB');
+    
+    // Show loading indicator
+    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Uploading...';
+    submitBtn.disabled = true;
+    
+    console.log('⏳ Please wait while file is being uploaded and processed...');
+});
+
+// Page load complete
+console.log('✅ CSV Upload Wizard ready for file selection');
+</script>
+{% endblock %}
+

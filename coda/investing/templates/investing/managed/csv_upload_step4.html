@@ -1,0 +1,314 @@
+{% extends "main/base_templates/new_base.html" %}
+
+{% block title %}CSV Upload - Complete{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="wizard-steps">
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Upload</div>
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Auto-Map</div>
+        <div class="wizard-step completed"><i class="fa fa-check"></i> Filter & Import</div>
+        <div class="wizard-step active"><i class="fa fa-trophy"></i> Complete</div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fa fa-check-circle"></i> Import Complete!</h4>
+        </div>
+        <div class="card-body">
+            <!-- Cleanup Summary (if applicable) -->
+            {% if deleted_count > 0 or archived_count > 0 %}
+            <div class="alert alert-warning">
+                <h5><i class="fa fa-broom"></i> Data Cleanup Performed</h5>
+                {% if deleted_count > 0 %}
+                <p class="mb-0"><strong>🗑️ Deleted:</strong> {{ deleted_count }} old positions (Replace mode)</p>
+                {% endif %}
+                {% if archived_count > 0 %}
+                <p class="mb-0"><strong>🧹 Archived:</strong> {{ archived_count }} expired positions (Cleanup mode)</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Two-Tier Filter Flow Summary -->
+            {% if tier2_enabled %}
+            <div class="alert alert-primary">
+                <h5><i class="fa fa-filter"></i> Two-Tier Filtering Active</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <strong>Tier 1 (Quality)</strong><br>
+                        <span class="badge badge-success">{{ tier1_passed }} passed</span>
+                        <span class="badge badge-secondary">{{ tier1_filtered }} filtered</span>
+                    </div>
+                    <div class="col-md-1">
+                        <i class="fa fa-arrow-right" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Tier 2 (Final)</strong><br>
+                        <span class="badge badge-info">{{ tier2_filtered }} filtered</span>
+                    </div>
+                    <div class="col-md-1">
+                        <i class="fa fa-arrow-right" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Final Import</strong><br>
+                        <span class="badge badge-success">{{ imported_count }} imported</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Filter Analysis (if many filtered) -->
+            {% if imported_count == 0 and tier1_filtered > 0 %}
+            <div class="alert alert-danger">
+                <h5><i class="fa fa-exclamation-triangle"></i> All {{ tier1_filtered }} Positions Were Filtered Out!</h5>
+                <p><strong>Your Tier 1 filters might be too strict.</strong> Here's what happened:</p>
+                <ul class="mb-3">
+                    {% if tier1_breakdown.premium > 0 %}
+                    <li><strong>Premium too low:</strong> {{ tier1_breakdown.premium }} positions (try lowering min premium to $1.50)</li>
+                    {% endif %}
+                    {% if tier1_breakdown.iv_rank > 0 %}
+                    <li><strong>IV Rank too low:</strong> {{ tier1_breakdown.iv_rank }} positions (try lowering to 25-30%)</li>
+                    {% endif %}
+                    {% if tier1_breakdown.dte > 0 %}
+                    <li><strong>DTE too high:</strong> {{ tier1_breakdown.dte }} positions (try increasing max to 45 days)</li>
+                    {% endif %}
+                    {% if tier1_breakdown.roc > 0 %}
+                    <li><strong>ROC too low:</strong> {{ tier1_breakdown.roc }} positions (try lowering to 30-35%)</li>
+                    {% endif %}
+                </ul>
+                <div class="mt-3">
+                    <button type="button" class="btn btn-warning" onclick="window.location.href='{% url 'investing:csv_upload_wizard' %}'">
+                        <i class="fa fa-redo"></i> Adjust Filters & Try Again
+                    </button>
+                    {% if near_miss_positions %}
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#nearMissModal">
+                        <i class="fa fa-search"></i> Show {{ near_miss_positions|length }} Best Near-Miss Positions
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% elif tier1_passed > imported_count and imported_count > 0 %}
+            <div class="alert alert-info">
+                <h5><i class="fa fa-info-circle"></i> Filter Summary</h5>
+                <p><strong>Tier 1:</strong> {{ tier1_passed }} positions passed quality filters</p>
+                {% if tier2_enabled %}
+                <p><strong>Tier 2:</strong> {{ tier2_filtered }} filtered, {{ imported_count }} selected for import</p>
+                <button type="button" class="btn btn-sm btn-info" data-toggle="collapse" data-target="#filterDetails">
+                    Show Tier 2 Filter Breakdown
+                </button>
+                <div id="filterDetails" class="collapse mt-2">
+                    <ul>
+                        {% if tier2_breakdown.earnings > 0 %}
+                        <li>Has earnings in window: {{ tier2_breakdown.earnings }} positions</li>
+                        {% endif %}
+                        {% if tier2_breakdown.blue_chip > 0 %}
+                        <li>Not blue chip: {{ tier2_breakdown.blue_chip }} positions</li>
+                        {% endif %}
+                        {% if tier2_breakdown.stock_price > 0 %}
+                        <li>Stock price out of range: {{ tier2_breakdown.stock_price }} positions</li>
+                        {% endif %}
+                        {% if tier2_breakdown.distance_otm > 0 %}
+                        <li>Too close to strike: {{ tier2_breakdown.distance_otm }} positions</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Results Summary -->
+            <div class="row text-center mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-success">{{ imported_count }}</h2>
+                            <p class="mb-0">Imported</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if auto_convert %}
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-info">{{ converted_count }}</h2>
+                            <p class="mb-0">Converted</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if auto_score %}
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-warning">{{ scored_count }}</h2>
+                            <p class="mb-0">AI Scored</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h2 class="text-muted">{{ filtered_count }}</h2>
+                            <p class="mb-0">Filtered Out</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if error_count > 0 %}
+            <div class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle"></i> 
+                <strong>{{ error_count }} rows</strong> had errors and were skipped
+            </div>
+            {% endif %}
+            
+            <div class="alert alert-success">
+                <h5><i class="fa fa-check-circle"></i> Success!</h5>
+                <p class="mb-0">
+                    <strong>{{ imported_count }} positions</strong> imported successfully (estimated risk-return for client review).
+                    {% if auto_score and scored_count > 0 %}
+                    <br><strong>{{ scored_count }} positions</strong> have been AI-scored and are ready for review.
+                    {% endif %}
+                    {% if technical_count > 0 %}
+                    <br><strong>🎯 {{ technical_count }} positions</strong> enhanced with technical analysis (RSI, MA, Volume)!
+                    {% endif %}
+                    {% if cv_boost_count > 0 %}
+                    <br><strong>💎 {{ cv_boost_count }} positions</strong> cross-validated (appeared in multiple files = HIGH CONVICTION)!
+                    {% endif %}
+                    {% if flow_count > 0 %}
+                    <br><strong>⚡ {{ flow_count }} positions</strong> analyzed with Unusual Whales flow data (TIMING SIGNALS)!
+                    {% endif %}
+                    {% if not uw_enabled and converted_count > 0 %}
+                    <br><em class="text-muted small">💡 Add Unusual Whales API key to get real-time buy/sell flow signals for better entry timing!</em>
+                    {% endif %}
+                </p>
+                <hr>
+                <p class="mb-0"><small><strong>⚠️ Important:</strong> All capital and premium estimates are based on mid-prices for screening purposes. Actual execution prices will vary. Present these to clients as preliminary risk-return estimates before entering live trades.</small></p>
+            </div>
+            
+            <!-- Next Actions -->
+            <div class="card bg-light mt-4">
+                <div class="card-body">
+                    <h5>What's Next?</h5>
+                    <div class="d-grid gap-2">
+                        {% if scored_count > 0 %}
+                        <a href="{% url 'investing:suggested_positions_list' %}" class="btn btn-primary btn-lg">
+                            <i class="fa fa-star"></i> Review AI-Scored Positions
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-outline-primary">
+                            <i class="fa fa-upload"></i> Upload Another CSV
+                        </a>
+                        
+                        <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-outline-secondary">
+                            <i class="fa fa-home"></i> Back to Accounts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Near-Miss Positions Modal -->
+{% if near_miss_positions %}
+<div class="modal fade" id="nearMissModal" tabindex="-1" role="dialog" aria-labelledby="nearMissModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="nearMissModalLabel">
+                    <i class="fa fa-search"></i> Best Near-Miss Positions
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-info">
+                    <strong>These {{ near_miss_positions|length }} positions came closest to passing your filters.</strong>
+                    They might be worth considering if you adjust your filters slightly.
+                </p>
+                
+                {% for position in near_miss_positions %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{ forloop.counter }}. {{ position.symbol }}
+                            <span class="badge badge-primary">Score: {{ position.score }}/4</span>
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Premium:</strong> ${{ position.premium|floatformat:2 }}</p>
+                                <p class="mb-1"><strong>IV Rank:</strong> {{ position.iv_rank|floatformat:1 }}%</p>
+                                <p class="mb-1"><strong>DTE:</strong> {{ position.dte }} days</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>ROC:</strong> {{ position.roc|floatformat:1 }}%</p>
+                                <p class="mb-1"><strong>Capital:</strong> ${{ position.capital }}</p>
+                                <p class="mb-1"><strong>Spread:</strong> {{ position.spread_width }}-point</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <p class="mb-0"><strong>Why it was filtered:</strong></p>
+                            <ul class="mb-0">
+                                {% for reason in position.reasons %}
+                                <li><small>{{ reason }}</small></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <p class="mb-0 text-success"><strong>How to accept this position:</strong></p>
+                            <ul class="mb-0">
+                                {% for suggestion in position.suggestions %}
+                                <li><small>{{ suggestion }}</small></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-warning">
+                    <i class="fa fa-redo"></i> Adjust Filters & Re-Upload
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.wizard-step {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 5px;
+}
+.wizard-step.active {
+    background: #007bff;
+    color: white;
+}
+.wizard-step.completed {
+    background: #28a745;
+    color: white;
+}
+</style>
+{% endblock %}
+

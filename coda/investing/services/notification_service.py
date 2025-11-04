@@ -430,6 +430,24 @@ Deadline: {deadline}
 Please review ASAP:
 {link}
             """,
+            
+            'batch_quick_approval': """
+💎 *NEW POSITIONS READY FOR APPROVAL*
+
+{count} high-conviction positions selected!
+
+Total Capital: ${capital:,.2f}
+AI Average Score: {avg_score}/100
+Cross-Validated: {cv_count} positions
+Technical Confirmed: {tech_count} positions
+
+🚀 QUICK APPROVE: Reply "YES" to approve all
+❌ REVIEW FIRST: Reply "NO" to see details
+📊 DETAILS: {link}
+
+⏰ Expires in 24 hours
+🔐 Token: {token}
+            """,
         }
         
         template = templates.get(template_name, "Message: {message}")
@@ -439,4 +457,61 @@ Please review ASAP:
         except KeyError as e:
             logger.error(f"Template formatting error: Missing parameter {e}")
             return f"Error formatting message for {template_name}"
+    
+    def send_realtime_batch_notification(self, batch):
+        """
+        Send real-time WhatsApp notification with quick approval option
+        
+        Client can reply "YES" to approve or "NO" to review in portal
+        """
+        from django.contrib.auth.models import User
+        import secrets
+        
+        # Generate approval token if not exists
+        if not batch.approval_token:
+            batch.approval_token = secrets.token_urlsafe(32)
+            batch.save()
+        
+        client = batch.managed_account.client
+        account = batch.managed_account
+        
+        # Get client phone (assumes client has phone_number field)
+        phone_number = getattr(account, 'client_phone', None) or getattr(client, 'phone_number', None)
+        
+        if not phone_number:
+            logger.warning(f"No phone number for {client.email} - skipping WhatsApp notification")
+            return False
+        
+        # Get batch stats
+        from django.db.models import Avg
+        positions = batch.suggested_positions.all()
+        avg_score = positions.aggregate(avg=Avg('ai_score'))['avg'] or 0
+        cv_count = positions.filter(notes__icontains='Cross-Validated').count()
+        tech_count = positions.filter(notes__icontains='Technical:').count()
+        
+        # Format WhatsApp message
+        params = {
+            'count': batch.total_positions,
+            'capital': batch.total_capital_required,
+            'avg_score': round(avg_score, 1),
+            'cv_count': cv_count,
+            'tech_count': tech_count,
+            'link': f"{getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')}/investing/managed/portal/approvals/batch/{batch.id}/",
+            'token': batch.approval_token[:8]  # Show first 8 chars for reference
+        }
+        
+        # Send WhatsApp
+        success = self.send_whatsapp_message(
+            phone_number,
+            'batch_quick_approval',
+            params
+        )
+        
+        if success:
+            batch.whatsapp_notification_sent = True
+            batch.whatsapp_notification_date = timezone.now()
+            batch.save()
+            logger.info(f"✅ Real-time WhatsApp sent to {phone_number} for {batch.batch_number}")
+        
+        return success
 

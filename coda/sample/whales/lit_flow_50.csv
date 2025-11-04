@@ -1,0 +1,51 @@
+date,time,ticker,symbol,type,size,premium,volume,next_earnings_date,issue_type,sector,avg30_volume,ext_hour_sold_codes,marketcap,nbbo_ask_quantity,nbbo_bid_quantity,price,sale_cond_codes,trade_code,trade_settlement
+11/3/2025,1:23:33 PM,TLT,TLT,lit,1400,125734,40537175,,ETF,,31504977.818181818182,extended_hours_trade,49661907561,250,50,89.81,,,regular
+11/3/2025,1:23:24 PM,NVDA,NVDA,lit,1800,372960,177454906,11/19/2025,Common Stock,Technology,175326014.59090909,extended_hours_trade,4.92051E+12,20,1809,207.2,,intermarket_sweep,regular
+11/3/2025,1:23:24 PM,COIN,COIN,lit,920,301760,9210736,2/12/2026,Common Stock,Technology,9812832.5,extended_hours_trade,78437692905,80,277,328,,,regular
+11/3/2025,1:23:24 PM,NVDA,NVDA,lit,1695,351204,177452016,11/19/2025,Common Stock,Technology,175326014.59090909,extended_hours_trade,4.92051E+12,20,1809,207.2,,intermarket_sweep,regular
+11/3/2025,1:23:15 PM,SRPT,SRPT,lit,9623,189091.94999999998,9493267,11/3/2025,Common Stock,Healthcare,5221693.5,extended_hours_trade,2346099646,300,100,19.65,,,regular
+11/3/2025,1:23:09 PM,TLT,TLT,lit,1400,125747.99999999999,40532936,,ETF,,31504977.818181818182,extended_hours_trade,49661907561,1000,50,89.82,,,regular
+11/3/2025,1:23:07 PM,PLTR,PLTR,lit,500,104450,69391252,11/3/2025,Common Stock,Technology,47381456.909090909091,extended_hours_trade,4.55921E+11,25,33,208.9,,intermarket_sweep,regular
+11/3/2025,1:23:07 PM,PLTR,PLTR,lit,552,115423.2,69387160,11/3/2025,Common Stock,Technology,47381456.909090909091,extended_hours_trade,4.55921E+11,25,33,209.1,,intermarket_sweep,regular
+11/3/2025,1:22:55 PM,PLTR,PLTR,lit,700,146201.30000000002,69348631,11/3/2025,Common Stock,Technology,47381456.909090909091,extended_hours_trade,4.55921E+11,1,30,208.859,,,regular
+11/3/2025,1:22:49 PM,TLT,TLT,lit,1400,125734,40528636,,ETF,,31504977.818181818182,extended_hours_trade,49661907561,250,2770,89.81,,intermarket_sweep,regular
+11/3/2025,1:22:43 PM,PLTR,PLTR,lit,531,110979,69312408,11/3/2025,Common Stock,Technology,47381456.909090909091,extended_hours_trade,4.55921E+11,10,1,209,,intermarket_sweep,regular
+11/3/2025,1:22:38 PM,TLT,TLT,lit,4777,428974.6,40520853,,ETF,,31504977.818181818182,extended_hours_trade,49661907561,4777,550,89.8,,intermarket_sweep,regular
+11/3/2025,1:22:37 PM,HIMS,HIMS,lit,4824,219974.4,34984037,11/3/2025,Common Stock,Consumer Defensive,28448652.409090909091,extended_hours_trade,9894003411,1000,5229,45.6,,intermarket_sweep,regular
+11/3/2025,1:22:37 PM,TLT,TLT,lit,4200,377160,40516076,,ETF,,31504977.818181818182,extended_hours_trade,49661907561,4777,550,89.8,,intermarket_sweep,regular
+11/3/2025,1:22:34 PM,PLTR,PLTR,lit,1470,306744.89999999997,69284860,11/3/2025,Common Stock,Technology,47381456.909090909091,extended_hours_trade,4.55921E+11,510,100,208.67,,intermarket_sweep,regular
+11/3/2025,1:22:34 PM,PLTR,PLTR,lit,766,159841.22,69283240,11/3/2025,Common Stock,Technology,47381456.909090909091,extended_hours_trade,4.55921E+11,510,100,208.67,,,regular
+11/3/2025,1:22:34 PM,PLTR,PLTR,lit,2800,584276,69282246,11/3/2025,Common Stock,Technology,47381456.909090909091,extended_hours_trade,4.55921E+11,510,100,208.67,,,regular
+11/3/2025,1:22:34 PM,C,C,lit,1000,101720,10363677,1/21/2026,Common Stock,Financial Services,13505659.090909090909,extended_hours_trade,1.86354E+11,19,2410,101.72,,intermarket_sweep,regular
+11/3/2025,1:22:27 PM,AMD,,,1876,487910.07999999996,35915876,,Common Stock,Technology,78174196.863636363636,extended_hours_trade,,20,208,260.08,,,regular
+11/3/2025,1:22:12 PM,PLTR,,,630,131953.5,69208030,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,2,6,209.45,,,regular
+11/3/2025,1:22:01 PM,PLTR,,,1000,207950,69145076,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,70,30,207.95,,,regular
+11/3/2025,1:21:47 PM,PLTR,,,1670,347760.8,69108225,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,210,400,208.24,,,regular
+11/3/2025,1:21:47 PM,PLTR,,,1200,249888,69106500,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,210,400,208.24,,,regular
+11/3/2025,1:21:47 PM,PLTR,,,773,160969.52000000002,69103547,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,110,250,208.24,,,regular
+11/3/2025,1:21:46 PM,PLTR,,,948,197411.52000000002,69099643,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,1181,50,208.24,,intermarket_sweep,regular
+11/3/2025,1:21:45 PM,PLTR,,,2000,416000,69093642,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,10,5,208,,,regular
+11/3/2025,1:21:40 PM,PLTR,,,500,103870,69081678,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,55,2,207.74,,intermarket_sweep,regular
+11/3/2025,1:21:35 PM,PLTR,,,1000,208190,69061363,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,19,100,208.19,,,regular
+11/3/2025,1:21:28 PM,AMZN,,,642,162650.69999999998,92421677,,Common Stock,Consumer Cyclical,52406496.181818181818,extended_hours_trade,,5,4,253.35,,,regular
+11/3/2025,1:21:25 PM,PLTR,,,500,104000,69014661,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,79,70,208,,intermarket_sweep,regular
+11/3/2025,1:21:24 PM,PLTR,,,885,184080,69014136,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,79,70,208,,intermarket_sweep,regular
+11/3/2025,1:21:23 PM,PLTR,,,751,156733.69999999998,69003141,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,100,20,208.7,,,regular
+11/3/2025,1:21:21 PM,PLTR,,,1891,395029.9,68972969,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,1891,20,208.9,,,regular
+11/3/2025,1:21:20 PM,PLTR,,,852,178068,68963452,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,2,10,209,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,PLTR,,,1148,239932,68961664,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,2,10,209,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,PLTR,,,700,146300,68959618,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,2,10,209,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,PLTR,,,1000,208500,68950218,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,2,10,208.5,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,SPY,,,300,204987,55757275,,ETF,,77680664.090909090909,extended_hours_trade,,500,500,683.29,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,SPY,,,280,191321.19999999998,55756975,,ETF,,77680664.090909090909,extended_hours_trade,,500,500,683.29,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,SPY,,,200,136658,55756695,,ETF,,77680664.090909090909,extended_hours_trade,,500,500,683.29,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,TQQQ,,,900,106560,40940854,,ETF,,56833802.136363636364,extended_hours_trade,,101,100,118.4,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,QQQ,,,200,126446,36596421,,ETF,,58091317.818181818182,extended_hours_trade,,130,1045,632.23,,intermarket_sweep,regular
+11/3/2025,1:21:20 PM,PLTR,,,500,103850,68926221,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,10,19,207.7,,intermarket_sweep,regular
+11/3/2025,1:21:14 PM,PLTR,,,2000,413580,68860320,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,10,300,206.79,,intermarket_sweep,regular
+11/3/2025,1:21:13 PM,HIMS,,,4000,184000,34841975,,Common Stock,Consumer Defensive,28448652.409090909091,extended_hours_trade,,9,4340,46,,,regular
+11/3/2025,1:21:13 PM,PLTR,,,1200,248400,68831461,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,110,300,207,,intermarket_sweep,regular
+11/3/2025,1:21:13 PM,PLTR,,,500,103390,68827271,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,110,300,206.78,,,regular
+11/3/2025,1:21:08 PM,PLTR,,,1700,350506,68807700,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,1730,120,206.18,,intermarket_sweep,regular
+11/3/2025,1:21:07 PM,PLTR,,,600,123708,68804422,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,1730,2,206.18,,intermarket_sweep,regular
+11/3/2025,1:21:06 PM,PLTR,,,1024,210432,68789638,,Common Stock,Technology,47381456.909090909091,extended_hours_trade,,10,5,205.5,,,regular

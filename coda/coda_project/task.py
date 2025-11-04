@@ -66,56 +66,57 @@ def dump_data(request):
         updated_task = []
         for employee in employees: 
 
-            employee_taskhistory = TaskHistory.objects.filter(employee__is_staff=True, employee__is_active=True,
-                                                      employee_id=employee)
-            if employee_taskhistory.count() > 0:
+            # Get current tasks for this employee
+            employee_task = ai_services_data.filter(employee__is_staff=True, employee__is_active=True,employee=employee)
+            if employee_task.count() > 0:
                 
-                employee_task = ai_services_data.filter(employee__is_staff=True, employee__is_active=True,employee=employee)
-                if employee_task.count() > 0:
+                # Get TaskHistory for this employee (including just-created records)
+                employee_taskhistory = TaskHistory.objects.filter(employee__is_staff=True, employee__is_active=True,
+                                                      employee_id=employee)
+                
+                for task in employee_task:
                     
-                    for task in employee_task:
+                    group, group_title, total_point = employee_group_level(employee_taskhistory.filter(activity_name=task.activity_name), TaskGroups)
+                    new_max_earning = task.mxearning
+                    
+                    #incrementing contractual people max_earnig by one whenever hr/she will complete 30 hour on project
+                    #here point is incresed by duration(hour) when newevidence uploaded for particular requirement.
+                    if group_title == 'Group H' and total_point > 30: 
                         
-                        group, group_title, total_point = employee_group_level(employee_taskhistory.filter(activity_name=task.activity_name), TaskGroups)
-                        new_max_earning = task.mxearning
+                        new_max_earning += (total_point // 3)
+
+                        task.groupname_id = group
+                        task.group = group_title
+                        task.point = 0
+                        task.mxearning = new_max_earning
+
+                        updated_task.append(task)
+
+                    #for intern no earning 
+                    elif group_title == 'Group I':
                         
-                        #incrementing contractual people max_earnig by one whenever hr/she will complete 30 hour on project
-                        #here point is incresed by duration(hour) when newevidence uploaded for particular requirement.
-                        if group_title == 'Group H' and total_point > 30: 
-                            
-                            new_max_earning += (total_point // 3)
+                        new_max_earning = 0
 
-                            task.groupname_id = group
-                            task.group = group_title
-                            task.point = 0
-                            task.mxearning = new_max_earning
+                        task.groupname_id = group
+                        task.group = group_title
+                        task.point = 0
+                        task.mxearning = new_max_earning
+                        updated_task.append(task)
 
-                            updated_task.append(task)
+                    elif task.groupname.id != group:
 
-                        #for intern no earning 
-                        elif group_title == 'Group I':
-                            
-                            new_max_earning = 0
+                        new_max_earning = increment_in_graduation_of_employee(employee, task.mxearning, group, PayslipConfig)
 
-                            task.groupname_id = group
-                            task.group = group_title
-                            task.point = 0
-                            task.mxearning = new_max_earning
-                            updated_task.append(task)
-
-                        elif task.groupname.id != group:
-
-                            new_max_earning = increment_in_graduation_of_employee(employee, task.mxearning, group, PayslipConfig)
-
-                            task.groupname_id = group
-                            task.group = group_title
-                            task.point = 0
-                            task.mxearning = new_max_earning
-                            
-                            updated_task.append(task)
+                        task.groupname_id = group
+                        task.group = group_title
+                        task.point = 0
+                        task.mxearning = new_max_earning
                         
-                        else:
-                            task.point = 0
-                            updated_task.append(task)
+                        updated_task.append(task)
+                    
+                    else:
+                        task.point = 0
+                        updated_task.append(task)
                     
 
         if len(updated_task) > 0:

@@ -37,7 +37,8 @@ class OptionPlayConverterService:
         from ..models import SuggestedPosition
         
         try:
-            if raw_data.strategy_type == 'credit_spread':
+            # Handle all spread types (credit_spread, bull_put_spread, bear_call_spread, etc.)
+            if raw_data.strategy_type in ['credit_spread', 'bull_put_spread', 'bear_call_spread', 'iron_condor']:
                 suggestion_data = self._convert_credit_spread(raw_data)
             elif raw_data.strategy_type == 'short_put':
                 suggestion_data = self._convert_short_put(raw_data)
@@ -77,17 +78,31 @@ class OptionPlayConverterService:
         CSV: Symbol, Strategy, Type, Price, Sell Strike, Buy Strike, Expiry, Premium, Width, IV Rank
         Example: DIS, Bearish, Call, $101.50, $102.00, $107.00, 08/02/2024, $2.30, $5.00, 14%
         """
-        # Determine strategy code
-        if raw_data.spread_strategy == 'Bearish' and raw_data.option_type == 'Call':
+        # Determine strategy code from strategy_type field
+        # This field is set by spread_builder or CSV import
+        if raw_data.strategy_type == 'bear_call_spread':
             strategy = 'bear_call_spread'
             option_type_code = 'call'
-        elif raw_data.spread_strategy == 'Bullish' and raw_data.option_type == 'Put':
+        elif raw_data.strategy_type == 'bull_put_spread':
             strategy = 'bull_put_spread'
             option_type_code = 'put'
+        elif raw_data.strategy_type == 'iron_condor':
+            strategy = 'iron_condor'
+            option_type_code = 'put'  # Iron condor has both, default to put
         else:
-            # Default fallback
-            strategy = 'bull_put_spread'
-            option_type_code = 'put'
+            # Fallback for legacy 'credit_spread' type
+            # Try to infer from strikes (higher sell = bull put, lower sell = bear call)
+            if raw_data.sell_strike and raw_data.buy_strike:
+                if raw_data.sell_strike > raw_data.buy_strike:
+                    strategy = 'bull_put_spread'
+                    option_type_code = 'put'
+                else:
+                    strategy = 'bear_call_spread'
+                    option_type_code = 'call'
+            else:
+                # Last resort default
+                strategy = 'bull_put_spread'
+                option_type_code = 'put'
         
         # Build position legs
         positions_data = [
@@ -111,16 +126,23 @@ class OptionPlayConverterService:
         
         # Calculate metrics
         width = raw_data.width or (abs(raw_data.sell_strike - raw_data.buy_strike))
-        capital_required = width * 100  # Per contract
-        premium_collected = raw_data.premium * 100
+        capital_required = width * 100  # Per contract (spread width * 100)
+        
+        # For spreads, premium is already TOTAL per contract (from spread_builder)
+        # Don't multiply by 100 again!
+        premium_collected = raw_data.premium  # Already in total dollars per contract
+        
         max_profit = premium_collected
-        max_loss = capital_required - max_profit
+        # Max loss = (spread_width * 100) - premium_collected
+        max_loss = capital_required - premium_collected
         
         # Calculate breakeven
+        # premium_collected is total per contract, need per-share for breakeven
+        premium_per_share = premium_collected / Decimal('100')
         if strategy == 'bull_put_spread':
-            breakeven = raw_data.sell_strike - raw_data.premium
+            breakeven = raw_data.sell_strike - premium_per_share
         else:  # bear_call_spread
-            breakeven = raw_data.sell_strike + raw_data.premium
+            breakeven = raw_data.sell_strike + premium_per_share
         
         # Estimate probability of profit from IV Rank and distance
         iv_rank_value = float(raw_data.iv_rank or 50)

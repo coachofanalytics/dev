@@ -16,6 +16,10 @@ from .views.managed_trading import (
     onboarding,  # Phase 6
     batches,  # Phase 7
     position_suggestions,  # Phase 8: Automated position sourcing
+    csv_upload,  # CSV Upload Wizard (Enhanced with Cross-Validation)
+    webhooks,  # Phase 9: Real-time WhatsApp approval
+    multi_file_analyzer,  # Phase 9: Multi-file flow analyzer (manual Unusual Whales)
+    api_bulk_actions,  # Phase 9: Bulk approval and distribution
 )
 
 urlpatterns = [
@@ -198,6 +202,11 @@ urlpatterns = [
          position_suggestions.ajax_reject_position, 
          name='ajax_reject_position'),
     
+    # Bulk actions API
+    path('managed/api/bulk-approve-excellent/', 
+         api_bulk_actions.bulk_approve_excellent, 
+         name='bulk_approve_excellent_api'),
+    
     # Staff: Batch Management
     path('managed/accounts/<int:account_id>/batches/create/', 
          batches.staff_create_batch_view, 
@@ -211,5 +220,45 @@ urlpatterns = [
     path('managed/api/batch/<int:batch_id>/status/', 
          batches.ajax_check_batch_status, 
          name='ajax_batch_status'),
+    
+    # ========================================================================
+    # CSV UPLOAD WIZARD (Staff Only)
+    # ========================================================================
+    
+    path('managed/staff/upload-csv/', 
+         csv_upload.csv_upload_wizard, 
+         name='csv_upload_wizard'),
+    
+    path('managed/staff/upload-csv/process-mapping/', 
+         csv_upload.csv_process_mapping, 
+         name='csv_process_mapping'),
+    
+    path('managed/staff/upload-csv/import/', 
+         csv_upload.csv_import_and_score, 
+         name='csv_import_and_score'),
+    
+    # ========================================================================
+    # WEBHOOKS: Real-Time Approval (Phase 9)
+    # ========================================================================
+    
+    path('webhooks/whatsapp/', 
+         webhooks.whatsapp_webhook, 
+         name='whatsapp_webhook'),
+    
+    path('webhooks/whatsapp/status/', 
+         webhooks.whatsapp_status_callback, 
+         name='whatsapp_status_callback'),
+    
+    # ========================================================================
+    # MULTI-FILE FLOW ANALYZER: Manual Unusual Whales Workflow (Phase 9)
+    # ========================================================================
+    
+    path('managed/staff/flow-analyzer/', 
+         multi_file_analyzer.multi_file_flow_analyzer, 
+         name='multi_file_analyzer'),
+    
+    path('managed/staff/flow-analyzer/results/', 
+         multi_file_analyzer.multi_file_analyzer_results, 
+         name='multi_file_analyzer_results'),
 ]
 
