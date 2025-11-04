@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Welcome to Biashara Bridges!</h1>
+            <p class="lead">Connecting businesses and bridging opportunities.</p>
+            <hr class="my-4">
+            <p>Your platform for business networking, collaboration, and growth.</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Get Started</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-people-fill text-primary" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Network</h5>
+                <p class="card-text">Connect with other businesses and expand your professional network.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up text-success" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Grow</h5>
+                <p class="card-text">Access resources and tools to help your business thrive.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-diagram-3 text-info" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Collaborate</h5>
+                <p class="card-text">Find partners and opportunities for collaboration.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Profile</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Profile Image Section -->
+                    <h5 class="mb-3"><i class="bi bi-image"></i> Profile Picture</h5>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form.profile_image }}
+                            {% if form.profile_image.errors %}
+                            <div class="text-danger">{{ form.profile_image.errors }}</div>
+                            {% endif %}
+                            {% if profile.profile_image %}
+                            <div class="mt-2">
+                                <img src="{{ profile.profile_image.url }}" alt="Profile" style="max-width: 150px; max-height: 150px;" class="rounded-circle">
+                                <small class="d-block mt-1 text-muted">Current profile picture</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Personal Information Section -->
+                    <h5 class="mb-3"><i class="bi bi-person"></i> Personal Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="text-danger">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                        {{ form.bio }}
+                        {% if form.bio.errors %}
+                        <div class="text-danger">{{ form.bio.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.bio.help_text }}</div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Professional Information Section -->
+                    <h5 class="mb-3"><i class="bi bi-briefcase"></i> Professional Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.company_name.id_for_label }}" class="form-label">Company/Organization</label>
+                            {{ form.company_name }}
+                            {% if form.company_name.errors %}
+                            <div class="text-danger">{{ form.company_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.job_title.id_for_label }}" class="form-label">Job Title/Position</label>
+                            {{ form.job_title }}
+                            {% if form.job_title.errors %}
+                            <div class="text-danger">{{ form.job_title.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.industry.id_for_label }}" class="form-label">Industry/Sector</label>
+                            {{ form.industry }}
+                            {% if form.industry.errors %}
+                            <div class="text-danger">{{ form.industry.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.years_of_experience.id_for_label }}" class="form-label">Years of Experience</label>
+                            {{ form.years_of_experience }}
+                            {% if form.years_of_experience.errors %}
+                            <div class="text-danger">{{ form.years_of_experience.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.skills.id_for_label }}" class="form-label">Skills & Expertise</label>
+                        {{ form.skills }}
+                        {% if form.skills.errors %}
+                        <div class="text-danger">{{ form.skills.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.skills.help_text }}</div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Contact Information Section -->
+                    <h5 class="mb-3"><i class="bi bi-telephone"></i> Contact Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                            <div class="text-danger">{{ form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.alternate_email.id_for_label }}" class="form-label">Alternate Email</label>
+                            {{ form.alternate_email }}
+                            {% if form.alternate_email.errors %}
+                            <div class="text-danger">{{ form.alternate_email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location (City, Country)</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                            <div class="text-danger">{{ form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Full Address (Optional)</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                            <div class="text-danger">{{ form.address.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Online Presence Section -->
+                    <h5 class="mb-3"><i class="bi bi-globe"></i> Online Presence</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.website.id_for_label }}" class="form-label">Website</label>
+                            {{ form.website }}
+                            {% if form.website.errors %}
+                            <div class="text-danger">{{ form.website.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.linkedin_url.id_for_label }}" class="form-label">LinkedIn Profile</label>
+                            {{ form.linkedin_url }}
+                            {% if form.linkedin_url.errors %}
+                            <div class="text-danger">{{ form.linkedin_url.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.twitter_handle.id_for_label }}" class="form-label">Twitter Handle</label>
+                            {{ form.twitter_handle }}
+                            {% if form.twitter_handle.errors %}
+                            <div class="text-danger">{{ form.twitter_handle.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.facebook_url.id_for_label }}" class="form-label">Facebook Profile</label>
+                            {{ form.facebook_url }}
+                            {% if form.facebook_url.errors %}
+                            <div class="text-danger">{{ form.facebook_url.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Documents Section -->
+                    <h5 class="mb-3"><i class="bi bi-file-earmark-text"></i> Documents</h5>
+                    <div class="mb-3">
+                        <label for="{{ form.document.id_for_label }}" class="form-label">
+                            {% if profile.category %}
+                                {% if profile.category.slug == 'investor' %}Portfolio/Investment Profile
+                                {% elif profile.category.slug == 'business' %}Business Profile/Company Document
+                                {% else %}Resume/CV
+                                {% endif %}
+                            {% else %}
+                                Document
+                            {% endif %}
+                        </label>
+                        {{ form.document }}
+                        {% if form.document.errors %}
+                        <div class="text-danger">{{ form.document.errors }}</div>
+                        {% endif %}
+                        {% if profile.document %}
+                        <div class="form-text">
+                            Current file: <a href="{{ profile.document.url }}" target="_blank" class="text-decoration-none">
+                                <i class="bi bi-download"></i> View Document
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'profile' user.username %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
