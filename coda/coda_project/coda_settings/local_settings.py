@@ -105,7 +105,7 @@ def get_database_config():
     """
     # Environment variable controls
     # DB_TYPE = os.environ.get('DB_TYPE', 'clone').lower()  # Default to 'clone' for safety
-    DB_TYPE = 'clone'
+    DB_TYPE = 'uat'
     print("🗄️  DB_TYPE: ", DB_TYPE)
     USE_POSTGRESQL = os.environ.get('USE_POSTGRESQL', 'False').lower() == 'true'
    
