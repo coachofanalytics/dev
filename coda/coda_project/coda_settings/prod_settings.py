@@ -17,27 +17,26 @@ DEBUG = False
 SECURE_SSL_REDIRECT = True
 
 # Database configuration for production
-def dba_values():
-    """Get database values for production environment"""
-    host = os.environ.get('HEROKU_PROD_HOST')
-    dbname = os.environ.get('HEROKU_PROD_NAME')
-    user = os.environ.get('HEROKU_PROD_USER')
-    password = os.environ.get('HEROKU_PROD_PASS')
-    return host, dbname, user, password
+# Use Heroku's DATABASE_URL instead of custom environment variables
+import dj_database_url
 
-host, dbname, user, password = dba_values()
-
-# Database - Use PostgreSQL for production
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": dbname,
-        "USER": user,
-        "PASSWORD": password,
-        "HOST": host,
-        "CONN_MAX_AGE": 600,
-    }
+    'default': dj_database_url.config(
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
+
+# Fallback database helper functions for compatibility
+def dba_values():
+    """Get database values for production environment (for backward compatibility)"""
+    db_config = DATABASES['default']
+    return (
+        db_config.get('HOST'),
+        db_config.get('NAME'),
+        db_config.get('USER'),
+        db_config.get('PASSWORD')
+    )
 
 # Email settings for production
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
