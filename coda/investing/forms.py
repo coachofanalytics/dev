@@ -384,6 +384,16 @@ class OptionsPositionForm(forms.ModelForm):
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Trade notes...'}),
         }
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Filter managed_account to active/paused accounts only
+        if 'managed_account' in self.fields:
+            self.fields['managed_account'].queryset = ManagedTradingAccount.objects.filter(
+                status__in=['active', 'paused']
+            ).select_related('client').order_by('account_number')
+            self.fields['managed_account'].empty_label = "--- Select Account ---"
+    
     def clean_symbol(self):
         symbol = self.cleaned_data.get('symbol')
         if symbol:
@@ -462,6 +472,17 @@ class TradingSessionForm(forms.ModelForm):
             'fee_charged': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'recording_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Filter managed_account to consultative tier accounts only
+        if 'managed_account' in self.fields:
+            self.fields['managed_account'].queryset = ManagedTradingAccount.objects.filter(
+                fee_tier='consultative',
+                status__in=['active', 'paused']
+            ).select_related('client').order_by('account_number')
+            self.fields['managed_account'].empty_label = "--- Select Consultative Account ---"
 
 
 class QuickPositionEntryForm(forms.Form):

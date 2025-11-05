@@ -143,6 +143,15 @@ class ComplianceRecordForm(forms.ModelForm):
             'assigned_to': 'Assigned To'
         }
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Filter assigned_to to active staff only (managers/executives preferred for compliance)
+        if 'assigned_to' in self.fields:
+            from accounts.utilities.user_querysets import get_active_staff_queryset
+            self.fields['assigned_to'].queryset = get_active_staff_queryset()
+            self.fields['assigned_to'].empty_label = "--- Assign To Staff ---"
+    
     def clean_due_date(self):
         """Validate due date"""
         due_date = self.cleaned_data.get('due_date')
