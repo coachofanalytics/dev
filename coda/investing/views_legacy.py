@@ -79,14 +79,11 @@ from .models import (
     Investments,
     InvestmentContent,
     Ticker_Data,
-    credit_spread,
-    ShortPut,
-    covered_calls,
-    Portfolio,
-    OverBoughtSold,
-    SavedResponses,
-    Options_Returns,
-    Cost_Basis,
+    # credit_spread,  # DELETED Nov 5, 2025
+    # OverBoughtSold,  # DELETED Nov 5, 2025
+    # SavedResponses,  # DELETED Nov 5, 2025
+    # Options_Returns,  # DELETED Nov 5, 2025
+    # Cost_Basis,  # DELETED Nov 5, 2025
     InvestmentsStrategy,
     Returns_Balances,
     Daily_Trades,
@@ -114,17 +111,72 @@ from main.utils import (
 )
 from main.filters import ReturnsFilter
 from main.context_processors import fetch_service_descriptions
-from .filters import PortfolioFilter
+# from .filters import PortfolioFilter  # DELETED Nov 5, 2025 - Portfolio model removed
 from .forms import (
-    OptionsForm,
+    # OptionsForm,  # DELETED Nov 5, 2025 - ShortPut model removed
     InvestmentForm,
     InvestmentRateForm,
-    PortfolioForm,
+    # PortfolioForm,  # DELETED Nov 5, 2025 - Portfolio model removed
     InvestmentsStrategyForm,
 )
 
 register = template.Library()
 User = get_user_model
+
+# ============================================================
+# LEGACY MODEL PLACEHOLDERS (Nov 5, 2025)
+# ============================================================
+# These models were deleted but views_legacy.py still references them
+# This prevents import errors. These views are DEPRECATED and should not be used.
+# Use OptionsPosition and related services instead.
+# 
+# TODO: Refactor or remove views_legacy.py entirely
+#
+class ShortPut:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+    
+class covered_calls:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+    
+class Portfolio:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+
+class PortfolioForm:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    pass
+
+class PortfolioFilter:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    pass
+
+class OptionsForm:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    pass
+
+# Additional legacy models deleted Nov 5, 2025
+class credit_spread:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+
+class OverBoughtSold:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+
+class SavedResponses:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+
+class Options_Returns:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+
+class Cost_Basis:
+    """DEPRECATED - Placeholder to prevent import errors"""
+    objects = None
+# ============================================================
 
 
 # Create your views here.

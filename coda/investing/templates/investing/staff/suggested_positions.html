@@ -556,6 +556,10 @@ function bulkApproveExcellent() {
     button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
     button.disabled = true;
     
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);  // 30 second timeout
+    
     fetch('/investing/managed/api/bulk-approve-excellent/', {
         method: 'POST',
         headers: {
@@ -566,9 +570,13 @@ function bulkApproveExcellent() {
             min_score: 95,
             top_n: 6,
             auto_distribute: true
-        })
+        }),
+        signal: controller.signal  // Add timeout signal
     })
-    .then(response => response.json())
+    .then(response => {
+        clearTimeout(timeoutId);  // Clear timeout on success
+        return response.json();
+    })
     .then(data => {
         button.innerHTML = originalText;
         button.disabled = false;
@@ -589,10 +597,16 @@ function bulkApproveExcellent() {
         }
     })
     .catch(error => {
+        clearTimeout(timeoutId);  // Clear timeout on error
         button.innerHTML = originalText;
         button.disabled = false;
         console.error('Error:', error);
-        alert('❌ Bulk approval failed: ' + error);
+        
+        if (error.name === 'AbortError') {
+            alert('⏱️ Request timed out after 30 seconds.\n\nThe server might still be processing.\nCheck the positions list in a moment.');
+        } else {
+            alert('❌ Bulk approval failed: ' + error);
+        }
     });
 }
 

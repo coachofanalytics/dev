@@ -3,21 +3,17 @@ from .models import *
 
 # Register your models here.
 admin.site.register(Ticker_Data)
-admin.site.register(Portfolio)
-admin.site.register(OverBoughtSold)
-admin.site.register(credit_spread)
-admin.site.register(ShortPut)
-admin.site.register(covered_calls)
+# admin.site.register(OverBoughtSold)  # DELETED: Legacy model (Nov 5, 2025)
 admin.site.register(Investments)
 admin.site.register(Investment_rates)
 admin.site.register(Investor_Information)
 admin.site.register(InvestmentContent)
 admin.site.register(InvestmentsStrategy)
-admin.site.register(Cost_Basis)
+# admin.site.register(Cost_Basis)  # DELETED: Legacy model (Nov 5, 2025)
 admin.site.register(Daily_Trades)
 admin.site.register(Returns_Balances)
-admin.site.register(SavedResponses)
-admin.site.register(Options_Returns)
+# admin.site.register(SavedResponses)  # DELETED: Legacy model (Nov 5, 2025)
+# admin.site.register(Options_Returns)  # DELETED: Legacy model (Nov 5, 2025)
 
 # Investor Relations Models
 admin.site.register(InvestmentPerformance)

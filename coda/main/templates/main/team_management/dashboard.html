@@ -106,14 +106,25 @@
         
         {% for category in team_groups %}
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 {% if category.is_manual %}border-success{% else %}border-info{% endif %}">
-                <div class="card-header {% if category.is_manual %}bg-success text-white{% else %}bg-info text-white{% endif %}">
+            <div class="card h-100 {% if category.is_empty %}border-warning{% elif category.is_manual %}border-success{% else %}border-info{% endif %}">
+                <div class="card-header {% if category.is_empty %}bg-warning{% elif category.is_manual %}bg-success{% else %}bg-info{% endif %} text-white">
                     <h5 class="mb-0">
                         {{ category.name }}
+                        {% if category.is_empty %}
+                        <span class="badge badge-light text-dark">Empty</span>
+                        {% endif %}
                     </h5>
                 </div>
                 <div class="card-body">
-                    <h3 class="text-center display-4">{{ category.member_count }}</h3>
+                    <h3 class="text-center display-4 {% if category.is_empty %}text-muted{% endif %}">
+                        {{ category.member_count }}
+                    </h3>
+                    {% if category.is_empty %}
+                    <p class="text-center text-warning">
+                        <strong>⚠️ No members yet</strong><br>
+                        <small>Click below to add members</small>
+                    </p>
+                    {% else %}
                     <p class="text-center text-muted">
                         {% if category.is_manual %}
                             <strong>Typical: Manual Assignment</strong><br>
@@ -123,11 +134,16 @@
                             <small>Can manually override/pin</small>
                         {% endif %}
                     </p>
+                    {% endif %}
                     
                     <div class="text-center mt-3">
                         <a href="/team-management/{{ category.name_encoded }}/" 
-                           class="btn btn-primary btn-block">
-                            View & Manage
+                           class="btn {% if category.is_empty %}btn-warning{% else %}btn-primary{% endif %} btn-block">
+                            {% if category.is_empty %}
+                                ➕ Add Members
+                            {% else %}
+                                View & Manage
+                            {% endif %}
                         </a>
                     </div>
                 </div>

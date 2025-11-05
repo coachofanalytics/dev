@@ -418,10 +418,10 @@ def csv_import_and_score(request):
         # Get Tier 1 filter parameters (Quality Filters)
         logger.info("🔧 Reading Tier 1 filter parameters (Quality)...")
         min_premium = Decimal(request.POST.get('min_premium', '0'))
-        min_iv = Decimal(request.POST.get('min_iv', '0'))
+        min_iv = Decimal(request.POST.get('min_iv', '0')) / 100  # FIX: Convert 16 → 0.16 (form % to decimal)
         max_dte = int(request.POST.get('max_dte', '365'))
         max_positions = int(request.POST.get('max_positions', '100'))
-        min_roc = Decimal(request.POST.get('min_roc', '0'))  # Minimum Return on Capital %
+        min_roc = Decimal(request.POST.get('min_roc', '0')) / 100  # FIX: Convert 1.5 → 0.015 (form % to decimal)
         spread_width_choice = request.POST.get('spread_width', 'auto')
         auto_convert = request.POST.get('auto_convert') == 'on'
         auto_score = request.POST.get('auto_score') == 'on'
@@ -897,6 +897,8 @@ def csv_import_and_score(request):
             'rejected_count': 0,
             'capital_before': Decimal('0'),
             'capital_after': Decimal('0'),
+            'total_savings': Decimal('0'),  # FIX: Initialize to prevent KeyError
+            'savings_pct': 0.0,  # FIX: Initialize to prevent KeyError
             'conversions': []
         }
         

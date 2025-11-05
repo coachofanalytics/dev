@@ -55,7 +55,7 @@ from ai_services.utils import (
 )
 from finance.models import (Transaction, Payment_History)
 
-from investing.models import Options_Returns, OverBoughtSold,Daily_Trades
+from investing.models import Daily_Trades  # Options_Returns, OverBoughtSold DELETED Nov 5, 2025
 from marketing.models import Whatsapp_Groups
 from main.models import Pricing
 

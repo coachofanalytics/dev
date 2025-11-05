@@ -111,7 +111,7 @@
     </div>
     
     <!-- Add Members (Manual categories only) -->
-    {% if is_manual and available_users %}
+    {% if is_manual %}
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -119,6 +119,30 @@
                     <h5 class="mb-0">➕ Add Members to {{ category_name }}</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Search Box -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <form method="get" class="form-inline">
+                                <div class="input-group w-100">
+                                    <input type="text" 
+                                           name="search" 
+                                           class="form-control" 
+                                           placeholder="Search by name, username, or email..."
+                                           value="{{ request.GET.search }}">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="submit">
+                                            🔍 Search
+                                        </button>
+                                        {% if request.GET.search %}
+                                        <a href="?page=1" class="btn btn-secondary">Clear</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    {% if available_users %}
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
@@ -131,7 +155,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in available_users|slice:":20" %}
+                                {% for user in available_users %}
                                 <tr>
                                     <td>
                                         <strong>{{ user.get_full_name }}</strong><br>
@@ -163,8 +187,59 @@
                             </tbody>
                         </table>
                     </div>
-                    {% if available_users.count > 20 %}
-                    <p class="text-muted mb-0">Showing first 20 of {{ available_users.count }} available users</p>
+                    
+                    <!-- Pagination Info & Controls -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <p class="text-muted mb-0">
+                                Showing {{ available_users.start_index }} - {{ available_users.end_index }} of {{ total_available }} available users
+                            </p>
+                        </div>
+                        
+                        {% if available_users.has_other_pages %}
+                        <nav>
+                            <ul class="pagination mb-0">
+                                {% if available_users.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ available_users.previous_page_number }}">Previous</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in available_users.paginator.page_range %}
+                                    {% if available_users.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                    {% elif num > available_users.number|add:'-3' and num < available_users.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if available_users.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ available_users.next_page_number }}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ available_users.paginator.num_pages }}">Last</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        {% if request.GET.search %}
+                        <p class="mb-0">No users found matching "{{ request.GET.search }}". <a href="?page=1">Clear search</a></p>
+                        {% else %}
+                        <p class="mb-0">All active employees are already assigned to {{ category_name }}.</p>
+                        {% endif %}
+                    </div>
                     {% endif %}
                 </div>
             </div>

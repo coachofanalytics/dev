@@ -28,25 +28,23 @@ def team_management_dashboard(request):
     Main team management dashboard.
     Shows all categories with member counts and quick actions.
     """
-    # Get all team groups with member counts (only show non-empty groups)
+    # Get all team groups with member counts (show all, including empty)
     from urllib.parse import quote
     team_groups = []
     for group_name in TeamService.ALL_CATEGORIES:
         group = Group.objects.filter(name=group_name).first()
         if group:
             member_count = group.user_set.filter(is_active=True).count()
+            is_manual = group_name in TeamService.MANUAL_CATEGORIES
             
-            # Only show groups that have members
-            if member_count > 0:
-                is_manual = group_name in TeamService.MANUAL_CATEGORIES
-                
-                team_groups.append({
-                    'name': group_name,
-                    'name_encoded': quote(group_name),  # URL-encoded version
-                    'member_count': member_count,
-                    'is_manual': is_manual,
-                    'group_obj': group,
-                })
+            team_groups.append({
+                'name': group_name,
+                'name_encoded': quote(group_name),  # URL-encoded version
+                'member_count': member_count,
+                'is_manual': is_manual,
+                'is_empty': member_count == 0,
+                'group_obj': group,
+            })
     
     # Get promotion candidates
     promotion_candidates = TeamService.get_promotion_candidates()
@@ -85,6 +83,7 @@ def team_category_detail(request, category_name):
     View and manage members in a specific category.
     """
     from urllib.parse import quote
+    from django.core.paginator import Paginator
     
     # Get members in this category
     members = TeamService.get_team_members(category_name)
@@ -96,12 +95,32 @@ def team_category_detail(request, category_name):
     is_manual = category_name in TeamService.MANUAL_CATEGORIES
     
     # Get all active employees not in this category (for adding)
-    available_users = User.objects.filter(
-        category=2,  # Employee
-        is_active=True
+    # Use is_staff=True (currently employed by CODA) instead of category=2 (which is STUDENT)
+    available_users_all = User.objects.filter(
+        is_staff=True,  # Currently employed by CODA (not just applicants/students)
+        is_active=True,  # Account not disabled
     ).exclude(
         groups__name=category_name
-    ).select_related('profile')
+    ).select_related('profile', 'team_profile')
+    
+    # Apply search filter if provided
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        available_users_all = available_users_all.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(profile__position__icontains=search_query)
+        )
+    
+    # Order results
+    available_users_all = available_users_all.order_by('username')
+    
+    # Paginate available users (20 per page)
+    paginator = Paginator(available_users_all, 20)
+    page_number = request.GET.get('page', 1)
+    available_users_page = paginator.get_page(page_number)
     
     context = {
         'title': f'{category_name} - Team Management',
@@ -110,7 +129,8 @@ def team_category_detail(request, category_name):
         'members': members,
         'group': group,
         'is_manual': is_manual,
-        'available_users': available_users,
+        'available_users': available_users_page,  # Paginated
+        'total_available': available_users_all.count(),  # Total count
     }
     
     return render(request, 'main/team_management/category_detail.html', context)
