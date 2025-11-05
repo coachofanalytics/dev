@@ -88,10 +88,122 @@
                             <li><strong>Short Puts</strong> - Cash-secured put positions</li>
                             <li><strong>Covered Calls</strong> - Covered call positions</li>
                         </ul>
-                        <hr>
-                        <p class="mb-2"><strong>💎 NEW: Technical Analysis Integration!</strong></p>
-                        <p class="small mb-0">
-                            Each position now includes <strong>RSI, Moving Averages, Volume</strong> analysis for better entry timing!
+                    </div>
+                    
+                    <!-- Unusual Whales Integration Guide -->
+                    <div class="alert" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <h5><i class="fa fa-whale"></i> 🐋 Unusual Whales Data (Optional - Boosts AI Scores!)</h5>
+                        <p class="mb-2">Upload additional files from your Unusual Whales Platform subscription for better position timing:</p>
+                        
+                        <!-- Quick Download Buttons -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <strong>⚡ Quick Download Links (Click → Download → Upload below):</strong>
+                                <div class="btn-group w-100 mt-2" role="group">
+                                    <a href="https://unusualwhales.com/live-options-flow?issue_types[]=Common%20Stock&limit=50&min_premium=100000&min_size=100&watchlist_name=CODA%20Institutional%20Flow" 
+                                       target="_blank" 
+                                       class="btn btn-light btn-sm">
+                                        <i class="fa fa-download"></i> Options Flow
+                                        <br><small>(Premium >$100k)</small>
+                                    </a>
+                                    <a href="https://unusualwhales.com/dark-pool-flow?limit=50&newer_than=1761894000000&older_than=1762243140000" 
+                                       target="_blank" 
+                                       class="btn btn-light btn-sm">
+                                        <i class="fa fa-download"></i> Dark Pool
+                                        <br><small>(Last 24hrs)</small>
+                                    </a>
+                                    <a href="https://unusualwhales.com/lit-flow" 
+                                       target="_blank" 
+                                       class="btn btn-light btn-sm">
+                                        <i class="fa fa-download"></i> Lit Flow
+                                        <br><small>(Exchange trades)</small>
+                                    </a>
+                                    <a href="https://unusualwhales.com/option-flow-alerts?limit=50&min_size_vol_ratio=3&newer_than=2025-11-03T13%3A30%3A00.000Z&older_than=2025-11-03T20%3A59%3A59.999Z&watchlist_name=CODA" 
+                                       target="_blank" 
+                                       class="btn btn-light btn-sm">
+                                        <i class="fa fa-download"></i> Unusual Activity
+                                        <br><small>(Volume alerts)</small>
+                                    </a>
+                                </div>
+                                <p class="small text-white-50 mt-2 mb-0">
+                                    💡 Click any button → Download CSV from Unusual Whales → Upload in "Additional Files" section below
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <hr style="border-color: rgba(255,255,255,0.3);">
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <strong>📊 PRIORITY 1: Options Flow</strong>
+                                <ul class="small mt-1 mb-2">
+                                    <li><strong>Where:</strong> Options → Live Options Flow</li>
+                                    <li><strong>Filter:</strong> Premium >$100k, Last 24hrs</li>
+                                    <li><strong>Export:</strong> Top 50 trades</li>
+                                    <li><strong>Filename:</strong> <code>OptionFlow_*.csv</code></li>
+                                    <li><strong>Boost:</strong> +20 pts (institutional activity)</li>
+                                </ul>
+                                
+                                <strong>📊 PRIORITY 2: Dark Pool</strong>
+                                <ul class="small mt-1 mb-2">
+                                    <li><strong>Where:</strong> Market → Dark Pool</li>
+                                    <li><strong>Filter:</strong> Size >1,000 shares, Last 24hrs</li>
+                                    <li><strong>Export:</strong> Top 50 trades</li>
+                                    <li><strong>Filename:</strong> <code>dark-pool_*.csv</code></li>
+                                    <li><strong>Boost:</strong> +20 pts (accumulation signal)</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <strong>📊 PRIORITY 3: Lit Flow</strong>
+                                <ul class="small mt-1 mb-0">
+                                    <li><strong>Where:</strong> Market → Lit Flow</li>
+                                    <li><strong>Filter:</strong> Last 24hrs</li>
+                                    <li><strong>Export:</strong> Top 50 trades</li>
+                                    <li><strong>Filename:</strong> <code>lit_flow_*.csv</code></li>
+                                    <li><strong>Boost:</strong> +10 pts (market interest)</li>
+                                </ul>
+                                
+                                <div class="alert alert-light mt-3 mb-0">
+                                    <strong>💡 Pro Tip:</strong><br>
+                                    <small>
+                                        • Download Monday morning (weekly)<br>
+                                        • Takes 10 minutes total<br>
+                                        • Saves $1,800/year vs API access!<br>
+                                        • 2+ confirmations = 🟢 ENTER NOW
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- OptionPlay Quick Download Buttons -->
+                    <div class="alert alert-success">
+                        <h5><i class="fa fa-chart-line"></i> 📊 OptionPlay Data (REQUIRED - Primary Source)</h5>
+                        <p class="mb-2">Click to download from OptionPlay, then upload below:</p>
+                        
+                        <div class="btn-group w-100 mt-2" role="group">
+                            <a href="https://www1.optionsplay.com/hub/short-puts" 
+                               target="_blank" 
+                               class="btn btn-success btn-sm">
+                                <i class="fa fa-download"></i> <strong>Short Puts</strong>
+                                <br><small>Cash-secured positions</small>
+                            </a>
+                            <a href="https://www1.optionsplay.com/hub/covered-calls" 
+                               target="_blank" 
+                               class="btn btn-success btn-sm">
+                                <i class="fa fa-download"></i> <strong>Covered Calls</strong>
+                                <br><small>Income generation</small>
+                            </a>
+                            <a href="https://www1.optionsplay.com/hub/credit-spread-file" 
+                               target="_blank" 
+                               class="btn btn-success btn-sm">
+                                <i class="fa fa-download"></i> <strong>Credit Spreads</strong>
+                                <br><small>Defined risk spreads</small>
+                            </a>
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">
+                            💡 Download → Click "Export CSV" → Upload in the main file section below
                         </p>
                     </div>
                     

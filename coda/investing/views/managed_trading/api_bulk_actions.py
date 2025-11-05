@@ -114,3 +114,4 @@ def bulk_approve_excellent(request):
             'message': str(e)
         }, status=500)
 
+
