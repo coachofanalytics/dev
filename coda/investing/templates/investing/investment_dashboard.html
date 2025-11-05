@@ -119,6 +119,26 @@
                         </div>
                     </div>
                     <hr>
+                    <!-- Phase 9: Data Upload Tools -->
+                    <div class="alert alert-info mb-3">
+                        <h6 class="mb-2"><i class="fa fa-upload"></i> <strong>Data Upload Tools (Phase 9)</strong></h6>
+                        <p class="small mb-0">Upload position data from OptionPlay and Unusual Whales</p>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <a href="{% url 'investing:csv_upload_wizard' %}" class="btn btn-success w-100 btn-lg">
+                                <i class="fa fa-file-csv"></i> <strong>📊 OptionPlay CSV Upload</strong>
+                                <br><small>Single file upload with AI scoring</small>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <a href="{% url 'investing:multi_file_analyzer' %}" class="btn btn-primary w-100 btn-lg">
+                                <i class="fa fa-whale"></i> <strong>🐋 Multi-File Flow Analyzer</strong>
+                                <br><small>OptionPlay + Unusual Whales (7 files max)</small>
+                            </a>
+                        </div>
+                    </div>
+                    <hr>
                     <div class="row">
                         <div class="col-md-3 mb-2">
                             <a href="{% url 'investing:create_managed_account' %}" class="btn btn-outline-info w-100">
