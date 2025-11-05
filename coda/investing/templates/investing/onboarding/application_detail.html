@@ -118,7 +118,7 @@
                             {% elif application.status == 'approved' %}
                             <div class="alert alert-success mb-0">
                                 <i class="fas fa-check-circle"></i> Your application has been approved! 
-                                <a href="{% url 'investing:managed_client_portal' %}" class="btn btn-success btn-sm ms-2">
+                                <a href="{% url 'investing:client_portal' %}" class="btn btn-success btn-sm ms-2">
                                     <i class="fas fa-chart-line"></i> Go to Client Portal
                                 </a>
                             </div>
@@ -135,7 +135,7 @@
 
                     <!-- Back Button -->
                     <div class="mt-3 text-center">
-                        <a href="{% url 'investing:managed_client_portal' %}" class="btn btn-outline-secondary">
+                        <a href="{% url 'investing:client_portal' %}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left"></i> Back to Dashboard
                         </a>
                     </div>
