@@ -736,7 +736,10 @@ class OptionListView(FilteredListViewMixin, ListView):
         default_title = "creditspread"
         # Get title from URL path parameter, not query parameter
         title = self.kwargs.get("title", default_title)
-        context.update({"title": title})
+        context.update({
+            "title": title,
+            "subtitle": title,  # Add subtitle for template compatibility
+        })
         return context
 
 
