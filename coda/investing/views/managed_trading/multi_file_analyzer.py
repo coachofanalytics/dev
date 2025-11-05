@@ -275,3 +275,4 @@ def _calculate_conviction_scores(parsed_data, symbols_by_file):
     
     return scored_symbols
 
+
