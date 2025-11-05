@@ -24,6 +24,7 @@ from ...services.technical_analysis_service import get_technical_indicators
 from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.spread_builder import SpreadBuilderService
 from ...services.auto_approval_service import AutoApprovalService
+from ...services.leaps_converter_service import LEAPSConverterService
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -822,6 +823,155 @@ def csv_import_and_score(request):
         logger.info(f"✅ Successfully imported {len(imported_ids)} positions to database")
         logger.info("=" * 80)
         
+        # ========== PHASE 10B: LEAPS CONVERSION ==========
+        leaps_converted_ids = []
+        leaps_summary = {
+            'total_leaps_detected': 0,
+            'converted_count': 0,
+            'rejected_count': 0,
+            'capital_before': Decimal('0'),
+            'capital_after': Decimal('0'),
+            'conversions': []
+        }
+        
+        if auto_convert and imported_ids:
+            logger.info("=" * 80)
+            logger.info("🔍 PHASE 10B: LEAPS DETECTION & CONVERSION")
+            logger.info("=" * 80)
+            
+            leaps_converter = LEAPSConverterService()
+            whales_symbols = request.session.get('whales_symbols', {})
+            
+            # Check for LEAPS (DTE > 60)
+            leaps_found = []
+            for raw_id in list(imported_ids):  # Create copy to allow modifications
+                try:
+                    raw_data = OptionPlayRawData.objects.get(id=raw_id)
+                    dte = raw_data.days_to_expiry or 0
+                    
+                    if 60 < dte <= 365:
+                        leaps_summary['total_leaps_detected'] += 1
+                        leaps_found.append(raw_data)
+                        logger.info(f"  🔍 LEAP: {raw_data.symbol} (DTE: {dte})")
+                
+                except OptionPlayRawData.DoesNotExist:
+                    continue
+            
+            if leaps_found:
+                logger.info(f"✅ Found {len(leaps_found)} LEAPS (DTE 60-365)")
+                logger.info("🐋 Checking Whales signals for conversion eligibility...")
+                
+                for raw_data in leaps_found:
+                    try:
+                        symbol = raw_data.symbol.upper()
+                        
+                        # Determine Whales signal
+                        whales_signal = 0
+                        if symbol in whales_symbols.get('options_flow', []):
+                            whales_signal = 50  # Strong bullish
+                        elif symbol in whales_symbols.get('dark_pool', []):
+                            whales_signal = 30  # Moderate
+                        elif symbol in whales_symbols.get('lit_flow', []):
+                            whales_signal = 15  # Weak
+                        
+                        # Check if should convert
+                        option_data = {
+                            'dte': raw_data.days_to_expiry,
+                            'whales_signal': whales_signal,
+                            'iv_rank': float(raw_data.iv_rank * 100) if raw_data.iv_rank else 20,
+                            'flow_premium': 100000 if whales_signal >= 30 else 50000,
+                            'option_type': 'call'
+                        }
+                        
+                        should_convert, reason = leaps_converter.should_convert(option_data)
+                        
+                        if should_convert:
+                            # Convert to Bull Call Spread
+                            long_call = {
+                                'symbol': raw_data.symbol,
+                                'strike': raw_data.sell_strike,
+                                'premium': raw_data.premium,
+                                'dte': raw_data.days_to_expiry,
+                                'stock_price': raw_data.stock_price or raw_data.sell_strike,
+                                'iv': float(raw_data.iv_rank) if raw_data.iv_rank else 0.40,
+                                'contracts': 1,
+                                'expiration_date': raw_data.expiry
+                            }
+                            
+                            spread = leaps_converter.convert_to_bull_call_spread(long_call)
+                            
+                            # Create Bull Call Spread in database
+                            spread_raw = OptionPlayRawData.objects.create(
+                                strategy_type='bull_call_spread',
+                                symbol=spread['symbol'],
+                                stock_price=raw_data.stock_price,
+                                sell_strike=Decimal(str(spread['positions'][1]['strike'])),
+                                buy_strike=Decimal(str(spread['positions'][0]['strike'])),
+                                premium=Decimal(str(spread['capital_required'] / 100)),
+                                expiry=spread['expiration_date'],
+                                days_to_expiry=spread['dte'],
+                                iv_rank=raw_data.iv_rank,
+                                width=Decimal(str(spread['spread_width'])),
+                                earnings_flag=raw_data.earnings_flag,
+                                uploaded_by=raw_data.uploaded_by,
+                                upload_notes=(
+                                    f"🚀 LEAPS → BULL CALL SPREAD (Phase 10B)\n"
+                                    f"Original: ${spread['positions'][0]['strike']} Call ({spread['dte']} DTE)\n"
+                                    f"Spread: ${spread['positions'][0]['strike']}/${spread['positions'][1]['strike']}\n"
+                                    f"Capital: ${spread['original_capital']:,.0f} → ${spread['capital_required']:,.0f} "
+                                    f"({spread['capital_reduction_pct']:.0f}% reduction)\n"
+                                    f"Whales: +{whales_signal} | {reason}"
+                                )
+                            )
+                            
+                            leaps_summary['converted_count'] += 1
+                            leaps_summary['capital_before'] += Decimal(str(spread['original_capital']))
+                            leaps_summary['capital_after'] += Decimal(str(spread['capital_required']))
+                            leaps_summary['conversions'].append({
+                                'symbol': spread['symbol'],
+                                'buy_strike': spread['positions'][0]['strike'],
+                                'sell_strike': spread['positions'][1]['strike'],
+                                'dte': spread['dte'],
+                                'capital_reduction_pct': spread['capital_reduction_pct']
+                            })
+                            
+                            leaps_converted_ids.append(spread_raw.id)
+                            imported_ids.remove(raw_data.id)
+                            imported_ids.append(spread_raw.id)
+                            raw_data.delete()
+                            
+                            logger.info(f"    ✅ {symbol}: ${spread['positions'][0]['strike']}/${spread['positions'][1]['strike']} Bull Call ({spread['capital_reduction_pct']:.0f}% savings)")
+                        else:
+                            leaps_summary['rejected_count'] += 1
+                            logger.info(f"    ❌ {symbol}: {reason}")
+                    
+                    except Exception as e:
+                        logger.error(f"    ❌ Error: {raw_data.symbol} - {e}")
+                        leaps_summary['rejected_count'] += 1
+                
+                leaps_summary['total_savings'] = leaps_summary['capital_before'] - leaps_summary['capital_after']
+                leaps_summary['savings_pct'] = float(leaps_summary['total_savings'] / leaps_summary['capital_before'] * 100) if leaps_summary['capital_before'] > 0 else 0
+                
+                logger.info("=" * 80)
+                logger.info(f"📊 LEAPS: {leaps_summary['converted_count']} converted, {leaps_summary['rejected_count']} rejected")
+                logger.info(f"💰 Savings: ${leaps_summary['total_savings']:,.0f} ({leaps_summary['savings_pct']:.0f}%)")
+                logger.info("=" * 80)
+            else:
+                logger.info("ℹ️  No LEAPS detected (all DTE < 60)")
+        
+        # Store LEAPS summary in session for results page
+        request.session['leaps_summary'] = {
+            'total_detected': leaps_summary['total_leaps_detected'],
+            'converted': leaps_summary['converted_count'],
+            'rejected': leaps_summary['rejected_count'],
+            'capital_before': float(leaps_summary['capital_before']),
+            'capital_after': float(leaps_summary['capital_after']),
+            'total_savings': float(leaps_summary['total_savings']),
+            'savings_pct': leaps_summary['savings_pct'],
+            'conversions': leaps_summary['conversions']
+        }
+        # ========================================================================
+        
         # Step 1.5: Auto-convert single-leg to spreads (NEW!)
         spread_converted_ids = []
         logger.info(f"🔍 Spread builder check: imported_ids={len(imported_ids)}, strategy_type='{strategy_type}'")
@@ -1577,6 +1727,7 @@ def csv_import_and_score(request):
             'tier1_breakdown': tier1_reasons,
             'tier2_breakdown': tier2_reasons,
             'near_miss_positions': near_miss_positions,
+            'leaps_summary': request.session.get('leaps_summary'),  # Phase 10B: LEAPS conversion
             'title': 'CSV Upload - Complete'
         }
         

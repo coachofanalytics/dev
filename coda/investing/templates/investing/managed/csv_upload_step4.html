@@ -190,6 +190,85 @@
                 <p class="mb-0"><small><strong>⚠️ Important:</strong> All capital and premium estimates are based on mid-prices for screening purposes. Actual execution prices will vary. Present these to clients as preliminary risk-return estimates before entering live trades.</small></p>
             </div>
             
+            <!-- PHASE 10B: LEAPS Conversion Summary -->
+            {% if leaps_summary and leaps_summary.total_detected > 0 %}
+            <div class="alert" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; margin-top: 20px;">
+                <h5 style="color: white; margin-bottom: 15px;">
+                    <i class="fa fa-rocket"></i> 🚀 LEAPS CONVERSION SUMMARY (Phase 10B)
+                </h5>
+                
+                <div class="row text-center" style="margin-bottom: 15px;">
+                    <div class="col-md-3">
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                            <h3 style="color: white; margin: 0;">{{ leaps_summary.total_detected }}</h3>
+                            <small>LEAPS Detected</small><br>
+                            <small class="text-muted" style="color: rgba(255,255,255,0.7);">DTE 60-365</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div style="background: rgba(92,184,92,0.3); padding: 15px; border-radius: 8px;">
+                            <h3 style="color: white; margin: 0;">✅ {{ leaps_summary.converted }}</h3>
+                            <small>Converted to Spreads</small><br>
+                            <small class="text-muted" style="color: rgba(255,255,255,0.7);">Whales ≥ +30</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div style="background: rgba(217,83,79,0.3); padding: 15px; border-radius: 8px;">
+                            <h3 style="color: white; margin: 0;">❌ {{ leaps_summary.rejected }}</h3>
+                            <small>Rejected</small><br>
+                            <small class="text-muted" style="color: rgba(255,255,255,0.7);">Weak signals</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div style="background: rgba(240,173,78,0.3); padding: 15px; border-radius: 8px;">
+                            <h3 style="color: white; margin: 0;">{{ leaps_summary.savings_pct|floatformat:0 }}%</h3>
+                            <small>Capital Saved</small><br>
+                            <small class="text-muted" style="color: rgba(255,255,255,0.7);">${{ leaps_summary.total_savings|floatformat:0 }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if leaps_summary.conversions %}
+                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h6 style="color: white; margin-bottom: 10px;">
+                        <i class="fa fa-list"></i> Converted Positions:
+                    </h6>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        <table class="table table-sm" style="color: white; margin-bottom: 0;">
+                            <thead style="background: rgba(0,0,0,0.2);">
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Strategy</th>
+                                    <th>DTE</th>
+                                    <th>Capital Reduction</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for conv in leaps_summary.conversions %}
+                                <tr>
+                                    <td><strong>{{ conv.symbol }}</strong></td>
+                                    <td>${{ conv.buy_strike|floatformat:0 }}/${{ conv.sell_strike|floatformat:0 }} Bull Call</td>
+                                    <td>{{ conv.dte }} days</td>
+                                    <td>
+                                        <span class="badge badge-success">{{ conv.capital_reduction_pct|floatformat:0 }}% savings</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                    <small>
+                        <strong>💡 LEAPS Strategy:</strong> Long-dated options (60-365 DTE) with strong Unusual Whales bullish signals 
+                        are automatically converted to Bull Call Spreads to reduce capital requirements by 60-70% while maintaining upside potential.
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- Next Actions -->
             <div class="card bg-light mt-4">
                 <div class="card-body">

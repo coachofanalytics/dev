@@ -1,11 +1,22 @@
 from django.urls import path
 
 from . import views
+from . import views_team_management
 # from .utils import convert_html_to_pdf
 
 app_name = 'main'
 urlpatterns = [
     path('', views.layout, name='layout'),
+    
+    #=======================TEAM MANAGEMENT (ADMIN)=====================================
+    path('team-management/', views_team_management.team_management_dashboard, name='team_management_dashboard'),
+    path('team-management/<str:category_name>/', views_team_management.team_category_detail, name='team_category_detail'),
+    path('team-management/assign/<int:user_id>/<str:category_name>/', views_team_management.assign_member_to_category, name='assign_member_to_category'),
+    path('team-management/remove/<int:user_id>/<str:category_name>/', views_team_management.remove_member_from_category, name='remove_member_from_category'),
+    path('team-management/update-priority/<int:user_id>/', views_team_management.update_member_priority, name='update_member_priority'),
+    path('team-management/recalculate-points/', views_team_management.recalculate_all_points, name='recalculate_all_points'),
+    #====================================================================================
+    
     path('get_respos', views.get_respos, name='get_respos'),
     path('fetch_model_table_names/', views.fetch_model_table_names, name='fetch_model_table_names'),
     # path('get_respos/<str:table>', views.get_respos, name='get_respos'),

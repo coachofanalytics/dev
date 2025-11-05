@@ -1,0 +1,187 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Team Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">🏢 Team Management Dashboard</h1>
+            <p class="lead text-muted">Manage team assignments, categories, and promotions</p>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3 class="display-4 text-primary">{{ total_team_members }}</h3>
+                    <p class="text-muted">Total Team Members</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3 class="display-4 text-success">{{ manual_count }}</h3>
+                    <p class="text-muted">📌 Manual Assignments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="display-4 text-info">{{ auto_count }}</h3>
+                    <p class="text-muted">📊 Points-Based</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Promotion Candidates Alert -->
+    {% if promotion_candidates %}
+    <div class="alert alert-warning">
+        <h4 class="alert-heading">🎯 Promotion Candidates ({{ promotion_candidates.count }})</h4>
+        <p>The following members have 6,000+ points and are ready for manual promotion:</p>
+        <ul>
+            {% for user in promotion_candidates %}
+            <li>
+                <strong>{{ user.get_full_name }}</strong> ({{ user.username}}) - 
+                {{ user.team_profile.total_points|floatformat:0 }} points
+                <a href="{% url 'admin:accounts_teamprofile_change' user.team_profile.id %}" class="btn btn-sm btn-primary">Promote</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- Team Categories -->
+    <div class="row">
+        <div class="col-12 mb-3">
+            <h2>Team Categories</h2>
+        </div>
+        
+        {% for category in team_groups %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 {% if category.is_manual %}border-success{% else %}border-info{% endif %}">
+                <div class="card-header {% if category.is_manual %}bg-success text-white{% else %}bg-info text-white{% endif %}">
+                    <h5 class="mb-0">
+                        {% if category.is_manual %}📌{% else %}📊{% endif %}
+                        {{ category.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-center display-4">{{ category.member_count }}</h3>
+                    <p class="text-center text-muted">
+                        {% if category.is_manual %}Manual Assignment{% else %}Points-Based{% endif %}
+                    </p>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'main:team_category_detail' category.name|urlencode %}" 
+                           class="btn btn-primary btn-block">
+                            View & Manage
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">⚡ Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'main:recalculate_all_points' %}" 
+                               class="btn btn-info btn-block"
+                               onclick="return confirm('Recalculate points for all non-manual members?')">
+                                🔄 Recalculate All Points
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:accounts_teamprofile_changelist' %}" 
+                               class="btn btn-secondary btn-block">
+                                📋 View in Django Admin
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:auth_group_changelist' %}" 
+                               class="btn btn-secondary btn-block">
+                                🏷️ Manage Groups
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'main:members' 'team_profiles' %}" 
+                               class="btn btn-success btn-block"
+                               target="_blank">
+                                👁️ View Public Page
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Text -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>ℹ️ How to Use This Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <h6>📌 Manual Categories (BOG, Elite, Lead, Support, Analysts):</h6>
+                    <ul>
+                        <li>Click "View & Manage" to see members</li>
+                        <li>Add/remove members manually</li>
+                        <li>Set priority (higher = displayed first)</li>
+                        <li>Points are calculated but don't affect categorization</li>
+                    </ul>
+                    
+                    <h6>📊 Points-Based Categories (Trainees):</h6>
+                    <ul>
+                        <li>Members auto-categorize by points</li>
+                        <li>Senior Trainee: 5,000-6,000 points</li>
+                        <li>Junior Trainee: 4,000-5,000 points</li>
+                        <li>Elementary: < 4,000 points</li>
+                        <li>At 6,000+ points: Flagged for manual promotion</li>
+                    </ul>
+                    
+                    <h6>🎯 Promoting Members:</h6>
+                    <ul>
+                        <li>System auto-flags members with 6,000+ points</li>
+                        <li>Review candidates in alert above</li>
+                        <li>Click "Promote" or use Django Admin bulk action</li>
+                        <li>Add promotion notes for tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-block {
+    width: 100%;
+}
+</style>
+{% endblock %}
+

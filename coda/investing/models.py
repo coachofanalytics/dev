@@ -3598,6 +3598,7 @@ class OptionPlayRawData(TimeStampedModel):
         ('credit_spread', 'Credit Spread'),
         ('bull_put_spread', 'Bull Put Spread'),
         ('bear_call_spread', 'Bear Call Spread'),
+        ('bull_call_spread', 'Bull Call Spread'),  # Phase 10B: LEAPS conversion
         ('iron_condor', 'Iron Condor'),
         ('short_put', 'Short Put'),
         ('covered_call', 'Covered Call'),

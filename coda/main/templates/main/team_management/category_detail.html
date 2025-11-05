@@ -1,0 +1,186 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ category_name }} - Team Management{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'main:team_management_dashboard' %}">Team Management</a></li>
+                    <li class="breadcrumb-item active">{{ category_name }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-4">
+                {% if is_manual %}📌{% else %}📊{% endif %}
+                {{ category_name }}
+            </h1>
+            <p class="lead text-muted">
+                {% if is_manual %}
+                    Manual Assignment - Admin controlled
+                {% else %}
+                    Points-Based - Auto-categorized daily
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    
+    <!-- Current Members -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">👥 Current Members ({{ members.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if members %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Position</th>
+                                    <th>Priority</th>
+                                    <th>Points</th>
+                                    <th>Assignment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in members %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ user.get_full_name }}</strong><br>
+                                        <small class="text-muted">{{ user.username }}</small>
+                                    </td>
+                                    <td>{{ user.profile.position|default:"Not set" }}</td>
+                                    <td>
+                                        <span class="badge badge-info">{{ user.team_profile.priority }}</span>
+                                    </td>
+                                    <td>
+                                        {{ user.team_profile.total_points|floatformat:0 }}
+                                        {% if user.team_profile.is_promotion_ready %}
+                                        <span class="badge badge-warning">🎯 Promotion Ready</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.team_profile.is_manually_assigned %}
+                                        <span class="badge badge-success">📌 Manual</span>
+                                        {% else %}
+                                        <span class="badge badge-info">📊 Auto</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'admin:accounts_teamprofile_change' user.team_profile.id %}" 
+                                               class="btn btn-primary" title="Edit in Admin">
+                                                ✏️
+                                            </a>
+                                            {% if is_manual %}
+                                            <a href="{% url 'main:remove_member_from_category' user.id category_name|urlencode %}" 
+                                               class="btn btn-danger" 
+                                               onclick="return confirm('Remove {{ user.get_full_name }} from {{ category_name }}?')"
+                                               title="Remove from category">
+                                                🗑️
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">No members in this category yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Members (Manual categories only) -->
+    {% if is_manual and available_users %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">➕ Add Members to {{ category_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Position</th>
+                                    <th>Current Category</th>
+                                    <th>Points</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in available_users|slice:":20" %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ user.get_full_name }}</strong><br>
+                                        <small class="text-muted">{{ user.username }}</small>
+                                    </td>
+                                    <td>{{ user.profile.position|default:"Not set" }}</td>
+                                    <td>
+                                        {% if user.team_profile.category %}
+                                            {{ user.team_profile.category }}
+                                        {% else %}
+                                            <span class="text-muted">Not assigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.team_profile %}
+                                            {{ user.team_profile.total_points|floatformat:0 }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'main:assign_member_to_category' user.id category_name %}" 
+                                           class="btn btn-sm btn-success">
+                                            ➕ Add to {{ category_name }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if available_users.count > 20 %}
+                    <p class="text-muted mb-0">Showing first 20 of {{ available_users.count }} available users</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{% url 'main:team_management_dashboard' %}" class="btn btn-secondary">
+                ← Back to Dashboard
+            </a>
+            <a href="{% url 'main:members' 'team_profiles' %}" class="btn btn-primary" target="_blank">
+                👁️ View Public Page
+            </a>
+            <a href="{% url 'admin:auth_group_change' group.id %}" class="btn btn-info">
+                🏷️ Edit Group in Admin
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
