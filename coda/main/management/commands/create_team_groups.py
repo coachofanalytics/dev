@@ -14,15 +14,21 @@ class Command(BaseCommand):
     help = 'Create Django Groups for team categories'
     
     TEAM_GROUPS = [
-        'BOG/Leadership',
+        # Core team categories
+        'BOG-Leadership',  # Changed from BOG/Leadership to avoid URL encoding issues
         'Elite Team',
         'Lead Team',
         'Support Team',
         'Senior Analysts',
         'Junior Analysts',
+        
+        # Trainee categories
         'Senior Trainee',
         'Junior Trainee',
         'Elementary',
+        
+        # External marketing
+        'Available for Hire',  # Members available for external opportunities
     ]
     
     def add_arguments(self, parser):

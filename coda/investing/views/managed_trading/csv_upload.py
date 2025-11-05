@@ -435,8 +435,12 @@ def csv_import_and_score(request):
         min_stock_price = Decimal(request.POST.get('min_stock_price', '40'))
         max_stock_price = Decimal(request.POST.get('max_stock_price', '600'))
         min_distance_otm = Decimal(request.POST.get('min_distance_otm', '0.03'))  # 3% OTM
-        tier2_ranking = request.POST.get('tier2_ranking', 'ai_score')  # ai_score, roc, balanced
+        tier2_ranking = request.POST.get('tier2_ranking', 'ai_score')  # ai_score, roc, balanced, whales
         tier2_max_positions = int(request.POST.get('tier2_max_positions', '12'))
+        
+        # NEW: Diversity controls (Phase 10 Enhancement)
+        max_per_sector = int(request.POST.get('max_per_sector', '2'))
+        max_per_week = int(request.POST.get('max_per_week', '2'))
         
         logger.info("=" * 80)
         logger.info("📊 IMPORT SETTINGS (Two-Tier Filtering)")
@@ -460,6 +464,8 @@ def csv_import_and_score(request):
             logger.info(f"  Min Distance OTM: {min_distance_otm*100:.0f}%")
             logger.info(f"  Ranking Method: {tier2_ranking.upper()}")
             logger.info(f"  Max Final Positions: {tier2_max_positions}")
+            logger.info(f"  Max Per Sector: {max_per_sector} (diversity control)")
+            logger.info(f"  Max Per Week: {max_per_week} (time spread control)")
         logger.info("")
         logger.info(f"Auto-Convert: {auto_convert}")
         logger.info(f"Auto-Score: {auto_score}")
@@ -782,6 +788,27 @@ def csv_import_and_score(request):
                     # Will be done after import
                     pass
                 
+                elif tier2_ranking == 'whales':
+                    # NEW: Whales Strength ranking (Phase 10 Enhancement)
+                    logger.info("  🐋 Ranking by Unusual Whales signal strength...")
+                    whales_symbols = request.session.get('whales_symbols', {})
+                    
+                    for pos in tier2_candidates:
+                        symbol = pos['symbol'].upper()
+                        
+                        # Calculate Whales score
+                        if symbol in whales_symbols.get('options_flow', []):
+                            pos['whales_score'] = 50  # Strong bullish
+                        elif symbol in whales_symbols.get('dark_pool', []):
+                            pos['whales_score'] = 30  # Moderate
+                        elif symbol in whales_symbols.get('lit_flow', []):
+                            pos['whales_score'] = 15  # Weak
+                        else:
+                            pos['whales_score'] = 0  # No signal
+                    
+                    tier2_candidates.sort(key=lambda x: x.get('whales_score', 0), reverse=True)
+                    logger.info(f"  Sorted by Whales Signal Strength (top score: {tier2_candidates[0].get('whales_score', 0)})")
+                
                 else:  # 'balanced'
                     # Balanced score: ROC + Premium + IV
                     for pos in tier2_candidates:
@@ -793,9 +820,48 @@ def csv_import_and_score(request):
                     tier2_candidates.sort(key=lambda x: x['balanced_score'], reverse=True)
                     logger.info("  Sorted by Balanced Score (ROC + Premium + IV)")
                 
-                # Select top N positions
-                final_positions = tier2_candidates[:tier2_max_positions]
-                logger.info(f"🎯 Selected TOP {len(final_positions)} positions for import")
+                # ========== NEW: APPLY DIVERSITY CONTROLS ==========
+                logger.info(f"🎯 Applying diversity controls (max {max_per_sector}/sector, {max_per_week}/week)...")
+                
+                sector_counts = defaultdict(int)
+                week_counts = defaultdict(int)
+                diversified_positions = []
+                diversity_filtered = 0
+                
+                for pos in tier2_candidates:
+                    # Check sector limit
+                    sector = _get_sector_from_symbol(pos['symbol'])
+                    if sector_counts[sector] >= max_per_sector:
+                        diversity_filtered += 1
+                        logger.debug(f"  ⏭️ Skipping {pos['symbol']}: Sector {sector} limit ({max_per_sector}) reached")
+                        continue
+                    
+                    # Check expiry week limit  
+                    if pos.get('mapped_data') and pos['mapped_data'].get('expiry'):
+                        expiry_str = pos['mapped_data']['expiry']
+                        week_key = _get_week_key_from_date_string(expiry_str)
+                        
+                        if week_counts[week_key] >= max_per_week:
+                            diversity_filtered += 1
+                            logger.debug(f"  ⏭️ Skipping {pos['symbol']}: Week {week_key} limit ({max_per_week}) reached")
+                            continue
+                        
+                        week_counts[week_key] += 1
+                    
+                    sector_counts[sector] += 1
+                    diversified_positions.append(pos)
+                    
+                    # Stop when we have enough
+                    if len(diversified_positions) >= tier2_max_positions:
+                        break
+                
+                logger.info(f"✅ Diversity applied: {len(diversified_positions)} positions selected")
+                logger.info(f"  Sectors: {dict(sector_counts)}")
+                logger.info(f"  Weeks: {dict(week_counts)}")
+                logger.info(f"  Filtered by diversity: {diversity_filtered}")
+                
+                final_positions = diversified_positions
+                logger.info(f"🎯 FINAL TIER 2 RESULT: {len(final_positions)} positions (diversified & ranked)")
             else:
                 logger.warning("⚠️  No positions passed Tier 2 filters!")
                 final_positions = []
@@ -2197,4 +2263,99 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
     )
     
     return raw_data
+
+
+# ============================================================================
+# HELPER FUNCTIONS: Sector & Expiry Week Detection (Phase 10 Enhancement)
+# ============================================================================
+
+def _get_sector_from_symbol(symbol):
+    """
+    Get sector for a stock symbol
+    
+    Returns: Sector name string
+    """
+    symbol = symbol.upper().strip()
+    
+    # Sector mappings (expandable)
+    SECTORS = {
+        'Technology': [
+            'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'AMZN', 'META', 'NVDA', 'AMD', 'INTC',
+            'ORCL', 'CRM', 'ADBE', 'NOW', 'INTU', 'QCOM', 'AVGO', 'ANET', 'CSCO',
+            'PLTR', 'SNOW', 'DDOG', 'NET', 'FTNT', 'ZS', 'CRWD', 'S', 'MDB',
+            'SOUN', 'IONQ', 'CORZ', 'TTD'
+        ],
+        'Finance': [
+            'JPM', 'BAC', 'GS', 'MS', 'C', 'WFC', 'BLK', 'SCHW', 'AXP',
+            'V', 'MA', 'PYPL', 'SQ', 'COIN', 'HOOD', 'SOFI', 'AFRM'
+        ],
+        'Energy': [
+            'XOM', 'CVX', 'COP', 'SLB', 'EOG', 'PXD', 'OXY', 'DVN', 'MPC', 'VLO'
+        ],
+        'Healthcare': [
+            'UNH', 'JNJ', 'PFE', 'ABBV', 'TMO', 'DHR', 'ABT', 'LLY', 'MRK', 'BMY',
+            'AMGN', 'GILD', 'NVO', 'REGN'
+        ],
+        'Consumer': [
+            'TSLA', 'NFLX', 'DIS', 'NKE', 'SBUX', 'MCD', 'HD', 'LOW', 'TGT', 'WMT',
+            'COST', 'TJX', 'ROST', 'LULU', 'ABNB', 'BKNG', 'MAR', 'HLT',
+            'APP', 'CVNA', 'ETSY', 'W'
+        ],
+        'Industrial': [
+            'BA', 'CAT', 'DE', 'GE', 'RTX', 'LMT', 'UPS', 'FDX', 'NSC', 'UNP',
+            'CEG', 'AIG', 'VST', 'ETN'
+        ],
+        'Semiconductor': [
+            'TSM', 'ASML', 'ARM', 'MRVL', 'LRCX', 'KLAC', 'AMAT', 'MU', 'NXPI',
+            'WDC', 'NTAP', 'STX', 'SMCI'
+        ],
+        'Automotive': [
+            'TSLA', 'GM', 'F', 'RACE', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI', 'AZO'
+        ],
+        'Materials': [
+            'NEM', 'AEM', 'WPM', 'PAAS', 'KGC', 'GDX', 'GDXJ', 'GLD', 'SLV'
+        ],
+        'Communication': [
+            'T', 'VZ', 'TMUS', 'CHTR', 'CMCSA', 'DIS', 'NFLX', 'SPOT', 'UBER'
+        ]
+    }
+    
+    # Find sector for symbol
+    for sector, symbols in SECTORS.items():
+        if symbol in symbols:
+            return sector
+    
+    # Default if not found
+    return 'Other'
+
+
+def _get_week_key_from_date_string(date_str):
+    """
+    Get week identifier from date string
+    
+    Args:
+        date_str: Date string (MM/DD/YYYY or YYYY-MM-DD)
+        
+    Returns:
+        str: Week key like "2025-W46"
+    """
+    from datetime import datetime
+    
+    try:
+        # Try different date formats
+        for fmt in ['%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y']:
+            try:
+                date_obj = datetime.strptime(date_str, fmt).date()
+                # Get ISO week
+                year, week, _ = date_obj.isocalendar()
+                return f"{year}-W{week:02d}"
+            except ValueError:
+                continue
+        
+        # If all fail, return generic
+        return "Unknown-Week"
+    
+    except Exception as e:
+        logger.debug(f"  ⚠️ Could not parse date '{date_str}': {e}")
+        return "Unknown-Week"
 

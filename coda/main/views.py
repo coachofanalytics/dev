@@ -749,20 +749,19 @@ def team(request, title):
     
     # Define categories for each page type
     if sub_title == 'team_profiles':
-        # Manual categories (established team)
+        # Manual categories (established team) - Excludes BOG (shown separately on /board)
         categories = [
-            'BOG/Leadership',
             'Elite Team',
             'Lead Team',
             'Support Team',
             'Senior Analysts',
-            'Junior Analysts',
         ]
         heading = "THE BEST TEAM IN ANALYTICS AND WEB DEVELOPMENT"
         
     elif sub_title == 'future_talents':
-        # Points-based categories (trainees)
+        # Points-based categories (trainees & junior analysts)
         categories = [
+            'Junior Analysts',    # Advanced trainees ready for analyst work
             'Senior Trainee',
             'Junior Trainee',
             'Elementary',
@@ -770,32 +769,38 @@ def team(request, title):
         heading = "MINDS OF TOMORROW: LEADING DATA ANALYTICS AND WEB DEVELOPMENT"
         
     elif sub_title == 'board':
-        # Board page (BOG/Leadership only)
-        categories = ['BOG/Leadership']
+        # Board page (BOG-Leadership only)
+        categories = ['BOG-Leadership']
         heading = "BOARD OF GOVERNORS"
         
     elif sub_title == 'client_profiles':
-        # Client profiles (keep old logic for now)
-        clients_job_seekers = UserProfile.objects.filter(
-            user__category__in=[1, 3, 4, 5, 6, 7],
-            user__is_active=True
-        ).exclude(user__sub_category=4).order_by("user__date_joined")
+        # Client profiles = Talent Marketplace (external students available for hire)
+        # Shows CODA staff/alumni who are also available for external opportunities
+        heading = "AVAILABLE TALENT - DATA ANALYTICS & WEB DEVELOPMENT"
         
-        clients_job_support = UserProfile.objects.filter(
-            user__category__in=[1, 3, 4, 5, 6, 7],
-            user__sub_category=4, 
-            user__is_active=True
-        ).order_by("user__date_joined")
+        # Get members marked as "Available for Hire"
+        available_members = TeamService.get_team_members('Available for Hire')
         
-        team_categories = {
-            'Job Seekers': list(clients_job_seekers),
-            'Job Support': list(clients_job_support),
-        }
-        heading = "EXPERTS FOR DATA ANALYTICS/SCIENCE"
+        team_categories = {}
+        if available_members.exists():
+            # Convert to UserProfile objects
+            member_profiles = []
+            for user in available_members:
+                # Ensure TeamProfile exists
+                if not hasattr(user, 'team_profile'):
+                    from accounts.models import TeamProfile
+                    TeamProfile.objects.create(user=user)
+                
+                # Get UserProfile
+                member_profiles.append(user.profile)
+            
+            # Only show if we have profiles
+            if member_profiles:
+                team_categories['CODA Certified Professionals - Ready for Hire'] = member_profiles
         
         context = {
             "team_categories": team_categories,
-            "team_members": [],  # Not used for client profiles
+            "team_members": [],
             "title": heading,
         }
         return render(request, "main/team_profiles.html", context)
@@ -811,6 +816,7 @@ def team(request, title):
         # Use TeamService to get members (optimized query)
         members = TeamService.get_team_members(category_name)
         
+        # Only show categories that have members
         if members.exists():
             # Convert QuerySet to list of UserProfile objects for template compatibility
             member_profiles = []
@@ -823,7 +829,9 @@ def team(request, title):
                 # Get UserProfile
                 member_profiles.append(user.profile)
             
-            team_categories[category_name] = member_profiles
+            # Only add to dict if there are actual profiles
+            if member_profiles:
+                team_categories[category_name] = member_profiles
     
     # Get promotion candidates (if admin)
     promotion_candidates = []

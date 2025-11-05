@@ -23,22 +23,38 @@ class TeamService:
     """Service layer for team operations"""
     
     # Team category definitions
-    MANUAL_CATEGORIES = [
-        'BOG/Leadership',
+    # NOTE: ALL categories support both modes:
+    # - Auto-assigned by points (default, is_manually_assigned=False)
+    # - Manually pinned (admin override, is_manually_assigned=True)
+    
+    LEADERSHIP_CATEGORIES = [
+        'BOG-Leadership',  # Board of Governors
         'Elite Team',
+    ]
+    
+    CORE_TEAM_CATEGORIES = [
         'Lead Team',
         'Support Team',
         'Senior Analysts',
         'Junior Analysts',
     ]
     
-    POINTS_CATEGORIES = [
+    TRAINEE_CATEGORIES = [
         'Senior Trainee',
         'Junior Trainee',
         'Elementary',
     ]
     
-    ALL_CATEGORIES = MANUAL_CATEGORIES + POINTS_CATEGORIES
+    # Special groups (can be combined with other categories)
+    SPECIAL_GROUPS = [
+        'Available for Hire',  # Members available for external opportunities
+    ]
+    
+    # For backward compatibility
+    MANUAL_CATEGORIES = LEADERSHIP_CATEGORIES + CORE_TEAM_CATEGORIES
+    POINTS_CATEGORIES = TRAINEE_CATEGORIES
+    
+    ALL_CATEGORIES = LEADERSHIP_CATEGORIES + CORE_TEAM_CATEGORIES + TRAINEE_CATEGORIES + SPECIAL_GROUPS
     
     # Point thresholds for auto-categorization
     POINT_THRESHOLDS = {
@@ -273,6 +289,17 @@ class TeamService:
         # Skip manual members
         if team_profile.is_manually_assigned:
             logger.debug(f"Skipping {user.username} - manually assigned")
+            return
+        
+        # Skip users already in manual categories (established team)
+        user_groups = list(user.groups.values_list('name', flat=True))
+        in_manual_category = any(
+            group_name in TeamService.MANUAL_CATEGORIES 
+            for group_name in user_groups
+        )
+        
+        if in_manual_category:
+            logger.debug(f"Skipping {user.username} - already in manual category: {user_groups}")
             return
         
         points = team_profile.total_points

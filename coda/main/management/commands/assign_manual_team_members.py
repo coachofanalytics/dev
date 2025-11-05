@@ -19,29 +19,32 @@ class Command(BaseCommand):
     # Team assignments using Django Groups
     # Format: category_slug -> [(username, full_name, priority), ...]
     MANUAL_ASSIGNMENTS = {
-        'BOG/Leadership': [
+        'BOG-Leadership': [  # Changed from BOG/Leadership to avoid URL encoding issues
             # (username, full_name, priority)
-            ('amanda_towe', 'Amanda Towe', 100),
+            ('atowe', 'Amanda Towe', 100),
             ('cmaghas', 'Chris Maghas', 90),
-            ('tirimba_obonyo', 'Tirimba Obonyo', 80),
+            ('tobonyo', 'Tirimba Obonyo', 80),
         ],
         'Elite Team': [
-            ('coda-info', 'Chris Maghas', 100),
+            ('cmaghas', 'Chris Maghas', 100),
         ],
         'Lead Team': [
-            ('edwin_kimtai', 'Edwin Kimtai', 100),
-            ('emanuel_masakhwe', 'Emanuel Masakhwe', 90),
-            ('george_ndahiro', 'George Ndahiro', 80),
+            ('gndahiro', 'George Ndahiro', 100),
         ],
         'Support Team': [
-            ('hashim_kha', 'Hashim Kha', 100),
-            ('christine_karagu', 'Christine Karagu', 90),
+            ('ckarugu', 'Christine Karugu', 100),
+            ('phinehaskiyozeal@gmail.com', 'Phinehas Maina', 90),
         ],
         'Senior Analysts': [
-            ('sylvia_jelante', 'Sylvia Jelante', 100),
         ],
+        # Note: Junior Analysts moved to Future Talents (points-based)
         'Junior Analysts': [
-            ('phinehas_maina', 'Phinehas Maina', 100),
+        ],
+        'Senior Trainee': [
+            ('Brenda', 'Brenda Nasimiyu', 100),
+        ],
+        'Junior Trainee': [
+            ('ENyamari', 'Eugene Nyamari', 100),
         ],
     }
     

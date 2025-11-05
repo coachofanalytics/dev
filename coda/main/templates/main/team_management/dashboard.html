@@ -12,6 +12,47 @@
         </div>
     </div>
     
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">⚡ Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="/team-management/recalculate-points/" 
+                               class="btn btn-info btn-block"
+                               onclick="return confirm('Recalculate points for all non-manual members?')">
+                                🔄 Recalculate All Points
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:accounts_teamprofile_changelist' %}" 
+                               class="btn btn-secondary btn-block">
+                                📋 View in Django Admin
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:auth_group_changelist' %}" 
+                               class="btn btn-secondary btn-block">
+                                🏷️ Manage Groups
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'main:members' 'team_profiles' %}" 
+                               class="btn btn-success btn-block"
+                               target="_blank">
+                                👁️ View Public Page
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-4">
@@ -68,18 +109,23 @@
             <div class="card h-100 {% if category.is_manual %}border-success{% else %}border-info{% endif %}">
                 <div class="card-header {% if category.is_manual %}bg-success text-white{% else %}bg-info text-white{% endif %}">
                     <h5 class="mb-0">
-                        {% if category.is_manual %}📌{% else %}📊{% endif %}
                         {{ category.name }}
                     </h5>
                 </div>
                 <div class="card-body">
                     <h3 class="text-center display-4">{{ category.member_count }}</h3>
                     <p class="text-center text-muted">
-                        {% if category.is_manual %}Manual Assignment{% else %}Points-Based{% endif %}
+                        {% if category.is_manual %}
+                            <strong>Typical: Manual Assignment</strong><br>
+                            <small>Can also auto-assign by points</small>
+                        {% else %}
+                            <strong>Typical: Points-Based</strong><br>
+                            <small>Can manually override/pin</small>
+                        {% endif %}
                     </p>
                     
                     <div class="text-center mt-3">
-                        <a href="{% url 'main:team_category_detail' category.name|urlencode %}" 
+                        <a href="/team-management/{{ category.name_encoded }}/" 
                            class="btn btn-primary btn-block">
                             View & Manage
                         </a>
@@ -90,47 +136,6 @@
         {% endfor %}
     </div>
     
-    <!-- Quick Actions -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">⚡ Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <a href="{% url 'main:recalculate_all_points' %}" 
-                               class="btn btn-info btn-block"
-                               onclick="return confirm('Recalculate points for all non-manual members?')">
-                                🔄 Recalculate All Points
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'admin:accounts_teamprofile_changelist' %}" 
-                               class="btn btn-secondary btn-block">
-                                📋 View in Django Admin
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'admin:auth_group_changelist' %}" 
-                               class="btn btn-secondary btn-block">
-                                🏷️ Manage Groups
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'main:members' 'team_profiles' %}" 
-                               class="btn btn-success btn-block"
-                               target="_blank">
-                                👁️ View Public Page
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <!-- Help Text -->
     <div class="row mt-4">
         <div class="col-12">
@@ -139,29 +144,34 @@
                     <h5>ℹ️ How to Use This Dashboard</h5>
                 </div>
                 <div class="card-body">
-                    <h6>📌 Manual Categories (BOG, Elite, Lead, Support, Analysts):</h6>
+                    <h6>🔄 Hybrid Assignment System:</h6>
+                    <p><strong>ALL categories support BOTH modes:</strong></p>
                     <ul>
-                        <li>Click "View & Manage" to see members</li>
-                        <li>Add/remove members manually</li>
-                        <li>Set priority (higher = displayed first)</li>
-                        <li>Points are calculated but don't affect categorization</li>
+                        <li><strong>📌 Manual (Pinned):</strong> Admin assigns - member stays regardless of points</li>
+                        <li><strong>📊 Auto (Points):</strong> System assigns - member may move on recalculation</li>
                     </ul>
                     
-                    <h6>📊 Points-Based Categories (Trainees):</h6>
+                    <h6>📊 Point Thresholds (for Auto-Assignment):</h6>
                     <ul>
-                        <li>Members auto-categorize by points</li>
                         <li>Senior Trainee: 5,000-6,000 points</li>
                         <li>Junior Trainee: 4,000-5,000 points</li>
                         <li>Elementary: < 4,000 points</li>
-                        <li>At 6,000+ points: Flagged for manual promotion</li>
+                        <li>6,000+ points: Flagged for promotion review</li>
                     </ul>
                     
-                    <h6>🎯 Promoting Members:</h6>
+                    <h6>🎯 How to Manage:</h6>
                     <ul>
-                        <li>System auto-flags members with 6,000+ points</li>
-                        <li>Review candidates in alert above</li>
-                        <li>Click "Promote" or use Django Admin bulk action</li>
-                        <li>Add promotion notes for tracking</li>
+                        <li><strong>Add Member:</strong> Click "View & Manage" → Click "Add to [Category]" → Auto-assigned by default</li>
+                        <li><strong>Pin Member:</strong> Use Django Admin → Mark "is_manually_assigned" = True</li>
+                        <li><strong>Recalculate:</strong> Click "Recalculate All Points" → Only affects auto-assigned members</li>
+                        <li><strong>Remove:</strong> Click trash icon → Removes from category</li>
+                    </ul>
+                    
+                    <h6>💡 Best Practices:</h6>
+                    <ul>
+                        <li><strong>Leadership (BOG, Elite):</strong> Always manually pin</li>
+                        <li><strong>Core Team (Lead, Support, Analysts):</strong> Manually pin established members</li>
+                        <li><strong>Trainees:</strong> Let system auto-assign, manually pin when ready</li>
                     </ul>
                 </div>
             </div>

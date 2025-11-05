@@ -28,28 +28,43 @@ def team_management_dashboard(request):
     Main team management dashboard.
     Shows all categories with member counts and quick actions.
     """
-    # Get all team groups with member counts
+    # Get all team groups with member counts (only show non-empty groups)
+    from urllib.parse import quote
     team_groups = []
     for group_name in TeamService.ALL_CATEGORIES:
         group = Group.objects.filter(name=group_name).first()
         if group:
             member_count = group.user_set.filter(is_active=True).count()
-            is_manual = group_name in TeamService.MANUAL_CATEGORIES
             
-            team_groups.append({
-                'name': group_name,
-                'member_count': member_count,
-                'is_manual': is_manual,
-                'group_obj': group,
-            })
+            # Only show groups that have members
+            if member_count > 0:
+                is_manual = group_name in TeamService.MANUAL_CATEGORIES
+                
+                team_groups.append({
+                    'name': group_name,
+                    'name_encoded': quote(group_name),  # URL-encoded version
+                    'member_count': member_count,
+                    'is_manual': is_manual,
+                    'group_obj': group,
+                })
     
     # Get promotion candidates
     promotion_candidates = TeamService.get_promotion_candidates()
     
     # Get team statistics
     total_team_members = TeamProfile.objects.filter(user__is_active=True).count()
-    manual_count = TeamProfile.objects.filter(is_manually_assigned=True).count()
-    auto_count = TeamProfile.objects.filter(is_manually_assigned=False).count()
+    
+    # Manual count: users in manual categories
+    manual_count = User.objects.filter(
+        is_active=True,
+        groups__name__in=TeamService.MANUAL_CATEGORIES
+    ).distinct().count()
+    
+    # Points-based count: users in points-based categories
+    auto_count = User.objects.filter(
+        is_active=True,
+        groups__name__in=TeamService.POINTS_CATEGORIES
+    ).distinct().count()
     
     context = {
         'title': 'Team Management Dashboard',
@@ -69,6 +84,8 @@ def team_category_detail(request, category_name):
     """
     View and manage members in a specific category.
     """
+    from urllib.parse import quote
+    
     # Get members in this category
     members = TeamService.get_team_members(category_name)
     
@@ -89,6 +106,7 @@ def team_category_detail(request, category_name):
     context = {
         'title': f'{category_name} - Team Management',
         'category_name': category_name,
+        'category_name_encoded': quote(category_name),  # URL-encoded version
         'members': members,
         'group': group,
         'is_manual': is_manual,
