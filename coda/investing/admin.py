@@ -90,6 +90,29 @@ class ManagedTradingAccountAdmin(admin.ModelAdmin):
     search_fields = ['account_number', 'client__username', 'client__email', 'client__first_name', 'client__last_name']
     readonly_fields = ['account_number', 'created_at', 'updated_at', 'win_rate_display', 'roi_display', 'available_buying_power_display', 'risk_exposure_display']
     
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """
+        Filter user foreign keys by category and active status
+        
+        This prevents the dropdown from showing ALL users (100+) and instead
+        shows only relevant, active users based on their role:
+        - client: Active Investors only
+        - account_manager: Active Staff only
+        
+        Related: docs/USER_FILTERING_AUDIT_AND_FIX.md
+        """
+        from accounts.utilities.user_querysets import (
+            get_active_investors_queryset,
+            get_active_staff_queryset
+        )
+        
+        if db_field.name == 'client':
+            kwargs['queryset'] = get_active_investors_queryset()
+        elif db_field.name == 'account_manager':
+            kwargs['queryset'] = get_active_staff_queryset()
+        
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
     fieldsets = (
         ('Account Information', {
             'fields': ('account_number', 'client', 'account_name', 'account_manager', 'status')

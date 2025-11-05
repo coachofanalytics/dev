@@ -321,6 +321,22 @@ class ManagedAccountForm(forms.ModelForm):
             'monthly_platform_fee': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Filter client to active investors only
+        if 'client' in self.fields:
+            from accounts.utilities.user_querysets import get_active_investors_queryset
+            self.fields['client'].queryset = get_active_investors_queryset()
+            self.fields['client'].empty_label = "--- Select Client (Investor) ---"
+        
+        # Filter account_manager to active staff only
+        if 'account_manager' in self.fields:
+            from accounts.utilities.user_querysets import get_active_staff_queryset
+            self.fields['account_manager'].queryset = get_active_staff_queryset()
+            self.fields['account_manager'].empty_label = "--- Select Account Manager (Staff) ---"
+            self.fields['account_manager'].required = False
+    
     def clean_initial_capital(self):
         capital = self.cleaned_data.get('initial_capital')
         if capital and capital < Decimal('5000.00'):
