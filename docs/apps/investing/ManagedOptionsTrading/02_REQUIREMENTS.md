@@ -1119,6 +1119,223 @@ Since the initial requirements were defined (October 2025), the following enhanc
 
 ---
 
+---
+
+## 🎯 PHASE 10: PORTFOLIO INTELLIGENCE & OPTIMIZATION
+**Status:** 📋 Requirements Approved (Nov 5, 2025)  
+**Priority:** 🔴 CRITICAL  
+**Timeline:** 4-5 weeks (Phased implementation)
+
+### **Business Problem**
+
+**Current State (After Phase 9):**
+- ✅ Auto-spread builder working
+- ✅ Bulk approval for EXCELLENT positions (≥95 score)
+- ✅ Unusual Whales integration
+- ⚠️ **Gap:** When 20+ positions pass filters, unclear which 5 to select
+- ⚠️ **Gap:** LEAPS (365 DTE) rejected despite strong signals
+- ⚠️ **Gap:** No portfolio-level analysis (positions picked individually)
+- ⚠️ **Gap:** No hedging/insurance against market crashes
+
+---
+
+### **Phase 10A: Smart Position Ranking** (Week 1-2)
+**Priority:** 🔴 CRITICAL
+
+#### BR-010A: Multi-Factor Position Ranking
+**Description:** Intelligently rank and select top 5 positions from 20+ approved positions using weighted factors.
+
+**Ranking Algorithm:**
+```
+Total Score = (Whales × 35%) + (Earnings × 25%) + (Profit × 20%) + (DTE × 20%)
+
+Where:
+- Whales Score: Unusual Whales directional signal strength (+50 to -50)
+- Earnings Score: Safety from earnings conflicts (100=safe, 0=earnings before expiry)
+- Profit Score: ROC (Return on Capital) percentage
+- DTE Score: Diversification across expiration dates
+```
+
+**Acceptance Criteria:**
+- [x] Ranking weights agreed: Whales 35%, Earnings 25%, ROC 20%, DTE 20%
+- [ ] System scores all pending positions using multi-factor algorithm
+- [ ] Top 5 positions displayed with breakdown (why each was selected)
+- [ ] Staff can see full ranked list (all 20+) with scores
+- [ ] One-click "Accept Top 5" button
+- [ ] Manual override option (pick different 5)
+
+**Business Rules:**
+- Whales alignment: Bull Put + Bullish Flow = bonus +10 points
+- Earnings conflict: Position with earnings <5 days = -50 points
+- DTE clustering: If 3+ positions same expiry week = penalize clustering
+- Sector concentration: Max 3 positions in same sector
+
+---
+
+### **Phase 10B: LEAPS Conversion** (Week 2-3)
+**Priority:** 🟡 HIGH
+
+#### BR-010B: Intelligent LEAPS Strategy Conversion
+**Description:** Convert long-dated options (60-365 DTE) to Bull Call Spreads when strong institutional signals present.
+
+**Conversion Criteria:**
+```
+IF:
+  - DTE between 60-365 days AND
+  - Unusual Whales bullish signal ≥ +30 AND
+  - IV Rank > 30% AND
+  - Options flow premium > $100k
+
+THEN:
+  - Convert to Bull Call Spread (debit spread)
+  - Buy ATM call (from Whales data)
+  - Sell 10-15% OTM call
+  - Reduce capital requirement by 60-70%
+```
+
+**Acceptance Criteria:**
+- [x] Only convert LEAPS if Whales signal ≥ +30
+- [ ] System detects LEAPS (DTE > 60) during CSV upload
+- [ ] Auto-calculates optimal short call strike (10-15% OTM)
+- [ ] Estimates short call premium (using Black-Scholes or API)
+- [ ] Creates Bull Call Spread position
+- [ ] Shows capital reduction % (vs buying call outright)
+- [ ] Staff can enable/disable LEAPS conversion per upload
+
+**Example:**
+```
+Original: NBIS $115 Call - 319 DTE - $4,600 capital
+Converted: NBIS $115/$130 Bull Call Spread - 319 DTE - $1,600 capital (65% reduction)
+```
+
+---
+
+### **Phase 10C: Portfolio Optimizer** (Week 3-4)
+**Priority:** 🔴 CRITICAL
+
+#### BR-010C: AI-Generated Portfolio Comparison
+**Description:** Generate 3 distinct portfolios (Aggressive, Balanced, Conservative), compare metrics, recommend best.
+
+**Portfolio Strategies:**
+
+**Portfolio A - Aggressive Growth:**
+- Focus: High ROC positions (>10%)
+- Risk: Higher (PoP >65%)
+- DTE: Shorter (20-35 days) for fast theta
+- Sectors: Concentrated (tech-heavy OK)
+- Whales weight: Maximum (90%+ alignment preferred)
+
+**Portfolio B - Balanced Income:**
+- Focus: Moderate ROC (6-9%)
+- Risk: Medium (PoP >70%)
+- DTE: Mixed (30-45 days)
+- Sectors: Diversified (max 2 per sector)
+- Whales weight: Strong (75%+ alignment)
+
+**Portfolio C - Conservative Safety:**
+- Focus: Capital preservation (ROC >4%)
+- Risk: Lower (PoP >80%)
+- DTE: Longer (40-60 days) for flexibility
+- Sectors: Highly diversified (1 per sector)
+- Whales weight: Moderate (50%+ alignment)
+
+**Portfolio Scoring:**
+```
+Portfolio Score = (Expected Return × 30%) + (Sharpe Ratio × 25%) + 
+                  (Diversification × 20%) + (Whales Alignment × 15%) + 
+                  (Capital Efficiency × 10%)
+```
+
+**Acceptance Criteria:**
+- [x] Generate exactly 3 portfolios (Aggressive, Balanced, Conservative)
+- [ ] Each portfolio has 5 positions
+- [ ] Side-by-side comparison table with 12+ metrics
+- [ ] AI recommends winner (highest score)
+- [ ] Staff can view position breakdown for each portfolio
+- [ ] One-click "Submit Portfolio B" button
+- [ ] Can generate new portfolios if unsatisfied
+
+**Comparison Metrics:**
+- Total ROC (expected return)
+- Average Probability of Profit
+- Capital required
+- Max profit / Max loss
+- Risk/Reward ratio
+- Sector diversity score
+- DTE range
+- Earnings conflicts count
+- Whales alignment %
+- Overall AI score (0-100)
+
+---
+
+### **Phase 10D: Portfolio Hedging** (Week 4-5)
+**Priority:** 🟡 MEDIUM
+
+#### BR-010D: Automated Portfolio Insurance
+**Description:** Recommend and implement hedges to protect portfolio against market crashes and volatility spikes.
+
+**Hedge Types:**
+
+**1. Market Hedge (SPY Put Spread):**
+```
+Purpose: Protect against 5-10% market selloff
+Cost: 3-5% of portfolio
+Example:
+  - BUY SPY $550 Put @ $8
+  - SELL SPY $540 Put @ $5
+  Net: $300 (protects $7,200 portfolio)
+  Pays: $700 if market crashes
+```
+
+**2. Volatility Hedge (VIX Call):**
+```
+Purpose: Profit from panic/volatility spike
+Cost: 2-3% of portfolio
+Example:
+  - BUY VIX $35 Call @ $2
+  Net: $200
+  Pays: $1,000+ if VIX > 45
+```
+
+**3. Sector Hedge (QQQ Put for Tech):**
+```
+Purpose: Protect tech-heavy portfolios
+Cost: 2-3% of portfolio
+Condition: If 3+ positions in Tech sector
+Example:
+  - BUY/SELL QQQ Put Spread
+  Net: $150
+  Pays: $400 if QQQ drops 10%
+```
+
+**Acceptance Criteria:**
+- [x] Insurance budget: 5-10% of portfolio max
+- [ ] System analyzes portfolio risk exposure
+- [ ] Recommends 1-3 hedges based on exposure
+- [ ] Shows cost/benefit for each hedge
+- [ ] Calculates "hedged loss" vs "unhedged loss" scenarios
+- [ ] One-click "Add Recommended Hedges" button
+- [ ] Can skip insurance (optional, not required)
+- [ ] Shows risk-adjusted return after insurance
+
+**Hedge Recommendation Logic:**
+```
+IF portfolio_value > $5000:
+  - Recommend SPY put spread (always)
+  
+IF tech_positions >= 3:
+  - Recommend QQQ put spread
+  
+IF VIX < 20 (low volatility):
+  - Recommend VIX call (cheap insurance)
+  
+IF earnings_in_next_week >= 2:
+  - Recommend tighter stop losses
+```
+
+---
+
 ### **⏳ Future Enhancements Roadmap**
 
 For detailed future enhancement plans, see:

@@ -823,3 +823,117 @@ class Team_Members(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class TeamProfile(models.Model):
+    """
+    Team-specific metadata using Django Groups for categorization.
+    
+    Design: SMALL model (5 data fields). Category stored in Django Groups.
+    UserProfile NOT modified - keeps it at 38 fields.
+    
+    Usage:
+        - Manual roles (BOG, Elite, Lead, etc.) assigned via admin
+        - Trainees auto-categorized by points
+        - Promotion tracking built-in
+    """
+    
+    # Core relationship
+    user = models.OneToOneField(
+        'accounts.CustomerUser',  # Use string reference to avoid circular import
+        on_delete=models.CASCADE,
+        related_name='team_profile',
+        help_text='User this team profile belongs to'
+    )
+    
+    # Display priority (for ordering within category)
+    priority = models.IntegerField(
+        default=0,
+        db_index=True,
+        help_text='Display priority (higher number = shown first within category)'
+    )
+    
+    # Cached points (calculated daily for performance)
+    total_points = models.IntegerField(
+        default=0,
+        db_index=True,
+        help_text='Cached total points (recalculated daily by management command)'
+    )
+    
+    # Assignment method tracking
+    is_manually_assigned = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='True = manual assignment (admin), False = points-based (auto)'
+    )
+    
+    # Promotion tracking
+    last_promoted = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When last promoted to manual category'
+    )
+    
+    promotion_notes = models.TextField(
+        blank=True,
+        help_text='Promotion notes (who promoted, why, approval notes)'
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'accounts_teamprofile'
+        verbose_name = 'Team Profile'
+        verbose_name_plural = 'Team Profiles'
+        indexes = [
+            models.Index(fields=['priority', '-total_points']),
+            models.Index(fields=['is_manually_assigned']),
+        ]
+    
+    def __str__(self):
+        category = self.category or 'Uncategorized'
+        return f"{self.user.username} - {category}"
+    
+    @property
+    def category(self):
+        """
+        Get team category from user's groups.
+        
+        Returns:
+            String category name or None if not assigned
+        """
+        TEAM_GROUPS = [
+            'BOG/Leadership',
+            'Elite Team',
+            'Lead Team',
+            'Support Team',
+            'Senior Analysts',
+            'Junior Analysts',
+            'Senior Trainee',
+            'Junior Trainee',
+            'Elementary',
+        ]
+        
+        for group_name in TEAM_GROUPS:
+            if self.user.groups.filter(name=group_name).exists():
+                return group_name
+        
+        return None
+    
+    @property
+    def category_slug(self):
+        """Get category slug for URL/template use"""
+        if not self.category:
+            return 'uncategorized'
+        
+        return self.category.lower().replace('/', '_').replace(' ', '_')
+    
+    @property
+    def is_promotion_ready(self):
+        """Check if trainee is ready for manual promotion (6,000+ points)"""
+        return (
+            not self.is_manually_assigned and
+            self.total_points >= 6000
+        )

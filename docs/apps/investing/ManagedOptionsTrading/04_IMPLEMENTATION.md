@@ -1280,6 +1280,410 @@ except Exception as e:
 
 ---
 
+## 🎯 PHASE 10: PORTFOLIO INTELLIGENCE & OPTIMIZATION
+**Status:** 📋 Approved - Ready to Implement (Nov 5, 2025)  
+**Timeline:** 4-5 weeks (Phased: 10A → 10B → 10C → 10D)
+
+### **Phase 10A: Smart Position Ranking** (CURRENT - Week 1-2)
+**Priority:** 🔴 CRITICAL | **Status:** ⏳ Starting Implementation
+
+#### **New Service:** `PositionRankingService`
+**File:** `coda/investing/services/position_ranking_service.py` (NEW - 400 lines est.)
+
+**Purpose:** Multi-factor ranking algorithm to select top 5 positions from 20+ approved positions.
+
+**Core Methods:**
+```python
+class PositionRankingService:
+    """Intelligent position ranking using multi-factor analysis"""
+    
+    # Ranking weights (configurable)
+    WHALES_WEIGHT = Decimal('0.35')  # 35%
+    EARNINGS_WEIGHT = Decimal('0.25')  # 25%
+    PROFIT_WEIGHT = Decimal('0.20')   # 20%
+    DTE_WEIGHT = Decimal('0.20')      # 20%
+    
+    def rank_positions(self, positions: List[SuggestedPosition]) -> List[Dict]:
+        """
+        Rank positions using weighted multi-factor algorithm
+        
+        Returns:
+            [{
+                'position': SuggestedPosition,
+                'total_score': Decimal,
+                'breakdown': {
+                    'whales_score': Decimal,
+                    'earnings_score': Decimal,
+                    'profit_score': Decimal,
+                    'dte_score': Decimal
+                },
+                'rank': int,  # 1-N
+                'recommendation': str  # "STRONG BUY", "BUY", etc.
+            }]
+        """
+        
+    def _score_whales_signal(self, position) -> Decimal:
+        """Score: 0-100 based on Unusual Whales alignment"""
+        
+    def _score_earnings_safety(self, position) -> Decimal:
+        """Score: 100 if safe, 0 if earnings before expiry"""
+        
+    def _score_profit_potential(self, position) -> Decimal:
+        """Score: 0-100 based on ROC%"""
+        
+    def _score_dte_diversity(self, position, all_positions) -> Decimal:
+        """Penalize clustering in same expiry week"""
+        
+    def get_top_n(self, ranked_positions, n=5) -> List[Dict]:
+        """Select top N positions with diversity checks"""
+```
+
+**Integration Points:**
+- **View:** `coda/investing/views/managed_trading/position_suggestions.py`
+  - Add "🏆 Top 5 Recommended" section at top
+  - Show ranking breakdown table
+  - Add "Accept Top 5" button
+  
+- **Template:** `coda/investing/templates/investing/staff/suggested_positions.html`
+  - Display ranked list with scores
+  - Color-code by recommendation (green=strong, yellow=moderate)
+  - Show why each position ranked high
+
+**Database Changes:**
+- No new models needed (uses existing `SuggestedPosition`)
+- Add `ranking_score` and `ranking_breakdown` JSON fields (optional, for caching)
+
+---
+
+### **Phase 10B: LEAPS Conversion** (Week 2-3)
+**Priority:** 🟡 HIGH | **Status:** 📋 Planned
+
+#### **New Service:** `LEAPSConverterService`
+**File:** `coda/investing/services/leaps_converter_service.py` (NEW - 350 lines est.)
+
+**Purpose:** Convert long-dated options (60-365 DTE) to Bull Call Spreads when Whales signal is strong.
+
+**Core Methods:**
+```python
+class LEAPSConverterService:
+    """Convert LEAPS to Bull Call Spreads for capital efficiency"""
+    
+    MIN_DTE = 60
+    MAX_DTE = 365
+    MIN_WHALES_SIGNAL = 30  # Require strong bullish signal
+    
+    def should_convert(self, option_data: Dict) -> bool:
+        """Determine if LEAPS should be converted to spread"""
+        
+    def convert_to_bull_call_spread(self, long_call: Dict) -> Dict:
+        """
+        Convert long call to Bull Call Spread
+        
+        Strategy:
+        - BUY ATM call (from Whales data)
+        - SELL 10-15% OTM call (estimate premium)
+        - Net debit = capital required
+        
+        Returns position data for Bull Call Spread
+        """
+        
+    def calculate_short_strike(self, long_strike, stock_price) -> Decimal:
+        """Calculate optimal short call strike (12% OTM)"""
+        
+    def estimate_short_premium(self, strike, dte, iv) -> Decimal:
+        """Estimate premium using Black-Scholes (fallback if no API)"""
+```
+
+**Integration:**
+- **File:** `coda/investing/views/managed_trading/csv_upload.py`
+  - Modify `_parse_unusual_whales_flow()` to detect LEAPS
+  - Call `LEAPSConverterService` for DTE > 60
+  - Show conversion summary ("15 LEAPS converted to spreads")
+
+**Example Output:**
+```
+LEAPS Conversion Summary:
+✅ Converted: 15 positions
+   - NBIS $115 Call (319 DTE) → $115/$130 Bull Call Spread
+   - META $650 Call (227 DTE) → $650/$700 Bull Call Spread
+   ...
+💰 Capital Savings: $42,500 (67% reduction)
+```
+
+---
+
+### **Phase 10C: Portfolio Optimizer** (Week 3-4)
+**Priority:** 🔴 CRITICAL | **Status:** 📋 Planned
+
+#### **New Models:** `Portfolio` and `PortfolioPosition`
+
+**File:** `coda/investing/models.py` (Add to existing)
+
+```python
+class Portfolio(TimeStampedModel):
+    """Generated portfolio of 3-5 positions"""
+    
+    # Identification
+    name = models.CharField(max_length=100)  # "Aggressive Growth"
+    strategy_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('aggressive', 'Aggressive Growth'),
+            ('balanced', 'Balanced Income'),
+            ('conservative', 'Conservative Safety')
+        ]
+    )
+    description = models.TextField()
+    
+    # Metrics
+    total_capital = models.DecimalField(max_digits=12, decimal_places=2)
+    expected_roc = models.DecimalField(max_digits=6, decimal_places=2)
+    avg_pop = models.DecimalField(max_digits=5, decimal_places=2)
+    max_profit = models.DecimalField(max_digits=12, decimal_places=2)
+    max_loss = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    # Diversity
+    sector_diversity_score = models.IntegerField()  # 0-100
+    dte_range = models.JSONField()  # {'min': 28, 'max': 48}
+    earnings_conflicts = models.IntegerField(default=0)
+    
+    # Whales
+    whales_alignment_score = models.IntegerField()  # 0-100
+    
+    # AI Scoring
+    ai_score = models.IntegerField()  # 0-100 (overall portfolio score)
+    ai_recommendation_rank = models.IntegerField()  # 1, 2, or 3
+    is_recommended = models.BooleanField(default=False)  # Winner
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('generated', 'Generated'),
+            ('selected', 'Selected by Staff'),
+            ('submitted', 'Submitted to Clients'),
+            ('rejected', 'Rejected')
+        ],
+        default='generated'
+    )
+
+class PortfolioPosition(TimeStampedModel):
+    """Link between Portfolio and SuggestedPosition"""
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='positions')
+    suggested_position = models.ForeignKey(SuggestedPosition, on_delete=models.CASCADE)
+    allocation_pct = models.DecimalField(max_digits=5, decimal_places=2)  # % of portfolio
+    selection_reason = models.TextField()  # Why this position was included
+```
+
+#### **New Service:** `PortfolioOptimizerService`
+**File:** `coda/investing/services/portfolio_optimizer_service.py` (NEW - 600 lines est.)
+
+**Core Methods:**
+```python
+class PortfolioOptimizerService:
+    """Generate and compare 3 optimized portfolios"""
+    
+    def generate_portfolios(self, approved_positions, account_balance):
+        """
+        Create 3 distinct portfolios from approved positions
+        
+        Returns:
+            {
+                'aggressive': Portfolio,
+                'balanced': Portfolio,
+                'conservative': Portfolio,
+                'comparison': ComparisonTable,
+                'recommended': Portfolio  # Highest score
+            }
+        """
+        
+    def _build_aggressive_portfolio(self, positions, balance):
+        """High ROC, Whales-driven, concentrated"""
+        
+    def _build_balanced_portfolio(self, positions, balance):
+        """Diversified sectors, mixed DTE, moderate risk"""
+        
+    def _build_conservative_portfolio(self, positions, balance):
+        """High PoP, max diversification, safety first"""
+        
+    def _score_portfolio(self, portfolio):
+        """
+        Score portfolio on 5 dimensions
+        
+        Returns:
+            {
+                'total': Decimal (0-100),
+                'breakdown': {
+                    'expected_return': Decimal,
+                    'sharpe_ratio': Decimal,
+                    'diversification': Decimal,
+                    'whales_alignment': Decimal,
+                    'capital_efficiency': Decimal
+                }
+            }
+        """
+```
+
+**New Views:**
+- **File:** `coda/investing/views/managed_trading/portfolio_optimizer.py` (NEW)
+  - `portfolio_generator_view()` - Generate 3 portfolios
+  - `portfolio_comparison_view()` - Side-by-side comparison
+  - `portfolio_select_view()` - Submit selected portfolio
+
+**New Templates:**
+- `portfolio_generator.html` - Generate portfolios UI
+- `portfolio_comparison.html` - 3-column comparison table
+- `portfolio_detail.html` - Single portfolio breakdown
+
+**New URLs:**
+```python
+# urls_managed_trading.py
+path('portfolio/generate/', views.portfolio_generator_view, name='portfolio_generate'),
+path('portfolio/compare/<int:batch_id>/', views.portfolio_comparison_view, name='portfolio_compare'),
+path('portfolio/select/<int:portfolio_id>/', views.portfolio_select_view, name='portfolio_select'),
+```
+
+---
+
+### **Phase 10D: Portfolio Hedging** (Week 4-5)
+**Priority:** 🟡 MEDIUM | **Status:** 📋 Planned
+
+#### **New Model:** `PortfolioHedge`
+
+```python
+class PortfolioHedge(TimeStampedModel):
+    """Insurance positions for portfolio protection"""
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='hedges')
+    
+    # Hedge Details
+    hedge_type = models.CharField(
+        max_length=30,
+        choices=[
+            ('spy_put_spread', 'SPY Put Spread (Market)'),
+            ('vix_call', 'VIX Call (Volatility)'),
+            ('qqq_put_spread', 'QQQ Put Spread (Tech Sector)'),
+            ('iwm_put_spread', 'IWM Put Spread (Small Cap)')
+        ]
+    )
+    symbol = models.CharField(max_length=10)  # SPY, VIX, QQQ
+    
+    # Cost/Benefit
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    cost_pct = models.DecimalField(max_digits=5, decimal_places=2)  # % of portfolio
+    max_protection = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Position Legs
+    positions = models.JSONField()  # Hedge leg details
+    
+    # Analysis
+    scenario_analysis = models.JSONField()  # Market down 5%, 10%, 20%
+    recommended = models.BooleanField(default=False)
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('recommended', 'Recommended'),
+            ('accepted', 'Accepted'),
+            ('rejected', 'Rejected'),
+            ('executed', 'Executed')
+        ],
+        default='recommended'
+    )
+```
+
+#### **New Service:** `PortfolioHedgingService`
+**File:** `coda/investing/services/portfolio_hedging_service.py` (NEW - 450 lines est.)
+
+**Core Methods:**
+```python
+class PortfolioHedgingService:
+    """Calculate and recommend portfolio insurance"""
+    
+    INSURANCE_BUDGET_MIN = Decimal('0.05')  # 5%
+    INSURANCE_BUDGET_MAX = Decimal('0.10')  # 10%
+    
+    def analyze_portfolio_risk(self, portfolio):
+        """Analyze exposure and recommend hedges"""
+        
+    def recommend_hedges(self, portfolio):
+        """
+        Returns list of recommended hedges
+        
+        [{
+            'type': 'spy_put_spread',
+            'cost': Decimal,
+            'protection': Decimal,
+            'reason': str,
+            'required': bool
+        }]
+        """
+        
+    def calculate_spy_put_spread(self, portfolio_value):
+        """SPY put spread for market crash protection"""
+        
+    def calculate_vix_call(self, portfolio_value, current_vix):
+        """VIX call for volatility spike"""
+        
+    def calculate_sector_hedge(self, portfolio, sector):
+        """Sector-specific put spread (QQQ, IWM, etc.)"""
+        
+    def simulate_scenarios(self, portfolio, hedges):
+        """
+        Simulate market scenarios
+        
+        Returns:
+            {
+                'market_down_5pct': {'unhedged': Decimal, 'hedged': Decimal},
+                'market_down_10pct': {...},
+                'vix_spike_to_60': {...}
+            }
+        """
+```
+
+**New View:**
+- **File:** `coda/investing/views/managed_trading/portfolio_hedging.py` (NEW)
+  - `portfolio_hedge_view()` - Show hedge recommendations
+  - `portfolio_add_hedge_view()` - Add hedge to portfolio
+
+**New Template:**
+- `portfolio_hedging.html` - Insurance dashboard
+
+---
+
+## 📊 PHASE 10 IMPLEMENTATION SUMMARY
+
+### **Files to Create (8 New Files):**
+1. `coda/investing/services/position_ranking_service.py` (~400 lines)
+2. `coda/investing/services/leaps_converter_service.py` (~350 lines)
+3. `coda/investing/services/portfolio_optimizer_service.py` (~600 lines)
+4. `coda/investing/services/portfolio_hedging_service.py` (~450 lines)
+5. `coda/investing/views/managed_trading/portfolio_optimizer.py` (~300 lines)
+6. `coda/investing/views/managed_trading/portfolio_hedging.py` (~200 lines)
+7. `coda/investing/templates/investing/managed/portfolio_comparison.html` (~250 lines)
+8. `coda/investing/templates/investing/managed/portfolio_hedging.html` (~200 lines)
+
+**Total New Code:** ~2,750 lines
+
+### **Files to Modify:**
+1. `coda/investing/models.py` - Add Portfolio, PortfolioPosition, PortfolioHedge models
+2. `coda/investing/admin.py` - Register new models
+3. `coda/investing/views/managed_trading/position_suggestions.py` - Add ranking
+4. `coda/investing/views/managed_trading/csv_upload.py` - Add LEAPS detection
+5. `coda/investing/templates/investing/staff/suggested_positions.html` - Show rankings
+6. `coda/investing/urls_managed_trading.py` - Add 5 new URLs
+
+### **Migrations Needed:**
+- **0015_add_portfolio_models.py** - Portfolio, PortfolioPosition, PortfolioHedge
+
+### **Testing Requirements:**
+See [05_TESTING.md](05_TESTING.md) for Phase 10 test plans.
+
+### **Deployment Plan:**
+See [07_DEPLOYMENT.md](07_DEPLOYMENT.md) for Phase 10 deployment strategy.
+
+---
+
 **Next Phase:** [05_TESTING.md](05_TESTING.md)  
 **Previous Phase:** [03_ARCHITECTURE.md](03_ARCHITECTURE.md)  
 **Return to:** [README.md](README.md)

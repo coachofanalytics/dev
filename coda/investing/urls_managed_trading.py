@@ -202,6 +202,11 @@ urlpatterns = [
          position_suggestions.ajax_reject_position, 
          name='ajax_reject_position'),
     
+    # Phase 10A: Accept Top 5 Recommended
+    path('managed/api/suggestions/accept-top-5/', 
+         position_suggestions.accept_top_5, 
+         name='accept_top_5'),
+    
     # Bulk actions API
     path('managed/api/bulk-approve-excellent/', 
          api_bulk_actions.bulk_approve_excellent, 
