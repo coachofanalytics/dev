@@ -2020,16 +2020,18 @@ class ManagedTradingAccount(TimeStampedModel):
     @property
     def available_buying_power(self):
         """Calculate available buying power for new positions"""
+        if self.cash_available is None or self.cash_reserved is None:
+            return Decimal('0.00')
         return self.cash_available - self.cash_reserved
     
     @property
     def current_risk_exposure(self):
         """Calculate current risk exposure as % of balance"""
+        if self.current_balance is None or self.current_balance == 0:
+            return Decimal('0.00')
         open_positions = self.positions.filter(status='open')
         total_risk = sum([pos.max_loss for pos in open_positions])
-        if self.current_balance > 0:
-            return (total_risk / self.current_balance) * 100
-        return Decimal('0.00')
+        return (total_risk / self.current_balance) * 100
     
     @property
     def win_rate(self):
@@ -2041,9 +2043,11 @@ class ManagedTradingAccount(TimeStampedModel):
     @property
     def return_on_investment(self):
         """Calculate ROI percentage"""
-        if self.initial_capital > 0:
-            return ((self.current_balance - self.initial_capital) / self.initial_capital) * 100
-        return Decimal('0.00')
+        if self.initial_capital is None or self.initial_capital == 0:
+            return Decimal('0.00')
+        if self.current_balance is None:
+            return Decimal('0.00')
+        return ((self.current_balance - self.initial_capital) / self.initial_capital) * 100
 
 
 class OptionsPosition(TimeStampedModel):
