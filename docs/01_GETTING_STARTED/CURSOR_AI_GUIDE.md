@@ -1,6 +1,6 @@
 # CURSOR AI GUIDE FOR CODA DEVELOPMENT
 **Purpose:** Complete guide for AI-assisted development on CODA  
-**Last Updated:** November 5, 2025 (Added CRITICAL Document Creation Rules)
+**Last Updated:** November 6, 2025 (Updated branch structure, strict no-new-docs policy)
 
 ---
 
@@ -22,9 +22,16 @@
 
 ## 🚨 **CRITICAL: DO NOT CREATE NEW DOCUMENTS!** 🚨
 
-### ❌ **NEVER CREATE .MD FILES IN PROJECT ROOT OR DOCS ROOT**
+### ❌ **NEVER CREATE NEW .MD FILES (STRICTEST RULE)**
 
 **This is the #1 rule violation by AI assistants!**
+
+**ONLY 3 legitimate cases for new .md files:**
+1. ✅ New feature/app (needs 7 docs) - User initiates
+2. ✅ Project-level doc (cross-cutting) - User explicitly requests  
+3. ✅ Session summary - User explicitly requests + goes in `docs/05_DEPLOYMENT/[DATE]_SESSION.md`
+
+**For ALL other changes: UPDATE existing docs!**
 
 ### ✅ **CORRECT Approach:**
 
@@ -33,10 +40,12 @@
    - Don't create "PROGRESS_UPDATE.md" ❌  
    - **DO:** Update `04_IMPLEMENTATION.md` Change History ✅
 
-2. **Need to track progress?** → Use `docs/_temp_summaries/` ONLY
-   - Create ONE summary file per session (if absolutely necessary)
-   - User will review and integrate into proper docs
-   - Then DELETE the temp file
+2. **Need to track progress?** → **UPDATE existing docs**
+   - New requirement? → Edit `02_REQUIREMENTS.md`
+   - New analysis? → Edit `01_ANALYSIS.md`
+   - New architecture? → Edit `03_ARCHITECTURE.md`
+   - Code changed? → Edit `04_IMPLEMENTATION.md` Change History
+   - **NO temporary files or summaries**
 
 3. **Back-and-forth is NORMAL!** → Don't create new docs each time
    - Requirements evolve during development
@@ -153,18 +162,22 @@ Note: IV format bug fixed Nov 5 (see Change History)
 
 | Environment | Branch | Heroku App | Remote | Status |
 |-------------|--------|------------|--------|--------|
-| **Production** | `25.10_CODA_PROD_v2_CM` | codatrainingapp.herokuapp.com | `production` | ✅ Lean (79.7M) |
-| **UAT/Staging** | `25_UAT_CM` | codamakutano.herokuapp.com | `heroku` | ✅ Testing |
+| **Production** | `25.11_CODA_PROD_CM` | codatrainingapp.herokuapp.com | `production` | ✅ Active (Nov 2025) |
+| **UAT/Staging** | `25.11_CODA_UAT_CM` | codamakutano.herokuapp.com | `heroku` | ✅ Testing |
+| **Development** | `25.11_CODA_DEV_CM` | Local only | N/A | ✅ Local with all docs |
 
-**⚠️ ALWAYS use `25.10_CODA_PROD_v2_CM` branch for production deployments!**
+**⚠️ ALWAYS use `25.11_CODA_PROD_CM` branch for production deployments!**
 
 **Quick Deploy Commands:**
 ```bash
 # Production (REQUIRES USER PERMISSION!)
-git push production 25.10_CODA_PROD_v2_CM:main --force
+git push production 25.11_CODA_PROD_CM:main --force
 
 # UAT (Allowed for testing)
-git push heroku [your-branch]:main --force
+git push heroku 25.11_CODA_UAT_CM:main --force
+
+# Development (Local only - do NOT deploy)
+# Work on: 25.11_CODA_DEV_CM
 ```
 
 ---
@@ -493,36 +506,37 @@ python manage.py migrate --settings=coda_project.coda_settings.local_prod_clone_
 
 ### Branch Strategy (IMPORTANT!)
 
-**Current Production Branch:** `25.10_CODA_PROD_v2_CM`
+**Current Production Branch:** `25.11_CODA_PROD_CM` (November 2025)
 
 **Branch Structure:**
-- **Production Branch**: `25.10_CODA_PROD_v2_CM`
+- **Production Branch**: `25.11_CODA_PROD_CM`
   - Deployed to: `codatrainingapp.herokuapp.com` (Production)
   - Remote: `production`
-  - Status: Lean deployment (79.7M slug, venv removed)
+  - Status: Active production deployment
   
-- **UAT Branch**: `25_UAT_CM` (or current working branch)
+- **UAT Branch**: `25.11_CODA_UAT_CM`
   - Deployed to: `codamakutano.herokuapp.com` (UAT/Staging)
   - Remote: `heroku`
   - Status: Testing environment
 
-- **Development Branches**: Various feature branches
-  - Local development only
-  - Merge to UAT branch for testing
+- **Development Branch**: `25.11_CODA_DEV_CM`
+  - Local development only (NOT deployed to Heroku)
+  - Contains all documentation
+  - Work here, then merge to UAT for testing
 
 **Deployment Commands by Environment:**
 ```bash
 # Deploy to UAT (codamakutano.herokuapp.com)
-git push heroku [your-branch]:main --force
+git push heroku 25.11_CODA_UAT_CM:main --force
 
 # Deploy to Production (codatrainingapp.herokuapp.com)
-git push production 25.10_CODA_PROD_v2_CM:main --force
+git push production 25.11_CODA_PROD_CM:main --force
 ```
 
 **Important Notes:**
-- ✅ Always deploy `25.10_CODA_PROD_v2_CM` branch to production
-- ✅ This branch has the lean configuration (venv removed, proper settings)
-- ✅ UAT can use different branches for testing
+- ✅ Always deploy `25.11_CODA_PROD_CM` branch to production
+- ✅ Development happens on `25.11_CODA_DEV_CM` (local only)
+- ✅ Test on `25.11_CODA_UAT_CM` before merging to production
 - ⚠️ Never deploy untested code directly to production
 
 ---
@@ -540,13 +554,13 @@ git push production 25.10_CODA_PROD_v2_CM:main --force
 **Deployment Commands:**
 ```bash
 # 1. Ensure on correct branch
-git branch  # For UAT testing: any branch; For Production: 25.10_CODA_PROD_v2_CM
+git branch  # Should be: 25.11_CODA_UAT_CM
 
 # 2. Push to GitHub (backup)
-git push uat [your-branch]
+git push origin 25.11_CODA_UAT_CM
 
 # 3. Deploy to Heroku UAT
-git push heroku [your-branch]:main --force
+git push heroku 25.11_CODA_UAT_CM:main --force
 
 # 4. Monitor deployment
 heroku logs --tail --app codamakutano --num 50
@@ -595,9 +609,9 @@ heroku run "cd coda && python manage.py showmigrations finance" --app codamakuta
 # ASK USER FIRST: "Ready to deploy to production?"
 
 # If YES:
-# ALWAYS use the production branch: 25.10_CODA_PROD_v2_CM
-git checkout 25.10_CODA_PROD_v2_CM
-git push production 25.10_CODA_PROD_v2_CM:main --force
+# ALWAYS use the production branch: 25.11_CODA_PROD_CM
+git checkout 25.11_CODA_PROD_CM
+git push production 25.11_CODA_PROD_CM:main --force
 
 # Monitor closely
 heroku logs --tail --app codatrainingapp --num 100
@@ -1300,78 +1314,176 @@ Every feature (Budget, Transaction, Loan, etc.) has EXACTLY 7 documents:
 
 ---
 
-## 🚨 CRITICAL RULE: NO .MD FILES IN PROJECT ROOT OR DOCS ROOT
+## 🚨 CRITICAL RULE: WHEN ARE NEW .MD FILES LEGITIMATE?
 
-### ❌ NEVER Create Files In:
-- `/` (project root) - Only `README.md` allowed
-- `/docs/` (docs root) - Only `README.md` allowed
+### ✅ **ONLY 3 Legitimate Cases for New .md Files:**
 
-### ✅ ALWAYS Create Progress/Summary Files In:
-**`docs/_temp_summaries/`** - Temporary working folder
+#### **Case 1: New Feature/App (User-Initiated)**
+Creating a **completely new feature** that doesn't exist in the system.
 
-**Why?**
-- Keeps root clean
-- User can review summaries
-- Then move information to appropriate feature docs
-- Delete temp files after integration
-
-### Examples:
-
-**DON'T:** ❌
+**Example:**
 ```bash
-# Creating files in wrong locations
-/INTEGRATION_PROGRESS.md          # ROOT - Wrong!
-/docs/SESSION_SUMMARY.md           # DOCS ROOT - Wrong!
-/DEPLOYMENT_STRATEGY.md            # ROOT - Wrong!
+User: "Build a new Payroll management feature"
+
+You create:
+docs/apps/finance/Payroll/
+├── 01_ANALYSIS.md
+├── 02_REQUIREMENTS.md
+├── 03_ARCHITECTURE.md
+├── 04_IMPLEMENTATION.md
+├── 05_TESTING.md
+├── 06_MAINTENANCE.md
+└── 07_DEPLOYMENT.md
 ```
 
-**DO:** ✅
+**Criteria:**
+- ✅ User explicitly requests a NEW feature
+- ✅ Feature doesn't exist in `docs/apps/`
+- ✅ Create ALL 7 docs at once (not one at a time)
+- ❌ NOT for enhancements to existing features
+
+---
+
+#### **Case 2: Project-Level Documentation (User-Requested)**
+Documentation that applies to **entire project**, not one specific feature.
+
+**Examples of legitimate project-level docs:**
+- `docs/PROJECT_HISTORY_TIMELINE.md` (timeline across all features)
+- `docs/TESTING_STANDARDS_AND_STRUCTURE.md` (testing strategy)
+- `docs/LOCAL_DEVELOPMENT_WITH_PROD_DATA.md` (setup guide)
+- `docs/COMPREHENSIVE_TESTING_STRATEGY.md` (testing approach)
+
+**Criteria:**
+- ✅ User explicitly requests new project-level documentation
+- ✅ Affects multiple features/apps (cross-cutting concern)
+- ✅ Cannot fit in any existing feature's 7 docs
+- ✅ No existing project-level doc covers this topic
+- ❌ NOT for feature-specific information
+
+---
+
+#### **Case 3: Session Documentation (User-Requested, Date-Stamped)**
+Historical record of a **major development session** affecting multiple features.
+
+**Example:**
 ```bash
-# Create in temp folder
-/docs/_temp_summaries/INTEGRATION_PROGRESS.md          # Correct!
-/docs/_temp_summaries/SESSION_SUMMARY.md               # Correct!
-/docs/_temp_summaries/DEPLOYMENT_STRATEGY.md           # Correct!
+User: "Create a summary of today's major refactoring session"
 
-# Then user reviews and you move info to:
-docs/apps/finance/Budget/IMPLEMENTATION.md             # Permanent
-docs/apps/finance/Budget/REQUIREMENTS.md               # Permanent
-docs/05_DEPLOYMENT/OCT13_SESSION.md                    # Permanent
+You create:
+docs/05_DEPLOYMENT/NOV06_SESSION.md
 ```
 
-### Workflow:
+**Criteria:**
+- ✅ User explicitly requests session summary
+- ✅ Major work affecting multiple features
+- ✅ Goes in `docs/05_DEPLOYMENT/[DATE]_SESSION.md`
+- ✅ Date format: `NOV06_SESSION.md`, `OCT13_SESSION.md`
+- ❌ NOT created automatically after each prompt
+- ❌ NOT for routine development work
 
-**Step 1: Create Summary (During Work)**
-```bash
-# You're working on budget feature
-# Create progress summary
-→ docs/_temp_summaries/BUDGET_WORK_PROGRESS.md
+**Existing examples:**
+- `docs/05_DEPLOYMENT/OCT13_SESSION.md`
+
+---
+
+### ❌ **NEVER Create These (Common Violations):**
+
+| ❌ Don't Create | ✅ Instead Update | Reason |
+|----------------|-------------------|---------|
+| `PROGRESS_UPDATE.md` | `04_IMPLEMENTATION.md` (Change History) | Routine changes |
+| `SESSION_SUMMARY.md` | Existing feature docs | Routine work |
+| `REQUIREMENTS_UPDATE.md` | `02_REQUIREMENTS.md` (just edit) | Requirement evolution |
+| `BUG_FIX_LOG.md` | `04_IMPLEMENTATION.md` + `06_MAINTENANCE.md` | Bug fixes |
+| `NEW_ARCHITECTURE.md` | `03_ARCHITECTURE.md` (edit existing) | Architecture changes |
+| `CODE_CHANGES.md` | `04_IMPLEMENTATION.md` (Change History) | Code changes |
+| `TEST_RESULTS.md` | `05_TESTING.md` (Test Results section) | Test outcomes |
+| `INTEGRATION_SUMMARY.md` | Relevant feature docs | Integration work |
+| `DEPLOYMENT_LOG.md` | `07_DEPLOYMENT.md` | Deployment changes |
+
+---
+
+### 🎯 **Decision Tree: "Should I Create a New .md File?"**
+
+```
+┌─────────────────────────────────────┐
+│ Do I need to document something?   │
+└───────────────┬─────────────────────┘
+                │
+                ▼
+┌─────────────────────────────────────┐
+│ Is this a NEW feature?              │◄── User explicitly requested new feature
+│ (Not enhancement to existing)       │
+└───────┬─────────────────────────────┘
+        │ YES → Create 7 docs for feature ✅
+        │
+        ▼ NO
+┌─────────────────────────────────────┐
+│ Is this project-level documentation?│◄── Affects ALL features (cross-cutting)
+│ (Affects multiple features)         │    AND user explicitly requested
+└───────┬─────────────────────────────┘
+        │ YES → Create project doc ✅
+        │       (get user approval first)
+        │
+        ▼ NO
+┌─────────────────────────────────────┐
+│ Did user request session summary?   │◄── User explicitly asked for summary
+│ (Historical record of major work)   │    AND major multi-feature work
+└───────┬─────────────────────────────┘
+        │ YES → Create in docs/05_DEPLOYMENT/ ✅
+        │       with date: [DATE]_SESSION.md
+        │
+        ▼ NO
+┌─────────────────────────────────────┐
+│ UPDATE EXISTING DOCUMENTATION       │◄── 99% of cases fall here!
+│                                     │
+│ • New requirement? → 02_REQUIREMENTS.md
+│ • Code change? → 04_IMPLEMENTATION.md
+│ • Bug fix? → 04_IMPLEMENTATION.md + 06_MAINTENANCE.md
+│ • New test? → 05_TESTING.md
+│ • Architecture change? → 03_ARCHITECTURE.md
+│                                     │
+│ DO NOT CREATE NEW FILE ❌           │
+└─────────────────────────────────────┘
 ```
 
-**Step 2: User Reviews**
+---
+
+### 📝 **Examples of Correct Behavior:**
+
+**Scenario 1: Bug fix during feature work**
 ```
-User reads your summary in _temp_summaries/
-User says: "Good, integrate this into Budget/IMPLEMENTATION.md"
+User: "The budget filter isn't working"
+You: Fix bug
+     Update: 04_IMPLEMENTATION.md (Change History)
+     Update: 05_TESTING.md (add regression test)
+     Update: 06_MAINTENANCE.md (mark issue resolved)
+❌ DON'T: Create "BUG_FIX_NOV06.md"
 ```
 
-**Step 3: Integrate & Delete**
-```bash
-# You extract key info and add to:
-→ docs/apps/finance/Budget/IMPLEMENTATION.md (Change History)
-→ docs/apps/finance/Budget/REQUIREMENTS.md (if new requirement)
-
-# Then delete temp file
-rm docs/_temp_summaries/BUDGET_WORK_PROGRESS.md
+**Scenario 2: New requirement discovered**
+```
+User: "Oh, also need to filter by date range"
+You: Update: 02_REQUIREMENTS.md (add to Phase X)
+     Update: 04_IMPLEMENTATION.md (implement + Change History)
+     Update: 05_TESTING.md (add tests)
+❌ DON'T: Create "NEW_REQUIREMENT.md"
 ```
 
-### File Naming in _temp_summaries/:
+**Scenario 3: Architecture changes**
 ```
-✅ BUDGET_WORK_PROGRESS.md        (feature-specific)
-✅ SESSION_OCT13_SUMMARY.md        (session summary)
-✅ INTEGRATION_STATUS.md           (progress update)
-✅ DEPLOYMENT_PLAN.md              (planning)
+User: "Let's use Redis for caching instead of database"
+You: Update: 03_ARCHITECTURE.md (update caching section)
+     Update: 04_IMPLEMENTATION.md (implement + Change History)
+     Update: 07_DEPLOYMENT.md (Redis setup instructions)
+❌ DON'T: Create "ARCHITECTURE_UPDATE.md"
 ```
 
-**All temp files get reviewed and integrated, then deleted!**
+**Scenario 4: Completely new feature (LEGITIMATE)**
+```
+User: "Build a new Payroll management system"
+You: ✅ Create: docs/apps/finance/Payroll/ (all 7 docs)
+     This is a NEW feature, not enhancement
+```
 
 ---
 
@@ -1408,10 +1520,10 @@ heroku logs --tail --app codamakutano
 If approved:
 ```bash
 # ALWAYS use the production branch
-git checkout 25.10_CODA_PROD_v2_CM
+git checkout 25.11_CODA_PROD_CM
 
 # Deploy
-git push production 25.10_CODA_PROD_v2_CM:main --force
+git push production 25.11_CODA_PROD_CM:main --force
 
 # Monitor closely
 heroku logs --tail --app codatrainingapp
@@ -1583,8 +1695,9 @@ This might be related because: [REASON]
 ## ⚡ QUICK REFERENCE
 
 ### Production Branch & Environments:
-- **Production Branch:** `25.10_CODA_PROD_v2_CM` ⚠️ (ALWAYS use this for production!)
-- **UAT Branch:** `25_UAT_CM` (or current feature branch)
+- **Production Branch:** `25.11_CODA_PROD_CM` ⚠️ (ALWAYS use this for production!)
+- **UAT Branch:** `25.11_CODA_UAT_CM` (matches heroku UAT)
+- **Development Branch:** `25.11_CODA_DEV_CM` (local only, all docs)
 - **Production URL:** https://codatrainingapp.herokuapp.com
 - **UAT URL:** https://codamakutano.herokuapp.com
 
@@ -1611,7 +1724,7 @@ python manage.py runserver --settings=coda_project.coda_settings.local_prod_clon
 git push heroku [your-branch]:main --force
 
 # Deploy to Production (REQUIRES PERMISSION!)
-git push production 25.10_CODA_PROD_v2_CM:main --force
+git push production 25.11_CODA_PROD_CM:main --force
 
 # Check logs (UAT)
 heroku logs --tail --app codamakutano
@@ -1708,8 +1821,21 @@ heroku run "cd coda && python manage.py migrate" --app codatrainingapp
 **This guide ensures consistent, high-quality development!**  
 **Follow it for every task, every deployment, every change.**
 
-**Last Updated:** October 27, 2025 (Added Local Development with Production Clone - CRITICAL!)  
+**Last Updated:** November 6, 2025 (Updated branch structure, strict no-new-docs policy)  
 **Maintained by:** CODA Development Team
+
+---
+
+## 📋 **CHANGE LOG**
+
+| Date | Change | Reason |
+|------|--------|--------|
+| Nov 6, 2025 | Updated branch structure to 25.11_CODA_* | New month, new branches |
+| Nov 6, 2025 | Removed docs/_temp_summaries/ workflow | Stricter policy: update existing docs only |
+| Nov 6, 2025 | Added decision tree for new .md files | Clarify 3 legitimate cases |
+| Oct 27, 2025 | Added LOCAL_DEVELOPMENT_WITH_PROD_DATA.md | Critical: never test against production |
+| Oct 22, 2025 | Implemented 7-doc standard | Prevent documentation sprawl |
+| Oct 13, 2025 | Added Known Issues section | Track deployment issues |
 
 ---
 
