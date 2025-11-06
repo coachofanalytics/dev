@@ -1,103 +1,109 @@
-# CODA Test Scripts
+# CODA Platform Tests
 
-This directory contains all test scripts for the CODA project.
+**Last Updated:** November 5, 2025  
+**Standard:** 7-Category Test Structure
 
-## Test Scripts
+## Test Organization
 
-### `run_tests.sh` ⭐ Main Test Runner
-**Purpose:** Run comprehensive test suite before deployment  
-**Usage:**
+All tests are organized by app, then by test category:
+
+```
+tests/
+├── {app_name}/
+│   ├── 01_unit/          🤖 Cursor creates
+│   ├── 02_integration/   🤖 Cursor creates
+│   ├── 03_performance/   🤖👤 Cursor + Human
+│   ├── 04_regression/    🤖 Cursor creates
+│   ├── 05_system/        👤 Human creates
+│   ├── 06_security/      🤖👤 Cursor + Human
+│   ├── 07_manual/        👤 Human creates
+│   └── README.md
+└── README.md (this file)
+```
+
+## Apps with Tests
+
+### Finance
+[Finance App Tests](finance/README.md)
+- Payment control tests
+- URL resolution tests
+- Budget workflow tests
+
+### Investing
+[Investing App Tests](investing/README.md)
+- User filtering tests (planned)
+- Account management tests (planned)
+- Position management tests (planned)
+
+### Management
+[Management App Tests](management/README.md)
+- Task reset tests
+
+## Running All Tests
+
 ```bash
-# Run all tests
-./tests/run_tests.sh
+# Run ALL tests across entire platform
+cd /Users/coda/PROJECTS/CODA/DEVELOPMENT/DEV
+python coda/manage.py test tests --settings=coda_project.coda_settings.local_settings
 
-# Run only regression tests (critical)
-./tests/run_tests.sh --regression
+# Run specific app
+python coda/manage.py test tests.finance --settings=coda_project.coda_settings.local_settings
 
-# Run with verbose output
-./tests/run_tests.sh --verbose
+# Run with coverage
+coverage run --source='coda' coda/manage.py test tests --settings=coda_project.coda_settings.local_settings
+coverage report
+coverage html  # Generate HTML report
 ```
 
-**IMPORTANT:** Always run regression tests before deploying!
+## Test Categories Explained
+
+### 🤖 Automated by Cursor
+
+1. **01_unit** - Individual component tests
+2. **02_integration** - Component interaction tests
+3. **04_regression** - Bug prevention tests
+
+### 🤖👤 Shared Responsibility
+
+1. **03_performance** - Cursor writes basic, human does load testing
+2. **06_security** - Cursor writes permission tests, human does audits
+
+### 👤 Manual by Human
+
+1. **05_system** - End-to-end user flows (browser required)
+2. **07_manual** - UI/UX validation, cross-browser testing
+
+## Standards & Guidelines
+
+**Complete Documentation:** [Testing Standards & Structure](../docs/TESTING_STANDARDS_AND_STRUCTURE.md)
+
+**Key Points:**
+- Every feature must have automated tests
+- Critical flows must have manual test plans
+- 80%+ code coverage required for new code
+- All tests must pass before deployment
+- Human approval required for production
+
+## Contributing
+
+### Adding Tests for New Features
+
+1. Create app folder if it doesn't exist: `tests/{app_name}/`
+2. Create test file in appropriate category (01-07)
+3. Follow naming convention: `test_{component}_{feature}.py`
+4. Write tests using AAA pattern (Arrange, Act, Assert)
+5. Add docstrings to all test methods
+6. Update app's README.md
+
+### Moving Legacy Tests
+
+If you find tests in wrong locations:
+1. Move to appropriate app folder
+2. Place in correct category (01-07)
+3. Update file if needed
+4. Update app README
+5. Delete old location
 
 ---
 
-### `test_budget_workflow.py`
-**Purpose:** Test budget creation and approval workflow  
-**Usage:**
-```bash
-cd coda
-python ../tests/test_budget_workflow.py
-```
-
----
-
-### `test_payment_control.py`
-**Purpose:** Test payment control middleware  
-**Usage:**
-```bash
-python tests/test_payment_control.py
-```
-
----
-
-### `test_uat_urls.sh`
-**Purpose:** Test all critical URLs in UAT environment  
-**Usage:**
-```bash
-./tests/test_uat_urls.sh
-```
-
-**Tests:**
-- Dashboard URLs
-- Budget approval URLs
-- Loan URLs
-- API endpoints
-
----
-
-## Django Unit Tests
-
-Django unit tests are located in each app's `tests/` directory:
-
-```
-coda/finance/tests/
-├── __init__.py
-├── test_models.py
-├── test_services.py
-├── test_views.py
-├── test_api.py
-└── test_regressions.py  ⭐ Critical regression tests
-```
-
-**Run Django tests:**
-```bash
-cd coda
-python manage.py test finance
-```
-
----
-
-## Test Strategy
-
-See comprehensive testing documentation:
-- **[COMPREHENSIVE_TESTING_STRATEGY.md](../coda/docs/COMPREHENSIVE_TESTING_STRATEGY.md)** - Full testing framework
-- **[Feature Testing Docs](../coda/docs/apps/finance/)** - Feature-specific test guides
-
----
-
-## Pre-Deployment Checklist
-
-Before deploying to UAT or Production:
-
-- [ ] Run `./tests/run_tests.sh` (all tests pass)
-- [ ] Run regression tests specifically
-- [ ] Test critical user journeys manually
-- [ ] Check browser console for errors
-- [ ] Verify database migrations
-- [ ] Review deployment logs
-
----
-
-**Last Updated:** October 13, 2025
-
+*See: [Testing Standards](../docs/TESTING_STANDARDS_AND_STRUCTURE.md) for complete guidelines*
