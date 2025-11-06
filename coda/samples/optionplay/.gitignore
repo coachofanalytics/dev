@@ -1,7 +1,0 @@
-# Ignore all CSV exports (they can get large)
-*.csv
-*.xlsx
-
-# But track the README
-!README.md
-

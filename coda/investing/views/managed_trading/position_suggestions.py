@@ -19,6 +19,7 @@ import logging
 
 from ...models import SuggestedPosition, OptionsPosition, PositionBatch, ManagedTradingAccount
 from ...services import PositionFetcherService, BatchApprovalService, ManagedTradingService
+from ...services.position_ranking_service import PositionRankingService
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,8 @@ def suggested_positions_list(request):
     - Financial metrics (premium, P&L)
     - Review status
     - Actions (Edit, Approve, Reject)
+    
+    NEW (Phase 10A): Top 5 Recommended with multi-factor ranking
     """
     # Get all pending suggestions (sorted by AI score first!)
     pending = SuggestedPosition.objects.filter(
@@ -53,6 +56,22 @@ def suggested_positions_list(request):
         review_status='rejected',
         reviewed_at__gte=week_ago
     ).order_by('-reviewed_at')
+    
+    # ========== PHASE 10A: SMART POSITION RANKING ==========
+    top_5_recommended = []
+    all_ranked = []
+    
+    if pending.exists():
+        try:
+            ranker = PositionRankingService()
+            all_ranked = ranker.rank_positions(pending)
+            top_5_recommended = ranker.get_top_n(all_ranked, n=5)
+            
+            logger.info(f"🏆 Top 5 ranked: {[item['position'].symbol for item in top_5_recommended]}")
+        except Exception as e:
+            logger.error(f"Ranking error: {e}", exc_info=True)
+            # Graceful degradation - continue without ranking
+    # ========================================================
     
     # Statistics
     from django.db.models import Avg, Sum, Count, Q
@@ -82,6 +101,10 @@ def suggested_positions_list(request):
         'rejected_positions': rejected,
         'stats': stats,
         'active_accounts': active_accounts,
+        # Phase 10A: Ranking
+        'top_5_recommended': top_5_recommended,
+        'all_ranked_positions': all_ranked,
+        'ranking_enabled': len(top_5_recommended) > 0,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 
@@ -357,4 +380,82 @@ def ajax_reject_position(request, suggestion_id):
 
 # Add missing import at top
 from django.db import models
+
+
+@staff_member_required
+@require_POST
+def accept_top_5(request):
+    """
+    PHASE 10A: Accept Top 5 Recommended Positions
+    
+    Auto-approves the top 5 ranked positions based on multi-factor ranking:
+    - Whales (35%) + Earnings (25%) + ROC (20%) + DTE (20%)
+    
+    Returns JSON response with approved positions
+    """
+    try:
+        # Get pending positions
+        pending = SuggestedPosition.objects.filter(review_status='pending')
+        
+        if not pending.exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'No pending positions to rank'
+            }, status=400)
+        
+        # Rank positions
+        ranker = PositionRankingService()
+        all_ranked = ranker.rank_positions(pending)
+        top_5 = ranker.get_top_n(all_ranked, n=5)
+        
+        if not top_5:
+            return JsonResponse({
+                'success': False,
+                'message': 'Ranking returned no results'
+            }, status=400)
+        
+        # Approve top 5
+        approved_positions = []
+        with transaction.atomic():
+            for item in top_5:
+                position = item['position']
+                
+                # Approve with ranking details in notes
+                ranking_notes = (
+                    f"Auto-approved as Top {item['rank']} position "
+                    f"(Score: {item['total_score']:.1f}/100)\n"
+                    f"Ranking Breakdown:\n"
+                    f"  🐋 Whales: {item['breakdown']['whales_score']:.1f}/100\n"
+                    f"  📅 Earnings: {item['breakdown']['earnings_score']:.1f}/100\n"
+                    f"  💰 ROC: {item['breakdown']['profit_score']:.1f}/100\n"
+                    f"  ⏰ DTE: {item['breakdown']['dte_score']:.1f}/100\n"
+                    f"Recommendation: {item['recommendation']}\n"
+                    f"Reason: {item['selection_reason']}"
+                )
+                
+                position.approve(request.user, notes=ranking_notes)
+                
+                approved_positions.append({
+                    'symbol': position.symbol,
+                    'strategy': position.get_strategy_display(),
+                    'rank': item['rank'],
+                    'score': float(item['total_score']),
+                    'recommendation': item['recommendation']
+                })
+        
+        logger.info(f"✅ Auto-approved top 5: {[p['symbol'] for p in approved_positions]}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': f"✅ Approved top 5 positions!",
+            'approved_count': len(approved_positions),
+            'approved_positions': approved_positions
+        })
+    
+    except Exception as e:
+        logger.error(f"Accept Top 5 error: {e}", exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }, status=500)
 

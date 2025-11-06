@@ -1,6 +1,149 @@
 # CURSOR AI GUIDE FOR CODA DEVELOPMENT
 **Purpose:** Complete guide for AI-assisted development on CODA  
-**Last Updated:** October 16, 2025 (Added Production Deployment Lessons)
+**Last Updated:** November 5, 2025 (Added CRITICAL Document Creation Rules)
+
+---
+
+## ⚡ **QUICK REFERENCE: When to UPDATE vs CREATE**
+
+| Situation | ❌ DON'T | ✅ DO |
+|-----------|----------|-------|
+| Bug fix during feature work | Create "BUG_FIX.md" | Update `04_IMPLEMENTATION.md` Change History |
+| New requirement discovered | Create "UPDATE.md" | Add to `02_REQUIREMENTS.md` Phase X |
+| Need to track session progress | Create "SESSION_SUMMARY.md" in root | Create in `docs/_temp_summaries/` (if absolutely needed) |
+| Code changed | Create "CODE_CHANGES.md" | Update `04_IMPLEMENTATION.md` |
+| Test added | Create "TEST_RESULTS.md" | Update `05_TESTING.md` |
+| Deployment done | Create "DEPLOYMENT_LOG.md" | Update `07_DEPLOYMENT.md` |
+| Working on existing feature | Create new .md files | Edit the 7 existing docs |
+
+**Golden Rule:** If feature has 7 docs, NEVER create an 8th! Update the existing ones.
+
+---
+
+## 🚨 **CRITICAL: DO NOT CREATE NEW DOCUMENTS!** 🚨
+
+### ❌ **NEVER CREATE .MD FILES IN PROJECT ROOT OR DOCS ROOT**
+
+**This is the #1 rule violation by AI assistants!**
+
+### ✅ **CORRECT Approach:**
+
+1. **Working on EXISTING feature?** → **UPDATE** existing docs in `docs/apps/[Feature]/`
+   - Don't create "SESSION_SUMMARY.md" ❌
+   - Don't create "PROGRESS_UPDATE.md" ❌  
+   - **DO:** Update `04_IMPLEMENTATION.md` Change History ✅
+
+2. **Need to track progress?** → Use `docs/_temp_summaries/` ONLY
+   - Create ONE summary file per session (if absolutely necessary)
+   - User will review and integrate into proper docs
+   - Then DELETE the temp file
+
+3. **Back-and-forth is NORMAL!** → Don't create new docs each time
+   - Requirements evolve during development
+   - **Update existing docs AS IF you knew requirements from start**
+   - Don't create "UPDATE_1.md", "UPDATE_2.md" ❌
+   - **DO:** Edit the original `02_REQUIREMENTS.md` ✅
+
+### 📋 **The 7-Doc Structure (MANDATORY):**
+
+Every feature has **EXACTLY 7 documents** - no more, no less:
+1. `01_ANALYSIS.md` - Why (business case)
+2. `02_REQUIREMENTS.md` - What (requirements)
+3. `03_ARCHITECTURE.md` - How (design)
+4. `04_IMPLEMENTATION.md` - Built (code)
+5. `05_TESTING.md` - Verified (tests)
+6. `06_MAINTENANCE.md` - Issues/TODO
+7. `07_DEPLOYMENT.md` - Deploy procedures
+
+**When things change during development:**
+- ✅ **Update the original doc** (e.g., add to `02_REQUIREMENTS.md`)
+- ❌ **Don't create** "REQUIREMENTS_UPDATE.md"
+
+### 🎯 **Document Update Rules:**
+
+| What Changed | Update This Doc | Example |
+|--------------|----------------|---------|
+| New requirement discovered | `02_REQUIREMENTS.md` | Add to Phase X section |
+| Code changed | `04_IMPLEMENTATION.md` | Add to Change History table |
+| Bug fixed | `04_IMPLEMENTATION.md` + `05_TESTING.md` | Log fix + add regression test |
+| New test | `05_TESTING.md` | Add to Test Scenarios |
+| Issue found | `06_MAINTENANCE.md` | Add to Known Issues |
+| Deploy procedure changed | `07_DEPLOYMENT.md` | Update procedure |
+
+**NEVER create:** SESSION_LOG.md, PROGRESS.md, UPDATE.md, SUMMARY.md ❌
+
+---
+
+## 🔄 **UNDERSTANDING THE DEVELOPMENT PROCESS**
+
+### **Development is Iterative - This is NORMAL:**
+
+```
+User: "Add feature X"
+AI: Creates initial implementation
+User: "Actually, also need Y"
+AI: ❌ WRONG: Creates "FEATURE_X_UPDATE.md"
+AI: ✅ RIGHT: Updates 02_REQUIREMENTS.md and 04_IMPLEMENTATION.md
+```
+
+**Key Insight:** Requirements evolve during development. This is expected!
+
+### **How to Handle Changes:**
+
+#### **Scenario 1: New Requirement Discovered**
+```
+User: "Oh, also need to filter by Z"
+```
+❌ **DON'T:** Create "ADDITIONAL_REQUIREMENTS.md"  
+✅ **DO:** Add to existing `02_REQUIREMENTS.md`:
+```markdown
+### Phase X Requirements (Updated Nov 5)
+- Original: Filter by X, Y
+- Added: Filter by Z (discovered during development)
+```
+
+#### **Scenario 2: Bug Found During Testing**
+```
+User: "The filter isn't working correctly"
+```
+❌ **DON'T:** Create "BUG_FIX_SUMMARY.md"  
+✅ **DO:** Update `04_IMPLEMENTATION.md` Change History:
+```markdown
+| Date | Change | Reason | Files |
+|------|--------|--------|-------|
+| Nov 5 | Fixed IV filter format bug | Compared 0.26 to 16 instead of 0.16 | csv_upload.py |
+```
+
+#### **Scenario 3: Implementation Details Changed**
+```
+User: "Let's use approach B instead of A"
+```
+❌ **DON'T:** Create "IMPLEMENTATION_CHANGE.md"  
+✅ **DO:** Update `04_IMPLEMENTATION.md`:
+- Remove approach A details
+- Add approach B details
+- Note change in Change History
+
+### **The Goal: Docs Should Read Like You Knew Everything Upfront**
+
+Someone reading `02_REQUIREMENTS.md` should see a clean list of requirements, **not** a chronological log of how requirements evolved.
+
+**Bad (Chronological):**
+```markdown
+## Requirements
+- Filter by IV (Sept 20)
+- UPDATE: Also filter by ROC (Oct 15)
+- UPDATE 2: Fix IV format bug (Nov 5)
+```
+
+**Good (Clean Final State):**
+```markdown
+## Requirements
+- Filter by IV rank (decimal format: 0.16 = 16%)
+- Filter by ROC (return on capital)
+
+Note: IV format bug fixed Nov 5 (see Change History)
+```
 
 ---
 
@@ -1518,15 +1661,17 @@ heroku run "cd coda && python manage.py migrate" --app codatrainingapp
 - ✅ Reads relevant docs first
 - ✅ Follows existing patterns
 - ✅ Adds tests for changes
-- ✅ Updates documentation
+- ✅ **Updates EXISTING documentation** (not creates new)
 - ✅ Considers impact on other features
 - ✅ Asks for permission (production deployments)
+- ✅ **Respects 7-doc structure** (never creates extra docs)
 
 **Bad AI Assistance:**
 - ❌ Makes changes without reading docs
 - ❌ Ignores existing patterns
 - ❌ Skips tests
-- ❌ Doesn't update documentation
+- ❌ **Creates new .md files after every prompt** ⚠️ **#1 VIOLATION**
+- ❌ **Creates SESSION_SUMMARY.md, PROGRESS.md, etc. in root** ⚠️
 - ❌ Deploys without testing
 - ❌ Deploys to production without permission
 
@@ -1537,15 +1682,20 @@ heroku run "cd coda && python manage.py migrate" --app codatrainingapp
 ### ALWAYS:
 - ✅ **Clone production database before any development** ⭐ **MOST IMPORTANT!**
 - ✅ **Test against cloned database, NEVER against production** ⭐
+- ✅ **UPDATE existing docs, NEVER create new .md files in root** 🚨 **CRITICAL!**
 - ✅ Read feature docs before making changes
 - ✅ Run regression tests before deploying
-- ✅ Update documentation with every change
+- ✅ Update documentation with every change (edit existing files!)
 - ✅ Add regression test for every bug fix
 - ✅ Test in UAT before production
 - ✅ **Ask for permission before production deployment**
+- ✅ **Respect the 7-doc structure** (no extra docs per feature)
 
 ### NEVER:
 - ❌ **Test against production database** ⭐ **MOST CRITICAL!**
+- ❌ **Create .md files in project root** 🚨 **#1 AI VIOLATION!**
+- ❌ **Create SESSION_SUMMARY.md, PROGRESS.md, UPDATE.md** 🚨
+- ❌ **Create new docs after every prompt** 🚨
 - ❌ Deploy to production without user permission
 - ❌ Skip regression tests
 - ❌ Ignore existing documentation

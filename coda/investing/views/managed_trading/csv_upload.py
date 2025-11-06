@@ -24,6 +24,7 @@ from ...services.technical_analysis_service import get_technical_indicators
 from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.spread_builder import SpreadBuilderService
 from ...services.auto_approval_service import AutoApprovalService
+from ...services.leaps_converter_service import LEAPSConverterService
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -417,10 +418,10 @@ def csv_import_and_score(request):
         # Get Tier 1 filter parameters (Quality Filters)
         logger.info("🔧 Reading Tier 1 filter parameters (Quality)...")
         min_premium = Decimal(request.POST.get('min_premium', '0'))
-        min_iv = Decimal(request.POST.get('min_iv', '0'))
+        min_iv = Decimal(request.POST.get('min_iv', '0')) / 100  # FIX: Convert 16 → 0.16 (form % to decimal)
         max_dte = int(request.POST.get('max_dte', '365'))
         max_positions = int(request.POST.get('max_positions', '100'))
-        min_roc = Decimal(request.POST.get('min_roc', '0'))  # Minimum Return on Capital %
+        min_roc = Decimal(request.POST.get('min_roc', '0')) / 100  # FIX: Convert 1.5 → 0.015 (form % to decimal)
         spread_width_choice = request.POST.get('spread_width', 'auto')
         auto_convert = request.POST.get('auto_convert') == 'on'
         auto_score = request.POST.get('auto_score') == 'on'
@@ -434,8 +435,12 @@ def csv_import_and_score(request):
         min_stock_price = Decimal(request.POST.get('min_stock_price', '40'))
         max_stock_price = Decimal(request.POST.get('max_stock_price', '600'))
         min_distance_otm = Decimal(request.POST.get('min_distance_otm', '0.03'))  # 3% OTM
-        tier2_ranking = request.POST.get('tier2_ranking', 'ai_score')  # ai_score, roc, balanced
+        tier2_ranking = request.POST.get('tier2_ranking', 'ai_score')  # ai_score, roc, balanced, whales
         tier2_max_positions = int(request.POST.get('tier2_max_positions', '12'))
+        
+        # NEW: Diversity controls (Phase 10 Enhancement)
+        max_per_sector = int(request.POST.get('max_per_sector', '2'))
+        max_per_week = int(request.POST.get('max_per_week', '2'))
         
         logger.info("=" * 80)
         logger.info("📊 IMPORT SETTINGS (Two-Tier Filtering)")
@@ -459,6 +464,8 @@ def csv_import_and_score(request):
             logger.info(f"  Min Distance OTM: {min_distance_otm*100:.0f}%")
             logger.info(f"  Ranking Method: {tier2_ranking.upper()}")
             logger.info(f"  Max Final Positions: {tier2_max_positions}")
+            logger.info(f"  Max Per Sector: {max_per_sector} (diversity control)")
+            logger.info(f"  Max Per Week: {max_per_week} (time spread control)")
         logger.info("")
         logger.info(f"Auto-Convert: {auto_convert}")
         logger.info(f"Auto-Score: {auto_score}")
@@ -781,6 +788,27 @@ def csv_import_and_score(request):
                     # Will be done after import
                     pass
                 
+                elif tier2_ranking == 'whales':
+                    # NEW: Whales Strength ranking (Phase 10 Enhancement)
+                    logger.info("  🐋 Ranking by Unusual Whales signal strength...")
+                    whales_symbols = request.session.get('whales_symbols', {})
+                    
+                    for pos in tier2_candidates:
+                        symbol = pos['symbol'].upper()
+                        
+                        # Calculate Whales score
+                        if symbol in whales_symbols.get('options_flow', []):
+                            pos['whales_score'] = 50  # Strong bullish
+                        elif symbol in whales_symbols.get('dark_pool', []):
+                            pos['whales_score'] = 30  # Moderate
+                        elif symbol in whales_symbols.get('lit_flow', []):
+                            pos['whales_score'] = 15  # Weak
+                        else:
+                            pos['whales_score'] = 0  # No signal
+                    
+                    tier2_candidates.sort(key=lambda x: x.get('whales_score', 0), reverse=True)
+                    logger.info(f"  Sorted by Whales Signal Strength (top score: {tier2_candidates[0].get('whales_score', 0)})")
+                
                 else:  # 'balanced'
                     # Balanced score: ROC + Premium + IV
                     for pos in tier2_candidates:
@@ -792,9 +820,48 @@ def csv_import_and_score(request):
                     tier2_candidates.sort(key=lambda x: x['balanced_score'], reverse=True)
                     logger.info("  Sorted by Balanced Score (ROC + Premium + IV)")
                 
-                # Select top N positions
-                final_positions = tier2_candidates[:tier2_max_positions]
-                logger.info(f"🎯 Selected TOP {len(final_positions)} positions for import")
+                # ========== NEW: APPLY DIVERSITY CONTROLS ==========
+                logger.info(f"🎯 Applying diversity controls (max {max_per_sector}/sector, {max_per_week}/week)...")
+                
+                sector_counts = defaultdict(int)
+                week_counts = defaultdict(int)
+                diversified_positions = []
+                diversity_filtered = 0
+                
+                for pos in tier2_candidates:
+                    # Check sector limit
+                    sector = _get_sector_from_symbol(pos['symbol'])
+                    if sector_counts[sector] >= max_per_sector:
+                        diversity_filtered += 1
+                        logger.debug(f"  ⏭️ Skipping {pos['symbol']}: Sector {sector} limit ({max_per_sector}) reached")
+                        continue
+                    
+                    # Check expiry week limit  
+                    if pos.get('mapped_data') and pos['mapped_data'].get('expiry'):
+                        expiry_str = pos['mapped_data']['expiry']
+                        week_key = _get_week_key_from_date_string(expiry_str)
+                        
+                        if week_counts[week_key] >= max_per_week:
+                            diversity_filtered += 1
+                            logger.debug(f"  ⏭️ Skipping {pos['symbol']}: Week {week_key} limit ({max_per_week}) reached")
+                            continue
+                        
+                        week_counts[week_key] += 1
+                    
+                    sector_counts[sector] += 1
+                    diversified_positions.append(pos)
+                    
+                    # Stop when we have enough
+                    if len(diversified_positions) >= tier2_max_positions:
+                        break
+                
+                logger.info(f"✅ Diversity applied: {len(diversified_positions)} positions selected")
+                logger.info(f"  Sectors: {dict(sector_counts)}")
+                logger.info(f"  Weeks: {dict(week_counts)}")
+                logger.info(f"  Filtered by diversity: {diversity_filtered}")
+                
+                final_positions = diversified_positions
+                logger.info(f"🎯 FINAL TIER 2 RESULT: {len(final_positions)} positions (diversified & ranked)")
             else:
                 logger.warning("⚠️  No positions passed Tier 2 filters!")
                 final_positions = []
@@ -821,6 +888,157 @@ def csv_import_and_score(request):
         
         logger.info(f"✅ Successfully imported {len(imported_ids)} positions to database")
         logger.info("=" * 80)
+        
+        # ========== PHASE 10B: LEAPS CONVERSION ==========
+        leaps_converted_ids = []
+        leaps_summary = {
+            'total_leaps_detected': 0,
+            'converted_count': 0,
+            'rejected_count': 0,
+            'capital_before': Decimal('0'),
+            'capital_after': Decimal('0'),
+            'total_savings': Decimal('0'),  # FIX: Initialize to prevent KeyError
+            'savings_pct': 0.0,  # FIX: Initialize to prevent KeyError
+            'conversions': []
+        }
+        
+        if auto_convert and imported_ids:
+            logger.info("=" * 80)
+            logger.info("🔍 PHASE 10B: LEAPS DETECTION & CONVERSION")
+            logger.info("=" * 80)
+            
+            leaps_converter = LEAPSConverterService()
+            whales_symbols = request.session.get('whales_symbols', {})
+            
+            # Check for LEAPS (DTE > 60)
+            leaps_found = []
+            for raw_id in list(imported_ids):  # Create copy to allow modifications
+                try:
+                    raw_data = OptionPlayRawData.objects.get(id=raw_id)
+                    dte = raw_data.days_to_expiry or 0
+                    
+                    if 60 < dte <= 365:
+                        leaps_summary['total_leaps_detected'] += 1
+                        leaps_found.append(raw_data)
+                        logger.info(f"  🔍 LEAP: {raw_data.symbol} (DTE: {dte})")
+                
+                except OptionPlayRawData.DoesNotExist:
+                    continue
+            
+            if leaps_found:
+                logger.info(f"✅ Found {len(leaps_found)} LEAPS (DTE 60-365)")
+                logger.info("🐋 Checking Whales signals for conversion eligibility...")
+                
+                for raw_data in leaps_found:
+                    try:
+                        symbol = raw_data.symbol.upper()
+                        
+                        # Determine Whales signal
+                        whales_signal = 0
+                        if symbol in whales_symbols.get('options_flow', []):
+                            whales_signal = 50  # Strong bullish
+                        elif symbol in whales_symbols.get('dark_pool', []):
+                            whales_signal = 30  # Moderate
+                        elif symbol in whales_symbols.get('lit_flow', []):
+                            whales_signal = 15  # Weak
+                        
+                        # Check if should convert
+                        option_data = {
+                            'dte': raw_data.days_to_expiry,
+                            'whales_signal': whales_signal,
+                            'iv_rank': float(raw_data.iv_rank * 100) if raw_data.iv_rank else 20,
+                            'flow_premium': 100000 if whales_signal >= 30 else 50000,
+                            'option_type': 'call'
+                        }
+                        
+                        should_convert, reason = leaps_converter.should_convert(option_data)
+                        
+                        if should_convert:
+                            # Convert to Bull Call Spread
+                            long_call = {
+                                'symbol': raw_data.symbol,
+                                'strike': raw_data.sell_strike,
+                                'premium': raw_data.premium,
+                                'dte': raw_data.days_to_expiry,
+                                'stock_price': raw_data.stock_price or raw_data.sell_strike,
+                                'iv': float(raw_data.iv_rank) if raw_data.iv_rank else 0.40,
+                                'contracts': 1,
+                                'expiration_date': raw_data.expiry
+                            }
+                            
+                            spread = leaps_converter.convert_to_bull_call_spread(long_call)
+                            
+                            # Create Bull Call Spread in database
+                            spread_raw = OptionPlayRawData.objects.create(
+                                strategy_type='bull_call_spread',
+                                symbol=spread['symbol'],
+                                stock_price=raw_data.stock_price,
+                                sell_strike=Decimal(str(spread['positions'][1]['strike'])),
+                                buy_strike=Decimal(str(spread['positions'][0]['strike'])),
+                                premium=Decimal(str(spread['capital_required'] / 100)),
+                                expiry=spread['expiration_date'],
+                                days_to_expiry=spread['dte'],
+                                iv_rank=raw_data.iv_rank,
+                                width=Decimal(str(spread['spread_width'])),
+                                earnings_flag=raw_data.earnings_flag,
+                                uploaded_by=raw_data.uploaded_by,
+                                upload_notes=(
+                                    f"🚀 LEAPS → BULL CALL SPREAD (Phase 10B)\n"
+                                    f"Original: ${spread['positions'][0]['strike']} Call ({spread['dte']} DTE)\n"
+                                    f"Spread: ${spread['positions'][0]['strike']}/${spread['positions'][1]['strike']}\n"
+                                    f"Capital: ${spread['original_capital']:,.0f} → ${spread['capital_required']:,.0f} "
+                                    f"({spread['capital_reduction_pct']:.0f}% reduction)\n"
+                                    f"Whales: +{whales_signal} | {reason}"
+                                )
+                            )
+                            
+                            leaps_summary['converted_count'] += 1
+                            leaps_summary['capital_before'] += Decimal(str(spread['original_capital']))
+                            leaps_summary['capital_after'] += Decimal(str(spread['capital_required']))
+                            leaps_summary['conversions'].append({
+                                'symbol': spread['symbol'],
+                                'buy_strike': spread['positions'][0]['strike'],
+                                'sell_strike': spread['positions'][1]['strike'],
+                                'dte': spread['dte'],
+                                'capital_reduction_pct': spread['capital_reduction_pct']
+                            })
+                            
+                            leaps_converted_ids.append(spread_raw.id)
+                            imported_ids.remove(raw_data.id)
+                            imported_ids.append(spread_raw.id)
+                            raw_data.delete()
+                            
+                            logger.info(f"    ✅ {symbol}: ${spread['positions'][0]['strike']}/${spread['positions'][1]['strike']} Bull Call ({spread['capital_reduction_pct']:.0f}% savings)")
+                        else:
+                            leaps_summary['rejected_count'] += 1
+                            logger.info(f"    ❌ {symbol}: {reason}")
+                    
+                    except Exception as e:
+                        logger.error(f"    ❌ Error: {raw_data.symbol} - {e}")
+                        leaps_summary['rejected_count'] += 1
+                
+                leaps_summary['total_savings'] = leaps_summary['capital_before'] - leaps_summary['capital_after']
+                leaps_summary['savings_pct'] = float(leaps_summary['total_savings'] / leaps_summary['capital_before'] * 100) if leaps_summary['capital_before'] > 0 else 0
+                
+                logger.info("=" * 80)
+                logger.info(f"📊 LEAPS: {leaps_summary['converted_count']} converted, {leaps_summary['rejected_count']} rejected")
+                logger.info(f"💰 Savings: ${leaps_summary['total_savings']:,.0f} ({leaps_summary['savings_pct']:.0f}%)")
+                logger.info("=" * 80)
+            else:
+                logger.info("ℹ️  No LEAPS detected (all DTE < 60)")
+        
+        # Store LEAPS summary in session for results page
+        request.session['leaps_summary'] = {
+            'total_detected': leaps_summary['total_leaps_detected'],
+            'converted': leaps_summary['converted_count'],
+            'rejected': leaps_summary['rejected_count'],
+            'capital_before': float(leaps_summary['capital_before']),
+            'capital_after': float(leaps_summary['capital_after']),
+            'total_savings': float(leaps_summary['total_savings']),
+            'savings_pct': leaps_summary['savings_pct'],
+            'conversions': leaps_summary['conversions']
+        }
+        # ========================================================================
         
         # Step 1.5: Auto-convert single-leg to spreads (NEW!)
         spread_converted_ids = []
@@ -1577,6 +1795,7 @@ def csv_import_and_score(request):
             'tier1_breakdown': tier1_reasons,
             'tier2_breakdown': tier2_reasons,
             'near_miss_positions': near_miss_positions,
+            'leaps_summary': request.session.get('leaps_summary'),  # Phase 10B: LEAPS conversion
             'title': 'CSV Upload - Complete'
         }
         
@@ -2046,4 +2265,99 @@ def _create_raw_data_from_mapped(mapped_data, strategy_type):
     )
     
     return raw_data
+
+
+# ============================================================================
+# HELPER FUNCTIONS: Sector & Expiry Week Detection (Phase 10 Enhancement)
+# ============================================================================
+
+def _get_sector_from_symbol(symbol):
+    """
+    Get sector for a stock symbol
+    
+    Returns: Sector name string
+    """
+    symbol = symbol.upper().strip()
+    
+    # Sector mappings (expandable)
+    SECTORS = {
+        'Technology': [
+            'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'AMZN', 'META', 'NVDA', 'AMD', 'INTC',
+            'ORCL', 'CRM', 'ADBE', 'NOW', 'INTU', 'QCOM', 'AVGO', 'ANET', 'CSCO',
+            'PLTR', 'SNOW', 'DDOG', 'NET', 'FTNT', 'ZS', 'CRWD', 'S', 'MDB',
+            'SOUN', 'IONQ', 'CORZ', 'TTD'
+        ],
+        'Finance': [
+            'JPM', 'BAC', 'GS', 'MS', 'C', 'WFC', 'BLK', 'SCHW', 'AXP',
+            'V', 'MA', 'PYPL', 'SQ', 'COIN', 'HOOD', 'SOFI', 'AFRM'
+        ],
+        'Energy': [
+            'XOM', 'CVX', 'COP', 'SLB', 'EOG', 'PXD', 'OXY', 'DVN', 'MPC', 'VLO'
+        ],
+        'Healthcare': [
+            'UNH', 'JNJ', 'PFE', 'ABBV', 'TMO', 'DHR', 'ABT', 'LLY', 'MRK', 'BMY',
+            'AMGN', 'GILD', 'NVO', 'REGN'
+        ],
+        'Consumer': [
+            'TSLA', 'NFLX', 'DIS', 'NKE', 'SBUX', 'MCD', 'HD', 'LOW', 'TGT', 'WMT',
+            'COST', 'TJX', 'ROST', 'LULU', 'ABNB', 'BKNG', 'MAR', 'HLT',
+            'APP', 'CVNA', 'ETSY', 'W'
+        ],
+        'Industrial': [
+            'BA', 'CAT', 'DE', 'GE', 'RTX', 'LMT', 'UPS', 'FDX', 'NSC', 'UNP',
+            'CEG', 'AIG', 'VST', 'ETN'
+        ],
+        'Semiconductor': [
+            'TSM', 'ASML', 'ARM', 'MRVL', 'LRCX', 'KLAC', 'AMAT', 'MU', 'NXPI',
+            'WDC', 'NTAP', 'STX', 'SMCI'
+        ],
+        'Automotive': [
+            'TSLA', 'GM', 'F', 'RACE', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI', 'AZO'
+        ],
+        'Materials': [
+            'NEM', 'AEM', 'WPM', 'PAAS', 'KGC', 'GDX', 'GDXJ', 'GLD', 'SLV'
+        ],
+        'Communication': [
+            'T', 'VZ', 'TMUS', 'CHTR', 'CMCSA', 'DIS', 'NFLX', 'SPOT', 'UBER'
+        ]
+    }
+    
+    # Find sector for symbol
+    for sector, symbols in SECTORS.items():
+        if symbol in symbols:
+            return sector
+    
+    # Default if not found
+    return 'Other'
+
+
+def _get_week_key_from_date_string(date_str):
+    """
+    Get week identifier from date string
+    
+    Args:
+        date_str: Date string (MM/DD/YYYY or YYYY-MM-DD)
+        
+    Returns:
+        str: Week key like "2025-W46"
+    """
+    from datetime import datetime
+    
+    try:
+        # Try different date formats
+        for fmt in ['%m/%d/%Y', '%Y-%m-%d', '%m/%d/%y']:
+            try:
+                date_obj = datetime.strptime(date_str, fmt).date()
+                # Get ISO week
+                year, week, _ = date_obj.isocalendar()
+                return f"{year}-W{week:02d}"
+            except ValueError:
+                continue
+        
+        # If all fail, return generic
+        return "Unknown-Week"
+    
+    except Exception as e:
+        logger.debug(f"  ⚠️ Could not parse date '{date_str}': {e}")
+        return "Unknown-Week"
 

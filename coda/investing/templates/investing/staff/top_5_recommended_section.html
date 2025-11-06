@@ -1,0 +1,210 @@
+<!-- 
+    PHASE 10A: TOP 5 RECOMMENDED POSITIONS
+    
+    Insert this section at the top of suggested_positions.html
+    Shows AI-ranked top 5 positions with multi-factor scoring
+-->
+
+{% if ranking_enabled %}
+<div class="panel panel-success" style="border: 3px solid #5cb85c; box-shadow: 0 4px 8px rgba(0,0,0,0.15);">
+    <div class="panel-heading" style="background-color: #5cb85c; color: white;">
+        <h3 style="margin: 10px 0;">
+            🏆 Top 5 Recommended Positions
+        </h3>
+        <p style="margin: 5px 0; opacity: 0.9;">
+            <strong>AI-Ranked by:</strong> 
+            Whales (35%) + Earnings Safety (25%) + ROC (20%) + DTE Diversity (20%)
+        </p>
+    </div>
+    
+    <div class="panel-body">
+        <table class="table table-hover" style="margin-bottom: 20px;">
+            <thead style="background-color: #f5f5f5;">
+                <tr>
+                    <th style="width: 5%;">Rank</th>
+                    <th style="width: 10%;">Symbol</th>
+                    <th style="width: 15%;">Strategy</th>
+                    <th style="width: 8%;">Total Score</th>
+                    <th style="width: 15%;">Recommendation</th>
+                    <th style="width: 22%;">Score Breakdown</th>
+                    <th style="width: 25%;">Selection Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in top_5_recommended %}
+                <tr class="{% if item.recommendation == 'STRONG BUY' %}success{% elif item.recommendation == 'BUY' %}info{% endif %}" 
+                    style="{% if forloop.first %}border-left: 4px solid gold;{% endif %}">
+                    
+                    <!-- Rank -->
+                    <td style="text-align: center; font-size: 18px; font-weight: bold;">
+                        {% if forloop.first %}
+                            <span style="color: gold;">🥇</span>
+                        {% elif forloop.counter == 2 %}
+                            <span style="color: silver;">🥈</span>
+                        {% elif forloop.counter == 3 %}
+                            <span style="color: #CD7F32;">🥉</span>
+                        {% else %}
+                            #{{ item.rank }}
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Symbol -->
+                    <td>
+                        <strong style="font-size: 16px;">{{ item.position.symbol }}</strong><br>
+                        <small class="text-muted">{{ item.position.dte }} DTE</small>
+                    </td>
+                    
+                    <!-- Strategy -->
+                    <td>
+                        {{ item.position.get_strategy_display }}<br>
+                        <small class="text-muted">
+                            ${{ item.position.premium_collected|floatformat:0 }} premium
+                        </small>
+                    </td>
+                    
+                    <!-- Total Score -->
+                    <td style="text-align: center;">
+                        <span class="badge badge-{% if item.total_score >= 85 %}success{% elif item.total_score >= 70 %}warning{% else %}default{% endif %}" 
+                              style="font-size: 14px; padding: 8px 12px;">
+                            {{ item.total_score|floatformat:0 }}/100
+                        </span>
+                    </td>
+                    
+                    <!-- Recommendation -->
+                    <td style="text-align: center;">
+                        <span class="label label-{% if item.recommendation == 'STRONG BUY' %}success{% elif item.recommendation == 'BUY' %}info{% elif item.recommendation == 'HOLD' %}warning{% else %}default{% endif %}" 
+                              style="font-size: 13px; padding: 6px 12px;">
+                            {{ item.recommendation }}
+                        </span>
+                    </td>
+                    
+                    <!-- Score Breakdown -->
+                    <td>
+                        <small>
+                            <div style="line-height: 1.6;">
+                                🐋 <strong>Whales:</strong> {{ item.breakdown.whales_score|floatformat:0 }}/100<br>
+                                📅 <strong>Earnings:</strong> {{ item.breakdown.earnings_score|floatformat:0 }}/100<br>
+                                💰 <strong>ROC:</strong> {{ item.breakdown.profit_score|floatformat:0 }}/100<br>
+                                ⏰ <strong>DTE:</strong> {{ item.breakdown.dte_score|floatformat:0 }}/100
+                            </div>
+                        </small>
+                    </td>
+                    
+                    <!-- Selection Reason -->
+                    <td>
+                        <small>
+                            {{ item.selection_reason }}
+                            
+                            {% if item.bonuses %}
+                                <div style="margin-top: 5px; color: #5cb85c;">
+                                    {% for bonus in item.bonuses %}
+                                        ✅ {{ bonus }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            {% if item.penalties %}
+                                <div style="margin-top: 5px; color: #d9534f;">
+                                    {% for penalty in item.penalties %}
+                                        ⚠️ {{ penalty }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Accept Top 5 Button -->
+        <div style="text-align: center; padding: 15px;">
+            <button id="acceptTop5Btn" 
+                    class="btn btn-success btn-lg" 
+                    style="font-size: 16px; padding: 12px 30px;">
+                <i class="fa fa-check-circle"></i>
+                ✅ Accept Top 5 Positions
+            </button>
+            
+            <button class="btn btn-default btn-lg" 
+                    style="margin-left: 10px;"
+                    onclick="toggleFullRankings()">
+                <i class="fa fa-list"></i>
+                View Full Rankings
+            </button>
+        </div>
+        
+        <!-- Full Rankings (Hidden by default) -->
+        <div id="fullRankings" style="display: none; margin-top: 20px;">
+            <h4>All Ranked Positions ({{ all_ranked_positions|length }} total)</h4>
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Symbol</th>
+                        <th>Score</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in all_ranked_positions %}
+                    <tr class="{% if forloop.counter <= 5 %}success{% endif %}">
+                        <td>#{{ item.rank }}</td>
+                        <td><strong>{{ item.position.symbol }}</strong></td>
+                        <td>{{ item.total_score|floatformat:0 }}/100</td>
+                        <td>
+                            <span class="label label-{% if item.recommendation == 'STRONG BUY' %}success{% elif item.recommendation == 'BUY' %}info{% elif item.recommendation == 'HOLD' %}warning{% else %}default{% endif %}">
+                                {{ item.recommendation }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Accept Top 5 AJAX Handler
+$(document).ready(function() {
+    $('#acceptTop5Btn').click(function() {
+        if (!confirm('Accept the top 5 recommended positions?\n\nThey will be auto-approved based on AI ranking.')) {
+            return;
+        }
+        
+        var btn = $(this);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Approving...');
+        
+        $.ajax({
+            url: '{% url "investing:accept_top_5" %}',
+            type: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+            success: function(response) {
+                if (response.success) {
+                    alert('✅ Success!\n\n' + response.message + '\n\nApproved ' + response.approved_count + ' positions:\n' + 
+                          response.approved_positions.map(p => '- ' + p.symbol + ' (' + p.recommendation + ')').join('\n'));
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + response.message);
+                    btn.prop('disabled', false).html('✅ Accept Top 5 Positions');
+                }
+            },
+            error: function(xhr) {
+                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Unknown error';
+                alert('❌ Error: ' + msg);
+                btn.prop('disabled', false).html('✅ Accept Top 5 Positions');
+            }
+        });
+    });
+});
+
+// Toggle Full Rankings
+function toggleFullRankings() {
+    $('#fullRankings').slideToggle();
+}
+</script>
+
+<hr style="margin: 30px 0; border-top: 2px solid #ddd;">
+{% endif %}
+

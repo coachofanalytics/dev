@@ -8,6 +8,21 @@ from django.urls import reverse
 from main.models import TimeStampedModel, ContractBase, DocumentMixin, StatusMixin
 from django.contrib.auth import get_user_model
 
+# Import shared constants (Single Source of Truth) - Added Nov 5, 2025
+# Constants import - COMMENTED OUT temporarily (Nov 5, 2025)
+# These constants are still defined inline in each model
+# Will be migrated to constants.py in future update
+# from .constants import (
+#     STRATEGY_CHOICES,
+#     SOURCE_CHOICES,
+#     POSITION_STATUS_CHOICES,
+#     BATCH_STATUS_CHOICES,
+#     RATING_CHOICES,
+#     CONFIDENCE_CHOICES,
+#     WHALES_SIGNAL_TYPE_CHOICES,
+#     ACTIVITY_TYPE_CHOICES
+# )
+
 # from finance.utils import get_exchange_rate
 User = get_user_model()
 
@@ -18,109 +33,9 @@ User = get_user_model()
 # FEE TIER CONFIGURATION (Admin-editable)
 # ============================================================================
 
-class FeeTierConfiguration(TimeStampedModel):
-    """
-    Admin-editable configuration for managed trading fee tiers
-    Allows staff to update minimums, fees, descriptions without code changes
-    """
-    
-    TIER_CHOICES = [
-        ('starter', 'Starter'),
-        ('professional', 'Professional'),
-        ('premium', 'Premium'),
-        ('consultative', 'Consultative'),
-        ('co_invest', 'Co-Invest'),
-    ]
-    
-    tier_code = models.CharField(
-        max_length=20,
-        choices=TIER_CHOICES,
-        unique=True,
-        help_text="Internal tier code"
-    )
-    tier_name = models.CharField(
-        max_length=100,
-        help_text="Display name (e.g., 'Starter - AI Powered')"
-    )
-    minimum_capital = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        help_text="Minimum capital required for this tier"
-    )
-    monthly_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        help_text="Fixed monthly fee (set to 0 if none)"
-    )
-    per_session_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        help_text="Fee per session (for consultative tier)"
-    )
-    profit_share_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        help_text="Percentage of profits shared (e.g., 10 for 10%)"
-    )
-    max_sessions_per_month = models.IntegerField(
-        default=0,
-        help_text="Maximum sessions per month (0 if unlimited)"
-    )
-    short_description = models.CharField(
-        max_length=200,
-        help_text="Brief description for tier card"
-    )
-    
-    # Features description (for display)
-    features = models.JSONField(
-        default=list,
-        help_text="List of features (e.g., ['AI-driven trades', 'Real-time monitoring'])"
-    )
-    compatible_risk_levels = models.JSONField(
-        default=list,
-        help_text="Risk levels this tier is suitable for (e.g., ['low', 'medium'])"
-    )
-    
-    # Display order
-    display_order = models.IntegerField(
-        default=0,
-        help_text="Order to display on forms (lower = first)"
-    )
-    
-    is_active = models.BooleanField(
-        default=True,
-        help_text="Is this tier currently available?"
-    )
-    
-    class Meta:
-        verbose_name = "Fee Tier Configuration"
-        verbose_name_plural = "Fee Tier Configurations"
-        ordering = ['display_order', 'minimum_capital']
-    
-    def __str__(self):
-        return f"{self.tier_name} (${self.minimum_capital:,.0f}+)"
-    
-    def get_fee_display(self):
-        """Return formatted fee string for display"""
-        parts = []
-        if self.monthly_fee > 0:
-            parts.append(f"${self.monthly_fee:.0f}/month")
-        if self.per_session_fee > 0:
-            parts.append(f"${self.per_session_fee:.0f}/session")
-        if self.profit_share_percentage > 0:
-            parts.append(f"{self.profit_share_percentage:.0f}% profit")
-        return " + ".join(parts) if parts else "Custom"
-    
-    def get_features_list(self):
-        """Return features as a list"""
-        # Handle both list (JSONField) and string (TextField) formats
-        if isinstance(self.features, list):
-            return self.features
-        elif isinstance(self.features, str):
-            return [f.strip() for f in self.features.split(',') if f.strip()]
-        return []
+# LEGACY MODEL DELETED: FeeTierConfiguration (Duplicate) (Nov 5, 2025)
+# Reason: Duplicate of FeeTierConfiguration at Line 2310 (kept the newer, more complete version)
+
 
 
 class Investor_Information(ContractBase, DocumentMixin, StatusMixin):
@@ -560,276 +475,46 @@ class Ticker_Data(models.Model):
         return self.symbol
 
 
-class credit_spread(models.Model):
-    symbol = models.CharField(max_length=255, blank=True, null=True)
-    strategy = models.CharField(max_length=255, blank=True, null=True)
-    type = models.CharField(max_length=255, blank=True, null=True)
-    price = models.CharField(max_length=255, blank=True, null=True)
-    sell_strike = models.CharField(max_length=255, blank=True, null=True)
-    buy_strike = models.CharField(max_length=255, blank=True, null=True)
-    expiry = models.CharField(max_length=255, blank=True, null=True)
-    premium = models.CharField(max_length=255, blank=True, null=True)
-    width = models.CharField(max_length=255, blank=True, null=True)
-    prem_width = models.CharField(max_length=255, blank=True, null=True)
-    # iv_rank = models.CharField(max_length=255,blank=True, null=True)
-    rank = models.CharField(max_length=255, blank=True, null=True)
-    earnings_date = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = "credit_spread"
-
-    # def __str__(self):
-    #     return self.symbol
+# LEGACY MODEL DELETED: credit_spread (Nov 5, 2025)
+# Reason: Used CharField for all numeric values (price, strikes, premium)
+# Replacement: OptionPlayRawData (has proper Decimal fields)
 
 
-class ShortPut(models.Model):
-    symbol = models.CharField(max_length=255, blank=True, null=True)
-    industry = models.CharField(max_length=255, blank=True, null=True)
-    expiry = models.CharField(max_length=255, blank=True, null=True)
-    days_to_expiry = models.CharField(max_length=255, blank=True, null=True)
-    strike_price = models.CharField(max_length=255, blank=True, null=True)
-    mid_price = models.CharField(max_length=255, blank=True, null=True)
-    bid_price = models.CharField(max_length=255, blank=True, null=True)
-    ask_price = models.CharField(max_length=255, blank=True, null=True)
-    implied_volatility_rank = models.CharField(max_length=255, blank=True, null=True)
-    earnings_date = models.CharField(max_length=255, blank=True, null=True)
-    earnings_flag = models.CharField(max_length=255, blank=True, null=True)
-    stock_price = models.CharField(max_length=255, blank=True, null=True)
-    raw_return = models.CharField(max_length=255, blank=True, null=True)
-    annualized_return = models.CharField(max_length=255, blank=True, null=True)
-    distance_to_strike = models.CharField(max_length=255, blank=True, null=True)
-    comment = models.CharField(max_length=255, blank=True, null=True)
-    on_date = models.CharField(max_length=255, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    is_featured = models.BooleanField(default=True)
-
-    class Meta:
-        verbose_name_plural = "ShortPut"
-
-    # def __str__(self):
-    #     return self.symbol
+# LEGACY MODEL DELETED: ShortPut (Nov 5, 2025)
+# Data backed up to: legacy_shortput_backup_20251105_112852.csv
+# Reason: Used CharField for numeric values, superseded by OptionsPosition
 
 
-class covered_calls(models.Model):
-    symbol = models.CharField(max_length=255, blank=True, null=True)
-    action = models.CharField(max_length=255, blank=True, null=True)
-    expiry = models.CharField(max_length=255, blank=True, null=True)
-    days_to_expiry = models.CharField(max_length=255, blank=True, null=True)
-    strike_price = models.CharField(max_length=255, blank=True, null=True)
-    mid_price = models.CharField(max_length=255, blank=True, null=True)
-    bid_price = models.CharField(max_length=255, blank=True, null=True)
-    ask_price = models.CharField(max_length=255, blank=True, null=True)
-    implied_volatility_rank = models.CharField(max_length=255, blank=True, null=True)
-    # rank = models.CharField(max_length=255,blank=True, null=True)
-    earnings_date = models.CharField(max_length=255, blank=True, null=True)
-    earnings_flag = models.CharField(max_length=255, blank=True, null=True)
-    stock_price = models.CharField(max_length=255, blank=True, null=True)
-    raw_return = models.CharField(max_length=255, blank=True, null=True)
-    annualized_return = models.CharField(max_length=255, blank=True, null=True)
-    distance_to_strike = models.CharField(max_length=255, blank=True, null=True)
-    comment = models.CharField(max_length=255, blank=True, null=True)
-    on_date = models.CharField(max_length=255, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    is_featured = models.BooleanField(default=True)
-
-    class Meta:
-        verbose_name_plural = "covered_calls"
-
-    # def __str__(self):
-    #     return self.symbol
+# LEGACY MODEL DELETED: covered_calls (Nov 5, 2025)
+# Data backed up to: legacy_covered_calls_backup_20251105_112852.csv
+# Reason: Used CharField for numeric values, superseded by OptionsPosition
 
 
-class Portfolio(TimeStampedModel):
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    symbol = models.CharField(max_length=255, blank=True, null=True)
-    industry = models.CharField(max_length=255, blank=True, null=True)
-    action = models.CharField(max_length=255, blank=True, null=True)
-    # strike_price = models.CharField(max_length=255,blank=True, null=True)
-    implied_volatility_rank = models.CharField(max_length=255, blank=True, null=True)
-    expiry = models.CharField(max_length=255, blank=True, null=True)
-    earnings_date = models.CharField(max_length=255, blank=True, null=True)
-    condition = models.CharField(max_length=255, blank=True, null=True)
-    comment = models.CharField(max_length=255, blank=True, null=True)
-    on_date = models.CharField(max_length=255, blank=True, null=True)
-
-    strategy = models.CharField(max_length=255, blank=True, null=True)
-    returns = models.DecimalField(max_digits=10, decimal_places=4, default=0.00)
-    short_strike = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    long_strike = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    # short_strike = models.CharField(max_length=255,blank=True, null=True)
-    # long_strike = models.CharField(max_length=255,blank=True, null=True)
-
-    amount = models.DecimalField(max_digits=10, decimal_places=4, default=0.00)
-
-    long_leg_delta = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        default=0.00,
-        validators=[MinValueValidator(0.20)],
-    )
-    short_leg_delta = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        default=0.00,
-        validators=[MaxValueValidator(0.45)],
-    )
-    long_leg_theta = models.DecimalField(max_digits=10, decimal_places=4, default=0.00)
-    short_leg_theta = models.DecimalField(max_digits=10, decimal_places=4, default=0.00)
-    number_of_contract = models.IntegerField(default=1)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    # Comes from TimeStampedModel in main
-    class Meta:
-        verbose_name_plural = "Portfolio"
-        indexes = [
-            models.Index(fields=["symbol"]),
-            models.Index(fields=["user"]),
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["updated_at"]),
-            models.Index(fields=["is_active"]),
-            models.Index(fields=["is_featured"]),
-            # Composite indexes for common query patterns
-            models.Index(fields=["user", "symbol"]),
-            models.Index(fields=["symbol", "is_active"]),
-            models.Index(fields=["created_at", "is_active"]),
-        ]
-
-    def clean(self):
-        """Validate Portifolio model data"""
-        from django.core.exceptions import ValidationError
-
-        # Validate delta values
-        if self.long_leg_delta < 0.20:
-            raise ValidationError("Long leg delta must be at least 0.20")
-
-        if self.short_leg_delta > 0.45:
-            raise ValidationError("Short leg delta cannot exceed 0.45")
-
-        # Validate strike prices
-        if self.short_strike and self.long_strike:
-            if self.short_strike >= self.long_strike:
-                raise ValidationError("Short strike must be less than long strike")
-
-        # Validate amount
-        if self.amount < 0:
-            raise ValidationError("Amount cannot be negative")
-
-        # Validate number of contracts
-        if self.number_of_contract <= 0:
-            raise ValidationError("Number of contracts must be positive")
-
-    def save(self, *args, **kwargs):
-        """Override save to ensure validation"""
-        self.clean()
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.symbol
+# LEGACY MODEL DELETED: Portfolio (Nov 5, 2025)
+# Table never existed in database (migration never ran)
+# Reason: Conflicts with ManagedTradingAccount, superseded by OptionsPosition
 
 
-class OverBoughtSold(models.Model):
-    symbol = models.CharField(max_length=255, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    last = models.CharField(max_length=255, blank=True, null=True)
-    volume = models.CharField(max_length=255, blank=True, null=True)
-    RSI = models.CharField(max_length=255, blank=True, null=True)
-    EPS = models.CharField(max_length=255, blank=True, null=True)
-    PE = models.CharField(max_length=255, blank=True, null=True)
-    rank = models.CharField(max_length=255, blank=True, null=True)
-    profit_margins = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(default=timezone.now)
-
-    @property
-    def condition_integer(self):
-        try:
-            # Convert to float, round, and then convert to int
-            rsi_value = int(round(float(self.RSI)))
-            if rsi_value >= 30:
-                return 1  # 'oversold'
-            else:
-                return 0  # 'overbought'
-        except ValueError:
-            # Handle any exceptions gracefully
-            return -1  # neutral
-
-    class Meta:
-        verbose_name_plural = "Oversold"
-
-    def __str__(self):
-        return self.symbol
 
 
-class SavedResponses(models.Model):
-    CONDITION_CHOICES = (
-        ("80", "Overbought (RSI > 80)"),
-        ("20", "Oversold (RSI < 20)"),
-    )
-
-    condition = models.CharField(max_length=10, choices=CONDITION_CHOICES, unique=True)
-    standard_response = models.TextField(null=True)
-
-    def __str__(self):
-        return f"{self.condition} Standard Response"
+# LEGACY MODEL DELETED: OverBoughtSold (Nov 5, 2025)
+# Reason: Used CharField for all technical indicators (RSI, volume, EPS, PE)
+# Replacement: MarketData model (has proper Decimal fields for technical data)
 
 
-class Options_Returns(models.Model):
-    symbol = models.CharField(max_length=255, blank=True, null=True)
-    expiration_date = models.CharField(max_length=255, blank=True, null=True)
-    action = models.CharField(max_length=255, blank=True, null=True)
-    event = models.CharField(max_length=255, blank=True, null=True)
-    qty = models.CharField(max_length=255, blank=True, null=True)
-    strike_price = models.CharField(max_length=255, blank=True, null=True)
-    open_date = models.CharField(max_length=255, blank=True, null=True)
-    closed_date = models.CharField(max_length=255, blank=True, null=True)
-    cost = models.CharField(max_length=255, blank=True, null=True)
-    LT_GL = models.CharField(max_length=255, blank=True, null=True)
-    ST_GL = models.CharField(max_length=255, blank=True, null=True)
-    proceeds = models.CharField(max_length=255, blank=True, null=True)
-    covered = models.CharField(max_length=255, blank=True, null=True)
-    security_number = models.CharField(max_length=255, blank=True, null=True)
-    cbm = models.CharField(max_length=255, blank=True, null=True)
-    other = models.CharField(max_length=255, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-
-    @property
-    def wash_days(self):
-        date_today = datetime.now(timezone.utc)
-        date_today_date = date_today.date()
-        wash_days = (date_today_date - self.closed_date).days
-        return wash_days
-
-    @property
-    def wait_time(self):
-        wait_time = (self.closed_date - self.open_date).days
-        return wait_time
-
-    class Meta:
-        verbose_name_plural = "returns"
-
-    def __str__(self):
-        return self.symbol
+# LEGACY MODEL DELETED: SavedResponses (Nov 5, 2025)
+# Reason: Only 2 static records (config data, not dynamic data)
+# Replacement: Can be hardcoded in views or moved to settings.py if needed
 
 
-class Cost_Basis(models.Model):
-    symbol = models.CharField(max_length=255, blank=True, null=True)
-    expiration_date = models.CharField(max_length=255, blank=True, null=True)
-    action = models.CharField(max_length=255, blank=True, null=True)
-    qty = models.CharField(max_length=255, blank=True, null=True)
-    strike_price = models.CharField(max_length=255, blank=True, null=True)
-    open_date = models.CharField(max_length=255, blank=True, null=True)
-    cost = models.CharField(max_length=255, blank=True, null=True)
-    covered = models.CharField(max_length=255, blank=True, null=True)
-    security_number = models.CharField(max_length=255, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
+# LEGACY MODEL DELETED: Options_Returns (Nov 5, 2025)
+# Reason: Used CharField for all financial data (cost, qty, P&L, proceeds)
+# Replacement: OptionsPositionHistory (has proper Decimal fields for P&L tracking)
 
-    class Meta:
-        verbose_name_plural = "cost_basis"
 
-    def __str__(self):
-        return self.symbol
+# LEGACY MODEL DELETED: Cost_Basis (Nov 5, 2025)
+# Reason: Used CharField for cost and quantity (should be Decimal/Integer)
+# Replacement: OptionsPosition.capital_required (tracks costs properly)
 
 
 class InvestmentsStrategy(models.Model):
@@ -2058,6 +1743,22 @@ class OptionsPosition(TimeStampedModel):
     Greeks, P&L, and current status.
     """
     
+    STRATEGY_CHOICES = [
+        ('short_put', 'Cash-Secured Short Put'),
+        ('covered_call', 'Covered Call'),
+        ('short_call', 'Naked Short Call'),
+        ('bull_put_spread', 'Bull Put Spread'),
+        ('bear_call_spread', 'Bear Call Spread'),
+        ('bull_call_spread', 'Bull Call Spread'),
+        ('bear_put_spread', 'Bear Put Spread'),
+        ('iron_condor', 'Iron Condor'),
+        ('long_call', 'Long Call'),
+        ('long_put', 'Long Put'),
+        ('straddle', 'Straddle'),
+        ('strangle', 'Strangle'),
+        ('other', 'Other Strategy')
+    ]
+    
     # Account Linkage
     managed_account = models.ForeignKey(
         ManagedTradingAccount,
@@ -2110,22 +1811,10 @@ class OptionsPosition(TimeStampedModel):
         help_text="Underlying stock ticker (e.g., AAPL)"
     )
     
-    STRATEGY_CHOICES = [
-        ('short_put', 'Cash-Secured Short Put'),
-        ('covered_call', 'Covered Call'),
-        ('short_call', 'Naked Short Call'),
-        ('bull_put_spread', 'Bull Put Spread'),
-        ('bear_call_spread', 'Bear Call Spread'),
-        ('iron_condor', 'Iron Condor'),
-        ('long_call', 'Long Call'),
-        ('long_put', 'Long Put'),
-        ('straddle', 'Straddle'),
-        ('strangle', 'Strangle'),
-        ('other', 'Other Strategy')
-    ]
+    # STRATEGY_CHOICES moved to constants.py (Nov 5, 2025) - Single Source of Truth
     strategy = models.CharField(
-        max_length=20,
-        choices=STRATEGY_CHOICES,
+        max_length=30,  # Increased from 20 to handle longer strategy names
+        choices=STRATEGY_CHOICES,  # Imported from constants.py
         help_text="Options strategy type"
     )
     
@@ -3281,15 +2970,33 @@ class SuggestedPosition(TimeStampedModel):
     4. Client approves batch → Positions become active
     """
     
-    # Source tracking
     SOURCE_CHOICES = [
         ('optionplay', 'OptionPlay API'),
         ('thinkorswim', 'Thinkorswim/TD Ameritrade'),
+        ('unusual_whales', 'Unusual Whales'),
         ('manual', 'Manual Entry'),
     ]
+    
+    STRATEGY_CHOICES = [
+        ('short_put', 'Cash-Secured Short Put'),
+        ('covered_call', 'Covered Call'),
+        ('short_call', 'Naked Short Call'),
+        ('bull_put_spread', 'Bull Put Spread'),
+        ('bear_call_spread', 'Bear Call Spread'),
+        ('bull_call_spread', 'Bull Call Spread'),
+        ('bear_put_spread', 'Bear Put Spread'),
+        ('iron_condor', 'Iron Condor'),
+        ('long_call', 'Long Call'),
+        ('long_put', 'Long Put'),
+        ('straddle', 'Straddle'),
+        ('strangle', 'Strangle'),
+        ('other', 'Other Strategy')
+    ]
+    
+    # Source tracking
     source = models.CharField(
         max_length=20,
-        choices=SOURCE_CHOICES,
+        choices=SOURCE_CHOICES,  # Imported from constants.py
         help_text="Where this position was sourced from"
     )
     fetched_at = models.DateTimeField(
@@ -3303,21 +3010,10 @@ class SuggestedPosition(TimeStampedModel):
         help_text="Underlying stock ticker (e.g., AAPL, TSLA)"
     )
     
-    STRATEGY_CHOICES = [
-        ('short_put', 'Cash-Secured Short Put'),
-        ('covered_call', 'Covered Call'),
-        ('bull_put_spread', 'Bull Put Spread'),
-        ('bear_call_spread', 'Bear Call Spread'),
-        ('bull_call_spread', 'Bull Call Spread'),
-        ('bear_put_spread', 'Bear Put Spread'),
-        ('iron_condor', 'Iron Condor'),
-        ('long_call', 'Long Call'),
-        ('long_put', 'Long Put'),
-        ('other', 'Other Strategy')
-    ]
+    # STRATEGY_CHOICES moved to constants.py (Nov 5, 2025) - Single Source of Truth
     strategy = models.CharField(
         max_length=30,
-        choices=STRATEGY_CHOICES,
+        choices=STRATEGY_CHOICES,  # Imported from constants.py
         help_text="Options strategy type"
     )
     
@@ -3597,19 +3293,26 @@ class OptionPlayRawData(TimeStampedModel):
     - Covered Calls
     """
     
-    # Source tracking
-    STRATEGY_TYPE_CHOICES = [
-        ('credit_spread', 'Credit Spread'),
+    STRATEGY_CHOICES = [
+        ('short_put', 'Cash-Secured Short Put'),
+        ('covered_call', 'Covered Call'),
+        ('short_call', 'Naked Short Call'),
         ('bull_put_spread', 'Bull Put Spread'),
         ('bear_call_spread', 'Bear Call Spread'),
+        ('bull_call_spread', 'Bull Call Spread'),
+        ('bear_put_spread', 'Bear Put Spread'),
         ('iron_condor', 'Iron Condor'),
-        ('short_put', 'Short Put'),
-        ('covered_call', 'Covered Call'),
-        ('short_call', 'Short Call'),
+        ('long_call', 'Long Call'),
+        ('long_put', 'Long Put'),
+        ('straddle', 'Straddle'),
+        ('strangle', 'Strangle'),
+        ('other', 'Other Strategy')
     ]
+    
+    # Source tracking
     strategy_type = models.CharField(
-        max_length=30,  # Increased from 20 to fit 'bull_put_spread'
-        choices=STRATEGY_TYPE_CHOICES,
+        max_length=30,
+        choices=STRATEGY_CHOICES,  # Imported from constants.py
         help_text="Type of position from CSV"
     )
     

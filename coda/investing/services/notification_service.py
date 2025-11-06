@@ -279,6 +279,8 @@ CODA Investment Team
             message_body = self._format_whatsapp_template(template_name, template_params)
             
             # Send WhatsApp message
+            # Note: Twilio client has built-in timeout (default ~60s)
+            # Can't set custom timeout easily without modifying Twilio client
             message = client.messages.create(
                 from_=whatsapp_from,
                 body=message_body,
@@ -336,7 +338,7 @@ CODA Investment Team
                 'parse_mode': parse_mode
             }
             
-            response = requests.post(url, json=payload)
+            response = requests.post(url, json=payload, timeout=10)  # FIX: Add 10 second timeout
             
             if response.status_code == 200:
                 logger.info(f"✅ Telegram sent to {chat_id}")
