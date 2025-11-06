@@ -1684,6 +1684,36 @@ See [07_DEPLOYMENT.md](07_DEPLOYMENT.md) for Phase 10 deployment strategy.
 
 ---
 
+## 📝 **CHANGE HISTORY**
+
+| Date | Change | Reason | Files Modified | Status |
+|------|--------|--------|----------------|--------|
+| Nov 5, 2025 | **Legacy Model Cleanup** - Removed 9 models (ShortPut, covered_calls, Portfolio, credit_spread, OverBoughtSold, Options_Returns, Cost_Basis, SavedResponses, FeeTierConfiguration duplicate) | Models used CharField for numeric values, superseded by OptionsPosition system | `models.py`, `admin.py`, `forms.py`, `views_legacy.py` | ✅ Complete |
+| Nov 5, 2025 | **Created constants.py** - Centralized STRATEGY_CHOICES (19 strategies), SOURCE_CHOICES, STATUS_CHOICES | Single source of truth for constants across models | `investing/constants.py` (new file) | ✅ Complete |
+| Nov 5, 2025 | **Bug Fix: IV Rank Filter** - Fixed format mismatch (compared 0.26 to 16 instead of 0.16) | All positions incorrectly filtered, 0 results | `views/managed_trading/csv_upload.py` line 421 | ✅ Fixed |
+| Nov 5, 2025 | **Bug Fix: ROC Filter** - Fixed format mismatch (compared 0.015 to 1.5 instead of 0.015) | All positions incorrectly filtered by ROC | `views/managed_trading/csv_upload.py` line 424 | ✅ Fixed |
+| Nov 5, 2025 | **Bug Fix: LEAPS KeyError** - Initialized `total_savings` and `savings_pct` in dictionary | KeyError crash during CSV import | `views/managed_trading/csv_upload.py` lines 900-901 | ✅ Fixed |
+| Nov 5, 2025 | **Bug Fix: Approval Timeout** - Added 30s timeout to bulk approval fetch() | Browser hung indefinitely waiting for server | `templates/investing/staff/suggested_positions.html` lines 560-610 | ✅ Fixed |
+| Nov 5, 2025 | **Bug Fix: Telegram Timeout** - Added 10s timeout to Telegram API | API calls could hang indefinitely | `services/notification_service.py` line 339 | ✅ Fixed |
+| Nov 5, 2025 | **Data Migration** - Backed up legacy data (35 records) to CSV before deletion | Preserve historical data | Created `backup_legacy_positions.py` management command | ✅ Complete |
+| Nov 5, 2025 | **Database Migration** - Created migration to drop legacy tables (investing_shortput, investing_covered_calls) | Clean up database | `migrations/0015_remove_legacy_models.py` | ⏸️ Pending |
+
+### **Bug Details:**
+
+**IV/ROC Filter Bug (Critical):**
+- **Problem:** Form sends percentages as integers (16 for 16%), but code compared directly to CSV decimals (0.26 for 26%)
+- **Impact:** `if 0.26 < 16` was always TRUE → everything filtered
+- **Fix:** Divide form values by 100: `min_iv / 100`, `min_roc / 100`
+- **Result:** Filters now work correctly
+
+**Timeout Bugs:**
+- **Problem:** JavaScript fetch() and API calls had no timeout → infinite hangs
+- **Impact:** Approval button could hang forever
+- **Fix:** Added 30s timeout to frontend, 10s to backend API calls
+- **Result:** Graceful timeout with user feedback
+
+---
+
 **Next Phase:** [05_TESTING.md](05_TESTING.md)  
 **Previous Phase:** [03_ARCHITECTURE.md](03_ARCHITECTURE.md)  
 **Return to:** [README.md](README.md)

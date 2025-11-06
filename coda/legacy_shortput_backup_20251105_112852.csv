@@ -1,3 +1,0 @@
-id,symbol,industry,expiry,days_to_expiry,strike_price,mid_price,bid_price,ask_price,implied_volatility_rank,earnings_date,earnings_flag,stock_price,raw_return,annualized_return,distance_to_strike,comment,on_date,is_active,is_featured
-34,CRM,Software - Application,,,,,,,,,,341.73,,0.0023410295,,,2024-11-12 16:57:57.295167+00:00,True,True
-35,PLTR,Software - Infrastructure,,,,,,,,,,60.24,,,,,2024-11-12 16:57:57.323643+00:00,True,True

@@ -15,6 +15,46 @@ You are working on the **CODA Budget System**, a Django-based data-driven budget
 - **Phase 2 Complete**: Smart forms with AI predictions, cascading dropdowns
 - **Phase 3 In Progress**: User drill-down views, category detail pages
 
+---
+
+## 🚨 **CRITICAL RULE #1: DO NOT CREATE NEW .MD FILES!** 🚨
+
+### **This is the #1 violation by AI assistants - READ THIS FIRST!**
+
+❌ **NEVER create .md files in project root** (except README.md)
+❌ **NEVER create .md files in docs/ root** (except README.md)
+❌ **NEVER create new docs after each prompt** (SESSION_SUMMARY.md, PROGRESS.md, etc.)
+❌ **NEVER create duplicate feature docs** (each feature has EXACTLY 7 docs)
+
+✅ **ALWAYS update existing docs** in `docs/apps/[Feature]/01-07/`
+✅ **IF ABSOLUTELY NEEDED:** Create in `docs/_temp_summaries/` (user reviews, then integrate & delete)
+✅ **Understand:** Back-and-forth is normal! Update existing docs as if you knew requirements from start
+
+**Why this matters:**
+- User gets 19 session summaries in root every time AI works on something
+- Docs become messy, duplicated, hard to navigate
+- The 7-doc structure exists to prevent doc sprawl
+- Development is iterative - requirements change - UPDATE docs, don't create new ones!
+
+**Example of CORRECT behavior:**
+```
+Session 1: User asks for feature X
+  → AI updates docs/apps/Feature/02_REQUIREMENTS.md
+
+Session 2: User says "also add Y"
+  → AI updates SAME 02_REQUIREMENTS.md (adds Y to Phase X)
+  → NOT creates "REQUIREMENTS_UPDATE.md" ❌
+
+Session 3: User reports bug
+  → AI updates 04_IMPLEMENTATION.md Change History
+  → AI updates 05_TESTING.md with regression test
+  → NOT creates "BUG_FIX_REPORT.md" ❌
+```
+
+**Read full guidelines:** `docs/01_GETTING_STARTED/CURSOR_AI_GUIDE.md` (lines 7-131)
+
+---
+
 ## ESSENTIAL READING (Always Check These First)
 
 Before responding to ANY request, check if these files exist and read them:
