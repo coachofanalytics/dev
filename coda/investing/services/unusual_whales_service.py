@@ -446,12 +446,15 @@ class UnusualWhalesService:
             flow_score = flow_data['flow_score']
             if flow_score >= 75:
                 timing = '🟢 ENTER NOW (Heavy buying flow detected!)'
+                entry_window = 'Next 1-2 sessions (re-check flow within 24h)'
                 ai_boost = 20
             elif flow_score >= 50:
                 timing = '🟡 OK TO ENTER (Normal flow)'
+                entry_window = 'Within the next 2-4 sessions (stale after ~48h)'
                 ai_boost = 10
             else:
                 timing = '🔴 WAIT/SKIP (Heavy selling flow detected!)'
+                entry_window = 'Hold off until new bullish flow appears'
                 ai_boost = -20
 
             adjusted_score = max(0, min(100, base_score + ai_boost))
@@ -468,6 +471,7 @@ class UnusualWhalesService:
                 'premium_spent': flow_data.get('premium_spent'),
                 'volume_oi_ratio': flow_data.get('volume_oi_ratio'),
                 'timing_signal': timing,
+                'entry_window': entry_window,
                 'base_ai_score': base_score,
                 'last_updated': timezone.now().isoformat(),
             })
@@ -488,6 +492,8 @@ class UnusualWhalesService:
         note_header = '💎 Unusual Whales Flow:'
         base_notes = (existing_notes or '').split(note_header)[0].rstrip()
 
+        entry_window = whales_meta.get('entry_window')
+
         flow_lines = [
             note_header,
             f"  • Flow Score: {whales_meta.get('flow_score', 0):.0f}/100",
@@ -497,6 +503,9 @@ class UnusualWhalesService:
             f"  • Net Premium: ${whales_meta.get('premium_spent', 0):,.0f}",
             f"  • Timing: {whales_meta.get('timing_signal', 'N/A')}",
         ]
+
+        if entry_window:
+            flow_lines.append(f"  • Entry Window: {entry_window}")
 
         combined = base_notes
         if combined:

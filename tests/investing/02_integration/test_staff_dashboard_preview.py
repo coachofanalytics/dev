@@ -57,4 +57,7 @@ class StaffDashboardPreviewTests(unittest.TestCase):
         self.assertEqual(leg['type'], 'call')
         self.assertEqual(leg['direction'], 'short')
         self.assertEqual(leg['strike'], 150)
+        self.assertEqual(payload['short_strike'], 150.0)
+        self.assertIsNone(payload['long_strike'])
+        self.assertIsNone(payload['underlying_price'])
 

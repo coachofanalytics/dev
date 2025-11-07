@@ -658,6 +658,57 @@ function formatCurrency(value) {
     })}`;
 }
 
+function buildStrikeInsight(payload) {
+    const shortStrike = Number(payload.short_strike);
+    const longStrike = Number(payload.long_strike);
+    const underlying = Number(payload.underlying_price);
+    const probability = Number(payload.probability);
+    const flowScore = Number(payload.flow_score);
+    const entryWindow = payload.entry_window;
+
+    const segments = [];
+
+    if (!Number.isNaN(shortStrike)) {
+        if (!Number.isNaN(underlying) && underlying > 0) {
+            const cushion = ((underlying - shortStrike) / underlying) * 100;
+            const magnitude = Math.abs(cushion).toFixed(1);
+            const relation = cushion >= 0 ? 'below' : 'above';
+            segments.push(`Short strike anchored at $${shortStrike.toFixed(2)} (~${magnitude}% ${relation} spot $${underlying.toFixed(2)}) keeps the spread comfortably out-of-the-money.`);
+        } else {
+            segments.push(`Short strike anchored at $${shortStrike.toFixed(2)} keeps the spread comfortably out-of-the-money.`);
+        }
+    }
+
+    if (!Number.isNaN(longStrike) && !Number.isNaN(shortStrike) && longStrike !== shortStrike) {
+        segments.push(`Long leg at $${longStrike.toFixed(2)} caps risk for a defined-loss structure.`);
+    }
+
+    if (!Number.isNaN(probability) && probability > 0) {
+        segments.push(`Targets ≈${probability.toFixed(0)}% probability of profit to support the managed-income plan.`);
+    }
+
+    if (!Number.isNaN(flowScore) && flowScore > 0) {
+        segments.push(`UW flow score ${flowScore.toFixed(0)}/100 confirms timing before capital is deployed.`);
+    }
+
+    if (entryWindow) {
+        segments.push(`Entry window: ${escapeHtml(entryWindow)}.`);
+    }
+
+    if (!segments.length) {
+        return '';
+    }
+
+    return `
+        <div class="alert alert-light border strike-placement mb-3 d-flex align-items-start">
+            <i class="fa fa-info-circle text-info mr-2" aria-hidden="true"></i>
+            <div>
+                <strong>Strike placement insight:</strong> ${segments.join(' ')}
+            </div>
+        </div>
+    `;
+}
+
 function openPreviewModal(positionId) {
     const payload = previewPayloads[positionId];
     if (!payload) {
@@ -708,6 +759,8 @@ function openPreviewModal(positionId) {
         }).join('')
         : '<tr><td colspan="9" class="text-center text-muted">No leg data available.</td></tr>';
 
+    const strikeInsightHtml = buildStrikeInsight(payload);
+
     if (bodyEl) {
         bodyEl.innerHTML = `
             <div class="mb-3">
@@ -718,6 +771,7 @@ function openPreviewModal(positionId) {
                     ${flowBadge}
                     ${sentimentBadge}
                 </div>
+                ${strikeInsightHtml}
             </div>
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body">

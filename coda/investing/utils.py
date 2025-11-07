@@ -121,6 +121,27 @@ def build_preview_payloads(pending_queryset, approved_queryset):
     for position in list(pending_queryset) + list(approved_queryset):
         metadata = getattr(position, 'api_response_data', {}) or {}
         whales_meta = metadata.get('unusual_whales') or {}
+        legs = _normalize_legs(getattr(position, 'positions', []))
+
+        short_leg = next(
+            (leg for leg in legs if str(leg.get('direction', '')).lower().startswith('short')),
+            legs[0] if legs else None,
+        )
+        long_leg = next(
+            (leg for leg in legs if str(leg.get('direction', '')).lower().startswith('long')),
+            legs[1] if len(legs) > 1 else None,
+        )
+
+        def _coerce_number(value):
+            number = _safe_number(value)
+            return float(number) if isinstance(number, (int, float)) else None
+
+        short_strike = _coerce_number(short_leg.get('strike')) if short_leg else None
+        long_strike = _coerce_number(long_leg.get('strike')) if long_leg else None
+
+        underlying_price = metadata.get('underlying_price') or metadata.get('stock_price') or metadata.get('underlying')
+        underlying_price = _coerce_number(underlying_price)
+
         preview_payloads[position.id] = {
             'id': position.id,
             'symbol': position.symbol,
@@ -136,8 +157,12 @@ def build_preview_payloads(pending_queryset, approved_queryset):
             'timing_signal': whales_meta.get('timing_signal'),
             'flow_score': whales_meta.get('flow_score'),
             'sentiment': whales_meta.get('sentiment'),
+            'entry_window': whales_meta.get('entry_window'),
             'notes': getattr(position, 'notes', '') or '',
-            'legs': _normalize_legs(getattr(position, 'positions', [])),
+            'legs': legs,
+            'short_strike': short_strike,
+            'long_strike': long_strike,
+            'underlying_price': underlying_price,
         }
     return preview_payloads
 
