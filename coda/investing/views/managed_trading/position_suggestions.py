@@ -17,6 +17,12 @@ from decimal import Decimal
 import json
 import logging
 
+from celery.exceptions import OperationalError as CeleryOperationalError
+try:  # Kombu may not distinguish from Celery on all installs
+    from kombu.exceptions import OperationalError as KombuOperationalError
+except Exception:  # pragma: no cover - kombu always present with Celery, but fail safe
+    KombuOperationalError = CeleryOperationalError
+
 from ...models import SuggestedPosition, OptionsPosition, PositionBatch, ManagedTradingAccount
 from ...services import PositionFetcherService, BatchApprovalService, ManagedTradingService
 from ...services.unusual_whales_service import UnusualWhalesService
@@ -297,8 +303,34 @@ def trigger_managed_income_scheduler(request):
         messages.error(request, "❌ Only superusers can trigger the managed income scheduler.")
         return redirect('investing:suggested_positions_list')
 
-    managed_income_scheduler.delay()
-    messages.success(request, "✅ Managed income scheduler queued. Digest will send shortly.")
+    try:
+        managed_income_scheduler.delay()
+        messages.success(request, "✅ Managed income scheduler queued. Digest will send shortly.")
+    except (CeleryOperationalError, KombuOperationalError, ConnectionError) as exc:
+        logger.warning("Celery broker unavailable; running managed_income_scheduler inline. %s", exc)
+        try:
+            eager_result = managed_income_scheduler.apply(args=(), kwargs={})
+            payload = getattr(eager_result, 'result', eager_result)
+            if isinstance(payload, dict) and payload.get('success'):
+                messages.success(
+                    request,
+                    "✅ Managed income scheduler ran inline (Celery unavailable). Digest will reflect the latest run.",
+                )
+            else:
+                messages.warning(
+                    request,
+                    "⚠️ Scheduler ran inline but did not report success. Check logs for details.",
+                )
+        except Exception as inline_exc:  # pragma: no cover - safety net for unexpected errors
+            logger.error("Managed income scheduler inline execution failed: %s", inline_exc, exc_info=True)
+            messages.error(
+                request,
+                "❌ Scheduler trigger failed: Celery unavailable and inline run encountered an error.",
+            )
+    except Exception as exc:  # Catch any other errors and surface to user
+        logger.error("Managed income scheduler trigger failed: %s", exc, exc_info=True)
+        messages.error(request, f"❌ Scheduler trigger failed: {exc}")
+
     return redirect('investing:suggested_positions_list')
 
 
