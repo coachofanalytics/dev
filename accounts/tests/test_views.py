@@ -1,7 +1,53 @@
 from django.test import TestCase, Client
 from django.shortcuts import redirect
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 from accounts.models import User, Tracker
 from accounts.views import *
+from main.forms import ContactForm
+
+class TestCrisisManagement(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username='testuser',
+            email='test@test.com',
+            password='testpass123'
+        )
+
+    def test_error_pages(self):
+        """Test that error pages are displayed correctly"""
+        error_pages = [
+            ('main:400error', 'main/errors/400.html'),
+            ('main:403error', 'main/errors/403.html'),
+            ('main:404error', 'main/errors/404.html'),
+            ('main:500error', 'main/errors/500.html'),
+        ]
+        for url_name, template in error_pages:
+            response = self.client.get(reverse(url_name))
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, template)
+
+    def test_contact_form(self):
+        """Test crisis communication through contact form"""
+        self.client.login(username='testuser', password='testpass123')
+        form_data = {
+            'task': 'NA',
+            'plan': 'NA',
+            'message': 'Test crisis message'
+        }
+        response = self.client.post(reverse('main:contact'), form_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'main/errors/generalerrors.html')
+        self.assertIn('message', response.context)
+        self.assertIn('48 hours', response.context['message'])
+
+    def test_unauthorized_access(self):
+        """Test unauthorized access handling"""
+        response = self.client.get(reverse('main:plans'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response.url)
 
 # class TestHomeView(TestCase):
 

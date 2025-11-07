@@ -245,6 +245,72 @@
                     handleUserInput();
                 }
             });
+
+            // Subscription UI wiring
+            const openBtn = document.getElementById('open-subscribe');
+            const box = document.getElementById('subscribe-box');
+            const form = document.getElementById('alerts-form');
+            const feedback = document.getElementById('alerts-feedback');
+
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+
+            if (openBtn && box) {
+                openBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    box.classList.toggle('hidden');
+                    if (!box.classList.contains('hidden')) {
+                        const emailInput = document.getElementById('alerts-email');
+                        if (emailInput) emailInput.focus();
+                    }
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', async function(e){
+                    e.preventDefault();
+                    const emailInput = document.getElementById('alerts-email');
+                    const email = emailInput ? emailInput.value : '';
+                    if (feedback) {
+                        feedback.textContent = 'Subscribing...';
+                        feedback.className = 'text-gray-600 text-sm mt-2';
+                    }
+                    const csrfToken = (document.querySelector('#alerts-form input[name=csrfmiddlewaretoken]')?.value) || getCookie('csrftoken');
+
+                    try {
+                        const resp = await fetch("{% url 'main:subscribe_alerts' %}", {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-CSRFToken': csrfToken,
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: new URLSearchParams({ email })
+                        });
+                        if (!resp.ok) {
+                            const text = await resp.text();
+                            throw new Error('HTTP ' + resp.status + ' ' + text);
+                        }
+                        const data = await resp.json();
+                        if (feedback) {
+                            feedback.textContent = data.message || (data.success ? 'Subscribed.' : 'Something went wrong.');
+                            feedback.className = (data.success ? 'text-green-600' : 'text-red-600') + ' text-sm mt-2';
+                        }
+                        if (data.success && form) {
+                            form.reset();
+                        }
+                    } catch (err) {
+                        if (feedback) {
+                            feedback.textContent = 'Request failed. ' + (err && err.message ? err.message : 'Please try again.');
+                            feedback.className = 'text-red-600 text-sm mt-2';
+                        }
+                    }
+                });
+            }
         };
 
     </script>
@@ -322,10 +388,22 @@
                         <li>Public health alerts and travel restriction updates</li>
                     </ul>
                      <div class="mt-6">
-                        <a href="#" class="inline-block bg-brand-green text-white font-bold py-3
+                        <a href="#" id="open-subscribe" class="inline-block bg-brand-green text-white font-bold py-3
                          px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
                             Subscribe to Safety Alerts
                         </a>
+                     </div>
+                    <div id="subscribe-box" class="mt-4 hidden">
+                      <form id="alerts-form" method="post">
+                        {% csrf_token %}
+                        <input type="email" name="email" id="alerts-email" placeholder="Enter your email"
+                               class="border rounded px-3 py-2 w-full md:w-64" required />
+                        <button type="submit"
+                                class="inline-block bg-brand-green text-white font-bold py-2 px-4 rounded-md mt-2">
+                          Subscribe
+                        </button>
+                        <p id="alerts-feedback" class="text-sm mt-2"></p>
+                      </form>
                     </div>
                 </div>
                 <!-- Image -->

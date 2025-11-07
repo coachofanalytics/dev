@@ -13,7 +13,11 @@ from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm
 from django.contrib.auth import get_user_model
-
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
 User=get_user_model()
 
 
@@ -168,6 +172,35 @@ def team_list(request):
     return render(request, 'main/snippets_templates/table/team.html', {'info': teams})
 
 
+@require_POST
+@csrf_protect
+def subscribe_alerts(request):
+    email = request.POST.get('email', '').strip().lower()
+    if not email:
+        return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
+
+    subject = "DC48K Safety Alerts Subscription"
+    html_message = """
+      <p>Thank you for subscribing to DC48K Safety Alerts.</p>
+      <p>You will receive updates about advisories and safety information.</p>
+    """
+    plain_message = strip_tags(html_message)
+
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            None,  # uses DEFAULT_FROM_EMAIL
+            [email],
+            html_message=html_message,
+        )
+        return JsonResponse({'success': True, 'message': 'Thank you! Please check your email.'})
+    except Exception as e:
+        # Avoid 500s if email backend is not configured or SMTP is unreachable
+        return JsonResponse({
+            'success': False,
+            'message': 'Unable to send email right now. Please try again later.'
+        }, status=502)
 
 
 
