@@ -10,6 +10,8 @@ load_dotenv()  # Load .env file
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+TEST_MODE = os.environ.get('TEST_MODE', 'False').lower() == 'true'
+
 # ==============ENVIRONMENT CONFIGURATION=====================================
 def get_environment_config():
     """Centralized environment configuration - basic environment detection only"""
@@ -69,6 +71,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "platform_services",
 ]
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -317,6 +320,7 @@ UNUSUAL_WHALES_ENABLED = os.environ.get('UNUSUAL_WHALES_ENABLED', 'False').lower
 ZAPIER_POSITION_WEBHOOK = os.environ.get('ZAPIER_POSITION_WEBHOOK')
 ZAPIER_ALERT_WEBHOOK = os.environ.get('ZAPIER_ALERT_WEBHOOK')
 ZAPIER_WEBHOOK_TOKEN = os.environ.get('ZAPIER_WEBHOOK_TOKEN')
+MANAGED_INCOME_DIGEST_GROUP = os.environ.get('MANAGED_INCOME_DIGEST_GROUP', 'Managed Income Digest')
 
 # Environment variable validation is now handled in environment-specific settings files
 

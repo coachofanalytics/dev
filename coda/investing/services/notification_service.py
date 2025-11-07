@@ -6,6 +6,7 @@ Handles email and SMS notifications for managed trading
 import logging
 from decimal import Decimal
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -292,11 +293,28 @@ CODA Investment Team
     
     @staticmethod
     def _get_staff_emails() -> list[str]:
-        return list(
-            User.objects.filter(is_staff=True, email__isnull=False)
-            .exclude(email='')
-            .values_list('email', flat=True)
+        base_qs = User.objects.filter(
+            is_active=True,
+            email__isnull=False,
+        ).exclude(email='')
+
+        emails = set(
+            base_qs.filter(is_superuser=True).values_list('email', flat=True)
         )
+
+        group_name = getattr(settings, 'MANAGED_INCOME_DIGEST_GROUP', None)
+        if group_name:
+            try:
+                group = Group.objects.get(name=group_name)
+            except Group.DoesNotExist:
+                group = None
+
+            if group:
+                emails.update(
+                    base_qs.filter(groups=group).values_list('email', flat=True)
+                )
+
+        return sorted(emails)
 
     def send_sms_notification(self, phone_number, message):
         """

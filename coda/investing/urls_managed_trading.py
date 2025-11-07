@@ -187,6 +187,11 @@ urlpatterns = [
     path('managed/staff/suggestions/fetch-quick/', 
          position_suggestions.fetch_positions_quick, 
          name='fetch_positions_quick'),
+
+    # Staff: Trigger managed income scheduler (superusers)
+    path('managed/staff/suggestions/trigger-scheduler/',
+         position_suggestions.trigger_managed_income_scheduler,
+         name='trigger_managed_income_scheduler'),
     
     # Staff: Create batch from approved suggestions
     path('managed/staff/suggestions/create-batch/', 

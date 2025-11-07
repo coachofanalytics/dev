@@ -12,8 +12,8 @@
             🏆 Top 5 Recommended Positions
         </h3>
         <p style="margin: 5px 0; opacity: 0.9;">
-            <strong>AI-Ranked by:</strong> 
-            Whales (35%) + Earnings Safety (25%) + ROC (20%) + DTE Diversity (20%)
+            <strong>Scoring weights:</strong>
+            Whales 35% · Earnings Safety 25% · Return on Capital 20% · DTE Diversity 20%
         </p>
     </div>
     
@@ -101,10 +101,10 @@
                     <td>
                         <small>
                             <div style="line-height: 1.6;">
-                                🐋 <strong>Whales:</strong> {{ item.breakdown.whales_score|floatformat:0 }}/100<br>
-                                📅 <strong>Earnings:</strong> {{ item.breakdown.earnings_score|floatformat:0 }}/100<br>
-                                💰 <strong>ROC:</strong> {{ item.breakdown.profit_score|floatformat:0 }}/100<br>
-                                ⏰ <strong>DTE:</strong> {{ item.breakdown.dte_score|floatformat:0 }}/100
+                                🐋 <strong>Whales (35% weight):</strong> {{ item.breakdown.whales_score|floatformat:0 }}/100<br>
+                                📅 <strong>Earnings Safety (25%):</strong> {{ item.breakdown.earnings_score|floatformat:0 }}/100<br>
+                                💰 <strong>Return on Capital (20%):</strong> {{ item.breakdown.profit_score|floatformat:0 }}/100<br>
+                                ⏰ <strong>DTE Diversity (20%):</strong> {{ item.breakdown.dte_score|floatformat:0 }}/100
                             </div>
                         </small>
                     </td>

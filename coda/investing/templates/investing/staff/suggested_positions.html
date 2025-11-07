@@ -19,6 +19,14 @@
             <a href="{% url 'investing:fetch_positions_quick' %}" class="btn btn-primary me-2">
                 🔄 Fetch New Positions
             </a>
+            {% if request.user.is_superuser %}
+            <form method="post" action="{% url 'investing:trigger_managed_income_scheduler' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success mb-2" title="Trigger managed income scheduler">
+                    🗓 Trigger Managed Income
+                </button>
+            </form>
+            {% endif %}
             <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-secondary">
                 ← Back to Accounts
             </a>

@@ -22,6 +22,7 @@ from ...services import PositionFetcherService, BatchApprovalService, ManagedTra
 from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.position_ranking_service import PositionRankingService
 from ...utils import build_preview_payloads
+from ...tasks import managed_income_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +288,19 @@ def fetch_positions_quick(request):
         logger.error(f"Quick fetch error: {e}", exc_info=True)
         messages.error(request, f"❌ Fetch failed: {str(e)}")
     return redirect('investing:suggested_positions_list')
+
+
+@staff_member_required
+@require_POST
+def trigger_managed_income_scheduler(request):
+    if not request.user.is_superuser:
+        messages.error(request, "❌ Only superusers can trigger the managed income scheduler.")
+        return redirect('investing:suggested_positions_list')
+
+    managed_income_scheduler.delay()
+    messages.success(request, "✅ Managed income scheduler queued. Digest will send shortly.")
+    return redirect('investing:suggested_positions_list')
+
 
 @staff_member_required
 def review_position(request, suggestion_id):
