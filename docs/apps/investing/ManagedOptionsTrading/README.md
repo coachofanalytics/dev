@@ -1,7 +1,7 @@
 # CODA Trading Platform - Complete Documentation Suite
 **System:** Managed Options Trading + AI Scoring + Notifications + Enhancements  
-**Last Updated:** November 6, 2025  
-**Status:** ✅ **CORE OPERATIONAL** | 🚀 **ENHANCEMENT ROADMAP DEFINED**
+**Last Updated:** November 7, 2025  
+**Status:** ✅ **CORE OPERATIONAL** | 🚀 **ENHANCEMENT PHASE (P1 in progress)**
 
 ---
 
@@ -13,9 +13,22 @@
 | **AI Position Scoring** | ✅ Complete | UAT (v976) | 6-factor algorithm, 499 positions tested |
 | **WhatsApp/Telegram** | 95% Complete | UAT (v982) | Real-time notifications operational |
 | **Documentation** | 59% Complete | Updated | 3/7 docs updated (01, 02, 04) |
-| **Enhancements** | 0% Complete | Planned | 19 enhancements in 4 phases (51 days) |
+| **Enhancements** | 20% In Progress | Dev (Phase 1) | Dark mode, heatmap, Zapier, UW auto-check live |
 
 **Overall:** ✅ **World-class platform operational, ready for enhancement**
+
+---
+
+## 🚀 **WHAT'S NEW (November 7, 2025)**
+
+### **✅ Phase 1 Quick Wins (Code Implemented)**
+- 🌙 **Dark Mode Toggle:** Staff suggestions view now persists theme preference (`investing/staff/suggested_positions.html`, `investing/css/dark-mode.css`)
+- 🔥 **Portfolio Heat Map:** Pending suggestions surface capital concentration & strategy mix (auto-built from existing `SuggestedPosition` data)
+- 🤖 **Unusual Whales Auto-Check:** CSV import stores flow metadata & timing signals in-place (no duplicate services)
+- 🔗 **Zapier Webhooks:** Staff can push top trades to Ops with a single click + inbound token validation (`webhooks.py`)
+- ✅ **Tests:** Added integration coverage under `tests/investing/02_integration/test_phase1_features.py`
+
+> Note: Docs 03/05/06/07 remain queued per CURSOR_AI_GUIDE; will update after Phase 1 verification session.
 
 ---
 

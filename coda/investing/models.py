@@ -1959,6 +1959,7 @@ class OptionsPosition(TimeStampedModel):
             models.Index(fields=['managed_account', 'status']),
             models.Index(fields=['symbol', 'status']),
             models.Index(fields=['expiration_date', 'status']),
+            models.Index(fields=['managed_account', '-entry_date']),
         ]
     
     def __str__(self):
@@ -3220,6 +3221,8 @@ class SuggestedPosition(TimeStampedModel):
             models.Index(fields=['review_status', '-fetched_at']),
             models.Index(fields=['source', 'review_status']),
             models.Index(fields=['-probability_of_profit']),
+            models.Index(fields=['review_status', '-ai_score']),
+            models.Index(fields=['symbol', 'review_status']),
         ]
     
     def __str__(self):

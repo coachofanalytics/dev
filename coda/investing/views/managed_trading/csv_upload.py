@@ -16,6 +16,7 @@ import csv
 import io
 import json
 import logging
+from django.utils import timezone
 
 from ...models import OptionPlayRawData, SuggestedPosition
 from ...services.optionplay_converter import OptionPlayConverterService
@@ -1458,6 +1459,21 @@ def csv_import_and_score(request):
                         position.ai_score += ai_boost
                     else:
                         position.ai_score = 50 + ai_boost
+
+                    # Persist structured flow metadata for dashboards & Zapier pushes
+                    metadata = position.api_response_data or {}
+                    metadata['unusual_whales'] = {
+                        'flow_score': float(flow_data.get('flow_score', 0)),
+                        'sentiment': flow_data.get('sentiment'),
+                        'sentiment_score': float(flow_data.get('sentiment_score', 0)),
+                        'unusual_calls': flow_data.get('unusual_calls'),
+                        'unusual_puts': flow_data.get('unusual_puts'),
+                        'premium_spent': flow_data.get('premium_spent'),
+                        'volume_oi_ratio': flow_data.get('volume_oi_ratio'),
+                        'timing_signal': timing,
+                        'captured_at': timezone.now().isoformat(),
+                    }
+                    position.api_response_data = metadata
                     
                     position.save()
                     

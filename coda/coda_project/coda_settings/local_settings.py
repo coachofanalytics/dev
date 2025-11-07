@@ -74,6 +74,8 @@ For complete guide: docs/LOCAL_DEVELOPMENT_WITH_PROD_DATA.md
 """
 
 
+import sys
+
 from .base_settings import *
 
 
@@ -213,6 +215,20 @@ def get_sqlite_config():
 
 # Apply database configuration
 DATABASES = get_database_config()
+
+# For test runs, switch to in-memory SQLite to avoid Postgres permission issues
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
+        }
+    }
+    existing_migrations = globals().get('MIGRATION_MODULES', {}).copy()
+    existing_migrations.update({
+        'accounts': None,
+    })
+    MIGRATION_MODULES = existing_migrations
 
 # Display database info
 print("   " + "="*50)

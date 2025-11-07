@@ -32,10 +32,12 @@ class UnusualWhalesService:
     def __init__(self):
         self.api_key = getattr(settings, 'UNUSUAL_WHALES_API_KEY', None)
         self.enabled = getattr(settings, 'UNUSUAL_WHALES_ENABLED', False) and self.api_key
-        self.base_url = 'https://api.unusualwhales.com/api'
+        # Unusual Whales API base (v1)
+        # All endpoint paths below include the /api prefix explicitly
+        self.base_url = 'https://api.unusualwhales.com'
         self.headers = {
             'Authorization': f'Bearer {self.api_key}',
-            'Content-Type': 'application/json'
+            'Accept': 'application/json'
         }
     
     def is_enabled(self):
@@ -58,25 +60,36 @@ class UnusualWhalesService:
             return {'valid': False, 'error': 'No API key configured'}
         
         try:
-            # Test endpoint (adjust based on actual Unusual Whales API docs)
+            # Test with a simple stock flow alert query (AAPL)
+            # This validates the API key and permissions
             response = requests.get(
-                f'{self.base_url}/account',
+                f'{self.base_url}/api/stock/AAPL/flow-alerts',
                 headers=self.headers,
+                params={'limit': 1},
                 timeout=10
             )
             
             if response.status_code == 200:
-                data = response.json()
                 return {
                     'valid': True,
-                    'plan': data.get('plan', 'Unknown'),
-                    'rate_limit': data.get('rate_limit', 'Unknown'),
+                    'plan': 'API key valid',
+                    'rate_limit': 'Check headers for X-RateLimit-Remaining',
                     'error': None
+                }
+            elif response.status_code == 401:
+                return {
+                    'valid': False,
+                    'error': 'Invalid API key or expired'
+                }
+            elif response.status_code == 403:
+                return {
+                    'valid': False,
+                    'error': 'API key valid but insufficient permissions for this endpoint'
                 }
             else:
                 return {
                     'valid': False,
-                    'error': f'API returned {response.status_code}: {response.text}'
+                    'error': f'API returned {response.status_code}: {response.text[:200]}'
                 }
         
         except Exception as e:
@@ -109,11 +122,11 @@ class UnusualWhalesService:
             return None
         
         try:
-            # Fetch unusual activity (adjust endpoint based on actual API docs)
+            # Fetch unusual activity (latest flow alerts)
             response = requests.get(
-                f'{self.base_url}/options/flow/{symbol}',
+                f'{self.base_url}/api/stock/{symbol}/flow-alerts',
                 headers=self.headers,
-                params={'days': 1},  # Today's activity
+                params={'limit': 100},  # Latest alerts
                 timeout=10
             )
             
@@ -121,11 +134,25 @@ class UnusualWhalesService:
                 logger.warning(f"Failed to fetch unusual activity for {symbol}: {response.status_code}")
                 return None
             
-            data = response.json()
+            payload = response.json()
+            # API wraps payload in "data"
+            data_list = payload.get('data', []) if isinstance(payload, dict) else []
+            if not data_list:
+                return None
+            # Take most recent alert
+            data = data_list[0]
             
             # Calculate sentiment and flow score
-            calls_premium = data.get('calls_premium', 0)
-            puts_premium = data.get('puts_premium', 0)
+            total_premium = float(data.get('total_premium', 0) or 0)
+            if data.get('type') == 'call':
+                calls_premium = total_premium
+                puts_premium = 0.0
+            elif data.get('type') == 'put':
+                calls_premium = 0.0
+                puts_premium = total_premium
+            else:
+                calls_premium = total_premium
+                puts_premium = 0.0
             total_premium = calls_premium + puts_premium
             
             if total_premium > 0:
@@ -147,13 +174,15 @@ class UnusualWhalesService:
             
             return {
                 'symbol': symbol,
-                'unusual_calls': data.get('unusual_calls', 0),
-                'unusual_puts': data.get('unusual_puts', 0),
+                'unusual_calls': data.get('volume', 0) if data.get('type') == 'call' else 0,
+                'unusual_puts': data.get('volume', 0) if data.get('type') == 'put' else 0,
                 'sentiment': sentiment,
                 'sentiment_score': round(sentiment_score, 1),
                 'premium_spent': calls_premium - puts_premium,  # Net bullish premium
                 'flow_score': round(flow_score, 1),
-                'timestamp': datetime.now()
+                'timestamp': datetime.fromisoformat(
+                    data.get('created_at', datetime.utcnow().isoformat()).replace('Z', '+00:00')
+                )
             }
         
         except Exception as e:
@@ -182,24 +211,30 @@ class UnusualWhalesService:
         
         try:
             response = requests.get(
-                f'{self.base_url}/darkpool/{symbol}',
+                f'{self.base_url}/api/darkpool/{symbol}',
                 headers=self.headers,
-                params={'days': 1},
+                params={'limit': 100},
                 timeout=10
             )
             
             if response.status_code != 200:
                 return None
             
-            data = response.json()
+            payload = response.json()
+            data_list = payload.get('data', []) if isinstance(payload, dict) else []
+            if not data_list:
+                return None
+            data = data_list[0]
             
             return {
                 'symbol': symbol,
-                'dark_pool_volume': data.get('volume', 0),
-                'dark_pool_price': data.get('avg_price', 0),
+                'dark_pool_volume': data.get('shares', 0),
+                'dark_pool_price': data.get('price', 0),
                 'net_flow': data.get('net_flow', 'neutral'),
                 'large_blocks': data.get('block_trades', 0),
-                'timestamp': datetime.now()
+                'timestamp': datetime.fromisoformat(
+                    data.get('executed_at', datetime.utcnow().isoformat()).replace('Z', '+00:00')
+                )
             }
         
         except Exception as e:
@@ -221,32 +256,62 @@ class UnusualWhalesService:
         """
         score = 50  # Start neutral
         
-        # Factor 1: Unusual volume
-        unusual_ratio = flow_data.get('unusual_volume_ratio', 1.0)
-        if unusual_ratio > 3.0:
-            score += 20  # Very unusual!
-        elif unusual_ratio > 2.0:
-            score += 10  # Unusual
-        
-        # Factor 2: Sentiment strength (extreme = good)
-        if sentiment_score > 75 or sentiment_score < 25:
-            score += 15  # Strong conviction
-        elif sentiment_score > 65 or sentiment_score < 35:
-            score += 5   # Moderate conviction
-        
-        # Factor 3: Premium size
-        premium = flow_data.get('total_premium', 0)
-        if premium > 5_000_000:  # >$5M
-            score += 15  # Big money moving
-        elif premium > 1_000_000:  # >$1M
-            score += 10  # Significant
-        
-        # Factor 4: Large block trades
-        large_blocks = flow_data.get('large_block_count', 0)
-        if large_blocks > 10:
-            score += 10  # Institutional activity
-        elif large_blocks > 5:
+        # Factor 1: Premium size (conviction)
+        premium = float(flow_data.get('total_premium', 0) or 0)
+        if premium >= 5_000_000:  # >$5M
+            score += 15
+        elif premium >= 2_000_000:
+            score += 12
+        elif premium >= 1_000_000:
+            score += 8
+        elif premium >= 500_000:
             score += 5
+        
+        # Factor 2: Volume vs OI ratio
+        try:
+            ratio = float(flow_data.get('volume_oi_ratio', 0) or 0)
+        except (TypeError, ValueError):
+            ratio = 0.0
+        if ratio >= 0.5:
+            score += 15
+        elif ratio >= 0.25:
+            score += 10
+        elif ratio >= 0.1:
+            score += 5
+        
+        # Factor 3: Trade characteristics
+        volume = flow_data.get('volume', 0) or 0
+        if volume >= 500:
+            score += 10
+        elif volume >= 200:
+            score += 6
+        elif volume >= 100:
+            score += 3
+        
+        trade_count = flow_data.get('trade_count', 0) or 0
+        if trade_count >= 10:
+            score += 6
+        elif trade_count >= 5:
+            score += 3
+        
+        if flow_data.get('has_sweep'):
+            score += 10
+        if flow_data.get('has_floor'):
+            score += 8
+        if flow_data.get('has_multileg'):
+            score += 4
+        if flow_data.get('all_opening_trades'):
+            score += 5
+        
+        # Factor 4: Sentiment strength
+        if sentiment_score >= 75 or sentiment_score <= 25:
+            score += 10
+        elif sentiment_score >= 65 or sentiment_score <= 35:
+            score += 5
+        
+        # For bearish flow (puts), invert score to reflect caution
+        if flow_data.get('type') == 'put':
+            score = 100 - score
         
         # Cap at 0-100
         return max(0, min(100, score))

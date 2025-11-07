@@ -1,0 +1,133 @@
+/* Dark mode styling tailored for investing staff dashboards */
+
+:root {
+    --body-bg: #f8f9fa;
+    --body-color: #212529;
+    --card-bg: #ffffff;
+    --card-border: rgba(0, 0, 0, 0.1);
+    --table-header-bg: #f1f3f5;
+    --table-row-hover: rgba(0, 0, 0, 0.03);
+}
+
+body.dark-mode {
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+body.dark-mode .navbar,
+body.dark-mode .dropdown-menu,
+body.dark-mode .modal-content {
+    background-color: #111c30;
+    color: #e2e8f0;
+}
+
+body.dark-mode .card {
+    background-color: #13223d;
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+body.dark-mode .card.bg-warning,
+body.dark-mode .card.bg-success,
+body.dark-mode .card.bg-info,
+body.dark-mode .card.bg-primary {
+    filter: brightness(0.85);
+}
+
+body.dark-mode .table {
+    color: #e2e8f0;
+}
+
+body.dark-mode .table thead {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode .badge {
+    filter: brightness(0.9);
+}
+
+body.dark-mode .alert {
+    background-color: rgba(30, 41, 59, 0.9);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: rgba(148, 163, 184, 0.2);
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: #1e293b;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+body.dark-mode .btn-outline-secondary {
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background-color: rgba(148, 163, 184, 0.1);
+}
+
+/* Heatmap cells */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+}
+
+.heatmap-cell {
+    border-radius: 12px;
+    padding: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);
+    color: #0f172a;
+    box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.25);
+}
+
+.heatmap-cell:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px -18px rgba(30, 64, 175, 0.35);
+}
+
+body.dark-mode .heatmap-cell {
+    color: #e2e8f0;
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+    box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.75);
+}
+
+.heatmap-cell small {
+    display: block;
+    opacity: 0.85;
+}
+
+.heatmap-cell .heatmap-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.75rem;
+    margin-top: 0.35rem;
+    background-color: rgba(15, 23, 42, 0.15);
+    color: inherit;
+}
+
+body.dark-mode .heatmap-cell .heatmap-chip {
+    background-color: rgba(15, 23, 42, 0.35);
+}
+

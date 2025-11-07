@@ -254,6 +254,15 @@ urlpatterns = [
          webhooks.whatsapp_status_callback, 
          name='whatsapp_status_callback'),
     
+    # Zapier integrations (Phase 1 - Quick Wins)
+    path('managed/webhooks/zapier/push/', 
+         webhooks.zapier_position_push, 
+         name='zapier_position_push'),
+    
+    path('webhooks/zapier/inbound/', 
+         webhooks.zapier_inbound_handler, 
+         name='zapier_inbound_handler'),
+    
     # ========================================================================
     # MULTI-FILE FLOW ANALYZER: Manual Unusual Whales Workflow (Phase 9)
     # ========================================================================

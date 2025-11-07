@@ -3,6 +3,8 @@ Heroku/UAT settings for coda_project.
 Extends base_settings with Heroku and UAT-specific configurations.
 """
 
+import sys
+
 from .base_settings import *
 import dj_database_url
 
@@ -35,6 +37,19 @@ DATABASES = {
         ssl_require=True
     )
 }
+
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
+        }
+    }
+    existing_migrations = globals().get('MIGRATION_MODULES', {}).copy()
+    existing_migrations.update({
+        'accounts': None,
+    })
+    MIGRATION_MODULES = existing_migrations
 
 # Email settings for Heroku
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

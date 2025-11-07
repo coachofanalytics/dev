@@ -89,6 +89,43 @@ def suggested_positions_list(request):
         'good_count': pending.filter(ai_rating='GOOD').count(),
     }
     
+    # Heat map data (symbol & strategy concentration)
+    heatmap_symbols_qs = pending.values('symbol').annotate(
+        total_capital=Sum('capital_required'),
+        avg_ai_score=Avg('ai_score'),
+        avg_probability=Avg('probability_of_profit'),
+        position_count=Count('id'),
+    ).order_by('-total_capital')[:12]
+
+    strategy_labels = dict(SuggestedPosition.STRATEGY_CHOICES)
+    heatmap_strategies_qs = pending.values('strategy').annotate(
+        total_capital=Sum('capital_required'),
+        avg_probability=Avg('probability_of_profit'),
+        position_count=Count('id'),
+    ).order_by('-total_capital')
+
+    heatmap_symbols = [
+        {
+            'symbol': item['symbol'],
+            'total_capital': float(item['total_capital'] or 0),
+            'avg_ai_score': float(item['avg_ai_score'] or 0),
+            'avg_probability': float(item['avg_probability'] or 0),
+            'position_count': item['position_count'],
+        }
+        for item in heatmap_symbols_qs
+    ]
+
+    heatmap_strategies = [
+        {
+            'strategy': item['strategy'],
+            'strategy_label': strategy_labels.get(item['strategy'], item['strategy']),
+            'total_capital': float(item['total_capital'] or 0),
+            'avg_probability': float(item['avg_probability'] or 0),
+            'position_count': item['position_count'],
+        }
+        for item in heatmap_strategies_qs
+    ]
+
     # Get active managed trading accounts for batch creation
     active_accounts = ManagedTradingAccount.objects.filter(
         status='active',
@@ -105,6 +142,9 @@ def suggested_positions_list(request):
         'top_5_recommended': top_5_recommended,
         'all_ranked_positions': all_ranked,
         'ranking_enabled': len(top_5_recommended) > 0,
+        # Phase 1: Heatmap insights
+        'heatmap_symbols': heatmap_symbols,
+        'heatmap_strategies': heatmap_strategies,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 

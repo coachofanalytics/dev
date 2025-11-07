@@ -12,7 +12,10 @@
             <h2>🤖 Auto-Fetched Position Suggestions</h2>
             <p class="text-muted">Review high-probability positions fetched from OptionPlay/Thinkorswim</p>
         </div>
-        <div class="col-md-4 text-end">
+        <div class="col-md-4 text-end d-flex gap-2 justify-content-end align-items-start flex-wrap">
+            <button class="btn btn-outline-secondary mb-2" id="themeToggleBtn" type="button">
+                🌙 Dark Mode
+            </button>
             <a href="{% url 'investing:fetch_positions_quick' %}" class="btn btn-primary me-2">
                 🔄 Fetch New Positions
             </a>
@@ -88,6 +91,66 @@
         </div>
     </div>
     
+    {% if heatmap_symbols %}
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">Portfolio Heat Map</h5>
+                    <p class="text-muted mb-0 small">Scaled by capital required — highlights where pending exposure is concentrated.</p>
+                </div>
+                <span class="badge bg-primary-subtle text-primary">Pending Symbols</span>
+            </div>
+            <div class="heatmap-grid mt-3" id="symbolHeatmap">
+                {% for item in heatmap_symbols %}
+                <div class="heatmap-cell" 
+                     data-value="{{ item.total_capital }}" 
+                     data-ai="{{ item.avg_ai_score }}" 
+                     data-prob="{{ item.avg_probability }}"
+                     data-count="{{ item.position_count }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>{{ item.symbol }}</strong>
+                        <small class="heatmap-chip"><span>Positions:</span> {{ item.position_count }}</small>
+                    </div>
+                    <small>Capital: ${{ item.total_capital|floatformat:0 }}</small>
+                    <small>Avg AI Score: {{ item.avg_ai_score|floatformat:0 }}/100</small>
+                    <small>Avg Probability: {{ item.avg_probability|floatformat:0 }}%</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if heatmap_strategies %}
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">Strategy Mix Snapshot</h5>
+                    <p class="text-muted mb-0 small">See which playbooks dominate the current pending queue.</p>
+                </div>
+                <span class="badge bg-info text-dark">Strategies</span>
+            </div>
+            <div class="heatmap-grid mt-3" id="strategyHeatmap">
+                {% for item in heatmap_strategies %}
+                <div class="heatmap-cell"
+                     data-value="{{ item.total_capital }}"
+                     data-prob="{{ item.avg_probability }}"
+                     data-count="{{ item.position_count }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>{{ item.strategy_label }}</strong>
+                        <small class="heatmap-chip"><span>Positions:</span> {{ item.position_count }}</small>
+                    </div>
+                    <small>Capital: ${{ item.total_capital|floatformat:0 }}</small>
+                    <small>Avg Probability: {{ item.avg_probability|floatformat:0 }}%</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- PHASE 10A: Top 5 Recommended Positions -->
     {% include "investing/staff/top_5_recommended_section.html" %}
     
@@ -161,7 +224,14 @@
                                     {{ pos.get_source_display }}
                                 </span>
                             </td>
-                            <td><strong>{{ pos.symbol }}</strong></td>
+                            <td>
+                                <strong>{{ pos.symbol }}</strong>
+                                {% if pos.api_response_data and pos.api_response_data.unusual_whales %}
+                                <div class="small text-muted">
+                                    🐋 Flow {{ pos.api_response_data.unusual_whales.flow_score|floatformat:0 }}/100 · {{ pos.api_response_data.unusual_whales.timing_signal }}
+                                </div>
+                                {% endif %}
+                            </td>
                             <td><small>{{ pos.get_strategy_display }}</small></td>
                             <td>
                                 <span class="badge bg-success">{{ pos.probability_of_profit }}%</span>
@@ -183,6 +253,9 @@
                                     <a href="{% url 'investing:review_position' pos.id %}" class="btn btn-primary" title="Review Details">
                                         👁️
                                     </a>
+                                    <button class="btn btn-outline-secondary" onclick="sendToZapier({{ pos.id }})" title="Push to Ops (Zapier)">
+                                        📤
+                                    </button>
                                     <button class="btn btn-danger" onclick="rejectPosition({{ pos.id }})" title="Reject">
                                         ❌
                                     </button>
@@ -239,16 +312,28 @@
                                 <span class="text-muted">N/A</span>
                                 {% endif %}
                             </td>
-                            <td><strong>{{ pos.symbol }}</strong></td>
+                            <td>
+                                <strong>{{ pos.symbol }}</strong>
+                                {% if pos.api_response_data and pos.api_response_data.unusual_whales %}
+                                <div class="small text-muted">
+                                    🐋 Flow {{ pos.api_response_data.unusual_whales.flow_score|floatformat:0 }}/100 · {{ pos.api_response_data.unusual_whales.timing_signal }}
+                                </div>
+                                {% endif %}
+                            </td>
                             <td><small>{{ pos.get_strategy_display }}</small></td>
                             <td><span class="badge bg-success">{{ pos.probability_of_profit }}%</span></td>
                             <td>${{ pos.premium_collected|floatformat:0 }}</td>
                             <td><small>{{ pos.reviewed_by.get_full_name }}</small></td>
                             <td><small>{{ pos.staff_notes|truncatewords:10 }}</small></td>
                             <td>
-                                <button class="btn btn-sm btn-primary" onclick="addSinglePosition({{ pos.id }})">
-                                    ➕ Add to Account
-                                </button>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-primary" onclick="addSinglePosition({{ pos.id }})">
+                                        ➕ Add to Account
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="sendToZapier({{ pos.id }})" title="Push to Ops (Zapier)">
+                                        📤
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -406,6 +491,65 @@
 
 <!-- JavaScript -->
 <script>
+const heatmapTargets = ['symbolHeatmap', 'strategyHeatmap'];
+
+function hydrateHeatmap(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        return;
+    }
+    const cells = container.querySelectorAll('.heatmap-cell');
+    if (!cells.length) {
+        return;
+    }
+
+    const values = Array.from(cells).map(cell => Number(cell.dataset.value || 0));
+    const maxValue = Math.max(...values, 1);
+    const isDark = document.body.classList.contains('dark-mode');
+
+    cells.forEach(cell => {
+        const value = Number(cell.dataset.value || 0);
+        const ratio = Math.max(0, value / maxValue);
+        const startAlpha = isDark ? Math.max(0.35, ratio) : Math.max(0.25, ratio);
+        const endAlpha = Math.min(1, startAlpha + 0.25);
+        const gradient = isDark
+            ? `linear-gradient(135deg, rgba(29,78,216,${startAlpha}) 0%, rgba(59,130,246,${endAlpha}) 100%)`
+            : `linear-gradient(135deg, rgba(59,130,246,${startAlpha}) 0%, rgba(125,211,252,${endAlpha}) 100%)`;
+
+        cell.style.background = gradient;
+        cell.style.color = isDark ? '#e2e8f0' : '#0f172a';
+    });
+}
+
+function refreshHeatmaps() {
+    heatmapTargets.forEach(targetId => hydrateHeatmap(targetId));
+}
+
+// Dark mode toggle
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+let updateThemeButton = null;
+if (themeToggleBtn && window.toggleTheme) {
+    updateThemeButton = () => {
+        const isDark = document.body.classList.contains('dark-mode');
+        themeToggleBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+    };
+    themeToggleBtn.addEventListener('click', () => {
+        window.toggleTheme();
+        updateThemeButton();
+        refreshHeatmaps();
+    });
+    updateThemeButton();
+}
+
+document.addEventListener('coda-theme-change', () => {
+    if (typeof updateThemeButton === 'function') {
+        updateThemeButton();
+    }
+    refreshHeatmaps();
+});
+
+refreshHeatmaps();
+
 // Select all checkboxes
 document.getElementById('selectAllPending')?.addEventListener('change', function(e) {
     document.querySelectorAll('.position-checkbox').forEach(cb => {
@@ -541,6 +685,50 @@ function rejectPosition(positionId) {
     .catch(error => {
         console.error('Error:', error);
         alert('❌ Rejection failed: ' + error);
+    });
+}
+
+// Push suggestion to Zapier
+function sendToZapier(suggestionId) {
+    const button = event?.currentTarget;
+    const originalContent = button ? button.innerHTML : null;
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+    }
+
+    fetch('/investing/managed/webhooks/zapier/push/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `suggestion_id=${suggestionId}`
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        return { ok: response.ok, data };
+    })
+    .then(({ ok, data }) => {
+        if (button && originalContent) {
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+
+        if (ok && data.success) {
+            alert('📤 Sent to Zapier: ' + (data.message || 'Queued'));
+        } else {
+            alert('❌ Zapier push failed: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Zapier push error', error);
+        if (button && originalContent) {
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+        alert('❌ Zapier push error: ' + error);
     });
 }
 

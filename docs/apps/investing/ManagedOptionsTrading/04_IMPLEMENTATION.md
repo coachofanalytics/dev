@@ -163,6 +163,7 @@ Every enhancement follows this pattern:
 ### **Phase 1: Quick Wins** [PLANNED - 4 days]
 
 #### **Enhancement 1.1: Dark Mode** (1 day)
+**Status:** ✅ Implemented in code (Nov 7, 2025) — `investing/staff/suggested_positions.html`, `investing/css/dark-mode.css`
 
 **Existing Code to Reuse:**
 - ✅ All templates in `coda/investing/templates/`
@@ -216,6 +217,7 @@ const toggleTheme = () => {
 ---
 
 #### **Enhancement 1.2: Database Indexes** (1 day)
+**Status:** ✅ Implemented (Nov 7, 2025) — migration `0016_add_phase1_indexes.py`
 
 **Existing Code to Reuse:**
 - ✅ All 33 models in `coda/investing/models.py`
@@ -259,6 +261,7 @@ class SuggestedPosition(TimeStampedModel):
 ---
 
 #### **Enhancement 1.3: Portfolio Heat Map** (1 day)
+**Status:** ✅ Implemented (Nov 7, 2025) — heatmap context in `position_suggestions.py`
 
 **Existing Code to Reuse:**
 - ✅ `dashboard.py` view (existing)
@@ -310,6 +313,7 @@ def managed_trading_dashboard(request):
 ---
 
 #### **Enhancement 1.4: Zapier Webhooks** (1 day)
+**Status:** ✅ Implemented (Nov 7, 2025) — reusing `webhooks.py` (no duplication)
 
 **Existing Code to Reuse:**
 - ✅ `webhooks.py` view (existing - 3 functions)

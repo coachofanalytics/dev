@@ -1,18 +1,24 @@
 """
-WhatsApp Webhooks for Real-Time Client Approval
+Real-time webhook endpoints for Managed Trading.
 
-Handles incoming WhatsApp messages for quick position batch approvals.
-Client replies "YES" to approve or "NO" to view details.
+Includes:
+- WhatsApp/Twilio callbacks for client approvals
+- Zapier integrations for operations automations (Phase 1 enhancement)
 """
 
+import json
 import logging
+
+import requests
+from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.utils import timezone
-from django.conf import settings
 
-from ...models import PositionBatch
+from ...models import PositionBatch, OptionsPosition, SuggestedPosition
 
 logger = logging.getLogger(__name__)
 
@@ -148,4 +154,153 @@ def whatsapp_status_callback(request):
     except Exception as e:
         logger.error(f"❌ Status callback error: {str(e)}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@staff_member_required
+@require_POST
+def zapier_position_push(request):
+    """
+    Push a position (suggested or active) summary to Zapier for downstream automation.
+    
+    Expected POST params:
+    - suggestion_id (optional): ID of SuggestedPosition
+    - position_id (optional): ID of OptionsPosition
+    
+    Requires staff authentication and an environment variable `ZAPIER_POSITION_WEBHOOK`.
+    """
+    webhook_url = getattr(settings, 'ZAPIER_POSITION_WEBHOOK', None)
+    if not webhook_url:
+        logger.warning("Zapier webhook push attempted without configuration")
+        return JsonResponse(
+            {'success': False, 'message': 'Zapier webhook not configured'},
+            status=503,
+        )
+
+    suggestion_id = request.POST.get('suggestion_id')
+    position_id = request.POST.get('position_id')
+
+    if not suggestion_id and not position_id:
+        return JsonResponse(
+            {'success': False, 'message': 'Provide suggestion_id or position_id'},
+            status=400,
+        )
+
+    payload = {
+        'triggered_at': timezone.now().isoformat(),
+        'triggered_by': request.user.get_username(),
+    }
+
+    if suggestion_id:
+        suggestion = get_object_or_404(SuggestedPosition, id=suggestion_id)
+        payload.update({
+            'record_type': 'suggested_position',
+            'id': suggestion.id,
+            'symbol': suggestion.symbol,
+            'strategy': suggestion.get_strategy_display(),
+            'probability_of_profit': float(suggestion.probability_of_profit or 0),
+            'ai_score': float(suggestion.ai_score or 0),
+            'ai_rating': suggestion.ai_rating,
+            'source': suggestion.get_source_display(),
+            'premium_collected': float(suggestion.premium_collected or 0),
+            'capital_required': float(suggestion.capital_required or 0),
+            'dte': suggestion.dte,
+            'expiration_date': suggestion.expiration_date.isoformat(),
+            'flow_notes_present': bool(suggestion.notes and 'Unusual Whales' in suggestion.notes),
+            'api_response': suggestion.api_response_data or {},
+            'legs': suggestion.positions or [],
+        })
+        if suggestion.notes:
+            payload['notes'] = suggestion.notes
+    else:
+        position = get_object_or_404(OptionsPosition, id=position_id)
+        account_number = getattr(position.managed_account, 'account_number', None)
+        account_manager = getattr(position.managed_account, 'account_manager', None)
+        account_manager_name = account_manager.get_full_name() if account_manager else None
+
+        payload.update({
+            'record_type': 'options_position',
+            'id': position.id,
+            'symbol': position.symbol,
+            'strategy': position.get_strategy_display(),
+            'status': position.status,
+            'entry_date': position.entry_date.isoformat() if position.entry_date else None,
+            'expiration_date': position.expiration_date.isoformat() if position.expiration_date else None,
+            'max_profit': float(position.max_profit or 0),
+            'max_loss': float(position.max_loss or 0),
+            'premium_collected': float(position.premium_collected or 0),
+            'capital_required': float(position.capital_required or 0),
+            'managed_account': account_number,
+            'account_manager': account_manager_name,
+            'notes': position.notes or '',
+        })
+
+    try:
+        logger.info("🔗 Sending Zapier payload: %s", payload['record_type'])
+        response = requests.post(
+            webhook_url,
+            json=payload,
+            timeout=8,
+        )
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        logger.error("❌ Zapier push failed: %s", exc, exc_info=True)
+        return JsonResponse(
+            {'success': False, 'message': str(exc)},
+            status=502,
+        )
+
+    return JsonResponse(
+        {
+            'success': True,
+            'message': 'Zapier notified',
+            'status_code': response.status_code,
+        }
+    )
+
+
+@csrf_exempt
+@require_POST
+def zapier_inbound_handler(request):
+    """
+    Receive inbound notifications from Zapier (e.g., audits, approvals).
+    
+    Security:
+    - Optional shared token via header `X-Zapier-Token` or `token` query param
+    """
+    expected_token = getattr(settings, 'ZAPIER_WEBHOOK_TOKEN', None)
+    provided_token = (
+        request.headers.get('X-Zapier-Token')
+        or request.GET.get('token')
+        or request.POST.get('token')
+    )
+
+    if expected_token and expected_token != provided_token:
+        logger.warning("⚠️ Zapier inbound rejected - invalid token")
+        return JsonResponse(
+            {'success': False, 'message': 'Invalid token'},
+            status=403,
+        )
+
+    try:
+        body = request.body.decode('utf-8') or '{}'
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        logger.error("❌ Zapier inbound payload not JSON")
+        return JsonResponse(
+            {'success': False, 'message': 'Invalid JSON payload'},
+            status=400,
+        )
+
+    event = payload.get('event', 'unknown')
+    logger.info("📬 Zapier inbound event: %s", event)
+
+    if event == 'position_ack':
+        logger.debug("Zapier acknowledged position: %s", payload.get('position_id'))
+    elif event == 'alert_feedback':
+        logger.debug("Zapier provided alert feedback: %s", payload.get('details'))
+    else:
+        logger.debug("Zapier payload: %s", payload)
+
+    return JsonResponse({'success': True})
 

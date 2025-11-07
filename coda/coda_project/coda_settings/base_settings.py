@@ -306,6 +306,13 @@ MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL')
 
 ZEROBOUNCE_API_KEY = os.environ.get('ZEROBOUNCE_API_KEY')
 
+# Unusual Whales API Configuration (Investing App)
+UNUSUAL_WHALES_API_KEY = os.environ.get('UNUSUAL_WHALES_API_KEY')
+UNUSUAL_WHALES_ENABLED = os.environ.get('UNUSUAL_WHALES_ENABLED', 'False').lower() in ('true', '1', 'yes')
+ZAPIER_POSITION_WEBHOOK = os.environ.get('ZAPIER_POSITION_WEBHOOK')
+ZAPIER_ALERT_WEBHOOK = os.environ.get('ZAPIER_ALERT_WEBHOOK')
+ZAPIER_WEBHOOK_TOKEN = os.environ.get('ZAPIER_WEBHOOK_TOKEN')
+
 # Environment variable validation is now handled in environment-specific settings files
 
 # Allauth Configuration
