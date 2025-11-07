@@ -93,11 +93,11 @@
     
     {% if heatmap_symbols or heatmap_strategies %}
     <div class="d-flex justify-content-end mb-2">
-        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#heatmapCollapse" aria-expanded="false" aria-controls="heatmapCollapse">
+        <button class="btn btn-outline-primary btn-sm" type="button" id="heatmapToggleBtn" onclick="toggleHeatmapPanel()">
             📊 Show Exposure Heatmap
         </button>
     </div>
-    <div class="collapse" id="heatmapCollapse">
+    <div id="heatmapPanel" class="d-none">
         {% if heatmap_symbols %}
         <div class="card shadow-sm mb-3 border-0">
             <div class="card-body">
@@ -256,7 +256,7 @@
                             <td><small>{{ pos.risk_reward_ratio|floatformat:2 }}</small></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ pos.id }}" aria-expanded="false" aria-controls="details-{{ pos.id }}" title="View Unusual Whales details">
+                                    <button class="btn btn-outline-info" type="button" onclick="toggleUwDetails('details-{{ pos.id }}')" title="View Unusual Whales details">
                                         ℹ️
                                     </button>
                                     <button class="btn btn-success" onclick="approvePosition({{ pos.id }})" title="Approve">
@@ -274,7 +274,7 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr class="collapse bg-light" id="details-{{ pos.id }}">
+                        <tr class="bg-light uw-details-row d-none" id="details-{{ pos.id }}">
                             <td colspan="12">
                                 {% with whales=pos.api_response_data.unusual_whales %}
                                 {% if whales %}
@@ -369,7 +369,7 @@
                             <td><small>{{ pos.staff_notes|truncatewords:10 }}</small></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details-approved-{{ pos.id }}" aria-expanded="false" aria-controls="details-approved-{{ pos.id }}" title="View Unusual Whales details">
+                                    <button class="btn btn-outline-info" type="button" onclick="toggleUwDetails('details-approved-{{ pos.id }}')" title="View Unusual Whales details">
                                         ℹ️
                                     </button>
                                     <button class="btn btn-primary" onclick="addSinglePosition({{ pos.id }})">
@@ -381,7 +381,7 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr class="collapse bg-light" id="details-approved-{{ pos.id }}">
+                        <tr class="bg-light uw-details-row d-none" id="details-approved-{{ pos.id }}">
                             <td colspan="9">
                                 {% with whales=pos.api_response_data.unusual_whales %}
                                 {% if whales %}
@@ -567,17 +567,8 @@
 <!-- JavaScript -->
 <script>
 const heatmapTargets = ['symbolHeatmap', 'strategyHeatmap'];
-const heatmapToggleButton = document.querySelector('[data-bs-target="#heatmapCollapse"]');
-const heatmapCollapseEl = document.getElementById('heatmapCollapse');
-
-if (heatmapCollapseEl && heatmapToggleButton) {
-    heatmapCollapseEl.addEventListener('show.bs.collapse', () => {
-        heatmapToggleButton.textContent = '📊 Hide Exposure Heatmap';
-    });
-    heatmapCollapseEl.addEventListener('hide.bs.collapse', () => {
-        heatmapToggleButton.textContent = '📊 Show Exposure Heatmap';
-    });
-}
+const heatmapPanel = document.getElementById('heatmapPanel');
+const heatmapToggleBtn = document.getElementById('heatmapToggleBtn');
 
 function hydrateHeatmap(containerId) {
     const container = document.getElementById(containerId);
@@ -609,6 +600,33 @@ function hydrateHeatmap(containerId) {
 
 function refreshHeatmaps() {
     heatmapTargets.forEach(targetId => hydrateHeatmap(targetId));
+}
+
+function toggleHeatmapPanel() {
+    if (!heatmapPanel || !heatmapToggleBtn) {
+        return;
+    }
+    const isHidden = heatmapPanel.classList.contains('d-none');
+    if (isHidden) {
+        heatmapPanel.classList.remove('d-none');
+        heatmapToggleBtn.textContent = '📊 Hide Exposure Heatmap';
+        refreshHeatmaps();
+    } else {
+        heatmapPanel.classList.add('d-none');
+        heatmapToggleBtn.textContent = '📊 Show Exposure Heatmap';
+    }
+}
+
+function toggleUwDetails(rowId) {
+    const row = document.getElementById(rowId);
+    if (!row) {
+        return;
+    }
+    if (row.classList.contains('d-none')) {
+        row.classList.remove('d-none');
+    } else {
+        row.classList.add('d-none');
+    }
 }
 
 // Dark mode toggle
