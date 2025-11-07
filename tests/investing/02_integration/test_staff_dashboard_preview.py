@@ -3,7 +3,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 import unittest
 
-from coda.investing.utils.preview_payloads import build_preview_payloads
+from coda.investing.utils import build_preview_payloads
 
 
 class StaffDashboardPreviewTests(unittest.TestCase):

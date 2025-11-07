@@ -21,7 +21,7 @@ from ...models import SuggestedPosition, OptionsPosition, PositionBatch, Managed
 from ...services import PositionFetcherService, BatchApprovalService, ManagedTradingService
 from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.position_ranking_service import PositionRankingService
-from ...utils.preview_payloads import build_preview_payloads
+from ...utils import build_preview_payloads
 
 logger = logging.getLogger(__name__)
 
