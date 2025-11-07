@@ -91,63 +91,72 @@
         </div>
     </div>
     
-    {% if heatmap_symbols %}
-    <div class="card shadow-sm mb-4 border-0">
-        <div class="card-body">
-            <div class="d-flex flex-wrap justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-1">Portfolio Heat Map</h5>
-                    <p class="text-muted mb-0 small">Scaled by capital required — highlights where pending exposure is concentrated.</p>
-                </div>
-                <span class="badge bg-primary-subtle text-primary">Pending Symbols</span>
-            </div>
-            <div class="heatmap-grid mt-3" id="symbolHeatmap">
-                {% for item in heatmap_symbols %}
-                <div class="heatmap-cell" 
-                     data-value="{{ item.total_capital }}" 
-                     data-ai="{{ item.avg_ai_score }}" 
-                     data-prob="{{ item.avg_probability }}"
-                     data-count="{{ item.position_count }}">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <strong>{{ item.symbol }}</strong>
-                        <small class="heatmap-chip"><span>Positions:</span> {{ item.position_count }}</small>
-                    </div>
-                    <small>Capital: ${{ item.total_capital|floatformat:0 }}</small>
-                    <small>Avg AI Score: {{ item.avg_ai_score|floatformat:0 }}/100</small>
-                    <small>Avg Probability: {{ item.avg_probability|floatformat:0 }}%</small>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    {% if heatmap_symbols or heatmap_strategies %}
+    <div class="d-flex justify-content-end mb-2">
+        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#heatmapCollapse" aria-expanded="false" aria-controls="heatmapCollapse">
+            📊 Show Exposure Heatmap
+        </button>
     </div>
-    {% endif %}
-
-    {% if heatmap_strategies %}
-    <div class="card shadow-sm mb-4 border-0">
-        <div class="card-body">
-            <div class="d-flex flex-wrap justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-1">Strategy Mix Snapshot</h5>
-                    <p class="text-muted mb-0 small">See which playbooks dominate the current pending queue.</p>
-                </div>
-                <span class="badge bg-info text-dark">Strategies</span>
-            </div>
-            <div class="heatmap-grid mt-3" id="strategyHeatmap">
-                {% for item in heatmap_strategies %}
-                <div class="heatmap-cell"
-                     data-value="{{ item.total_capital }}"
-                     data-prob="{{ item.avg_probability }}"
-                     data-count="{{ item.position_count }}">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <strong>{{ item.strategy_label }}</strong>
-                        <small class="heatmap-chip"><span>Positions:</span> {{ item.position_count }}</small>
+    <div class="collapse" id="heatmapCollapse">
+        {% if heatmap_symbols %}
+        <div class="card shadow-sm mb-3 border-0">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Portfolio Heat Map</h5>
+                        <p class="text-muted mb-0 small">Scaled by capital required — highlights where pending exposure is concentrated.</p>
                     </div>
-                    <small>Capital: ${{ item.total_capital|floatformat:0 }}</small>
-                    <small>Avg Probability: {{ item.avg_probability|floatformat:0 }}%</small>
+                    <span class="badge bg-primary-subtle text-primary">Pending Symbols</span>
                 </div>
-                {% endfor %}
+                <div class="heatmap-grid mt-3" id="symbolHeatmap">
+                    {% for item in heatmap_symbols %}
+                    <div class="heatmap-cell" 
+                         data-value="{{ item.total_capital }}" 
+                         data-ai="{{ item.avg_ai_score }}" 
+                         data-prob="{{ item.avg_probability }}"
+                         data-count="{{ item.position_count }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <strong>{{ item.symbol }}</strong>
+                            <small class="heatmap-chip"><span>Positions:</span> {{ item.position_count }}</small>
+                        </div>
+                        <small>Capital: ${{ item.total_capital|floatformat:0 }}</small>
+                        <small>Avg AI Score: {{ item.avg_ai_score|floatformat:0 }}/100</small>
+                        <small>Avg Probability: {{ item.avg_probability|floatformat:0 }}%</small>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
+        {% endif %}
+
+        {% if heatmap_strategies %}
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Strategy Mix Snapshot</h5>
+                        <p class="text-muted mb-0 small">See which playbooks dominate the current pending queue.</p>
+                    </div>
+                    <span class="badge bg-info text-dark">Strategies</span>
+                </div>
+                <div class="heatmap-grid mt-3" id="strategyHeatmap">
+                    {% for item in heatmap_strategies %}
+                    <div class="heatmap-cell"
+                         data-value="{{ item.total_capital }}"
+                         data-prob="{{ item.avg_probability }}"
+                         data-count="{{ item.position_count }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <strong>{{ item.strategy_label }}</strong>
+                            <small class="heatmap-chip"><span>Positions:</span> {{ item.position_count }}</small>
+                        </div>
+                        <small>Capital: ${{ item.total_capital|floatformat:0 }}</small>
+                        <small>Avg Probability: {{ item.avg_probability|floatformat:0 }}%</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
     
@@ -247,6 +256,9 @@
                             <td><small>{{ pos.risk_reward_ratio|floatformat:2 }}</small></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ pos.id }}" aria-expanded="false" aria-controls="details-{{ pos.id }}" title="View Unusual Whales details">
+                                        ℹ️
+                                    </button>
                                     <button class="btn btn-success" onclick="approvePosition({{ pos.id }})" title="Approve">
                                         ✅
                                     </button>
@@ -260,6 +272,36 @@
                                         ❌
                                     </button>
                                 </div>
+                            </td>
+                        </tr>
+                        <tr class="collapse bg-light" id="details-{{ pos.id }}">
+                            <td colspan="12">
+                                {% with whales=pos.api_response_data.unusual_whales %}
+                                {% if whales %}
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <strong>Timing Signal</strong>
+                                        <p class="mb-1">{{ whales.timing_signal }}</p>
+                                        <small class="text-muted">Flow Score: {{ whales.flow_score|floatformat:0 }}/100</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Sentiment & Volume</strong>
+                                        <ul class="list-unstyled mb-1 small">
+                                            <li>Sentiment: {{ whales.sentiment|upper }} ({{ whales.sentiment_score|floatformat:0 }}%)</li>
+                                            <li>Unusual Calls: {{ whales.unusual_calls|default:0 }}</li>
+                                            <li>Unusual Puts: {{ whales.unusual_puts|default:0 }}</li>
+                                            <li>Net Premium: ${{ whales.premium_spent|floatformat:0 }}</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>AI Notes</strong>
+                                        <pre class="mb-0 small" style="white-space: pre-wrap; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px;">{{ pos.notes }}</pre>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <em>No Unusual Whales data yet. Fetch new positions to pull live flow.</em>
+                                {% endif %}
+                                {% endwith %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -327,6 +369,9 @@
                             <td><small>{{ pos.staff_notes|truncatewords:10 }}</small></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details-approved-{{ pos.id }}" aria-expanded="false" aria-controls="details-approved-{{ pos.id }}" title="View Unusual Whales details">
+                                        ℹ️
+                                    </button>
                                     <button class="btn btn-primary" onclick="addSinglePosition({{ pos.id }})">
                                         ➕ Add to Account
                                     </button>
@@ -334,6 +379,36 @@
                                         📤
                                     </button>
                                 </div>
+                            </td>
+                        </tr>
+                        <tr class="collapse bg-light" id="details-approved-{{ pos.id }}">
+                            <td colspan="9">
+                                {% with whales=pos.api_response_data.unusual_whales %}
+                                {% if whales %}
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <strong>Timing Signal</strong>
+                                        <p class="mb-1">{{ whales.timing_signal }}</p>
+                                        <small class="text-muted">Flow Score: {{ whales.flow_score|floatformat:0 }}/100</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Sentiment & Volume</strong>
+                                        <ul class="list-unstyled mb-1 small">
+                                            <li>Sentiment: {{ whales.sentiment|upper }} ({{ whales.sentiment_score|floatformat:0 }}%)</li>
+                                            <li>Unusual Calls: {{ whales.unusual_calls|default:0 }}</li>
+                                            <li>Unusual Puts: {{ whales.unusual_puts|default:0 }}</li>
+                                            <li>Net Premium: ${{ whales.premium_spent|floatformat:0 }}</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>AI Notes</strong>
+                                        <pre class="mb-0 small" style="white-space: pre-wrap; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px;">{{ pos.notes }}</pre>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <em>No Unusual Whales data yet for this approved position.</em>
+                                {% endif %}
+                                {% endwith %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -492,6 +567,17 @@
 <!-- JavaScript -->
 <script>
 const heatmapTargets = ['symbolHeatmap', 'strategyHeatmap'];
+const heatmapToggleButton = document.querySelector('[data-bs-target="#heatmapCollapse"]');
+const heatmapCollapseEl = document.getElementById('heatmapCollapse');
+
+if (heatmapCollapseEl && heatmapToggleButton) {
+    heatmapCollapseEl.addEventListener('show.bs.collapse', () => {
+        heatmapToggleButton.textContent = '📊 Hide Exposure Heatmap';
+    });
+    heatmapCollapseEl.addEventListener('hide.bs.collapse', () => {
+        heatmapToggleButton.textContent = '📊 Show Exposure Heatmap';
+    });
+}
 
 function hydrateHeatmap(containerId) {
     const container = document.getElementById(containerId);

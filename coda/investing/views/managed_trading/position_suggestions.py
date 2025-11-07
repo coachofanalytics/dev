@@ -19,6 +19,7 @@ import logging
 
 from ...models import SuggestedPosition, OptionsPosition, PositionBatch, ManagedTradingAccount
 from ...services import PositionFetcherService, BatchApprovalService, ManagedTradingService
+from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.position_ranking_service import PositionRankingService
 
 logger = logging.getLogger(__name__)
@@ -126,6 +127,15 @@ def suggested_positions_list(request):
         for item in heatmap_strategies_qs
     ]
 
+    heatmap_summary = None
+    if heatmap_symbols or heatmap_strategies:
+        total_capital = sum(item['total_capital'] for item in heatmap_symbols)
+        heatmap_summary = {
+            'total_capital': total_capital,
+            'top_symbols': heatmap_symbols[:3],
+            'top_strategies': heatmap_strategies[:2],
+        }
+
     # Get active managed trading accounts for batch creation
     active_accounts = ManagedTradingAccount.objects.filter(
         status='active',
@@ -145,6 +155,7 @@ def suggested_positions_list(request):
         # Phase 1: Heatmap insights
         'heatmap_symbols': heatmap_symbols,
         'heatmap_strategies': heatmap_strategies,
+        'heatmap_summary': heatmap_summary,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 
@@ -186,11 +197,26 @@ def fetch_positions_now(request):
         # Fetch positions
         fetcher = PositionFetcherService()
         suggested = fetcher.fetch_high_probability_positions(filters)
+
+        uw_summary = None
+        if suggested:
+            uw_service = UnusualWhalesService()
+            if uw_service.is_enabled():
+                uw_summary = uw_service.apply_flow_to_suggestions(suggested)
+        avg_prob = (
+            sum(float(p.probability_of_profit) for p in suggested) / len(suggested)
+            if suggested else 0
+        )
+
+        extra = ''
+        if uw_summary and uw_summary.get('enriched'):
+            extra = f" • UW signals on {uw_summary['enriched']} symbol(s)"
+        elif uw_summary and uw_summary.get('symbols_requested'):
+            extra = " • UW signals unavailable for fetched symbols"
         
         messages.success(
             request,
-            f"✅ Fetched {len(suggested)} high-probability positions! "
-            f"Average probability: {sum(float(p.probability_of_profit) for p in suggested) / len(suggested) if suggested else 0:.1f}%"
+            f"✅ Fetched {len(suggested)} high-probability positions! Avg probability: {avg_prob:.1f}%" + extra
         )
         
     except Exception as e:
@@ -210,13 +236,25 @@ def fetch_positions_quick(request):
         fetcher = PositionFetcherService()
         default_filters = fetcher._get_default_filters()
         suggested = fetcher.fetch_high_probability_positions(default_filters)
+        uw_summary = None
+        if suggested:
+            uw_service = UnusualWhalesService()
+            if uw_service.is_enabled():
+                uw_summary = uw_service.apply_flow_to_suggestions(suggested)
+
         avg_prob = (
             sum(float(p.probability_of_profit) for p in suggested) / len(suggested)
             if suggested else 0
         )
+        extra = ''
+        if uw_summary and uw_summary.get('enriched'):
+            extra = f" • UW signals on {uw_summary['enriched']} symbol(s)"
+        elif uw_summary and uw_summary.get('symbols_requested'):
+            extra = " • UW signals unavailable for fetched symbols"
+
         messages.success(
             request,
-            f"✅ Fetched {len(suggested)} position(s). Avg probability: {avg_prob:.1f}%"
+            f"✅ Fetched {len(suggested)} position(s). Avg probability: {avg_prob:.1f}%" + extra
         )
     except Exception as e:
         logger.error(f"Quick fetch error: {e}", exc_info=True)

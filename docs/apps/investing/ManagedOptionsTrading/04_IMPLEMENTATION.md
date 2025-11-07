@@ -261,69 +261,18 @@ class SuggestedPosition(TimeStampedModel):
 ---
 
 #### **Enhancement 1.3: Portfolio Heat Map** (1 day)
-**Status:** ✅ Implemented (Nov 7, 2025) — heatmap context in `position_suggestions.py`
+**Status:** ✅ Implemented (Nov 7, 2025) — heatmap toggle + exposure summary integrated into `suggested_positions`
 
 **Existing Code to Reuse:**
-- ✅ `dashboard.py` view (existing)
-- ✅ `ManagedTradingAccount`, `OptionsPosition` models
-- ✅ Dashboard template
+- ✅ `position_suggestions.py` query set for pending suggestions
+- ✅ Staff suggestions template + Phase 10A Top 5 component
 
 **New Code Required:**
 ```
 Files to MODIFY:
-- coda/investing/views/managed_trading/dashboard.py (ADD heatmap data calculation)
-- coda/investing/templates/investing/managed/dashboard.html (ADD heatmap chart)
-
-Files to CREATE:
-- NONE (pure enhancement)
-```
-
-**Implementation:**
-```python
-# EXTEND existing dashboard view
-def managed_trading_dashboard(request):
-    # ... existing code ...
-    
-    # ADD heatmap data
-    positions = OptionsPosition.objects.filter(
-        managed_account__in=accounts,
-        status='open'
-    ).select_related('managed_account')
-    
-    # Calculate exposures
-    sector_exposure = positions.values('symbol').annotate(
-        total_capital=Sum('capital_required')
-    )
-    
-    strategy_exposure = positions.values('strategy').annotate(
-        count=Count('id'),
-        capital=Sum('capital_required')
-    )
-    
-    context['heatmap_data'] = {
-        'sectors': list(sector_exposure),
-        'strategies': list(strategy_exposure),
-    }
-    
-    return render(request, 'investing/managed/dashboard.html', context)
-```
-
-**Duplication Risk:** ✅ NONE (extending existing view)
-
----
-
-#### **Enhancement 1.4: Zapier Webhooks** (1 day)
-**Status:** ✅ Implemented (Nov 7, 2025) — reusing `webhooks.py` (no duplication)
-
-**Existing Code to Reuse:**
-- ✅ `webhooks.py` view (existing - 3 functions)
-- ✅ Django signals system
-
-**New Code Required:**
-```
-Files to MODIFY:
-- coda/investing/views/managed_trading/webhooks.py (ADD zapier endpoints)
-- coda/investing/urls_managed_trading.py (ADD 2 URLs)
+- coda/investing/views/managed_trading/position_suggestions.py (heatmap aggregation + summary context)
+- coda/investing/templates/investing/staff/suggested_positions.html (collapsible heatmap + UW detail drawer)
+- coda/investing/templates/investing/staff/top_5_recommended_section.html (exposure snapshot banner)
 
 Files to CREATE:
 - NONE
@@ -331,30 +280,76 @@ Files to CREATE:
 
 **Implementation:**
 ```python
-# EXTEND existing webhooks.py (currently 3 functions)
-from django.views.decorators.csrf import csrf_exempt
-import json
+# position_suggestions.py (excerpt)
+heatmap_symbols_qs = pending.values('symbol').annotate(
+    total_capital=Sum('capital_required'),
+    avg_ai_score=Avg('ai_score'),
+    avg_probability=Avg('probability_of_profit'),
+    position_count=Count('id'),
+)
 
-@csrf_exempt
-def zapier_position_webhook(request):
-    """Send position data to Zapier"""
-    if request.method == 'POST':
-        position_id = request.POST.get('position_id')
-        position = OptionsPosition.objects.get(id=position_id)
-        
-        webhook_url = settings.ZAPIER_POSITION_WEBHOOK
-        data = {
-            'symbol': position.symbol,
-            'strategy': position.get_strategy_display(),
-            'premium': str(position.premium_collected),
-            'status': position.status,
-        }
-        
-        requests.post(webhook_url, json=data)
-        return JsonResponse({'status': 'sent'})
+heatmap_symbols = [
+    {
+        'symbol': item['symbol'],
+        'total_capital': float(item['total_capital'] or 0),
+        'avg_ai_score': float(item['avg_ai_score'] or 0),
+        'avg_probability': float(item['avg_probability'] or 0),
+        'position_count': item['position_count'],
+    }
+    for item in heatmap_symbols_qs
+]
+
+heatmap_summary = {
+    'total_capital': sum(item['total_capital'] for item in heatmap_symbols),
+    'top_symbols': heatmap_symbols[:3],
+    'top_strategies': heatmap_strategies[:2],
+}
 ```
 
-**Duplication Risk:** ✅ NONE (extending existing webhooks)
+**Duplication Risk:** ✅ NONE (reuse existing data models + views)
+
+---
+
+#### **Enhancement 1.4: Zapier Webhooks** (1 day)
+**Status:** ✅ Implemented (Nov 7, 2025) — reusing `webhooks.py` with bulk UW enrichment + Fetch button integration
+
+**Existing Code to Reuse:**
+- ✅ `webhooks.py` endpoints (WhatsApp)
+- ✅ `PositionFetcherService` & `SuggestedPosition` model
+
+**New Code Required:**
+```
+Files to MODIFY:
+- coda/investing/services/unusual_whales_service.py (ADD bulk flow enrichment helper)
+- coda/investing/views/managed_trading/position_suggestions.py (wire UW auto-check into fetch buttons)
+- coda/investing/views/managed_trading/webhooks.py (refined payload + inbound token handling)
+- coda/investing/templates/investing/staff/suggested_positions.html (Zapier + UW detail toggle)
+
+Files to CREATE:
+- NONE
+```
+
+**Implementation:**
+```python
+# unusual_whales_service.py (excerpt)
+def apply_flow_to_suggestions(self, suggestions):
+    symbols = list({s.symbol for s in suggestions if getattr(s, 'symbol', None)})
+    flow_map = self.get_flow_summary_for_symbols(symbols, max_symbols=len(symbols))
+    for suggestion in suggestions:
+        flow_data = flow_map.get(suggestion.symbol)
+        if not flow_data:
+            continue
+        ...  # adjust ai_score, rating, notes, api_response_data
+
+# position_suggestions.fetch_positions_now
+suggested = fetcher.fetch_high_probability_positions(filters)
+if suggested and UnusualWhalesService().is_enabled():
+    uw_summary = UnusualWhalesService().apply_flow_to_suggestions(suggested)
+    messages.success(request, f"✅ Fetched {len(suggested)}..." +
+                      f" • UW signals on {uw_summary['enriched']} symbol(s)")
+```
+
+**Duplication Risk:** ✅ NONE (extending existing services + views)
 
 **Phase 1 Summary:**
 - Investment: 4 days

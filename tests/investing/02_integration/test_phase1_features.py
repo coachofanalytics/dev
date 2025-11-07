@@ -120,3 +120,28 @@ class PhaseOneFeatureTests(TestCase):
         self.assertTrue(all("total_capital" in item for item in heatmap))
         self.assertTrue(all("position_count" in item for item in heatmap))
 
+    @override_settings(
+        ENVIRONMENT="local",
+    )
+    @mock.patch("investing.views.managed_trading.position_suggestions.UnusualWhalesService")
+    @mock.patch("investing.views.managed_trading.position_suggestions.PositionFetcherService.fetch_high_probability_positions")
+    def test_fetch_positions_invokes_unusual_whales(self, mock_fetcher, mock_whales):
+        suggestion = self._create_suggestion(symbol="SPY", capital=Decimal("1500.00"), score=Decimal("80.0"))
+        mock_fetcher.return_value = [suggestion]
+        mock_service = mock_whales.return_value
+        mock_service.is_enabled.return_value = True
+        mock_service.apply_flow_to_suggestions.return_value = {'enriched': 1, 'symbols_requested': 1}
+
+        response = self.client.post(reverse("investing:fetch_positions_now"), {
+            'probability_min': 70,
+            'premium_min': 100,
+            'dte_min': 30,
+            'dte_max': 60,
+            'max_positions': 5,
+        })
+
+        self.assertRedirects(response, reverse("investing:suggested_positions_list"))
+        mock_service.apply_flow_to_suggestions.assert_called_once()
+        messages = [m.message for m in response.wsgi_request._messages]
+        self.assertTrue(any("UW signals" in msg for msg in messages))
+

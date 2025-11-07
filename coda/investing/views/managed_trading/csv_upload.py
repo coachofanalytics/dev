@@ -1414,74 +1414,15 @@ def csv_import_and_score(request):
         if uw_service.is_enabled() and converted_ids:
             logger.info("💎 Fetching Unusual Whales flow data for timing signals...")
             logger.info("   Use Case: Heavy buying → GREEN LIGHT | Heavy selling → RED LIGHT")
-            
-            # Get unique symbols
-            positions = SuggestedPosition.objects.filter(id__in=converted_ids)
-            symbols = list(positions.values_list('symbol', flat=True).distinct())
-            
-            # Fetch flow data for all symbols at once (batch)
-            flow_data_map = uw_service.get_flow_summary_for_symbols(symbols, max_symbols=20)
-            
-            # Add flow signals to each position
-            for position in positions:
-                if position.symbol in flow_data_map:
-                    flow_data = flow_data_map[position.symbol]
-                    
-                    # Add flow notes
-                    flow_notes = f"\n\n💎 Unusual Whales Flow:\n"
-                    flow_notes += f"  • Flow Score: {flow_data['flow_score']:.0f}/100\n"
-                    flow_notes += f"  • Sentiment: {flow_data['sentiment'].upper()} ({flow_data['sentiment_score']:.0f}%)\n"
-                    flow_notes += f"  • Unusual Calls: {flow_data.get('unusual_calls', 0)}\n"
-                    flow_notes += f"  • Unusual Puts: {flow_data.get('unusual_puts', 0)}\n"
-                    
-                    # Determine timing indicator
-                    flow_score = flow_data['flow_score']
-                    if flow_score >= 75:
-                        timing = '🟢 ENTER NOW (Heavy buying flow detected!)'
-                        ai_boost = 20
-                    elif flow_score >= 50:
-                        timing = '🟡 OK TO ENTER (Normal flow)'
-                        ai_boost = 10
-                    else:
-                        timing = '🔴 WAIT/SKIP (Heavy selling flow detected!)'
-                        ai_boost = -20
-                    
-                    flow_notes += f"  • Timing: {timing}\n"
-                    
-                    # Append to notes
-                    if position.notes:
-                        position.notes += flow_notes
-                    else:
-                        position.notes = flow_notes
-                    
-                    # Boost AI score
-                    if position.ai_score:
-                        position.ai_score += ai_boost
-                    else:
-                        position.ai_score = 50 + ai_boost
 
-                    # Persist structured flow metadata for dashboards & Zapier pushes
-                    metadata = position.api_response_data or {}
-                    metadata['unusual_whales'] = {
-                        'flow_score': float(flow_data.get('flow_score', 0)),
-                        'sentiment': flow_data.get('sentiment'),
-                        'sentiment_score': float(flow_data.get('sentiment_score', 0)),
-                        'unusual_calls': flow_data.get('unusual_calls'),
-                        'unusual_puts': flow_data.get('unusual_puts'),
-                        'premium_spent': flow_data.get('premium_spent'),
-                        'volume_oi_ratio': flow_data.get('volume_oi_ratio'),
-                        'timing_signal': timing,
-                        'captured_at': timezone.now().isoformat(),
-                    }
-                    position.api_response_data = metadata
-                    
-                    position.save()
-                    
-                    flow_count += 1
-                    logger.debug(f"  ✅ {position.symbol}: Flow {flow_score:.0f}/100, Timing: {timing[:20]}, AI boost {ai_boost:+d}")
-            
+            positions = list(SuggestedPosition.objects.filter(id__in=converted_ids))
+            summary = uw_service.apply_flow_to_suggestions(positions)
+            flow_count = summary.get('enriched', 0)
+
             if flow_count > 0:
-                logger.info(f"✅ Unusual Whales flow scoring complete: {flow_count}/{len(converted_ids)} positions")
+                logger.info(
+                    f"✅ Unusual Whales flow scoring complete: {flow_count}/{len(positions)} positions"
+                )
             else:
                 logger.warning("⚠️  No flow data available (check API key or symbols may have no unusual activity)")
         elif not uw_service.is_enabled():

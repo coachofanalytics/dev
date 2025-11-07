@@ -23,8 +23,9 @@
 
 ### **✅ Phase 1 Quick Wins (Code Implemented)**
 - 🌙 **Dark Mode Toggle:** Staff suggestions view now persists theme preference (`investing/staff/suggested_positions.html`, `investing/css/dark-mode.css`)
-- 🔥 **Portfolio Heat Map:** Pending suggestions surface capital concentration & strategy mix (auto-built from existing `SuggestedPosition` data)
-- 🤖 **Unusual Whales Auto-Check:** CSV import stores flow metadata & timing signals in-place (no duplicate services)
+- 🔥 **Portfolio Heat Map:** Collapsible exposure view + Top 5 banner highlights capital concentration and dominant strategies
+- 🐋 **Unusual Whales Auto-Check:** “Fetch New Positions” now enriches every symbol with flow score, sentiment, and timing (same helper used for CSV uploads)
+- 🔎 **UW Detail Drawers:** Each suggestion exposes flow breakdown (calls vs puts, net premium, timing) via inline collapse, ready for instant client notes
 - 🔗 **Zapier Webhooks:** Staff can push top trades to Ops with a single click + inbound token validation (`webhooks.py`)
 - ✅ **Tests:** Added integration coverage under `tests/investing/02_integration/test_phase1_features.py`
 

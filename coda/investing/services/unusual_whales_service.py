@@ -12,6 +12,7 @@ Use Case:
 import logging
 import requests
 from django.conf import settings
+from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -364,73 +365,91 @@ class UnusualWhalesService:
         
         return results
     
-    def add_flow_signals_to_position(self, position):
-        """
-        Add Unusual Whales flow signals to a SuggestedPosition
-        
-        Modifies position object to include:
-        - flow_score (0-100)
-        - flow_sentiment ('bullish', 'bearish', 'neutral')
-        - flow_timing_indicator ('🟢 ENTER', '🟡 WAIT', '🔴 SKIP')
-        - Updated ai_score (boosted by flow)
-        
-        Args:
-            position: SuggestedPosition object
-        
-        Returns:
-            bool: True if flow data added, False if not available
-        """
-        if not self.enabled:
-            return False
-        
-        try:
-            # Get flow data
-            flow_data = self.get_unusual_activity(position.symbol)
-            
+    def apply_flow_to_suggestions(self, suggestions):
+        """Apply Unusual Whales data to a list of SuggestedPosition objects."""
+        from .position_scoring_service import PositionScoringService
+
+        if not self.enabled or not suggestions:
+            return {'enriched': 0, 'symbols_requested': len(suggestions) if suggestions else 0}
+
+        symbols = list({s.symbol for s in suggestions if getattr(s, 'symbol', None)})
+        if not symbols:
+            return {'enriched': 0, 'symbols_requested': 0}
+
+        flow_map = self.get_flow_summary_for_symbols(symbols, max_symbols=len(symbols))
+        if not flow_map:
+            return {'enriched': 0, 'symbols_requested': len(symbols)}
+
+        scorer = PositionScoringService()
+        enriched = 0
+
+        for suggestion in suggestions:
+            flow_data = flow_map.get(suggestion.symbol)
             if not flow_data:
-                return False
-            
-            # Add flow score to position notes
-            flow_notes = f"\n\n💎 Unusual Whales Flow:\n"
-            flow_notes += f"  • Flow Score: {flow_data['flow_score']:.0f}/100\n"
-            flow_notes += f"  • Sentiment: {flow_data['sentiment'].upper()} ({flow_data['sentiment_score']:.0f}%)\n"
-            flow_notes += f"  • Unusual Calls: {flow_data['unusual_calls']}\n"
-            flow_notes += f"  • Unusual Puts: {flow_data['unusual_puts']}\n"
-            flow_notes += f"  • Net Premium: ${flow_data['premium_spent']:,.0f}\n"
-            
-            # Determine timing indicator
+                continue
+
+            metadata = suggestion.api_response_data or {}
+            whales_meta = metadata.get('unusual_whales', {})
+            base_score = whales_meta.get('base_ai_score', float(suggestion.ai_score or 0))
+
             flow_score = flow_data['flow_score']
             if flow_score >= 75:
-                timing = '🟢 ENTER NOW (Heavy buying flow)'
+                timing = '🟢 ENTER NOW (Heavy buying flow detected!)'
                 ai_boost = 20
             elif flow_score >= 50:
                 timing = '🟡 OK TO ENTER (Normal flow)'
                 ai_boost = 10
             else:
-                timing = '🔴 WAIT/SKIP (Heavy selling flow)'
+                timing = '🔴 WAIT/SKIP (Heavy selling flow detected!)'
                 ai_boost = -20
-            
-            flow_notes += f"  • Timing: {timing}\n"
-            
-            # Append to existing notes
-            if position.notes:
-                position.notes += flow_notes
-            else:
-                position.notes = flow_notes
-            
-            # Boost AI score based on flow
-            if position.ai_score:
-                position.ai_score += ai_boost
-            else:
-                position.ai_score = 50 + ai_boost
-            
-            position.save()
-            
-            logger.info(f"✅ {position.symbol}: Flow score {flow_score:.0f}, AI boost {ai_boost:+d}")
-            
-            return True
-        
-        except Exception as e:
-            logger.error(f"Error adding flow signals to {position.symbol}: {str(e)}")
-            return False
+
+            adjusted_score = max(0, min(100, base_score + ai_boost))
+            suggestion.ai_score = Decimal(str(adjusted_score))
+            suggestion.ai_rating = scorer._get_rating(float(suggestion.ai_score))
+
+            whales_meta.update({
+                'symbol': suggestion.symbol,
+                'flow_score': float(flow_data.get('flow_score', 0)),
+                'sentiment': flow_data.get('sentiment'),
+                'sentiment_score': float(flow_data.get('sentiment_score', 0)),
+                'unusual_calls': flow_data.get('unusual_calls'),
+                'unusual_puts': flow_data.get('unusual_puts'),
+                'premium_spent': flow_data.get('premium_spent'),
+                'volume_oi_ratio': flow_data.get('volume_oi_ratio'),
+                'timing_signal': timing,
+                'base_ai_score': base_score,
+                'last_updated': timezone.now().isoformat(),
+            })
+
+            metadata['unusual_whales'] = whales_meta
+            suggestion.api_response_data = metadata
+            suggestion.notes = self._inject_flow_notes(suggestion.notes, whales_meta)
+            suggestion.save()
+            enriched += 1
+
+        return {
+            'enriched': enriched,
+            'symbols_requested': len(symbols),
+            'flow_map': flow_map,
+        }
+
+    def _inject_flow_notes(self, existing_notes, whales_meta):
+        note_header = '💎 Unusual Whales Flow:'
+        base_notes = (existing_notes or '').split(note_header)[0].rstrip()
+
+        flow_lines = [
+            note_header,
+            f"  • Flow Score: {whales_meta.get('flow_score', 0):.0f}/100",
+            f"  • Sentiment: {str(whales_meta.get('sentiment', '')).upper()} ({whales_meta.get('sentiment_score', 0):.0f}%)",
+            f"  • Unusual Calls: {whales_meta.get('unusual_calls', 0)}",
+            f"  • Unusual Puts: {whales_meta.get('unusual_puts', 0)}",
+            f"  • Net Premium: ${whales_meta.get('premium_spent', 0):,.0f}",
+            f"  • Timing: {whales_meta.get('timing_signal', 'N/A')}",
+        ]
+
+        combined = base_notes
+        if combined:
+            combined += '\n\n'
+        combined += '\n'.join(flow_lines)
+        return combined
 
