@@ -493,6 +493,9 @@ class UnusualWhalesService:
         base_notes = (existing_notes or '').split(note_header)[0].rstrip()
 
         entry_window = whales_meta.get('entry_window')
+        timing_text = whales_meta.get('timing_signal', 'N/A')
+        if entry_window:
+            timing_text = f"{timing_text} — Window: {entry_window}"
 
         flow_lines = [
             note_header,
@@ -501,11 +504,8 @@ class UnusualWhalesService:
             f"  • Unusual Calls: {whales_meta.get('unusual_calls', 0)}",
             f"  • Unusual Puts: {whales_meta.get('unusual_puts', 0)}",
             f"  • Net Premium: ${whales_meta.get('premium_spent', 0):,.0f}",
-            f"  • Timing: {whales_meta.get('timing_signal', 'N/A')}",
+            f"  • Timing: {timing_text}",
         ]
-
-        if entry_window:
-            flow_lines.append(f"  • Entry Window: {entry_window}")
 
         combined = base_notes
         if combined:
