@@ -1,0 +1,45 @@
+{% extends "finance/finance_base.html" %}
+
+{% block title %}Home - CODA Finance{% endblock %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h1 class="display-5 fw-bold">Welcome to CODA Finance</h1>
+    <p class="lead text-muted mt-3">
+        Manage your organization's budgets, track payments, and analyze financial data all in one place.
+    </p>
+    <hr class="my-4">
+
+    <div class="row mt-5">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title">💰 Budgeting</h5>
+                    <p class="card-text text-muted">View, edit, and manage yearly and monthly budgets with detailed breakdowns.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">View Budgets</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title">📊 Data Analysis</h5>
+                    <p class="card-text text-muted">Visualize trends, compare spending, and track your organization's financial performance.</p>
+                    <a href="#" class="btn btn-outline-success btn-sm">Analyze Data</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title">📁 Reports</h5>
+                    <p class="card-text text-muted">Generate summary reports for budgets, transactions, and departments.</p>
+                    <a href="#" class="btn btn-outline-dark btn-sm">View Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

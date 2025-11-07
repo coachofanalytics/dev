@@ -53,3 +53,22 @@ class OverBoughtSold(models.Model):
 
     def __str__(self):
         return f"{self.symbol or 'Unknown Symbol'} - {self.condition_label()}"
+
+
+
+class payment_infomation(models.Model):
+    payment_fees=models.IntegerField(null=False)
+    down_payment=models.IntegerField(null=False)
+    student_bonus=models.IntegerField(null=True)
+    fee_balance=models.IntegerField(null=False)
+    plan =models.CharField(max_length=100,null=True)
+    subplan=models.CharField(max_length=100,null=True)
+    fee_balance=models.IntegerField(null=False)
+    payment_method=models.CharField(max_length=100,null=False)
+    contract_submitted_date=models.DateTimeField(null=False)
+    client_signature=models.CharField(max_length=1000,null=False)
+    company_rep=models.CharField(max_length=1000,null=False)
+    client_date=models.CharField(max_length=100,null=False)
+    description=models.TextField(max_length=1000,null=True)
+    is_active=models.BooleanField(null=True)
+    is_featured=models.BooleanField(null=True)
