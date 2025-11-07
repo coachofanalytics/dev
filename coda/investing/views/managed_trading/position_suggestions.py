@@ -21,6 +21,7 @@ from ...models import SuggestedPosition, OptionsPosition, PositionBatch, Managed
 from ...services import PositionFetcherService, BatchApprovalService, ManagedTradingService
 from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.position_ranking_service import PositionRankingService
+from ...utils.preview_payloads import build_preview_payloads
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,29 @@ def suggested_positions_list(request):
     
     NEW (Phase 10A): Top 5 Recommended with multi-factor ranking
     """
+    def _safe_number(value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return value
+
+    def _normalize_legs(legs_payload):
+        if not legs_payload:
+            return []
+        normalized = []
+        for leg in legs_payload:
+            normalized.append({
+                'type': leg.get('type') or leg.get('leg_type'),
+                'direction': leg.get('direction'),
+                'contracts': leg.get('contracts'),
+                'strike': _safe_number(leg.get('strike')),
+                'expiration': leg.get('expiration') or leg.get('expiry'),
+                'premium': _safe_number(leg.get('premium')),
+                'delta': _safe_number(leg.get('delta')),
+                'theta': _safe_number(leg.get('theta')),
+            })
+        return normalized
+
     # Get all pending suggestions (sorted by AI score first!)
     pending = SuggestedPosition.objects.filter(
         review_status='pending'
@@ -142,6 +166,8 @@ def suggested_positions_list(request):
         trading_enabled=True
     ).order_by('account_number')
     
+    preview_payloads = build_preview_payloads(pending, approved)
+
     context = {
         'pending_positions': pending,
         'approved_positions': approved,
@@ -156,6 +182,7 @@ def suggested_positions_list(request):
         'heatmap_symbols': heatmap_symbols,
         'heatmap_strategies': heatmap_strategies,
         'heatmap_summary': heatmap_summary,
+        'preview_payloads': preview_payloads,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 

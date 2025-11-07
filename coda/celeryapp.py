@@ -105,5 +105,10 @@ app.conf.beat_schedule = {
         'schedule': crontab(day_of_week=1, hour=13, minute=0),  # Monday 8 AM EST = 13:00 UTC
         'args': (),
     },
+    'managed-income-scheduler': {
+        'task': 'investing.tasks.managed_income_scheduler',
+        'schedule': crontab(hour=14, minute=30),  # Daily 14:30 UTC (~9:30 AM EST)
+        'args': (),
+    },
 }
 

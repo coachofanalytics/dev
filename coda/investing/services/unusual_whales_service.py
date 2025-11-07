@@ -12,6 +12,7 @@ Use Case:
 import logging
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -40,6 +41,9 @@ class UnusualWhalesService:
             'Authorization': f'Bearer {self.api_key}',
             'Accept': 'application/json'
         }
+        self.cache_enabled = getattr(settings, 'UW_CACHE_ENABLED', True)
+        self.cache_ttl = int(getattr(settings, 'UW_CACHE_TTL_SECONDS', 600) or 600)
+        self.last_fetch_stats = None
     
     def is_enabled(self):
         """Check if Unusual Whales is enabled and configured"""
@@ -334,35 +338,82 @@ class UnusualWhalesService:
         """
         if not self.enabled:
             logger.info("Unusual Whales disabled - skipping flow data")
+            self.last_fetch_stats = {
+                'requested': len(symbols or []),
+                'cache_hits': 0,
+                'api_calls': 0,
+                'ttl': self.cache_ttl,
+            }
             return {}
-        
+
+        symbols = symbols or []
+
+        unique_symbols = []
+        seen = set()
+        for symbol in symbols:
+            if not symbol:
+                continue
+            normalized = symbol.upper().strip()
+            if normalized in seen:
+                continue
+            seen.add(normalized)
+            unique_symbols.append(normalized)
+
+        symbols_to_consider = unique_symbols[:max_symbols]
         results = {}
-        
-        # Limit to max_symbols to avoid rate limits
-        symbols_to_fetch = symbols[:max_symbols]
-        
-        logger.info(f"📊 Fetching Unusual Whales flow data for {len(symbols_to_fetch)} symbols...")
-        
-        for symbol in symbols_to_fetch:
+        cache_hits = 0
+        api_calls = 0
+        missing_symbols = []
+
+        for symbol in symbols_to_consider:
+            cached = self._get_cached_flow(symbol)
+            if cached:
+                cache_hits += 1
+                results[symbol] = {**cached, 'cache_source': 'cache'}
+            else:
+                missing_symbols.append(symbol)
+
+        if missing_symbols:
+            logger.info(
+                "📊 Fetching Unusual Whales flow data for %s symbols (cache hits: %s)...",
+                len(missing_symbols),
+                cache_hits,
+            )
+
+        for symbol in missing_symbols:
             try:
-                # Get unusual activity
                 unusual = self.get_unusual_activity(symbol)
-                
-                # Get dark pool (optional - may hit rate limits)
-                # dark_pool = self.get_dark_pool_activity(symbol)
-                
+                api_calls += 1
                 if unusual:
-                    results[symbol] = unusual
-                    logger.debug(f"  ✅ {symbol}: Flow score {unusual['flow_score']:.0f}/100 ({unusual['sentiment']})")
+                    self._set_cached_flow(symbol, unusual)
+                    results[symbol] = {**unusual, 'cache_source': 'live'}
+                    logger.debug(
+                        "  ✅ %s: Flow score %s/100 (%s)",
+                        symbol,
+                        f"{unusual['flow_score']:.0f}",
+                        unusual['sentiment'],
+                    )
                 else:
                     logger.debug(f"  ⚠️  {symbol}: No unusual activity")
-            
             except Exception as e:
                 logger.warning(f"  ❌ {symbol}: Error - {str(e)}")
                 continue
-        
-        logger.info(f"✅ Fetched flow data for {len(results)}/{len(symbols_to_fetch)} symbols")
-        
+
+        logger.info(
+            "✅ Flow data ready for %s/%s symbols (cache hits=%s, api_calls=%s)",
+            len(results),
+            len(symbols_to_consider),
+            cache_hits,
+            api_calls,
+        )
+
+        self.last_fetch_stats = {
+            'requested': len(symbols_to_consider),
+            'cache_hits': cache_hits,
+            'api_calls': api_calls,
+            'ttl': self.cache_ttl,
+        }
+
         return results
     
     def apply_flow_to_suggestions(self, suggestions):
@@ -384,7 +435,7 @@ class UnusualWhalesService:
         enriched = 0
 
         for suggestion in suggestions:
-            flow_data = flow_map.get(suggestion.symbol)
+            flow_data = flow_map.get(str(suggestion.symbol).upper())
             if not flow_data:
                 continue
 
@@ -452,4 +503,20 @@ class UnusualWhalesService:
             combined += '\n\n'
         combined += '\n'.join(flow_lines)
         return combined
+
+    def _cache_key(self, symbol: str) -> str:
+        return f"uw:flow:{symbol.upper()}"
+
+    def _get_cached_flow(self, symbol: str):
+        if not self.cache_enabled:
+            return None
+        return cache.get(self._cache_key(symbol))
+
+    def _set_cached_flow(self, symbol: str, data: dict) -> None:
+        if not self.cache_enabled:
+            return
+        try:
+            cache.set(self._cache_key(symbol), data, self.cache_ttl)
+        except Exception as exc:
+            logger.debug("UW cache set failed for %s: %s", symbol, exc)
 

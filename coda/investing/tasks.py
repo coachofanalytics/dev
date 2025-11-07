@@ -12,7 +12,13 @@ from django.conf import settings
 from datetime import timedelta
 import logging
 
-from .services import PositionFetcherService, BatchApprovalService, NotificationService
+from .services import (
+    PositionFetcherService,
+    BatchApprovalService,
+    NotificationService,
+    CapitalAllocationService,
+    UnusualWhalesService,
+)
 from .models import SuggestedPosition, ManagedTradingAccount, PositionBatch
 
 logger = logging.getLogger(__name__)
@@ -267,4 +273,62 @@ This is an automated weekly summary.
                 for item in top
             ])
         return "• No data"
+
+
+@shared_task(bind=True, default_retry_delay=180, max_retries=3)
+def managed_income_scheduler(self):
+    """Size positions for managed accounts to hit monthly income targets."""
+
+    try:
+        logger.info("💼 Running managed income scheduler...")
+
+        pending_qs = SuggestedPosition.objects.filter(review_status='pending').order_by('-ai_score')
+        suggestions = list(pending_qs[:25])
+
+        if not suggestions:
+            logger.info("No pending suggestions found — triggering fetch fallback")
+            fetcher = PositionFetcherService()
+            fallback_filters = {
+                'probability_min': 65,
+                'premium_min': 75,
+                'dte_min': 25,
+                'dte_max': 55,
+                'max_positions': 12,
+            }
+            suggestions = fetcher.fetch_high_probability_positions(fallback_filters) or []
+
+        if not suggestions:
+            logger.warning("Managed income scheduler: still no suggestions after fallback")
+            return {
+                'success': False,
+                'message': 'No suggestions available for allocation'
+            }
+
+        uw_service = UnusualWhalesService()
+        if uw_service.is_enabled():
+            uw_service.apply_flow_to_suggestions(suggestions)
+
+        allocation_service = CapitalAllocationService()
+        summary = allocation_service.recommend_allocations(suggestions)
+
+        digest_sent = NotificationService().send_internal_allocation_digest(summary)
+
+        totals = summary.get('totals', {})
+        logger.info(
+            "✅ Managed income scheduler complete: %s positions (coverage %s%%, digest=%s)",
+            totals.get('positions', 0),
+            totals.get('coverage_pct', 0),
+            'sent' if digest_sent else 'skipped',
+        )
+
+        return {
+            'success': True,
+            'totals': totals,
+            'meets_target': summary.get('meets_target', False),
+            'notes': summary.get('notes', []),
+        }
+
+    except Exception as exc:
+        logger.error("❌ Managed income scheduler failed: %s", exc, exc_info=True)
+        raise self.retry(exc=exc)
 

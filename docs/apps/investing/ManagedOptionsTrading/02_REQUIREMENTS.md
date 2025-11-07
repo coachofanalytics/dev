@@ -17,10 +17,10 @@
 | **Performance Enhancements** | 3 | 0 | 3 | 0% 🚀 |
 | **Advanced Features** | 4 | 0 | 4 | 0% 🚀 |
 | **UX Improvements** | 3 | 0 | 3 | 0% 🚀 |
-| **Business Intelligence** | 3 | 0 | 3 | 0% 🚀 |
+| **Business Intelligence** | 4 | 0 | 4 | 0% 🚀 |
 | **Risk Management Enhancements** | 3 | 0 | 3 | 0% 🚀 |
-| **Integration & Automation** | 3 | 0 | 3 | 0% 🚀 |
-| **TOTAL** | **46** | **27** | **19** | **59% Complete** |
+| **Integration & Automation** | 6 | 0 | 6 | 0% 🚀 |
+| **TOTAL** | **51** | **27** | **24** | **53% Complete** |
 
 **Legend:**
 - ✅ [IMPLEMENTED] - Built, tested, deployed
@@ -70,6 +70,52 @@
 | TradingView | ER-017 | 🚀 PLANNED | EMBED widget | Phase 4 |
 | Zapier Integration | ER-018 | 🚀 PLANNED | EXTEND webhooks | Phase 1 |
 | Database Indexes | ER-019 | 🚀 PLANNED | ADD Meta.indexes | Phase 1 |
+| Capital Allocation Engine (Income Target) | ER-020 | 🚀 PLANNED | EXTEND fetcher + new `CapitalAllocationService` | Phase 1 |
+| UW Flow Caching & Reuse | ER-021 | 🚀 PLANNED | EXTEND `UnusualWhalesService` caching | Phase 1 |
+| Managed Income Dashboard | ER-022 | 🚀 PLANNED | ENHANCE staff/client dashboards | Phase 2 |
+| Scenario Reports & Capital Upsell | ER-023 | 🚀 PLANNED | EXTEND reporting + WhatsApp/email templates | Phase 2 |
+| Premium Alert Tier (Higher Plan) | ER-024 | 🚀 PLANNED | EXTEND notification workflows | Phase 3 |
+
+#### 🚀 Phase 1 Managed Income Enhancements (New)
+
+**ER-020: Capital Allocation Engine (Income Target)**  
+**Goal:** Automate $30K sleeves to generate ≥$420 monthly net income while respecting CODA-managed execution.  
+**Must Have:**
+- Position sizing logic that caps allocation at 10% per trade and prioritises 🟢 UW timing.
+- Debit spread opportunity detection when credit spreads fail income checks.
+- Output summary used by staff—no client-facing trade instructions.
+
+**ER-021: UW Flow Caching & Reuse**  
+**Goal:** Eliminate duplicate Unusual Whales API calls across CSV uploads, fetch jobs, and dashboards.  
+**Must Have:**
+- Cache layer (10 minute TTL) keyed by symbol + filters.
+- Service method for bulk symbol resolution with cache hit metrics.
+- Guardrails to prevent more than one live API hit per symbol per task execution.
+
+#### 📈 Phase 2 Client Intelligence Enhancements
+
+**ER-022: Managed Income Dashboard**  
+**Goal:** Provide clients with read-only outcome metrics: income vs target, risk usage, allocation mix.  
+**Must Have:**
+- Summary card showing `$420 target vs actual` and trailing 3 months.
+- Strategy leg breakdown (e.g., covered calls vs spreads) with UW sentiment badges.
+- “Preview Trade” UI button for staff that opens leg-level modal for client-friendly screenshots.
+
+**ER-023: Scenario Reports & Capital Upsell**  
+**Goal:** Give CODA staff one-click WhatsApp/email digests encouraging higher funding.  
+**Must Have:**
+- Scenario engine (base/plus $10K/plus $25K) with projected income.
+- Templated WhatsApp and email messages.
+- Logging of outreach for compliance.
+
+#### 📣 Phase 3 Premium Engagement
+
+**ER-024: Premium Alert Tier (Higher Plan)**  
+**Goal:** Offer optional upgrade where clients receive actionable alerts; default stay in managed-only mode.  
+**Must Have:**
+- Toggle in account settings controlling instruction visibility.
+- Workflow to capture client acknowledgement before sending entry/exit details.
+- Audit trail of premium alerts sent.
 
 ---
 
@@ -125,6 +171,9 @@
 - [x] ✅ Real-time dashboard access for clients
 - [x] ✅ Downloadable statements
 - [ ] ⏳ Year-end tax documents (planned Phase 2)
+- [ ] ⏳ Managed-income digest: WhatsApp + email summary (Phase 1 add-on)
+- [ ] ⏳ Scenario-based upsell report (capital growth paths) (Phase 2)
+- [ ] ⏳ Maintain managed-only visibility (no direct trade instructions unless premium tier enabled)
 
 ---
 
@@ -242,6 +291,7 @@
   - Total profit/loss
   - Return percentage
   - Number of positions
+  - Monthly income vs $420 target (Phase 1)
 - [ ] Active positions table:
   - Symbol
   - Strategy
@@ -257,6 +307,7 @@
 - [ ] Closed positions history
 - [ ] Monthly statements download
 - [ ] Fee breakdown view
+- [ ] Scenario planner (clients simulate additional capital contributions) (Phase 2)
 
 **Access Control:**
 - Client can only see their own account

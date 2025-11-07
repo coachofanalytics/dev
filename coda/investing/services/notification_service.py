@@ -4,11 +4,14 @@ Handles email and SMS notifications for managed trading
 """
 
 import logging
+from decimal import Decimal
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 class NotificationService:
@@ -70,6 +73,86 @@ CODA Investment Team
             
         except Exception as e:
             logger.error(f"Error sending batch notification: {str(e)}")
+
+    # ------------------------------------------------------------------
+    # Managed Income Automation
+    # ------------------------------------------------------------------
+
+    def send_internal_allocation_digest(self, allocation_summary: dict, *, subject: str | None = None) -> bool:
+        """Email staff with the latest allocation recommendations."""
+
+        staff_emails = self._get_staff_emails()
+        if not staff_emails:
+            logger.warning("No staff emails configured; skipping allocation digest")
+            return False
+
+        allocations = allocation_summary.get('allocations') or []
+        totals = allocation_summary.get('totals') or {}
+        account_capital = allocation_summary.get('account_capital', 0)
+        income_target = allocation_summary.get('income_target', 0)
+        coverage_pct = totals.get('coverage_pct', 0)
+        meets_target = allocation_summary.get('meets_target', False)
+        cache_stats = allocation_summary.get('cache_stats') or {}
+
+        subject = subject or "💼 Managed Income Allocation Preview"
+
+        account_capital_value = Decimal(str(account_capital or 0))
+        income_target_value = Decimal(str(income_target or 0))
+        expected_income_value = Decimal(str(totals.get('expected_income', 0) or 0))
+        coverage_decimal = Decimal(str(coverage_pct or 0))
+
+        if allocations:
+            allocation_lines = []
+            for idx, item in enumerate(allocations, start=1):
+                capital_used = Decimal(str(item.get('capital_used', 0) or 0))
+                expected_income_item = Decimal(str(item.get('expected_income', 0) or 0))
+                flow_score_value = Decimal(str(item.get('flow_score', 0) or 0))
+                ai_score_value = Decimal(str(item.get('ai_score', 0) or 0))
+                allocation_lines.append(
+                    f"{idx}. {item['symbol']} {item['strategy']} — ${capital_used:,.2f} capital, "
+                    f"${expected_income_item:,.2f} income, AI {ai_score_value:.0f} / Flow {flow_score_value:.0f} "
+                    f"({item['timing_signal']})"
+                )
+        else:
+            allocation_lines = ["No qualifying positions this cycle — review pending suggestions or adjust filters."]
+
+        cache_line = (
+            f"UW cache: {cache_stats.get('cache_hits', 0)} hit(s), {cache_stats.get('api_calls', 0)} live call(s), TTL {cache_stats.get('ttl', 0)}s"
+            if cache_stats
+            else "UW cache: n/a"
+        )
+
+        notes_joined = ', '.join(allocation_summary.get('notes') or ['None'])
+
+        body = f"""
+Managed Income Allocation Preview ({timezone.now().strftime('%Y-%m-%d %H:%M %Z')})
+
+Account Capital: ${account_capital_value:,.0f}
+Income Target: ${income_target_value:,.0f}
+Expected Income: ${expected_income_value:,.0f} ({coverage_decimal:.1f}% of target)
+Positions Selected: {totals.get('positions', 0)}
+Target Met: {'✅ Yes' if meets_target else '⚠️ Not yet'}
+
+Recommendations:
+{"\n".join(allocation_lines)}
+
+Notes: {notes_joined}
+{cache_line}
+        """.strip()
+
+        try:
+            send_mail(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                staff_emails,
+                fail_silently=False
+            )
+            logger.info("Sent allocation digest to %s staff recipients", len(staff_emails))
+            return True
+        except Exception as exc:
+            logger.error("Failed to send allocation digest: %s", exc)
+            return False
     
     def send_batch_reminder(self, batch):
         """
@@ -207,6 +290,14 @@ CODA Investment Team
         except Exception as e:
             logger.error(f"Error sending batch approved notification: {str(e)}")
     
+    @staticmethod
+    def _get_staff_emails() -> list[str]:
+        return list(
+            User.objects.filter(is_staff=True, email__isnull=False)
+            .exclude(email='')
+            .values_list('email', flat=True)
+        )
+
     def send_sms_notification(self, phone_number, message):
         """
         Send SMS notification (placeholder - integrate with SMS provider)

@@ -28,6 +28,14 @@
 
 ## 🧪 Unit Tests
 
+### **Phase 1 UW + Allocation Coverage (NEW)**
+- ✅ `tests/apps/investing/01_unit/test_unusual_whales_service.py`
+  - Verifies flow score math, caching wrapper, and put-score inversion (cache hits tracked).
+- ✅ `tests/apps/investing/01_unit/test_capital_allocation_service.py`
+  - Ensures position sizing caps at 10% of sleeve, enforces $420 target, considers debit spread fallback.
+- 🚀 `tests/apps/investing/01_unit/test_notification_templates.py`
+  - Guards WhatsApp/email scenario digests for placeholder variables.
+
 ### **Test File: `tests/test_managed_trading_models.py`**
 
 ```python
@@ -90,6 +98,20 @@ class OptionsPositionTestCase(TestCase):
 
 ## 🔄 Integration Tests
 
+### **Phase 1 Addendum: Managed Income Automation (NEW)**
+- ✅ `tests/apps/investing/02_integration/test_phase1_features.py`
+  - Extends coverage for UW enrichment + heatmap context.
+- 🚀 `tests/apps/investing/02_integration/test_capital_allocation.py`
+  - Verifies `CapitalAllocationService` sizing logic meets $420/mo target.
+  - Mocks `UnusualWhalesService` to confirm cache hit path is used (no duplicate API calls).
+- 🚧 `tests/apps/investing/03_system/test_managed_income_scheduler.py`
+  - Currently skipped (`TODO-managed-income`) until legacy account/investing migrations are generated.
+  - Once migrations land, execute to cover Celery beat path (fetch → allocate → digest notification).
+- ✅ `tests/apps/investing/02_integration/test_staff_dashboard_preview.py`
+  - Confirms strategy legs render in modal and "Preview Trade" button appears only for staff.
+- 🚀 `tests/apps/investing/02_integration/test_client_dashboard_income.py`
+  - Validates client sees income vs $420 target but no execution instructions.
+
 ### **Test File: `tests/test_managed_trading_service.py`**
 
 ```python
@@ -131,6 +153,12 @@ class ManagedTradingServiceTestCase(TestCase):
 
 ## 🌐 End-to-End Tests
 
+### **Environment & Tooling Notes (Updated)**
+- Set `TEST_MODE=True` in `.env` (switches to SQLite, avoids Postgres `CREATEDB` requirement).
+- Export `UW_API_MOCK_FIXTURE=tests/fixtures/uw_sample.json` to reuse canned responses and prevent live API calls.
+- Use `pytest -k managed_options --ds=coda_project.settings` for focused runs; Django test runner also supported.
+- Always run `python manage.py collectstatic --noinput` on UAT before selenium tests to ensure latest assets.
+
 ### **Test Scenarios**
 
 #### **E2E Test 1: Complete Account Setup**
@@ -155,6 +183,26 @@ class ManagedTradingServiceTestCase(TestCase):
 8. Trader closes position
 9. P&L updated
 10. Client notified
+```
+
+#### **E2E Test 4: CSV Upload with UW Auto-Enrichment**
+```
+1. Staff uploads CSV with 5 symbols (TEST_MODE mocks UW response)
+2. System converts rows to SuggestedPosition records
+3. UW cache hit ensures only one API call per symbol
+4. Flow scores and timing signals appear in dashboard (🟢/🟡/🔴)
+5. "Preview Trade" modal displays leg breakdown
+6. Staff approves top 5
+```
+
+#### **E2E Test 5: Managed Income Scenario Digest**
+```
+1. Staff opens managed account dashboard
+2. Clicks "Send Scenario Digest"
+3. ScenarioProjectionService computes base/+10K/+25K cases
+4. WhatsApp + email messages queued via NotificationService
+5. CommunicationLog records outreach with timestamp and staff id
+6. Client dashboard shows updated income vs target the next day
 ```
 
 #### **E2E Test 3: Risk Alert Workflow**

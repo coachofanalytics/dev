@@ -1,20 +1,6 @@
-"""
-Investing Services Package
+"""Investing services exposed via lazy imports to avoid premature model loading."""
 
-This package contains service layer classes for the Investment & Portfolio Management bounded context.
-Following the modular monolith architecture plan, these services encapsulate business logic
-and provide clean interfaces for views and other components.
-"""
-
-from .investment_service import InvestmentService
-from .managed_trading_service import ManagedTradingService
-from .options_monitoring_service import OptionsMonitoringService
-from .application_approval_service import ApplicationReviewService
-from .batch_approval_service import BatchApprovalService
-from .notification_service import NotificationService
-from .gotomeeting_service import GoToMeetingService
-from .performance_reporting_service import PerformanceReportingService
-from .position_fetcher_service import PositionFetcherService
+import importlib
 
 __all__ = [
     'InvestmentService',
@@ -26,4 +12,29 @@ __all__ = [
     'GoToMeetingService',
     'PerformanceReportingService',
     'PositionFetcherService',
+    'CapitalAllocationService',
+    'UnusualWhalesService',
 ]
+
+_MODULE_MAP = {
+    'InvestmentService': '.investment_service',
+    'ManagedTradingService': '.managed_trading_service',
+    'OptionsMonitoringService': '.options_monitoring_service',
+    'ApplicationReviewService': '.application_approval_service',
+    'BatchApprovalService': '.batch_approval_service',
+    'NotificationService': '.notification_service',
+    'GoToMeetingService': '.gotomeeting_service',
+    'PerformanceReportingService': '.performance_reporting_service',
+    'PositionFetcherService': '.position_fetcher_service',
+    'CapitalAllocationService': '.capital_allocation_service',
+    'UnusualWhalesService': '.unusual_whales_service',
+}
+
+
+def __getattr__(name):
+    if name in _MODULE_MAP:
+        module = importlib.import_module(_MODULE_MAP[name], __name__)
+        attr = getattr(module, name)
+        globals()[name] = attr
+        return attr
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

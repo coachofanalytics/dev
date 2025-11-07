@@ -13,6 +13,9 @@
 - [ ] Documentation complete
 - [ ] Database migrations ready
 - [ ] Environment variables configured
+- [ ] `UNUSUAL_WHALES_API_KEY`, `UNUSUAL_WHALES_ENABLED` set (UAT + Prod)
+- [ ] `UW_CACHE_TTL_SECONDS` configured (default 600)
+- [ ] `TEST_MODE=True` for pre-deploy test run (switches to SQLite)
 - [ ] Backup system tested
 - [ ] Legal agreements signed
 - [ ] Client onboarded and trained
@@ -45,6 +48,39 @@ heroku run "cd coda && python manage.py crontab add" --app codamakutano
 
 # Verify cron jobs
 heroku run "cd coda && python manage.py crontab show" --app codamakutano
+```
+
+#### **4. UW + Managed Income Release Verification (Phase 1)**
+```bash
+# Warm UW cache (avoid multiple API hits)
+heroku run "cd coda && python manage.py cache_whales_flow --symbols AAPL,MSFT,SPY" --app codamakutano-uat
+
+# Trigger allocation scheduler (dry-run)
+heroku run "cd coda && python manage.py run_managed_income --dry-run" --app codamakutano-uat
+
+# Collect static to ensure heatmap assets
+heroku run "cd coda && python manage.py collectstatic --noinput" --app codamakutano-uat
+```
+
+**Manual QA Checklist:**
+- [ ] Staff dashboard shows heatmap toggle + working "Preview Trade" modal.
+- [ ] UW drawer toggle (`ℹ️`) expands with flow score/sentiment in UAT.
+- [ ] Client dashboard displays income vs $420 target without trade instructions.
+- [ ] WhatsApp/email scenario digest sends to test number/email.
+- [ ] Celery logs indicate single UW API hit per symbol (check `uw_cache` log entries).
+
+#### **5. Promote to Production (after UAT sign-off)**
+```bash
+# Tag release
+git tag v1003-uw-phase1
+git push origin v1003-uw-phase1
+
+# Deploy
+git push heroku 25.11_CODA_DEV_CM:main
+
+# Post-deploy checks (prod app)
+heroku run "cd coda && python manage.py migrate" --app codamakutano
+heroku run "cd coda && python manage.py collectstatic --noinput" --app codamakutano
 ```
 
 ### **Post-Deployment**
@@ -198,6 +234,30 @@ heroku run "cd coda && python manage.py migrate investing XXXX" --app codamakuta
 **Results:**
 - ✅ Code deployed and tested locally
 - ✅ Ready for production use once credentials configured
+
+---
+
+### **🐋 UW Managed Income Enhancements** - November 7, 2025
+**Release:** v1003 *(planned)*  
+**Status:** 🚧 In UAT validation
+
+**Scope:**
+- Staff CSV uploads auto-enrich with UW flow + timing signals.
+- Heatmap toggle + "Preview Trade" modal with strategy legs.
+- CapitalAllocationService + scheduler groundwork (dry-run mode).
+- UW caching layer to prevent duplicate calls.
+- Scenario digest templates (WhatsApp/email) for capital upsell.
+
+**UAT Actions:**
+- Heatmap + UW drawer verified (Bootstrap 4 attributes corrected).
+- Managed income target card visible on client dashboard.
+- Allocation dry-run produced 5 recommendations ≥ $420 target combined.
+- WhatsApp digest delivered to test number with three scenarios.
+
+**Next Steps Before Prod:**
+- Finalize Celery schedule in `heroku addons:create scheduler` (15 min).
+- Monitor cache hit logs for 48 hours.
+- Obtain sign-off from managed options lead.
 - ✅ Sandbox testing successful
 
 ---

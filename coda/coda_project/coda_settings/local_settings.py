@@ -74,6 +74,7 @@ For complete guide: docs/LOCAL_DEVELOPMENT_WITH_PROD_DATA.md
 """
 
 
+import os
 import sys
 
 from .base_settings import *
@@ -105,9 +106,14 @@ def get_database_config():
     - 'prod': Heroku Production database (NEVER use for local dev!)
     - 'postgres': Custom local PostgreSQL
     """
-    # Environment variable controls
-    # DB_TYPE = os.environ.get('DB_TYPE', 'clone').lower()  # Default to 'clone' for safety
-    DB_TYPE = 'uat'
+    TEST_MODE = os.environ.get('TEST_MODE', 'False').lower() == 'true'
+    db_type_env = os.environ.get('DB_TYPE', '').strip().lower()
+
+    if TEST_MODE:
+        print("   🧪 TEST_MODE detected — using in-memory SQLite database")
+        return get_sqlite_config(memory=True)
+
+    DB_TYPE = db_type_env or 'clone'
     print("🗄️  DB_TYPE: ", DB_TYPE)
     USE_POSTGRESQL = os.environ.get('USE_POSTGRESQL', 'False').lower() == 'true'
    
@@ -201,13 +207,14 @@ def get_clone_config():
     }
 
 
-def get_sqlite_config():
+def get_sqlite_config(memory: bool = False):
     """Get SQLite database configuration"""
     print("   📁 Using SQLite database for local development")
+    db_name = ':memory:' if memory else os.path.join(BASE_DIR, 'db.sqlite3')
     return {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'NAME': db_name,
             'CONN_MAX_AGE': 0,
         }
     }
@@ -218,17 +225,7 @@ DATABASES = get_database_config()
 
 # For test runs, switch to in-memory SQLite to avoid Postgres permission issues
 if 'test' in sys.argv:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
-        }
-    }
-    existing_migrations = globals().get('MIGRATION_MODULES', {}).copy()
-    existing_migrations.update({
-        'accounts': None,
-    })
-    MIGRATION_MODULES = existing_migrations
+    DATABASES = get_sqlite_config()
 
 # Display database info
 print("   " + "="*50)

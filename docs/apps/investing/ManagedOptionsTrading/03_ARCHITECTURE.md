@@ -77,6 +77,25 @@
 
 ---
 
+## ♻️ Cross-App Reuse Inventory (Updated Nov 7, 2025)
+
+| Component / Template | Current Location | Status | Leverage & Dedup Plan |
+|----------------------|------------------|--------|-----------------------|
+| `NotificationService` | `coda/notifications/services.py` | ✅ Implemented | Extend with scenario digest helpers; keep WhatsApp/email templates under `notifications/managed_income/` to avoid new service clones. |
+| `stats_card.html` partial | `templates/shared/components/` | ✅ Implemented | Reuse for client income dashboard + staff heatmap summary; prohibit new bespoke cards in investing templates. |
+| `PositionFetcherService` | `investing/services/position_fetcher_service.py` | ✅ Implemented | Wrap in `CapitalAllocationService` instead of duplicating fetch logic in Celery or views. |
+| `UnusualWhalesService` | `investing/services/unusual_whales_service.py` | ✅ Implemented | Introduce caching decorator + bulk fetch method; mandate all apps call through service (no direct API calls). |
+| `CommunicationLog` model | `communications/models.py` | ✅ Implemented | Log scenario digests + premium alerts here; avoid new per-app log tables. |
+| `CapitalAllocationService` (new) | `investing/services/capital_allocation_service.py` | 🚀 Planned | Shared sizing rules for Celery task, dashboard preview, and scenario projections. |
+| `audit_shared_templates` mgmt cmd | `core/management/commands/` | 🚀 Planned | Monthly run to detect duplicate templates across apps; feeds maintenance checklist. |
+
+**Action Items:**
+- Before adding UI fragments for strategy legs or preview modal, extract/extend partials in `templates/investing/shared/` to avoid duplication with `portfolio` app.
+- Document any new helpers in `docs/apps/shared/STYLE_GUIDE.md` (create if missing) after first use.
+- Enforce reuse by code review checklist (see 05_TESTING.md integration section for paths).
+
+---
+
 ## 📊 Database Schema Design
 
 ### **New Models**

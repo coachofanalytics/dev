@@ -351,6 +351,135 @@ if suggested and UnusualWhalesService().is_enabled():
 
 **Duplication Risk:** ✅ NONE (extending existing services + views)
 
+---
+
+#### **Enhancement 1.5: Capital Allocation Engine & Scheduler** (2 days)
+**Status:** 🚀 Planned — Phase 1 automation to guarantee $420/mo net income per $30K sleeve.
+
+**Existing Code to Reuse:**
+- ✅ `investing.tasks.daily_position_fetch_task`
+- ✅ `PositionFetcherService`, `SuggestedPosition`, `NotificationService`
+
+**New Code Required:**
+```
+Files to MODIFY:
+- coda/investing/services/unusual_whales_service.py (reuse flow map for sizing)
+- coda/investing/tasks.py (CALL new allocation service + staff notifications)
+
+Files to CREATE:
+- coda/investing/services/capital_allocation_service.py (NEW)
+```
+
+**Implementation Sketch:**
+```python
+# services/capital_allocation_service.py
+class CapitalAllocationService(BaseInvestingService):
+    TARGET_MONTHLY_INCOME = Decimal('420')
+    TARGET_ACCOUNT_CAPITAL = Decimal('30000')
+    MAX_POSITION_PCT = Decimal('0.10')
+
+    def recommend_allocations(self, suggestions):
+        """Return list of {suggestion, capital_required, expected_income}."""
+        # Prioritise 🟢 timing, then 🟡
+        scored = self._score_by_flow_and_ai(suggestions)
+        return self._size_positions(scored)
+
+# tasks.py
+@shared_task
+def managed_income_scheduler():
+    suggestions = PositionFetcherService().fetch_high_probability_positions(filters)
+    summary = CapitalAllocationService().recommend_allocations(suggestions)
+    NotificationService().send_internal_allocation_digest(summary)
+```
+
+**Operational Notes:**
+- Celery Beat entry `managed-income-scheduler` runs daily at 14:30 UTC (≈9:30 AM EST) via `coda/celeryapp.py`.
+- Task short-circuits gracefully when no qualifying suggestions remain.
+
+**Duplication Risk:** ✅ NONE (wrap existing fetch task, single allocation hub)
+
+---
+
+#### **Enhancement 1.6: UW Flow Caching & Reuse** (1 day)
+**Status:** 🚀 Planned — shared cache prevents duplicate API calls across fetchers, Celery tasks, and ranking pipelines.
+
+**Existing Code to Reuse:**
+- ✅ `UnusualWhalesService`
+- ✅ `django.core.cache`
+
+**Implementation Sketch:**
+```python
+from django.core.cache import cache
+
+class UnusualWhalesService:
+    CACHE_TTL = 60 * 10  # 10 minutes
+
+    def get_flow_summary_for_symbols(self, symbols, max_symbols=20):
+        cache_key = f"uw-flow:{','.join(sorted(symbols))}"
+        cached = cache.get(cache_key)
+        if cached:
+            return cached
+        results = self._fetch_flow(symbols, max_symbols)
+        cache.set(cache_key, results, self.CACHE_TTL)
+        return results
+```
+
+**Duplication Risk:** ✅ NONE (central cache used by fetch endpoints + Celery)
+
+---
+
+#### **Enhancement 2.1: Managed Income Dashboard (Client Read-Only)** (2 days)
+**Status:** 🚀 Planned — expose performance outcomes while keeping CODA as executor.
+
+**Existing Code to Reuse:**
+- ✅ `investing/views/managed_trading/client_dashboard.py`
+- ✅ `templates/investing/client/dashboard.html`
+- ✅ `SuggestedPosition.api_response_data['unusual_whales']`
+
+**Work Plan:**
+- Add serializer helpers that transform UW metadata into client-safe sentiment badges (no trade directions).
+- Extend dashboard context with `income_goal_progress`, `uw_alignment_summary`, `strategy_mix`.
+- Render new dashboard cards + sparkline using existing `stats_card` partial to avoid duplication.
+- Hook “Preview Trade” button to staff-only modal that reuses `pending_positions` partial and shows leg breakdown.
+
+**Duplication Risk:** ✅ LOW (reuse shared partials + service layer for aggregation)
+
+---
+
+#### **Enhancement 2.2: Scenario Reports & Capital Upsell** (1.5 days)
+**Status:** 🚀 Planned — automated WhatsApp + email digests to encourage higher funding.
+
+**Existing Code to Reuse:**
+- ✅ `NotificationService` (WhatsApp/Email drivers)
+- ✅ `InvestmentReport` generation utilities
+- ✅ `ManagedTradingAccount` fee configuration
+
+**Work Plan:**
+- Add `ScenarioProjectionService` that projects income at +$10K/+ $25K using CapitalAllocationService heuristics.
+- Build templated message generator (Jinja/format strings) stored in `templates/notifications/managed_income/`.
+- Expose staff UI toggle (`Send Scenario Digest`) on dashboard -> triggers Celery task to send via WhatsApp + email.
+- Log outreach events in `CommunicationLog` model extension (audit + compliance).
+
+**Duplication Risk:** ✅ NONE (extends existing notification pipelines)
+
+---
+
+#### **Enhancement 3.1: Premium Alert Tier Toggle** (1 day)
+**Status:** 🚀 Planned — allow opt-in instructions while defaulting to managed summaries.
+
+**Existing Code to Reuse:**
+- ✅ `ManagedTradingAccount` settings fields
+- ✅ `NotificationPreference` model
+- ✅ `NotificationService`
+
+**Work Plan:**
+- Add boolean `allow_direct_instructions` to account settings with audit timestamp.
+- Gate existing trade alert templates behind new permission check.
+- Update staff workflows to require explicit confirmation before sending actionable entries/exits.
+- Record each premium alert with metadata (position id, UW score, allocation size).
+
+**Duplication Risk:** ✅ NONE (small extension of current preference logic)
+
 **Phase 1 Summary:**
 - Investment: 4 days
 - New files: 1 CSS file, 1 migration

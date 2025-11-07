@@ -259,6 +259,9 @@
                                     <button class="btn btn-outline-info" type="button" onclick="toggleUwDetails('details-{{ pos.id }}')" title="View Unusual Whales details">
                                         ℹ️
                                     </button>
+                                    <button class="btn btn-outline-primary" type="button" onclick="openPreviewModal({{ pos.id }})" title="Preview Trade">
+                                        🧩
+                                    </button>
                                     <button class="btn btn-success" onclick="approvePosition({{ pos.id }})" title="Approve">
                                         ✅
                                     </button>
@@ -371,6 +374,9 @@
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-info" type="button" onclick="toggleUwDetails('details-approved-{{ pos.id }}')" title="View Unusual Whales details">
                                         ℹ️
+                                    </button>
+                                    <button class="btn btn-outline-primary" type="button" onclick="openPreviewModal({{ pos.id }})" title="Preview Trade">
+                                        🧩
                                     </button>
                                     <button class="btn btn-primary" onclick="addSinglePosition({{ pos.id }})">
                                         ➕ Add to Account
@@ -564,11 +570,201 @@
     </div>
 </div>
 
+{{ preview_payloads|json_script:"preview-payloads" }}
+
+<div class="modal fade" id="previewTradeModal" tabindex="-1" role="dialog" aria-labelledby="previewTradeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewTradeLabel">Preview Trade</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="previewTradeBody" class="small text-muted">
+                    Loading trade details...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="previewApproveBtn">✅ Approve This Trade</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- JavaScript -->
 <script>
 const heatmapTargets = ['symbolHeatmap', 'strategyHeatmap'];
 const heatmapPanel = document.getElementById('heatmapPanel');
 const heatmapToggleBtn = document.getElementById('heatmapToggleBtn');
+const previewPayloadsElement = document.getElementById('preview-payloads');
+const previewPayloads = previewPayloadsElement ? JSON.parse(previewPayloadsElement.textContent) : {};
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    return String(value).replace(/[&<>"']/g, function(match) {
+        const replacements = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return replacements[match] || match;
+    });
+}
+
+function valueOrDash(value) {
+    return value === undefined || value === null || value === '' ? '—' : value;
+}
+
+function formatNumber(value, digits = 2) {
+    if (value === null || value === undefined || value === '') {
+        return '—';
+    }
+    const num = Number(value);
+    if (Number.isNaN(num)) {
+        return String(value);
+    }
+    return num.toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+    });
+}
+
+function formatCurrency(value) {
+    if (value === null || value === undefined || value === '') {
+        return '—';
+    }
+    const num = Number(value);
+    if (Number.isNaN(num)) {
+        return String(value);
+    }
+    return `$${num.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
+}
+
+function openPreviewModal(positionId) {
+    const payload = previewPayloads[positionId];
+    if (!payload) {
+        alert('Preview data not available yet. Try fetching flow data first.');
+        return;
+    }
+
+    const titleEl = document.getElementById('previewTradeLabel');
+    const bodyEl = document.getElementById('previewTradeBody');
+    const approveBtn = document.getElementById('previewApproveBtn');
+
+    if (titleEl) {
+        titleEl.textContent = `${payload.symbol} · ${payload.strategy}`;
+    }
+
+    const flowScore = Number(payload.flow_score);
+    let flowBadge = '';
+    if (!Number.isNaN(flowScore) && payload.timing_signal) {
+        let badgeClass = 'badge-danger';
+        if (flowScore >= 75) {
+            badgeClass = 'badge-success';
+        } else if (flowScore >= 50) {
+            badgeClass = 'badge-warning';
+        }
+        flowBadge = `<span class="badge ${badgeClass} mr-2">Flow ${formatNumber(flowScore, 0)} (${escapeHtml(payload.timing_signal)})</span>`;
+    }
+
+    const sentimentBadge = payload.sentiment
+        ? `<span class="badge badge-info">Sentiment ${escapeHtml(String(payload.sentiment).toUpperCase())}</span>`
+        : '';
+
+    const legs = Array.isArray(payload.legs) ? payload.legs : [];
+    const legsRows = legs.length
+        ? legs.map((leg, index) => {
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${escapeHtml(valueOrDash(leg.direction))}</td>
+                    <td>${escapeHtml(valueOrDash(leg.type))}</td>
+                    <td>${escapeHtml(valueOrDash(leg.contracts))}</td>
+                    <td>${formatNumber(leg.strike)}</td>
+                    <td>${escapeHtml(valueOrDash(leg.expiration))}</td>
+                    <td>${formatCurrency(leg.premium)}</td>
+                    <td>${formatNumber(leg.delta, 3)}</td>
+                    <td>${formatNumber(leg.theta, 3)}</td>
+                </tr>
+            `;
+        }).join('')
+        : '<tr><td colspan="9" class="text-center text-muted">No leg data available.</td></tr>';
+
+    if (bodyEl) {
+        bodyEl.innerHTML = `
+            <div class="mb-3">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="badge badge-dark mr-2">DTE ${valueOrDash(payload.dte)}</span>
+                    <span class="badge badge-primary mr-2">AI ${formatNumber(payload.ai_score, 0)}</span>
+                    <span class="badge badge-secondary mr-2">PoP ${formatNumber(payload.probability, 1)}%</span>
+                    ${flowBadge}
+                    ${sentimentBadge}
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="mb-2">Capital &amp; Income</h6>
+                    <div class="row small text-muted">
+                        <div class="col-md-3 col-6 mb-2"><strong>Premium</strong><div>${formatCurrency(payload.premium_collected)}</div></div>
+                        <div class="col-md-3 col-6 mb-2"><strong>Capital</strong><div>${formatCurrency(payload.capital_required)}</div></div>
+                        <div class="col-md-3 col-6 mb-2"><strong>Max Profit</strong><div>${formatCurrency(payload.max_profit)}</div></div>
+                        <div class="col-md-3 col-6 mb-2"><strong>Max Loss</strong><div>${formatCurrency(payload.max_loss)}</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="mb-2">Strategy Legs</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Direction</th>
+                                    <th>Type</th>
+                                    <th>Contracts</th>
+                                    <th>Strike</th>
+                                    <th>Expiration</th>
+                                    <th>Premium</th>
+                                    <th>Δ</th>
+                                    <th>Θ</th>
+                                </tr>
+                            </thead>
+                            <tbody>${legsRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h6 class="mb-2">Notes</h6>
+                <pre class="small bg-light p-3 rounded">${escapeHtml(payload.notes || '—')}</pre>
+            </div>
+        `;
+    }
+
+    if (approveBtn) {
+        approveBtn.onclick = () => {
+            if (typeof window.jQuery !== 'undefined') {
+                window.jQuery('#previewTradeModal').modal('hide');
+            }
+            approvePosition(positionId);
+        };
+    }
+
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery('#previewTradeModal').modal('show');
+    }
+}
 
 function hydrateHeatmap(containerId) {
     const container = document.getElementById(containerId);

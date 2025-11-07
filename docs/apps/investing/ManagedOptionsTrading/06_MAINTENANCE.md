@@ -79,7 +79,24 @@ python manage.py run_risk_assessments
 
 # Database optimization
 python manage.py optimize_database
+
+# Refresh UW cache baselines (prevent stale data)
+python manage.py cache_whales_flow --symbols SPY,QQQ,IWM --refresh
+
+# Dry-run capital allocation to validate $420 target
+python manage.py run_managed_income --dry-run
 ```
+
+---
+
+## 🐋 UW Data & Allocation Maintenance (NEW)
+
+- Review `uw_cache` metrics in logs daily; investigate if hit rate <70%.
+- Ensure `UnusualWhalesService` cache TTL matches environment variable (`UW_CACHE_TTL_SECONDS`).
+- Verify capital allocation recommendations stay within 10% per position; adjust configuration if market volatility changes.
+- Capture sample of WhatsApp/email scenario digests weekly to confirm templates remain accurate.
+- Log any manual overrides of UW timing so the allocation heuristics can be tuned.
+- Run cross-app duplication audit (`python manage.py audit_shared_templates`) monthly; refactor shared partials into `shared/templates/` when flagged.
 
 ---
 
