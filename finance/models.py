@@ -1,14 +1,15 @@
 from django.db import models
 
+
 # Create your models here.
 class Food(models.Model):
     name = models.CharField(max_length=100)
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    unit_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     supplier = models.CharField(max_length=100, null=True, blank=True)
     quantity = models.IntegerField(default=0)
     date_added = models.DateField(auto_now_add=True)
-
-
 
 
 class OverBoughtSold(models.Model):
@@ -40,11 +41,7 @@ class OverBoughtSold(models.Model):
             return 0
 
     def condition_label(self):
-        mapping = {
-            1: "Overbought",
-            0: "Neutral",
-            -1: "Oversold"
-        }
+        mapping = {1: "Overbought", 0: "Neutral", -1: "Oversold"}
         return mapping.get(self.condition_integer, "Unknown")
 
     def save(self, *args, **kwargs):
@@ -54,7 +51,9 @@ class OverBoughtSold(models.Model):
     def __str__(self):
         return f"{self.symbol or 'Unknown Symbol'} - {self.condition_label()}"
 
+
 from django.db import models
+
 
 class PaymentInformation(models.Model):  # Class name corrected
     payment_fees = models.IntegerField(null=False)
