@@ -22,18 +22,24 @@ DEBUG = True
 
 SECURE_SSL_REDIRECT = False
  
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "uwayoolga@gmail.com"
-EMAIL_HOST_PASSWORD = "Horizon2!"
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = "uwayoolga@gmail.com"
+# Email settings via environment variables (no secrets in code)
+# Examples to set (PowerShell):
+#   setx EMAIL_BACKEND "django.core.mail.backends.smtp.EmailBackend"
+#   setx EMAIL_HOST "smtp.gmail.com"
+#   setx EMAIL_PORT "587"
+#   setx EMAIL_HOST_USER "your_email@example.org"
+#   setx EMAIL_HOST_PASSWORD "your_app_password"
+#   setx EMAIL_USE_TLS "True"
+#   setx DEFAULT_FROM_EMAIL "your_email@example.org"
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False") == "True"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = "uwayoolga@gmail.com"
-# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # App password
 # EMAIL_USE_TLS = True
 # DEFAULT_FROM_EMAIL = "uwayoolga@gmail.com"
 ALLOWED_HOSTS = ["*"]
