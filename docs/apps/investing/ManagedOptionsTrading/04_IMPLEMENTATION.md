@@ -702,6 +702,29 @@ def managed_trading_dashboard(request):
 
 ### **Phase 3: Advanced Features** [PLANNED - 20 days]
 
+#### **Enhancement 3.0: Managed Outcomes Dashboard (Client-Facing)** (5 days)
+
+**Goal:** Deliver a read-only dashboard that keeps managed clients informed (income progress, UW timing history, scenario planning) without exposing execution instructions.
+
+**Key Widgets**
+- **Income Coverage Gauge:** Visual against $420/month target, with MTD/YTD payout history pulled from `PositionBatch` + `OptionsPosition` P&L.
+- **UW Timing History:** Lightweight timeline table (symbol, flow score, sentiment, entry window) sourced from existing `api_response_data['unusual_whales']` payloads.
+- **Scenario Explorer:** Allow clients to adjust sleeve size sliders (e.g., +$5K, +$10K) and show projected income using `CapitalAllocationService` rates.
+
+**Reuse Strategy**
+- ✅ Reuse `ManagedTradingAccount` metrics, `CapitalAllocationService`, and `TradingActivity` for historical events.
+- ✅ Extend existing client portal view (`investing/views/managed_trading/client.py`) and template with new context blocks.
+- ✅ Introduce helper in `investing/utils.py` to aggregate income statistics (avoids duplicating reporting logic).
+- 🔁 Optional: expose JSON endpoint for scenario explorer so the dashboard can poll without regeneration.
+
+**Work Plan**
+1. **Service helper:** `ManagedTradingService.get_income_summary(account)` returning coverage %, expected monthly income, realized payouts.
+2. **Client view update:** Add `income_summary`, `uw_history` (limited to last 10 positions), and `scenario_defaults`.
+3. **Template:** Build responsive cards (income gauge, UW timeline, scenario slider). Ensure “managed role” copy explains CODA executes trades.
+4. **Security:** Retain `login_required` + account ownership checks; no action buttons rendered.
+
+**Duplication Risk:** ✅ NONE (extends existing client portal stack).
+
 #### **Enhancement 3.1: WebSocket Real-Time Dashboard** (5 days)
 
 **Existing Code to Reuse:**

@@ -115,6 +115,10 @@ class OptionsPositionTestCase(TestCase):
   - Validates client sees income vs $420 target but no execution instructions.
 - 🚧 `tests/apps/investing/02_integration/test_account_limit_controls.py`
   - New scaffolding for risk guardrail UI; currently skipped with `@skipIf` until legacy migrations are restored.
+- 🚀 `tests/apps/investing/02_integration/test_client_managed_dashboard.py`
+  - Planned coverage for Phase 3 dashboard: ensures income gauge matches service totals, UW history limited to permitted fields, and scenario projections stay read-only.
+- 🚀 `tests/apps/investing/01_unit/test_income_summary_helper.py`
+  - Planned unit tests for upcoming income aggregation helper (validates coverage %, monthly totals, zero-division handling).
 
 ### **Test File: `tests/test_managed_trading_service.py`**
 

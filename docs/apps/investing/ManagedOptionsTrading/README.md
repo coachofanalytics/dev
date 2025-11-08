@@ -27,6 +27,12 @@
 - ✉️ **Digest Targeting:** Allocation digest now emails only superusers and members of the configured `MANAGED_INCOME_DIGEST_GROUP`.
 - 🧪 **Coverage:** Added unit tests for recipient filtering (`tests/apps/investing/01_unit/test_notification_service.py`) and integration scaffolding for risk UI (skips until legacy migrations restored).
 
+### **🚀 Coming Up: Phase 3 Managed Outcomes Dashboard**
+- 🎯 **Client Metrics:** Show monthly income vs $420 target plus historical payouts.
+- 🐋 **UW Timeline:** Lightweight history of timing signals (symbol, flow score, entry window).
+- 📈 **Scenario Explorer:** Simple sliders to project income as clients allocate more capital.
+- 🔒 **Managed Role:** Dashboard remains read-only—CODA executes trades behind the scenes.
+
 ## 🚀 **WHAT'S NEW (November 7, 2025)**
 
 ### **✅ Phase 1 Quick Wins (Code Implemented)**
