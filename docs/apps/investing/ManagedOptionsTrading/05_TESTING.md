@@ -35,6 +35,8 @@
   - Ensures position sizing caps at 10% of sleeve, enforces $420 target, considers debit spread fallback.
 - ✅ `tests/apps/investing/01_unit/test_notification_service.py`
   - Confirms allocation digest recipients are limited to superusers + configured group, and emails skip when recipient list is empty.
+- ✅ `tests/apps/investing/01_unit/test_services.py`
+  - Validates `ManagedTradingService.get_income_summary()` coverage %, target gaps, and Unusual Whales timeline metadata powering the Phase 3 dashboard.
 - 🚀 `tests/apps/investing/01_unit/test_notification_templates.py`
   - Guards WhatsApp/email scenario digests for placeholder variables.
 
@@ -115,10 +117,10 @@ class OptionsPositionTestCase(TestCase):
   - Validates client sees income vs $420 target but no execution instructions.
 - 🚧 `tests/apps/investing/02_integration/test_account_limit_controls.py`
   - New scaffolding for risk guardrail UI; currently skipped with `@skipIf` until legacy migrations are restored.
+- ✅ `tests/apps/investing/02_integration/test_views.py::ManagedAccountPhase3ViewTest`
+  - Exercises Phase 3 dashboard copy, scenario slider JSON defaults, and verifies the page remains read-only for managed clients.
 - 🚀 `tests/apps/investing/02_integration/test_client_managed_dashboard.py`
-  - Planned coverage for Phase 3 dashboard: ensures income gauge matches service totals, UW history limited to permitted fields, and scenario projections stay read-only.
-- 🚀 `tests/apps/investing/01_unit/test_income_summary_helper.py`
-  - Planned unit tests for upcoming income aggregation helper (validates coverage %, monthly totals, zero-division handling).
+  - Legacy scaffold kept for future E2E flow; high-level assertions now live in `test_views.py`.
 
 ### **Test File: `tests/test_managed_trading_service.py`**
 

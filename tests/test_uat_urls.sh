@@ -4,7 +4,17 @@ echo "║        TESTING UAT ENDPOINTS (v834)                       ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
-BASE_URL="https://codamakutano.herokuapp.com"
+DEFAULT_BASE_URL="https://codamakutano.herokuapp.com"
+
+if [ -n "${1:-}" ]; then
+    BASE_URL="$1"
+elif [ -n "${BASE_URL:-}" ]; then
+    BASE_URL="$BASE_URL"
+else
+    BASE_URL="$DEFAULT_BASE_URL"
+fi
+
+echo "Target base URL: $BASE_URL"
 
 # Function to test URL
 test_url() {

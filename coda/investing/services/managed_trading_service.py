@@ -728,6 +728,14 @@ class ManagedTradingService(BaseInvestingService):
         if target_income > 0:
             coverage_pct = (projected_income / target_income) * Decimal('100')
 
+        coverage_pct_clamped = coverage_pct
+        if coverage_pct_clamped > Decimal('100'):
+            coverage_pct_clamped = Decimal('100')
+        elif coverage_pct_clamped < Decimal('0'):
+            coverage_pct_clamped = Decimal('0')
+
+        target_gap = target_income - projected_income if target_income > projected_income else Decimal('0')
+
         history = []
         for offset in range(months):
             month_start = start_of_month - relativedelta(months=offset)
@@ -767,9 +775,13 @@ class ManagedTradingService(BaseInvestingService):
             'expected_premium_mtd': premium_this_month,
             'projected_income': projected_income,
             'coverage_pct': coverage_pct,
+            'coverage_pct_clamped': coverage_pct_clamped,
+            'target_gap': target_gap,
             'history': history,
             'income_per_dollar': income_per_dollar,
             'base_capital': base_capital,
+            'baseline_income': projected_income,
+            'baseline_coverage_pct': coverage_pct,
         }
 
     def get_whales_timeline(self, account: ManagedTradingAccount, limit: int = 6) -> List[Dict]:

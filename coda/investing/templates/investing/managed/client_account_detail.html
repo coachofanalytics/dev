@@ -2,44 +2,48 @@
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 <div class="container-fluid py-4">
-    <h2>{{ account.account_number }} - Account Details</h2>
+    <h2 class="mb-3">{{ account.account_number }} - Account Details</h2>
+    <p class="text-muted mb-4">
+        This portal keeps you informed while CODA executes every trade and adjustment on your behalf.
+        Reach out to your account manager if you’d like to discuss allocation changes.
+    </p>
     
-    <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card bg-primary text-white">
+    <div class="row g-3 mb-4 row-cols-1 row-cols-sm-2 row-cols-lg-4">
+        <div class="col">
+            <div class="card shadow-sm h-100 border-0 text-white bg-primary">
                 <div class="card-body">
-                    <h6>Total Capital</h6>
-                    <h3>${{ account.initial_capital|floatformat:0 }}</h3>
+                    <h6 class="text-uppercase fw-semibold small">Total Capital</h6>
+                    <h3 class="mb-0">${{ account.initial_capital|floatformat:0 }}</h3>
                     <small>Initial deposit</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card bg-danger text-white">
+        <div class="col">
+            <div class="card shadow-sm h-100 border-0 text-white bg-danger">
                 <div class="card-body">
-                    <h6>Deployed</h6>
-                    <h3>${{ account.cash_reserved|floatformat:0 }}</h3>
+                    <h6 class="text-uppercase fw-semibold small">Deployed</h6>
+                    <h3 class="mb-0">${{ account.cash_reserved|floatformat:0 }}</h3>
                     <small>Capital in use</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card bg-success text-white">
+        <div class="col">
+            <div class="card shadow-sm h-100 border-0 text-white bg-success">
                 <div class="card-body">
-                    <h6>Available</h6>
-                    <h3>${{ account.cash_available|floatformat:0 }}</h3>
+                    <h6 class="text-uppercase fw-semibold small">Available</h6>
+                    <h3 class="mb-0">${{ account.cash_available|floatformat:0 }}</h3>
                     <small>Ready to deploy</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card bg-info text-white">
+        <div class="col">
+            <div class="card shadow-sm h-100 border-0 text-white bg-info">
                 <div class="card-body">
-                    <h6>P&L</h6>
-                    <h3 class="{% if summary.summary.total_profit_loss >= 0 %}text-white{% else %}text-warning{% endif %}">
+                    <h6 class="text-uppercase fw-semibold small">P&L</h6>
+                    <h3 class="mb-0 {% if summary.summary.total_profit_loss < 0 %}text-warning{% endif %}">
                         ${{ summary.summary.total_profit_loss|floatformat:2 }}
                     </h3>
-                    <small>Total profit/loss</small>
+                    <small>Total profit / loss</small>
                 </div>
             </div>
         </div>
@@ -63,12 +67,19 @@
                     <div class="progress mb-3" style="height: 12px;">
                         <div class="progress-bar"
                              role="progressbar"
-                             style="width: {{ income_summary.coverage_pct|floatformat:0 }}%;"
+                             style="width: {{ income_summary.coverage_pct_clamped|floatformat:0 }}%;"
                              aria-valuenow="{{ income_summary.coverage_pct|floatformat:0 }}"
                              aria-valuemin="0"
                              aria-valuemax="100">
                         </div>
                     </div>
+                    <p class="text-muted small mb-3">
+                        {% if income_summary.target_gap > 0 %}
+                            Need <strong>${{ income_summary.target_gap|floatformat:2 }}</strong> more premium/realized income to hit this month's target.
+                        {% else %}
+                            🎯 Target met — additional premium builds next month’s buffer.
+                        {% endif %}
+                    </p>
                     <div class="row text-muted small">
                         <div class="col-6">
                             <strong>Realized MTD</strong>
@@ -81,26 +92,28 @@
                     </div>
                     <hr>
                     <h6 class="text-muted mb-2">Trailing Performance</h6>
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Period</th>
-                                <th class="text-end">Realized</th>
-                                <th class="text-end">Premium</th>
-                                <th class="text-end">Net</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in income_summary.history %}
-                            <tr>
-                                <td>{{ item.period }}</td>
-                                <td class="text-end">${{ item.realized_income|floatformat:2 }}</td>
-                                <td class="text-end">${{ item.premium_collected|floatformat:2 }}</td>
-                                <td class="text-end">${{ item.net_income|floatformat:2 }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th class="text-end">Realized</th>
+                                    <th class="text-end">Premium</th>
+                                    <th class="text-end">Net</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in income_summary.history %}
+                                <tr>
+                                    <td>{{ item.period }}</td>
+                                    <td class="text-end">${{ item.realized_income|floatformat:2 }}</td>
+                                    <td class="text-end">${{ item.premium_collected|floatformat:2 }}</td>
+                                    <td class="text-end">${{ item.net_income|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,8 +177,8 @@
             <small class="text-muted">CODA-managed execution — adjust target sleeve to view projections</small>
         </div>
         <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-12 col-xl-8">
                     <label for="scenarioSlider" class="form-label">
                         Proposed managed capital: <strong>$<span id="scenarioCapitalDisplay"></span></strong>
                     </label>
@@ -175,21 +188,38 @@
                            min="{{ scenario_defaults.min_capital|floatformat:0 }}"
                            max="{{ scenario_defaults.max_capital|floatformat:0 }}"
                            step="{{ scenario_defaults.step|floatformat:0 }}"
-                           value="{{ scenario_defaults.current_capital|floatformat:0 }}">
-                    <div class="d-flex justify-content-between text-muted small">
+                           value="{{ scenario_defaults.current_capital|floatformat:0 }}"
+                           aria-valuemin="{{ scenario_defaults.min_capital|floatformat:0 }}"
+                           aria-valuemax="{{ scenario_defaults.max_capital|floatformat:0 }}"
+                           aria-valuenow="{{ scenario_defaults.current_capital|floatformat:0 }}"
+                           {% if scenario_defaults.slider_disabled %}disabled{% endif %}>
+                    <div class="d-flex justify-content-between text-muted small mt-2">
                         <span>${{ scenario_defaults.min_capital|floatformat:0 }}</span>
                         <span>${{ scenario_defaults.max_capital|floatformat:0 }}</span>
                     </div>
+                    <p class="text-muted small mt-3 mb-1">
+                        Current managed sleeve: <strong>${{ scenario_defaults.current_capital|floatformat:0 }}</strong>
+                    </p>
+                    {% if scenario_defaults.slider_disabled %}
+                    <p class="text-muted small mb-0">
+                        Scenario range is fixed right now. Add capital to explore expanded projections.
+                    </p>
+                    {% endif %}
                 </div>
-                <div class="col-lg-4">
-                    <div class="border rounded p-3 bg-light">
-                        <div class="mb-2">
-                            <strong>Projected Monthly Income</strong>
-                            <div id="scenarioIncome" class="display-6 mb-0">$0.00</div>
-                        </div>
+                <div class="col-12 col-xl-4">
+                    <div class="border rounded p-3 bg-light h-100 d-flex flex-column justify-content-between">
                         <div>
-                            <small class="text-muted">Target coverage</small><br>
-                            <span id="scenarioCoverage" class="badge bg-primary">0%</span>
+                            <strong class="text-uppercase small">Projected Monthly Income</strong>
+                            <div id="scenarioIncome" class="display-6 mb-1">$0.00</div>
+                            <small id="scenarioDelta" class="text-muted">vs. current: $0.00</small>
+                        </div>
+                        <div class="mt-3">
+                            <strong class="text-uppercase small d-block">Target Coverage</strong>
+                            <div class="d-flex align-items-center gap-2">
+                                <span id="scenarioCoverage" class="badge bg-primary">0%</span>
+                                <small id="scenarioCoverageDelta" class="text-muted">+0 pts</small>
+                            </div>
+                            <small id="scenarioGap" class="d-block text-muted mt-2"></small>
                         </div>
                     </div>
                 </div>
@@ -207,30 +237,38 @@
             <h5>Open Positions</h5>
         </div>
         <div class="card-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Symbol</th>
-                        <th>Strategy</th>
-                        <th>Entry</th>
-                        <th>Expiration</th>
-                        <th>P&L</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for position in open_positions %}
-                    <tr>
-                        <td>{{ position.symbol }}</td>
-                        <td>{{ position.get_strategy_display }}</td>
-                        <td>{{ position.entry_date|date:"M d, Y" }}</td>
-                        <td>{{ position.expiration_date|date:"M d, Y" }}</td>
-                        <td class="{% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
-                            ${{ position.unrealized_pnl|floatformat:2 }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Strategy</th>
+                            <th>Entry</th>
+                            <th>Expiration</th>
+                            <th class="text-end">P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for position in open_positions %}
+                        <tr>
+                            <td>{{ position.symbol }}</td>
+                            <td>{{ position.get_strategy_display }}</td>
+                            <td>{{ position.entry_date|date:"M d, Y" }}</td>
+                            <td>{{ position.expiration_date|date:"M d, Y" }}</td>
+                            <td class="text-end {% if position.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ${{ position.unrealized_pnl|floatformat:2 }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-muted text-center py-4">
+                                No open positions at the moment. New allocations will appear here automatically.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -250,17 +288,34 @@
     const incomeEl = document.getElementById('scenarioIncome');
     const coverageEl = document.getElementById('scenarioCoverage');
     const capitalDisplayEl = document.getElementById('scenarioCapitalDisplay');
+    const deltaEl = document.getElementById('scenarioDelta');
+    const coverageDeltaEl = document.getElementById('scenarioCoverageDelta');
+    const gapEl = document.getElementById('scenarioGap');
 
     function formatCurrency(value) {
         return '$' + Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    function formatSignedCurrency(value) {
+        const formatted = formatCurrency(Math.abs(value));
+        if (!value) {
+            return formatted;
+        }
+        return `${value >= 0 ? '+' : '-'}${formatted}`;
+    }
+
     function updateScenario(capitalValue) {
         const capital = Number(capitalValue);
         const projectedIncome = capital * Number(scenario.income_per_dollar || 0);
-        const coverage = scenario.target_income > 0 ? (projectedIncome / scenario.target_income) * 100 : 0;
+        const targetIncome = Number(scenario.target_income || 0);
+        const baselineIncome = Number(scenario.baseline_income || 0);
+        const baselineCoverage = Number(scenario.baseline_coverage_pct || 0);
+        const coverage = targetIncome > 0 ? (projectedIncome / targetIncome) * 100 : 0;
+        const incomeDelta = projectedIncome - baselineIncome;
+        const coverageDelta = coverage - baselineCoverage;
+        const remainingGap = Math.max(targetIncome - projectedIncome, 0);
 
-        capitalDisplayEl.textContent = Number(capital).toLocaleString();
+        capitalDisplayEl.textContent = Number(capital).toLocaleString(undefined, { maximumFractionDigits: 0 });
         incomeEl.textContent = formatCurrency(projectedIncome);
         coverageEl.textContent = `${coverage.toFixed(0)}%`;
         coverageEl.className = 'badge ' + (
@@ -268,9 +323,25 @@
             coverage >= 75 ? 'bg-info text-dark' :
             'bg-warning text-dark'
         );
+        if (deltaEl) {
+            deltaEl.textContent = `vs. current: ${formatSignedCurrency(incomeDelta)}`;
+        }
+        if (coverageDeltaEl) {
+            const deltaLabel = coverageDelta >= 0 ? `+${coverageDelta.toFixed(0)} pts` : `${coverageDelta.toFixed(0)} pts`;
+            coverageDeltaEl.textContent = deltaLabel;
+        }
+        if (gapEl) {
+            gapEl.textContent = remainingGap > 0
+                ? `Need ${formatCurrency(remainingGap)} to fully reach the monthly target.`
+                : 'This sleeve size fully covers the monthly target.';
+        }
     }
 
     if (slider && incomeEl && coverageEl && capitalDisplayEl) {
+        const sliderDisabled = Boolean(scenario.slider_disabled);
+        if (sliderDisabled) {
+            slider.classList.add('opacity-75');
+        }
         slider.addEventListener('input', (event) => updateScenario(event.target.value));
         updateScenario(slider.value);
     }

@@ -2717,6 +2717,7 @@ See [07_DEPLOYMENT.md](07_DEPLOYMENT.md) for Phase 10 deployment strategy.
 
 | Date | Change | Reason | Files Modified | Status |
 |------|--------|--------|----------------|--------|
+| Nov 8, 2025 | **Phase 3 Dashboard Polish** - Responsive client portal, scenario deltas, UW timeline copy | Improve managed client insights without exposing execution actions | `views/managed_trading/client.py`, `templates/investing/managed/client_account_detail.html`, `services/managed_trading_service.py`, `tests/investing/01_unit/test_services.py`, `tests/investing/02_integration/test_views.py` | ✅ Complete |
 | Nov 5, 2025 | **Legacy Model Cleanup** - Removed 9 models (ShortPut, covered_calls, Portfolio, credit_spread, OverBoughtSold, Options_Returns, Cost_Basis, SavedResponses, FeeTierConfiguration duplicate) | Models used CharField for numeric values, superseded by OptionsPosition system | `models.py`, `admin.py`, `forms.py`, `views_legacy.py` | ✅ Complete |
 | Nov 5, 2025 | **Created constants.py** - Centralized STRATEGY_CHOICES (19 strategies), SOURCE_CHOICES, STATUS_CHOICES | Single source of truth for constants across models | `investing/constants.py` (new file) | ✅ Complete |
 | Nov 5, 2025 | **Bug Fix: IV Rank Filter** - Fixed format mismatch (compared 0.26 to 16 instead of 0.16) | All positions incorrectly filtered, 0 results | `views/managed_trading/csv_upload.py` line 421 | ✅ Fixed |

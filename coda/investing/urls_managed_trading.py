@@ -105,6 +105,14 @@ urlpatterns = [
     # ========================================================================
     # CLIENT PORTAL (Client Access)
     # ========================================================================
+    # Legacy aliases (client/)
+    path('managed/client/', 
+         client.client_portal,
+         name='client_portal_legacy'),
+    path('managed/client/<int:account_id>/', 
+         client.client_account_detail,
+         name='client_account_detail_legacy'),
+    
     path('managed/portal/', 
          client.client_portal, 
          name='client_portal'),

@@ -104,14 +104,25 @@ def client_account_detail(request, account_id):
     whales_timeline = summary['whales_timeline']
 
     base_capital = income_summary.get('base_capital') or Decimal('0')
+    scenario_step = service.SCENARIO_STEP
+    min_capital = base_capital - scenario_step
+    if min_capital < Decimal('0'):
+        min_capital = Decimal('0')
+    max_capital = base_capital * service.SCENARIO_MAX_MULTIPLIER
+    if max_capital <= base_capital:
+        max_capital = base_capital + scenario_step
     scenario_defaults = {
         'current_capital': float(base_capital),
-        'min_capital': float(base_capital),
-        'max_capital': float(base_capital * service.SCENARIO_MAX_MULTIPLIER) if base_capital > 0 else float(service.SCENARIO_STEP),
-        'step': float(service.SCENARIO_STEP),
+        'min_capital': float(min_capital),
+        'max_capital': float(max_capital),
+        'step': float(scenario_step),
         'income_per_dollar': float(income_summary.get('income_per_dollar') or Decimal('0')),
         'target_income': float(income_summary.get('target') or Decimal('0')),
+        'baseline_income': float(income_summary.get('baseline_income') or Decimal('0')),
+        'baseline_coverage_pct': float(income_summary.get('baseline_coverage_pct') or Decimal('0')),
+        'target_gap': float(income_summary.get('target_gap') or Decimal('0')),
     }
+    scenario_defaults['slider_disabled'] = scenario_defaults['min_capital'] == scenario_defaults['max_capital']
 
     context = {
         'account': account,

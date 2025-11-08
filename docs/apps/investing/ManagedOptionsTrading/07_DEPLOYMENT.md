@@ -93,6 +93,32 @@ heroku run "cd coda && python manage.py collectstatic --noinput" --app codamakut
 
 ---
 
+## ⚙️ Heroku-24 Stack Migration Prep (November 8, 2025)
+
+### Staging Clone (`codamakutano-24`)
+- ✅ Scripted end-to-end clone via `scripts/production/create_heroku24_clone.sh` (provisions Heroku-24 app, copies config/add-ons, deploys `25.11_CODA_UAT_CM`).
+- ✅ Smoke test coverage reused via `tests/test_uat_urls.sh` with `BASE_URL` override.
+- 🔄 To Do: Execute script, record results, and capture manual UI validation notes.
+
+### Production Swap Plan
+1. Pass smoke/manual checks on `codamakutano-24`.
+2. Schedule maintenance window + backups.
+3. Run stack swap sequence:
+   ```bash
+   heroku stack:set heroku-24 --app codamakutano
+   git push production 25.11_CODA_PROD_CM:main --force
+   heroku run "cd coda && python manage.py migrate" --app codamakutano
+   heroku run "cd coda && python manage.py collectstatic --noinput" --app codamakutano
+   ```
+4. Validate dashboards (staff + client) and Celery workers; keep `codamakutano-24` live for rollback safety.
+
+### Change Log
+| Date | Change | Notes |
+|------|--------|-------|
+| Nov 8, 2025 | Added Heroku-24 migration prep section | Stack upgrade pathway documented; scripts ready |
+
+---
+
 ## 🔄 Rollback Plan
 
 If critical issues found:

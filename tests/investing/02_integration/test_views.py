@@ -8,12 +8,16 @@ Created: November 6, 2025
 Category: Integration Tests
 """
 
+from datetime import timedelta
+
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from decimal import Decimal
+from django.utils import timezone
 
 from investing.models import ManagedTradingAccount, OptionsPosition
+from investing.services.managed_trading_service import ManagedTradingService
 from accounts.choices import UserCategory
 
 User = get_user_model()
@@ -295,6 +299,95 @@ class OptionListViewTest(TestCase):
             if response.status_code == 200:
                 self.assertIn('title', response.context)
                 self.assertIn('subtitle', response.context)
+
+
+class ManagedAccountPhase3ViewTest(TestCase):
+    """Ensure managed client dashboard surfaces Phase 3 widgets and context."""
+
+    def setUp(self):
+        self.client = Client()
+        self.service = ManagedTradingService()
+        self.client_user = User.objects.create_user(
+            username='phase3_client',
+            email='phase3_client@test.com',
+            password='password123',
+            category=UserCategory.INVESTOR,
+            is_active=True,
+        )
+        self.account = self.service.create_managed_account(
+            client_user=self.client_user,
+            account_data={
+                'account_name': 'Phase 3 Sleeve',
+                'initial_capital': Decimal('25000.00'),
+                'fee_tier': 'professional',
+            },
+        )
+        self.now = timezone.now()
+        self._seed_positions()
+
+    def _seed_positions(self):
+        month_start = self.now.date().replace(day=1)
+
+        closed = OptionsPosition.objects.create(
+            managed_account=self.account,
+            symbol='QQQ',
+            strategy='short_put',
+            positions=[{'type': 'put', 'strike': 370, 'contracts': 1}],
+            capital_required=Decimal('2500.00'),
+            premium_collected=Decimal('0.00'),
+            max_profit=Decimal('250.00'),
+            max_loss=Decimal('2500.00'),
+            expiration_date=month_start + timedelta(days=25),
+            status='closed',
+        )
+        OptionsPosition.objects.filter(pk=closed.pk).update(
+            entry_date=month_start - timedelta(days=9),
+            exit_date=month_start + timedelta(days=6),
+            realized_pnl=Decimal('160.00'),
+        )
+
+        open_position = OptionsPosition.objects.create(
+            managed_account=self.account,
+            symbol='NVDA',
+            strategy='short_put',
+            positions=[{'type': 'put', 'strike': 400, 'contracts': 1}],
+            capital_required=Decimal('3000.00'),
+            premium_collected=Decimal('220.00'),
+            max_profit=Decimal('220.00'),
+            max_loss=Decimal('3000.00'),
+            expiration_date=month_start + timedelta(days=40),
+            status='open',
+            api_response_data={
+                'unusual_whales': {
+                    'flow_score': 90,
+                    'sentiment': 'bullish',
+                    'timing_signal': 'Institutional sweep',
+                    'entry_window': '1-3 days',
+                }
+            },
+        )
+        OptionsPosition.objects.filter(pk=open_position.pk).update(
+            entry_date=month_start + timedelta(days=3)
+        )
+
+    def test_client_dashboard_renders_phase3_widgets(self):
+        self.client.login(username='phase3_client', password='password123')
+        response = self.client.get(reverse('investing:client_account_detail', args=[self.account.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This portal keeps you informed')
+        self.assertContains(response, 'Scenario Explorer')
+        self.assertContains(response, 'Need')
+
+        scenario_defaults = response.context['scenario_defaults']
+        self.assertIn('baseline_income', scenario_defaults)
+        self.assertIn('target_income', scenario_defaults)
+        self.assertIn('slider_disabled', scenario_defaults)
+        self.assertFalse(scenario_defaults['slider_disabled'])
+
+        income_summary = response.context['income_summary']
+        self.assertIn('target_gap', income_summary)
+        self.assertGreaterEqual(income_summary['coverage_pct'], Decimal('0'))
 
 
 class ManagedAccountDetailViewTest(TestCase):
