@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.utils import timezone
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import json
 import logging
 
@@ -23,7 +23,14 @@ try:  # Kombu may not distinguish from Celery on all installs
 except Exception:  # pragma: no cover - kombu always present with Celery, but fail safe
     KombuOperationalError = CeleryOperationalError
 
-from ...models import SuggestedPosition, OptionsPosition, PositionBatch, ManagedTradingAccount
+from ...models import (
+    SuggestedPosition,
+    OptionsPosition,
+    PositionBatch,
+    ManagedTradingAccount,
+    TradingRule,
+    TradingActivity,
+)
 from ...services import PositionFetcherService, BatchApprovalService, ManagedTradingService
 from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.position_ranking_service import PositionRankingService
@@ -171,7 +178,63 @@ def suggested_positions_list(request):
     active_accounts = ManagedTradingAccount.objects.filter(
         status='active',
         trading_enabled=True
-    ).order_by('account_number')
+    ).prefetch_related('trading_rules', 'client').order_by('account_number')
+
+    account_limits = {}
+    for account in active_accounts:
+        max_percentage = None
+        max_absolute = None
+
+        for rule in account.trading_rules.all():
+            if not rule.is_active:
+                continue
+
+            config = rule.rule_config or {}
+            if rule.rule_type == 'position_size_percentage':
+                raw_pct = (
+                    config.get('max_percentage_per_position')
+                    or config.get('max_percentage')
+                )
+                if raw_pct is not None:
+                    try:
+                        max_percentage = Decimal(str(raw_pct))
+                    except Exception:
+                        logger.warning(
+                            "Invalid max_percentage_per_position for account %s: %s",
+                            account.account_number,
+                            raw_pct,
+                        )
+            elif rule.rule_type == 'position_limit':
+                raw_abs = config.get('max_position_size')
+                if raw_abs is not None:
+                    try:
+                        max_absolute = Decimal(str(raw_abs))
+                    except Exception:
+                        logger.warning(
+                            "Invalid max_position_size for account %s: %s",
+                            account.account_number,
+                            raw_abs,
+                        )
+
+        reference_capital = account.initial_capital or Decimal('0')
+        max_dollar_from_pct = None
+        if max_percentage is not None and reference_capital > 0:
+            max_dollar_from_pct = (reference_capital * max_percentage) / Decimal('100')
+
+        # Prefer explicit absolute rule over derived value
+        effective_max_dollar = max_absolute or max_dollar_from_pct
+
+        account_limits[str(account.id)] = {
+            'account_number': account.account_number,
+            'account_name': account.account_name,
+            'client_name': account.client.get_full_name() if account.client else '',
+            'reference_capital': float(reference_capital),
+            'cash_available': float(account.cash_available or Decimal('0')),
+            'max_percentage': float(max_percentage) if max_percentage is not None else None,
+            'max_absolute': float(max_absolute) if max_absolute is not None else None,
+            'derived_max_dollar': float(max_dollar_from_pct) if max_dollar_from_pct is not None else None,
+            'effective_max_dollar': float(effective_max_dollar) if effective_max_dollar is not None else None,
+        }
     
     preview_payloads = build_preview_payloads(pending, approved)
 
@@ -190,6 +253,8 @@ def suggested_positions_list(request):
         'heatmap_strategies': heatmap_strategies,
         'heatmap_summary': heatmap_summary,
         'preview_payloads': preview_payloads,
+        'account_limits': account_limits,
+        'can_adjust_limits': request.user.is_superuser,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 
@@ -490,6 +555,101 @@ def create_batch_from_suggestions(request):
         logger.error(f"Batch creation error: {e}", exc_info=True)
         messages.error(request, f"❌ Error creating batch: {str(e)}")
     
+    return redirect('investing:suggested_positions_list')
+
+
+@staff_member_required
+@require_POST
+def update_account_position_limit(request):
+    """
+    Superuser endpoint to adjust per-position capital limits for managed accounts.
+    """
+    if not request.user.is_superuser:
+        messages.error(request, "❌ Only superusers can modify account risk limits.")
+        return redirect('investing:suggested_positions_list')
+
+    account_id = request.POST.get('account_id')
+    if not account_id:
+        messages.error(request, "❌ Missing account selection.")
+        return redirect('investing:suggested_positions_list')
+
+    account = get_object_or_404(ManagedTradingAccount, id=account_id)
+
+    def _parse_decimal(value, field_name):
+        if value is None or str(value).strip() == '':
+            return None
+        try:
+            return Decimal(str(value))
+        except (InvalidOperation, ValueError):
+            messages.error(request, f"❌ Invalid number for {field_name}.")
+            return None
+
+    max_percentage = _parse_decimal(request.POST.get('max_percentage'), "max % per position")
+    max_absolute = _parse_decimal(request.POST.get('max_absolute'), "max dollar per position")
+
+    if max_percentage is None or max_percentage <= 0:
+        messages.error(request, "❌ Max % per position must be greater than 0.")
+        return redirect('investing:suggested_positions_list')
+
+    if max_percentage > Decimal('100'):
+        messages.error(request, "❌ Max % per position cannot exceed 100%.")
+        return redirect('investing:suggested_positions_list')
+
+    if max_absolute is None or max_absolute <= 0:
+        reference_capital = account.initial_capital or Decimal('0')
+        max_absolute = (reference_capital * max_percentage) / Decimal('100') if reference_capital else None
+
+    if max_absolute is None or max_absolute <= 0:
+        messages.error(request, "❌ Unable to derive a valid dollar cap. Please enter one manually.")
+        return redirect('investing:suggested_positions_list')
+
+    percentage_rule, _ = TradingRule.objects.get_or_create(
+        managed_account=account,
+        rule_type='position_size_percentage',
+        defaults={
+            'rule_name': 'Per-position capital cap',
+            'rule_config': {},
+            'priority': 5,
+        }
+    )
+    percentage_rule.rule_config = {
+        **(percentage_rule.rule_config or {}),
+        'max_percentage_per_position': str(max_percentage),
+    }
+    percentage_rule.is_active = True
+    percentage_rule.save(update_fields=['rule_config', 'is_active', 'updated_at'])
+
+    absolute_rule, _ = TradingRule.objects.get_or_create(
+        managed_account=account,
+        rule_type='position_limit',
+        defaults={
+            'rule_name': 'Absolute position size cap',
+            'rule_config': {},
+            'priority': 6,
+        }
+    )
+    absolute_rule.rule_config = {
+        **(absolute_rule.rule_config or {}),
+        'max_position_size': str(max_absolute),
+    }
+    absolute_rule.is_active = True
+    absolute_rule.save(update_fields=['rule_config', 'is_active', 'updated_at'])
+
+    TradingActivity.objects.create(
+        managed_account=account,
+        activity_type='rule_changed',
+        description=f"Updated per-position cap to {max_percentage}% (${max_absolute:,.2f}).",
+        performed_by=request.user,
+        data_snapshot={
+            'max_percentage_per_position': str(max_percentage),
+            'max_position_size': str(max_absolute),
+        }
+    )
+
+    messages.success(
+        request,
+        f"✅ Updated {account.account_number} limit to {max_percentage}% (${max_absolute:,.2f})."
+    )
     return redirect('investing:suggested_positions_list')
 
 

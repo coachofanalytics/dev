@@ -197,6 +197,9 @@ urlpatterns = [
     path('managed/staff/suggestions/create-batch/', 
          position_suggestions.create_batch_from_suggestions, 
          name='create_batch_from_suggestions'),
+    path('managed/staff/suggestions/update-account-limit/',
+         position_suggestions.update_account_position_limit,
+         name='update_account_position_limit'),
     
     # AJAX endpoints for quick actions
     path('managed/api/suggestions/<int:suggestion_id>/approve/', 

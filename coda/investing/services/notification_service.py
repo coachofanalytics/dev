@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -296,7 +297,9 @@ CODA Investment Team
         base_qs = User.objects.filter(
             is_active=True,
             email__isnull=False,
-        ).exclude(email='')
+        ).exclude(email='').filter(
+            Q(is_superuser=True) | Q(is_staff=True)
+        )
 
         emails = set(
             base_qs.filter(is_superuser=True).values_list('email', flat=True)

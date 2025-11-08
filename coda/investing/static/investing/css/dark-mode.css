@@ -1,0 +1,12 @@
+/* Placeholder dark mode stylesheet to avoid 404s in production.
+   Extend with real overrides when dark mode design is finalized. */
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+.dark-mode-enabled body {
+    background-color: #111;
+    color: #f1f1f1;
+}
+

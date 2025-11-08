@@ -4,6 +4,7 @@ Common settings shared across all environments.
 """
 
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()  # Load .env file
@@ -195,9 +196,27 @@ LOGIN_REDIRECT_URL = "dashboard:unified_dashboard"
 LOGIN_URL = "accounts:account-login"
 
 # Email configuration
+logger = logging.getLogger(__name__)
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+_email_use_tls = _env_bool('EMAIL_USE_TLS')
+_email_use_ssl = _env_bool('EMAIL_USE_SSL')
+
+# Enforce mutual exclusivity; prefer TLS by default.
+if _email_use_tls and _email_use_ssl:
+    logger.warning("EMAIL_USE_TLS and EMAIL_USE_SSL were both truthy; disabling SSL to prefer TLS.")
+    _email_use_ssl = False
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL')
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+EMAIL_USE_SSL = _email_use_ssl
+EMAIL_USE_TLS = _email_use_tls
 EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
@@ -211,8 +230,8 @@ EMAIL_INFO = {
     'PASS': os.environ.get('EMAIL_INFO_PASS'),
     'HOST': os.environ.get('EMAIL_HOST'),
     'PORT': os.environ.get('EMAIL_PORT'),
-    'USE_TLS': os.environ.get('EMAIL_USE_TLS'),
-    'USE_SSL': os.environ.get('EMAIL_USE_SSL'),
+    'USE_TLS': _email_use_tls,
+    'USE_SSL': _email_use_ssl,
 }
 
 EMAIL_FIN = {
@@ -220,8 +239,8 @@ EMAIL_FIN = {
     'PASS': os.environ.get('EMAIL_FIN_PASS'),
     'HOST': os.environ.get('EMAIL_HOST'),
     'PORT': os.environ.get('EMAIL_PORT'),
-    'USE_TLS': os.environ.get('EMAIL_USE_TLS'),
-    'USE_SSL': os.environ.get('EMAIL_USE_SSL'),
+    'USE_TLS': _email_use_tls,
+    'USE_SSL': _email_use_ssl,
 }
 
 EMAIL_HR = {
@@ -229,8 +248,8 @@ EMAIL_HR = {
     'PASS': os.environ.get('EMAIL_HR_PASS'),
     'HOST': os.environ.get('EMAIL_HOST'),
     'PORT': os.environ.get('EMAIL_PORT'),
-    'USE_TLS': os.environ.get('EMAIL_USE_TLS'),
-    'USE_SSL': os.environ.get('EMAIL_USE_SSL'),
+    'USE_TLS': _email_use_tls,
+    'USE_SSL': _email_use_ssl,
 }
 
 # AWS S3 Configuration

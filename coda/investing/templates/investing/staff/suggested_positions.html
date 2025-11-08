@@ -354,7 +354,16 @@
                     <tbody>
                         {% for pos in approved_positions %}
                         <tr class="{% if pos.ai_rating == 'EXCELLENT' %}table-success{% elif pos.ai_rating == 'GOOD' %}table-info{% endif %}">
-                            <td><input type="checkbox" class="batch-checkbox" data-id="{{ pos.id }}"></td>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    class="batch-checkbox"
+                                    data-id="{{ pos.id }}"
+                                    data-capital="{{ pos.capital_required|floatformat:'2' }}"
+                                    data-symbol="{{ pos.symbol }}"
+                                    data-strategy="{{ pos.get_strategy_display }}"
+                                >
+                            </td>
                             <td>
                                 {% if pos.ai_score %}
                                 <strong style="color: #28a745; font-size: 1.1em;">{{ pos.ai_score|floatformat:0 }}</strong>
@@ -555,6 +564,24 @@
                             {% endfor %}
                         </select>
                     </div>
+
+                    <div class="mb-3">
+                        <div class="alert alert-light border small mb-2" id="accountRiskInfo" role="alert">
+                            <strong>Risk guardrails:</strong>
+                            <span id="accountLimitSummary">Choose an account to view per-position limits.</span>
+                            <div class="mt-2 text-muted">
+                                Selected trades → max per trade:
+                                <span id="selectedMaxPerTrade">$0.00</span> · bundle total:
+                                <span id="selectedTotalCapital">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning d-none small" id="accountRiskWarning"></div>
+                        {% if can_adjust_limits %}
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="openAdjustLimitModal">
+                            ⚙️ Adjust limit
+                        </button>
+                        {% endif %}
+                    </div>
                     
                     <div class="alert alert-info">
                         <strong>Selected Positions:</strong> <span id="selectedCountDisplay">0</span> approved positions
@@ -578,7 +605,54 @@
     </div>
 </div>
 
+{% if can_adjust_limits %}
+<div class="modal fade" id="adjustLimitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚙️ Adjust Per-Position Limit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'investing:update_account_position_limit' %}">
+                {% csrf_token %}
+                <input type="hidden" name="account_id" id="adjustLimitAccountId">
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">
+                        Update the risk guardrail for how much capital can be deployed in any single trade.
+                        Changes are logged to the account activity timeline.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label">Account</label>
+                        <input type="text" class="form-control" id="adjustLimitAccountLabel" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Max % of model capital <span class="text-muted">(2.0% = $600 on $30K)</span>
+                        </label>
+                        <input type="number" name="max_percentage" id="adjustLimitMaxPercentage" class="form-control" min="0.1" max="25" step="0.1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Max dollar per position
+                        </label>
+                        <input type="number" name="max_absolute" id="adjustLimitMaxAbsolute" class="form-control" min="50" step="50">
+                        <small class="form-text text-muted">
+                            Leave blank to auto-calc from % of model capital.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Limit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {{ preview_payloads|json_script:"preview-payloads" }}
+{{ account_limits|json_script:"account-limits" }}
 
 <div class="modal fade" id="previewTradeModal" tabindex="-1" role="dialog" aria-labelledby="previewTradeLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
@@ -609,6 +683,13 @@ const heatmapPanel = document.getElementById('heatmapPanel');
 const heatmapToggleBtn = document.getElementById('heatmapToggleBtn');
 const previewPayloadsElement = document.getElementById('preview-payloads');
 const previewPayloads = previewPayloadsElement ? JSON.parse(previewPayloadsElement.textContent) : {};
+const accountLimitsElement = document.getElementById('account-limits');
+const accountLimits = accountLimitsElement ? JSON.parse(accountLimitsElement.textContent) : {};
+const accountLimitSummaryEl = document.getElementById('accountLimitSummary');
+const selectedMaxPerTradeEl = document.getElementById('selectedMaxPerTrade');
+const selectedTotalCapitalEl = document.getElementById('selectedTotalCapital');
+const accountRiskWarningEl = document.getElementById('accountRiskWarning');
+const accountSelectEl = document.querySelector('select[name="account_id"]');
 
 function escapeHtml(value) {
     if (value === null || value === undefined) {
@@ -656,6 +737,75 @@ function formatCurrency(value) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
+}
+
+function getSelectedBatchMeta() {
+    return Array.from(document.querySelectorAll('.batch-checkbox:checked')).map(cb => ({
+        id: cb.dataset.id,
+        capital: Number(cb.dataset.capital || 0),
+        symbol: cb.dataset.symbol || 'N/A',
+        strategy: cb.dataset.strategy || '',
+    }));
+}
+
+function updateRiskGuidance() {
+    if (!accountLimitSummaryEl || !selectedMaxPerTradeEl || !selectedTotalCapitalEl) {
+        return;
+    }
+
+    const selectedMeta = getSelectedBatchMeta();
+    const maxCapital = selectedMeta.length ? Math.max(...selectedMeta.map(item => item.capital)) : 0;
+    const totalCapital = selectedMeta.reduce((acc, item) => acc + item.capital, 0);
+    selectedMaxPerTradeEl.textContent = formatCurrency(maxCapital);
+    selectedTotalCapitalEl.textContent = formatCurrency(totalCapital);
+
+    if (accountRiskWarningEl) {
+        accountRiskWarningEl.classList.add('d-none');
+        accountRiskWarningEl.textContent = '';
+    }
+
+    const accountId = accountSelectEl ? accountSelectEl.value : '';
+    if (!accountId) {
+        accountLimitSummaryEl.textContent = 'Choose an account to view per-position limits.';
+        return;
+    }
+
+    const limit = accountLimits[accountId];
+    if (!limit) {
+        accountLimitSummaryEl.textContent = 'No risk rule configured yet — consider setting a per-position cap before batching.';
+        return;
+    }
+
+    const limitPercentage = Number(limit.max_percentage);
+    const limitDollar = Number(limit.effective_max_dollar);
+    const referenceCapital = Number(limit.reference_capital);
+    const cashAvailable = Number(limit.cash_available);
+
+    const summaryPieces = [];
+    if (Number.isFinite(limitDollar) && limitDollar > 0) {
+        summaryPieces.push(`Max per trade ${formatCurrency(limitDollar)}`);
+    }
+    if (Number.isFinite(limitPercentage) && Number.isFinite(referenceCapital)) {
+        summaryPieces.push(`${limitPercentage.toFixed(1)}% of model capital ${formatCurrency(referenceCapital)}`);
+    }
+    if (Number.isFinite(cashAvailable)) {
+        summaryPieces.push(`Cash available ${formatCurrency(cashAvailable)}`);
+    }
+
+    accountLimitSummaryEl.textContent = summaryPieces.length
+        ? summaryPieces.join(' • ')
+        : 'No per-position cap configured.';
+
+    if (!selectedMeta.length || !Number.isFinite(limitDollar) || limitDollar <= 0) {
+        return;
+    }
+
+    const breaches = selectedMeta.filter(item => item.capital > limitDollar);
+    if (breaches.length && accountRiskWarningEl) {
+        const lines = breaches.map(item => `${item.symbol} (${item.strategy}) → ${formatCurrency(item.capital)}`);
+        accountRiskWarningEl.innerHTML = `<strong>Limit warning:</strong> ${lines.join(', ')} exceed ${formatCurrency(limitDollar)} cap.`;
+        accountRiskWarningEl.classList.remove('d-none');
+    }
 }
 
 function buildStrikeInsight(payload) {
@@ -937,6 +1087,8 @@ function updateSelectedCount() {
         .map(cb => cb.dataset.id)
         .join(',');
     document.getElementById('suggestionIds').value = selectedIds;
+
+    updateRiskGuidance();
 }
 
 // Listen to checkbox changes
@@ -955,6 +1107,47 @@ if (createBatchModalEl) {
 } else {
     console.error('createBatchModal element not found!');
 }
+
+if (accountSelectEl) {
+    accountSelectEl.addEventListener('change', updateRiskGuidance);
+}
+
+updateRiskGuidance();
+
+{% if can_adjust_limits %}
+const openAdjustLimitBtn = document.getElementById('openAdjustLimitModal');
+const adjustLimitModalEl = document.getElementById('adjustLimitModal');
+if (openAdjustLimitBtn && adjustLimitModalEl) {
+    openAdjustLimitBtn.addEventListener('click', () => {
+        const accountId = accountSelectEl ? accountSelectEl.value : '';
+        if (!accountId) {
+            alert('Select an account first to adjust its limit.');
+            return;
+        }
+
+        const limit = accountLimits[accountId] || {};
+        document.getElementById('adjustLimitAccountId').value = accountId;
+        const label = `${limit.account_number || accountId}${limit.client_name ? ' — ' + limit.client_name : ''}`;
+        document.getElementById('adjustLimitAccountLabel').value = label;
+        document.getElementById('adjustLimitMaxPercentage').value = Number.isFinite(Number(limit.max_percentage))
+            ? Number(limit.max_percentage).toFixed(2)
+            : '';
+        document.getElementById('adjustLimitMaxAbsolute').value = Number.isFinite(Number(limit.effective_max_dollar))
+            ? Number(limit.effective_max_dollar).toFixed(2)
+            : '';
+
+        if (window.bootstrap && window.bootstrap.Modal) {
+            const modalInstance = window.bootstrap.Modal.getOrCreateInstance(adjustLimitModalEl);
+            modalInstance.show();
+        } else if (window.jQuery) {
+            window.jQuery(adjustLimitModalEl).modal('show');
+        } else {
+            adjustLimitModalEl.classList.add('show');
+            adjustLimitModalEl.style.display = 'block';
+        }
+    });
+}
+{% endif %}
 
 // Debug: log modal button click
 document.querySelector('[data-bs-target="#createBatchModal"]')?.addEventListener('click', function() {
