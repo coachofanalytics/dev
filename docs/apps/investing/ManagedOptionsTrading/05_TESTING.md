@@ -1,7 +1,7 @@
 # Managed Options Trading - Testing
 **Feature:** CODA Managed Options Trading Service  
-**Date:** October 22, 2025  
-**Status:** 🧪 Testing Plan
+**Date:** November 8, 2025  
+**Status:** 🧪 Testing Plan (Phase 2 coverage in progress)
 
 ---
 
@@ -28,11 +28,13 @@
 
 ## 🧪 Unit Tests
 
-### **Phase 1 UW + Allocation Coverage (NEW)**
+### **Phase 1 & 2 Coverage**
 - ✅ `tests/apps/investing/01_unit/test_unusual_whales_service.py`
   - Verifies flow score math, caching wrapper, and put-score inversion (cache hits tracked).
 - ✅ `tests/apps/investing/01_unit/test_capital_allocation_service.py`
   - Ensures position sizing caps at 10% of sleeve, enforces $420 target, considers debit spread fallback.
+- ✅ `tests/apps/investing/01_unit/test_notification_service.py`
+  - Confirms allocation digest recipients are limited to superusers + configured group, and emails skip when recipient list is empty.
 - 🚀 `tests/apps/investing/01_unit/test_notification_templates.py`
   - Guards WhatsApp/email scenario digests for placeholder variables.
 
@@ -98,7 +100,7 @@ class OptionsPositionTestCase(TestCase):
 
 ## 🔄 Integration Tests
 
-### **Phase 1 Addendum: Managed Income Automation (NEW)**
+### **Phase 1 & 2 Addendum: Managed Income Automation**
 - ✅ `tests/apps/investing/02_integration/test_phase1_features.py`
   - Extends coverage for UW enrichment + heatmap context.
 - 🚀 `tests/apps/investing/02_integration/test_capital_allocation.py`
@@ -111,6 +113,8 @@ class OptionsPositionTestCase(TestCase):
   - Confirms strategy legs render in modal and "Preview Trade" button appears only for staff.
 - 🚀 `tests/apps/investing/02_integration/test_client_dashboard_income.py`
   - Validates client sees income vs $420 target but no execution instructions.
+- 🚧 `tests/apps/investing/02_integration/test_account_limit_controls.py`
+  - New scaffolding for risk guardrail UI; currently skipped with `@skipIf` until legacy migrations are restored.
 
 ### **Test File: `tests/test_managed_trading_service.py`**
 

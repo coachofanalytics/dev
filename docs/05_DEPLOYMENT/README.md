@@ -56,6 +56,26 @@ heroku logs --tail --app codatrainingapp
 
 ---
 
+## 🔄 Runtime & Stack Maintenance (November 8, 2025)
+
+### Python Runtime
+- ✅ Replaced `runtime.txt` with `.python-version` to align with Heroku’s new requirement.
+- ✅ `.python-version` now pins only the major version (`3.12`) so patch-level security updates are applied automatically on rebuild.
+- 📌 **Reminder:** any new deployment branch must keep `.python-version` at the repo root before pushing to Heroku.
+
+### Heroku-24 Stack Upgrade Checklist
+| Step | Owner | Status |
+|------|-------|--------|
+| Inventory add-ons/buildpacks for stack compatibility | DevOps | 🔄 Pending |
+| Clone UAT to a Heroku-24 staging app and run smoke tests | DevOps | 🔄 Pending |
+| Capture database/app backups & schedule maintenance window | DevOps | 🔄 Pending |
+| `heroku stack:set heroku-24` (UAT → Production rollout) | DevOps | 🔄 Pending |
+| Post-upgrade verification (web, worker, beat dynos) | DevOps | 🔄 Pending |
+
+> **Recommendation:** target the stack migration during the next release cycle so Heroku-22 deprecation warnings are cleared before year end.
+
+---
+
 ## 📋 Pre-Deployment Checklist
 
 - [ ] All regression tests pass
@@ -66,5 +86,5 @@ heroku logs --tail --app codatrainingapp
 
 ---
 
-**Last Updated:** October 13, 2025
+**Last Updated:** November 8, 2025
 

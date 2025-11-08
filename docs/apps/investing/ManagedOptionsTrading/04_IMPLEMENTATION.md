@@ -1,7 +1,7 @@
 # CODA Trading Platform - Implementation Guide
 **System:** Comprehensive Managed Options Trading + AI + Notifications  
-**Last Updated:** November 6, 2025  
-**Status:** ✅ **CORE COMPLETE** | 🚀 **ENHANCEMENTS PLANNED**
+**Last Updated:** November 8, 2025  
+**Status:** ✅ **CORE COMPLETE** | 🚀 **PHASE 2 IN PROGRESS**
 
 ---
 
@@ -491,7 +491,29 @@ class UnusualWhalesService:
 
 ---
 
-### **Phase 2: Performance** [PLANNED - 9 days]
+### **Phase 2: Performance** [IN PROGRESS - 9 days]
+
+#### **Enhancement 2.0: Managed Risk Guardrails UI** (2 days) — ✅ **Completed Nov 8, 2025**
+
+**Objective:** Surface account-specific risk limits to staff reviewers and allow superusers to adjust guardrails without leaving the suggestions dashboard.
+
+**Existing Code Reused:**
+- ✅ `ManagedTradingAccount`, `TradingRule`, `TradingActivity` (risk metadata + audit trail)
+- ✅ `ManagedTradingService` (batch creation workflow)
+- ✅ Staff suggestions template + preview payload helper
+- ✅ `NotificationService` (existing digest sender)
+
+**Implementation Details (Delivered):**
+- Added risk summary + violation banners inside `Create Batch` modal (`investing/staff/suggested_positions.html`).
+- Loaded account risk limits in `suggested_positions_list` view and exposed new `update_account_position_limit` view.
+- Added superuser-only adjust-limit modal with audit logging via `TradingActivity`.
+- Hardened digest recipient filtering (`NotificationService._get_staff_emails`) so only superusers and members of `MANAGED_INCOME_DIGEST_GROUP` receive allocation previews.
+- Created placeholder `static/investing/css/dark-mode.css` inside app namespace to align WhiteNoise paths (prevents 404 triggered by modal theme toggle).
+- Tests: `tests/apps/investing/01_unit/test_notification_service.py` (recipient filtering) and integration scaffolding (`tests/apps/investing/02_integration/test_account_limit_controls.py`, currently skipped until legacy migrations exist).
+
+**Duplication Risk:** ✅ NONE (extends existing view/service; no new models).
+
+---
 
 #### **Enhancement 2.1: Redis Caching** (3 days)
 
@@ -667,9 +689,11 @@ def managed_trading_dashboard(request):
 **Duplication Risk:** ✅ NONE (optimizing existing queries)
 
 **Phase 2 Summary:**
-- Investment: 9 days
-- New files: 3 (caching_service.py, tasks.py, celery.py)
-- Modified files: 15-20 existing files
+- ✅ Delivered: Risk guardrail UI + superuser adjustments + digest recipient hardening (Nov 8, 2025)
+- Investment: 9 days (2 used, 7 planned for caching/Celery/query optimization)
+- New files to date: 3 (app-level dark mode CSS, notification unit tests, integration scaffolding)
+- Upcoming new files: caching_service.py, tasks.py, celery.py
+- Modified files (to date): `base_settings.py`, `notification_service.py`, `position_suggestions.py`, `staff/suggested_positions.html`, `urls_managed_trading.py`
 - New models: 0
 - New views: 0
 - Duplication risk: ✅ NONE

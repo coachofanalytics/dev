@@ -1,7 +1,7 @@
 # CODA Trading Platform - Complete Documentation Suite
 **System:** Managed Options Trading + AI Scoring + Notifications + Enhancements  
-**Last Updated:** November 7, 2025  
-**Status:** ✅ **CORE OPERATIONAL** | 🚀 **ENHANCEMENT PHASE (P1 in progress)**
+**Last Updated:** November 8, 2025  
+**Status:** ✅ **CORE OPERATIONAL** | 🚀 **ENHANCEMENT PHASE (P2 in progress)**
 
 ---
 
@@ -13,11 +13,19 @@
 | **AI Position Scoring** | ✅ Complete | UAT (v976) | 6-factor algorithm, 499 positions tested |
 | **WhatsApp/Telegram** | 95% Complete | UAT (v982) | Real-time notifications operational |
 | **Documentation** | 59% Complete | Updated | 3/7 docs updated (01, 02, 04) |
-| **Enhancements** | 20% In Progress | Dev (Phase 1) | Dark mode, heatmap, Zapier, UW auto-check live |
+| **Enhancements** | 35% In Progress | Dev (Phase 2) | Phase 1 shipped + risk-guardrails & digest targeting live |
 
 **Overall:** ✅ **World-class platform operational, ready for enhancement**
 
 ---
+
+## 🚀 **WHAT'S NEW (November 8, 2025)**
+
+### **✅ Phase 2 Guardrails & Comms**
+- 🛡️ **Managed Risk Panel:** “Create Batch” modal now shows per-account max position caps, bundle totals, and highlights violations before sending to clients.
+- ⚙️ **Superuser Adjustments:** Superusers can update cap thresholds inline; changes are logged to `TradingActivity` with before/after snapshot.
+- ✉️ **Digest Targeting:** Allocation digest now emails only superusers and members of the configured `MANAGED_INCOME_DIGEST_GROUP`.
+- 🧪 **Coverage:** Added unit tests for recipient filtering (`tests/apps/investing/01_unit/test_notification_service.py`) and integration scaffolding for risk UI (skips until legacy migrations restored).
 
 ## 🚀 **WHAT'S NEW (November 7, 2025)**
 
