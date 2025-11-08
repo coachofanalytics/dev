@@ -161,4 +161,55 @@ class ContactUs(models.Model):
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
 
-    
+
+# Stores email subscriptions for Safety Alerts
+class SafetyAlertSubscription(models.Model):
+    email = models.EmailField(unique=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+
+# Emergency help line configuration
+class EmergencyHotline(models.Model):
+    name = models.CharField(max_length=100, help_text="Display label, e.g., Global Hotline")
+    number = models.CharField(max_length=32, help_text="E.164 like +15551234567 or local format")
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "id"]
+
+    def __str__(self):
+        return f"{self.name} ({self.number})"
+
+
+class StaffContact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=32, blank=True, null=True)
+    notify_via_email = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class EmergencyHelpActivation(models.Model):
+    EVENT_CHOICES = (
+        ("call_link_clicked", "Call Link Clicked"),
+        ("callback_requested", "Callback Requested"),
+    )
+    event_type = models.CharField(max_length=32, choices=EVENT_CHOICES)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=32, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M:%S}"

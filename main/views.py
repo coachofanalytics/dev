@@ -8,7 +8,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import Assets,Description, News, Page, Service, SubService,Team
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, EmergencyHelpActivation
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from main.forms import ContactForm
@@ -87,8 +87,8 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-    page_instance = Page.objects.get(page_name='Home')
-    description = Description.objects.filter(page = page_instance)
+    page_instance, _ = Page.objects.get_or_create(page_name='Home')
+    description = Description.objects.filter(page=page_instance)
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -161,7 +161,8 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
         return reverse('main:images') 
     
 def crisis_page(request):
-    return render(request, "main/crisis.html")
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
+    return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
 
@@ -185,7 +186,22 @@ def subscribe_alerts(request):
       <p>You will receive updates about advisories and safety information.</p>
     """
     plain_message = strip_tags(html_message)
+    # Check if already subscribed
+    existing = SafetyAlertSubscription.objects.filter(email=email).first()
+    if existing and existing.is_active:
+        return JsonResponse({'success': True, 'message': 'You are already subscribed to Safety Alerts.'})
 
+    if existing and not existing.is_active:
+        existing.is_active = True
+        existing.save()
+    else:
+        SafetyAlertSubscription.objects.create(
+            email=email,
+            user=request.user if request.user.is_authenticated else None,
+            is_active=True,
+        )
+
+    # Attempt to send confirmation email
     try:
         send_mail(
             subject,
@@ -194,13 +210,10 @@ def subscribe_alerts(request):
             [email],
             html_message=html_message,
         )
-        return JsonResponse({'success': True, 'message': 'Thank you! Please check your email.'})
-    except Exception as e:
-        # Avoid 500s if email backend is not configured or SMTP is unreachable
-        return JsonResponse({
-            'success': False,
-            'message': 'Unable to send email right now. Please try again later.'
-        }, status=502)
+        return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
+    except Exception:
+        # Gracefully succeed even if email backend is unavailable
+        return JsonResponse({'success': True, 'message': 'Subscribed! (Email could not be sent right now.)'})
 
 
 
@@ -241,5 +254,63 @@ from django.views.generic import TemplateView
 
 class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
+
+
+@require_POST
+@csrf_protect
+def activate_helpline(request):
+    name = request.POST.get('name', '').strip() or None
+    phone = request.POST.get('phone', '').strip() or None
+    location = request.POST.get('location', '').strip() or None
+    notes = request.POST.get('notes', '').strip() or None
+
+    # Basic validation
+    if not phone:
+        return JsonResponse({'success': False, 'message': 'Phone number is required.'}, status=400)
+
+    # Client IP
+    ip = request.META.get('HTTP_X_FORWARDED_FOR')
+    if ip:
+        ip = ip.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+
+    # Log activation
+    EmergencyHelpActivation.objects.create(
+        event_type="callback_requested",
+        name=name,
+        phone=phone,
+        location=location,
+        notes=notes,
+        ip_address=ip,
+    )
+
+    # Notify active staff via email
+    recipients = list(
+        StaffContact.objects.filter(is_active=True, notify_via_email=True)
+        .exclude(email__isnull=True)
+        .exclude(email__exact='')
+        .values_list('email', flat=True)
+    )
+
+    subject = "Emergency Callback Requested"
+    lines = [
+        "An emergency callback has been requested.",
+        f"Name: {name or '-'}",
+        f"Phone: {phone or '-'}",
+        f"Location: {location or '-'}",
+        f"Notes: {notes or '-'}",
+        f"IP: {ip or '-'}",
+    ]
+    message = "\n".join(lines)
+
+    try:
+        if recipients:
+            send_mail(subject, message, None, recipients)
+    except Exception:
+        # Fail silently for the user; we still return success
+        pass
+
+    return JsonResponse({'success': True, 'message': 'Request received. Our team will call you shortly.'})
 
 

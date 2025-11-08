@@ -311,6 +311,93 @@
                     }
                 });
             }
+
+            // Helpline modal wiring
+            const openHelpline = document.getElementById('open-helpline');
+            const helplineModal = document.getElementById('helpline-modal');
+            const helplineClose = document.getElementById('helpline-close');
+            const helplineForm = document.getElementById('helpline-form');
+            const helplineMsg = document.getElementById('helpline-msg');
+
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+
+            if (openHelpline && helplineModal) {
+                openHelpline.addEventListener('click', function(e){
+                    e.preventDefault();
+                    helplineModal.classList.remove('hidden');
+                });
+            }
+            if (helplineClose && helplineModal) {
+                helplineClose.addEventListener('click', function(){
+                    helplineModal.classList.add('hidden');
+                });
+            }
+            if (helplineForm) {
+                helplineForm.addEventListener('submit', async function(e){
+                    e.preventDefault();
+                    if (helplineMsg) {
+                        helplineMsg.textContent = 'Submitting...';
+                        helplineMsg.className = 'text-gray-600 text-sm mt-2';
+                    }
+                    const csrfToken = (document.querySelector('#helpline-form input[name=csrfmiddlewaretoken]')?.value) || getCookie('csrftoken');
+                    const payload = new URLSearchParams({
+                        name: document.getElementById('hl-name')?.value || '',
+                        phone: document.getElementById('hl-phone')?.value || '',
+                        location: document.getElementById('hl-location')?.value || '',
+                        notes: document.getElementById('hl-notes')?.value || ''
+                    });
+                    try {
+                        const resp = await fetch("{% url 'main:activate_helpline' %}", {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-CSRFToken': csrfToken,
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: payload
+                        });
+                        if (!resp.ok) {
+                            const text = await resp.text();
+                            throw new Error('HTTP ' + resp.status + ' ' + text);
+                        }
+                        const data = await resp.json();
+                        if (helplineMsg) {
+                            helplineMsg.textContent = data.message || (data.success ? 'Request received.' : 'Something went wrong.');
+                            helplineMsg.className = (data.success ? 'text-green-600' : 'text-red-600') + ' text-sm mt-2';
+                        }
+                        if (data.success) {
+                            helplineForm.reset();
+                        }
+                    } catch (err) {
+                        if (helplineMsg) {
+                            helplineMsg.textContent = 'Request failed. ' + (err && err.message ? err.message : 'Please try again.');
+                            helplineMsg.className = 'text-red-600 text-sm mt-2';
+                        }
+                    }
+                });
+            }
+
+            // Emergency Contacts modal wiring (read-only list)
+            const openContacts = document.getElementById('open-contacts');
+            const contactsModal = document.getElementById('contacts-modal');
+            const contactsClose = document.getElementById('contacts-close');
+
+            if (openContacts && contactsModal) {
+                openContacts.addEventListener('click', function(e){
+                    e.preventDefault();
+                    contactsModal.classList.remove('hidden');
+                });
+            }
+            if (contactsClose && contactsModal) {
+                contactsClose.addEventListener('click', function(){
+                    contactsModal.classList.add('hidden');
+                });
+            }
         };
 
     </script>
@@ -323,7 +410,7 @@
                     <h2 class="text-xl font-medium text-gray-200 mb-8">
                         Immediate, reliable support and rapid response during personal or civil emergencies abroad.
                     </h2>
-                    <a href="#" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg text-lg">
+                    <a href="#" id="open-helpline" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg text-lg">
                         ACTIVATE EMERGENCY HELP LINE (24/7)
                     </a>
                 </div>
@@ -366,7 +453,7 @@
                         <li>Referrals to emergency legal counsel and repatriation assistance</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="#" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md 
+                        <a href="#" id="open-contacts" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md 
                         uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
                             View Emergency Contact List
                         </a>
@@ -447,6 +534,75 @@
               d="M5 13l4 4L19 7"></path>
       </svg>
     </button>
+  </div>
+</div>
+
+<!-- Helpline Modal -->
+<div id="helpline-modal" class="fixed inset-0 bg-black/50 hidden z-50">
+  <div class="bg-white max-w-lg mx-auto mt-24 rounded-lg shadow-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-xl font-bold text-brand-red">Emergency Help Line</h4>
+      <button id="helpline-close" class="text-gray-500 hover:text-gray-700">✕</button>
+    </div>
+
+    <div class="mb-6">
+      <h5 class="font-semibold mb-2">Call a hotline now</h5>
+      <div class="space-y-2">
+        {% if hotlines %}
+          {% for h in hotlines %}
+            <a href="tel:{{ h.number }}" class="block w-full text-center bg-brand-red text-white font-semibold py-2 rounded hover:bg-red-700">
+              {{ h.name }} — {{ h.number }}
+            </a>
+          {% endfor %}
+        {% else %}
+          <p class="text-gray-600 text-sm">No hotlines configured yet. Ask an admin to add some in the dashboard.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      <h5 class="font-semibold mb-2">Request a callback</h5>
+      <form id="helpline-form" method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 gap-3">
+          <input id="hl-name" name="name" type="text" placeholder="Your name (optional)" class="border rounded px-3 py-2 w-full">
+          <input id="hl-phone" name="phone" type="tel" placeholder="Your phone (required)" class="border rounded px-3 py-2 w-full" required>
+          <input id="hl-location" name="location" type="text" placeholder="Location (optional)" class="border rounded px-3 py-2 w-full">
+          <textarea id="hl-notes" name="notes" placeholder="Brief description (optional)" class="border rounded px-3 py-2 w-full"></textarea>
+        </div>
+        <button type="submit" class="mt-3 bg-brand-green text-white font-semibold py-2 px-4 rounded hover:bg-[#086a4f]">Request Callback</button>
+        <p id="helpline-msg" class="text-sm mt-2"></p>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Emergency Contacts Modal (read-only list) -->
+<div id="contacts-modal" class="fixed inset-0 bg-black/50 hidden z-50">
+  <div class="bg-white max-w-lg mx-auto mt-24 rounded-lg shadow-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-xl font-bold text-brand-red">Emergency Contact List</h4>
+      <button id="contacts-close" class="text-gray-500 hover:text-gray-700">✕</button>
+    </div>
+
+    <div>
+      {% if hotlines %}
+        <ul class="divide-y divide-gray-200">
+          {% for h in hotlines %}
+            <li class="py-3 flex items-center justify-between">
+              <div>
+                <p class="font-semibold">{{ h.name }}</p>
+                <p class="text-sm text-gray-600">{{ h.number }}</p>
+              </div>
+              <a href="tel:{{ h.number }}" class="ml-4 bg-brand-red text-white text-sm font-semibold py-2 px-3 rounded hover:bg-red-700">Call</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-gray-600 text-sm">No emergency contacts configured yet.</p>
+      {% endif %}
+    </div>
   </div>
 </div>
 

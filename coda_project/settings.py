@@ -16,14 +16,26 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(BASE_DIR)
 
-SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
-# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf" 
 
-DEBUG = True
-# DEBUG = os.environ.get("DEBUG_VALUE") == "True"
+DEBUG = True 
 
 SECURE_SSL_REDIRECT = False
+ 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "uwayoolga@gmail.com"
+EMAIL_HOST_PASSWORD = "Horizon2!"
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = "uwayoolga@gmail.com"
 
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = "uwayoolga@gmail.com"
+# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # App password
+# EMAIL_USE_TLS = True
+# DEFAULT_FROM_EMAIL = "uwayoolga@gmail.com"
 ALLOWED_HOSTS = ["*"]
 # ALLOWED_HOSTS = ['127.0.0.1','localhost','codatrainingapp.herokuapp.com','www.codanalytics.net','codanalytics.net']
 # ALLOWED_HOSTS = []

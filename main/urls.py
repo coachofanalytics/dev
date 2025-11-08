@@ -15,6 +15,7 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
     path('crisis_page/', views.crisis_page, name='crisis_page'),
     path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),
+    path('activate_helpline/', views.activate_helpline, name='activate_helpline'),
     
     
    #==============ERRORS==============================================

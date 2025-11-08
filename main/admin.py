@@ -14,5 +14,9 @@ admin.site.register(SubService)
 admin.site.register(News)
 admin.site.register(Gallery_image)
 admin.site.register(ContactUs)
+admin.site.register(SafetyAlertSubscription)
+admin.site.register(EmergencyHotline)
+admin.site.register(StaffContact)
+admin.site.register(EmergencyHelpActivation)
 
 
