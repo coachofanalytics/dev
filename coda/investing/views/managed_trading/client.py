@@ -4,6 +4,8 @@ Client Portal Views
 Read-only views for clients to monitor their managed trading accounts.
 """
 
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -98,6 +100,19 @@ def client_account_detail(request, account_id):
         sessions_this_month = 0
         sessions_remaining = 0
     
+    income_summary = summary['income_summary']
+    whales_timeline = summary['whales_timeline']
+
+    base_capital = income_summary.get('base_capital') or Decimal('0')
+    scenario_defaults = {
+        'current_capital': float(base_capital),
+        'min_capital': float(base_capital),
+        'max_capital': float(base_capital * service.SCENARIO_MAX_MULTIPLIER) if base_capital > 0 else float(service.SCENARIO_STEP),
+        'step': float(service.SCENARIO_STEP),
+        'income_per_dollar': float(income_summary.get('income_per_dollar') or Decimal('0')),
+        'target_income': float(income_summary.get('target') or Decimal('0')),
+    }
+
     context = {
         'account': account,
         'summary': summary,
@@ -108,6 +123,9 @@ def client_account_detail(request, account_id):
         'sessions_this_month': sessions_this_month,
         'sessions_remaining': sessions_remaining,
         'is_consultative': account.fee_tier == 'consultative',
+        'income_summary': income_summary,
+        'whales_timeline': whales_timeline,
+        'scenario_defaults': scenario_defaults,
         'title': f'My Account - {account.account_number}'
     }
     

@@ -5,7 +5,7 @@
     <h2>{{ account.account_number }} - Account Details</h2>
     
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-primary text-white">
                 <div class="card-body">
                     <h6>Total Capital</h6>
@@ -14,7 +14,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-danger text-white">
                 <div class="card-body">
                     <h6>Deployed</h6>
@@ -23,7 +23,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <h6>Available</h6>
@@ -32,7 +32,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-info text-white">
                 <div class="card-body">
                     <h6>P&L</h6>
@@ -45,6 +45,158 @@
         </div>
     </div>
     
+    <!-- Income Coverage & UW Timeline -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Managed Income Progress</h5>
+                    <span class="badge {% if income_summary.coverage_pct >= 100 %}bg-success{% elif income_summary.coverage_pct >= 75 %}bg-info{% else %}bg-warning text-dark{% endif %}">
+                        {{ income_summary.coverage_pct|floatformat:0 }}% of ${{ income_summary.target|floatformat:0 }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>${{ income_summary.projected_income|floatformat:2 }}</strong> projected this month
+                        <span class="text-muted">vs. ${{ income_summary.target|floatformat:0 }} target</span>
+                    </p>
+                    <div class="progress mb-3" style="height: 12px;">
+                        <div class="progress-bar"
+                             role="progressbar"
+                             style="width: {{ income_summary.coverage_pct|floatformat:0 }}%;"
+                             aria-valuenow="{{ income_summary.coverage_pct|floatformat:0 }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="row text-muted small">
+                        <div class="col-6">
+                            <strong>Realized MTD</strong>
+                            <div>${{ income_summary.realized_income_mtd|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-6">
+                            <strong>Premium (New)</strong>
+                            <div>${{ income_summary.expected_premium_mtd|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6 class="text-muted mb-2">Trailing Performance</h6>
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th class="text-end">Realized</th>
+                                <th class="text-end">Premium</th>
+                                <th class="text-end">Net</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in income_summary.history %}
+                            <tr>
+                                <td>{{ item.period }}</td>
+                                <td class="text-end">${{ item.realized_income|floatformat:2 }}</td>
+                                <td class="text-end">${{ item.premium_collected|floatformat:2 }}</td>
+                                <td class="text-end">${{ item.net_income|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Latest UW Flow Signals</h5>
+                    <span class="text-muted small">Most recent {{ whales_timeline|length }} positions</span>
+                </div>
+                <div class="card-body">
+                    {% if whales_timeline %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Score</th>
+                                    <th>Sentiment</th>
+                                    <th>Window</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in whales_timeline %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ row.symbol }}</strong><br>
+                                        <small class="text-muted">{{ row.entry_date|date:"M d, Y" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if row.flow_score %}
+                                            <span class="badge {% if row.flow_score >= 75 %}bg-success{% elif row.flow_score >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                                {{ row.flow_score|floatformat:0 }}/100
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ row.sentiment|default:"—"|title }}</td>
+                                    <td>
+                                        <small>{{ row.entry_window|default:"—" }}</small>
+                                    </td>
+                                    <td>{{ row.status }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">Flow data will appear here after the next allocation cycle.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scenario Explorer -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Scenario Explorer</h5>
+            <small class="text-muted">CODA-managed execution — adjust target sleeve to view projections</small>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <label for="scenarioSlider" class="form-label">
+                        Proposed managed capital: <strong>$<span id="scenarioCapitalDisplay"></span></strong>
+                    </label>
+                    <input type="range"
+                           class="form-range"
+                           id="scenarioSlider"
+                           min="{{ scenario_defaults.min_capital|floatformat:0 }}"
+                           max="{{ scenario_defaults.max_capital|floatformat:0 }}"
+                           step="{{ scenario_defaults.step|floatformat:0 }}"
+                           value="{{ scenario_defaults.current_capital|floatformat:0 }}">
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>${{ scenario_defaults.min_capital|floatformat:0 }}</span>
+                        <span>${{ scenario_defaults.max_capital|floatformat:0 }}</span>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="mb-2">
+                            <strong>Projected Monthly Income</strong>
+                            <div id="scenarioIncome" class="display-6 mb-0">$0.00</div>
+                        </div>
+                        <div>
+                            <small class="text-muted">Target coverage</small><br>
+                            <span id="scenarioCoverage" class="badge bg-primary">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Open Positions Count -->
     <div class="alert alert-info mb-4">
         <strong>📊 Active Positions: {{ summary.positions.open_count }}</strong>
@@ -84,5 +236,45 @@
     
     <a href="{% url 'investing:client_portal' %}" class="btn btn-primary mt-3">Back to Portal</a>
 </div>
+
+{{ scenario_defaults|json_script:"scenario-defaults" }}
+<script>
+(function() {
+    const dataElement = document.getElementById('scenario-defaults');
+    if (!dataElement) {
+        return;
+    }
+
+    const scenario = JSON.parse(dataElement.textContent);
+    const slider = document.getElementById('scenarioSlider');
+    const incomeEl = document.getElementById('scenarioIncome');
+    const coverageEl = document.getElementById('scenarioCoverage');
+    const capitalDisplayEl = document.getElementById('scenarioCapitalDisplay');
+
+    function formatCurrency(value) {
+        return '$' + Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateScenario(capitalValue) {
+        const capital = Number(capitalValue);
+        const projectedIncome = capital * Number(scenario.income_per_dollar || 0);
+        const coverage = scenario.target_income > 0 ? (projectedIncome / scenario.target_income) * 100 : 0;
+
+        capitalDisplayEl.textContent = Number(capital).toLocaleString();
+        incomeEl.textContent = formatCurrency(projectedIncome);
+        coverageEl.textContent = `${coverage.toFixed(0)}%`;
+        coverageEl.className = 'badge ' + (
+            coverage >= 100 ? 'bg-success' :
+            coverage >= 75 ? 'bg-info text-dark' :
+            'bg-warning text-dark'
+        );
+    }
+
+    if (slider && incomeEl && coverageEl && capitalDisplayEl) {
+        slider.addEventListener('input', (event) => updateScenario(event.target.value));
+        updateScenario(slider.value);
+    }
+})();
+</script>
 {% endblock %}
 

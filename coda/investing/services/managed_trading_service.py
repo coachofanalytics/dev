@@ -11,12 +11,17 @@ This service handles:
 """
 
 import logging
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Tuple, Optional
-from django.db import transaction
-from django.core.exceptions import ValidationError
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.db.models import Q, Sum
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 from ..models import (
     ManagedTradingAccount,
@@ -32,6 +37,9 @@ User = get_user_model()
 
 
 class ManagedTradingService(BaseInvestingService):
+    MANAGED_INCOME_TARGET = Decimal(str(getattr(settings, 'MANAGED_INCOME_TARGET', '420')))
+    SCENARIO_MAX_MULTIPLIER = Decimal('2')
+    SCENARIO_STEP = Decimal('2500')
     """
     Service for managed options trading operations
     
@@ -674,6 +682,118 @@ class ManagedTradingService(BaseInvestingService):
             'fees': current_fees,
             'activity': {
                 'recent': list(recent_activity),
-            }
+            },
+            'income_summary': self.get_income_summary(account),
+            'whales_timeline': self.get_whales_timeline(account),
         }
+
+    # ------------------------------------------------------------------ #
+    # Phase 3: Client managed outcomes helpers
+    # ------------------------------------------------------------------ #
+
+    def get_income_summary(self, account: ManagedTradingAccount, months: int = 3) -> Dict:
+        """
+        Aggregate managed-income metrics for client dashboard.
+        """
+        now = timezone.now()
+        start_of_month = date(year=now.year, month=now.month, day=1)
+        target_income = self.MANAGED_INCOME_TARGET
+
+        def _to_decimal(value) -> Decimal:
+            if value is None:
+                return Decimal('0')
+            if isinstance(value, Decimal):
+                return value
+            try:
+                return Decimal(str(value))
+            except (InvalidOperation, TypeError, ValueError):
+                return Decimal('0')
+
+        positions = account.positions.all()
+
+        closed_this_month = positions.filter(
+            status='closed',
+            exit_date__gte=start_of_month
+        )
+        realized_income_mtd = _to_decimal(
+            closed_this_month.aggregate(total=Sum('realized_pnl'))['total']
+        )
+
+        premium_this_month = _to_decimal(
+            positions.filter(entry_date__gte=start_of_month).aggregate(total=Sum('premium_collected'))['total']
+        )
+
+        projected_income = realized_income_mtd + premium_this_month
+        coverage_pct = Decimal('0')
+        if target_income > 0:
+            coverage_pct = (projected_income / target_income) * Decimal('100')
+
+        history = []
+        for offset in range(months):
+            month_start = start_of_month - relativedelta(months=offset)
+            month_end = month_start + relativedelta(months=1)
+
+            month_realized = _to_decimal(
+                positions.filter(
+                    status='closed',
+                    exit_date__gte=month_start,
+                    exit_date__lt=month_end,
+                ).aggregate(total=Sum('realized_pnl'))['total']
+            )
+            month_premium = _to_decimal(
+                positions.filter(
+                    entry_date__gte=month_start,
+                    entry_date__lt=month_end,
+                ).aggregate(total=Sum('premium_collected'))['total']
+            )
+
+            history.append({
+                'period': month_start.strftime('%b %Y'),
+                'realized_income': month_realized,
+                'premium_collected': month_premium,
+                'net_income': month_realized + month_premium,
+            })
+
+        history.reverse()
+
+        base_capital = account.initial_capital or Decimal('0')
+        income_per_dollar = Decimal('0')
+        if base_capital > 0:
+            income_per_dollar = projected_income / base_capital
+
+        return {
+            'target': target_income,
+            'realized_income_mtd': realized_income_mtd,
+            'expected_premium_mtd': premium_this_month,
+            'projected_income': projected_income,
+            'coverage_pct': coverage_pct,
+            'history': history,
+            'income_per_dollar': income_per_dollar,
+            'base_capital': base_capital,
+        }
+
+    def get_whales_timeline(self, account: ManagedTradingAccount, limit: int = 6) -> List[Dict]:
+        """
+        Return recent Unusual Whales datapoints for client timeline.
+        """
+        positions = account.positions.filter(
+            api_response_data__has_key='unusual_whales'
+        ).order_by('-entry_date')[:limit]
+
+        timeline: List[Dict] = []
+        for position in positions:
+            whales_meta = position.api_response_data.get('unusual_whales') or {}
+            if not whales_meta:
+                continue
+            timeline.append({
+                'symbol': position.symbol,
+                'status': position.get_status_display(),
+                'entry_date': position.entry_date,
+                'flow_score': whales_meta.get('flow_score'),
+                'sentiment': whales_meta.get('sentiment'),
+                'timing_signal': whales_meta.get('timing_signal'),
+                'entry_window': whales_meta.get('entry_window'),
+                'ai_score': position.ai_score,
+            })
+        return timeline
 
