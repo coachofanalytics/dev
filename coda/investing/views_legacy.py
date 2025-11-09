@@ -2685,6 +2685,7 @@ def investment_dashboard(request):
     from .models import Investor_Information, ManagedTradingAccount
     from decimal import Decimal
     from django.db.models import Count, Q
+    from django.utils import timezone
 
     # Get user's investments from Investor_Information model (System 1: Invest IN CODA)
     investments = Investor_Information.objects.filter(investor=request.user).order_by(
@@ -2730,10 +2731,18 @@ def investment_dashboard(request):
     has_application = applications.exists()
     
     # Get pending batches (URGENT - needs approval)
+    now = timezone.now()
     pending_batches = PositionBatch.objects.filter(
         managed_account__client=request.user,
-        status='pending'
+        status='pending',
+        approval_deadline__gt=now
     ).order_by('approval_deadline')
+
+    expired_batches = PositionBatch.objects.filter(
+        managed_account__client=request.user,
+        status='pending',
+        approval_deadline__lte=now
+    ).order_by('-approval_deadline')
 
     context = {
         # Equity investments (System 1)
@@ -2757,6 +2766,7 @@ def investment_dashboard(request):
         "has_application": has_application,
         "applications": applications,
         "pending_batches": pending_batches,
+        "expired_batches": expired_batches,
     }
 
     return render(request, "investing/investment_dashboard.html", context)

@@ -298,6 +298,10 @@ class OptionsPositionAdmin(admin.ModelAdmin):
         ('Notes', {
             'fields': ('notes',)
         }),
+        ('Analytics & Signals', {
+            'fields': ('api_response_data',),
+            'classes': ('collapse',)
+        }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)

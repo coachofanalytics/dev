@@ -805,7 +805,7 @@ class ManagedTradingService(BaseInvestingService):
                 'sentiment': whales_meta.get('sentiment'),
                 'timing_signal': whales_meta.get('timing_signal'),
                 'entry_window': whales_meta.get('entry_window'),
-                'ai_score': position.ai_score,
+                'ai_score': getattr(position, 'ai_score', None),
             })
         return timeline
 

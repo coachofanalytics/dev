@@ -2068,6 +2068,13 @@ class OptionsPosition(TimeStampedModel):
         help_text="Price at which position was closed"
     )
     
+    # External Analytics Metadata
+    api_response_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Raw broker or analytics API payloads associated with this position"
+    )
+    
     # Notes
     notes = models.TextField(
         blank=True,

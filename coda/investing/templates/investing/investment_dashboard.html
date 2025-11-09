@@ -213,6 +213,51 @@
         </div>
     </div>
     {% endif %}
+
+    {% if expired_batches %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fa fa-hourglass-end"></i> Expired Batch Approvals
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        The following batches hit the 24-hour deadline and were auto-rejected.
+                        Reach out to your account manager if you still want any of these trades.
+                    </p>
+                    {% for batch in expired_batches %}
+                    <div class="card mb-3 border-light">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <strong>Batch:</strong> {{ batch.batch_number }}<br>
+                                    <strong>Positions:</strong> {{ batch.total_positions }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Capital Required:</strong><br>
+                                    ${{ batch.total_capital_required|floatformat:2 }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Expired:</strong><br>
+                                    <span class="text-muted">{{ batch.approval_deadline|date:"M j, Y g:i A" }}</span>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <button class="btn btn-outline-secondary btn-lg" disabled>
+                                        <i class="fa fa-ban"></i> Expired
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     
     <!-- Get Started with Managed Trading (NEW USERS) -->
     {% if not has_managed_accounts and not has_application %}
