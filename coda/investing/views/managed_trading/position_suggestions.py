@@ -239,6 +239,8 @@ def suggested_positions_list(request):
     preview_payloads = build_preview_payloads(pending, approved)
     auto_metrics = ranker.get_auto_approval_metrics()
 
+    whales_snapshot = ranker.get_unusual_whales_snapshot()
+
     context = {
         'pending_positions': pending,
         'approved_positions': approved,
@@ -257,6 +259,7 @@ def suggested_positions_list(request):
         'account_limits': account_limits,
         'can_adjust_limits': request.user.is_superuser,
         'auto_metrics': auto_metrics,
+        'whales_snapshot': whales_snapshot,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 

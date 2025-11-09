@@ -455,20 +455,58 @@ CODA Investment Team
 
         return sorted(emails)
 
+    def _twilio_client(self):
+        """
+        Lazily instantiate and cache the Twilio client if credentials exist.
+        """
+        if hasattr(self, '_cached_twilio_client'):
+            return self._cached_twilio_client
+        
+        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
+        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
+        if not account_sid or not auth_token:
+            logger.info("Twilio credentials missing; SMS/WhatsApp disabled.")
+            self._cached_twilio_client = None
+            return None
+        
+        try:
+            from twilio.rest import Client as TwilioClient
+        except ImportError:
+            logger.warning("Twilio SDK not installed. Run `pip install twilio` to enable messaging.")
+            self._cached_twilio_client = None
+            return None
+        
+        try:
+            self._cached_twilio_client = TwilioClient(account_sid, auth_token)
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.error("Failed to initialise Twilio client: %s", exc)
+            self._cached_twilio_client = None
+        return self._cached_twilio_client
+
     def send_sms_notification(self, phone_number, message):
         """
-        Send SMS notification (placeholder - integrate with SMS provider)
-        
-        TODO: Integrate with Twilio, AWS SNS, or other SMS provider
+        Send SMS notification through Twilio.
         """
         if not phone_number:
-            return
+            return False
         
-        logger.info(f"SMS to {phone_number}: {message}")
-        # TODO: Actual SMS integration
-        # import twilio
-        # client = twilio.rest.Client(settings.TWILIO_SID, settings.TWILIO_TOKEN)
-        # client.messages.create(to=phone_number, from_=settings.TWILIO_FROM, body=message)
+        from_number = getattr(settings, 'TWILIO_FROM_NUMBER', '')
+        client = self._twilio_client()
+        if not client or not from_number:
+            logger.info("SMS disabled - would send to %s: %s", phone_number, message)
+            return False
+        
+        try:
+            sms = client.messages.create(
+                to=phone_number,
+                from_=from_number,
+                body=message
+            )
+            logger.info("✅ SMS sent to %s (SID %s)", phone_number, sms.sid)
+            return True
+        except Exception as exc:
+            logger.error("❌ SMS send failed to %s: %s", phone_number, exc)
+            return False
     
     # ========================================================================
     # WHATSAPP INTEGRATION (Phase 3)
@@ -507,42 +545,23 @@ CODA Investment Team
             logger.info(f"WhatsApp disabled - would send to {phone_number}: {template_name}")
             return False
         
+        client = self._twilio_client()
+        whatsapp_from = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+        if not client or not whatsapp_from:
+            logger.info("WhatsApp disabled - would send %s template to %s", template_name, phone_number)
+            return False
+        
         try:
-            # Import WhatsApp client (lazy load)
-            from twilio.rest import Client as TwilioClient
-            
-            # Twilio credentials
-            account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', None)
-            auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', None)
-            whatsapp_from = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
-            
-            if not account_sid or not auth_token:
-                logger.error("WhatsApp: Twilio credentials not configured")
-                return False
-            
-            # Initialize Twilio client
-            client = TwilioClient(account_sid, auth_token)
-            
-            # Format message from template
             message_body = self._format_whatsapp_template(template_name, template_params)
-            
-            # Send WhatsApp message
-            # Note: Twilio client has built-in timeout (default ~60s)
-            # Can't set custom timeout easily without modifying Twilio client
             message = client.messages.create(
                 from_=whatsapp_from,
                 body=message_body,
                 to=f'whatsapp:{phone_number}'
             )
-            
             logger.info(f"✅ WhatsApp sent to {phone_number}: {message.sid}")
             return True
-            
-        except ImportError:
-            logger.warning("Twilio not installed - install with: pip install twilio")
-            return False
-        except Exception as e:
-            logger.error(f"❌ WhatsApp send failed to {phone_number}: {e}")
+        except Exception as exc:
+            logger.error(f"❌ WhatsApp send failed to {phone_number}: {exc}")
             return False
     
     def send_telegram_message(self, chat_id, message, parse_mode='Markdown'):

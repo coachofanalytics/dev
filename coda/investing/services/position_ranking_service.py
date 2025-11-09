@@ -36,11 +36,13 @@ from django.db.models import (
     F,
     QuerySet,
     Q,
+    Sum,
 )
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
-from ..models import OptionsPosition
+from ..models import OptionsPosition, SuggestedPosition
 
 
 class PositionRankingService:
@@ -734,6 +736,47 @@ class PositionRankingService:
             'win_rate': win_rate,
             'avg_realized_pnl': float(avg_realized) if avg_realized is not None else None,
             'avg_time_to_entry_minutes': avg_time_to_entry,
+        }
+
+    def get_unusual_whales_snapshot(
+        self,
+        days: int = 90,
+    ) -> Dict[str, Optional[float]]:
+        """
+        Analyze Unusual Whales contribution over the lookback window.
+        """
+        cutoff = timezone.now() - timedelta(days=days)
+        suggestions = SuggestedPosition.objects.filter(fetched_at__gte=cutoff)
+        whales_suggestions = suggestions.filter(api_response_data__has_key='unusual_whales')
+
+        total_suggestions = suggestions.count()
+        whales_count = whales_suggestions.count()
+        whales_pct = (whales_count / total_suggestions * 100) if total_suggestions else None
+
+        auto_whales = whales_suggestions.filter(auto_approved_by_system=True).count()
+
+        positions = OptionsPosition.objects.filter(
+            source_suggestion__in=whales_suggestions
+        )
+        closed = positions.filter(status='closed')
+        realized_sum = closed.aggregate(total=Sum('realized_pnl'))['total']
+
+        wins = closed.filter(realized_pnl__gt=0).count()
+        losses = closed.filter(realized_pnl__lt=0).count()
+        win_rate = (wins / closed.count() * 100) if closed.exists() else None
+
+        return {
+            'lookback_days': days,
+            'total_suggestions': total_suggestions,
+            'whales_suggestions': whales_count,
+            'whales_share_pct': whales_pct,
+            'auto_whales': auto_whales,
+            'positions_created': positions.count(),
+            'closed_positions': closed.count(),
+            'wins': wins,
+            'losses': losses,
+            'win_rate': win_rate,
+            'realized_pnl': float(realized_sum) if realized_sum is not None else None,
         }
     
     def _get_sector(self, position) -> str:
