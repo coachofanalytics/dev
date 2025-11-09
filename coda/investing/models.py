@@ -1790,6 +1790,14 @@ class BrokerConnection(TimeStampedModel):
         blank=True,
         help_text="Optional metadata returned by the broker API (account numbers, permissions, etc)."
     )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Disable to prevent sync jobs from using this broker connection."
+    )
+    is_featured = models.BooleanField(
+        default=False,
+        help_text="Flag for highlighting primary broker integrations in the UI."
+    )
 
     class Meta:
         verbose_name = "Broker Connection"
@@ -1926,6 +1934,15 @@ class OptionsPosition(TimeStampedModel):
     rejection_reason = models.TextField(
         blank=True,
         help_text="Reason for rejection (if applicable)"
+    )
+    auto_approved = models.BooleanField(
+        default=False,
+        help_text="Set when the client approval window expired and the system auto-approved the trade. Trader must still enter execution details."
+    )
+    auto_approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the system auto-approved this position after client timeout."
     )
     
     # Position Details
@@ -2865,6 +2882,7 @@ class PositionBatch(TimeStampedModel):
     
     STATUS_CHOICES = [
         ('pending', 'Pending Client Approval'),
+        ('auto_approved', 'Auto Approved – Awaiting Trader Entry'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected by Client'),
         ('expired', 'Expired (24hr timeout)'),
@@ -2892,6 +2910,11 @@ class PositionBatch(TimeStampedModel):
     approval_deadline = models.DateTimeField(
         help_text="Client must approve before this time (24 hours from creation)"
     )
+    auto_approve_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="If the client does not respond by this time (~3 hours), the batch is auto-approved and awaits trader execution"
+    )
     
     # Status
     status = models.CharField(
@@ -2912,6 +2935,11 @@ class PositionBatch(TimeStampedModel):
     approval_ip = models.GenericIPAddressField(
         null=True,
         blank=True
+    )
+    auto_approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when the system auto-approved this batch after client timeout"
     )
     
     # Batch summary
@@ -2963,6 +2991,7 @@ class PositionBatch(TimeStampedModel):
         ('portal', 'Client Portal'),
         ('email', 'Email Link'),
         ('phone', 'Phone Call'),
+        ('auto', 'Auto Approval (Client Timeout)'),
     ]
     approval_method = models.CharField(
         max_length=20,
@@ -3015,21 +3044,62 @@ class PositionBatch(TimeStampedModel):
         """Check if batch is pending approval"""
         return self.status == 'pending' and not self.is_expired
     
+    def auto_approve_without_entry(self):
+        """
+        Auto-approve the batch when the client timeout window passes, but leave
+        positions in pending status so the trading desk can confirm execution.
+        """
+        from django.db import transaction
+
+        if self.status != 'pending':
+            return 0
+
+        with transaction.atomic():
+            now = timezone.now()
+            self.status = 'auto_approved'
+            self.auto_approved_at = now
+            self.approval_method = 'auto'
+            self.save(update_fields=['status', 'auto_approved_at', 'approval_method', 'updated_at'])
+
+            updated = 0
+            for position in self.positions.select_for_update().filter(status='pending'):
+                if position.auto_approved:
+                    continue
+                position.auto_approved = True
+                position.auto_approved_at = now
+                position.requires_client_approval = False
+                position.approval_method = 'auto'
+                position.save(update_fields=[
+                    'auto_approved',
+                    'auto_approved_at',
+                    'requires_client_approval',
+                    'approval_method',
+                    'updated_at',
+                ])
+                updated += 1
+
+        return updated
+
     def expire_batch(self):
         """
         Auto-reject all positions after 24-hour timeout
         Called by cron job
         """
+        if self.status != 'pending':
+            return 0
+
         self.status = 'expired'
-        self.save()
+        self.save(update_fields=['status', 'updated_at'])
         
         # Reject all pending positions in batch
+        rejected = 0
         for position in self.positions.filter(status='pending'):
             position.status = 'rejected'
             position.rejection_reason = 'Batch approval timeout (24 hours) - automatically rejected'
-            position.save()
+            position.save(update_fields=['status', 'rejection_reason', 'updated_at'])
+            rejected += 1
         
-        return self.positions.count()
+        return rejected
     
     def approve_all(self, signature_data, ip_address=None):
         """
@@ -3057,6 +3127,10 @@ class PositionBatch(TimeStampedModel):
                 if position.status == 'pending':
                     position.status = 'open'
                     position.approved_at = timezone.now()
+                    position.auto_approved = False
+                    position.auto_approved_at = None
+                    position.requires_client_approval = False
+                    position.approval_method = 'portal'
                     position.save()
                     
                     # Deduct capital from account
@@ -3316,6 +3390,19 @@ class SuggestedPosition(TimeStampedModel):
         blank=True,
         help_text="Staff comments, modifications, or rejection reasons"
     )
+    auto_approval_notes = models.TextField(
+        blank=True,
+        help_text="System-generated notes describing why this suggestion was auto-approved"
+    )
+    auto_approved_by_system = models.BooleanField(
+        default=False,
+        help_text="True when the ranking engine auto-approved this suggestion without manual review"
+    )
+    auto_approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when the system auto-approved this suggestion"
+    )
     
     # System-generated notes (technical analysis, cross-validation, etc.)
     notes = models.TextField(
@@ -3381,6 +3468,9 @@ class SuggestedPosition(TimeStampedModel):
         self.reviewed_at = timezone.now()
         if notes:
             self.staff_notes = notes
+        self.auto_approved_by_system = False
+        self.auto_approved_at = None
+        self.auto_approval_notes = ''
         self.save()
     
     def reject(self, staff_user, reason):
@@ -3389,6 +3479,9 @@ class SuggestedPosition(TimeStampedModel):
         self.reviewed_by = staff_user
         self.reviewed_at = timezone.now()
         self.staff_notes = reason
+        self.auto_approved_by_system = False
+        self.auto_approved_at = None
+        self.auto_approval_notes = ''
         self.save()
     
     def modify(self, staff_user, updated_data, notes=''):
@@ -3402,6 +3495,36 @@ class SuggestedPosition(TimeStampedModel):
         self.reviewed_by = staff_user
         self.reviewed_at = timezone.now()
         self.staff_notes = f"Modified: {notes}" if notes else "Modified by staff"
+        self.auto_approved_by_system = False
+        self.auto_approved_at = None
+        self.auto_approval_notes = ''
+        self.save()
+    
+    def system_auto_approve(self, ranking_details: dict, staff_user=None):
+        """
+        Approve this suggestion automatically based on ranking data.
+        ranking_details should include rank, total_score, breakdown, recommendation, selection_reason.
+        """
+        now = timezone.now()
+        breakdown = ranking_details.get('breakdown', {})
+        notes = (
+            f"Auto-approved by system as Top {ranking_details.get('rank')} pick "
+            f"(Score: {ranking_details.get('total_score', 0):.1f}/100). "
+            f"Whales {breakdown.get('whales_score', 0):.0f}/100, "
+            f"Earnings {breakdown.get('earnings_score', 0):.0f}/100, "
+            f"Return {breakdown.get('profit_score', 0):.0f}/100, "
+            f"DTE {breakdown.get('dte_score', 0):.0f}/100. "
+            f"Recommendation: {ranking_details.get('recommendation')} – "
+            f"{ranking_details.get('selection_reason')}"
+        )
+        
+        self.review_status = 'approved'
+        self.reviewed_by = staff_user
+        self.reviewed_at = now
+        self.auto_approved_by_system = True
+        self.auto_approved_at = now
+        self.auto_approval_notes = notes
+        self.staff_notes = notes
         self.save()
 
 

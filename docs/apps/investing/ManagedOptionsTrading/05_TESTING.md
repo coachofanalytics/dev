@@ -119,6 +119,8 @@ class OptionsPositionTestCase(TestCase):
   - Confirms strategy legs render in modal and "Preview Trade" button appears only for staff.
 - 🚀 `tests/apps/investing/02_integration/test_client_dashboard_income.py`
   - Validates client sees income vs $420 target but no execution instructions.
+- 🧪 `tests/apps/investing/02_integration/test_auto_ranking.py` *(planned)*
+  - Will exercise `PositionRankingService.auto_approve_top_positions`, ensure system flags and notifications fire.
 - 🚧 `tests/apps/investing/02_integration/test_account_limit_controls.py`
   - New scaffolding for risk guardrail UI; currently skipped with `@skipIf` until legacy migrations are restored.
 - ✅ `tests/apps/investing/02_integration/test_views.py::ManagedAccountPhase3ViewTest`
@@ -235,6 +237,17 @@ class ManagedTradingServiceTestCase(TestCase):
 8. Account updated
 ```
 
+#### **E2E Test 6: Auto-Approval & Batch Timeout Flow**
+```
+1. Ensure at least 5 pending SuggestedPosition records exist (use CSV upload or fetch command)
+2. Run `python manage.py auto_approve_top_positions --count=2`
+3. Verify two top-ranked suggestions move to `approved` with `auto_approved_by_system=True`
+4. Trigger `python manage.py process_batch_approvals` with a batch older than 3 hours
+5. Confirm batch status becomes `auto_approved` and client dashboard loads the "Awaiting Trader Execution" card
+6. Check staff email inbox for the auto-approval summaries (suggestions + batch)
+7. Open `/investing/managed/portal/` as client and ensure CTA is disabled until trader confirms
+```
+
 ---
 
 ## ✅ Test Cases
@@ -265,6 +278,11 @@ class ManagedTradingServiceTestCase(TestCase):
 - **Given:** Account with profit above threshold
 - **When:** Monthly fee calculation runs
 - **Then:** Correct management and performance fees calculated
+
+#### **TC-006: Auto-Approve Top Suggestions**
+- **Given:** 4+ pending `SuggestedPosition` records with ranking metadata
+- **When:** `auto_approve_top_positions` management command runs (count=2)
+- **Then:** Two suggestions move to `approved` with `auto_approved_by_system=True`, remaining suggestions stay pending, notification email sent to staff
 
 ---
 

@@ -56,10 +56,12 @@ class BatchApprovalService:
             total_capital = sum(p.capital_required for p in pending_positions)
             
             # Create batch
+            now = timezone.now()
             batch = PositionBatch.objects.create(
                 managed_account=managed_account,
                 batch_number=batch_number,
-                approval_deadline=timezone.now() + timedelta(hours=24),
+                approval_deadline=now + timedelta(hours=24),
+                auto_approve_at=now + timedelta(hours=3),
                 total_positions=total_positions,
                 total_capital_required=total_capital
             )
@@ -103,22 +105,43 @@ class BatchApprovalService:
     
     def process_expired_batches(self):
         """
-        Find and expire all batches past their deadline
-        Called hourly via cron job
-        
-        Returns:
-            dict with counts of expired batches and positions
+        Process batches that hit their SLA thresholds:
+        1. Auto-approve batches that crossed the 3-hour client timeout window.
+        2. Expire any remaining pending batches that crossed the full 24-hour deadline.
         """
+        now = timezone.now()
+
+        auto_approved_batches = 0
+        positions_auto_approved = 0
+
+        from .notification_service import NotificationService
+        notification_service = NotificationService()
+
+        auto_ready = PositionBatch.objects.filter(
+            status='pending',
+            auto_approve_at__isnull=False,
+            auto_approve_at__lte=now
+        )
+
+        for batch in auto_ready:
+            updated = batch.auto_approve_without_entry()
+            if updated > 0:
+                auto_approved_batches += 1
+                positions_auto_approved += updated
+                notification_service.send_auto_approved_notification(batch, updated)
+                logger.info(
+                    "Auto-approved batch %s after client timeout (%s positions)",
+                    batch.batch_number,
+                    updated,
+                )
+
         expired_batches = PositionBatch.objects.filter(
             status='pending',
-            approval_deadline__lt=timezone.now()
+            approval_deadline__lt=now
         )
         
         expired_count = 0
         positions_rejected = 0
-        
-        from .notification_service import NotificationService
-        notification_service = NotificationService()
         
         for batch in expired_batches:
             # Expire the batch
@@ -138,6 +161,8 @@ class BatchApprovalService:
         )
         
         return {
+            'auto_approved_batches': auto_approved_batches,
+            'positions_auto_approved': positions_auto_approved,
             'expired_batches': expired_count,
             'positions_rejected': positions_rejected
         }

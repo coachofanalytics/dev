@@ -2738,6 +2738,11 @@ def investment_dashboard(request):
         approval_deadline__gt=now
     ).order_by('approval_deadline')
 
+    auto_approved_batches = PositionBatch.objects.filter(
+        managed_account__client=request.user,
+        status='auto_approved'
+    ).order_by('-auto_approved_at')
+
     expired_batches = PositionBatch.objects.filter(
         managed_account__client=request.user,
         status='pending',
@@ -2766,6 +2771,7 @@ def investment_dashboard(request):
         "has_application": has_application,
         "applications": applications,
         "pending_batches": pending_batches,
+        "auto_approved_batches": auto_approved_batches,
         "expired_batches": expired_batches,
     }
 

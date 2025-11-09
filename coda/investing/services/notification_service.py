@@ -292,6 +292,103 @@ CODA Investment Team
         except Exception as e:
             logger.error(f"Error sending batch approved notification: {str(e)}")
     
+    def send_auto_approved_notification(self, batch, position_count):
+        """
+        Notify trading staff that a batch auto-approved after the client timeout window.
+        """
+        staff_emails = self._get_staff_emails()
+        
+        if not staff_emails:
+            logger.info(
+                "Auto-approved batch %s with %s positions (no staff recipients configured)",
+                batch.batch_number,
+                position_count,
+            )
+            return
+        
+        subject = f"[Managed Trading] Batch {batch.batch_number} auto-approved ({position_count} positions)"
+        site_url = getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')
+        message = (
+            f"Client timeout reached for batch {batch.batch_number} (account {batch.managed_account.account_number}).\n\n"
+            f"{position_count} positions are now cleared by the client window and await trader execution.\n\n"
+            f"Review the batch here:\n{site_url}/investing/managed/staff/batches/\n"
+            f"Filter for batch number {batch.batch_number} to process the trades."
+        )
+        
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                staff_emails,
+                fail_silently=False,
+            )
+            logger.info(
+                "Sent auto-approval notice for batch %s to %d staff recipients",
+                batch.batch_number,
+                len(staff_emails),
+            )
+        except Exception as exc:
+            logger.error(
+                "Error sending auto-approval notification for batch %s: %s",
+                batch.batch_number,
+                exc,
+            )
+    
+    def send_auto_suggestion_summary(self, auto_positions: list, remaining: list):
+        """
+        Email staff a summary of system-approved suggestions and remaining opportunities.
+        """
+        if not auto_positions:
+            return
+        
+        staff_emails = self._get_staff_emails()
+        if not staff_emails:
+            logger.info("Auto suggestion summary suppressed (no staff recipients).")
+            return
+        
+        subject = "[Managed Trading] System auto-approved top ranked positions"
+        summary_lines = [
+            "The ranking engine auto-approved the following positions:",
+            "",
+        ]
+        for item in auto_positions:
+            summary_lines.append(
+                f"• #{item['rank']} {item['symbol']} {item['strategy']} "
+                f"(Score {item['total_score']:.1f}/100, {item['recommendation']})"
+            )
+        summary_lines.append("")
+        
+        if remaining:
+            summary_lines.append("Additional high-ranking suggestions awaiting review:")
+            for item in remaining[:5]:
+                summary_lines.append(
+                    f"• #{item['rank']} {item['position'].symbol} "
+                    f"(Score {item['total_score']:.1f}/100, {item['recommendation']})"
+                )
+            summary_lines.append("")
+        
+        summary_lines.append("Log in to the suggestion dashboard to review or adjust exposures.")
+        site_url = getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')
+        summary_lines.append(f"Dashboard: {site_url}/investing/managed/staff/suggestions/")
+        
+        message = "\n".join(summary_lines)
+        
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                staff_emails,
+                fail_silently=False,
+            )
+            logger.info(
+                "Sent auto suggestion summary to %d staff recipients",
+                len(staff_emails),
+            )
+        except Exception as exc:
+            logger.error("Error sending auto suggestion summary: %s", exc)
+    
     @staticmethod
     def _get_staff_emails() -> list[str]:
         base_qs = User.objects.filter(

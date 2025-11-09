@@ -28,6 +28,7 @@ from decimal import Decimal
 from datetime import date, timedelta
 from typing import List, Dict, Optional
 from collections import defaultdict
+from django.db import transaction
 from django.db.models import QuerySet
 
 logger = logging.getLogger(__name__)
@@ -615,6 +616,76 @@ class PositionRankingService:
         self.logger.info(f"  Weeks: {dict(week_counts)}")
         
         return selected
+    
+    def auto_approve_top_positions(
+        self,
+        pending_positions: QuerySet,
+        *,
+        n: int = 2,
+        staff_user=None,
+    ) -> (List[Dict], List[Dict]):
+        """
+        Automatically approve the top N ranked positions.
+        
+        Returns tuple: (auto_approved, remaining_ranked)
+        """
+        base_queryset = pending_positions.filter(
+            review_status='pending',
+            auto_approved_by_system=False,
+        )
+        if not base_queryset.exists():
+            self.logger.info("🤖 Auto-approve: No pending suggestions available")
+            return [], []
+        
+        ranked = self.rank_positions(base_queryset)
+        if not ranked:
+            return [], []
+        
+        top_candidates = self.get_top_n(ranked, n=n)
+        if not top_candidates:
+            return [], ranked
+        
+        top_ids = {item['position'].id for item in top_candidates}
+        auto_approved = []
+        
+        with transaction.atomic():
+            for item in top_candidates:
+                suggestion = item['position']
+                if suggestion.auto_approved_by_system:
+                    self.logger.debug("Suggestion %s already auto-approved; skipping", suggestion.id)
+                    continue
+                
+                suggestion.system_auto_approve(item, staff_user=staff_user)
+                
+                auto_approved.append({
+                    'suggestion_id': suggestion.id,
+                    'symbol': suggestion.symbol,
+                    'strategy': suggestion.get_strategy_display(),
+                    'rank': item['rank'],
+                    'total_score': float(item['total_score']),
+                    'recommendation': item['recommendation'],
+                    'selection_reason': item['selection_reason'],
+                    'breakdown': {
+                        'whales': float(item['breakdown']['whales_score']),
+                        'earnings': float(item['breakdown']['earnings_score']),
+                        'profit': float(item['breakdown']['profit_score']),
+                        'dte': float(item['breakdown']['dte_score']),
+                    },
+                    'target_account': suggestion.target_account.account_number if suggestion.target_account else None,
+                })
+        
+        remaining = [
+            item for item in ranked
+            if item['position'].id not in top_ids
+        ]
+        
+        self.logger.info(
+            "🤖 Auto-approved %s suggestion(s): %s",
+            len(auto_approved),
+            [entry['symbol'] for entry in auto_approved],
+        )
+        
+        return auto_approved, remaining
     
     def _get_sector(self, position) -> str:
         """

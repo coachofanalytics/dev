@@ -213,6 +213,11 @@ $(document).ready(function() {
                 var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Unknown error';
                 alert('❌ Error: ' + msg);
                 btn.prop('disabled', false).html('✅ Accept Top 5 Positions');
+            },
+            complete: function(xhr) {
+                if (!xhr || xhr.status !== 200) {
+                    btn.prop('disabled', false).html('✅ Accept Top 5 Positions');
+                }
             }
         });
     });

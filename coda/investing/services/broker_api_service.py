@@ -111,9 +111,14 @@ class BrokerAPIService(BaseInvestingService):
     # ------------------------------------------------------------------ #
     def _get_connection(self, account: ManagedTradingAccount) -> BrokerConnection:
         try:
-            return account.broker_connection
+            connection = account.broker_connection
         except BrokerConnection.DoesNotExist as exc:
             raise ValidationError("Managed account is not linked to a broker connection.") from exc
+        
+        if not connection.is_active:
+            raise ValidationError("Broker connection is disabled for this account.")
+        
+        return connection
 
     def _fetch_from_broker(self, connection: BrokerConnection) -> List[Dict[str, Any]]:
         """

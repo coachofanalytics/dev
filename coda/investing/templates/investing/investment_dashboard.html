@@ -167,6 +167,50 @@
     </div>
     {% endif %}
 
+    {% if auto_approved_batches %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fa fa-robot"></i> Auto-Approved Batches (Awaiting Desk Entry)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        These trades cleared the 3-hour client window automatically and will go live once the trading desk confirms execution.
+                    </p>
+                    {% for batch in auto_approved_batches %}
+                    <div class="card mb-3 border-info-subtle">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <strong>Batch:</strong> {{ batch.batch_number }}<br>
+                                    <strong>Positions:</strong> {{ batch.total_positions }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Capital Reserved:</strong><br>
+                                    ${{ batch.total_capital_required|floatformat:2 }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Auto Approved:</strong><br>
+                                    <span class="text-info">{{ batch.auto_approved_at|date:"M j, Y g:i A" }}</span>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <span class="badge bg-info text-dark" style="font-size: 16px; padding: 10px 16px;">
+                                        Awaiting Trader Execution
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Pending Batch Approvals (URGENT - Show First) -->
     {% if pending_batches %}
     <div class="row mb-4">

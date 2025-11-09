@@ -198,7 +198,7 @@ class BrokerConnectionAdminForm(forms.ModelForm):
 
     class Meta:
         model = BrokerConnection
-        fields = ['managed_account', 'broker', 'api_key', 'api_secret', 'metadata']
+        fields = ['managed_account', 'broker', 'is_active', 'is_featured', 'api_key', 'api_secret', 'metadata']
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -225,13 +225,16 @@ class BrokerConnectionAdmin(admin.ModelAdmin):
         'masked_api_key',
         'masked_api_secret',
         'last_sync',
+        'is_active',
+        'is_featured',
         'updated_at',
     ]
+    list_filter = ['broker', 'is_active', 'is_featured']
     search_fields = ['managed_account__account_number', 'managed_account__client__email']
     readonly_fields = ['masked_api_key', 'masked_api_secret', 'last_sync', 'created_at', 'updated_at']
     fieldsets = (
         ('Broker Details', {
-            'fields': ('managed_account', 'broker')
+            'fields': ('managed_account', 'broker', 'is_active', 'is_featured')
         }),
         ('Credentials', {
             'fields': ('api_key', 'api_secret', 'masked_api_key', 'masked_api_secret'),
@@ -266,12 +269,24 @@ class OptionsPositionAdmin(admin.ModelAdmin):
     readonly_fields = [
         'entry_date', 'created_at', 'updated_at',
         'days_in_trade_display', 'days_to_expiration_display',
-        'profit_percentage_display', 'is_profitable_display'
+        'profit_percentage_display', 'is_profitable_display',
+        'approved_at', 'auto_approved', 'auto_approved_at'
     ]
     
     fieldsets = (
         ('Position Details', {
             'fields': ('managed_account', 'symbol', 'strategy', 'positions', 'status')
+        }),
+        ('Approval Tracking', {
+            'fields': (
+                'requires_client_approval',
+                'approved_at',
+                'approval_method',
+                'approval_notes',
+                'auto_approved',
+                'auto_approved_at',
+                'rejection_reason',
+            )
         }),
         ('Financial Details', {
             'fields': (
@@ -615,17 +630,20 @@ class PositionBatchAdmin(admin.ModelAdmin):
         'managed_account',
         'created_date',
         'approval_deadline',
+        'auto_approve_at',
+        'auto_approved_at',
         'status',
         'total_positions',
         'total_capital_required',
         'hours_remaining',
         'is_expired_display'
     ]
-    list_filter = ['status', 'created_date', 'approval_deadline']
+    list_filter = ['status', 'created_date', 'approval_deadline', 'auto_approve_at']
     search_fields = ['batch_number', 'managed_account__account_number']
     readonly_fields = [
         'created_date', 'approved_date', 'created_at', 'updated_at',
-        'hours_remaining', 'time_remaining_display', 'is_expired_display'
+        'hours_remaining', 'time_remaining_display', 'is_expired_display',
+        'auto_approve_at', 'auto_approved_at'
     ]
     
     fieldsets = (
@@ -635,6 +653,7 @@ class PositionBatchAdmin(admin.ModelAdmin):
         ('Timing', {
             'fields': (
                 'created_date', 'approval_deadline',
+                'auto_approve_at', 'auto_approved_at',
                 'hours_remaining', 'time_remaining_display', 'is_expired_display'
             )
         }),
@@ -685,14 +704,16 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
         'dte',
         'review_status',
         'reviewed_by',
+        'auto_approved_by_system',
         'fetched_at'
     ]
-    list_filter = ['review_status', 'ai_rating', 'source', 'strategy', 'fetched_at']  # Added ai_rating filter
-    search_fields = ['symbol', 'ai_reasoning', 'ai_recommendation', 'staff_notes']
+    list_filter = ['review_status', 'ai_rating', 'source', 'strategy', 'auto_approved_by_system', 'fetched_at']
+    search_fields = ['symbol', 'ai_reasoning', 'ai_recommendation', 'staff_notes', 'auto_approval_notes']
     readonly_fields = [
         'fetched_at', 'reviewed_at', 'created_at', 'updated_at',
         'risk_reward_ratio', 'meets_criteria', 
-        'ai_score', 'ai_rating', 'ai_breakdown', 'ai_recommendation', 'ai_confidence_level'  # NEW: AI fields readonly
+        'ai_score', 'ai_rating', 'ai_breakdown', 'ai_recommendation', 'ai_confidence_level',
+        'auto_approved_at', 'auto_approved_by_system'
     ]
     list_editable = []
     ordering = ['-ai_score', '-probability_of_profit', '-fetched_at']  # Sort by AI score first!
@@ -734,6 +755,13 @@ class SuggestedPositionAdmin(admin.ModelAdmin):
             'fields': (
                 'review_status', 'reviewed_by', 'reviewed_at',
                 'staff_notes', 'target_account'
+            )
+        }),
+        ('System Automation', {
+            'fields': (
+                'auto_approved_by_system',
+                'auto_approved_at',
+                'auto_approval_notes',
             )
         }),
         ('Conversion', {

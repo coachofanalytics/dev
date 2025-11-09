@@ -88,6 +88,8 @@ def batch_approval_view(request, batch_id):
                         position.status = 'open'
                         position.approved_at = timezone.now()
                         position.approval_method = 'batch'
+                        position.auto_approved = False
+                        position.auto_approved_at = None
                         position.save()
                         
                         # Deduct capital from account
@@ -103,6 +105,8 @@ def batch_approval_view(request, batch_id):
                             f'rejection_reason_{position.id}',
                             'Rejected by client'
                         )
+                        position.auto_approved = False
+                        position.auto_approved_at = None
                         position.save()
                         rejected_count += 1
                 

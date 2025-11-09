@@ -26,12 +26,20 @@ class Command(BaseCommand):
         
         # 1. Process expired batches (24-hour timeout)
         self.stdout.write("Checking for expired batches...")
-        expired_result = service.process_expired_batches()
+        result = service.process_expired_batches()
         
-        if expired_result['expired_batches'] > 0:
+        if result['auto_approved_batches'] > 0:
+            self.stdout.write(self.style.SUCCESS(
+                f"🤖 Auto-approved {result['auto_approved_batches']} batches "
+                f"({result['positions_auto_approved']} positions) after client timeout"
+            ))
+        else:
+            self.stdout.write("✓ No batches needed auto-approval this cycle")
+        
+        if result['expired_batches'] > 0:
             self.stdout.write(self.style.WARNING(
-                f"⚠️  Expired {expired_result['expired_batches']} batches, "
-                f"rejected {expired_result['positions_rejected']} positions"
+                f"⚠️  Expired {result['expired_batches']} batches, "
+                f"rejected {result['positions_rejected']} positions"
             ))
         else:
             self.stdout.write("✓ No expired batches")
@@ -50,7 +58,8 @@ class Command(BaseCommand):
         # Summary
         self.stdout.write(self.style.SUCCESS(
             f"\n✅ Batch processing complete at {timezone.now()}\n"
-            f"   Expired: {expired_result['expired_batches']}\n"
+            f"   Auto Approved: {result['auto_approved_batches']}\n"
+            f"   Expired: {result['expired_batches']}\n"
             f"   Reminders: {reminders_sent}\n"
         ))
 
