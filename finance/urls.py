@@ -7,5 +7,6 @@ urlpatterns = [
 
     path("overboughtsold/", views.OverBoughtSold, name="OverBoughtSold_list"),
     path("payments_information/", views.PaymentInformation_list, name="PaymentInformation_list"),
+    path("Default_Payment_Fees_list/", views.Default_Payment_Fees_list, name="Default_Payment_Fees_list"),
 
 ]

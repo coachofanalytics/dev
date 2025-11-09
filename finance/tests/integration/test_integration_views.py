@@ -2,10 +2,16 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from finance.models import Default_Payment_Fees
 
-class DefaultPaymentFeesListViewTest(TestCase):
+
+class DefaultPaymentFeesIntegrationTest(TestCase):
+    """
+    Integration test for Default_Payment_Fees_list view.
+    Checks URL, template rendering, and database integration together.
+    """
+
     def setUp(self):
         self.client = Client()
-        # Create test data
+        # Create multiple payment records
         Default_Payment_Fees.objects.create(
             job_down_payment_per_month=2000,
             job_plan_hours_per_month=160,
@@ -19,29 +25,24 @@ class DefaultPaymentFeesListViewTest(TestCase):
             student_bonus_payment_per_month=400
         )
 
-    def test_list_view_status_code(self):
-        """Check if the list view loads successfully"""
-        url = reverse("Default_Payment_Fees_list")
+    def test_integration_view_status_code(self):
+        """Integration: Ensure view returns 200 OK."""
+        url = reverse('Default_Payment_Fees_list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_list_view_template_used(self):
-        """Ensure the correct template is used"""
-        url = reverse("Default_Payment_Fees_list")
+    def test_integration_template_used(self):
+        """Integration: Correct template is rendered."""
+        url = reverse('Default_Payment_Fees_list')
         response = self.client.get(url)
-        self.assertTemplateUsed(response, "finance/Default_Payment_Fees_list.html")
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')
 
-    def test_list_view_context_data(self):
-        """Ensure 'payments' is in context and contains correct count"""
-        url = reverse("Default_Payment_Fees_list")
+    def test_integration_context_and_data(self):
+        """Integration: Context includes payments and data is correct."""
+        url = reverse('Default_Payment_Fees_list')
         response = self.client.get(url)
-        self.assertIn("payments", response.context)
-        self.assertEqual(response.context["payments"].count(), 2)
-
-    def test_list_view_displays_fee_values(self):
-        """Ensure the rendered HTML contains specific fee data"""
-        url = reverse("Default_Payment_Fees_list")
-        response = self.client.get(url)
+        self.assertIn('payments', response.context)
+        self.assertEqual(response.context['payments'].count(), 2)
         self.assertContains(response, "2000")
         self.assertContains(response, "2500")
         self.assertContains(response, "160")

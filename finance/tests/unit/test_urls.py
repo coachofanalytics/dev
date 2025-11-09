@@ -1,17 +1,20 @@
+
+
+
 from django.test import SimpleTestCase
 from django.urls import reverse, resolve
-from finance.views import PaymentInformation_list
+from finance import views
 
 
-class TestPaymentInformationURLs(SimpleTestCase):
-    """Test URL configuration for PaymentInformation views"""
+class TestDefaultPaymentFeesUrls(SimpleTestCase):
 
-    def test_paymentinformation_list_url_resolves(self):
-        """Ensure the 'paymentinformation_list' URL name resolves to the correct view"""
-        url = reverse('paymentinformation_list')
-        self.assertEqual(resolve(url).func, PaymentInformation_list)
+    def test_default_payment_fees_list_reverse(self):
+        url = reverse('Default_Payment_Fees_list')
+        # ✅ Since your app is included under /finance/
+        self.assertEqual(url, '/finance/Default_Payment_Fees_list/')
 
-    def test_paymentinformation_list_url_exists_at_desired_location(self):
-        """Ensure /finance/payments/ returns 200 OK"""
-        response = self.client.get('/finance/payments/')
-        self.assertEqual(response.status_code, 200)
+    def test_default_payment_fees_list_resolves(self):
+        resolver = resolve('/finance/Default_Payment_Fees_list/')
+        self.assertEqual(resolver.func, views.Default_Payment_Fees_list)
+
+
