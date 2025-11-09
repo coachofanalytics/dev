@@ -4,11 +4,14 @@ Position Management Views
 Views for creating, closing, and managing options positions.
 """
 
+import logging
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import date
 import json
@@ -16,7 +19,10 @@ import json
 from ...models import ManagedTradingAccount, OptionsPosition
 from ...forms import OptionsPositionForm, ClosePositionForm, QuickPositionEntryForm
 from ...forms_enhanced import MultiLegOptionsForm, OptionPlayIntegrationForm
-from ...services import ManagedTradingService, OptionsMonitoringService
+from ...services import ManagedTradingService, OptionsMonitoringService, BrokerAPIService
+
+
+logger = logging.getLogger(__name__)
 
 
 @staff_member_required
@@ -384,6 +390,37 @@ def position_detail(request, position_id):
     }
     
     return render(request, 'investing/managed/position_detail.html', context)
+
+
+@staff_member_required
+def sync_broker_positions(request, account_id):
+    """
+    Trigger a broker sync for the specified managed trading account.
+    """
+    account = get_object_or_404(
+        ManagedTradingAccount.objects.select_related('broker_connection', 'client'),
+        id=account_id
+    )
+
+    service = BrokerAPIService()
+    try:
+        result = service.sync_positions(account, performed_by=request.user)
+        messages.success(
+            request,
+            (
+                f"Broker sync completed for {account.account_number}. "
+                f"{result['created']} created, {result['updated']} updated, {result['skipped']} skipped."
+            )
+        )
+    except ValidationError as exc:
+        messages.error(request, str(exc))
+    except NotImplementedError as exc:
+        messages.warning(request, str(exc))
+    except Exception as exc:  # pragma: no cover - unexpected broker failure
+        logger.exception("Broker sync failed for account %s", account.account_number)
+        messages.error(request, f"Unexpected error during broker sync: {exc}")
+
+    return redirect('investing:managed_account_detail', account_id=account.id)
 
 
 @staff_member_required

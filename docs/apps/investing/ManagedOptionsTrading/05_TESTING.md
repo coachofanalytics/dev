@@ -37,6 +37,10 @@
   - Confirms allocation digest recipients are limited to superusers + configured group, and emails skip when recipient list is empty.
 - ✅ `tests/apps/investing/01_unit/test_services.py`
   - Validates `ManagedTradingService.get_income_summary()` coverage %, target gaps, and Unusual Whales timeline metadata powering the Phase 3 dashboard.
+- ✅ `tests/apps/investing/01_unit/test_services.py::BrokerAPIServiceTests`
+  - Ensures broker credentials encrypt correctly and broker sync upserts positions as expected.
+- ✅ `tests/apps/investing/01_unit/test_services.py::PredictiveAnalyticsServiceTests`
+  - Exercises fallback forecasting and minimum-history guard for predictive analytics.
 - 🚀 `tests/apps/investing/01_unit/test_notification_templates.py`
   - Guards WhatsApp/email scenario digests for placeholder variables.
 
@@ -119,6 +123,10 @@ class OptionsPositionTestCase(TestCase):
   - New scaffolding for risk guardrail UI; currently skipped with `@skipIf` until legacy migrations are restored.
 - ✅ `tests/apps/investing/02_integration/test_views.py::ManagedAccountPhase3ViewTest`
   - Exercises Phase 3 dashboard copy, scenario slider JSON defaults, and verifies the page remains read-only for managed clients.
+- ✅ `tests/apps/investing/02_integration/test_views.py::BrokerSyncViewTest`
+  - Verifies staff-only broker sync endpoint wiring and permission guard.
+- ✅ `tests/apps/investing/02_integration/test_views.py::AccountAnalyticsViewTest`
+  - Confirms predictive analytics page renders for staff accounts with sufficient history.
 - 🚀 `tests/apps/investing/02_integration/test_client_managed_dashboard.py`
   - Legacy scaffold kept for future E2E flow; high-level assertions now live in `test_views.py`.
 

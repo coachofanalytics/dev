@@ -20,6 +20,7 @@ from .views.managed_trading import (
     webhooks,  # Phase 9: Real-time WhatsApp approval
     multi_file_analyzer,  # Phase 9: Multi-file flow analyzer (manual Unusual Whales)
     api_bulk_actions,  # Phase 9: Bulk approval and distribution
+    analytics,  # Phase 4: Predictive analytics
 )
 
 urlpatterns = [
@@ -52,6 +53,13 @@ urlpatterns = [
     path('managed/accounts/<int:account_id>/positions/create/', 
          positions.create_position, 
          name='create_position_for_account'),
+    path('managed/accounts/<int:account_id>/analytics/',
+         analytics.account_analytics,
+         name='managed_account_analytics'),
+    
+    path('managed/accounts/<int:account_id>/broker-sync/',
+         positions.sync_broker_positions,
+         name='broker_sync_positions'),
     
     path('managed/positions/<int:position_id>/', 
          positions.position_detail, 

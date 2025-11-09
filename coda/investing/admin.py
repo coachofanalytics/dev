@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from .models import *
 
 # Register your models here.
@@ -180,6 +181,70 @@ class ManagedTradingAccountAdmin(admin.ModelAdmin):
         return f"{obj.current_risk_exposure:.2f}%"
     risk_exposure_display.short_description = 'Risk Exposure'
 
+
+class BrokerConnectionAdminForm(forms.ModelForm):
+    api_key = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(render_value=False),
+        help_text="Leave blank to keep the existing API key.",
+        label="API key",
+    )
+    api_secret = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(render_value=False),
+        help_text="Leave blank to keep the existing API secret.",
+        label="API secret",
+    )
+
+    class Meta:
+        model = BrokerConnection
+        fields = ['managed_account', 'broker', 'api_key', 'api_secret', 'metadata']
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        api_key = self.cleaned_data.get('api_key')
+        api_secret = self.cleaned_data.get('api_secret')
+
+        if api_key:
+            instance.set_api_key(api_key)
+        if api_secret:
+            instance.set_api_secret(api_secret)
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
+
+
+@admin.register(BrokerConnection)
+class BrokerConnectionAdmin(admin.ModelAdmin):
+    form = BrokerConnectionAdminForm
+    list_display = [
+        'managed_account',
+        'broker',
+        'masked_api_key',
+        'masked_api_secret',
+        'last_sync',
+        'updated_at',
+    ]
+    search_fields = ['managed_account__account_number', 'managed_account__client__email']
+    readonly_fields = ['masked_api_key', 'masked_api_secret', 'last_sync', 'created_at', 'updated_at']
+    fieldsets = (
+        ('Broker Details', {
+            'fields': ('managed_account', 'broker')
+        }),
+        ('Credentials', {
+            'fields': ('api_key', 'api_secret', 'masked_api_key', 'masked_api_secret'),
+            'description': 'Enter new credentials to rotate keys. Leave blank to keep existing values.',
+        }),
+        ('Metadata', {
+            'fields': ('metadata', 'last_sync')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
 @admin.register(OptionsPosition)
 class OptionsPositionAdmin(admin.ModelAdmin):

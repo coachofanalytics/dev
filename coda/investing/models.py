@@ -7,6 +7,7 @@ from datetime import datetime, date, timedelta
 from django.urls import reverse
 from main.models import TimeStampedModel, ContractBase, DocumentMixin, StatusMixin
 from django.contrib.auth import get_user_model
+from ai_services.services.token_encryption_service import TokenEncryptionService
 
 # Import shared constants (Single Source of Truth) - Added Nov 5, 2025
 # Constants import - COMMENTED OUT temporarily (Nov 5, 2025)
@@ -1733,6 +1734,128 @@ class ManagedTradingAccount(TimeStampedModel):
         if self.current_balance is None:
             return Decimal('0.00')
         return ((self.current_balance - self.initial_capital) / self.initial_capital) * 100
+
+
+class BrokerConnection(TimeStampedModel):
+    """
+    Stores API credentials and sync metadata for a managed trading account's broker.
+    
+    Credentials are encrypted-at-rest via TokenEncryptionService. Use the helper
+    methods to set or retrieve decrypted values instead of reading fields directly.
+    """
+
+    BROKER_CHOICES = [
+        ('td', 'TD Ameritrade'),
+        ('ibkr', 'Interactive Brokers'),
+        ('tasty', 'Tastytrade'),
+        ('schwab', 'Schwab'),
+    ]
+
+    managed_account = models.OneToOneField(
+        ManagedTradingAccount,
+        on_delete=models.CASCADE,
+        related_name='broker_connection'
+    )
+    broker = models.CharField(
+        max_length=20,
+        choices=BROKER_CHOICES
+    )
+    api_key_encrypted = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Encrypted API key. Set using set_api_key() helper."
+    )
+    api_key_last4 = models.CharField(
+        max_length=4,
+        blank=True,
+        help_text="Last 4 characters of the API key for display."
+    )
+    api_secret_encrypted = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Encrypted API secret. Set using set_api_secret() helper."
+    )
+    api_secret_last4 = models.CharField(
+        max_length=4,
+        blank=True,
+        help_text="Last 4 characters of the API secret for display."
+    )
+    last_sync = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of the most recent successful broker sync."
+    )
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Optional metadata returned by the broker API (account numbers, permissions, etc)."
+    )
+
+    class Meta:
+        verbose_name = "Broker Connection"
+        verbose_name_plural = "Broker Connections"
+        ordering = ['-updated_at']
+
+    def __str__(self) -> str:
+        return f"{self.get_broker_display()} connection for {self.managed_account.account_number}"
+
+    # ------------------------------------------------------------------ #
+    # Credential helpers
+    # ------------------------------------------------------------------ #
+    @property
+    def has_credentials(self) -> bool:
+        return bool(self.api_key_encrypted and self.api_secret_encrypted)
+
+    @property
+    def masked_api_key(self) -> str:
+        if not self.api_key_last4:
+            return "Not set"
+        return f"••••{self.api_key_last4}"
+
+    @property
+    def masked_api_secret(self) -> str:
+        if not self.api_secret_last4:
+            return "Not set"
+        return f"••••{self.api_secret_last4}"
+
+    def set_api_key(self, api_key: str):
+        if not api_key:
+            raise ValidationError("API key cannot be empty.")
+        encrypted = self._encryption_service.encrypt_token(api_key)
+        self.api_key_encrypted = encrypted
+        self.api_key_last4 = api_key[-4:] if len(api_key) >= 4 else api_key
+
+    def set_api_secret(self, api_secret: str):
+        if not api_secret:
+            raise ValidationError("API secret cannot be empty.")
+        encrypted = self._encryption_service.encrypt_token(api_secret)
+        self.api_secret_encrypted = encrypted
+        self.api_secret_last4 = api_secret[-4:] if len(api_secret) >= 4 else api_secret
+
+    def set_credentials(self, *, api_key: str = None, api_secret: str = None):
+        """
+        Convenience helper for setting key and secret in one call.
+        """
+        if api_key:
+            self.set_api_key(api_key)
+        if api_secret:
+            self.set_api_secret(api_secret)
+
+    def get_api_key(self) -> str:
+        if not self.api_key_encrypted:
+            return ""
+        return self._encryption_service.decrypt_token(self.api_key_encrypted)
+
+    def get_api_secret(self) -> str:
+        if not self.api_secret_encrypted:
+            return ""
+        return self._encryption_service.decrypt_token(self.api_secret_encrypted)
+
+    @property
+    def _encryption_service(self) -> TokenEncryptionService:
+        if not hasattr(self, '_token_encryption_service'):
+            self._token_encryption_service = TokenEncryptionService()
+        return self._token_encryption_service
 
 
 class OptionsPosition(TimeStampedModel):

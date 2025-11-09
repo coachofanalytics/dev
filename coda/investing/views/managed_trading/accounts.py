@@ -159,6 +159,8 @@ def managed_account_detail(request, account_id):
     session_fees_this_month = account.sessions_completed_this_month * account.session_fee
     remaining_sessions = account.sessions_per_month - account.sessions_completed_this_month
     
+    broker_connection = getattr(account, 'broker_connection', None)
+
     context = {
         'account': account,
         'summary': summary,
@@ -172,6 +174,9 @@ def managed_account_detail(request, account_id):
         'is_manager': is_manager or is_staff,
         'is_client': is_client,
         'is_consultative': account.fee_tier == 'consultative',
+        'broker_connection': broker_connection,
+        'can_sync_from_broker': bool(broker_connection and broker_connection.has_credentials),
+        'last_broker_sync': broker_connection.last_sync if broker_connection else None,
         'title': f'Account {account.account_number}'
     }
     

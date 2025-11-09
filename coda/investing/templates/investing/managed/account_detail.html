@@ -20,7 +20,7 @@
                 {{ account.get_fee_tier_display }}
             </p>
         </div>
-        <div class="col-auto">
+        <div class="col-auto text-end">
             {% if is_manager %}
                 <a href="{% url 'investing:create_position_for_account' account.id %}" class="btn btn-success">
                     <i class="fa fa-plus"></i> New Position
@@ -28,11 +28,33 @@
                 <a href="{% url 'investing:account_alerts' account.id %}" class="btn btn-warning">
                     <i class="fa fa-exclamation-triangle"></i> Alerts
                 </a>
+                {% if can_sync_from_broker %}
+                <a href="{% url 'investing:broker_sync_positions' account.id %}" class="btn btn-outline-primary">
+                    <i class="fa fa-sync"></i> Sync Broker Positions
+                </a>
+                {% elif broker_connection %}
+                <span class="badge bg-secondary align-middle">
+                    Broker linked – add credentials to enable sync
+                </span>
+                {% endif %}
+                <a href="{% url 'investing:managed_account_analytics' account.id %}" class="btn btn-outline-secondary">
+                    <i class="fa fa-chart-line"></i> Predictive Analytics
+                </a>
                 {% if is_consultative %}
                 <a href="{% url 'investing:create_session' account.id %}" class="btn btn-info">
                     <i class="fa fa-calendar"></i> Record Session
                 </a>
                 {% endif %}
+            {% endif %}
+            {% if broker_connection %}
+            <div class="small text-muted mt-2">
+                Broker: {{ broker_connection.get_broker_display }} |
+                {% if last_broker_sync %}
+                    Last sync {{ last_broker_sync|date:"M d, Y g:i A" }}
+                {% else %}
+                    Not synced yet
+                {% endif %}
+            </div>
             {% endif %}
         </div>
     </div>

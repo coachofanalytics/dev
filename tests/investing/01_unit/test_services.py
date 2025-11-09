@@ -9,15 +9,19 @@ Category: Unit Tests
 """
 
 from datetime import timedelta
+from unittest.mock import patch
 from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
-from investing.models import ManagedTradingAccount, OptionsPosition
+from investing.models import ManagedTradingAccount, OptionsPosition, BrokerConnection, OptionsPositionHistory
 from investing.services.managed_trading_service import ManagedTradingService
+from investing.services.broker_api_service import BrokerAPIService
+from investing.services.predictive_analytics_service import PredictiveAnalyticsService
 
 User = get_user_model()
 
@@ -170,3 +174,151 @@ class ManagedTradingServiceIncomeSummaryTests(TestCase):
         self.assertEqual(latest["flow_score"], 88)
         self.assertEqual(latest["timing_signal"], "Sweep > $1M")
         self.assertEqual(latest["entry_window"], "0-2 days")
+
+
+class BrokerAPIServiceTests(TestCase):
+    """Validate broker sync logic and credential handling."""
+
+    def setUp(self):
+        self.service = ManagedTradingService()
+        self.sync_service = BrokerAPIService()
+        self.user = User.objects.create_user(
+            username="broker_client",
+            email="broker_client@test.com",
+            password="securepass123",
+            is_active=True,
+        )
+        self.account = self.service.create_managed_account(
+            client_user=self.user,
+            account_data={
+                "account_name": "Broker Synced Account",
+                "initial_capital": Decimal("15000.00"),
+                "fee_tier": "professional",
+            },
+        )
+        self.connection = BrokerConnection.objects.create(
+            managed_account=self.account,
+            broker="tasty",
+        )
+        self.connection.set_credentials(
+            api_key="TASTY-KEY-1234",
+            api_secret="SECRET-5678",
+        )
+        self.connection.save()
+
+    def test_credentials_are_encrypted_and_masked(self):
+        """Ensure secrets are stored encrypted with masked helpers."""
+        self.assertTrue(self.connection.api_key_encrypted)
+        self.assertNotEqual(self.connection.api_key_encrypted, "TASTY-KEY-1234")
+        self.assertEqual(self.connection.api_key_last4, "1234")
+        self.assertEqual(self.connection.masked_api_key, "••••1234")
+        self.assertEqual(self.connection.get_api_key(), "TASTY-KEY-1234")
+
+    def test_sync_positions_creates_and_updates_records(self):
+        """Broker sync should upsert positions without duplication."""
+        expiration = timezone.now().date() + timedelta(days=30)
+        payload = [
+            {
+                "symbol": "AAPL",
+                "strategy": "short_put",
+                "expiration_date": expiration,
+                "premium_collected": "250.00",
+                "capital_required": "2500.00",
+                "unrealized_pnl": "75.00",
+                "status": "open",
+                "legs": [{"type": "short_put", "strike": 175, "contracts": 1}],
+            }
+        ]
+
+        with patch.object(BrokerAPIService, "_fetch_from_broker", return_value=payload):
+            result = self.sync_service.sync_positions(self.account, performed_by=self.user)
+
+        self.assertEqual(result, {"created": 1, "updated": 0, "skipped": 0})
+        position = OptionsPosition.objects.get(managed_account=self.account, symbol="AAPL")
+        self.assertEqual(position.premium_collected, Decimal("250.00"))
+        self.assertEqual(position.unrealized_pnl, Decimal("75.00"))
+        self.connection.refresh_from_db()
+        self.assertIsNotNone(self.connection.last_sync)
+
+        # Sync again with modified values to ensure update path works
+        payload[0]["unrealized_pnl"] = "55.00"
+        with patch.object(BrokerAPIService, "_fetch_from_broker", return_value=payload):
+            result = self.sync_service.sync_positions(self.account, performed_by=self.user)
+        self.assertEqual(result, {"created": 0, "updated": 1, "skipped": 0})
+        position.refresh_from_db()
+        self.assertEqual(position.unrealized_pnl, Decimal("55.00"))
+
+    def test_sync_raises_without_connection(self):
+        """Accounts without broker connections should error."""
+        new_account = self.service.create_managed_account(
+            client_user=self.user,
+            account_data={
+                "account_name": "No Broker Account",
+                "initial_capital": Decimal("10000.00"),
+                "fee_tier": "professional",
+            },
+        )
+        with self.assertRaises(ValidationError):
+            self.sync_service.sync_positions(new_account)
+
+
+class PredictiveAnalyticsServiceTests(TestCase):
+    """Validate predictive analytics fallback projections."""
+
+    def setUp(self):
+        self.trading_service = ManagedTradingService()
+        self.analytics_service = PredictiveAnalyticsService()
+        self.user = User.objects.create_user(
+            username="analytics_client",
+            email="analytics_client@test.com",
+            password="securepass123",
+            is_active=True,
+        )
+        self.account = self.trading_service.create_managed_account(
+            client_user=self.user,
+            account_data={
+                "account_name": "Analytics Account",
+                "initial_capital": Decimal("18000.00"),
+                "fee_tier": "professional",
+            },
+        )
+        self._seed_history()
+
+    def _seed_history(self):
+        base_date = timezone.now().date() - timedelta(days=90)
+        for offset, profit in enumerate([Decimal("180.00"), Decimal("220.00"), Decimal("150.00"), Decimal("195.00")]):
+            position = OptionsPosition.objects.create(
+                managed_account=self.account,
+                symbol=f"SYM{offset}",
+                strategy="short_put",
+                positions=[{"type": "short_put", "strike": 100 + offset, "contracts": 1}],
+                capital_required=Decimal("2500.00"),
+                premium_collected=profit,
+                max_profit=profit,
+                max_loss=Decimal("2500.00"),
+                entry_date=base_date + timedelta(days=offset * 7),
+                expiration_date=base_date + timedelta(days=offset * 7 + 30),
+                exit_date=base_date + timedelta(days=offset * 7 + 15),
+                status="closed",
+            )
+            OptionsPositionHistory.objects.create(
+                position=position,
+                was_profitable=True,
+                actual_return_amount=profit,
+                actual_return_percentage=Decimal("12.0"),
+                days_held=15,
+                annualized_return=Decimal("25.0"),
+                exit_reason="profit_target",
+            )
+
+    def test_forecast_returns_history_and_projection(self):
+        result = self.analytics_service.forecast_account_balance(self.account, periods=5)
+        self.assertIn('history', result)
+        self.assertIn('forecast', result)
+        self.assertGreaterEqual(len(result['history']), 4)
+        self.assertEqual(len(result['forecast']), 5)
+
+    def test_forecast_requires_minimum_history(self):
+        OptionsPositionHistory.objects.all().delete()
+        with self.assertRaises(ValueError):
+            self.analytics_service.forecast_account_balance(self.account)

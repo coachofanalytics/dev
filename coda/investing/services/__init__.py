@@ -14,6 +14,8 @@ __all__ = [
     'PositionFetcherService',
     'CapitalAllocationService',
     'UnusualWhalesService',
+    'BrokerAPIService',
+    'PredictiveAnalyticsService',
 ]
 
 _MODULE_MAP = {
@@ -28,6 +30,8 @@ _MODULE_MAP = {
     'PositionFetcherService': '.position_fetcher_service',
     'CapitalAllocationService': '.capital_allocation_service',
     'UnusualWhalesService': '.unusual_whales_service',
+    'BrokerAPIService': '.broker_api_service',
+    'PredictiveAnalyticsService': '.predictive_analytics_service',
 }
 
 

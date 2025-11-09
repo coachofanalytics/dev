@@ -9,6 +9,7 @@ Category: Integration Tests
 """
 
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
@@ -16,7 +17,7 @@ from django.urls import reverse
 from decimal import Decimal
 from django.utils import timezone
 
-from investing.models import ManagedTradingAccount, OptionsPosition
+from investing.models import ManagedTradingAccount, OptionsPosition, BrokerConnection, OptionsPositionHistory
 from investing.services.managed_trading_service import ManagedTradingService
 from accounts.choices import UserCategory
 
@@ -388,6 +389,126 @@ class ManagedAccountPhase3ViewTest(TestCase):
         income_summary = response.context['income_summary']
         self.assertIn('target_gap', income_summary)
         self.assertGreaterEqual(income_summary['coverage_pct'], Decimal('0'))
+
+
+class BrokerSyncViewTest(TestCase):
+    """Ensure staff can trigger broker sync endpoint."""
+
+    def setUp(self):
+        self.client = Client()
+        self.service = ManagedTradingService()
+        self.staff = User.objects.create_user(
+            username='sync_staff',
+            email='sync_staff@test.com',
+            password='password123',
+            is_staff=True,
+            is_active=True,
+        )
+        self.investor = User.objects.create_user(
+            username='sync_investor',
+            email='sync_investor@test.com',
+            password='password123',
+            is_active=True,
+        )
+        self.account = self.service.create_managed_account(
+            client_user=self.investor,
+            account_data={
+                'account_name': 'Sync Account',
+                'initial_capital': Decimal('12000.00'),
+                'fee_tier': 'professional',
+            },
+        )
+        self.connection = BrokerConnection.objects.create(
+            managed_account=self.account,
+            broker='tasty',
+        )
+        self.connection.set_credentials(
+            api_key='TASTY-AUTO-1234',
+            api_secret='SECRET-AUTO-5678',
+        )
+        self.connection.save()
+
+    @patch('investing.views.managed_trading.positions.BrokerAPIService.sync_positions')
+    def test_staff_can_trigger_broker_sync(self, mock_sync):
+        mock_sync.return_value = {'created': 1, 'updated': 0, 'skipped': 0}
+        self.client.login(username='sync_staff', password='password123')
+
+        response = self.client.get(reverse('investing:broker_sync_positions', args=[self.account.pk]))
+
+        self.assertEqual(response.status_code, 302)
+        mock_sync.assert_called_once()
+        redirect_url = reverse('investing:managed_account_detail', args=[self.account.pk])
+        self.assertEqual(response.url, redirect_url)
+
+    def test_non_staff_cannot_trigger_broker_sync(self):
+        self.client.login(username='sync_investor', password='password123')
+        response = self.client.get(reverse('investing:broker_sync_positions', args=[self.account.pk]))
+        # staff_member_required should redirect to admin login
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/admin/login/', response.url)
+
+
+class AccountAnalyticsViewTest(TestCase):
+    """Ensure predictive analytics view renders for staff."""
+
+    def setUp(self):
+        self.client = Client()
+        self.service = ManagedTradingService()
+        self.staff = User.objects.create_user(
+            username='analytics_staff',
+            email='analytics_staff@test.com',
+            password='password123',
+            is_staff=True,
+            is_active=True,
+        )
+        self.investor = User.objects.create_user(
+            username='analytics_investor',
+            email='analytics_investor@test.com',
+            password='password123',
+            is_active=True,
+        )
+        self.account = self.service.create_managed_account(
+            client_user=self.investor,
+            account_data={
+                'account_name': 'Analytics Account',
+                'initial_capital': Decimal('15000.00'),
+                'fee_tier': 'professional',
+            },
+        )
+        self._seed_history()
+
+    def _seed_history(self):
+        base_date = timezone.now().date() - timedelta(days=60)
+        for offset, pnl in enumerate([Decimal('150.00'), Decimal('210.00'), Decimal('180.00')]):
+            position = OptionsPosition.objects.create(
+                managed_account=self.account,
+                symbol=f'ANA{offset}',
+                strategy='short_put',
+                positions=[{"type": "short_put", "strike": 140 + offset, "contracts": 1}],
+                capital_required=Decimal('2000.00'),
+                premium_collected=pnl,
+                max_profit=pnl,
+                max_loss=Decimal('2000.00'),
+                entry_date=base_date + timedelta(days=offset * 7),
+                expiration_date=base_date + timedelta(days=offset * 7 + 30),
+                exit_date=base_date + timedelta(days=offset * 7 + 15),
+                status='closed',
+            )
+            OptionsPositionHistory.objects.create(
+                position=position,
+                was_profitable=True,
+                actual_return_amount=pnl,
+                actual_return_percentage=Decimal('10.0'),
+                days_held=15,
+                annualized_return=Decimal('20.0'),
+                exit_reason='profit_target',
+            )
+
+    def test_staff_can_view_analytics(self):
+        self.client.login(username='analytics_staff', password='password123')
+        response = self.client.get(reverse('investing:managed_account_analytics', args=[self.account.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Predictive Analytics')
 
 
 class ManagedAccountDetailViewTest(TestCase):

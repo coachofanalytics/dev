@@ -1,0 +1,97 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="fa fa-chart-line"></i> Predictive Analytics</h2>
+            <p class="text-muted mb-0">
+                Account {{ account.account_number }} · Client {{ account.client.get_full_name }}
+            </p>
+            {% if uses_prophet %}
+            <p class="text-success small mt-1">Forecast generated with Prophet (90% confidence interval).</p>
+            {% else %}
+            <p class="text-muted small mt-1">Forecast generated with rolling-average fallback (install Prophet for advanced modelling).</p>
+            {% endif %}
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'investing:managed_account_detail' account.id %}" class="btn btn-secondary">
+                ← Back to Account
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Historical Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if forecast.history %}
+                    <div class="table-responsive" style="max-height: 320px;">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-end">Realized P&L</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in forecast.history %}
+                                <tr>
+                                    <td>{{ row.ds|date:"M d, Y" }}</td>
+                                    <td class="text-end">${{ row.y|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">Not enough closed positions to render history.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Projected Balance (Next 30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    {% if forecast.forecast %}
+                    <div class="table-responsive" style="max-height: 320px;">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-end">Estimate</th>
+                                    <th class="text-end text-muted">Lower</th>
+                                    <th class="text-end text-muted">Upper</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in forecast.forecast %}
+                                <tr>
+                                    <td>{{ row.ds|date:"M d, Y" }}</td>
+                                    <td class="text-end">${{ row.yhat|floatformat:2 }}</td>
+                                    <td class="text-end text-muted">${{ row.yhat_lower|floatformat:2 }}</td>
+                                    <td class="text-end text-muted">${{ row.yhat_upper|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">Forecast unavailable. Close more positions to build history.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
