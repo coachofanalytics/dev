@@ -1,0 +1,95 @@
+/* Namespaced chat widget styles - minimal and scoped */
+#healthcare-chat-root .hc-chat-toggle{
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#0a926d,#0a6f7a);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 6px 18px rgba(10,146,109,0.24);
+  cursor:pointer;
+  z-index: 9999;
+  border: none;
+}
+
+#healthcare-chat-root .hc-chat-window{
+  position: fixed;
+  right: 20px;
+  bottom: 90px;
+  width: 360px;
+  max-height: 70vh;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  font-family: Arial, sans-serif;
+  z-index: 9999;
+}
+
+#healthcare-chat-root .hc-header{
+  background: linear-gradient(90deg,#0a926d,#0a6f7a);
+  color: #fff;
+  padding: 12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+#healthcare-chat-root .hc-messages{
+  padding: 12px;
+  overflow:auto;
+  flex:1 1 auto;
+  background: #f7f9fa;
+}
+
+#healthcare-chat-root .hc-input{
+  padding: 10px;
+  border-top:1px solid #eee;
+  display:flex;
+  gap:8px;
+}
+#healthcare-chat-root .hc-input textarea{
+  flex:1 1 auto;
+  resize:none;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ddd;
+  min-height:44px;
+}
+#healthcare-chat-root .hc-send{
+  background:#0a926d;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+#healthcare-chat-root .hc-msg{
+  margin-bottom:10px;
+  display:block;
+}
+#healthcare-chat-root .hc-msg.user{ text-align:right; }
+#healthcare-chat-root .hc-msg .bubble{
+  display:inline-block;
+  padding:10px 12px;
+  border-radius:12px;
+  max-width:78%;
+}
+#healthcare-chat-root .hc-msg.user .bubble{ background:#0a926d; color:#fff; border-bottom-right: 2px solid rgba(0,0,0,0.08); }
+#healthcare-chat-root .hc-msg.bot .bubble{ background:#fff; color:#222; border:1px solid #e6eef0; }
+
+#healthcare-chat-root .hc-suggestion{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap }
+#healthcare-chat-root .hc-suggestion button{ background:#eef9f6; border:1px solid #dff2ec; padding:6px 10px; border-radius:6px; cursor:pointer; }
+
+/* small screens */
+@media (max-width:420px){
+  #healthcare-chat-root .hc-chat-window{ right:10px; left:10px; width:auto; bottom:80px; }
+}
