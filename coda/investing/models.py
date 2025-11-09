@@ -1935,6 +1935,19 @@ class OptionsPosition(TimeStampedModel):
         blank=True,
         help_text="Reason for rejection (if applicable)"
     )
+    entered_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the trader confirmed this position is live."
+    )
+    entered_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='entered_positions',
+        help_text="Trader who confirmed this position is live."
+    )
     auto_approved = models.BooleanField(
         default=False,
         help_text="Set when the client approval window expired and the system auto-approved the trade. Trader must still enter execution details."
@@ -3110,8 +3123,9 @@ class PositionBatch(TimeStampedModel):
         from django.db import transaction
         
         with transaction.atomic():
+            now = timezone.now()
             self.status = 'approved'
-            self.approved_date = timezone.now()
+            self.approved_date = now
             self.approval_signature = signature_data
             self.approval_ip = ip_address
             self.save()
@@ -3126,11 +3140,13 @@ class PositionBatch(TimeStampedModel):
             for position in self.positions.all():
                 if position.status == 'pending':
                     position.status = 'open'
-                    position.approved_at = timezone.now()
-                    position.auto_approved = False
-                    position.auto_approved_at = None
+                    position.approved_at = now
+                    if position.auto_approved:
+                        position.auto_approved = False
                     position.requires_client_approval = False
                     position.approval_method = 'portal'
+                    position.entered_at = now
+                    position.entered_by = account.account_manager
                     position.save()
                     
                     # Deduct capital from account

@@ -20,6 +20,7 @@ from ...models import ManagedTradingAccount, OptionsPosition
 from ...forms import OptionsPositionForm, ClosePositionForm, QuickPositionEntryForm
 from ...forms_enhanced import MultiLegOptionsForm, OptionPlayIntegrationForm
 from ...services import ManagedTradingService, OptionsMonitoringService, BrokerAPIService
+from ...models import TradingActivity
 
 
 logger = logging.getLogger(__name__)
@@ -256,6 +257,33 @@ def close_position(request, position_id):
     }
     
     return render(request, 'investing/managed/close_position.html', context)
+
+
+@staff_member_required
+@require_POST
+def mark_position_entered(request, position_id):
+    """
+    Confirm that a pending auto-approved position has been executed by the trading desk.
+    """
+    position = get_object_or_404(
+        OptionsPosition.objects.select_related('managed_account'),
+        id=position_id
+    )
+
+    service = ManagedTradingService()
+    try:
+        service.confirm_auto_approved_entry(position, request.user)
+        messages.success(
+            request,
+            f'✅ {position.symbol} marked as entered. Capital reserved and position is now live.'
+        )
+    except ValidationError as exc:
+        messages.error(request, str(exc))
+    except Exception as exc:
+        logger.exception("Failed to confirm position entry: %s", exc)
+        messages.error(request, f'Unexpected error: {exc}')
+
+    return redirect('investing:managed_position_detail', position_id=position.id)
 
 
 @staff_member_required

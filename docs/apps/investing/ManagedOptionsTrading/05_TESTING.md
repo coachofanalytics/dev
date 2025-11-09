@@ -178,6 +178,7 @@ class ManagedTradingServiceTestCase(TestCase):
 - Export `UW_API_MOCK_FIXTURE=tests/fixtures/uw_sample.json` to reuse canned responses and prevent live API calls.
 - Use `pytest -k managed_options --ds=coda_project.settings` for focused runs; Django test runner also supported.
 - Always run `python manage.py collectstatic --noinput` on UAT before selenium tests to ensure latest assets.
+- Configure desk alerts with `TRADER_ALERT_PHONES="+15551234567,+15557654321"` (comma-separated E.164 numbers) when validating SMS/WhatsApp notifications.
 
 ### **Test Scenarios**
 
@@ -283,6 +284,11 @@ class ManagedTradingServiceTestCase(TestCase):
 - **Given:** 4+ pending `SuggestedPosition` records with ranking metadata
 - **When:** `auto_approve_top_positions` management command runs (count=2)
 - **Then:** Two suggestions move to `approved` with `auto_approved_by_system=True`, remaining suggestions stay pending, notification email sent to staff
+
+#### **TC-007: Mark Auto-Approved Position Entered**
+- **Given:** `OptionsPosition` with `status='pending'` and `auto_approved_at` populated
+- **When:** Staff posts to `mark_position_entered`
+- **Then:** Position status becomes `open`, balances update, `entered_at`/`entered_by` recorded, and activity logged
 
 ---
 

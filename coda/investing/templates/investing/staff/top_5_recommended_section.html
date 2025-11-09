@@ -37,6 +37,65 @@
         </div>
         {% endif %}
         
+        {% if auto_metrics.total %}
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted mb-1">Auto Positions</h6>
+                        <h4 class="mb-0">{{ auto_metrics.total }}</h4>
+                        <small class="text-muted">Live: {{ auto_metrics.live }} · Pending: {{ auto_metrics.pending }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted mb-1">Closed Win Rate</h6>
+                        <h4 class="mb-0">
+                            {% if auto_metrics.win_rate is not None %}
+                                {{ auto_metrics.win_rate|floatformat:1 }}%
+                            {% else %}
+                                —
+                            {% endif %}
+                        </h4>
+                        <small class="text-muted">Wins: {{ auto_metrics.wins }} · Losses: {{ auto_metrics.losses }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted mb-1">Avg Realized P&L</h6>
+                        <h4 class="mb-0">
+                            {% if auto_metrics.avg_realized_pnl is not None %}
+                                ${{ auto_metrics.avg_realized_pnl|floatformat:2 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </h4>
+                        <small class="text-muted">Across {{ auto_metrics.closed }} closed trades</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted mb-1">Avg Time to Entry</h6>
+                        <h4 class="mb-0">
+                            {% if auto_metrics.avg_time_to_entry_minutes %}
+                                {{ auto_metrics.avg_time_to_entry_minutes|floatformat:1 }} min
+                            {% else %}
+                                —
+                            {% endif %}
+                        </h4>
+                        <small class="text-muted">From auto-approval to desk confirmation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <table class="table table-hover" style="margin-bottom: 20px;">
             <thead style="background-color: #f5f5f5;">
                 <tr>

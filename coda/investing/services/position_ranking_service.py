@@ -29,9 +29,18 @@ from datetime import date, timedelta
 from typing import List, Dict, Optional
 from collections import defaultdict
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import (
+    Avg,
+    DurationField,
+    ExpressionWrapper,
+    F,
+    QuerySet,
+    Q,
+)
 
 logger = logging.getLogger(__name__)
+
+from ..models import OptionsPosition
 
 
 class PositionRankingService:
@@ -686,6 +695,46 @@ class PositionRankingService:
         )
         
         return auto_approved, remaining
+    
+    def get_auto_approval_metrics(self) -> Dict[str, Optional[float]]:
+        """
+        Aggregate performance metrics for auto-approved positions.
+        """
+        qs = OptionsPosition.objects.filter(auto_approved_at__isnull=False)
+        total = qs.count()
+        pending = qs.filter(status='pending').count()
+        live = qs.filter(status='open').count()
+        closed_qs = qs.filter(status='closed')
+        closed_count = closed_qs.count()
+        wins = closed_qs.filter(realized_pnl__gt=0).count()
+        losses = closed_qs.filter(realized_pnl__lt=0).count()
+        
+        win_rate = float(wins / closed_count * 100) if closed_count else None
+        avg_realized = closed_qs.aggregate(avg=Avg('realized_pnl'))['avg']
+        
+        avg_time_to_entry = None
+        with_entry = qs.filter(entered_at__isnull=False)
+        if with_entry.exists():
+            delta = with_entry.annotate(
+                entry_delay=ExpressionWrapper(
+                    F('entered_at') - F('auto_approved_at'),
+                    output_field=DurationField(),
+                )
+            ).aggregate(avg_delay=Avg('entry_delay'))['avg_delay']
+            if delta:
+                avg_time_to_entry = delta.total_seconds() / 60  # minutes
+        
+        return {
+            'total': total,
+            'pending': pending,
+            'live': live,
+            'closed': closed_count,
+            'wins': wins,
+            'losses': losses,
+            'win_rate': win_rate,
+            'avg_realized_pnl': float(avg_realized) if avg_realized is not None else None,
+            'avg_time_to_entry_minutes': avg_time_to_entry,
+        }
     
     def _get_sector(self, position) -> str:
         """

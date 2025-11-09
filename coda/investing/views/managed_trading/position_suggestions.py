@@ -100,9 +100,9 @@ def suggested_positions_list(request):
     top_5_recommended = []
     all_ranked = []
     
+    ranker = PositionRankingService()
     if pending.exists():
         try:
-            ranker = PositionRankingService()
             all_ranked = ranker.rank_positions(pending)
             top_5_recommended = ranker.get_top_n(all_ranked, n=5)
             
@@ -237,6 +237,7 @@ def suggested_positions_list(request):
         }
     
     preview_payloads = build_preview_payloads(pending, approved)
+    auto_metrics = ranker.get_auto_approval_metrics()
 
     context = {
         'pending_positions': pending,
@@ -255,6 +256,7 @@ def suggested_positions_list(request):
         'preview_payloads': preview_payloads,
         'account_limits': account_limits,
         'can_adjust_limits': request.user.is_superuser,
+        'auto_metrics': auto_metrics,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 

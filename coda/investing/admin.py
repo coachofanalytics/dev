@@ -270,7 +270,8 @@ class OptionsPositionAdmin(admin.ModelAdmin):
         'entry_date', 'created_at', 'updated_at',
         'days_in_trade_display', 'days_to_expiration_display',
         'profit_percentage_display', 'is_profitable_display',
-        'approved_at', 'auto_approved', 'auto_approved_at'
+        'approved_at', 'auto_approved', 'auto_approved_at',
+        'entered_at', 'entered_by'
     ]
     
     fieldsets = (
@@ -285,6 +286,8 @@ class OptionsPositionAdmin(admin.ModelAdmin):
                 'approval_notes',
                 'auto_approved',
                 'auto_approved_at',
+                'entered_at',
+                'entered_by',
                 'rejection_reason',
             )
         }),

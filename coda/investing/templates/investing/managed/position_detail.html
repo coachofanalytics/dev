@@ -12,6 +12,19 @@
                 Status: <span class="badge {% if position.status == 'open' %}bg-success{% elif position.status == 'closed' %}bg-secondary{% else %}bg-warning{% endif %}">
                     {{ position.get_status_display }}
                 </span>
+                <br>
+                {% if position.entered_at %}
+                <small class="text-muted">
+                    Entered {{ position.entered_at|date:"M d, Y H:i" }}
+                    {% if position.entered_by %}
+                        by {{ position.entered_by.get_full_name|default:position.entered_by.username }}
+                    {% endif %}
+                </small>
+                {% elif position.auto_approved_at %}
+                <small class="text-warning">
+                    Awaiting trader entry — auto-approved {{ position.auto_approved_at|timesince }} ago
+                </small>
+                {% endif %}
             </p>
         </div>
     </div>
@@ -155,6 +168,14 @@
         <a href="{% url 'investing:managed_account_detail' account.id %}" class="btn btn-secondary">
             ← Back to Account
         </a>
+        {% if is_manager and position.status == 'pending' and position.auto_approved_at %}
+        <form action="{% url 'investing:mark_position_entered' position.id %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                ✅ Mark Entered
+            </button>
+        </form>
+        {% endif %}
         {% if is_manager and position.status == 'open' %}
         <a href="{% url 'investing:close_managed_position' position.id %}" class="btn btn-danger">
             Close Position

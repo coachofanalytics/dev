@@ -39,6 +39,7 @@ urlpatterns = [
     path('positions/<int:position_id>/close/', positions.close_position, name='close_managed_position'),
     path('positions/<int:position_id>/edit/', positions.edit_position, name='edit_managed_position'),
     path('positions/<int:position_id>/adjust-pnl/', positions.adjust_position_pnl, name='adjust_position_pnl'),
+    path('positions/<int:position_id>/mark-entered/', positions.mark_position_entered, name='mark_position_entered'),
 
     # Monitoring & alerts
     path('monitor/', monitoring.monitor_dashboard, name='monitor_dashboard'),

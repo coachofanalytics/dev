@@ -278,6 +278,8 @@ class ManagedTradingService(BaseInvestingService):
                 # Validate against trading rules
                 self._validate_position_against_rules(account, position_data)
                 
+                entered_timestamp = timezone.now() if deduct_balance else None
+                
                 # Create position
                 position = OptionsPosition.objects.create(
                     managed_account=account,
@@ -294,7 +296,9 @@ class ManagedTradingService(BaseInvestingService):
                     position_vega=Decimal(str(position_data.get('position_vega', '0.0000'))),
                     expiration_date=position_data['expiration_date'],
                     notes=position_data.get('notes', ''),
-                    status='open'
+                    status='open' if deduct_balance else 'pending',
+                    entered_at=entered_timestamp,
+                    entered_by=account.account_manager if deduct_balance else None
                 )
                 
                 # Update account balances (only if not pending approval)
@@ -327,6 +331,78 @@ class ManagedTradingService(BaseInvestingService):
         except Exception as e:
             logger.error(f"Error creating position: {e}")
             raise ValidationError(f"Failed to create position: {str(e)}")
+    
+    def confirm_auto_approved_entry(
+        self,
+        position: OptionsPosition,
+        trader: Optional[User] = None,
+    ) -> OptionsPosition:
+        """
+        Confirm that a previously auto-approved (pending) position is now live.
+        
+        Deducts capital, stamps entry metadata, and logs activity.
+        """
+        if position.status != 'pending':
+            raise ValidationError('Only pending positions can be marked as entered.')
+        
+        try:
+            with transaction.atomic():
+                account = position.managed_account
+                
+                if position.capital_required > account.available_buying_power:
+                    raise ValidationError(
+                        f'Insufficient buying power. Available: ${account.available_buying_power:,.2f}'
+                    )
+                
+                entry_time = timezone.now()
+                
+                position.status = 'open'
+                if not position.approved_at:
+                    position.approved_at = entry_time
+                position.entered_at = entry_time
+                position.entered_by = trader
+                position.auto_approved = False
+                position.requires_client_approval = False
+                position.save(update_fields=[
+                    'status',
+                    'approved_at',
+                    'entered_at',
+                    'entered_by',
+                    'auto_approved',
+                    'requires_client_approval',
+                    'updated_at',
+                ])
+                
+                account.cash_reserved += position.capital_required
+                account.cash_available -= position.capital_required
+                account.save(update_fields=['cash_reserved', 'cash_available', 'updated_at'])
+                
+                TradingActivity.objects.create(
+                    managed_account=account,
+                    position=position,
+                    activity_type='position_opened',
+                    description=f'Trader confirmed entry for {position.symbol} position.',
+                    performed_by=trader,
+                    data_snapshot={
+                        'symbol': position.symbol,
+                        'capital_required': str(position.capital_required),
+                        'premium_collected': str(position.premium_collected),
+                        'auto_approved_at': str(position.auto_approved_at) if position.auto_approved_at else None,
+                    }
+                )
+                
+                logger.info(
+                    "Confirmed entry for position %s on account %s",
+                    position.id,
+                    account.account_number,
+                )
+                
+                return position
+        except ValidationError:
+            raise
+        except Exception as exc:
+            logger.error("Error confirming auto-approved entry: %s", exc)
+            raise ValidationError(f"Failed to confirm position entry: {exc}")
     
     def _validate_position_against_rules(
         self,

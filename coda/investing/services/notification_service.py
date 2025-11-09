@@ -292,47 +292,68 @@ CODA Investment Team
         except Exception as e:
             logger.error(f"Error sending batch approved notification: {str(e)}")
     
+    def _get_trader_phone_numbers(self) -> list[str]:
+        phones = getattr(settings, 'TRADER_ALERT_PHONES', '')
+        if not phones:
+            return []
+        return [phone.strip() for phone in phones.split(',') if phone.strip()]
+    
     def send_auto_approved_notification(self, batch, position_count):
         """
         Notify trading staff that a batch auto-approved after the client timeout window.
         """
         staff_emails = self._get_staff_emails()
+        site_url = getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')
         
-        if not staff_emails:
+        if staff_emails:
+            subject = f"[Managed Trading] Batch {batch.batch_number} auto-approved ({position_count} positions)"
+            message = (
+                f"Client timeout reached for batch {batch.batch_number} (account {batch.managed_account.account_number}).\n\n"
+                f"{position_count} positions are now cleared by the client window and await trader execution.\n\n"
+                f"Review the batch here:\n{site_url}/investing/managed/staff/batches/\n"
+                f"Filter for batch number {batch.batch_number} to process the trades."
+            )
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    staff_emails,
+                    fail_silently=False,
+                )
+                logger.info(
+                    "Sent auto-approval notice for batch %s to %d staff recipients",
+                    batch.batch_number,
+                    len(staff_emails),
+                )
+            except Exception as exc:
+                logger.error(
+                    "Error sending auto-approval notification for batch %s: %s",
+                    batch.batch_number,
+                    exc,
+                )
+        else:
             logger.info(
                 "Auto-approved batch %s with %s positions (no staff recipients configured)",
                 batch.batch_number,
                 position_count,
             )
-            return
         
-        subject = f"[Managed Trading] Batch {batch.batch_number} auto-approved ({position_count} positions)"
-        site_url = getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')
-        message = (
-            f"Client timeout reached for batch {batch.batch_number} (account {batch.managed_account.account_number}).\n\n"
-            f"{position_count} positions are now cleared by the client window and await trader execution.\n\n"
-            f"Review the batch here:\n{site_url}/investing/managed/staff/batches/\n"
-            f"Filter for batch number {batch.batch_number} to process the trades."
-        )
-        
-        try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                staff_emails,
-                fail_silently=False,
+        for phone in self._get_trader_phone_numbers():
+            self.send_whatsapp_message(
+                phone,
+                'batch_auto_approved',
+                {
+                    'batch': batch.batch_number,
+                    'positions': position_count,
+                    'account': batch.managed_account.account_number,
+                    'link': f"{site_url}/investing/managed/staff/batches/",
+                },
             )
-            logger.info(
-                "Sent auto-approval notice for batch %s to %d staff recipients",
-                batch.batch_number,
-                len(staff_emails),
-            )
-        except Exception as exc:
-            logger.error(
-                "Error sending auto-approval notification for batch %s: %s",
-                batch.batch_number,
-                exc,
+            self.send_sms_notification(
+                phone,
+                f"Auto-approved batch {batch.batch_number} ({position_count} positions) awaiting desk entry.",
             )
     
     def send_auto_suggestion_summary(self, auto_positions: list, remaining: list):
@@ -343,11 +364,8 @@ CODA Investment Team
             return
         
         staff_emails = self._get_staff_emails()
-        if not staff_emails:
-            logger.info("Auto suggestion summary suppressed (no staff recipients).")
-            return
+        site_url = getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')
         
-        subject = "[Managed Trading] System auto-approved top ranked positions"
         summary_lines = [
             "The ranking engine auto-approved the following positions:",
             "",
@@ -369,25 +387,46 @@ CODA Investment Team
             summary_lines.append("")
         
         summary_lines.append("Log in to the suggestion dashboard to review or adjust exposures.")
-        site_url = getattr(settings, 'SITE_URL', 'https://codamakutano.herokuapp.com')
         summary_lines.append(f"Dashboard: {site_url}/investing/managed/staff/suggestions/")
         
-        message = "\n".join(summary_lines)
+        if staff_emails:
+            subject = "[Managed Trading] System auto-approved top ranked positions"
+            message = "\n".join(summary_lines)
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    staff_emails,
+                    fail_silently=False,
+                )
+                logger.info(
+                    "Sent auto suggestion summary to %d staff recipients",
+                    len(staff_emails),
+                )
+            except Exception as exc:
+                logger.error("Error sending auto suggestion summary: %s", exc)
+        else:
+            logger.info("Auto suggestion summary suppressed (no staff recipients).")
         
-        try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                staff_emails,
-                fail_silently=False,
+        for phone in self._get_trader_phone_numbers():
+            # Provide condensed summary for mobile
+            summary = ", ".join(
+                f"#{item['rank']} {item['symbol']} ({item['recommendation']})"
+                for item in auto_positions
             )
-            logger.info(
-                "Sent auto suggestion summary to %d staff recipients",
-                len(staff_emails),
+            self.send_whatsapp_message(
+                phone,
+                'auto_suggestions',
+                {
+                    'summary': summary or 'No new approvals',
+                    'count': len(auto_positions),
+                },
             )
-        except Exception as exc:
-            logger.error("Error sending auto suggestion summary: %s", exc)
+            self.send_sms_notification(
+                phone,
+                f"Auto-approved {len(auto_positions)} positions: {summary}" if summary else "No new auto approvals.",
+            )
     
     @staticmethod
     def _get_staff_emails() -> list[str]:
@@ -658,6 +697,25 @@ Technical Confirmed: {tech_count} positions
 
 ⏰ Expires in 24 hours
 🔐 Token: {token}
+            """,
+            
+            'batch_auto_approved': """
+🤖 *AUTO-APPROVED BATCH*
+
+Batch {batch} is ready ({positions} positions).
+Account: {account}
+
+Desk confirmation required before entry.
+Review: {link}
+            """,
+            
+            'auto_suggestions': """
+🤖 *AUTO-RANKED TRADES*
+
+Auto-approved {count} position(s):
+{summary}
+
+Log in to confirm placement and monitor risk.
             """,
         }
         
