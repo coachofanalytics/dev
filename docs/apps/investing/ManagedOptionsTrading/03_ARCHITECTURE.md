@@ -1,11 +1,16 @@
 # Managed Options Trading - Architecture
 **Feature:** CODA Managed Options Trading Service  
-**Date:** October 22, 2025  
-**Status:** 🏗️ Architecture Design
+**Date:** November 10, 2025  
+**Status:** 🏗️ Architecture Design (Updated with SMS & Broker integration prep)
 
 ---
 
 ## 🏗️ System Architecture Overview
+
+> **Architecture delta – Nov 2025**
+> - Added **Twilio SMS channel** alongside WhatsApp using shared `NotificationService`.
+> - Surfaced **Unusual Whales telemetry pipeline** (metrics aggregated in `PositionRankingService`).
+> - Introduced **Charles Schwab broker layer** blueprint (OAuth client, order mapper) to support button-to-trade automation.
 
 ### **High-Level Architecture**
 
@@ -81,7 +86,7 @@
 
 | Component / Template | Current Location | Status | Leverage & Dedup Plan |
 |----------------------|------------------|--------|-----------------------|
-| `NotificationService` | `coda/notifications/services.py` | ✅ Implemented | Extend with scenario digest helpers; keep WhatsApp/email templates under `notifications/managed_income/` to avoid new service clones. |
+| `NotificationService` | `coda/investing/services/notification_service.py` | ✅ Implemented | Central hub for Twilio SMS + WhatsApp templates. Reuse helper for future broker/order alerts; avoid per-app Twilio clients. |
 | `stats_card.html` partial | `templates/shared/components/` | ✅ Implemented | Reuse for client income dashboard + staff heatmap summary; prohibit new bespoke cards in investing templates. |
 | `PositionFetcherService` | `investing/services/position_fetcher_service.py` | ✅ Implemented | Wrap in `CapitalAllocationService` instead of duplicating fetch logic in Celery or views. |
 | `UnusualWhalesService` | `investing/services/unusual_whales_service.py` | ✅ Implemented | Introduce caching decorator + bulk fetch method; mandate all apps call through service (no direct API calls). |

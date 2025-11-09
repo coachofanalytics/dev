@@ -1,8 +1,8 @@
 # CODA Managed Options Trading Platform - Complete Analysis
 **System:** Comprehensive Options Trading & Investment Management Platform  
-**Date:** November 6, 2025  
+**Date:** November 10, 2025  
 **Status:** ✅ **PRODUCTION** (Core Systems) + 🚀 **ENHANCEMENT PHASE** (Advanced Features)  
-**Last Updated:** November 6, 2025
+**Last Updated:** November 10, 2025
 
 ---
 
@@ -16,7 +16,12 @@ CODA has successfully built and deployed a **world-class managed options trading
 | **AI Position Scoring** | ✅ Complete | UAT (v976) | 6-factor algorithm, 0-100 scoring, 499 positions tested |
 | **WhatsApp/Telegram Alerts** | 95% Complete | UAT (v982) | Real-time notifications, 6 message templates |
 
-**Current Capability:** Managing multiple client accounts with AI-powered position selection and real-time client notifications.
+**Current Capability:** Managing multiple client accounts with AI-powered position selection, **automated SMS/WhatsApp desk alerts**, and Unusual Whales impact analytics.
+
+**New Enhancements (Nov 2025):**
+- 📈 **UW Attribution Metrics:** Live win-rate and P&L share surfaced on the staff console for subscription ROI tracking.
+- 📱 **Twilio SMS Support:** Production-ready phone-first alerts complementing WhatsApp templates.
+- 🤝 **Broker Automation Prep:** Charles Schwab onboarding guide and execution mapping to accelerate button-to-trade delivery.
 
 **Next Phase:** Performance optimization + advanced features to create a **top-notch, world-class platform**.
 
@@ -191,13 +196,11 @@ A CODA client requested professional options trading management services with a 
 - ✅ Auto-scoring via Django signals
 - ✅ 499 positions tested successfully
 
-**WhatsApp/Telegram Notifications:**
-- ✅ Real-time position opened alerts
-- ✅ Position closed with P&L
-- ✅ Batch approval requests
-- ✅ Reminder notifications
-- ✅ 6 message templates
-- ✅ Auto-triggered via signals
+**Communication & Alerts:**
+- ✅ WhatsApp templates (open, close, reminders, auto approvals)
+- ✅ **SMS desk alerts via Twilio (Nov 2025)**
+- ✅ Telegram (optional) + email digests
+- ✅ Auto-triggered via signals and management commands
 - ✅ FREE sandbox mode
 
 **Batch Approval Workflow:**

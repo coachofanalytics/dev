@@ -1,11 +1,16 @@
 # CODA Trading Platform - Requirements Specification
 **System:** Comprehensive Managed Options Trading + AI + Notifications  
-**Date:** November 6, 2025  
+**Date:** November 10, 2025  
 **Status:** ✅ **CORE COMPLETE** | 🚀 **ENHANCEMENTS PLANNED**
 
 ---
 
 ## 📊 **REQUIREMENTS STATUS SUMMARY**
+
+> **Update – Nov 10, 2025**
+> - Notifications scope expanded to include **Twilio SMS** alongside WhatsApp/Telegram.
+> - Added analytics requirement traceability for **Unusual Whales attribution** (BI-005).
+> - Broker automation requirements now reference **Charles Schwab onboarding checklist** for execution enablement.
 
 | Category | Total | [IMPLEMENTED] | [PLANNED] | Completion % |
 |----------|-------|---------------|-----------|--------------|

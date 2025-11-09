@@ -1,6 +1,6 @@
 # Managed Options Trading - Maintenance
 **Feature:** CODA Managed Options Trading Service  
-**Date:** October 22, 2025  
+**Date:** November 10, 2025  
 **Status:** 🔧 Maintenance Guide
 
 ---
@@ -97,6 +97,16 @@ python manage.py run_managed_income --dry-run
 - Capture sample of WhatsApp/email scenario digests weekly to confirm templates remain accurate.
 - Log any manual overrides of UW timing so the allocation heuristics can be tuned.
 - Run cross-app duplication audit (`python manage.py audit_shared_templates`) monthly; refactor shared partials into `shared/templates/` when flagged.
+
+---
+
+## 📞 Communications Maintenance (Nov 2025 Update)
+
+- Confirm `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, and `TWILIO_WHATSAPP_FROM` are present in Heroku config after every credential rotation.
+- Keep `TRADER_ALERT_PHONES` list current (desk handset numbers in E.164 format).
+- After each deployment touching notifications, run the smoke test in `docs/operations/runbooks/twilio_alert_testing.md` (both SMS and WhatsApp).
+- Monitor Twilio delivery logs weekly for failures or opt-out warnings; address issues immediately with the trading desk.
+- Archive sample alerts monthly for compliance (store SIDs + timestamp in communication log).
 
 ---
 

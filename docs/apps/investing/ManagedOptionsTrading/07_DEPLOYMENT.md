@@ -1,6 +1,6 @@
 # Managed Options Trading - Deployment
 **Feature:** CODA Managed Options Trading Service  
-**Date:** October 22, 2025  
+**Date:** November 10, 2025  
 **Status:** 🚀 Deployment Guide
 
 ---
@@ -15,10 +15,13 @@
 - [ ] Environment variables configured
 - [ ] `UNUSUAL_WHALES_API_KEY`, `UNUSUAL_WHALES_ENABLED` set (UAT + Prod)
 - [ ] `UW_CACHE_TTL_SECONDS` configured (default 600)
+- [ ] `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `TWILIO_WHATSAPP_FROM` present
+- [ ] `TRADER_ALERT_PHONES` up to date (E.164 formatted desk numbers)
 - [ ] `TEST_MODE=True` for pre-deploy test run (switches to SQLite)
 - [ ] Backup system tested
 - [ ] Legal agreements signed
 - [ ] Client onboarded and trained
+- [ ] Broker credential checklist reviewed (see `docs/operations/brokers/charles_schwab_onboarding.md`)
 
 ### **Deployment Steps**
 
@@ -67,6 +70,7 @@ heroku run "cd coda && python manage.py collectstatic --noinput" --app codamakut
 - [ ] UW drawer toggle (`ℹ️`) expands with flow score/sentiment in UAT.
 - [ ] Client dashboard displays income vs $420 target without trade instructions.
 - [ ] WhatsApp/email scenario digest sends to test number/email.
+- [ ] **Twilio SMS/WhatsApp smoke test executed** (`docs/operations/runbooks/twilio_alert_testing.md`) – confirm desk receives alerts.
 - [ ] Celery logs indicate single UW API hit per symbol (check `uw_cache` log entries).
 
 #### **5. Promote to Production (after UAT sign-off)**
@@ -116,6 +120,7 @@ heroku run "cd coda && python manage.py collectstatic --noinput" --app codamakut
 | Date | Change | Notes |
 |------|--------|-------|
 | Nov 8, 2025 | Added Heroku-24 migration prep section | Stack upgrade pathway documented; scripts ready |
+| Nov 10, 2025 | Added Twilio + Schwab deployment steps | Ensure phone-first alerts and broker onboarding verified pre-release |
 
 ---
 

@@ -1,6 +1,6 @@
 # Managed Options Trading - Testing
 **Feature:** CODA Managed Options Trading Service  
-**Date:** November 8, 2025  
+**Date:** November 10, 2025  
 **Status:** 🧪 Testing Plan (Phase 2 coverage in progress)
 
 ---
@@ -29,6 +29,8 @@
 ## 🧪 Unit Tests
 
 ### **Phase 1 & 2 Coverage**
+- ✅ `tests/apps/investing/01_unit/test_position_ranking_metrics.py` *(new planned)*
+  - Will assert Unusual Whales attribution snapshot maths (counts, win-rate, realized P&L).
 - ✅ `tests/apps/investing/01_unit/test_unusual_whales_service.py`
   - Verifies flow score math, caching wrapper, and put-score inversion (cache hits tracked).
 - ✅ `tests/apps/investing/01_unit/test_capital_allocation_service.py`
@@ -178,7 +180,7 @@ class ManagedTradingServiceTestCase(TestCase):
 - Export `UW_API_MOCK_FIXTURE=tests/fixtures/uw_sample.json` to reuse canned responses and prevent live API calls.
 - Use `pytest -k managed_options --ds=coda_project.settings` for focused runs; Django test runner also supported.
 - Always run `python manage.py collectstatic --noinput` on UAT before selenium tests to ensure latest assets.
-- Configure desk alerts with `TRADER_ALERT_PHONES="+15551234567,+15557654321"` (comma-separated E.164 numbers) when validating SMS/WhatsApp notifications.
+- Configure desk alerts with `TRADER_ALERT_PHONES="+15551234567,+15557654321"` (comma-separated E.164 numbers) when validating SMS/WhatsApp notifications. Use the **Twilio Smoke Test Runbook** (`docs/operations/runbooks/twilio_alert_testing.md`) to send verification pings after deploys.
 
 ### **Test Scenarios**
 
