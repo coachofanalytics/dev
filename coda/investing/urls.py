@@ -108,5 +108,5 @@ urlpatterns = [
     path("risk/", include("investing.urls_risk_management")),
     
     # Managed Options Trading URLs
-    path("", include("investing.urls_managed_trading")),
+    path("managed/", include("investing.urls_managed_trading")),
 ]
