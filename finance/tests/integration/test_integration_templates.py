@@ -47,3 +47,23 @@ class DefaultPaymentFeesIntegrationTemplateTest(TestCase):
         response = self.client.get(url)
         self.assertIn('payments', response.context)
         self.assertEqual(response.context['payments'].count(), 2)
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from finance.models import Default_Payment_Fees
+
+class DefaultPaymentFeesIntegrationTemplates(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.list_url = reverse('Default_Payment_Fees_list')
+        self.create_url = reverse('Default_Payment_Fees_create')
+
+    def test_list_template_used(self):
+        response = self.client.get(self.list_url)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')
+
+    def test_create_template_used(self):
+        response = self.client.get(self.create_url)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_create.html')

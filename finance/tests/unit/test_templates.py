@@ -39,3 +39,28 @@ class DefaultPaymentFeesTemplateTest(TestCase):
         response = self.client.get(reverse('Default_Payment_Fees_list'))
         self.assertIn('payments', response.context)
         self.assertEqual(response.context['payments'].count(), 2)
+
+
+
+
+class TestDefaultPaymentFeesTemplates(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        # Create sample data for list view
+        Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+
+    def test_list_view_uses_correct_template(self):
+        """List view should use the Default_Payment_Fees_list.html template"""
+        response = self.client.get(reverse('Default_Payment_Fees_list'))
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')
+
+    def test_create_view_uses_correct_template(self):
+        """Create view should use the Default_Payment_Fees_create.html template"""
+        response = self.client.get(reverse('Default_Payment_Fees_create'))
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_create.html')

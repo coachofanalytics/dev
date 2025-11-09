@@ -14,3 +14,20 @@ class DefaultPaymentFeesRegressionURLTest(SimpleTestCase):
         self.assertEqual(url, '/finance/Default_Payment_Fees_list/')
         resolver = resolve(url)
         self.assertEqual(resolver.func, views.Default_Payment_Fees_list)
+
+
+
+
+from django.test import SimpleTestCase
+from django.urls import reverse, resolve
+from finance.views import Default_Payment_Fees_list, Default_Payment_Fees_create
+
+class DefaultPaymentFeesRegressionURLs(SimpleTestCase):
+
+    def test_list_url_resolves(self):
+        url = reverse('Default_Payment_Fees_list')
+        self.assertEqual(resolve(url).func, Default_Payment_Fees_list)
+
+    def test_create_url_resolves(self):
+        url = reverse('Default_Payment_Fees_create')
+        self.assertEqual(resolve(url).func, Default_Payment_Fees_create)

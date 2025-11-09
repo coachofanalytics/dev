@@ -5,7 +5,7 @@
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Default Payment Fees</h4>
-            <a href="#" class="btn btn-light btn-sm text-primary fw-bold">
+            <a href="{% url 'Default_Payment_Fees_create' %}" class="btn btn-light btn-sm text-primary fw-bold">
                 + Add Default Payment Fees
             </a>
         </div>
@@ -31,7 +31,8 @@
                         <td>{{ payment.student_bonus_payment_per_month }}</td>
                         <td>
                             <a href="#" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                             <a href="#" class="btn btn-outline-primary btn-sm">View</a>
+                            
                         </td>
                     </tr>
                     {% endfor %}

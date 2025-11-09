@@ -1,5 +1,8 @@
 from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect, render, get_object_or_404
 from .models import OverBoughtSold, PaymentInformation, Default_Payment_Fees
+from .forms import Default_Payment_Fees_form
 
 
 # Create your views here.
@@ -40,3 +43,16 @@ def Default_Payment_Fees_list(request):
     return render(
         request, "finance/Default_Payment_Fees_list.html", {"payments": payments}
     )
+
+
+# create view
+def Default_Payment_Fees_create(request):
+    if request.method == "POST":
+        form = Default_Payment_Fees_form(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Default_Payment_Fees successfully")
+            return redirect("Default_Payment_Fees_list")
+    else:
+        form = Default_Payment_Fees_form()
+    return render(request, "finance/Default_Payment_Fees_create.html", {"form": form})

@@ -23,3 +23,19 @@ class DefaultPaymentFeesIntegrationURLs(SimpleTestCase):
     #     self.assertEqual(url, '/finance/payments/')
     #     resolver = resolve(url)
     #     self.assertEqual(resolver.func, views.paymentinformation_list)
+
+
+
+from django.test import SimpleTestCase
+from django.urls import reverse, resolve
+from finance.views import Default_Payment_Fees_list, Default_Payment_Fees_create
+
+class DefaultPaymentFeesIntegrationURLs(SimpleTestCase):
+
+    def test_list_url_resolves(self):
+        url = reverse('Default_Payment_Fees_list')
+        self.assertEqual(resolve(url).func, Default_Payment_Fees_list)
+
+    def test_create_url_resolves(self):
+        url = reverse('Default_Payment_Fees_create')
+        self.assertEqual(resolve(url).func, Default_Payment_Fees_create)
