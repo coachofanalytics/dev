@@ -1,0 +1,64 @@
+{% extends "finance/finance_base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">payment_informations</h4>
+            <a href="#" class="btn btn-light btn-sm text-primary fw-bold">
+                + payments
+            </a>
+        </div>
+        <div class="card-body">
+            {% if locations %}
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>payment_fees</th>
+                        <th>down_payment</th>
+                        <th>student_bonus</th>
+                        <th>fee_balance</th>
+                        <th>plan</th>
+                        <th>payment_method</th>
+                        <th>contract_submitted_date</th>
+                        <th>client_signature</th>
+                        <th>company_rep</th>
+                        <th>client_date</th>
+                        <th>description</th>
+                        <th>is_active</th>
+                        <th>is_featured</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payments in payments %}
+                    <tr>
+                        
+                        <td>{{ payments.payment_fees }}</td>
+                        <td>{{ payments.down_payment }}</td>
+                        <td>{{ payments.student_bonus }}</td>
+                        <td>{{ payments.fee_balance }}</td>
+                        <td>{{ payments.plan }}</td>
+                        <td>{{ payments.subplan }}</td>
+                        <td>{{ payments.payment_method }}</td>
+                        <td>{{ payments.contract_submitted_date }}</td>
+                        <td>{{ payments.client_signature }}</td>
+                        <td>{{ payments.company_rep }}</td>
+                        <td>{{ payments.client_date }}</td>
+                        <td>{{ payments.description }}</td>
+                        <td>{{ payments.is_active }}</td>
+                        <td>{{ payments.is_featured }}</td>
+
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-center text-muted">No payment_informations found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

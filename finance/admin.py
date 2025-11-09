@@ -1,9 +1,10 @@
 from django.contrib import admin
 
-from .models import Food,OverBoughtSold,PaymentInformation
+from .models import Food,OverBoughtSold,PaymentInformation,Default_Payment_Fees
                    
 
 # Register your models here.
 admin.site.register(Food)
 admin.site.register(OverBoughtSold)
 admin.site.register(PaymentInformation)
+admin.site.register(Default_Payment_Fees)

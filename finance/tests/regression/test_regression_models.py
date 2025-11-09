@@ -163,3 +163,62 @@ class PaymentInformationRegressionTest(TestCase):
         # Ensure that the default values for Boolean fields are correct
         self.assertTrue(payment.is_active)  # Default True
         self.assertFalse(payment.is_featured)  # Default False
+
+
+
+# finance/tests/regression/test_regression_models.py
+from django.test import TestCase
+from django.db import IntegrityError
+from finance.models import Default_Payment_Fees
+
+class DefaultPaymentFeesRegressionTest(TestCase):
+    
+    def setUp(self):
+        """Set up initial test data before each test."""
+        self.payment_fee = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=500,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=300,
+            student_bonus_payment_per_month=150
+        )
+
+    def test_default_payment_fees_creation(self):
+        """Ensure a Default_Payment_Fees object is created successfully."""
+        payment_fee = Default_Payment_Fees.objects.get(id=self.payment_fee.id)
+        self.assertEqual(payment_fee.job_down_payment_per_month, 500)
+        self.assertEqual(payment_fee.job_plan_hours_per_month, 160)
+        self.assertEqual(payment_fee.student_down_payment_per_month, 300)
+        self.assertEqual(payment_fee.student_bonus_payment_per_month, 150)
+
+    def test_default_payment_fees_str(self):
+        """Ensure the __str__ representation of the object is correct."""
+        self.assertEqual(str(self.payment_fee), f"Default Payment Fee {self.payment_fee.id}")
+
+    def test_default_payment_fees_not_null(self):
+        """Test NOT NULL constraint: should raise IntegrityError if a required field is NULL."""
+        with self.assertRaises(IntegrityError):
+            Default_Payment_Fees.objects.create(
+                job_down_payment_per_month=None,  # NULL not allowed
+                job_plan_hours_per_month=160,
+                student_down_payment_per_month=300,
+                student_bonus_payment_per_month=150
+            )
+
+    def test_field_values(self):
+        """Ensure updating a field persists correctly."""
+        self.payment_fee.job_down_payment_per_month = 600
+        self.payment_fee.save()
+        updated_payment_fee = Default_Payment_Fees.objects.get(id=self.payment_fee.id)
+        self.assertEqual(updated_payment_fee.job_down_payment_per_month, 600)
+
+    def test_default_payment_fees_count(self):
+        """Ensure record count increases correctly when a new object is created."""
+        initial_count = Default_Payment_Fees.objects.count()
+        Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=700,
+            job_plan_hours_per_month=180,
+            student_down_payment_per_month=400,
+            student_bonus_payment_per_month=200
+        )
+        new_count = Default_Payment_Fees.objects.count()
+        self.assertEqual(new_count, initial_count + 1)

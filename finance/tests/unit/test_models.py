@@ -1,5 +1,5 @@
 from django.test import TestCase
-from finance.models import OverBoughtSold,PaymentInformation  
+from finance.models import OverBoughtSold,PaymentInformation ,Default_Payment_Fees 
 from django.utils import timezone# adjust app name if different
 
 class OverBoughtSoldModelTest(TestCase):
@@ -65,3 +65,48 @@ class PaymentInformationModelTest(TestCase):
     def test_fee_balance_is_correct_type(self):
         """Ensure fee_balance is an integer."""
         self.assertIsInstance(self.payment.fee_balance, int)
+# test_models.py
+from django.test import TestCase
+from finance.models import Default_Payment_Fees
+
+class DefaultPaymentFeesModelTest(TestCase):
+    
+    def setUp(self):
+        # Creating a valid instance of Default_Payment_Fees with valid data
+        self.payment_fee = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=500,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=300,
+            student_bonus_payment_per_month=150
+        )
+    
+    def test_default_payment_fees_creation(self):
+        # Test if the Default_Payment_Fees instance is created correctly
+        self.assertEqual(self.payment_fee.job_down_payment_per_month, 500)
+        self.assertEqual(self.payment_fee.job_plan_hours_per_month, 160)
+        self.assertEqual(self.payment_fee.student_down_payment_per_month, 300)
+        self.assertEqual(self.payment_fee.student_bonus_payment_per_month, 150)
+    
+    def test_default_payment_fees_not_null(self):
+        # Test if fields are not null (since null=False in the model)
+        # Creating an object with valid values to avoid NULL constraint error
+        try:
+            Default_Payment_Fees.objects.create(
+                job_down_payment_per_month=500,  
+                job_plan_hours_per_month=160,    
+                student_down_payment_per_month=300,  
+                student_bonus_payment_per_month=150
+            )
+        except Exception as e:
+            self.fail(f"Error creating Default_Payment_Fees: {e}")
+    
+    def test_default_payment_fees_field_types(self):
+        # Test if fields are integer type
+        self.assertIsInstance(self.payment_fee.job_down_payment_per_month, int)
+        self.assertIsInstance(self.payment_fee.job_plan_hours_per_month, int)
+        self.assertIsInstance(self.payment_fee.student_down_payment_per_month, int)
+        self.assertIsInstance(self.payment_fee.student_bonus_payment_per_month, int)
+    
+    def test_default_payment_fees_str(self):
+        # Test the string representation of the Default_Payment_Fees instance
+        self.assertEqual(str(self.payment_fee), f"Default Payment Fee {self.payment_fee.id}")

@@ -73,3 +73,13 @@ class PaymentInformation(models.Model):  # Class name corrected
 
     def __str__(self):
         return f"{self.plan} - {self.payment_method}"
+
+
+class Default_Payment_Fees(models.Model):
+    job_down_payment_per_month = models.IntegerField(null=False)
+    job_plan_hours_per_month = models.IntegerField(null=False)
+    student_down_payment_per_month = models.IntegerField(null=False)
+    student_bonus_payment_per_month = models.IntegerField(null=False)
+
+    def __str__(self):
+        return f"Default Payment Fee {self.id}"

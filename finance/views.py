@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import OverBoughtSold
+from .models import OverBoughtSold,PaymentInformation
 
 
 
@@ -20,3 +20,8 @@ def OverBoughtSold_list(request):
 
 def home_view(request):
     return render(request, 'finance/home.html')
+
+
+def PaymentInformation_list(request)  :
+    payments=PaymentInformation.objects.all()
+    return render(request,'finance/payments_information.html',{'payments':payments})

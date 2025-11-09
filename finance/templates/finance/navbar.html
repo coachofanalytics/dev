@@ -1,45 +1,110 @@
 {% extends "finance/finance_base.html" %}
+{% load static %}
 
-{% block title %}Home - CODA Finance{% endblock %}
+{% block title %}Finance Dashboard · CODA{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5">
-    <h1 class="display-5 fw-bold">Welcome to CODA Finance</h1>
-    <p class="lead text-muted mt-3">
-        Manage your organization's budgets, track payments, and analyze financial data all in one place.
-    </p>
-    <hr class="my-4">
+<!-- Sidebar Navigation -->
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar bg-dark text-white col-md-3 col-lg-2 p-3" style="height: 100vh; position: fixed;">
+        <h3 class="text-center mb-4">Finance Dashboard</h3>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/payments_information/' %} active {% endif %}" href="{% url 'PaymentInformation_list' %}">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Payment Information <span class="badge bg-info ms-2">{{ payment_info_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/payment_history_dashboard/' %} active {% endif %}" href="{% url 'payment_history_dashboard' %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Payment History <span class="badge bg-info ms-2">{{ payment_history_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/deleted_payment_history_list/' %} active {% endif %}" href="{% url 'deleted_payment_history_list' %}">
+                    <i class="fa-solid fa-trash-arrow-up"></i> Deleted History <span class="badge bg-info ms-2">{{ deleted_payment_history_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/transactions_list/' %} active {% endif %}" href="{% url 'transactions_list' %}">
+                    <i class="fa-solid fa-list-ul"></i> Transactions <span class="badge bg-info ms-2">{{ transactions_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/inflow_list/' %} active {% endif %}" href="{% url 'inflow_list' %}">
+                    <i class="fa-solid fa-arrow-down-wide-short"></i> Inflows <span class="badge bg-info ms-2">{{ inflow_month_total|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/training_loans_list/' %} active {% endif %}" href="{% url 'training_loans_list' %}">
+                    <i class="fa-solid fa-graduation-cap"></i> Training Loans <span class="badge bg-info ms-2">{{ training_loans_active|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/loan_users_list/' %} active {% endif %}" href="{% url 'loan_users_list' %}">
+                    <i class="fa-solid fa-user-check"></i> Loan Users <span class="badge bg-info ms-2">{{ loan_users_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/budgeting_home/' %} active {% endif %}" href="{% url 'budgeting_home' %}">
+                    <i class="fa-solid fa-wallet"></i> Budgeting <span class="badge bg-info ms-2">{{ budgets_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/overboughtsold_list/' %} active {% endif %}" href="{% url 'overboughtsold_list' %}">
+                    <i class="fa-solid fa-chart-line"></i> Stocks (OverBoughtSold) <span class="badge bg-info ms-2">{{ obs_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/suppliers_list/' %} active {% endif %}" href="{% url 'suppliers_list' %}">
+                    <i class="fa-solid fa-truck-field"></i> Suppliers <span class="badge bg-info ms-2">{{ suppliers_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/field_expenses_list/' %} active {% endif %}" href="{% url 'field_expenses_list' %}">
+                    <i class="fa-solid fa-map-location-dot"></i> Field Expenses <span class="badge bg-info ms-2">{{ field_expenses_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/food_list/' %} active {% endif %}" href="{% url 'food_list' %}">
+                    <i class="fa-solid fa-bowl-food"></i> Food & History <span class="badge bg-info ms-2">{{ food_items_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/payslip_config/' %} active {% endif %}" href="{% url 'payslip_config' %}">
+                    <i class="fa-solid fa-sliders"></i> Payslip Config <span class="badge bg-info ms-2">{{ payslip_rules_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/default_fees/' %} active {% endif %}" href="{% url 'default_fees' %}">
+                    <i class="fa-solid fa-scale-balanced"></i> Default Payment Fees <span class="badge bg-info ms-2">{{ default_fees_count|default:"0" }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if request.path == '/finance/lb_ls_list/' %} active {% endif %}" href="{% url 'lb_ls_list' %}">
+                    <i class="fa-solid fa-laptop-code"></i> Laptop Bonus & Savings <span class="badge bg-info ms-2">{{ lb_ls_active|default:"0" }}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
 
-    <div class="row mt-5">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">💰 Budgeting</h5>
-                    <p class="card-text text-muted">View, edit, and manage yearly and monthly budgets with detailed breakdowns.</p>
-                    <a href="#" class="btn btn-outline-primary btn-sm">View Budgets</a>
+    <!-- Main Content Area -->
+    <div class="col-md-9 col-lg-10 offset-md-3 offset-lg-2 p-4">
+        <h2 class="coda-page-title mb-4">Finance Dashboard</h2>
+        <div class="row g-3">
+            <!-- Add your dashboard content here -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Payment Information</h5>
+                        <p class="card-text">Active payment arrangements and current obligations.</p>
+                        <a href="{% url 'payment_info_list' %}" class="btn btn-primary">View</a>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">📊 Data Analysis</h5>
-                    <p class="card-text text-muted">Visualize trends, compare spending, and track your organization's financial performance.</p>
-                    <a href="#" class="btn btn-outline-success btn-sm">Analyze Data</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">📁 Reports</h5>
-                    <p class="card-text text-muted">Generate summary reports for budgets, transactions, and departments.</p>
-                    <a href="#" class="btn btn-outline-dark btn-sm">View Reports</a>
-                </div>
-            </div>
+            <!-- Repeat similar cards for other modules -->
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -1,45 +1,121 @@
 {% extends "finance/finance_base.html" %}
+{% load static %}
 
-{% block title %}Home - CODA Finance{% endblock %}
+{% block title %}Finance Dashboard · CODA{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5">
-    <h1 class="display-5 fw-bold">Welcome to CODA Finance</h1>
-    <p class="lead text-muted mt-3">
-        Manage your organization's budgets, track payments, and analyze financial data all in one place.
-    </p>
-    <hr class="my-4">
+<!--
+URL NAME SUGGESTIONS (update to match your urls.py):
+payment_info_list, payment_history_dashboard, deleted_payment_history_list,
+transactions_list, inflow_list, training_loans_list, loan_users_list,
+budgeting_home, overboughtsold_list, suppliers_list, field_expenses_list,
+food_list, payslip_config, default_fees, lb_ls_list
+-->
 
-    <div class="row mt-5">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">💰 Budgeting</h5>
-                    <p class="card-text text-muted">View, edit, and manage yearly and monthly budgets with detailed breakdowns.</p>
-                    <a href="#" class="btn btn-outline-primary btn-sm">View Budgets</a>
-                </div>
-            </div>
-        </div>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">📊 Data Analysis</h5>
-                    <p class="card-text text-muted">Visualize trends, compare spending, and track your organization's financial performance.</p>
-                    <a href="#" class="btn btn-outline-success btn-sm">Analyze Data</a>
-                </div>
-            </div>
-        </div>
+<style>
+  :root{
+    --coda-blue:#1e40af;         /* Brand Blue */
+    --coda-gold:#e7ad4a;         /* Gold */
+    --coda-red:#cc0000;          /* Accent Red */
+    --card-bg:#ffffff;
+    --card-hover:#f5f7ff;
+  }
+  .coda-page-title{
+    color: var(--coda-blue);
+    font-weight: 800;
+    letter-spacing:.2px;
+  }
+  .module-card{
+    position:relative;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    background:var(--card-bg);
+    transition:all .18s ease-in-out;
+    height:100%;
+  }
+  .module-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(30,64,175,.12);
+    background:var(--card-hover);
+  }
+  .module-icon{
+    width:48px;height:48px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:12px;
+    background:rgba(30,64,175,.08);
+    color:var(--coda-blue);
+    font-size:20px;
+  }
+  .stat-badge{
+    position:absolute; top:10px; right:10px;
+    background:var(--coda-blue); color:#fff;
+    padding:.35rem .55rem; border-radius:999px;
+    font-size:.75rem; font-weight:700;
+  }
+  .card-title{
+    margin:0; padding:0; font-weight:700; color:#0f172a;
+  }
+  .card-desc{ color:#475569; font-size:.92rem; }
+  .breadcrumb .active{ color:var(--coda-blue)!important; font-weight:600; }
+  .btn-coda{
+    background:var(--coda-blue); color:#fff; border:none;
+  }
+  .btn-coda:hover{ background:#17348a; color:#fff; }
+</style>
 
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">📁 Reports</h5>
-                    <p class="card-text text-muted">Generate summary reports for budgets, transactions, and departments.</p>
-                    <a href="#" class="btn btn-outline-dark btn-sm">View Reports</a>
-                </div>
-            </div>
-        </div>
+<div class="container py-4">
+  <!-- Header & Breadcrumb -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="coda-page-title mb-1">Finance Dashboard</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Finance</li>
+        </ol>
+      </nav>
     </div>
-</div>
+    <a class="btn btn-sm btn-coda" href="#">
+      <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Go to Payment History
+    </a>
+  </div>
+
+  <!-- Modules Grid -->
+  <div class="row g-3">
+
+    <!-- M1 Payment Information -->
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a class="text-decoration-none" href="#">
+        <div class="p-3 module-card">
+          <span class="stat-badge">{{ payment_info_count|default:"0" }} Records</span>
+          <div class="d-flex gap-3">
+            <div class="module-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div>
+              <h5 class="card-title">Payment Information</h5>
+              <p class="card-desc mb-0">Active payment arrangements and current obligations.</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- M2 Payment History -->
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a class="text-decoration-none" href="#">
+        <div class="p-3 module-card">
+          <span class="stat-badge">{{ payment_history_count|default:"0" }} Records</span>
+          <div class="d-flex gap-3">
+            <div class="module-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+              <h5 class="card-title">Payment History</h5>
+              <p class="card-desc mb-0">All historical payments for audits and reconciliation.</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+
 {% endblock %}

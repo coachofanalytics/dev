@@ -136,3 +136,74 @@ class PaymentInformationIntegrationTest(TestCase):
         """Test that the string representation of the PaymentInformation model is correct."""
         payment = PaymentInformation.objects.create(**self.payment_data)
         self.assertEqual(str(payment), "Standard - Mobile Money")
+
+
+# test_integration_models.py
+from django.test import TestCase
+from finance.models import Default_Payment_Fees
+from django.db import IntegrityError
+
+class IntegrationTestExample(TestCase):
+
+    def setUp(self):
+        # Create a valid instance of Default_Payment_Fees
+        self.payment_fee = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=500,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=300,
+            student_bonus_payment_per_month=150
+        )
+
+    def test_integration_creation(self):
+        # Check if the object is created successfully and has correct data
+        payment_fee = Default_Payment_Fees.objects.get(id=self.payment_fee.id)
+        self.assertEqual(payment_fee.job_down_payment_per_month, 500)
+        self.assertEqual(payment_fee.job_plan_hours_per_month, 160)
+        self.assertEqual(payment_fee.student_down_payment_per_month, 300)
+        self.assertEqual(payment_fee.student_bonus_payment_per_month, 150)
+
+    def test_integration_error_handling(self):
+        # Test the creation of an invalid object (will raise IntegrityError)
+        with self.assertRaises(IntegrityError):
+            Default_Payment_Fees.objects.create(
+                job_down_payment_per_month=None,  # This will cause the NOT NULL error
+                job_plan_hours_per_month=160,
+                student_down_payment_per_month=300,
+                student_bonus_payment_per_month=150
+            )
+# test_performance_model.py
+from django.test import TestCase
+from finance.models import Default_Payment_Fees
+import time
+
+class PerformanceTestExample(TestCase):
+    
+    def setUp(self):
+        # Setup the initial data for testing performance
+        self.start_time = time.time()
+        # Create 1000 entries to test the performance
+        for _ in range(1000):
+            Default_Payment_Fees.objects.create(
+                job_down_payment_per_month=500,
+                job_plan_hours_per_month=160,
+                student_down_payment_per_month=300,
+                student_bonus_payment_per_month=150
+            )
+        self.end_time = time.time()
+
+    def test_creation_performance(self):
+        # Test how long it takes to create 1000 instances
+        time_taken = self.end_time - self.start_time
+        print(f"Time taken to create 1000 Default_Payment_Fees: {time_taken} seconds")
+        # Ensure that it takes less than 2 seconds to create 1000 objects
+        self.assertLess(time_taken, 2, "Creation of 1000 instances took too long")
+
+    def test_query_performance(self):
+        # Test the performance of querying the created records
+        start_query_time = time.time()
+        Default_Payment_Fees.objects.all()  # Query all the created objects
+        end_query_time = time.time()
+        query_time = end_query_time - start_query_time
+        print(f"Time taken to query all records: {query_time} seconds")
+        # Ensure querying does not take too long
+        self.assertLess(query_time, 1, "Querying all records took too long")
