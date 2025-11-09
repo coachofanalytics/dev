@@ -52,7 +52,7 @@ urlpatterns = [
 #=======
     # Education pages removed — keep navbar buttons but links point to placeholders
     # scholaship url
-    path('scholarship', views.scholarship_search, name='scholarship_search')
+    path('scholarship', views.scholarship_search, name='scholarship_search'),
 #>>>>>>> 25.10_DC48_UAT_ND
 
     path('education/', views.education_landing, name = 'education_landing'),

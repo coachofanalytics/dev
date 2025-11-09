@@ -78,7 +78,6 @@ urlpatterns = [
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
     path('community/', include('communities.urls')),
-    path('schoralship/', include('schoralship.urls'))
 ]
 
 if settings.DEBUG:
