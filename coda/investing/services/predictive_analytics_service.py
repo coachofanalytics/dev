@@ -8,7 +8,7 @@ available, with a deterministic fallback when the dependency is absent.
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal, DecimalException
 from typing import Dict, Iterable, List
 
@@ -16,6 +16,14 @@ from django.utils import timezone
 
 from .base_service import BaseInvestingService
 from ..models import ManagedTradingAccount, OptionsPositionHistory
+
+try:  # NumPy 2 compatibility – Prophet still references np.float_
+    import numpy as np  # type: ignore
+except ImportError:  # pragma: no cover - prophet optional path
+    np = None  # type: ignore
+else:  # pragma: no cover - executed in environments with numpy installed
+    if np is not None and not hasattr(np, "float_"):
+        np.float_ = np.float64  # type: ignore[attr-defined]
 
 logger = logging.getLogger(__name__)
 
@@ -98,8 +106,14 @@ class PredictiveAnalyticsService(BaseInvestingService):
         future = model.make_future_dataframe(periods=periods)
         forecast = model.predict(future)
 
-        latest_history = df[['ds', 'y']].to_dict('records')
-        forecast_records = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods).to_dict('records')
+        latest_history = [
+            self._normalize_record(record)
+            for record in df[['ds', 'y']].to_dict('records')
+        ]
+        forecast_records = [
+            self._normalize_record(record)
+            for record in forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods).to_dict('records')
+        ]
 
         return {
             'history': latest_history,
@@ -141,6 +155,39 @@ class PredictiveAnalyticsService(BaseInvestingService):
             'forecast': forecast_records,
             'uses_prophet': False,
         }
+    
+    @staticmethod
+    def _normalize_record(record: Dict[str, object]) -> Dict[str, object]:
+        """
+        Convert pandas/numpy values to native Python types for template rendering.
+        """
+        normalized: Dict[str, object] = {}
+        for key, value in record.items():
+            normalized[key] = PredictiveAnalyticsService._normalize_value(value)
+        return normalized
+
+    @staticmethod
+    def _normalize_value(value):
+        # Convert pandas Timestamp to date
+        if hasattr(value, 'to_pydatetime'):
+            value = value.to_pydatetime()
+        if isinstance(value, datetime):
+            return value.date()
+        # Handle numpy scalar via item()
+        if hasattr(value, 'item'):
+            try:
+                value = value.item()
+            except Exception:
+                pass
+        # Convert Decimal or residual numpy scalar to float
+        if isinstance(value, (Decimal, float, int)):
+            return float(value)
+        if hasattr(value, '__float__'):
+            try:
+                return float(value)
+            except Exception:
+                return value
+        return value
 
     def _to_decimal(self, value) -> Decimal:
         try:
