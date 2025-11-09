@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="100%" height="100%" fill="#e9f5ff" />
+  <g transform="translate(100,40)">
+    <circle cx="80" cy="60" r="40" fill="#ffd9d9" />
+    <rect x="40" y="110" width="80" height="100" rx="10" fill="#ffffff" stroke="#ccc" />
+    <rect x="20" y="80" width="120" height="20" rx="10" fill="#0d6efd" opacity="0.1" />
+    <text x="60" y="180" font-family="Arial" font-size="14" fill="#333">Doctor</text>
+  </g>
+</svg>
