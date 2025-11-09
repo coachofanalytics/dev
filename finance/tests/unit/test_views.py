@@ -107,3 +107,61 @@ class DefaultPaymentFeesCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_create.html')
         self.assertTrue(response.context['form'].errors)
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from finance.models import Default_Payment_Fees
+from finance.forms import Default_Payment_Fees_form
+from django.contrib.messages import get_messages
+
+class DefaultPaymentFeesUpdateViewTest(TestCase):
+    
+    def setUp(self):
+        self.client = Client()
+        self.payment = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+        self.url = reverse('Default_Payment_Fees_update', kwargs={'pk': self.payment.pk})
+
+    def test_update_view_get_request(self):
+        """GET request should return 200 and contain the form"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('form', response.context)
+        self.assertIsInstance(response.context['form'], Default_Payment_Fees_form)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_update.html')
+
+    def test_update_view_post_valid_data(self):
+        """POST valid data should update the object"""
+        data = {
+            'job_down_payment_per_month': 2500,
+            'job_plan_hours_per_month': 180,
+            'student_down_payment_per_month': 1700,
+            'student_bonus_payment_per_month': 400
+        }
+        response = self.client.post(self.url, data, follow=True)
+        self.payment.refresh_from_db()
+        self.assertEqual(self.payment.job_down_payment_per_month, 2500)
+        self.assertEqual(self.payment.job_plan_hours_per_month, 180)
+        self.assertRedirects(response, reverse('Default_Payment_Fees_list'))
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(str(messages[0]), "Default_Payment_Fees successfully")
+
+    def test_update_view_post_invalid_data(self):
+        """POST invalid data should not update and render form errors"""
+        data = {
+            'job_down_payment_per_month': '',  # invalid
+            'job_plan_hours_per_month': 180,
+            'student_down_payment_per_month': 1700,
+            'student_bonus_payment_per_month': 400
+        }
+        response = self.client.post(self.url, data)
+        self.payment.refresh_from_db()
+        self.assertEqual(self.payment.job_down_payment_per_month, 2000)  # unchanged
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'].errors)

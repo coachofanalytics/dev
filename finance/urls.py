@@ -19,4 +19,9 @@ urlpatterns = [
         views.Default_Payment_Fees_create,
         name="Default_Payment_Fees_create",
     ),
+    path(
+        "payments/<int:pk>/edit/",
+        views.Default_Payment_Fees_update,
+        name="Default_Payment_Fees_update",
+    ),
 ]

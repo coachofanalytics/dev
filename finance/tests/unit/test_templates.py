@@ -64,3 +64,29 @@ class TestDefaultPaymentFeesTemplates(TestCase):
         """Create view should use the Default_Payment_Fees_create.html template"""
         response = self.client.get(reverse('Default_Payment_Fees_create'))
         self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_create.html')
+
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from finance.models import Default_Payment_Fees
+
+class DefaultPaymentFeesUpdateTemplateTest(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.payment = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+        self.url = reverse('Default_Payment_Fees_update', kwargs={'pk': self.payment.pk})
+
+    def test_template_renders_update_form(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_update.html')
+        self.assertContains(response, 'job_down_payment_per_month')
+        self.assertContains(response, 'job_plan_hours_per_month')
+        self.assertContains(response, 'student_down_payment_per_month')
+        self.assertContains(response, 'student_bonus_payment_per_month')

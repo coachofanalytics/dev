@@ -39,3 +39,15 @@ class TestDefaultPaymentFeesURLs(SimpleTestCase):
     def test_default_payment_fees_create_url_matches_expected_path(self):
         url = reverse('Default_Payment_Fees_create')
         self.assertEqual(url, '/Default_Payment_Fees_create/')
+
+
+
+from django.test import SimpleTestCase
+from django.urls import reverse, resolve
+from finance.views import Default_Payment_Fees_update
+
+class DefaultPaymentFeesURLsTest(SimpleTestCase):
+
+    def test_update_url_resolves(self):
+        url = reverse('Default_Payment_Fees_update', kwargs={'pk': 1})
+        self.assertEqual(resolve(url).func, Default_Payment_Fees_update)

@@ -63,3 +63,35 @@ class DefaultPaymentFeesRegressionTemplates(TestCase):
     def test_create_template_regression(self):
         response = self.client.get(self.create_url)
         self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_create.html')
+
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from finance.models import Default_Payment_Fees
+
+class DefaultPaymentFeesRegressionTemplates(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.payment = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+        self.list_url = reverse('Default_Payment_Fees_list')
+        self.create_url = reverse('Default_Payment_Fees_create')
+        self.update_url = reverse('Default_Payment_Fees_update', kwargs={'pk': self.payment.pk})
+
+    def test_list_template(self):
+        response = self.client.get(self.list_url)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')
+
+    def test_create_template(self):
+        response = self.client.get(self.create_url)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_create.html')
+
+    def test_update_template(self):
+        response = self.client.get(self.update_url)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_update.html')

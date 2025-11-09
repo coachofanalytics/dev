@@ -56,3 +56,19 @@ def Default_Payment_Fees_create(request):
     else:
         form = Default_Payment_Fees_form()
     return render(request, "finance/Default_Payment_Fees_create.html", {"form": form})
+
+
+# update view
+
+
+def Default_Payment_Fees_update(request, pk):
+    payments = get_object_or_404(Default_Payment_Fees, pk=pk)
+    if request.method == "POST":
+        form = Default_Payment_Fees_form(request.POST, instance=payments)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Default_Payment_Fees successfully")
+            return redirect("Default_Payment_Fees_list")
+    else:
+        form = Default_Payment_Fees_form(instance=payments)
+    return render(request, "finance/Default_Payment_Fees_update.html", {"form": form})
