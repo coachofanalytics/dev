@@ -23,8 +23,6 @@ from .views.managed_trading import (
     analytics,
 )
 
-app_name = "managed_trading"
-
 urlpatterns = [
     # Account management
     path('accounts/', accounts.managed_accounts_list, name='managed_accounts_list'),
