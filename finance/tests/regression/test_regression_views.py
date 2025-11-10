@@ -21,17 +21,16 @@ class DefaultPaymentFeesRegressionViews(TestCase):
         self.create_url = reverse("Default_Payment_Fees_create")
         self.update_url = reverse("Default_Payment_Fees_update", kwargs={"pk": self.payment.pk})
         self.delete_url = reverse("Default_Payment_Fees_delete", kwargs={"pk": self.payment.pk})
+        self.detail_url = reverse("Default_Payment_Fees_detail", kwargs={"pk": self.payment.pk})
 
     # ---------- LIST VIEW ----------
     def test_regression_list_returns_status_200(self):
-        """Ensure list view still returns HTTP 200"""
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "2000")
 
     # ---------- CREATE VIEW ----------
     def test_regression_create_redirects_on_success(self):
-        """Ensure create view redirects properly after valid submission"""
         data = {
             "job_down_payment_per_month": 2500,
             "job_plan_hours_per_month": 180,
@@ -45,7 +44,6 @@ class DefaultPaymentFeesRegressionViews(TestCase):
 
     # ---------- UPDATE VIEW ----------
     def test_regression_update_modifies_existing_object(self):
-        """Ensure update view correctly updates records"""
         data = {
             "job_down_payment_per_month": 3200,
             "job_plan_hours_per_month": 210,
@@ -60,7 +58,15 @@ class DefaultPaymentFeesRegressionViews(TestCase):
 
     # ---------- DELETE VIEW ----------
     def test_regression_delete_removes_object(self):
-        """Ensure delete view still removes object correctly"""
         response = self.client.post(self.delete_url, follow=True)
         self.assertFalse(Default_Payment_Fees.objects.filter(pk=self.payment.pk).exists())
         self.assertRedirects(response, self.list_url)
+
+    # ---------- DETAIL VIEW ----------
+    def test_regression_detail_returns_status_200_and_contains_data(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, str(self.payment.job_down_payment_per_month))
+        self.assertContains(response, str(self.payment.job_plan_hours_per_month))
+        self.assertContains(response, str(self.payment.student_down_payment_per_month))
+        self.assertContains(response, str(self.payment.student_bonus_payment_per_month))

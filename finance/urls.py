@@ -29,4 +29,9 @@ urlpatterns = [
         views.Default_Payment_Fees_delete,
         name="Default_Payment_Fees_delete",
     ),
+    path(
+        "payments/<int:pk>/detail/",
+        views.Default_Payment_Fees_detail,
+        name="Default_Payment_Fees_detail",
+    ),
 ]

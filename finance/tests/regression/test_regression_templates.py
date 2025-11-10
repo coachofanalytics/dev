@@ -20,10 +20,10 @@ class DefaultPaymentFeesRegressionTemplates(TestCase):
         self.create_url = reverse("Default_Payment_Fees_create")
         self.update_url = reverse("Default_Payment_Fees_update", kwargs={"pk": self.payment.pk})
         self.delete_url = reverse("Default_Payment_Fees_delete", kwargs={"pk": self.payment.pk})
+        self.detail_url = reverse("Default_Payment_Fees_detail", kwargs={"pk": self.payment.pk})
 
     # ---------- LIST ----------
     def test_list_template_contains_table_headers(self):
-        """Ensure the list template still displays expected table headers"""
         response = self.client.get(self.list_url)
         self.assertTemplateUsed(response, "finance/Default_Payment_Fees_list.html")
         self.assertContains(response, "job_down_payment_per_month")
@@ -31,7 +31,6 @@ class DefaultPaymentFeesRegressionTemplates(TestCase):
 
     # ---------- CREATE ----------
     def test_create_template_contains_form_fields(self):
-        """Ensure create template still shows correct input fields"""
         response = self.client.get(self.create_url)
         self.assertTemplateUsed(response, "finance/Default_Payment_Fees_create.html")
         self.assertContains(response, "job_down_payment_per_month")
@@ -39,7 +38,6 @@ class DefaultPaymentFeesRegressionTemplates(TestCase):
 
     # ---------- UPDATE ----------
     def test_update_template_contains_existing_values(self):
-        """Ensure update template still preloads object data"""
         response = self.client.get(self.update_url)
         self.assertTemplateUsed(response, "finance/Default_Payment_Fees_update.html")
         self.assertContains(response, "2000")
@@ -47,8 +45,21 @@ class DefaultPaymentFeesRegressionTemplates(TestCase):
 
     # ---------- DELETE ----------
     def test_delete_template_displays_confirmation_text(self):
-        """Ensure delete confirmation page displays expected message"""
         response = self.client.get(self.delete_url)
         self.assertTemplateUsed(response, "finance/Default_Payment_Fees_delete.html")
         self.assertContains(response, "Are you sure")
         self.assertContains(response, "Delete")
+
+    # ---------- DETAIL ----------
+    def test_detail_template_displays_payment_data(self):
+        """Ensure the detail template renders and shows correct payment data"""
+        response = self.client.get(self.detail_url)
+        self.assertTemplateUsed(response, "finance/Default_Payment_Fees_detail.html")
+        self.assertContains(response, "2000")
+        self.assertContains(response, "160")
+        self.assertContains(response, "1500")
+        self.assertContains(response, "300")
+        # Check for Edit/Delete/Back buttons
+        self.assertContains(response, "Edit")
+        self.assertContains(response, "Delete")
+        self.assertContains(response, "Back")

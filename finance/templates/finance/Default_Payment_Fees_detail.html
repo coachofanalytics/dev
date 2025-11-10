@@ -1,0 +1,20 @@
+{% extends "finance/finance_base.html" %}
+{% block content %}
+<div class="detail-section">
+  <div class="detail-card text-center">
+    <h3>Job Down Payment: {{ payment.job_down_payment_per_month }}</h3>
+    <p>Plan Hours Per Month: {{ payment.job_plan_hours_per_month }}</p>
+    <p>Student Down Payment: {{ payment.student_down_payment_per_month }}</p>
+    <p>Student Bonus Payment: {{ payment.student_bonus_payment_per_month }}</p>
+    
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <a href="{% url 'Default_Payment_Fees_update' payment.pk %}" class="btn btn-primary">✏️ Edit</a>
+      <form method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">🗑 Delete</button>
+      </form>
+      <a href="{% url 'Default_Payment_Fees_list' %}" class="btn btn-secondary">⬅ Back</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -31,7 +31,7 @@
                         <td>{{ payment.student_bonus_payment_per_month }}</td>
                         <td>
                             <a href="{% url 'Default_Payment_Fees_update' payment.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <a href="#" class="btn btn-outline-secondary btn-sm">View</a>
+                            <a href="{% url 'Default_Payment_Fees_detail' payment.id %}" class="btn btn-outline-secondary btn-sm">View</a>
                             <a href="{% url 'Default_Payment_Fees_delete' payment.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
                         </td>
                     </tr>

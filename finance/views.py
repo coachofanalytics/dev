@@ -84,3 +84,17 @@ def Default_Payment_Fees_delete(request, pk):
     return render(
         request, "finance/Default_Payment_Fees_delete.html", {"payments": payments}
     )
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from finance.models import Default_Payment_Fees
+
+
+def Default_Payment_Fees_detail(request, pk):
+    payment = get_object_or_404(Default_Payment_Fees, pk=pk)
+    if request.method == "POST":
+        payment.delete()
+        return redirect("finance:Default_Payment_Fees_list")
+    return render(
+        request, "finance/Default_Payment_Fees_detail.html", {"payment": payment}
+    )
