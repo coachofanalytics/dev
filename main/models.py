@@ -160,8 +160,62 @@ class ContactUs(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
+    
 
 
+# donation model
+class Donation_organisation(models.Model):
+    # DONATION_TYPE_CHOICES = [
+    #     ('One-Time', 'One-Time'),
+    #     ('Monthly', 'Monthly'),
+    #     ('Yearly', 'Yearly'),
+    # ]
+
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="The user who made the donation (if applicable)."
+    )
+    donor_name = models.CharField(max_length=100, help_text="Full name of the donor.")
+    email = models.EmailField(help_text="Email address of the donor.")
+    amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Amount donated.")
+    # donation_type = models.CharField(
+    #     max_length=20, 
+    #     choices=DONATION_TYPE_CHOICES, 
+    #     default='One-Time',
+    #     help_text="Type of donation."
+    # )
+    message = models.TextField(blank=True, null=True, help_text="Optional message from the donor.")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Timestamp when the donation was made.")
+    # is_anonymous = models.BooleanField(default=False, help_text="Flag to indicate if the donor wants to remain anonymous.")
+
+    def __str__(self):
+        return f"Donation of {self.amount} by {self.donor_name} ({self.email})"  
+# contact Message model
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.name} => ({self.message})"
+
+
+class Donation_organization(models.Model):
+    donor_name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=254)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.donor_name} - {self.amount}"
+
+
+
+#<<<<<<< 25.10_DC48_UAT_UO
 # Stores email subscriptions for Safety Alerts
 class SafetyAlertSubscription(models.Model):
     email = models.EmailField(unique=True)
@@ -213,3 +267,57 @@ class EmergencyHelpActivation(models.Model):
 
     def __str__(self):
         return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
+=======
+
+# Medical Resource Inquiry model at top-level
+class MedicalResourceInquiry(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.email})"
+
+
+# scholarship model
+
+class Scholarship(models.Model):
+    #start with filter
+    LEVEL_CHOICES =[
+        ('Undergraduate', 'Undergraduate'),
+        ('Masters','Masters'),
+        ('PhD', 'PhD'),
+        ('Vocational', 'Vocational'),
+    ]
+    FIELDS_CHOICES =[
+        ('STEM', 'STEM'),
+        ('Humanities','Humanities'),
+        ('Business', 'Business'),
+        ('Arts', 'Arts'),
+    ]
+    LOCATION_CHOICES =[
+        ('Kenya', 'Kenya'),
+        ('Global','Global'),
+        ('UK', 'UK'),
+        ('USA', 'USA'),
+    ]
+    STATUS_CHOICES =[
+        ('Open','Open'),
+        ('Closing Soon','Closing Soon'),
+        ('Closed', 'Closed'),
+    ]
+    title = models.CharField(max_length=200)
+    provider = models.CharField(max_length=200)
+    level = models.CharField(max_length=200, choices=LEVEL_CHOICES)
+    field = models.CharField(max_length=200, choices= FIELDS_CHOICES)
+    location = models.CharField(max_length=200,choices=LOCATION_CHOICES)
+    amount = models.CharField(max_length= 100)
+    deadline = models.DateField()
+    status = models.CharField(max_length=20, choices= STATUS_CHOICES)
+    class Meta:
+        ordering =['deadline']
+    def __str__(self):
+        return self.title
+    
+#>>>>>>> 25.10_DC48_UAT_ND

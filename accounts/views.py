@@ -1,3 +1,29 @@
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from .models import CustomerUser, Membership
+# Member CRUD views
+class MemberListView(ListView):
+    model = CustomerUser
+    template_name = 'accounts/member_list.html'
+    context_object_name = 'members'
+
+class MemberCreateView(CreateView):
+    model = CustomerUser
+    fields = ['username', 'email', 'first_name', 'last_name']
+    template_name = 'accounts/member_form.html'
+    success_url = reverse_lazy('accounts:member-list')
+
+class MemberUpdateView(UpdateView):
+    model = CustomerUser
+    fields = ['username', 'email', 'first_name', 'last_name']
+    template_name = 'accounts/member_form.html'
+    success_url = reverse_lazy('accounts:member-list')
+
+class MemberDeleteView(DeleteView):
+    model = CustomerUser
+    template_name = 'accounts/member_confirm_delete.html'
+    context_object_name = 'member'
+    success_url = reverse_lazy('accounts:member-list')
 import secrets
 import uuid
 import string, random
@@ -8,6 +34,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from flask import request
 from accounts.choices import CategoryChoices
 from accounts.utils import CATEGORY_FEES, convert_kes_to_usd, get_exchange_rate, send_verification_email
 from coda_project import settings
@@ -24,11 +51,37 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership
-from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
+from .models import Account, CustomerUser, Membership
+from .forms import AccountForm, CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, get_user_model
+
+from .forms import MembershipRegistrationForm
+
+def membership_registration(request):
+    if request.method == 'POST':
+        form = MembershipRegistrationForm(request.POST)
+        if form.is_valid():
+            # Extract cleaned data
+            data = form.cleaned_data
+            # Here you can create a new CustomerUser or Membership as needed
+            # Example: create a new CustomerUser (if you want to register a user)
+            # user = CustomerUser.objects.create(
+            #     email=data['email'],
+            #     first_name=data['first_name'],
+            #     last_name=data['last_name'],
+            #     ...
+            # )
+            # Or just show a success page for now
+            return render(request, 'accounts/membership_sucess.html', {'data': data})
+        # If form is not valid, fall through to re-render with errors
+    else:
+        form = MembershipRegistrationForm()
+    return render(request, 'accounts/membership_registration.html', {'form': form})
+ 
+
+
 # Create your views here..
 
 
@@ -52,14 +105,21 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('')
+            return redirect('accounts:member-list')
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/registration/DC48K/registers.html', {'form': form})
 
-class CustomLoginView(LoginView):
-    authentication_form = CustomAuthenticationForm
-    template_name = 'accounts/registration/DC48K/logins.html'
+def custom_login_view(request):
+    if request.method == 'POST':
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('main:layout')
+    else:
+        form = CustomAuthenticationForm()
+    return render(request, 'accounts/registration/DC48K/logins.html', {'form': form})
 
 
 # Function to generate a random password
@@ -80,7 +140,6 @@ def join(request):
             if form.is_valid():
                 # Check the selected category and update the form instance accordingly
                 category = form.cleaned_data.get("category")
-                
                 if category == CategoryChoices.ORDINARY_MEMBER:
                     form.instance.is_ordinary_member = True
                 elif category == CategoryChoices.ACTIVE_MEMBER:
@@ -108,7 +167,6 @@ def join(request):
                 user.save()
                 print(category)
                 fee_kes = CATEGORY_FEES.get(category, 0.0)
-                
                 fee_usd = fee_kes / get_exchange_rate('USD', 'KES')  # Convert to USD
                 membership = Membership.objects.create(
                     member=user,
@@ -117,17 +175,13 @@ def join(request):
                     status='NOT_PAID',
                 )
                 print(f"Membership created for user {user.username} with fee {fee_usd} USD")
-
                 print(f"User {user.username} created and saved. Account is inactive until verification.")
-
                 send_verification_email(user, password=password)
-
-                
-                return redirect('accounts:email-verification-notice', user.id)
+                # Redirect to member list after registration
+                return redirect('accounts:member-list')
             else:
                 msg = "Error validating form"
                 print(msg)
-
     return render(request, "accounts/registration/DC48K/joins.html", {"form": form})
 
 def email_verification_notice(request, user_id):
@@ -251,89 +305,32 @@ def users(request):
         return redirect("main:layout")
     
 
-class SuperuserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = CustomerUser
-    success_url = "/accounts/users"
-    fields = [
-        "category",
-        "sub_category",
-        "first_name",
-        "last_name",
-        "username",
-        "date_joined",
-        "email",
-        "gender",
-        "phone",
-        "address",
-        "city",
-        "state",
-        "country",
-        "is_superuser",
-        "is_admin",
-        "is_staff",
-        "is_client",
-        "is_applicant",
-        "is_active",
-        "is_staff",
-    ]
-
-    def form_valid(self, form):
-        # form.instance.username=self.request.user
-        # if request.user.is_authenticated:
-        if self.request.user.is_superuser:  # or self.request.user.is_authenticated :
-            return super().form_valid(form)
-        #  elif self.request.user.is_authenticated:
-        #      return super().form_valid(form)
-        return False
-
-    def test_func(self):
-        user = self.get_object()
-        # if self.request.user == client.username:
-        #     return True
-        if self.request.user.is_superuser:  # or self.request.user == user.username:
-            return True
-        return False
+def superuser_update_view(request, pk):
+    user = get_object_or_404(CustomerUser, pk=pk)
+    if not request.user.is_superuser:
+        return redirect('main:layout')
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('/accounts/users')
+    else:
+        form = UserForm(instance=user)
+    return render(request, 'accounts/admin/superuser_update.html', {'form': form, 'user': user})
 
 
-class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = CustomerUser
-    success_url = "/accounts/users"
-    # fields=['category','address','city','state','country']
-    fields = [
-        # "category",
-        # "sub_category",
-        "first_name",
-        "last_name",
-        "date_joined",
-        "email",
-        "gender",
-        "phone",
-        # "address",
-        # "city",
-        # "state",
-        # "country",
-        "is_admin",
-        "is_staff",
-        "is_client",
-        "is_applicant",
-    ]
-
-    def form_valid(self, form):
-        # form.instance.username=self.request.user
-        # if request.user.is_authenticated:
-        if self.request.user.is_superuser or self.request.user.is_admin:
-            return super().form_valid(form)
-        #  elif self.request.user.is_admin:
-        #       return super().form_valid(form)
-        return False
-
-    def test_func(self):
-        user = self.get_object()
-        # if self.request.user == client.username:
-        #     return True
-        if self.request.user.is_superuser or self.request.user.is_admin:
-            return True
-        return False
+def user_update_view(request, pk):
+    user = get_object_or_404(CustomerUser, pk=pk)
+    if not (request.user.is_superuser or request.user.is_admin):
+        return redirect('main:layout')
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('/accounts/users')
+    else:
+        form = UserForm(instance=user)
+    return render(request, 'accounts/admin/user_update.html', {'form': form, 'user': user})
 
 
 
@@ -348,86 +345,64 @@ def select_category(request):
     return render(request, "accounts/select_category.html")
 
 
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.core.exceptions import ImmediateHttpResponse  
 from django.http import HttpResponseRedirect  
-class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-    def pre_social_login(self, request, sociallogin):
-        print('Inside pre_social_login')
-
-        # Extract user information from sociallogin
-        user = sociallogin.user
-        email = user.email
-
-        # Attempt to find an existing user with the same email
-        existing_user = CustomerUser.objects.filter(email=email).first()
-        category = request.session.get('category')
-        print(category)
-
-        if existing_user:
-            print('Existing user found. Connecting social account.')
-            # Link the social login to the existing user
-            sociallogin.connect(request, existing_user)
-            target_user = existing_user
-        elif existing_user is None and category is None:
-            print('No existing user and no category in session. Redirecting to category selection.')
-           
+from django.http import HttpResponseRedirect  
+def custom_social_account_adapter_pre_social_login(request, sociallogin):
+    print('Inside pre_social_login')
+    user = sociallogin.user
+    email = user.email
+    existing_user = CustomerUser.objects.filter(email=email).first()
+    category = request.session.get('category')
+    print(category)
+    if existing_user:
+        print('Existing user found. Connecting social account.')
+        sociallogin.connect(request, existing_user)
+    elif existing_user is None and category is None:
+        print('No existing user and no category in session. Redirecting to category selection.')
+    else:
+        print('Creating a new user via social login.')
+        sociallogin.save(request, connect=False)
+        new_user = sociallogin.user
+        selected_category = request.session.pop('category', None)
+        print(selected_category)
+        if selected_category == CategoryChoices.ORDINARY_MEMBER:
+            new_user.is_ordinary_member = True
+        elif selected_category == CategoryChoices.ACTIVE_MEMBER:
+            new_user.is_active_member = True
+        elif selected_category == CategoryChoices.EXECUTIVE_MEMBER:
+            new_user.is_executive_member = True
+        elif selected_category == CategoryChoices.FBO_ORDINARY:
+            new_user.is_fbo_ordinary = True
+        elif selected_category == CategoryChoices.ACTIVE_ORGANIZATION:
+            new_user.is_active_organization = True
+        elif selected_category == CategoryChoices.ROYAL_ORGANIZATION:
+            new_user.is_royal_organization = True
         else:
-            print('Creating a new user via social login.')
-            # If the user doesn't exist and a category is provided, create a new user
-            sociallogin.save(request, connect=False)
-
-            new_user = sociallogin.user
-            selected_category = request.session.pop('category', None)
-            print(selected_category)
-
-            # Assign category based on your CategoryChoices
-            if selected_category == CategoryChoices.ORDINARY_MEMBER:
-                new_user.is_ordinary_member = True
-            elif selected_category == CategoryChoices.ACTIVE_MEMBER:
-                new_user.is_active_member = True
-            elif selected_category == CategoryChoices.EXECUTIVE_MEMBER:
-                new_user.is_executive_member = True
-            elif selected_category == CategoryChoices.FBO_ORDINARY:
-                new_user.is_fbo_ordinary = True
-            elif selected_category == CategoryChoices.ACTIVE_ORGANIZATION:
-                new_user.is_active_organization = True
-            elif selected_category == CategoryChoices.ROYAL_ORGANIZATION:
-                new_user.is_royal_organization = True
-            else:
-                messages.error(request, "Invalid category selected.")
-               
-            # Assign username if not set
-            if not new_user.username:
-                new_user.username = new_user.email
-
-            # Since email is verified by Google, set user as active
-            new_user.is_active = True  # No need for verification token
-            new_user.verification_token = None  # Clear any token if previously set
-            new_user.save()
-
-            cate = int(selected_category)
-            fee_kes = CATEGORY_FEES.get(cate) 
-            print(fee_kes)
-            fee_usd = fee_kes / get_exchange_rate('USD', 'KES')  # Ensure get_exchange_rate is defined
-            membership = Membership.objects.create(
-                member=new_user,
-                fee=fee_usd,
-                currency="USD",
-                status='NOT_PAID',
-            )
-            print(f"Membership created for user {new_user.username} with fee {fee_usd} USD")
-
-            # Optionally send a welcome email
+            messages.error(request, "Invalid category selected.")
+        if not new_user.username:
+            new_user.username = new_user.email
+        new_user.is_active = True
+        new_user.verification_token = None
+        new_user.save()
+        cate = int(selected_category)
+        fee_kes = CATEGORY_FEES.get(cate)
+        print(fee_kes)
+        fee_usd = fee_kes / get_exchange_rate('USD', 'KES')
+        membership = Membership.objects.create(
+            member=new_user,
+            fee=fee_usd,
+            currency="USD",
+            status='NOT_PAID',
+        )
+        print(f"Membership created for user {new_user.username} with fee {fee_usd} USD")
             # self.send_welcome_email(new_user)
 
-            target_user = new_user
 
         # After obtaining the target_user (existing or new), check Membership status
         if existing_user:
             membership = Membership.objects.filter(member=existing_user).first()
             if membership and membership.status == 'NOT_PAID':
-                print(f"User {target_user.username} has unpaid membership. Redirecting to payment.")
+                print(f"User {existing_user.username} has unpaid membership. Redirecting to payment.")
                 # Redirect to finance:pay with membership ID
                 sociallogin.state['next'] = reverse('finance:pay')
             else:
@@ -436,7 +411,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         else:
             membership = Membership.objects.filter(member=new_user).first()
             if membership and membership.status == 'NOT_PAID':
-                print(f"User {target_user.username} has unpaid membership. Redirecting to payment.")
+                print(f"User {new_user.username} has unpaid membership. Redirecting to payment.")
                 # Redirect to finance:pay with membership ID
                 sociallogin.state['next'] = reverse('finance:pay')
             else:
@@ -462,4 +437,20 @@ def custom_social_login(request):
     
     except:
     
-        return render(request, "accounts/registration/join.html", {"form": UserForm()})        
+        return render(request, "accounts/registration/join.html", {"form": UserForm()})
+# account list view
+def account_list(request):
+    accounts = Account.objects.all().order_by('-created_at')
+    return render(request, 'accounts/account_list.html', {'accounts': accounts})
+def create_account(request):
+    if request.method == 'POST':
+        form = AccountForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:account_list')
+    else:
+        form = AccountForm()
+    return render(request, 'accounts/create_account.html', {'form': form})
+def account_details(request, pk):
+    account = get_object_or_404(Account, pk=pk)
+    return render(request, 'accounts/account_details.html', {'account': account})

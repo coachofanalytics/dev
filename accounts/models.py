@@ -10,6 +10,7 @@ from django_countries.fields import CountryField
 
 
 class CustomerUser(AbstractUser):
+    accepted_terms = models.BooleanField(default=False)
     
     groups = models.ManyToManyField(Group, related_name='custom_user_set')
     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_set')
@@ -134,9 +135,44 @@ class Department(models.Model):
 
     class Meta:
         verbose_name = ("Department")
-        verbose_name_plural = ("Departments")
+        verbose_name_plural = ("Departments") 
 
     # def get_absolute_url(self):
     #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
-        return self.name    
+        return self.name  
+# account model
+class Account(models.Model): # make sure this exists
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+
+# ACCOUNT _TEAM MEMBERS model
+
+class AccountTeamMember(models.Model):
+    # choose user role
+    USER_ROLES = [
+        ('ADMIN', 'Admin'),
+        ('MEMBER', 'Member'),
+        ('VIEWER', 'Viewer'),
+    ]
+
+    account = models.ForeignKey('Account', on_delete=models.CASCADE, related_name="team_members")
+    user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='team_memberships')
+    role = models.CharField(max_length=10, choices=USER_ROLES)
+    status = models.BooleanField(default=True)  # Active or Inactive
+    joined_date = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(CustomerUser, on_delete=models.SET_NULL, null=True, related_name='added_team_members')
+    notes = models.TextField(null=True, blank=True)
+    class Meta:
+        unique_together = ('account', 'user')  # Ensure a user can't be added multiple times to the same account
+        verbose_name = "Account Team Member"
+        verbose_name_plural = "Account Team Members"
+    def __str__(self):
+        return f"{self.user.username} - {self.get_role_display()} in {self.account.name}"
+        

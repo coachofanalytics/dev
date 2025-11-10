@@ -1,0 +1,23 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm p-4">
+        <h2 class="mb-4">Donor Details</h2>
+
+        <ul class="list-group mb-4">
+            <li class="list-group-item"><strong>Name:</strong> {{ donation.donor_name }}</li>
+            <li class="list-group-item"><strong>Email:</strong> {{ donation.email }}</li>
+            <li class="list-group-item"><strong>Amount:</strong> {{ donation.amount }}</li>
+            <li class="list-group-item"><strong>Message:</strong> {{ donation.message }}</li>
+            <li class="list-group-item"><strong>Date:</strong> {{ donation.created_at|date:"F j, Y, g:i a" }}</li>
+        </ul>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'main:edit_donor' donation.id %}" class="btn btn-primary">✏️ Edit</a>
+            <a href="{% url 'main:delete_donor' donation.id %}" class="btn btn-danger">🗑️ Delete</a>
+            <a href="{% url 'main:donor_list' %}" class="btn btn-outline-secondary">⬅️ Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

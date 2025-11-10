@@ -8,16 +8,47 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+#<<<<<<< 25.10_DC48_UAT_UO
 from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, EmergencyHelpActivation
+#=======
+from django.db.models import Q
+#<<<<<<< HEAD
+from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
+#>>>>>>> 25.10_DC48_UAT_ND
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
+##=======
+from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
+from accounts.models import CustomerUser
+from .utils import image_view,path_values
+from django.views.decorators.csrf import csrf_exempt
 from main.forms import ContactForm
+#>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
+#<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
+#=======
+
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
+# Details Donation View
+class DonationDetailView(DetailView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_detail.html'
+# Create Donation View
+class DonationCreateView(CreateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_create.html'
+    success_url = reverse_lazy('main:donation')
+
+#>>>>>>> 25.10_DC48_UAT_ND
 User=get_user_model()
 
 
@@ -56,6 +87,19 @@ def template_errors(request):
     return render(request, 'main/errors/template_error.html', context)
 
 
+
+@csrf_exempt
+def medical_resource_form(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        # Redirect using the named URL so it works regardless of include path
+        return redirect('main:healthcare_info')
+    return render(request, 'main/data/medical_resource_form.html')
+
+
 def general_errors(request):
     # return render(request, "main/errors/noresult.html")
     context={'message':'message'}
@@ -87,8 +131,20 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
+#<<<<<<< 25.10_DC48_UAT_UO
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page=page_instance)
+#=======
+#<<<<<<< HEAD
+    # Define page_instance for the home page or desired page
+    page_instance = Page.objects.filter(page_name='Home').first()
+    description = Description.objects.filter(page=page_instance)
+#=======
+    # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
+    page_instance, _ = Page.objects.get_or_create(page_name='Home')
+    description = Description.objects.filter(page = page_instance)
+#>>>>>>> origin/25.10_DC48K_UAT_FN
+#>>>>>>> 25.10_DC48_UAT_ND
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -124,7 +180,8 @@ def layout(request):
     return render(request, "main/home_templates/home.html",context)
 
 def History(request):
-    page_instance = Page.objects.get(page_name='About')
+    # Ensure About page exists to avoid crashes when the DB is empty
+    page_instance, _ = Page.objects.get_or_create(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
             
@@ -228,6 +285,69 @@ def service_list(request):
     return render(request, 'main/services.html', {'services': services})
 
 
+def healthcare_info(request):
+    """
+    Render the Healthcare Information page (per spec this page presents financial services content).
+    """
+    hero = {
+        'title': 'FINANCIAL SERVICES',
+        'subtitle': 'Secure your wealth, invest smart, and manage your cross-border finances with confidence.',
+        'cta_text': 'BOOK A FINANCIAL CONSULTATION',
+        'hero_image': 'main/img/healthcare/doctor.svg',
+    }
+
+    mission = {
+        'heading': 'Empowering Your Global Financial Future',
+        'paragraph': 'International finance, investments, and repatriating funds can be complex. Our platform provides trusted tools and expert guidance to help you manage wealth across borders with confidence and compliance.'
+    }
+
+    sections = [
+        {
+            'number': '1',
+            'title': 'Banking and Investment',
+            'description': 'Access strategic advice on managing assets both locally and in Kenya. Connect with trusted partners for banking, real estate, and portfolio growth opportunities.',
+            'bullets': [
+                'Diaspora-focused mortgage and loan referrals',
+                'Investment advisory for Kenyan stocks, bonds, and real estate',
+                'Guidance on setting up international and Kenyan bank accounts',
+                'Tax consultation and dual residency compliance',
+            ],
+            'cta_text': 'Explore Investment Portfolios',
+            'image': 'main/img/healthcare/patient.svg',
+            'align': 'left',
+        },
+        {
+            'number': '2',
+            'title': 'Remittances and Currency Exchange',
+            'description': 'Ensure your money gets home quickly, safely, and cost-effectively. We compare and vet providers for the best rates and lowest fees.',
+            'bullets': [
+                'Real-time currency exchange comparisons',
+                'Verified low-fee remittance partners',
+                'Guidance on large fund transfers and declarations',
+                'Alerts on economic and regulatory changes affecting transfers',
+            ],
+            'cta_text': 'View Remittance Calculator',
+            'image': 'main/img/healthcare/doctor.svg',
+            'align': 'right',
+        }
+    ]
+
+    contact_cta = {
+        'heading': 'URGENT MEDICAL ADVISORY',
+        'description': "For life-threatening emergencies, always dial your host country's local emergency number first.",
+        'cta_text': 'View Emergency Contacts by Country',
+    }
+
+    context = {
+        'hero': hero,
+        'mission': mission,
+        'sections': sections,
+        'contact_cta': contact_cta,
+    }
+
+    return render(request, 'main/data/healthcare_info.html', context)
+
+
 
 
 
@@ -256,6 +376,7 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+#<<<<<<< 25.10_DC48_UAT_UO
 @require_POST
 @csrf_protect
 def activate_helpline(request):
@@ -314,3 +435,152 @@ def activate_helpline(request):
     return JsonResponse({'success': True, 'message': 'Request received. Our team will call you shortly.'})
 
 
+#=======
+#<<<<<<< HEAD
+def donor_list(request):
+    donations = Donation_organisation.objects.all()  # Remove is_donor filter
+    return render(request, 'main/donor.html', {'donations': donations})
+def donor_details(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    return render(request, 'main/donor_details.html', {'donation': donation})
+def add_donor(request):
+    if request.method == "POST":
+        form = DonorForm(request.POST, request.FILES)
+        message=f'Thank You for your donation, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = DonorForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_donor.html",context)
+def edit_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        form = DonorForm(request.POST, instance=donation)
+        if form.is_valid():
+            form.save()
+            return redirect('main:donor_list')
+    else:
+        form = DonorForm(instance=donation)
+    return render(request, 'main/edit_donor.html', {'form': form, 'donation': donation})
+def delete_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        donation.delete()
+        return redirect('main:donor_list')
+    return render(request, 'main/delete_donor.html', {'donation': donation})
+
+# contact message list view
+def message_list(request):
+    messages = ContactMessage.objects.all()  # Fetch all contact messages
+    return render(request, 'main/snippets_templates/table/contact_message_list.html', {'messages': messages})
+# contact message detail view
+def message_details(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    return render(request, 'main/message_details.html', {'message': message})
+# contact message edit view
+def edit_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        form = MessageForm(request.POST, instance=message)
+        if form.is_valid():
+            form.save()
+            return redirect('main:message_list')
+    else:
+        form = MessageForm(instance=message)
+    return render(request, 'main/edit_message.html', {'form': form, 'message': message})
+# contact message delete view
+def delete_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        message.delete()
+        return redirect('main:message_list')
+    return render(request, 'main/delete_message.html', {'message': message})
+
+# add contact message view (if needed)
+def add_message(request):
+    if request.method == "POST":
+        form = MessageForm(request.POST, request.FILES)
+        message=f'Thank You, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = MessageForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_message.html",context)
+#=======
+def education_landing(request):
+
+    initial_view = request.GET.get('view','landing')
+    context = {'initial_view': initial_view}
+    return render(request, 'main/education/education.html', context)
+
+
+def donation_list(request):
+    donations = Donation_organization.objects.all().order_by('-created_at')
+    return render(request,'main/snippets_templates/table/donation_list.html',{'donations': donations})
+
+
+# Edit Donation View
+class DonationEditView(UpdateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_edit.html'
+    success_url = reverse_lazy('main:donation')
+
+# Delete Donation View
+class DonationDeleteView(DeleteView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_confirm_delete.html'
+    success_url = reverse_lazy('main:donation')
+
+
+#>>>>>>> origin/25.10_DC48K_UAT_FN
+
+# Scholarship views
+
+def scholarship_search(request):
+    scholarships = Scholarship.objects.all()
+    form = ScholarshipSearchForm(request.GET or None)
+    if form.is_valid():
+        data = form.cleaned_data
+        # apply filter
+        if data['search_keyword']:
+            scholarships = scholarships.filter(
+                Q(title__icontains=data['search_keyword']) |
+                Q(provider__icontains=data['search_keyword']) 
+            )
+        if data['filter_level'] and data['filter_level'] != 'All':
+            scholarships = scholarships.filter(level=data['filter_level'])
+
+        if data['filter_field'] and data['filter_field'] != 'All':
+            scholarships = scholarships.filter(field=data['filter_field'])
+
+        if data['filter_location'] and data['filter_location'] != 'All':
+            scholarships = scholarships.filter(location=data['filter_location'])
+
+        if data['filter_status']:
+            scholarships = scholarships.filter(status='Closing soon')
+    context = {
+        'scholarships': scholarships,
+        'form': form,
+        'result_count': scholarships.count(),
+    }
+    return render(request, 'scholarship_app/scholarship_search.html',context)
+#>>>>>>> 25.10_DC48_UAT_ND
