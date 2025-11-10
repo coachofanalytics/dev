@@ -165,3 +165,51 @@ class DefaultPaymentFeesUpdateViewTest(TestCase):
         self.assertEqual(self.payment.job_down_payment_per_month, 2000)  # unchanged
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['form'].errors)
+
+
+import pytest
+from django.urls import reverse
+from django.contrib.messages import get_messages
+from finance.models import Default_Payment_Fees
+
+@pytest.mark.django_db
+class TestDefaultPaymentFeesDeleteView:
+
+    def test_get_delete_view_renders_template(self, client):
+        # Create a payment fee object
+        payment = Default_Payment_Fees.objects.create(
+            name="Test Fee",
+            amount=100
+        )
+
+        url = reverse("Default_Payment_Fees_delete", args=[payment.pk])
+        response = client.get(url)
+
+        # Check that the page renders correctly
+        assert response.status_code == 200
+        assert "finance/Default_Payment_Fees_delete.html" in [
+            t.name for t in response.templates
+        ]
+        assert b"Test Fee" in response.content
+
+    def test_post_delete_view_deletes_object_and_redirects(self, client):
+        # Create a payment fee object
+        payment = Default_Payment_Fees.objects.create(
+            name="Fee to Delete",
+            amount=200
+        )
+
+        url = reverse("Default_Payment_Fees_delete", args=[payment.pk])
+        response = client.post(url, follow=True)
+
+        # After deletion, object should not exist
+        assert not Default_Payment_Fees.objects.filter(pk=payment.pk).exists()
+
+        # Should redirect to the list page
+        assert response.redirect_chain
+        assert response.redirect_chain[-1][0].endswith(reverse("Default_Payment_Fees_list"))
+        assert response.status_code == 200
+
+        # Check that the success message appears
+        messages = list(get_messages(response.wsgi_request))
+        assert any("Delete successfully" in str(m) for m in messages)

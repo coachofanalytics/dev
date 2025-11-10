@@ -90,3 +90,27 @@ class DefaultPaymentFeesUpdateTemplateTest(TestCase):
         self.assertContains(response, 'job_plan_hours_per_month')
         self.assertContains(response, 'student_down_payment_per_month')
         self.assertContains(response, 'student_bonus_payment_per_month')
+
+
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from finance.models import Default_Payment_Fees
+
+class DefaultPaymentFeesDeleteTemplateTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.payment = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+        self.url = reverse('Default_Payment_Fees_delete', kwargs={'pk': self.payment.id})
+
+    def test_delete_template_contains_correct_html(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "Are you sure you want to delete")
+        self.assertContains(response, "Yes, Delete")
+        self.assertContains(response, "Cancel")

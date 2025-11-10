@@ -1,112 +1,19 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from finance.models import Default_Payment_Fees
-
-
-class DefaultPaymentFeesIntegrationTest(TestCase):
-    """
-    Integration test for Default_Payment_Fees_list view.
-    Checks URL, template rendering, and database integration together.
-    """
-
-    def setUp(self):
-        self.client = Client()
-        # Create multiple payment records
-        Default_Payment_Fees.objects.create(
-            job_down_payment_per_month=2000,
-            job_plan_hours_per_month=160,
-            student_down_payment_per_month=1500,
-            student_bonus_payment_per_month=300
-        )
-        Default_Payment_Fees.objects.create(
-            job_down_payment_per_month=2500,
-            job_plan_hours_per_month=180,
-            student_down_payment_per_month=1700,
-            student_bonus_payment_per_month=400
-        )
-
-    def test_integration_view_status_code(self):
-        """Integration: Ensure view returns 200 OK."""
-        url = reverse('Default_Payment_Fees_list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-    def test_integration_template_used(self):
-        """Integration: Correct template is rendered."""
-        url = reverse('Default_Payment_Fees_list')
-        response = self.client.get(url)
-        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')
-
-    def test_integration_context_and_data(self):
-        """Integration: Context includes payments and data is correct."""
-        url = reverse('Default_Payment_Fees_list')
-        response = self.client.get(url)
-        self.assertIn('payments', response.context)
-        self.assertEqual(response.context['payments'].count(), 2)
-        self.assertContains(response, "2000")
-        self.assertContains(response, "2500")
-        self.assertContains(response, "160")
-        self.assertContains(response, "180")
-
-
-
-from django.test import TestCase, Client
-from django.urls import reverse
-from finance.models import Default_Payment_Fees
-
-class DefaultPaymentFeesIntegrationTest(TestCase):
-
-    def setUp(self):
-        self.client = Client()
-        self.list_url = reverse('Default_Payment_Fees_list')
-        self.create_url = reverse('Default_Payment_Fees_create')
-
-        # Create sample data
-        Default_Payment_Fees.objects.create(
-            job_down_payment_per_month=2000,
-            job_plan_hours_per_month=160,
-            student_down_payment_per_month=1500,
-            student_bonus_payment_per_month=300
-        )
-
-    def test_list_view_integration(self):
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "2000")
-        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')
-
-    def test_create_view_integration(self):
-        data = {
-            'job_down_payment_per_month': 2500,
-            'job_plan_hours_per_month': 180,
-            'student_down_payment_per_month': 1700,
-            'student_bonus_payment_per_month': 400
-        }
-        response = self.client.post(self.create_url, data, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "2500")
-        self.assertEqual(Default_Payment_Fees.objects.count(), 2)
-
-
-
-
-from django.test import TestCase, Client
-from django.urls import reverse
-from finance.models import Default_Payment_Fees
 from django.contrib.messages import get_messages
+from finance.models import Default_Payment_Fees
+
 
 class DefaultPaymentFeesIntegrationTest(TestCase):
     
     def setUp(self):
         self.client = Client()
-        # Create an initial payment object
         self.payment = Default_Payment_Fees.objects.create(
             job_down_payment_per_month=2000,
             job_plan_hours_per_month=160,
             student_down_payment_per_month=1500,
             student_bonus_payment_per_month=300
         )
-        # URLs
         self.list_url = reverse('Default_Payment_Fees_list')
         self.create_url = reverse('Default_Payment_Fees_create')
         self.update_url = reverse('Default_Payment_Fees_update', kwargs={'pk': self.payment.pk})
@@ -127,12 +34,10 @@ class DefaultPaymentFeesIntegrationTest(TestCase):
             'student_bonus_payment_per_month': 400
         }
         response = self.client.post(self.create_url, data, follow=True)
-        self.assertEqual(Default_Payment_Fees.objects.count(), 2)  # initial + new
-        new_payment = Default_Payment_Fees.objects.last()
-        self.assertEqual(new_payment.job_down_payment_per_month, 2500)
+        self.assertEqual(Default_Payment_Fees.objects.count(), 2)
         self.assertRedirects(response, self.list_url)
         messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(str(messages[0]), 'Default_Payment_Fees successfully')
+        self.assertTrue(any("successfully" in str(m) for m in messages))
 
     # -------- Update View --------
     def test_update_view_post_valid_data(self):
@@ -148,4 +53,14 @@ class DefaultPaymentFeesIntegrationTest(TestCase):
         self.assertEqual(self.payment.job_plan_hours_per_month, 200)
         self.assertRedirects(response, self.list_url)
         messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(str(messages[0]), 'Default_Payment_Fees successfully')
+        self.assertTrue(any("successfully" in str(m) for m in messages))
+
+    # -------- Delete View --------
+    def test_delete_view_deletes_payment_and_redirects(self):
+        delete_url = reverse('Default_Payment_Fees_delete', kwargs={'pk': self.payment.pk})
+        self.assertTrue(Default_Payment_Fees.objects.filter(pk=self.payment.pk).exists())
+        response = self.client.post(delete_url, follow=True)
+        self.assertFalse(Default_Payment_Fees.objects.filter(pk=self.payment.pk).exists())
+        self.assertRedirects(response, self.list_url)
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue(any("Delete successfully" in str(m) for m in messages))

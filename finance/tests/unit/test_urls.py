@@ -51,3 +51,15 @@ class DefaultPaymentFeesURLsTest(SimpleTestCase):
     def test_update_url_resolves(self):
         url = reverse('Default_Payment_Fees_update', kwargs={'pk': 1})
         self.assertEqual(resolve(url).func, Default_Payment_Fees_update)
+
+
+
+
+from django.test import SimpleTestCase
+from django.urls import reverse, resolve
+from finance.views import Default_Payment_Fees_delete
+
+class DefaultPaymentFeesURLsTest(SimpleTestCase):
+    def test_delete_url_resolves(self):
+        url = reverse('Default_Payment_Fees_delete', kwargs={'pk': 1})
+        self.assertEqual(resolve(url).func, Default_Payment_Fees_delete)

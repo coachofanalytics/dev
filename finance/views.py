@@ -51,7 +51,7 @@ def Default_Payment_Fees_create(request):
         form = Default_Payment_Fees_form(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Default_Payment_Fees successfully")
+            messages.success(request, "create successfully")
             return redirect("Default_Payment_Fees_list")
     else:
         form = Default_Payment_Fees_form()
@@ -67,8 +67,20 @@ def Default_Payment_Fees_update(request, pk):
         form = Default_Payment_Fees_form(request.POST, instance=payments)
         if form.is_valid():
             form.save()
-            messages.success(request, "Default_Payment_Fees successfully")
+            messages.success(request, "update successfully")
             return redirect("Default_Payment_Fees_list")
     else:
         form = Default_Payment_Fees_form(instance=payments)
     return render(request, "finance/Default_Payment_Fees_update.html", {"form": form})
+
+
+# delete view
+def Default_Payment_Fees_delete(request, pk):
+    payments = get_object_or_404(Default_Payment_Fees, pk=pk)
+    if request.method == "POST":
+        payments.delete()
+        messages.success(request, "Delete successfully")
+        return redirect("Default_Payment_Fees_list")
+    return render(
+        request, "finance/Default_Payment_Fees_delete.html", {"payments": payments}
+    )
