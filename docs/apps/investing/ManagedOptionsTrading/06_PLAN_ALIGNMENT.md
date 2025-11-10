@@ -20,6 +20,7 @@ This note reconciles the trading strategy plan (`docs/_temp_summaries/TRADINGPLA
 | Plan Item | Status | Implementation Notes |
 | --- | --- | --- |
 | Use Unusual Whales flow + OptionsPlay for entry signals | **Implemented / Instrumented** | UW enrichment populates client dashboard and ranking engine; OptionsPlay ingestion exists in suggestion pipeline. New reporting cards show UW contribution (share of suggestions, win-rate, realized P&L). |
+| Pricing tiers reflect UW cost structure | **Implemented** | `$420` sleeve remains for legacy client; new tiers (Balanced/Elite) documented with UW cadence and fee adjustments (`feature_guides/PRICING_TIERS_2025.md`). |
 | Maintain watchlists for large/small cap candidates | **Not implemented** | Manual lists currently maintained outside the system. Consider adding curated watchlist model or integration with screener exports. |
 | ATR-driven stop-loss and profit targets | **Not implemented** | Exit automation still manual. Opportunity to extend `OptionsMonitoringService` with ATR/backtest-driven recommendations and auto close triggers. |
 
