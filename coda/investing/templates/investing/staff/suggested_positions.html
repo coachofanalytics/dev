@@ -98,6 +98,19 @@
             </div>
         </div>
     </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="alert alert-secondary d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
+                <div>
+                    <strong>Automation mode:</strong> feeds refresh around {{ fetch_windows|join:", " }} and pending ideas older than {{ ttl_minutes }} minutes are auto-cleared. We default to ratings ≥ {{ min_rating|title }} for faster desk decisions.
+                </div>
+                <div class="mt-2 mt-lg-0">
+                    <span class="badge bg-primary text-white">Tip</span> Click “Show all ratings” in the Pending tab if you need to review lower-graded ideas.
+                </div>
+            </div>
+        </div>
+    </div>
     
     {% if heatmap_symbols or heatmap_strategies %}
     <div class="d-flex justify-content-end mb-2">

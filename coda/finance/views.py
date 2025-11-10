@@ -3,6 +3,7 @@ import json
 import csv
 import tempfile
 import logging
+import copy
 from decimal import *
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
@@ -707,19 +708,70 @@ def loan_analytics(request):
     """Loan analytics using service layer."""
     # Use service layer
     analytics_service = FinancialAnalyticsService()
+    
+    default_context = {
+        "summary": {
+            "total_applications": 0,
+            "approved_loans": 0,
+            "active_loans": 0,
+            "under_review": 0,
+            "total_lent": 0,
+            "total_outstanding": 0,
+            "total_repaid": 0,
+            "total_interest": 0,
+            "staff_borrowers": 0,
+            "other_borrowers": 0,
+            "avg_loan_amount": 0,
+            "approval_rate": 0,
+        },
+        "summary_numeric": {
+            "total_applications": 0,
+            "approved_loans": 0,
+            "active_loans": 0,
+            "under_review": 0,
+            "total_lent": 0,
+            "total_outstanding": 0,
+            "total_repaid": 0,
+            "total_interest": 0,
+            "staff_borrowers": 0,
+            "other_borrowers": 0,
+            "avg_loan_amount": 0,
+            "approval_rate": 0,
+        },
+        "active_loans": [],
+        "approved_loans": [],
+        "under_review_loans": [],
+        "rejected_loans": [],
+        "recent_rejections": [],
+        "rejection_metrics": {
+            "today_rejections": 0,
+            "week_rejections": 0,
+            "month_rejections": 0,
+            "total_rejections": 0,
+            "temporary_issues": 0,
+            "permanent_issues": 0,
+        },
+        "rejection_reasons_breakdown": [],
+        "status_distribution": [],
+        "monthly_volume": [],
+        "amount_distribution": [],
+    }
 
-    if request.user.is_staff:
-        # Staff gets system-wide analytics
-        report = analytics_service.generate_performance_report()
-    else:
-        # Regular users get their own analytics
-        report = analytics_service.generate_performance_report(user=request.user)
+    dashboard_data = analytics_service.get_admin_loan_dashboard()
 
-    if report and report.get("status") == "success":
-        context = {"report": report.get("report", {})}
+    if dashboard_data.get("status") == "success":
+        context = copy.deepcopy(default_context)
+        data = dashboard_data.get("data", {})
+        for key, value in data.items():
+            if key == "summary":
+                context["summary"].update(value or {})
+            elif key == "rejection_metrics":
+                context["rejection_metrics"].update(value or {})
+            else:
+                context[key] = value
     else:
-        messages.error(request, "Error generating analytics report")
-        context = {"report": {}}
+        messages.error(request, "Error loading loan analytics dashboard")
+        context = copy.deepcopy(default_context)
 
     return render(request, "finance/admin/loan_analytics.html", context)
 

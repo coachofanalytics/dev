@@ -85,6 +85,7 @@ def suggested_positions_list(request):
     if min_rating not in rating_rank:
         min_rating = 'EXCELLENT'
     allowed_ratings = rating_rank[: rating_rank.index(min_rating) + 1]
+    ttl_minutes = getattr(settings, 'SUGGESTED_POSITION_TTL_MINUTES', 90)
 
     base_pending_qs = SuggestedPosition.objects.filter(
         review_status='pending'
@@ -280,6 +281,8 @@ def suggested_positions_list(request):
         'show_all': show_all,
         'suppressed_count': suppressed_count,
         'min_rating': min_rating,
+        'ttl_minutes': ttl_minutes,
+        'fetch_windows': ['9:00 AM ET', '1:00 PM ET'],
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 

@@ -24,20 +24,27 @@ def client_portal(request):
     Permissions: Authenticated users viewing their own accounts
     """
     # Get all managed accounts for this client
-    accounts = ManagedTradingAccount.objects.filter(
+    accounts_queryset = ManagedTradingAccount.objects.filter(
         client=request.user
     ).select_related('account_manager').annotate(
         open_positions_count=Count('positions', filter=Q(positions__status='open'))
     ).order_by('-created_at')
+    accounts = list(accounts_queryset)
     
     # Calculate totals across all accounts
-    total_invested = sum([acc.initial_capital for acc in accounts])
-    total_current_value = sum([acc.current_balance for acc in accounts])
-    total_pnl = sum([acc.total_profit_loss for acc in accounts])
+    total_invested = sum(
+        (acc.initial_capital or Decimal('0.00')) for acc in accounts
+    )
+    total_current_value = sum(
+        (acc.current_balance or Decimal('0.00')) for acc in accounts
+    )
+    total_pnl = sum(
+        (acc.total_profit_loss or Decimal('0.00')) for acc in accounts
+    )
     
     # Get overall stats
     total_open_positions = sum([
-        acc.positions.filter(status='open').count() 
+        getattr(acc, 'open_positions_count', 0) or 0
         for acc in accounts
     ])
     
@@ -47,7 +54,7 @@ def client_portal(request):
         'total_current_value': total_current_value,
         'total_pnl': total_pnl,
         'total_open_positions': total_open_positions,
-        'has_accounts': accounts.count() > 0,
+        'has_accounts': bool(accounts),
         'title': 'My Managed Accounts'
     }
     

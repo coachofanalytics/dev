@@ -137,7 +137,7 @@ class UserDataAccessTest(TestCase):
             account_number='INV1_001',
             account_name='Investor 1 Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             status='active',
         )
@@ -147,7 +147,7 @@ class UserDataAccessTest(TestCase):
             account_number='INV2_001',
             account_name='Investor 2 Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('15000.00'),
             status='active',
         )

@@ -1,6 +1,6 @@
 # Loan System - Testing
 
-**Last Updated:** October 22, 2025
+**Last Updated:** November 10, 2025
 
 ---
 
@@ -38,8 +38,20 @@
 
 | Date | Tests | Pass | Fail |
 |------|-------|------|------|
+| Nov 10, 2025 | 2 | 2 | 0 |
+| Nov 9, 2025 | 4 | 4 | 0 |
 | Oct 13, 2025 | 10 | 10 | 0 |
 | Sept 2025 | 8 | 8 | 0 |
+
+**Nov 10, 2025 Validation**
+- ✅ `/dashboard` financial analytics widget displays live totals (lent, outstanding, approval rate, borrower count) for admin/investor users
+- ✅ Recent activity list surfaces latest loan rejections when present and gracefully falls back to the empty state otherwise
+
+**Nov 9, 2025 Validation**
+- ✅ Loan analytics dashboard loads summary tiles with live data (UAT)
+- ✅ Active/approved/rejected loan tables render without errors
+- ✅ Chart visualizations populate with status distribution & monthly volume data
+- ✅ Modal interactions (view details, record payment) open and close correctly
 
 ---
 

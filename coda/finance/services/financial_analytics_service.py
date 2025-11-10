@@ -4,8 +4,10 @@ Provides comprehensive financial analytics and reporting capabilities
 """
 
 from decimal import Decimal
+from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Sum, Count, Avg, Q
+from django.db.models.functions import Coalesce, TruncMonth
 from core.services.base import ModelService
 import logging
 
@@ -283,7 +285,259 @@ class FinancialAnalyticsService(ModelService):
                 'message': f"Error getting dashboard data: {e}"
             }
     
+    def get_admin_loan_dashboard(self):
+        """
+        Build metrics and collections required for the admin loan analytics dashboard.
+        """
+        try:
+            from finance.models import LoanApplication, LoanPayment, LoanDecisionAudit
+
+            loans = LoanApplication.objects.select_related('borrower', 'loan_product')
+            total_applications = loans.count()
+
+            approval_statuses = ['approved', 'active', 'repaid', 'disbursed']
+            active_statuses = ['active', 'disbursed', 'overdue']
+            review_statuses = ['submitted', 'pending_guarantor', 'under_review']
+
+            approved_base_qs = loans.filter(status__in=approval_statuses)
+            approved_loans_qs = approved_base_qs.select_related('loan_product', 'borrower').order_by(
+                '-approved_at', '-updated_at'
+            )
+            approved_loans = list(approved_loans_qs)
+
+            active_loans_qs = loans.filter(status__in=active_statuses).select_related(
+                'loan_product', 'borrower'
+            ).order_by('-updated_at')
+            active_loans = list(active_loans_qs)
+
+            under_review_loans_qs = loans.filter(status__in=review_statuses).select_related(
+                'loan_product', 'borrower'
+            ).order_by('-updated_at')
+            under_review_loans = list(under_review_loans_qs)
+
+            rejected_loans_qs = loans.filter(status='rejected').select_related(
+                'loan_product', 'borrower'
+            ).prefetch_related('decision_audits').order_by('-updated_at')
+            rejected_loans = list(rejected_loans_qs)
+
+            payments_by_loan = dict(
+                LoanPayment.objects.values('loan_application_id')
+                .annotate(total_paid=Coalesce(Sum('amount'), Decimal('0.00')))
+                .values_list('loan_application_id', 'total_paid')
+            )
+
+            total_lent = approved_base_qs.aggregate(
+                total=Coalesce(Sum('amount_requested'), Decimal('0.00'))
+            )['total'] or Decimal('0.00')
+
+            total_repaid = LoanPayment.objects.aggregate(
+                total=Coalesce(Sum('amount'), Decimal('0.00'))
+            )['total'] or Decimal('0.00')
+
+            outstanding_total = Decimal('0.00')
+            interest_total = Decimal('0.00')
+
+            for loan in approved_loans:
+                total_payable = self._resolve_total_payable(loan)
+                total_paid = payments_by_loan.get(loan.id, Decimal('0.00'))
+
+                outstanding_amount = total_payable - total_paid
+                if outstanding_amount < 0:
+                    outstanding_amount = Decimal('0.00')
+
+                if loan.status in active_statuses:
+                    outstanding_total += outstanding_amount
+
+                interest_component = total_payable - loan.amount_requested
+                if interest_component > 0:
+                    interest_total += interest_component
+
+            processed_count = loans.filter(
+                status__in=['approved', 'active', 'repaid', 'rejected', 'disbursed']
+            ).count()
+            approval_rate = (len(approved_loans) / processed_count * 100) if processed_count else 0
+
+            avg_loan_amount = loans.aggregate(
+                avg=Coalesce(Avg('amount_requested'), Decimal('0.00'))
+            )['avg'] or Decimal('0.00')
+
+            staff_borrowers = loans.filter(borrower__category=2).values('borrower_id').distinct().count()
+            other_borrowers = loans.exclude(borrower__category=2).values('borrower_id').distinct().count()
+
+            summary = {
+                'total_applications': total_applications,
+                'approved_loans': len(approved_loans),
+                'active_loans': len(active_loans),
+                'under_review': len(under_review_loans),
+                'total_lent': self._quantize_currency(total_lent),
+                'total_outstanding': self._quantize_currency(outstanding_total),
+                'total_repaid': self._quantize_currency(total_repaid),
+                'total_interest': self._quantize_currency(interest_total),
+                'staff_borrowers': staff_borrowers,
+                'other_borrowers': other_borrowers,
+                'avg_loan_amount': self._quantize_currency(avg_loan_amount),
+                'approval_rate': round(approval_rate, 1) if approval_rate else 0,
+            }
+
+            today = timezone.now().date()
+            week_start = today - timedelta(days=7)
+            month_start = today.replace(day=1)
+
+            rejection_metrics = {
+                'today_rejections': sum(
+                    1 for loan in rejected_loans if loan.updated_at and loan.updated_at.date() == today
+                ),
+                'week_rejections': sum(
+                    1 for loan in rejected_loans if loan.updated_at and loan.updated_at.date() >= week_start
+                ),
+                'month_rejections': sum(
+                    1 for loan in rejected_loans if loan.updated_at and loan.updated_at.date() >= month_start
+                ),
+                'total_rejections': len(rejected_loans),
+                'temporary_issues': 0,
+                'permanent_issues': 0,
+            }
+
+            audits = LoanDecisionAudit.objects.filter(new_status='rejected').order_by('-decided_at')
+            reason_counts = {}
+
+            for audit in audits:
+                reason = (audit.reason or "Reason not provided").strip() or "Reason not provided"
+                reason_counts[reason] = reason_counts.get(reason, 0) + 1
+
+            breakdown = []
+            total_reason_count = sum(reason_counts.values())
+            if total_reason_count:
+                temporary_terms = ('guarantor', 'document', 'pending', 'income', 'verification', 'missing')
+                permanent_terms = ('credit', 'default', 'risk', 'fraud', 'policy', 'ineligible')
+                temporary_total = 0
+                permanent_total = 0
+
+                for reason, count in reason_counts.items():
+                    normalized = reason.lower()
+                    if any(term in normalized for term in temporary_terms):
+                        severity = 'warning'
+                        temporary_total += count
+                    elif any(term in normalized for term in permanent_terms):
+                        severity = 'danger'
+                        permanent_total += count
+                    else:
+                        severity = 'secondary'
+
+                    breakdown.append(
+                        {
+                            'title': reason,
+                            'count': count,
+                            'percentage': round((count / total_reason_count) * 100, 1),
+                            'severity': severity,
+                        }
+                    )
+
+                rejection_metrics['temporary_issues'] = temporary_total
+                rejection_metrics['permanent_issues'] = permanent_total
+
+            status_distribution = list(
+                loans.values('status').annotate(count=Count('id')).order_by('status')
+            )
+
+            monthly_volume = []
+            monthly_volume_qs = (
+                loans.annotate(month=TruncMonth('created_at'))
+                .values('month')
+                .annotate(
+                    applications=Count('id'),
+                    amount=Coalesce(Sum('amount_requested'), Decimal('0.00')),
+                )
+                .order_by('month')
+            )
+            for entry in monthly_volume_qs:
+                month = entry['month'].strftime('%b %Y') if entry['month'] else 'Unknown'
+                monthly_volume.append(
+                    {
+                        'label': month,
+                        'applications': entry['applications'],
+                        'amount': float(entry['amount'] or 0),
+                    }
+                )
+
+            amount_distribution = []
+            amount_distribution_qs = (
+                loans.values('loan_product__name')
+                .annotate(total=Coalesce(Sum('amount_requested'), Decimal('0.00')))
+                .order_by('-total')[:10]
+            )
+            for entry in amount_distribution_qs:
+                amount_distribution.append(
+                    {
+                        'label': entry['loan_product__name'] or 'Unknown Product',
+                        'total': float(entry['total'] or 0),
+                    }
+                )
+
+            summary_numeric = {
+                key: float(value) if isinstance(value, Decimal) else value
+                for key, value in summary.items()
+            }
+
+            data = {
+                'summary': summary,
+                'summary_numeric': summary_numeric,
+                'active_loans': active_loans,
+                'approved_loans': approved_loans,
+                'under_review_loans': under_review_loans,
+                'rejected_loans': rejected_loans,
+                'recent_rejections': rejected_loans[:10],
+                'rejection_metrics': rejection_metrics,
+                'rejection_reasons_breakdown': breakdown,
+                'status_distribution': status_distribution,
+                'monthly_volume': monthly_volume,
+                'amount_distribution': amount_distribution,
+            }
+
+            return {
+                'status': 'success',
+                'data': data,
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error building admin loan dashboard: {e}")
+            return {
+                'status': 'error',
+                'message': f"Error building admin loan dashboard: {e}",
+            }
+    
     # Private helper methods
+    
+    def _resolve_total_payable(self, loan):
+        """Calculate the total payable amount for a loan with safe fallbacks."""
+        try:
+            if getattr(loan, "total_payable", None):
+                return self._quantize_currency(loan.total_payable)
+
+            if getattr(loan, "loan_product", None):
+                term_months = getattr(loan.loan_product, "term_months", None)
+                total = loan.loan_product.calculate_total_payable(
+                    loan.amount_requested, term_months=term_months
+                )
+                return self._quantize_currency(total)
+
+            if loan.interest_rate is not None:
+                interest_amount = loan.amount_requested * (loan.interest_rate / Decimal('100'))
+                return self._quantize_currency(loan.amount_requested + interest_amount)
+
+            return self._quantize_currency(loan.amount_requested)
+
+        except Exception as exc:
+            self.logger.debug(f"Fallback total payable calculation failed: {exc}")
+            return self._quantize_currency(loan.amount_requested)
+
+    def _quantize_currency(self, value):
+        """Ensure currency values are returned with two decimal places."""
+        if value is None:
+            value = Decimal('0.00')
+        if not isinstance(value, Decimal):
+            value = Decimal(value)
+        return value.quantize(Decimal('0.01'))
     
     def _get_user_payment_history(self, user):
         """Get user's payment history"""

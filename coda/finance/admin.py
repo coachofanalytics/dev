@@ -41,27 +41,16 @@ class LoanProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description']
     
     readonly_fields = []  # No timestamp fields in this model
-    
+
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'product_type', 'status')
+            'fields': ('name', 'description', 'product_type', 'is_active')
         }),
         ('Financial Terms', {
-            'fields': ('min_amount', 'max_amount', 'interest_rate', 'interest_type', 
-                      'min_term_months', 'max_term_months')
+            'fields': ('min_amount', 'max_amount', 'interest_rate', 'term_months', 'fees')
         }),
-        ('Fees', {
-            'fields': ('processing_fee', 'late_fee')
-        }),
-        ('Eligibility', {
-            'fields': ('min_credit_score', 'min_income', 'employment_required')
-        }),
-        ('Settings', {
-            'fields': ('requires_collateral', 'auto_approve')
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
+        ('Eligibility & Requirements', {
+            'fields': ('min_credit_score', 'requirements')
         }),
     )
 

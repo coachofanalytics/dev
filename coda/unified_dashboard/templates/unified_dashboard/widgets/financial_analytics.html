@@ -1,42 +1,60 @@
 <div class="widget-content">
     <div class="analytics-summary">
         <div class="row">
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-dollar-sign text-success"></i>
+            {% if financial_cards %}
+                {% for card in financial_cards %}
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="{{ card.icon }}"></i>
+                            </div>
+                            <div class="metric-value">
+                                {% if card.prefix %}{{ card.prefix }}{% endif %}
+                                {{ card.value|floatformat:card.decimals }}
+                                {% if card.suffix %}{{ card.suffix }}{% endif %}
+                            </div>
+                            <div class="metric-label">{{ card.label }}</div>
+                        </div>
                     </div>
-                    <div class="metric-value">$0</div>
-                    <div class="metric-label">Total Revenue</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-credit-card text-info"></i>
+                {% endfor %}
+            {% else %}
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-dollar-sign text-success"></i>
+                        </div>
+                        <div class="metric-value">$0</div>
+                        <div class="metric-label">Total Revenue</div>
                     </div>
-                    <div class="metric-value">0</div>
-                    <div class="metric-label">Active Loans</div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-chart-pie text-warning"></i>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-credit-card text-info"></i>
+                        </div>
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Active Loans</div>
                     </div>
-                    <div class="metric-value">0%</div>
-                    <div class="metric-label">Success Rate</div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-users text-primary"></i>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-chart-pie text-warning"></i>
+                        </div>
+                        <div class="metric-value">0%</div>
+                        <div class="metric-label">Success Rate</div>
                     </div>
-                    <div class="metric-value">0</div>
-                    <div class="metric-label">Active Clients</div>
                 </div>
-            </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-users text-primary"></i>
+                        </div>
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Active Clients</div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
     
@@ -58,10 +76,24 @@
     <div class="recent-activity mt-4">
         <h6><i class="fas fa-history"></i> Recent Activity</h6>
         <div class="activity-list">
-            <div class="activity-item">
-                <i class="fas fa-info-circle text-muted"></i>
-                <span class="text-muted">No recent financial activity</span>
-            </div>
+            {% if financial_activity %}
+                {% for loan in financial_activity %}
+                    <div class="activity-item">
+                        <i class="fas fa-info-circle text-muted"></i>
+                        <span>
+                            {{ loan.updated_at|date:"M d, Y" }} –
+                            {{ loan.borrower.get_full_name|default:loan.borrower.username }}
+                            ({{ loan.loan_product.name|default:"Loan" }}) –
+                            ${{ loan.amount_requested|floatformat:2 }}
+                        </span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="activity-item">
+                    <i class="fas fa-info-circle text-muted"></i>
+                    <span class="text-muted">No recent financial activity</span>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

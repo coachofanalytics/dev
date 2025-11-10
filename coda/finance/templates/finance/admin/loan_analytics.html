@@ -4,7 +4,20 @@
 {% block title %}Loan Analytics & Management{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
+<style>
+    .loan-analytics-dashboard {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .loan-analytics-dashboard .card {
+        height: 100%;
+    }
+</style>
+<div class="container-fluid loan-analytics-dashboard mt-4">
     <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
@@ -120,34 +133,34 @@
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs" id="loanTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">
+            <a class="nav-link active" id="active-tab" data-toggle="tab" href="#active" role="tab" aria-controls="active" aria-selected="true">
                 <i class="fas fa-play-circle"></i> Active Loans
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">
+            <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">
                 <i class="fas fa-check-circle"></i> Approved Loans
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab">
+            <a class="nav-link" id="review-tab" data-toggle="tab" href="#review" role="tab" aria-controls="review" aria-selected="false">
                 <i class="fas fa-clock"></i> Under Review
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
+            <a class="nav-link" id="rejected-tab" data-toggle="tab" href="#rejected" role="tab" aria-controls="rejected" aria-selected="false">
                 <i class="fas fa-times-circle"></i> Rejected
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">
+            <a class="nav-link" id="analytics-tab" data-toggle="tab" href="#analytics" role="tab" aria-controls="analytics" aria-selected="false">
                 <i class="fas fa-chart-bar"></i> Analytics
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="rejection-tracking-tab" data-bs-toggle="tab" data-bs-target="#rejection-tracking" type="button" role="tab">
+            <a class="nav-link" id="rejection-tracking-tab" data-toggle="tab" href="#rejection-tracking" role="tab" aria-controls="rejection-tracking" aria-selected="false">
                 <i class="fas fa-exclamation-triangle text-warning"></i> Rejection Tracking
-            </button>
+            </a>
         </li>
     </ul>
 
@@ -888,7 +901,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Loan Application Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body" id="loanDetailsContent">
                 <!-- Content will be loaded here -->
@@ -903,7 +918,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Record Loan Payment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="paymentForm">
@@ -922,28 +939,28 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="submitPayment()">Record Payment</button>
             </div>
         </div>
     </div>
 </div>
 
+{{ summary_numeric|json_script:"loan-summary-numeric" }}
+{{ status_distribution|json_script:"loan-status-distribution" }}
+{{ monthly_volume|json_script:"loan-monthly-volume" }}
+{{ amount_distribution|json_script:"loan-amount-distribution" }}
+
 <script>
 // Global variables
 let currentLoanId = null;
 
 // Tab functionality
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap tabs
-    var triggerTabList = [].slice.call(document.querySelectorAll('#loanTabs button'))
-    triggerTabList.forEach(function (triggerEl) {
-        var tabTrigger = new bootstrap.Tab(triggerEl)
-        triggerEl.addEventListener('click', function (event) {
-            event.preventDefault()
-            tabTrigger.show()
-        })
-    })
+$(function() {
+    $('#loanTabs a[data-toggle="tab"]').on('click', function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+    });
 });
 
 // View loan details
@@ -953,7 +970,7 @@ function viewLoanDetails(loanId) {
         .then(data => {
             if (data.success) {
                 document.getElementById('loanDetailsContent').innerHTML = data.html;
-                new bootstrap.Modal(document.getElementById('loanDetailsModal')).show();
+                $('#loanDetailsModal').modal('show');
             } else {
                 alert('Error loading loan details: ' + data.error);
             }
@@ -1068,7 +1085,7 @@ function recordPayment(loanId) {
     document.getElementById('paymentAmount').value = '';
     document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('paymentNotes').value = '';
-    new bootstrap.Modal(document.getElementById('paymentModal')).show();
+    $('#paymentModal').modal('show');
 }
 
 // Submit payment
@@ -1097,7 +1114,7 @@ function submitPayment() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+            $('#paymentModal').modal('hide');
             location.reload();
         } else {
             alert('Error recording payment: ' + data.error);
@@ -1108,6 +1125,140 @@ function submitPayment() {
         alert('Error recording payment');
     });
 }
+
+// Charts
+$(function() {
+    if (typeof Chart === 'undefined') {
+        return;
+    }
+
+    const summaryData = JSON.parse(document.getElementById('loan-summary-numeric').textContent || '{}');
+    const statusData = JSON.parse(document.getElementById('loan-status-distribution').textContent || '[]');
+    const monthlyData = JSON.parse(document.getElementById('loan-monthly-volume').textContent || '[]');
+    const amountData = JSON.parse(document.getElementById('loan-amount-distribution').textContent || '[]');
+
+    const monthlyCtx = document.getElementById('monthlyVolumeChart');
+    if (monthlyCtx && monthlyData.length) {
+        const labels = monthlyData.map(item => item.label);
+        const applications = monthlyData.map(item => item.applications);
+        const amounts = monthlyData.map(item => item.amount);
+
+        new Chart(monthlyCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Applications',
+                        data: applications,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Amount (USD)',
+                        data: amounts,
+                        backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1,
+                        type: 'line',
+                        yAxisID: 'y1',
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Applications',
+                        },
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Amount (USD)',
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    const statusCtx = document.getElementById('statusDistributionChart');
+    if (statusCtx && statusData.length) {
+        const labels = statusData.map(item => (item.status || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+        const counts = statusData.map(item => item.count);
+
+        new Chart(statusCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        data: counts,
+                        backgroundColor: [
+                            '#007bff',
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545',
+                            '#17a2b8',
+                            '#6c757d',
+                        ],
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                },
+            },
+        });
+    }
+
+    const amountCtx = document.getElementById('amountDistributionChart');
+    if (amountCtx && amountData.length) {
+        const labels = amountData.map(item => item.label);
+        const totals = amountData.map(item => item.total);
+
+        new Chart(amountCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Total Amount (USD)',
+                        data: totals,
+                        backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    }
+});
 
 // Get CSRF token
 function getCookie(name) {

@@ -31,7 +31,7 @@ def test_model_fields():
         'Inflow': ['user', 'amount', 'currency', 'received_date', 'transaction_date', 'confirmed_date', 'total_payment'],
         'Budget': ['company', 'department', 'budget_lead', 'category', 'subcategory', 'item_name', 'quantity', 'unit_price', 'description', 'notes', 'created_at', 'updated_at'],
         'CodaBudget': ['company', 'name', 'total_amount', 'currency', 'status', 'created_by', 'updated_by'],
-        'LoanProduct': ['name', 'min_amount', 'max_amount', 'interest_rate', 'term_months', 'min_term_months', 'max_term_months'],
+        'LoanProduct': ['name', 'min_amount', 'max_amount', 'interest_rate', 'term_months', 'fees', 'is_active', 'min_credit_score', 'product_type', 'requirements'],
         'Payment_History': ['customer', 'payment_fees', 'plan', 'created_at', 'updated_at', 'contract_signed', 'amount'],
         'Default_Payment_Fees': ['plan', 'payment_fees', 'job_plan_hours_per_month', 'loan_amount'],
     }

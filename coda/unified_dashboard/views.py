@@ -11,6 +11,7 @@ import logging
 
 from .models import DashboardWidget, UserDashboardPreferences, DashboardService, UserServiceAccess, DashboardAnalytics
 from accounts.models import CategoryChoices
+from finance.services import FinancialAnalyticsService
 
 logger = logging.getLogger(__name__)
 
@@ -163,9 +164,9 @@ def get_dashboard_config(user_role, user=None):
                     'url': '/professional_services/interview_roles/'
                 },
                 {
-                    'title': 'Client Projects',
+                    'title': 'Service Catalog',
                     'type': 'widget',
-                    'template': 'unified_dashboard/widgets/client_projects.html'
+                    'template': 'unified_dashboard/widgets/service_catalog.html'
                 }
             ],
             'quick_actions': [
@@ -227,9 +228,10 @@ def get_user_notifications(user):
     return []
 
 
-@login_required
 def unified_dashboard(request):
     """Main unified dashboard view"""
+    if not request.user.is_authenticated:
+        return redirect('main:layout')
     try:
         user_role = get_user_role(request.user)
         dashboard_config = get_dashboard_config(user_role, request.user)
@@ -246,6 +248,60 @@ def unified_dashboard(request):
                 'icon': 'fas fa-database',
                 'url': '/dashboard/admin/backup-database/',
             })
+
+        financial_summary = {}
+        financial_cards = []
+        financial_activity = []
+
+        if user_role in ('admin', 'investor'):
+            analytics_service = FinancialAnalyticsService()
+            analytics_result = analytics_service.get_admin_loan_dashboard()
+
+            if analytics_result.get('status') == 'success':
+                analytics_data = analytics_result.get('data', {})
+                summary = analytics_data.get('summary', {})
+                summary_numeric = analytics_data.get('summary_numeric', summary)
+                financial_summary = summary
+
+                total_lent = summary_numeric.get('total_lent', 0)
+                total_outstanding = summary_numeric.get('total_outstanding', 0)
+                approval_rate = summary_numeric.get('approval_rate', 0)
+                borrower_total = (
+                    summary_numeric.get('staff_borrowers', 0)
+                    + summary_numeric.get('other_borrowers', 0)
+                )
+
+                financial_cards = [
+                    {
+                        'icon': 'fas fa-dollar-sign text-success',
+                        'label': 'Total Lent',
+                        'value': total_lent,
+                        'prefix': '$',
+                        'decimals': 2,
+                    },
+                    {
+                        'icon': 'fas fa-wallet text-warning',
+                        'label': 'Outstanding',
+                        'value': total_outstanding,
+                        'prefix': '$',
+                        'decimals': 2,
+                    },
+                    {
+                        'icon': 'fas fa-percentage text-info',
+                        'label': 'Approval Rate',
+                        'value': approval_rate,
+                        'suffix': '%',
+                        'decimals': 1,
+                    },
+                    {
+                        'icon': 'fas fa-users text-primary',
+                        'label': 'Borrowers',
+                        'value': borrower_total,
+                        'decimals': 0,
+                    },
+                ]
+
+                financial_activity = analytics_data.get('recent_rejections', [])[:5]
         
         # Simplified context without complex model queries for now
         context = {
@@ -257,6 +313,9 @@ def unified_dashboard(request):
             'notifications': get_user_notifications(request.user),
             'title': 'CODA Command Center - ' + dashboard_config["title"],
             'user': request.user,
+            'financial_summary': financial_summary,
+            'financial_cards': financial_cards,
+            'financial_activity': financial_activity,
         }
         
         return render(request, 'unified_dashboard/dashboard.html', context)
@@ -622,28 +681,6 @@ def get_role_based_links(request):
             'Contact Us': reverse('main:contact'),
             'Help Center': reverse('main:help'),
         })
-        
-        # Add subcategory-specific links
-        if user.sub_category == 1:  # RESEARCH
-            links.update({
-                'Research Tools': reverse('main:research'),
-                'Information Center': reverse('main:info'),
-            })
-        elif user.sub_category == 2:  # NETWORKING
-            links.update({
-                'Networking Events': reverse('main:events'),
-                'Industry Connect': reverse('main:networking'),
-            })
-        elif user.sub_category == 3:  # LEARNING
-            links.update({
-                'Learning Paths': reverse('main:learning'),
-                'Course Explorer': reverse('main:courses'),
-            })
-        elif user.sub_category == 4:  # PARTNERSHIP
-            links.update({
-                'Partnership Info': reverse('main:partnerships'),
-                'Business Opportunities': reverse('main:opportunities'),
-            })
     
     print("DEBUG: Final links for user: " + str(links))
     return links

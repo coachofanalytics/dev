@@ -28,8 +28,6 @@ class LoanProduct(models.Model):
     max_amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Maximum loan amount")
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Interest rate percentage")
     term_months = models.PositiveIntegerField(help_text="Loan term in months")
-    min_term_months = models.PositiveIntegerField(default=1, help_text="Minimum loan term in months")
-    max_term_months = models.PositiveIntegerField(default=12, help_text="Maximum loan term in months")
     fees = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Additional fees")
     is_active = models.BooleanField(default=True, help_text="Whether this product is available")
     min_credit_score = models.PositiveIntegerField(blank=True, null=True, help_text="Minimum credit score required")
@@ -102,6 +100,22 @@ class LoanProduct(models.Model):
         total_payable = principal + interest_amount
         
         return round(total_payable, 2)
+
+    @property
+    def min_term_months(self):
+        """
+        Backwards-compatible accessor for legacy code paths.
+        Production schema only stores `term_months`.
+        """
+        return self.term_months
+
+    @property
+    def max_term_months(self):
+        """
+        Backwards-compatible accessor for legacy code paths.
+        Production schema only stores `term_months`.
+        """
+        return self.term_months
 
 
 class LoanApplication(models.Model):
@@ -237,7 +251,7 @@ class LoanApplication(models.Model):
             self.total_payable = self.amount_requested + interest_amount
         
         if not self.monthly_payment and self.loan_product:
-            self.monthly_payment = self.loan_product.calculate_monthly_payment(self.amount_requested, self.loan_product.min_term_months)
+            self.monthly_payment = self.loan_product.calculate_monthly_payment(self.amount_requested, self.loan_product.term_months)
         
         super().save(*args, **kwargs)
 
@@ -247,7 +261,7 @@ class LoanApplication(models.Model):
     @property
     def term_months(self):
         """Get term months from loan product"""
-        return self.loan_product.min_term_months if self.loan_product else 0
+        return self.loan_product.term_months if self.loan_product else 0
     
     @property
     def balance_amount(self):

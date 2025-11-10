@@ -1,6 +1,6 @@
 # Loan System - Implementation
 
-**Last Updated:** October 22, 2025
+**Last Updated:** November 9, 2025
 
 ---
 
@@ -88,6 +88,9 @@ class LoanEligibilityService:
 
 | Date | Change | Files | Dev |
 |------|--------|-------|-----|
+| Nov 10, 2025 | Surfaced live loan analytics metrics on unified dashboard widgets | coda/unified_dashboard/views.py, coda/unified_dashboard/templates/unified_dashboard/widgets/financial_analytics.html | AI |
+| Nov 9, 2025 | Removed min/max term fields to match production schema and added safe migration | coda/finance/models/loan.py, coda/finance/admin.py, coda/finance/migrations/0005_remove_min_max_term_columns.py | AI |
+| Nov 9, 2025 | Rebuilt loan analytics dashboard data pipeline and fixed layout | coda/finance/services/financial_analytics_service.py, coda/finance/views.py, coda/finance/templates/finance/admin/loan_analytics.html | AI |
 | Oct 22, 2025 | 7-doc migration | All docs | AI |
 | Oct 14, 2025 | Service fixes + features | base_service.py, kcc_service.py, utils.py, commands/ | CM |
 | Oct 13, 2025 | Fixed schema alignment | models/loan.py | CM |
