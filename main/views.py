@@ -309,6 +309,68 @@ def education_landing(request):
     return render(request, 'main/education/education.html', context)
 
 
+def request_mentorship(request):
+    """Render and handle the mentorship request form. Uses the same ContactForm/Feedback
+    model used elsewhere so styling and behavior are consistent across the site.
+    """
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            # If user is authenticated, attach them; otherwise leave blank
+            if request.user.is_authenticated:
+                instance.user = request.user
+            # Ensure topic denotes mentorship request if left blank
+            if not instance.topic:
+                instance.topic = 'Mentorship Request'
+            instance.save()
+            # redirect back to education landing with a success flag
+            return redirect(reverse('main:education_landing') + '?view=landing&mentorship=success')
+    else:
+        # Prefill the form topic to guide the user
+        initial = {'topic': 'Mentorship Request'}
+        form = ContactForm(initial=initial)
+
+    return render(request, 'main/education/mentorship_form.html', {'form': form})
+
+
+def course_register(request):
+    """Render a mock course registration page where users can view course types,
+    see prices, and interact with a demo PayPal-style button. The page also
+    includes a client-side form to add course types dynamically (no server save).
+    """
+    courses = [
+        {
+            'id': 101,
+            'title': 'Modern Web Development (React & Node)',
+            'category': 'Digital Skills',
+            'duration': '12 Weeks',
+            'format': 'Online Live',
+            'price': 150.00,
+        },
+        {
+            'id': 102,
+            'title': 'Financial Literacy for Diaspora Investors',
+            'category': 'Finance & Business',
+            'duration': '4 Weeks',
+            'format': 'Online Self-Paced',
+            'price': 40.00,
+        },
+        {
+            'id': 103,
+            'title': 'Entrepreneurship & Small Business Management',
+            'category': 'Business',
+            'duration': '8 Weeks',
+            'format': 'Blended',
+            'price': 95.00,
+        },
+    ]
+    # If requested as a partial (AJAX in-page load), return only the fragment
+    if request.GET.get('partial') == '1':
+        return render(request, 'main/education/course_register_fragment.html', {'courses': courses})
+    return render(request, 'main/education/course_register.html', {'courses': courses})
+
+
 def donation_list(request):
     donations = Donation_organization.objects.all().order_by('-created_at')
     return render(request,'main/snippets_templates/table/donation_list.html',{'donations': donations})

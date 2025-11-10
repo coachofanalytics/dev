@@ -184,3 +184,40 @@ class MedicalResourceInquiry(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.email})"
+
+
+# Education: Scholarship and TrainingCourse models
+class Scholarship(models.Model):
+    title = models.CharField(max_length=255)
+    provider = models.CharField(max_length=255, blank=True, null=True)
+    level = models.CharField(max_length=100, blank=True, null=True)
+    field = models.CharField(max_length=100, blank=True, null=True)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    deadline = models.DateField(blank=True, null=True)
+    amount = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Scholarship"
+        verbose_name_plural = "Scholarships"
+
+    def __str__(self):
+        return self.title
+
+
+class TrainingCourse(models.Model):
+    title = models.CharField(max_length=255)
+    category = models.CharField(max_length=150, blank=True, null=True)
+    duration = models.CharField(max_length=100, blank=True, null=True)
+    format = models.CharField(max_length=100, blank=True, null=True)
+    enrollment = models.CharField(max_length=100, blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Training Course"
+        verbose_name_plural = "Training Courses"
+
+    def __str__(self):
+        return self.title
