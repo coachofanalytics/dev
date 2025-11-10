@@ -53,8 +53,24 @@ class Command(BaseCommand):
         # 2. Auto-approve top ranked suggestions
         self.stdout.write("Selecting top ranked suggestions for auto-approval...")
         ranker = PositionRankingService()
+        ttl_minutes = getattr(settings, 'SUGGESTED_POSITION_TTL_MINUTES', 90)
+        pruned = ranker.prune_stale_suggestions(ttl_minutes)
+        if pruned:
+            self.stdout.write(self.style.WARNING(
+                f"🧹 Removed {pruned} stale suggestion(s) older than {ttl_minutes} minutes"
+            ))
+
+        rating_rank = ['EXCELLENT', 'GOOD', 'AVERAGE', 'BELOW_AVERAGE', 'POOR']
+        min_rating = getattr(settings, 'SUGGESTED_POSITION_MIN_RATING', 'EXCELLENT').upper()
+        if min_rating not in rating_rank:
+            min_rating = 'EXCELLENT'
+        allowed_ratings = rating_rank[: rating_rank.index(min_rating) + 1]
+
         auto_positions, remaining = ranker.auto_approve_top_positions(
-            SuggestedPosition.objects.filter(review_status='pending'),
+            SuggestedPosition.objects.filter(
+                review_status='pending',
+                ai_rating__in=allowed_ratings,
+            ),
             n=getattr(settings, 'AUTO_APPROVE_TOP_N', 2),
         )
         if auto_positions:

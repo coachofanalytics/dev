@@ -95,6 +95,11 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=14, minute=0),  # 9 AM EST = 14:00 UTC (during DST) / 15:00 UTC (standard)
         'args': (),
     },
+    'midday-position-refresh': {
+        'task': 'investing.tasks.daily_position_fetch_task',
+        'schedule': crontab(hour=18, minute=0),  # Noon EST refresh using Playwright automation
+        'args': (),
+    },
     'hourly-batch-timeout-check': {
         'task': 'investing.tasks.process_batch_timeouts_task',
         'schedule': crontab(minute=0),  # Every hour at :00

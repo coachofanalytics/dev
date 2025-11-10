@@ -43,6 +43,8 @@
   - Ensures broker credentials encrypt correctly and broker sync upserts positions as expected.
 - ✅ `tests/apps/investing/01_unit/test_services.py::PredictiveAnalyticsServiceTests`
   - Exercises fallback forecasting and minimum-history guard for predictive analytics.
+- 🚀 `tests/apps/investing/01_unit/test_suggestion_pruning.py`
+  - Will validate stale suggestion pruning TTL and rating gating logic (suppressed queue vs. show-all toggle).
 - 🚀 `tests/apps/investing/01_unit/test_notification_templates.py`
   - Guards WhatsApp/email scenario digests for placeholder variables.
 

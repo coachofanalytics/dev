@@ -778,6 +778,27 @@ class PositionRankingService:
             'win_rate': win_rate,
             'realized_pnl': float(realized_sum) if realized_sum is not None else None,
         }
+
+    def prune_stale_suggestions(self, ttl_minutes: int) -> int:
+        """
+        Hard-delete pending suggestions older than the TTL.
+        """
+        cutoff = timezone.now() - timedelta(minutes=ttl_minutes)
+        stale_qs = SuggestedPosition.objects.filter(
+            review_status='pending',
+            fetched_at__lt=cutoff,
+        )
+        count = stale_qs.count()
+        if count:
+            symbols = list(stale_qs.values_list('symbol', flat=True)[:10])
+            stale_qs.delete()
+            self.logger.info(
+                "🧹 Pruned %s stale suggestions older than %s minutes (sample: %s)",
+                count,
+                ttl_minutes,
+                symbols,
+            )
+        return count
     
     def _get_sector(self, position) -> str:
         """

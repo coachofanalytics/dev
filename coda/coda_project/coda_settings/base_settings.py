@@ -340,6 +340,8 @@ ZAPIER_POSITION_WEBHOOK = os.environ.get('ZAPIER_POSITION_WEBHOOK')
 ZAPIER_ALERT_WEBHOOK = os.environ.get('ZAPIER_ALERT_WEBHOOK')
 ZAPIER_WEBHOOK_TOKEN = os.environ.get('ZAPIER_WEBHOOK_TOKEN')
 MANAGED_INCOME_DIGEST_GROUP = os.environ.get('MANAGED_INCOME_DIGEST_GROUP', 'Managed Income Digest')
+SUGGESTED_POSITION_TTL_MINUTES = int(os.environ.get('SUGGESTED_POSITION_TTL_MINUTES', '90'))
+SUGGESTED_POSITION_MIN_RATING = os.environ.get('SUGGESTED_POSITION_MIN_RATING', 'EXCELLENT')
 
 # Environment variable validation is now handled in environment-specific settings files
 

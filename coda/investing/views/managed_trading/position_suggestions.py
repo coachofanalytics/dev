@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.utils import timezone
+from django.conf import settings
 from decimal import Decimal, InvalidOperation
 import json
 import logging
@@ -78,9 +79,25 @@ def suggested_positions_list(request):
         return normalized
 
     # Get all pending suggestions (sorted by AI score first!)
-    pending = SuggestedPosition.objects.filter(
+    show_all = request.GET.get('show_all', '0') == '1'
+    rating_rank = ['EXCELLENT', 'GOOD', 'AVERAGE', 'BELOW_AVERAGE', 'POOR']
+    min_rating = getattr(settings, 'SUGGESTED_POSITION_MIN_RATING', 'EXCELLENT').upper()
+    if min_rating not in rating_rank:
+        min_rating = 'EXCELLENT'
+    allowed_ratings = rating_rank[: rating_rank.index(min_rating) + 1]
+
+    base_pending_qs = SuggestedPosition.objects.filter(
         review_status='pending'
-    ).order_by('-ai_score', '-probability_of_profit', '-fetched_at')
+    )
+
+    suppressed_count = 0
+    if show_all:
+        pending_qs = base_pending_qs
+    else:
+        pending_qs = base_pending_qs.filter(ai_rating__in=allowed_ratings)
+        suppressed_count = base_pending_qs.exclude(ai_rating__in=allowed_ratings).count()
+
+    pending = pending_qs.order_by('-ai_score', '-probability_of_profit', '-fetched_at')
     
     # Get approved suggestions not yet converted to batch
     approved = SuggestedPosition.objects.filter(
@@ -260,6 +277,9 @@ def suggested_positions_list(request):
         'can_adjust_limits': request.user.is_superuser,
         'auto_metrics': auto_metrics,
         'whales_snapshot': whales_snapshot,
+        'show_all': show_all,
+        'suppressed_count': suppressed_count,
+        'min_rating': min_rating,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 
