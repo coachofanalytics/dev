@@ -184,11 +184,11 @@ class RiskToleranceQuestionnaireForm(forms.Form):
         """Get recommended fee tiers"""
         category = self.get_risk_category()
         if category == 'conservative':
-            return ['starter', 'professional', 'consultative']
+            return ['consultative']
         elif category == 'moderate':
-            return ['professional', 'premium', 'consultative']
+            return ['balanced', 'consultative']
         else:  # aggressive
-            return ['premium', 'consultative', 'co_invest']
+            return ['elite', 'balanced', 'consultative']
 
 
 class ManagedTradingApplicationForm(forms.ModelForm):
@@ -234,11 +234,22 @@ class ManagedTradingApplicationForm(forms.ModelForm):
         self.fields['fee_tier'].help_text = "Select tier based on your risk profile and capital"
         
         # Filter tier choices based on risk profile (if available)
+        tier_choices = ManagedTradingAccount.FEE_TIER_CHOICES
+        selectable_codes = set(ManagedTradingAccount.APPLICATION_SELECTABLE_TIERS)
+        filtered_choices = [(k, v) for k, v in tier_choices if k in selectable_codes]
+
         if self.risk_profile:
-            recommended = self.risk_profile.recommended_tiers
-            tier_choices = ManagedTradingAccount.FEE_TIER_CHOICES
-            filtered_choices = [(k, v) for k, v in tier_choices if k in recommended]
-            self.fields['fee_tier'].choices = [('', '--- Select Tier ---')] + filtered_choices
+            recommended = [code for code in self.risk_profile.recommended_tiers if code in selectable_codes]
+            # Always allow consultative as legacy fallback
+            if 'consultative' in selectable_codes and 'consultative' not in recommended:
+                recommended.append('consultative')
+            recommended_filtered = [(k, v) for k, v in tier_choices if k in recommended]
+            if recommended_filtered:
+                filtered_choices = recommended_filtered
+
+        self.fields['fee_tier'].choices = [('', '--- Select Tier ---')] + filtered_choices
+        if not self.fields['fee_tier'].initial and filtered_choices:
+            self.fields['fee_tier'].initial = filtered_choices[0][0]
     
     def clean_initial_capital(self):
         """Validate minimum capital"""
@@ -262,17 +273,22 @@ class ManagedTradingApplicationForm(forms.ModelForm):
             except FeeTierConfiguration.DoesNotExist:
                 # Fallback to hardcoded minimums
                 tier_minimums = {
+                    'balanced': Decimal('25000.00'),
+                    'elite': Decimal('50000.00'),
+                    'consultative': Decimal('25000.00'),
                     'starter': Decimal('5000.00'),
                     'professional': Decimal('15000.00'),
                     'premium': Decimal('25000.00'),
-                    'consultative': Decimal('25000.00'),
                     'co_invest': Decimal('100000.00'),
+                    'custom': Decimal('25000.00'),
                 }
                 minimum = tier_minimums.get(tier, Decimal('5000.00'))
             
+            tier_label = dict(ManagedTradingAccount.FEE_TIER_CHOICES).get(tier, tier.title())
+
             if capital < minimum:
                 raise ValidationError(
-                    f"The {tier} tier requires a minimum of ${minimum:,.2f}. "
+                    f"The {tier_label} tier requires a minimum of ${minimum:,.2f}. "
                     f"You entered ${capital:,.2f}."
                 )
             

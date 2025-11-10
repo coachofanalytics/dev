@@ -122,7 +122,7 @@ class ClientPortalViewTest(TestCase):
             account_number='INV1_001',
             account_name='Investor 1 Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='custom',
             initial_capital=Decimal('10000.00'),
             current_balance=Decimal('12000.00'),
             status='active',
@@ -319,8 +319,8 @@ class ManagedAccountPhase3ViewTest(TestCase):
             client_user=self.client_user,
             account_data={
                 'account_name': 'Phase 3 Sleeve',
-                'initial_capital': Decimal('25000.00'),
-                'fee_tier': 'professional',
+                'initial_capital': Decimal('30000.00'),
+                'fee_tier': 'balanced',
             },
         )
         self.now = timezone.now()
@@ -414,8 +414,8 @@ class BrokerSyncViewTest(TestCase):
             client_user=self.investor,
             account_data={
                 'account_name': 'Sync Account',
-                'initial_capital': Decimal('12000.00'),
-                'fee_tier': 'professional',
+                'initial_capital': Decimal('30000.00'),
+                'fee_tier': 'balanced',
             },
         )
         self.connection = BrokerConnection.objects.create(
@@ -471,8 +471,8 @@ class AccountAnalyticsViewTest(TestCase):
             client_user=self.investor,
             account_data={
                 'account_name': 'Analytics Account',
-                'initial_capital': Decimal('15000.00'),
-                'fee_tier': 'professional',
+                'initial_capital': Decimal('30000.00'),
+                'fee_tier': 'balanced',
             },
         )
         self._seed_history()
@@ -542,7 +542,7 @@ class ManagedAccountDetailViewTest(TestCase):
             account_number='TEST001',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=Decimal('12000.00'),
             status='active',
@@ -606,7 +606,7 @@ class OptionsPositionListViewTest(TestCase):
             account_number='TEST001',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             status='active',
         )

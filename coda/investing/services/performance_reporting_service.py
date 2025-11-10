@@ -10,8 +10,10 @@ from django.db.models import Sum, Count, Q, Avg
 from datetime import date, timedelta
 from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
+from calendar import monthrange
 
 from ..models import OptionsPosition, ManagedTradingAccount, TradingActivity
+from .managed_trading_service import ManagedTradingService
 
 logger = logging.getLogger(__name__)
 
@@ -117,51 +119,16 @@ class PerformanceReportingService:
         - Consultative: Session fees + % of profits
         - Co-invest: % of profits
         """
-        tier = managed_account.fee_tier
-        
-        # Get closed positions for the month
-        closed_positions = OptionsPosition.objects.filter(
-            managed_account=managed_account,
-            exit_date__month=month,
-            exit_date__year=year,
-            status='closed'
+        period_start = date(year, month, 1)
+        period_end = date(year, month, monthrange(year, month)[1])
+
+        fee_summary = ManagedTradingService().calculate_fees(
+            managed_account,
+            period_start=period_start,
+            period_end=period_end
         )
-        
-        # Calculate profit for fee calculation (only profitable trades)
-        profitable_trades = closed_positions.filter(realized_pnl__gt=0)
-        total_profit = profitable_trades.aggregate(
-            total=Sum('realized_pnl')
-        )['total'] or Decimal('0.00')
-        
-        # Fee percentages by tier
-        profit_share_rates = {
-            'starter': Decimal('0.10'),  # 10%
-            'professional': Decimal('0.15'),  # 15%
-            'premium': Decimal('0.20'),  # 20%
-            'consultative': Decimal('0.20'),  # 20%
-            'co_invest': Decimal('0.30'),  # 30%
-        }
-        
-        profit_share_rate = profit_share_rates.get(tier, Decimal('0.10'))
-        profit_share_fee = total_profit * profit_share_rate
-        
-        # Add session fees for consultative tier
-        session_fees = Decimal('0.00')
-        if tier == 'consultative':
-            from ..models import TradingSession
-            sessions_this_month = TradingSession.objects.filter(
-                managed_account=managed_account,
-                session_date__month=month,
-                session_date__year=year,
-                is_billed=True
-            )
-            session_fees = sessions_this_month.aggregate(
-                total=Sum('fee_charged')
-            )['total'] or Decimal('0.00')
-        
-        total_fees = profit_share_fee + session_fees
-        
-        return total_fees
+
+        return fee_summary.get('total', Decimal('0.00'))
     
     def send_monthly_report_email(self, managed_account, month=None, year=None):
         """

@@ -61,7 +61,7 @@ class ManagedTradingAccountModelTest(TestCase):
             account_number='TEST001',
             account_name='Test Trading Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=Decimal('12000.00'),
             cash_available=Decimal('5000.00'),
@@ -103,7 +103,7 @@ class ManagedTradingAccountModelTest(TestCase):
             account_number='TEST002',
             account_name='Test Account with None',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=None,  # None value
             cash_available=None,   # None value
@@ -129,7 +129,7 @@ class ManagedTradingAccountModelTest(TestCase):
             account_number='TEST003',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=None,  # None value
             status='active',
@@ -145,7 +145,7 @@ class ManagedTradingAccountModelTest(TestCase):
             account_number='TEST004',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('0.00'),  # Zero
             current_balance=Decimal('5000.00'),
             status='active',
@@ -163,7 +163,7 @@ class ManagedTradingAccountModelTest(TestCase):
             account_number='TEST005',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=None,  # None value
             status='active',
@@ -182,7 +182,7 @@ class ManagedTradingAccountModelTest(TestCase):
                 account_number=f'TEST_{broker}',
                 account_name=f'Test {broker}',
                 broker=broker,
-                fee_tier='independent',
+                fee_tier='balanced',
                 initial_capital=Decimal('10000.00'),
                 status='active',
             )
@@ -191,7 +191,7 @@ class ManagedTradingAccountModelTest(TestCase):
     
     def test_fee_tier_choices(self):
         """Test that only valid fee tiers are accepted"""
-        valid_tiers = ['independent', 'consultative', 'full_service']
+        valid_tiers = ['balanced', 'consultative', 'custom']
         
         for tier in valid_tiers:
             account = ManagedTradingAccount(
@@ -216,7 +216,7 @@ class ManagedTradingAccountModelTest(TestCase):
                 account_number=f'TEST_{status}',
                 account_name=f'Test {status}',
                 broker='tastytrade',
-                fee_tier='independent',
+                fee_tier='balanced',
                 initial_capital=Decimal('10000.00'),
                 status=status,
             )
@@ -242,7 +242,7 @@ class OptionsPositionModelTest(TestCase):
             account_number='TEST001',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=Decimal('10000.00'),
             status='active',

@@ -167,7 +167,7 @@ class ManagedAccountFormTest(TestCase):
             'account_number': 'TEST001',
             'account_name': 'Test Trading Account',
             'broker': 'tastytrade',
-            'fee_tier': 'independent',
+            'fee_tier': 'balanced',
             'initial_capital': Decimal('10000.00'),
             'status': 'active',
         }
@@ -225,7 +225,7 @@ class OptionsPositionFormTest(TestCase):
             account_number='ACTIVE001',
             account_name='Active Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             status='active',
         )
@@ -236,7 +236,7 @@ class OptionsPositionFormTest(TestCase):
             account_number='PAUSED001',
             account_name='Paused Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             status='paused',
         )
@@ -247,7 +247,7 @@ class OptionsPositionFormTest(TestCase):
             account_number='CLOSED001',
             account_name='Closed Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             status='closed',
         )
@@ -294,7 +294,7 @@ class TradingSessionFormTest(TestCase):
             account_number='IND001',
             account_name='Independent Account',
             broker='tastytrade',
-            fee_tier='independent',  # Independent tier
+            fee_tier='balanced',  # Balanced tier
             initial_capital=Decimal('10000.00'),
             status='active',
         )

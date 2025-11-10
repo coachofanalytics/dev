@@ -87,6 +87,23 @@ class ManagedTradingService(BaseInvestingService):
                 # Get account manager (defaults to current user if staff)
                 account_manager = account_data.get('account_manager')
                 
+                fee_tier = account_data.get('fee_tier', 'balanced')
+                tier_fee_config = self._get_default_fee_settings(fee_tier)
+
+                # Allow overrides from account_data
+                management_fee_percentage = account_data.get(
+                    'management_fee_percentage',
+                    tier_fee_config['management_fee_percentage']
+                )
+                performance_fee_percentage = account_data.get(
+                    'performance_fee_percentage',
+                    tier_fee_config['performance_fee_percentage']
+                )
+                performance_threshold = account_data.get(
+                    'performance_threshold',
+                    tier_fee_config['performance_threshold']
+                )
+
                 # Create account
                 account = ManagedTradingAccount.objects.create(
                     client=client_user,
@@ -98,10 +115,10 @@ class ManagedTradingService(BaseInvestingService):
                     cash_reserved=Decimal('0.00'),
                     high_water_mark=initial_capital,
                     account_manager=account_manager,
-                    fee_tier=account_data.get('fee_tier', 'professional'),
-                    management_fee_percentage=account_data.get('management_fee_percentage', Decimal('1.50')),
-                    performance_fee_percentage=account_data.get('performance_fee_percentage', Decimal('20.00')),
-                    performance_threshold=account_data.get('performance_threshold', Decimal('8.00')),
+                    fee_tier=fee_tier,
+                    management_fee_percentage=management_fee_percentage,
+                    performance_fee_percentage=performance_fee_percentage,
+                    performance_threshold=performance_threshold,
                     status='active',
                     activation_date=date.today()
                 )
@@ -118,8 +135,9 @@ class ManagedTradingService(BaseInvestingService):
                     data_snapshot={
                         'initial_capital': str(account.initial_capital),
                         'fee_tier': account.fee_tier,
-                        'management_fee': str(account.management_fee_percentage),
-                        'performance_fee': str(account.performance_fee_percentage)
+                        'management_fee_percentage': str(account.management_fee_percentage),
+                        'performance_fee_percentage': str(account.performance_fee_percentage),
+                        'performance_threshold': str(account.performance_threshold)
                     }
                 )
                 
@@ -130,6 +148,65 @@ class ManagedTradingService(BaseInvestingService):
         except Exception as e:
             logger.error(f"Error creating managed account: {e}")
             raise ValidationError(f"Failed to create account: {str(e)}")
+
+    def _get_default_fee_settings(self, fee_tier: str) -> Dict[str, Decimal]:
+        """
+        Provide default management/performance fee settings for a tier
+        New automation tiers rely on flat monthly fees + performance share,
+        so we store 0% management percentage and handle fixed fees elsewhere.
+        """
+        defaults = {
+            'management_fee_percentage': Decimal('1.50'),
+            'performance_fee_percentage': Decimal('20.00'),
+            'performance_threshold': Decimal('8.00'),
+        }
+
+        tier_overrides = {
+            'consultative': {
+                'management_fee_percentage': Decimal('0.00'),
+                'performance_fee_percentage': Decimal('10.00'),
+                'performance_threshold': Decimal('8.00'),
+            },
+            'balanced': {
+                'management_fee_percentage': Decimal('0.00'),
+                'performance_fee_percentage': Decimal('12.00'),
+                'performance_threshold': Decimal('6.00'),
+            },
+            'elite': {
+                'management_fee_percentage': Decimal('0.00'),
+                'performance_fee_percentage': Decimal('18.00'),
+                'performance_threshold': Decimal('5.00'),
+            },
+            'starter': {
+                'management_fee_percentage': Decimal('0.00'),
+                'performance_fee_percentage': Decimal('25.00'),
+                'performance_threshold': Decimal('5.00'),
+            },
+            'professional': {
+                'management_fee_percentage': Decimal('1.50'),
+                'performance_fee_percentage': Decimal('20.00'),
+                'performance_threshold': Decimal('8.00'),
+            },
+            'premium': {
+                'management_fee_percentage': Decimal('1.00'),
+                'performance_fee_percentage': Decimal('15.00'),
+                'performance_threshold': Decimal('6.00'),
+            },
+            'co_invest': {
+                'management_fee_percentage': Decimal('0.00'),
+                'performance_fee_percentage': Decimal('50.00'),
+                'performance_threshold': Decimal('0.00'),
+            },
+            'custom': {
+                'management_fee_percentage': Decimal('0.00'),
+                'performance_fee_percentage': Decimal('20.00'),
+                'performance_threshold': Decimal('6.00'),
+            },
+        }
+
+        overrides = tier_overrides.get(fee_tier, {})
+        defaults.update(overrides)
+        return defaults
     
     def _generate_account_number(self) -> str:
         """Generate unique account number"""
@@ -574,6 +651,10 @@ class ManagedTradingService(BaseInvestingService):
         # Calculate based on fee tier
         if account.fee_tier == 'consultative':
             return self._calculate_consultative_fees(account, period_start, period_end)
+        elif account.fee_tier == 'balanced':
+            return self._calculate_balanced_fees(account, period_start, period_end)
+        elif account.fee_tier == 'elite':
+            return self._calculate_elite_fees(account, period_start, period_end)
         elif account.fee_tier == 'starter':
             return self._calculate_starter_fees(account)
         elif account.fee_tier == 'professional':
@@ -615,6 +696,67 @@ class ManagedTradingService(BaseInvestingService):
             'period_end': period_end
         }
     
+    def _calculate_balanced_fees(
+        self,
+        account: ManagedTradingAccount,
+        period_start: date,
+        period_end: date
+    ) -> Dict:
+        """Calculate fees for balanced automation tier"""
+        flat_fee = Decimal(str(getattr(settings, 'BALANCED_TIER_MONTHLY_FEE', '249')))
+        performance_fee = Decimal('0.00')
+
+        if account.current_balance > account.high_water_mark:
+            profit_above_hwm = account.current_balance - account.high_water_mark
+            hurdle_amount = account.high_water_mark * (account.performance_threshold / Decimal('100'))
+
+            if profit_above_hwm > hurdle_amount:
+                excess_profit = profit_above_hwm - hurdle_amount
+                performance_fee = excess_profit * (account.performance_fee_percentage / Decimal('100'))
+
+        total = flat_fee + performance_fee
+
+        return {
+            'fee_tier': 'balanced',
+            'flat_fee': flat_fee,
+            'performance_fee': performance_fee,
+            'total': total,
+            'hurdle_rate': account.performance_threshold,
+            'period_start': period_start,
+            'period_end': period_end,
+        }
+
+    def _calculate_elite_fees(
+        self,
+        account: ManagedTradingAccount,
+        period_start: date,
+        period_end: date
+    ) -> Dict:
+        """Calculate fees for elite desk tier"""
+        flat_fee = Decimal(str(getattr(settings, 'ELITE_TIER_MONTHLY_FEE', '399')))
+        performance_fee = Decimal('0.00')
+
+        if account.current_balance > account.high_water_mark:
+            profit_above_hwm = account.current_balance - account.high_water_mark
+            hurdle_amount = account.high_water_mark * (account.performance_threshold / Decimal('100'))
+
+            if profit_above_hwm > hurdle_amount:
+                excess_profit = profit_above_hwm - hurdle_amount
+                performance_fee = excess_profit * (account.performance_fee_percentage / Decimal('100'))
+
+        total = flat_fee + performance_fee
+
+        return {
+            'fee_tier': 'elite',
+            'flat_fee': flat_fee,
+            'performance_fee': performance_fee,
+            'total': total,
+            'hurdle_rate': account.performance_threshold,
+            'period_start': period_start,
+            'period_end': period_end,
+            'status': 'preview',
+        }
+
     def _calculate_professional_fees(self, account: ManagedTradingAccount) -> Dict:
         """Calculate fees for professional tier (1.5% mgmt + 20% perf above 8% hurdle)"""
         # Annual management fee (prorated monthly)

@@ -58,7 +58,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST001',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             cash_available=None,  # None value
             cash_reserved=Decimal('1000.00'),
@@ -76,7 +76,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST002',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             cash_available=Decimal('5000.00'),
             cash_reserved=None,  # None value
@@ -94,7 +94,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST003',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             cash_available=None,  # None
             cash_reserved=None,   # None
@@ -112,7 +112,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST004',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=None,  # None value
             status='active',
@@ -129,7 +129,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST005',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=None,  # None value
             current_balance=Decimal('12000.00'),
             status='active',
@@ -146,7 +146,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST006',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('0.00'),  # Zero
             current_balance=Decimal('5000.00'),
             status='active',
@@ -163,7 +163,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST007',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=None,  # None value
             status='active',
@@ -180,7 +180,7 @@ class BugFix_20251105_NoneTypeError_Test(TestCase):
             account_number='TEST008',
             account_name='Test Account',
             broker='tastytrade',
-            fee_tier='independent',
+            fee_tier='balanced',
             initial_capital=Decimal('10000.00'),
             current_balance=Decimal('0.00'),  # Zero
             status='active',

@@ -50,14 +50,18 @@ class ApplicationReviewService:
             except FeeTierConfiguration.DoesNotExist:
                 # Fallback to hardcoded minimums
                 tier_minimums = {
+                    'balanced': Decimal('25000.00'),
+                    'elite': Decimal('50000.00'),
+                    'consultative': Decimal('25000.00'),
                     'starter': Decimal('5000.00'),
                     'professional': Decimal('15000.00'),
                     'premium': Decimal('25000.00'),
-                    'consultative': Decimal('25000.00'),
                     'co_invest': Decimal('100000.00'),
+                    'custom': Decimal('25000.00'),
                 }
                 minimum = tier_minimums.get(application.fee_tier, Decimal('5000.00'))
-            return False, f"Capital ${application.initial_capital:,.2f} below tier minimum ${minimum:,.2f}"
+            tier_label = dict(ManagedTradingAccount.FEE_TIER_CHOICES).get(application.fee_tier, application.fee_tier.title())
+            return False, f"Capital ${application.initial_capital:,.2f} below {tier_label} minimum ${minimum:,.2f}"
         
         # Check 4: Application status is pending
         if application.status != 'pending':

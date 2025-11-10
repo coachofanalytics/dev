@@ -15,7 +15,8 @@ from decimal import Decimal
 from ...models import (
     InvestorRiskProfile,
     ManagedTradingApplication,
-    ManagedTradingContract
+    ManagedTradingContract,
+    ManagedTradingAccount
 )
 from ...forms_onboarding import (
     RiskToleranceQuestionnaireForm,
@@ -134,6 +135,7 @@ def managed_trading_apply_view(request):
         'form': form,
         'risk_profile': risk_profile,
         'tier_configs': tier_configs,  # Pass database configs to template
+        'preview_tiers': ManagedTradingAccount.PREVIEW_ONLY_TIERS,
     }
     return render(request, 'investing/onboarding/application.html', context)
 
@@ -409,11 +411,14 @@ def get_contract_body(contract_type, application):
         """
     elif contract_type == 'fee_agreement':
         tier_fees = {
-            'starter': '10% profit share',
-            'professional': '15% profit share',
-            'premium': '20% profit share + priority support',
-            'consultative': '$420/month + 10% bonus',
-            'co_invest': '30% profit share + CODA co-investment'
+            'balanced': '$249/mo management + 12% performance (6% hurdle)',
+            'elite': '$399/mo management + 18% performance (5% hurdle, coming soon)',
+            'consultative': '$420/mo legacy sleeve + 10% performance bonus',
+            'custom': 'Custom fee schedule (see signed rider)',
+            'starter': '10% profit share (legacy)',
+            'professional': '15% profit share (legacy)',
+            'premium': '20% profit share + priority support (legacy)',
+            'co_invest': '30% profit share + CODA co-investment (legacy)',
         }
         fee_structure = tier_fees.get(application.fee_tier, '10% profit share')
         

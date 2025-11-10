@@ -1505,18 +1505,26 @@ class ManagedTradingAccount(TimeStampedModel):
     )
     
     # Fee Structure
-    FEE_TIER_CHOICES = [
-        ('consultative', 'Consultative Coaching - $420/month + 10% bonus'),
-        ('starter', 'Starter - 0% mgmt + 25% performance'),
-        ('professional', 'Professional - 1.5% mgmt + 20% perf'),
-        ('premium', 'Premium - 1% mgmt + 15% perf + $500/mo min'),
-        ('co_invest', 'Co-Investment - 50/50 split'),
-        ('custom', 'Custom Fee Structure')
+    ACTIVE_FEE_TIER_CHOICES = [
+        ('balanced', 'Balanced Automation - $249/mo + 12% over 6% hurdle'),
+        ('consultative', 'Consultative Coaching - Legacy $420 Plan'),
+        ('elite', 'Elite Desk (Coming Soon) - $399/mo + 18% over 5% hurdle'),
+        ('custom', 'Custom Fee Structure'),
     ]
+    LEGACY_FEE_TIER_CHOICES = [
+        ('starter', 'Starter - Legacy (inactive)'),
+        ('professional', 'Professional - Legacy (inactive)'),
+        ('premium', 'Premium - Legacy (inactive)'),
+        ('co_invest', 'Co-Investment - Legacy (inactive)'),
+    ]
+    FEE_TIER_CHOICES = ACTIVE_FEE_TIER_CHOICES + LEGACY_FEE_TIER_CHOICES
+    APPLICATION_SELECTABLE_TIERS = ['balanced', 'consultative']
+    PREVIEW_ONLY_TIERS = ['elite']
+
     fee_tier = models.CharField(
         max_length=20,
         choices=FEE_TIER_CHOICES,
-        default='professional',
+        default='balanced',
         help_text="Fee tier selected by client"
     )
     management_fee_percentage = models.DecimalField(
@@ -2398,11 +2406,13 @@ class FeeTierConfiguration(TimeStampedModel):
     """
     
     FEE_TIER_CHOICES = [
-        ('starter', 'Starter - Automated Execution'),
-        ('professional', 'Professional - Weekly Strategy'),
-        ('premium', 'Premium - Enhanced Support'),
-        ('consultative', 'Consultative - 1-on-1 Sessions'),
-        ('co_invest', 'Co-Investment - Partnership'),
+        ('balanced', 'Balanced Automation - $249/mo + 12% over 6% hurdle'),
+        ('elite', 'Elite Desk (Coming Soon) - $399/mo + 18% over 5% hurdle'),
+        ('consultative', 'Consultative Coaching - Legacy $420 Plan'),
+        ('starter', 'Starter (Legacy)'),
+        ('professional', 'Professional (Legacy)'),
+        ('premium', 'Premium (Legacy)'),
+        ('co_invest', 'Co-Investment (Legacy)'),
     ]
     
     # Tier identification
@@ -2506,11 +2516,14 @@ class FeeTierConfiguration(TimeStampedModel):
         except cls.DoesNotExist:
             # Fallback to hardcoded defaults
             defaults = {
+                'balanced': Decimal('25000.00'),
+                'elite': Decimal('50000.00'),
+                'consultative': Decimal('25000.00'),
                 'starter': Decimal('5000.00'),
                 'professional': Decimal('15000.00'),
                 'premium': Decimal('25000.00'),
-                'consultative': Decimal('25000.00'),
                 'co_invest': Decimal('100000.00'),
+                'custom': Decimal('25000.00'),
             }
             return defaults.get(tier_code, Decimal('5000.00'))
     
@@ -2602,11 +2615,11 @@ class InvestorRiskProfile(TimeStampedModel):
     def recommended_tiers(self):
         """Get recommended fee tiers based on risk category"""
         if self.risk_category == 'conservative':
-            return ['starter', 'professional', 'consultative']
+            return ['consultative']
         elif self.risk_category == 'moderate':
-            return ['professional', 'premium', 'consultative']
+            return ['balanced', 'consultative']
         else:  # aggressive
-            return ['premium', 'consultative', 'co_invest']
+            return ['elite', 'balanced', 'consultative']
 
 
 class ManagedTradingApplication(TimeStampedModel):
@@ -2754,11 +2767,14 @@ class ManagedTradingApplication(TimeStampedModel):
         except FeeTierConfiguration.DoesNotExist:
             # Fallback to hardcoded minimums if config not found
             tier_minimums = {
+                'balanced': Decimal('25000.00'),
+                'elite': Decimal('50000.00'),
+                'consultative': Decimal('25000.00'),
                 'starter': Decimal('5000.00'),
                 'professional': Decimal('15000.00'),
                 'premium': Decimal('25000.00'),
-                'consultative': Decimal('25000.00'),
                 'co_invest': Decimal('100000.00'),
+                'custom': Decimal('25000.00'),
             }
             return self.initial_capital >= tier_minimums.get(self.fee_tier, Decimal('5000.00'))
     
@@ -2895,7 +2911,7 @@ class PositionBatch(TimeStampedModel):
     
     STATUS_CHOICES = [
         ('pending', 'Pending Client Approval'),
-        ('auto_approved', 'Auto Approved – Awaiting Trader Entry'),
+        ('auto_approved', 'Auto Approved - Awaiting Trader Entry'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected by Client'),
         ('expired', 'Expired (24hr timeout)'),
@@ -3530,7 +3546,7 @@ class SuggestedPosition(TimeStampedModel):
             f"Earnings {breakdown.get('earnings_score', 0):.0f}/100, "
             f"Return {breakdown.get('profit_score', 0):.0f}/100, "
             f"DTE {breakdown.get('dte_score', 0):.0f}/100. "
-            f"Recommendation: {ranking_details.get('recommendation')} – "
+            f"Recommendation: {ranking_details.get('recommendation')} - "
             f"{ranking_details.get('selection_reason')}"
         )
         
