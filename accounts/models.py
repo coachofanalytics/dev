@@ -21,48 +21,52 @@ class UserGroups(Group):
 
 
 class CustomerUser(AbstractUser):
-    class Gender(models.IntegerChoices):
-        MALE = 1, "Male"
-        FEMALE = 2, "Female"
+    def get_category_display_name(self):
+        return dict(CategoryChoices.choices).get(self.category, "Unknown")
 
-    # Keep AbstractUser’s default fields (username, first_name, last_name, email, etc.)
-    # If you REALLY need longer lengths, do it knowingly and migrate carefully.
+    # added this column here
+    def get_subcategory_display_name(self):
+        return dict(SubCategoryChoices.choices).get(self.subcategory, "Unknown")
 
+    class Score(models.IntegerChoices):
+        Male = 1
+        Female = 2
+
+    id = models.AutoField(primary_key=True)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     date_joined = models.DateTimeField(default=timezone.now)
-    gender = models.IntegerField(choices=Gender.choices, blank=True, null=True)
+    email = models.CharField(max_length=255)
+    gender = models.IntegerField(choices=Score.choices, blank=True, null=True)
     phone = models.CharField(default="90001", max_length=255)
     address = models.CharField(blank=True, null=True, max_length=255)
     city = models.CharField(blank=True, null=True, max_length=255)
     state = models.CharField(blank=True, null=True, max_length=255)
     zipcode = models.CharField(blank=True, null=True, max_length=255)
     country = CountryField(blank=True, null=True)
-
     category = models.IntegerField(choices=CategoryChoices.choices, default=999)
-    sub_category = models.IntegerField(choices=SubCategoryChoices.choices, blank=True, null=True)
-
+    # added this column here
+    sub_category = models.IntegerField(
+        choices=SubCategoryChoices.choices, blank=True, null=True
+    )
     is_admin = models.BooleanField("Is admin", default=False)
     is_staff = models.BooleanField("Is employee", default=False)
     is_client = models.BooleanField("Is Client", default=False)
     is_applicant = models.BooleanField("Is applicant", default=False)
+    # is_employee = models.BooleanField("Is employee", default=False)
     is_employee_contract_signed = models.BooleanField(default=False)
-
     resume_file = models.FileField(upload_to="resumes/doc/", blank=True, null=True)
 
+    # is_active = models.BooleanField('Is applicant', default=True)
     class Meta:
         ordering = ["-date_joined"]
+        # ordering = ["username"]
         verbose_name_plural = "Users"
-
-    def get_category_display_name(self):
-        return dict(CategoryChoices.choices).get(self.category, "Unknown")
-
-    def get_subcategory_display_name(self):
-        # FIX: use sub_category (field name), not subcategory
-        return dict(SubCategoryChoices.choices).get(self.sub_category, "Unknown")
 
     @property
     def full_name(self):
-        # Use a space, not a comma
-        return f"{self.first_name} {self.last_name}".strip()
+        fullname = f"{self.first_name},{self.last_name}"
+        return fullname
 
     @property
     def is_recent(self):

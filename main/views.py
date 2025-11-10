@@ -9,7 +9,7 @@ from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 import openai
 from django.db.models import Sum
-from .models import Service,Assets,Readme,Location,Testimonials,Volunteer
+from .models import Service,Assets,Readme,Location,Testimonials,Volunteer,ServiceCategory
 from .utils import *
 from coda_project import settings
 from application.models import UserProfile
