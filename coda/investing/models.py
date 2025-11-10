@@ -3782,6 +3782,124 @@ class OptionPlayRawData(TimeStampedModel):
 
 
 # ============================================================================
+# SUGGESTED POSITION OUTCOMES: HISTORICAL PERFORMANCE SNAPSHOT
+# ============================================================================
+
+class SuggestedPositionOutcome(TimeStampedModel):
+    """
+    Historical outcome record for SuggestedPosition ideas
+
+    Stores final P&L once the idea has expired (paper or live) so we can
+    demonstrate real win-rates for OptionPlay / Unusual Whales powered ideas.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending Outcome'),
+        ('won', 'Profitable Outcome'),
+        ('lost', 'Loss Outcome'),
+        ('breakeven', 'Breakeven'),
+        ('unsupported', 'Unsupported Strategy'),
+        ('error', 'Calculation Error'),
+    ]
+
+    suggestion = models.OneToOneField(
+        'SuggestedPosition',
+        on_delete=models.CASCADE,
+        related_name='outcome_record',
+        help_text="Suggestion this outcome belongs to"
+    )
+    source = models.CharField(
+        max_length=20,
+        help_text="Origin of the idea (OptionPlay, Unusual Whales, manual)"
+    )
+    symbol = models.CharField(
+        max_length=10,
+        help_text="Underlying stock ticker"
+    )
+    strategy = models.CharField(
+        max_length=30,
+        help_text="Strategy at the time of suggestion (e.g., bull_put_spread)"
+    )
+    expiration_date = models.DateField(
+        help_text="Expiration date associated with the suggestion"
+    )
+    premium_collected = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Net credit collected when the idea was suggested"
+    )
+    capital_required = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Capital required for the suggested trade"
+    )
+    probability_of_profit = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Probability of profit at suggestion time"
+    )
+    underlying_close = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Underlying close price used for outcome calculation"
+    )
+    realized_pnl = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Realized P&L (per suggestion) at expiration"
+    )
+    return_pct = models.DecimalField(
+        max_digits=7,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Return as percentage of capital required"
+    )
+    evaluated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when the outcome was evaluated"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text="Outcome classification"
+    )
+    calculation_notes = models.TextField(
+        blank=True,
+        help_text="Notes, errors, or rationale used to determine outcome"
+    )
+    data_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Snapshot of legs/greeks at time of evaluation"
+    )
+
+    class Meta:
+        verbose_name = "Suggested Position Outcome"
+        verbose_name_plural = "Suggested Position Outcomes"
+        ordering = ['-expiration_date', 'symbol']
+        indexes = [
+            models.Index(fields=['source', 'status']),
+            models.Index(fields=['symbol', 'expiration_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.symbol} {self.strategy} outcome ({self.status})"
+
+
+# ============================================================================
 # AI POSITION SCORING: MACHINE LEARNING FOR TRADE SELECTION
 # ============================================================================
 
