@@ -1,0 +1,14 @@
+Dear {{ name }},
+
+Thank you for contacting us!
+
+We’ve received your message and will get back to you shortly.
+
+Your message:
+{{ message }}
+
+If you need immediate assistance, you can reply directly to this email or visit our website:
+https://www.codanalytics.net/
+
+Best regards,
+Coda Rwanda Team

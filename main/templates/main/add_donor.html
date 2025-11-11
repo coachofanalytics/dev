@@ -1,0 +1,15 @@
+{%extends "main/base_templates/base.html"%}
+
+{% block content %}
+<div class="container">
+    <h2>Add a Donation</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-success">Save Donation</button>
+        <a href="{% url 'main:donor_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

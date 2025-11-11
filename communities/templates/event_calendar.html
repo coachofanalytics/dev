@@ -1,0 +1,65 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<main class="max-w-7xl mx-auto py-16 px-6">
+
+    <!-- Hero Section for Event Calendar -->
+    <header class="bg-brand-blue text-white shadow-xl overflow-hidden mb-12">
+        <div class="max-w-7xl mx-auto text-center py-12">
+            <h1 class="text-5xl font-extrabold mb-4">Event Calendar</h1>
+            <p class="text-xl font-medium text-gray-200">
+                Explore upcoming events in our community.
+            </p>
+        </div>
+    </header>
+
+    <!-- Event List Section -->
+    <section class="mb-16">
+        <h2 class="text-3xl font-extrabold text-brand-blue mb-6 text-center">Upcoming Events</h2>
+        <div class="space-y-6">
+            {% for event in events %}
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h3 class="text-2xl font-bold text-brand-blue mb-4">
+                    {{ event.name }}
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    <strong>Date:</strong> {{ event.start_date|date:"F j, Y, H:i" }} - {{ event.end_date|date:"F j, Y, H:i" }} <br>
+                    <strong>Location:</strong> {{ event.location }}
+                </p>
+                <p class="text-gray-600 mb-4">{{ event.description|truncatewords:30 }}</p>
+                <a href="{% url 'event_detail' event.id %}" class="text-brand-green font-semibold">View Details</a>
+            </div>
+            {% empty %}
+                <p class="text-gray-600">No upcoming events at the moment. Stay tuned!</p>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex justify-center mt-6">
+            {% if events.has_previous %}
+                <a href="?page=1" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">First</a>
+                <a href="?page={{ events.previous_page_number }}" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Previous</a>
+            {% endif %}
+
+            <span class="px-4 py-2">{{ events.number }} of {{ events.paginator.num_pages }}</span>
+
+            {% if events.has_next %}
+                <a href="?page={{ events.next_page_number }}" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Next</a>
+                <a href="?page={{ events.paginator.num_pages }}" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Last</a>
+            {% endif %}
+        </div>
+
+    </section>
+
+    <!-- Create an Event Section -->
+    <section class="mb-16 text-center">
+        <a href="{% url 'create_event' %}" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
+            Create a New Event
+        </a>
+    </section>
+
+</main>
+
+{% endblock content %}

@@ -1,0 +1,185 @@
+{%extends "main/base_templates/base.html"%}
+{%block content %}
+    <title>Scholarship Search Database | Diaspora County 48</title>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1f2937;
+        }
+        .text-brand-blue { color: #1e40af; }
+        .bg-brand-blue { background-color: #1e40af; }
+        .text-brand-green { color: #0a926d; }
+        .bg-brand-green { background-color: #0a926d; }
+        .text-brand-red { color: #cc0000; }
+        .bg-brand-red { background-color: #cc0000; }
+        
+        .filter-hidden {
+            display: none;
+        }
+        @media (min-width: 1024px) {
+            .filter-hidden {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Breadcrumb -->
+        <nav class="text-gray-500 text-base mb-6" aria-label="Breadcrumb">
+            <ol class="list-none p-0 inline-flex">
+                <li class="flex items-center">
+                    <a href="#" class="text-brand-blue hover:underline">Home</a>
+                    <span class="mx-2 text-gray-400">/</span>
+                </li>
+                <li class="flex items-center">
+                    <a href="#" class="text-brand-blue hover:underline">Services</a>
+                    <span class="mx-2 text-gray-400">/</span>
+                </li>
+                <li class="flex items-center">
+                    <span class="text-brand-green font-semibold">Scholarship Search Database</span>
+                </li>
+            </ol>
+        </nav>
+
+        <div class="lg:grid lg:grid-cols-4 lg:gap-8">
+            <!-- Filter Sidebar -->
+            <div id="filter-sidebar" class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg mb-8 lg:mb-0 filter-hidden">
+                <button type="button" class="lg:hidden absolute top-3 right-3 text-gray-500 hover:text-gray-700" onclick="toggleFilters()">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Filter Scholarships</h2>
+
+                <form method="get" id="search-form">
+                    <div class="space-y-6">
+                        <!-- Keyword Search -->
+                        <div class="relative">
+                            <label for="search-keyword" class="block text-sm font-medium text-gray-700 mb-1">Keyword Search</label>
+                            {{ form.search_keyword }}
+                        </div>
+
+                        <!-- Level Filter -->
+                        <div class="relative">
+                            <label for="filter-level" class="block text-sm font-medium text-gray-700 mb-1">Study Level</label>
+                            {{ form.filter_level }}
+                        </div>
+
+                        <!-- Field Filter -->
+                        <div class="relative">
+                            <label for="filter-field" class="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
+                            {{ form.filter_field }}
+                        </div>
+
+                        <!-- Location Filter -->
+                        <div class="relative">
+                            <label for="filter-location" class="block text-sm font-medium text-gray-700 mb-1">Study Location</label>
+                            {{ form.filter_location }}
+                        </div>
+
+                        <!-- Status Checkbox -->
+                        <div class="flex items-center pt-2">
+                            {{ form.filter_status }}
+                            <label for="filter-status" class="ml-3 block text-sm font-medium text-gray-700">Show only "Closing Soon"</label>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-brand-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-[#183693] transition duration-300">
+                            Apply Filters
+                        </button>
+                        <button type="button" onclick="resetFilters()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300 mt-2">
+                            Reset Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="lg:col-span-3">
+                <div class="flex justify-between items-center mb-6 border-b pb-3">
+                    <h2 class="text-3xl font-extrabold text-brand-blue">Scholarship Results</h2>
+                    <span class="text-xl font-semibold text-gray-600">
+                        <span id="result-count" class="text-brand-green">{{ result_count }}</span> Results
+                    </span>
+                </div>
+
+                <div id="scholarship-results" class="space-y-6">
+                    {% for scholarship in scholarships %}
+                    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-t-4 {% if scholarship.status == 'Closing Soon' %}border-brand-red{% else %}border-brand-green{% endif %}">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold text-brand-blue leading-tight">{{ scholarship.title }}</h3>
+                            <span class="text-sm font-semibold px-3 py-1 rounded-full {% if scholarship.status == 'Closing Soon' %}bg-brand-red text-white{% else %}bg-brand-green text-white{% endif %}">
+                                {{ scholarship.status|upper }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-4 font-medium">{{ scholarship.provider }}</p>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-6 border-b pb-4">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Level</span>
+                                <span class="font-semibold text-gray-800">{{ scholarship.level }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Field</span>
+                                <span class="font-semibold text-gray-800">{{ scholarship.field }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Location</span>
+                                <span class="font-semibold text-gray-800">{{ scholarship.location }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Amount</span>
+                                <span class="font-semibold text-gray-800">{{ scholarship.amount }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm font-semibold text-gray-600">
+                                Deadline: <span class="text-brand-red">{{ scholarship.deadline|date:"m/d/Y" }}</span>
+                            </p>
+                            <a href="#" onclick="console.log('Applying for {{ scholarship.title }}')" class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
+                                Apply Now
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center bg-white rounded-xl shadow-lg border border-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-xl font-semibold text-gray-700">No Scholarships Found</p>
+                        <p class="text-gray-500 mt-2">Try broadening your search criteria or checking back later for updates.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFilters() {
+            const sidebar = document.getElementById('filter-sidebar');
+            sidebar.classList.toggle('filter-hidden');
+        }
+
+        function resetFilters() {
+            document.getElementById('search-form').reset();
+            document.getElementById('search-form').submit();
+        }
+
+        // Auto-submit form when filters change (optional)
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('search-form');
+            const inputs = form.querySelectorAll('select, input[type="text"]');
+            
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    form.submit();
+                });
+            });
+        });
+    </script>
+{% endblock %}

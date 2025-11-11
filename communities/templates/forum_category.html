@@ -1,0 +1,46 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<main class="max-w-7xl mx-auto py-16 px-6">
+
+    <!-- Hero Section for Forum Category -->
+    <header class="bg-brand-blue text-white shadow-xl overflow-hidden mb-12">
+        <div class="max-w-7xl mx-auto text-center py-12">
+            <h1 class="text-5xl font-extrabold mb-4">{{ category.name }}</h1>
+            <p class="text-xl font-medium text-gray-200">
+                Explore discussions and contribute your knowledge in the {{ category.name }} category.
+            </p>
+        </div>
+    </header>
+
+    <!-- Forum Posts Section -->
+    <section class="mb-16">
+        <h2 class="text-3xl font-extrabold text-brand-blue mb-6 text-center">Recent Posts in {{ category.name }}</h2>
+        
+        <div class="space-y-6">
+            {% for post in posts %}
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h3 class="text-2xl font-bold text-brand-blue mb-4">
+                    <a href="{% url 'view_post' post.id %}" class="hover:text-brand-green">{{ post.title }}</a>
+                </h3>
+                <p class="text-gray-600 mb-4">{{ post.content|truncatewords:40 }}</p>
+                <a href="{% url 'view_post' post.id %}" class="text-brand-green font-semibold">Read More</a>
+            </div>
+            {% empty %}
+            <p class="text-center text-gray-500">No posts available in this category yet. Be the first to create one!</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Create a Post Button -->
+    <section class="mb-16 text-center">
+        <a href="{% url 'create_post' category.slug %}" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
+            Create a New Post in {{ category.name }}
+        </a>
+    </section>
+
+</main>
+
+{% endblock content %}
