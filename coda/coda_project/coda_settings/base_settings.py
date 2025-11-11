@@ -367,3 +367,14 @@ LOGIN_REDIRECT_URL = 'dashboard:unified_dashboard'
 LOGOUT_REDIRECT_URL = 'dashboard:unified_dashboard'
 
 # SSL redirect is now environment-specific
+
+# -----------------------------
+# Twilio / Messaging configuration
+# -----------------------------
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+TWILIO_FROM_NUMBER = os.environ.get('TWILIO_FROM_NUMBER')
+TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+
+TRADER_ALERT_PHONES = os.environ.get('TRADER_ALERT_PHONES', '')
+WHATSAPP_ENABLED = _env_bool('WHATSAPP_ENABLED', False)
