@@ -342,7 +342,7 @@ class OptionsPositionAdmin(admin.ModelAdmin):
     profit_percentage_display.short_description = 'Profit %'
     
     def is_profitable_display(self, obj):
-        return "✓" if obj.is_profitable else "✗"
+        return obj.is_profitable
     is_profitable_display.short_description = 'Profitable'
     is_profitable_display.boolean = True
 
