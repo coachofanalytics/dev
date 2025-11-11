@@ -172,8 +172,13 @@
                 <div>
                     <strong>Automation mode:</strong> feeds refresh around {{ fetch_windows|join:", " }} and pending ideas older than {{ ttl_minutes }} minutes are auto-cleared. We default to ratings ≥ {{ min_rating|title }} for faster desk decisions.
                 </div>
-                <div class="mt-2 mt-lg-0">
-                    <span class="badge bg-primary text-white">Tip</span> Click “Show all ratings” in the Pending tab if you need to review lower-graded ideas.
+                <div class="mt-2 mt-lg-0 d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-primary text-white">Tip</span>
+                    {% if show_all %}
+                        <a href="?" class="btn btn-sm btn-outline-primary">Hide lower ratings</a>
+                    {% else %}
+                        <a href="?show_all=1" class="btn btn-sm btn-outline-primary">Show all ratings</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
