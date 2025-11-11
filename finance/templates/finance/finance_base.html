@@ -1,0 +1,82 @@
+{% extends "main/base_templates/finance_base.html" %}
+{% load static %}
+
+{% block page_title %}
+Finance Dashboard
+{% endblock page_title %}
+
+{% block finance_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary fw-bold">Finance Dashboard</h2>
+    <a href="#" class="btn btn-success">
+        <i class="fas fa-plus-circle"></i> Add New Record
+    </a>
+</div>
+
+<!-- KPIs Section -->
+<div class="row text-center mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm p-3">
+            <h6>Total Revenue</h6>
+            <h4 class="text-success fw-bold">{{ total_revenue }} RWF</h4>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm p-3">
+            <h6>Total Expenses</h6>
+            <h4 class="text-danger fw-bold">{{ total_expenses }} RWF</h4>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm p-3">
+            <h6>Net Profit</h6>
+            <h4 class="text-primary fw-bold">{{ net_profit }} RWF</h4>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm p-3">
+            <h6>Pending Invoices</h6>
+            <h4 class="text-warning fw-bold">{{ pending_invoices }}</h4>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Table -->
+<div class="card shadow-lg p-3 mb-5">
+    <h5 class="text-secondary fw-bold">Recent Transactions</h5>
+    <table class="table table-bordered table-hover align-middle mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount (RWF)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in recent_transactions %}
+            <tr>
+                <td>{{ tx.date }}</td>
+                <td>{{ tx.description }}</td>
+                <td>{{ tx.category }}</td>
+                <td>{{ tx.amount }}</td>
+                <td>
+                    {% if tx.status == "Completed" %}
+                    <span class="badge bg-success">Completed</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">No recent transactions available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock finance_content %}

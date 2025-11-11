@@ -1,0 +1,116 @@
+from django.test import TestCase
+from django.utils import timezone
+from finance.models import OverBoughtSold
+import time
+
+
+class OverBoughtSoldPerformanceTest(TestCase):
+    def setUp(self):
+        """
+        This method is used to set up initial conditions for the performance tests.
+        """
+        self.stock_data = {
+            "description": "Apple Inc.",
+            "last": 145.30,
+            "volume": 50000,
+            "RSI": 75.0,
+            "EPS": 5.50,
+            "PE": 28.0,
+            "rank": "Top Performer",
+            "profit_margins": 22.5,
+            "created_at": timezone.now(),
+            "updated_at": timezone.now(),
+        }
+
+    def test_create_performance(self):
+        """
+        Test the performance of creating 1000 stock entries.
+        """
+        start_time = time.time()
+
+        # Create 1000 stock entries, symbol passed separately
+        for i in range(1000):
+            OverBoughtSold.objects.create(
+                **self.stock_data, symbol=f"AAPL_{i}"  # Unique symbol for each entry
+            )
+
+        end_time = time.time()
+        total_time = end_time - start_time
+
+        print(f"Time taken to create 1000 stock entries: {total_time:.2f} seconds")
+        self.assertTrue(
+            total_time < 5,
+            f"Creation of 1000 stock entries took too long: {total_time:.2f} seconds",
+        )
+
+
+def test_retrieve_performance(self):
+    """
+    Test the performance of retrieving stock entries.
+    """
+    # Bulk create 1000 stock entries
+    OverBoughtSold.objects.bulk_create(
+        [OverBoughtSold(**self.stock_data, symbol=f"AAPL_{i}") for i in range(1000)]
+    )
+
+    start_time = time.time()
+
+    # Test retrieving 1000 stock entries
+    OverBoughtSold.objects.all()  # No need to assign it to a variable
+
+    end_time = time.time()
+    total_time = end_time - start_time
+
+    print(f"Time taken to retrieve 1000 stock entries: {total_time:.2f} seconds")
+    self.assertTrue(
+        total_time < 2,
+        f"Retrieval of 1000 stock entries took too long: {total_time:.2f} seconds",
+    )
+
+    def test_update_performance(self):
+        """
+        Test the performance of updating stock entries.
+        """
+        # Bulk create 1000 stock entries
+        OverBoughtSold.objects.bulk_create(
+            [OverBoughtSold(**self.stock_data, symbol=f"AAPL_{i}") for i in range(1000)]
+        )
+
+        start_time = time.time()
+
+        # Update RSI for all stock entries
+        for stock in OverBoughtSold.objects.all():
+            stock.RSI = 50  # Update RSI to a new value
+            stock.save()
+
+        end_time = time.time()
+        total_time = end_time - start_time
+
+        print(f"Time taken to update 1000 stock entries: {total_time:.2f} seconds")
+        self.assertTrue(
+            total_time < 5,
+            f"Update of 1000 stock entries took too long: {total_time:.2f} seconds",
+        )
+
+    def test_delete_performance(self):
+        """
+        Test the performance of deleting 1000 stock entries.
+        """
+        # Bulk create 1000 stock entries
+        OverBoughtSold.objects.bulk_create(
+            [OverBoughtSold(**self.stock_data, symbol=f"AAPL_{i}") for i in range(1000)]
+        )
+
+        start_time = time.time()
+
+        # Delete all stock entries
+        OverBoughtSold.objects.all().delete()
+
+        end_time = time.time()
+        total_time = end_time - start_time
+
+        print(f"Time taken to delete 1000 stock entries: {total_time:.2f} seconds")
+        self.assertTrue(
+            total_time < 5,
+            f"Deletion of 1000 stock entries took too long: {total_time:.2f} seconds",
+        )
