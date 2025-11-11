@@ -1,5 +1,6 @@
 {% extends "main/base_templates/new_base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block page_title %}Auto-Fetched Position Suggestions - Staff Review{% endblock %}
 
@@ -171,6 +172,11 @@
             <div class="alert alert-secondary d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
                 <div>
                     <strong>Automation mode:</strong> feeds refresh around {{ fetch_windows|join:", " }} and pending ideas older than {{ ttl_minutes }} minutes are auto-cleared. We default to ratings ≥ {{ min_rating|title }} for faster desk decisions.
+                    {% if latest_fetch_at %}
+                    <div class="small mt-1">
+                        Last fetch finished {{ latest_fetch_at|naturaltime }} ({{ latest_fetch_at|date:"M j, g:i A T" }}).
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="mt-2 mt-lg-0 d-flex align-items-center gap-2 flex-wrap">
                     <span class="badge bg-primary text-white">Tip</span>
@@ -346,6 +352,11 @@
                                 {% if pos.api_response_data and pos.api_response_data.unusual_whales %}
                                 <div class="small text-muted">
                                     🐋 Flow {{ pos.api_response_data.unusual_whales.flow_score|floatformat:0 }}/100 · {{ pos.api_response_data.unusual_whales.timing_signal }}
+                                </div>
+                                {% endif %}
+                                {% if pos.fetched_at %}
+                                <div class="small text-muted">
+                                    Fetched {{ pos.fetched_at|naturaltime }} ({{ pos.fetched_at|date:"M j, g:i A T" }})
                                 </div>
                                 {% endif %}
                             </td>

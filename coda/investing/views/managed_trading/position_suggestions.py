@@ -131,8 +131,14 @@ def suggested_positions_list(request):
     # ========================================================
     
     # Statistics
-    from django.db.models import Avg, Sum, Count, Q
+    from django.db.models import Avg, Sum, Count, Q, Max
     
+    latest_fetch_at = base_pending_qs.aggregate(latest=Max('fetched_at'))['latest']
+    if not latest_fetch_at:
+        latest_fetch_at = base_pending_qs.aggregate(latest=Max('created_at'))['latest']
+    if latest_fetch_at:
+        latest_fetch_at = timezone.localtime(latest_fetch_at)
+
     stats = {
         'total_pending': pending.count(),
         'total_approved': approved.count(),
@@ -283,6 +289,7 @@ def suggested_positions_list(request):
         'min_rating': min_rating,
         'ttl_minutes': ttl_minutes,
         'fetch_windows': ['9:00 AM ET', '1:00 PM ET'],
+        'latest_fetch_at': latest_fetch_at,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 
