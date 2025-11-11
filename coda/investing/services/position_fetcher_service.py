@@ -23,6 +23,7 @@ from typing import List, Dict, Optional
 from ..models import SuggestedPosition, OptionPlayRawData
 from .optionplay_scraper import OptionPlayScraperService  # NEW: Web scraper
 from .optionplay_converter import OptionPlayConverterService  # NEW: CSV converter
+from .position_scoring_service import PositionScoringService
 
 logger = logging.getLogger(__name__)
 
@@ -561,6 +562,7 @@ class PositionFetcherService:
             List of created SuggestedPosition instances
         """
         suggested_positions = []
+        scorer: Optional[PositionScoringService] = None
         
         for pos_data in positions:
             try:
@@ -586,6 +588,52 @@ class PositionFetcherService:
                     api_response_data=pos_data.get('api_response_data', {}),
                     review_status='pending'
                 )
+
+                # Run AI scoring if possible
+                if scorer is None:
+                    scorer = PositionScoringService()
+
+                try:
+                    score_payload = {
+                        'symbol': pos_data.get('symbol'),
+                        'strategy': pos_data.get('strategy'),
+                        'premium': pos_data.get('premium_collected'),
+                        'max_loss': pos_data.get('max_loss'),
+                        'dte': pos_data.get('dte'),
+                        'iv_rank': pos_data.get('iv_rank'),
+                        'delta': pos_data.get('position_delta'),
+                        'theta': pos_data.get('position_theta'),
+                        'volume': pos_data.get('volume'),
+                        'open_interest': pos_data.get('open_interest'),
+                        'days_to_earnings': pos_data.get('days_to_earnings'),
+                    }
+                    score_result = scorer.score_position(score_payload)
+                    breakdown_raw = score_result.get('breakdown', {}) or {}
+                    breakdown_serialized = {
+                        key: float(value)
+                        for key, value in breakdown_raw.items()
+                        if value is not None
+                    }
+
+                    suggested_pos.ai_score = Decimal(str(score_result.get('score', 0)))
+                    suggested_pos.ai_rating = score_result.get('rating')
+                    suggested_pos.ai_breakdown = breakdown_serialized
+                    suggested_pos.ai_recommendation = score_result.get('recommendation', '')
+                    suggested_pos.ai_confidence_level = score_result.get('confidence')
+                    suggested_pos.save(update_fields=[
+                        'ai_score',
+                        'ai_rating',
+                        'ai_breakdown',
+                        'ai_recommendation',
+                        'ai_confidence_level',
+                    ])
+                except Exception as scoring_exc:
+                    logger.warning(
+                        "⚠️ Failed to score %s %s: %s",
+                        pos_data.get('symbol'),
+                        pos_data.get('strategy'),
+                        scoring_exc,
+                    )
                 
                 suggested_positions.append(suggested_pos)
                 logger.info(f"✅ Saved: {suggested_pos}")
