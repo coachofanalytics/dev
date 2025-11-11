@@ -85,6 +85,73 @@
         </div>
     </div>
     
+    {% if auto_metrics.total %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-success border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-success text-uppercase fw-bold mb-1">Auto-Approved Positions</h6>
+                    <div class="d-flex align-items-end justify-content-between">
+                        <span class="display-6 fw-bold">{{ auto_metrics.total }}</span>
+                        <small class="text-muted">Live: {{ auto_metrics.live }} · Closed: {{ auto_metrics.closed }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-primary border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-primary text-uppercase fw-bold mb-1">Win Rate</h6>
+                    <div class="d-flex align-items-end justify-content-between">
+                        <span class="display-6 fw-bold">
+                            {% if auto_metrics.win_rate is not None %}
+                                {{ auto_metrics.win_rate|floatformat:1 }}%
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">Wins: {{ auto_metrics.wins }} · Losses: {{ auto_metrics.losses }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-info text-uppercase fw-bold mb-1">Avg Realized P&amp;L</h6>
+                    <div class="d-flex align-items-end justify-content-between">
+                        <span class="display-6 fw-bold">
+                            {% if auto_metrics.avg_realized_pnl is not None %}
+                                ${{ auto_metrics.avg_realized_pnl|floatformat:0 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">Across closed auto-entered trades</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-dark border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-dark text-uppercase fw-bold mb-1">Avg Entry Lag</h6>
+                    <div class="d-flex align-items-end justify-content-between">
+                        <span class="display-6 fw-bold">
+                            {% if auto_metrics.avg_time_to_entry_minutes %}
+                                {{ auto_metrics.avg_time_to_entry_minutes|floatformat:0 }} min
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">Timeout → trader confirmation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- Quick Actions Bar -->
     <div class="row mb-3">
         <div class="col-md-12">
