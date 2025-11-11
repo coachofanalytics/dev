@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser, LoginHistory,All_transaction,Transaction,PaymentInformation,Payment_History
+from .models import CustomerUser, LoginHistory,All_transaction,Transaction,PaymentInformation,Payment_History,OverBoughtSold
 
 
 # admin.site.register(CustomerUser)
@@ -74,6 +74,7 @@ admin.site.register(CustomerUser, CustomerAdmin)
 admin.site.register(LoginHistory, LoginHistoryAdmin)
 admin.site.register(All_transaction)
 admin.site.register(Transaction)
+admin.site.register(OverBoughtSold)
 class PaymentInformationAdmin(admin.ModelAdmin):
     list_display = (
         "id", "customer_id", "payment_fees", "down_payment", 

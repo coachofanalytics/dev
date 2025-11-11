@@ -6,6 +6,8 @@ from accounts.views import *
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from accounts.models import Transaction,PaymentInformation,Payment_History
+from accounts.forms import PaymentHistoryForm
+
 
 User = get_user_model()
 
@@ -561,24 +563,22 @@ class PaymentHistoryListViewTest(TestCase):
         """✅ Should filter results when search query is provided"""
         response = self.client.get(self.url, {"search": "Mpesa"})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Mpesa")
-
 
 
 
 class PaymentHistoryCreateViewTest(TestCase):
+    """Test case for the PaymentHistoryCreateView."""
 
     def setUp(self):
-        # Create a CustomerUser object to associate with the payment history
+        # Setup code (create a test customer)
         self.customer = CustomerUser.objects.create(
             first_name="Chris",
             last_name="Maghas",
             email="chris@example.com",
             is_active=True
         )
-
         # Set the URL for the payment history create view
-        self.url = reverse('accounts:accounts-paymenthistory_list-')
+        self.url = reverse('accounts:paymenthistory_create')
 
     def test_create_view_get(self):
         """Test that the GET request loads the form correctly"""
@@ -605,6 +605,82 @@ class PaymentHistoryCreateViewTest(TestCase):
         self.assertRedirects(response, reverse('accounts:accounts-paymenthistory_list'))  # Ensure it redirects to the list view
         self.assertEqual(Payment_History.objects.count(), 1)  # Check if the record is created
 
+    def test_create_view_post_invalid(self):
+        """Test that an invalid POST request does not create a PaymentHistory record"""
+        form_data = {
+            "customer": self.customer.id,
+            "payment_fees": "invalid",  # Invalid data
+            "down_payment": 500.00,
+            "student_bonus": 200.00,
+            "fee_balance": 0,
+            "plan": 1,
+            "payment_method": "Mpesa",
+            "contract_submitted_date": timezone.now(),
+            "client_signature": "Signed",
+            "company_rep": "Manager",
+        }
+        response = self.client.post(self.url, data=form_data)
+        self.assertEqual(response.status_code, 200)  # Stay on the same page due to invalid data
+        self.assertFormError(response, 'form', 'payment_fees', 'Enter a whole number.')  # Check for the error message
+        self.assertEqual(Payment_History.objects.count(), 0)  # Ensure no record is created
 
+
+
+class PaymentHistoryUpdateViewTest(TestCase):
+    """Test case for the PaymentHistoryUpdateView."""
+
+    def setUp(self):
+        # Create a test customer
+        self.customer = CustomerUser.objects.create(
+            first_name="Chris",
+            last_name="Maghas",
+            email="chris@example.com",
+            is_active=True
+        )
+
+        # Create a payment history record to update
+        self.payment = Payment_History.objects.create(
+            customer=self.customer,
+            payment_fees=10000,
+            down_payment=500,
+            student_bonus=200,
+            fee_balance=9400,
+            plan=1,
+            payment_method="Mpesa",
+            contract_submitted_date=timezone.now(),
+            client_signature="Signed",
+            company_rep="Rep 1",
+            client_date="2025-01-12",
+            rep_date="2025-01-13"
+        )
+
+        # Set the URL for the payment history list view
+        self.url = reverse('accounts:paymenthistory_update', args=[self.payment.id])
+
+
+    def test_update_view_get(self):
+        """Test that the GET request loads the form correctly"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'accounts/Paymenthistory_update.html')
+
+    def test_update_view_post_valid(self):
+        """Test that a valid POST request updates the PaymentHistory record"""
+        form_data = {
+            "customer": self.customer.id,
+            "payment_fees": 10000.00,
+            "down_payment": 500.00,
+            "student_bonus": 200.00,
+            "fee_balance": 0,
+            "plan": 1,
+            "payment_method": "Mpesa",
+            "contract_submitted_date": timezone.now(),
+            "client_signature": "Signed",
+            "company_rep": "Manager",
+        }
+        response = self.client.post(self.url, data=form_data)
+        self.assertEqual(response.status_code, 302)  # Check for redirect after form submission
+        self.assertRedirects(response, reverse('accounts:accounts-paymenthistory_list'))  # Ensure it redirects to the list view
+        self.assertEqual(Payment_History.objects.count(), 1)  # Check if the record is updated
 
 

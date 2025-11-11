@@ -13,8 +13,9 @@ AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend
 # Application definition
 INSTALLED_APPS = [
     "main.apps.MainConfig",
-    'departments',   
+    "departments",
     "accounts.apps.AccountsConfig",
+    "finance",  # ✅ Added comma
     "application.apps.ApplicationConfig",
     "crispy_forms",
     "django.contrib.admin",
@@ -33,11 +34,9 @@ INSTALLED_APPS = [
     "django_crontab",
     "django.contrib.sites",
     "allauth",
-    # "allauth.account",
-    # "allauth.socialaccount",
-    # "allauth.socialaccount.providers.google",
-    # "allauth.socialaccount.providers.facebook"
 ]
+
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -67,26 +66,20 @@ ROOT_URLCONF = "coda_project.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            # os.path.join(BASE_DIR, 'templates')
-            "templates"
-        ],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "main.context_processors.images",
-                "main.context_processors.googledriveurl",
-                "main.context_processors.services",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
-          
         },
     },
 ]
+
 
 #  ==============DBFUNCTIONS=====================================
 def dba_values():

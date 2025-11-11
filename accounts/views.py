@@ -403,32 +403,41 @@ def payment_list_view(request):
 
 
 
-
 def payment_history_list_view(request):
     search_query = request.GET.get('search', '')
     payments = Payment_History.objects.all()
-
     if search_query:
         payments = payments.filter(payment_method__icontains=search_query)
-
     payments = payments.order_by('-contract_submitted_date')
-
-    return render(request, 'accounts/Paymenthistory_list_html', {
+    return render(request, 'accounts/paymentinformation_list.html', {
         'payments': payments,
         'search_query': search_query
     })
 
+
 def payment_history_create_view(request):
-    if request.method == "POST":
+    if request.method == "POST":       
         form = PaymentHistoryForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Transaction created successfully!")
+            messages.success(request, "Payment History created successfully!")
             return redirect('accounts:accounts-paymenthistory_list')
-    else:
-        form = PaymentHistoryForm()
-    
+    else:       
+        form = PaymentHistoryForm()    
     return render(request, "accounts/paymenthistory_create.html", {'form': form})
+
+
+
+
+def payment_history_update_view(request, pk):
+    payment = get_object_or_404(Payment_History, pk=pk)
+    if request.method == "POST":
+        # Example logic for updating payment
+        payment.status = request.POST.get("status", payment.status)
+        payment.save()
+        return redirect('payment_history_list')  # update this redirect as needed
+    return render(request, 'finance/payment_history_update.html', {'payment': payment})
+
 
 
 

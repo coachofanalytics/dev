@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>
+      {% block title %}CODA Finance{% endblock %} · CODA Finance
+  </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Custom variables + layout -->
+  <style>
+    :root{
+      --coda-primary: #0d6efd;   /* Blue */
+      --coda-gold:    #e7ad4a;   /* Gold */
+      --bg-body:      #f5f7fb;   /* Light page bg */
+      --text:         #1f2937;   /* Slate text */
+      --muted:        #6b7280;
+      --border:       #e5e7eb;
+      --sidebar-w:    260px;      /* Wide */
+    }
+
+    html, body { height: 100%; background: var(--bg-body); color: var(--text); }
+
+    /* Layout */
+    .finance-shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+    .finance-shell.sidebar-collapsed { grid-template-columns: 72px 1fr; }
+
+    /* Sidebar */
+    .finance-sidebar{
+      background: #ffffff;
+      border-right: 1px solid var(--border);
+      position: sticky; top: 0; height: 100vh; padding: 16px 12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; padding: 8px 10px; margin-bottom: 10px;
+    }
+    .brand__logo{
+      width:36px; height:36px; display:grid; place-items:center;
+      border-radius:10px; background: linear-gradient(135deg, var(--coda-primary), #5898ff);
+      color:#fff; font-weight:700;
+    }
+    .brand__name{ font-weight:700; letter-spacing:.3px; }
+
+    .nav-section-title{
+      font-size:.75rem; color: var(--muted); text-transform: uppercase;
+      margin: 16px 14px 8px;
+    }
+
+    .side-nav .nav-link{
+      display:flex; align-items:center; gap:12px; border-radius:10px;
+      color:#334155; padding:10px 12px; margin:4px 6px;
+    }
+    .side-nav .nav-link:hover{ background:#f1f5ff; color: var(--coda-primary); }
+    .side-nav .nav-link.active{
+      background:linear-gradient(90deg, rgba(13,110,253,.10), rgba(13,110,253,.06));
+      border:1px solid rgba(13,110,253,.20); color:#0b3c91;
+      box-shadow:0 0 0 2px rgba(231,173,74,.18) inset;
+    }
+    .side-nav i{ width:20px; text-align:center; }
+
+    /* Collapsed mode */
+    .finance-shell.sidebar-collapsed .brand__name,
+    .finance-shell.sidebar-collapsed .nav-text,
+    .finance-shell.sidebar-collapsed .nav-section-title{ display:none; }
+    .finance-shell.sidebar-collapsed .side-nav .nav-link{ justify-content:center; padding:10px; }
+
+    /* Header */
+    .finance-header{
+      background:#ffffff; border-bottom:1px solid var(--border); height:64px;
+      display:flex; align-items:center; justify-content:space-between; padding:0 16px 0 16px;
+      position:sticky; top:0; z-index: 10;
+    }
+    .header-left{ display:flex; align-items:center; gap:12px; }
+    .btn-toggle{
+      border:1px solid var(--border); background:#fff; width:40px; height:40px; border-radius:8px;
+    }
+    .btn-toggle:hover{ background:#f8fafc; }
+    .page-title{ margin:0; font-size:1rem; font-weight:700; }
+
+    .header-right{ display:flex; align-items:center; gap:8px; }
+    .badge-gold{
+      background: var(--coda-gold); color:#111827; font-weight:600;
+    }
+
+    /* Main content wrapper */
+    .finance-content{ padding: 20px; }
+    .card-soft{
+      background:#ffffff; border:1px solid var(--border); border-radius:14px; box-shadow:0 3px 10px rgba(16,24,40,.04);
+    }
+
+    /* Utilities */
+    .muted{ color: var(--muted); }
+    .btn-primary{ background: var(--coda-primary); border-color: var(--coda-primary); }
+    .btn-outline-primary{ color: var(--coda-primary); border-color: var(--coda-primary); }
+    .btn-outline-primary:hover{ background: var(--coda-primary); color:#fff; }
+    .link-gold{ color: var(--coda-gold); text-decoration: none; }
+    .link-gold:hover{ color:#c99333; }
+
+    /* Responsive */
+    @media (max-width: 992px){
+      .finance-shell{ grid-template-columns: 72px 1fr; }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="finance-shell" id="financeShell">
+  <!-- SIDEBAR -->
+  <aside class="finance-sidebar">
+    <div class="brand">
+      <div class="brand__logo">₵</div>
+      <div class="brand__name">CODA Finance</div>
+    </div>
+
+    <div class="nav-section-title">Core</div>
+    <nav class="side-nav nav flex-column">
+      <a class="nav-link" href="/finance/"><i class="fa-solid fa-gauge"></i><span class="nav-text">Dashboard</span></a>
+      <a class="nav-link" href="/finance/overboughtsold/"><i class="fa-solid fa-signal"></i><span class="nav-text">OverBoughtSold</span></a>
+      <a class="nav-link" href="/finance/transaction_list/"><i class="fa-solid fa-table-list"></i><span class="nav-text">Transactions</span></a>
+      <a class="nav-link" href="/accounts/paymenthistory_list/"><i class="fa-regular fa-credit-card"></i><span class="nav-text">Payments</span></a>
+    </nav>
+
+    <div class="nav-section-title">Capital</div>
+    <nav class="side-nav nav flex-column">
+      <a class="nav-link" href="/finance/stocks/"><i class="fa-solid fa-chart-line"></i><span class="nav-text">Stocks &amp; Signals</span></a>
+      <a class="nav-link" href="/finance/investments/"><i class="fa-solid fa-coins"></i><span class="nav-text">Investments</span></a>
+      <a class="nav-link" href="/finance/budgets/"><i class="fa-solid fa-wallet"></i><span class="nav-text">Budgets</span></a>
+      <a class="nav-link" href="/finance/investors/"><i class="fa-solid fa-handshake"></i><span class="nav-text">Investors &amp; Funding</span></a>
+    </nav>
+
+    <div class="nav-section-title">Insights</div>
+    <nav class="side-nav nav flex-column">
+      <a class="nav-link" href="/finance/reports/"><i class="fa-solid fa-file-chart-column"></i><span class="nav-text">Reports &amp; Analytics</span></a>
+      <a class="nav-link" href="/finance/settings/"><i class="fa-solid fa-gear"></i><span class="nav-text">Settings</span></a>
+    </nav>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="d-flex flex-column">
+    <!-- TOP HEADER -->
+    <header class="finance-header">
+      <div class="header-left">
+        <button class="btn btn-toggle" id="sidebarToggle" title="Toggle sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="page-title">{% block page_title %}Finance Dashboard{% endblock %}</h1>
+      </div>
+      <div class="header-right">
+        <span class="badge badge-gold rounded-pill px-3 py-2">CODA</span>
+        <button class="btn btn-outline-primary btn-sm">Profile</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <section class="finance-content">
+      {% block content %}
+      <div class="card-soft p-4">
+        <h5 class="mb-1">Welcome to CODA Finance</h5>
+        <p class="muted mb-0">Use the sidebar to navigate. This is the base layout.</p>
+      </div>
+      {% endblock %}
+    </section>
+  </main>
+</div>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Sidebar toggle (collapsible)
+  const shell = document.getElementById('financeShell');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  toggleBtn?.addEventListener('click', () => {
+    shell.classList.toggle('sidebar-collapsed');
+    try { sessionStorage.setItem('finance_sidebar_collapsed', shell.classList.contains('sidebar-collapsed')); } catch(e){}
+  });
+
+  // Restore state
+  (function(){
+    try{
+      const collapsed = sessionStorage.getItem('finance_sidebar_collapsed') === 'true';
+      if (collapsed) shell.classList.add('sidebar-collapsed');
+    }catch(e){}
+  })();
+
+  // Active link helper
+  (function(){
+    const path = location.pathname.toLowerCase();
+    document.querySelectorAll('.side-nav .nav-link').forEach(a=>{
+      if (path.startsWith(a.getAttribute('href').toLowerCase())) a.classList.add('active');
+    });
+  })();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

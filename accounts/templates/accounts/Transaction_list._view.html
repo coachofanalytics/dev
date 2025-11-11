@@ -47,9 +47,9 @@
             <td>{{ transaction.activity_date|date:"Y-m-d H:i" }}</td>
             <td>{{ transaction.description|truncatechars:50 }}</td>
             <td>
-              <a href="#" class="btn btn-sm btn-info">View</a>
-              <a href="#" class="btn btn-sm btn-warning">Edit</a>
-              <a href="#" class="btn btn-sm btn-danger">Delete</a>
+              <a href="{% url 'accounts:transaction_detail' transaction.id %}" class="btn btn-sm btn-info">View</a>
+            <a href="{% url 'accounts:transaction_update' transaction.id %}" class="btn btn-sm btn-warning">Edit</a>
+              <a href="{% url 'accounts:transaction_delete' transaction.id %}" class="btn btn-sm btn-danger">Delete</a>
             </td>
           </tr>
           {% empty %}

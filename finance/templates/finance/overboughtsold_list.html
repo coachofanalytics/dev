@@ -1,0 +1,94 @@
+{% extends "finance/finance_base.html" %}
+{% load static %}
+
+{% block title %}OverBoughtSold Records{% endblock %}
+
+{% block content %}
+
+<h1 style="color:red;">PER YEAR FINANCIAL IN CODA</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">📊 OverBoughtSold Records</h2>
+    <a href="#" class="btn btn-success px-4 py-2 shadow-sm">+ Add New Record</a>
+</div>
+
+<div class="table-container shadow-sm p-3 bg-white rounded-3">
+    <table class="table modern-table align-middle">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Symbol</th>
+                <th>Description</th>
+                <th>Last</th>
+                <th>Volume</th>
+                <th>RSI</th>
+                <th>EPS</th>
+                <th>PE</th>
+                <th>Rank</th>
+                <th>Profit Margins</th>
+                <th>Created At</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="fw-semibold">{{ record.symbol }}</td>
+                <td>{{ record.description }}</td>
+                <td>{{ record.last }}</td>
+                <td>{{ record.volume }}</td>
+                <td>{{ record.RSI }}</td>
+                <td>{{ record.EPS }}</td>
+                <td>{{ record.PE }}</td>
+                <td>{{ record.rank }}</td>
+                <td>{{ record.profit_margins }}%</td>
+                <td>{{ record.created_at|date:"Y-m-d H:i" }}</td>
+                <td class="text-center">
+                    <a href="#" class="btn btn-sm btn-outline-primary px-3">View</a>
+                    <a href="#" class="btn btn-sm btn-outline-warning px-3">Edit</a>
+                    <a href="#" class="btn btn-sm btn-outline-danger px-3">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="12" class="text-center text-muted py-3">
+                    No stocks available.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .modern-table thead th {
+        background: #f8fafc; /* check issues */
+        color: #2b2f32;
+        font-weight: 600;
+        padding: 14px;
+        border-bottom: 2px solid #eaecef;
+    }
+
+    .modern-table tbody td {
+        padding: 14px;
+        color: #3a3a3a;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .modern-table tbody tr:hover {
+        background-color: #f9f9ff;
+        transition: 0.2s;
+    }
+
+    .table-container {
+        border: 1px solid #e7e7e7;
+    }
+
+    .btn-sm {
+        border-radius: 6px;
+    }
+</style>
+
+{% endblock %}

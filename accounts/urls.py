@@ -1,5 +1,7 @@
 from django.urls import path
-from . import views
+from . import views 
+
+
 
 app_name = 'accounts'
 
@@ -26,7 +28,12 @@ urlpatterns = [
     # ✅ Correct route for paymenthistory
     path('paymenthistory_list/', views.payment_history_list_view, name='accounts-paymenthistory_list'),
     path('paymenthistory_create/', views.payment_history_create_view, name='paymenthistory_create'),
-    path('paymenthistory_update/<int:pk>/', views.payment_history_update_view, name='paymenthistory_update'),
+
+
+    path("paymentshistory_update/<int:pk>/update/", views.payment_history_update_view, name="paymenthistory_update")
+
+    # path('paymenthistory_update/<int:pk>/', views.payment_history_update_view, name='paymenthistory_update'),
+    
      
 ]
     

@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from decimal import Decimal
+from datetime import timedelta
 from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.utils import timezone
@@ -11,11 +10,10 @@ from accounts.choices import CategoryChoices, SubCategoryChoices
 # from accounts.models import Department, Credential, CredentialCategory, TaskGroups, Tracker, All_transaction
 
 
-
 # ✅ Transaction type choices defined globally
 TRANSACTION_TYPE_CHOICES = [
-    ('INCOME', 'Income'),
-    ('EXPENSE', 'Expense'),
+    ("INCOME", "Income"),
+    ("EXPENSE", "Expense"),
 ]
 
 
@@ -25,7 +23,7 @@ TRANSACTION_TYPE_CHOICES = [
 class UserGroups(Group):
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=True)
-    users = models.ManyToManyField('CustomerUser', related_name='user_groups')
+    users = models.ManyToManyField("CustomerUser", related_name="user_groups")
 
     class Meta:
         verbose_name_plural = "User Groups"
@@ -36,10 +34,10 @@ class UserGroups(Group):
 # =========================
 class CustomerUser(AbstractUser):
     def get_category_display_name(self):
-        return dict(CategoryChoices.choices).get(self.category, 'Unknown')
+        return dict(CategoryChoices.choices).get(self.category, "Unknown")
 
     def get_subcategory_display_name(self):
-        return dict(SubCategoryChoices.choices).get(self.sub_category, 'Unknown')
+        return dict(SubCategoryChoices.choices).get(self.sub_category, "Unknown")
 
     class Score(models.IntegerChoices):
         Male = 1
@@ -58,7 +56,9 @@ class CustomerUser(AbstractUser):
     zipcode = models.CharField(blank=True, null=True, max_length=255)
     country = CountryField(blank=True, null=True)
     category = models.IntegerField(choices=CategoryChoices.choices, default=999)
-    sub_category = models.IntegerField(choices=SubCategoryChoices.choices, blank=True, null=True)
+    sub_category = models.IntegerField(
+        choices=SubCategoryChoices.choices, blank=True, null=True
+    )
     is_admin = models.BooleanField("Is admin", default=False)
     is_staff = models.BooleanField("Is employee", default=False)
     is_client = models.BooleanField("Is Client", default=False)
@@ -82,11 +82,12 @@ class CustomerUser(AbstractUser):
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
 
+
 # =====================================================
 # LOGIN HISTORY MODEL
 # =====================================================
 class LoginHistory(models.Model):
-    user = models.ForeignKey('CustomerUser', on_delete=models.CASCADE)
+    user = models.ForeignKey("CustomerUser", on_delete=models.CASCADE)
     login_time = models.DateTimeField(null=True, blank=True)
     logout_time = models.DateTimeField(null=True, blank=True)
     start_time = models.TimeField(null=True, blank=True)
@@ -104,9 +105,10 @@ class LoginHistory(models.Model):
 # =====================================================
 
 TRANSACTION_TYPE_CHOICES = [
-    ('INCOME', 'Income'),
-    ('EXPENSE', 'Expense'),
+    ("INCOME", "Income"),
+    ("EXPENSE", "Expense"),
 ]
+
 
 class All_transaction(models.Model):
     type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES)
@@ -128,51 +130,49 @@ class Transaction(models.Model):
     # CHOICES
     # ----------------------------
     CAT_CHOICES = [
-        ('Salary', 'Salary'),
-        ('Health', 'Health'),
-        ('Transport', 'Transport'),
-        ('Food_Accomodation', 'Food & Accommodation'),
-        ('Internet_Airtime', 'Internet & Airtime'),
-        ('Recruitment', 'Recruitment'),
-        ('Labour', 'Labour'),
-        ('Electricity', 'Electricity'),
-        ('Construction', 'Construction'),
-        ('Training', 'Training'),
-        ('Grocery', 'Grocery'),
-        ('Gas', 'Gas'),
-        ('Poshmil', 'Poshmil'),
-        ('Other', 'Other'),
+        ("Salary", "Salary"),
+        ("Health", "Health"),
+        ("Transport", "Transport"),
+        ("Food_Accomodation", "Food & Accommodation"),
+        ("Internet_Airtime", "Internet & Airtime"),
+        ("Recruitment", "Recruitment"),
+        ("Labour", "Labour"),
+        ("Electricity", "Electricity"),
+        ("Construction", "Construction"),
+        ("Training", "Training"),
+        ("Grocery", "Grocery"),
+        ("Gas", "Gas"),
+        ("Poshmil", "Poshmil"),
+        ("Other", "Other"),
     ]
 
     PAY_CHOICES = [
-        ('Cash', 'Cash'),
-        ('Mpesa', 'Mpesa'),
-        ('Bank_Transfer', 'Bank Transfer'),
-        ('Cheque', 'Cheque'),
-        ('Other', 'Other'),
+        ("Cash", "Cash"),
+        ("Mpesa", "Mpesa"),
+        ("Bank_Transfer", "Bank Transfer"),
+        ("Cheque", "Cheque"),
+        ("Other", "Other"),
     ]
 
     # ----------------------------
     # FIELDS
     # ----------------------------
     sender = models.ForeignKey(
-        'accounts.CustomerUser',  # string reference avoids circular import
-        verbose_name=_('Sender'),
-        related_name='transactions_sent',
+        "accounts.CustomerUser",  # string reference avoids circular import
+        verbose_name=_("Sender"),
+        related_name="transactions_sent",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        limit_choices_to={'is_staff': True, 'is_active': True},
+        limit_choices_to={"is_staff": True, "is_active": True},
     )
 
     department = models.ForeignKey(
-    'departments.Department',  # ✅ Correct reference
-    verbose_name=_('Department'),
-    on_delete=models.CASCADE,
-    null=True,
-    blank=True,
-
-
+        "departments.Department",  # ✅ Correct reference
+        verbose_name=_("Department"),
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
 
     receiver = models.CharField(max_length=100, null=True, blank=True)
@@ -182,10 +182,14 @@ class Transaction(models.Model):
     receipt_link = models.CharField(max_length=255, null=True, blank=True)
     qty = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    transaction_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
+    transaction_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, null=True, blank=True
+    )
     description = models.TextField(null=True, blank=True)
-    payment_method = models.CharField(max_length=50, choices=PAY_CHOICES, default='Other')
-    category = models.CharField(max_length=100, choices=CAT_CHOICES, default='Other')
+    payment_method = models.CharField(
+        max_length=50, choices=PAY_CHOICES, default="Other"
+    )
+    category = models.CharField(max_length=100, choices=CAT_CHOICES, default="Other")
 
     # Computed field
     @property
@@ -199,31 +203,31 @@ class Transaction(models.Model):
 
     class Meta:
         verbose_name_plural = "Transactions"
-        ordering = ['-activity_date']
+        ordering = ["-activity_date"]
 
     def __str__(self):
         return f"{self.category} - {self.amount} ({self.payment_method})"
-    
 
 
 class PaymentInformation(models.Model):
     PAYMENT_METHOD_CHOICES = [
-        ('cash', 'cash'),
-        ('Mpesa', 'Mpesa'),
-        ('Bank_Transfer', 'Bank_Transfer'),
-        ('Cheque', 'Cheque'),
-        ('Other', 'Other'),
+        ("cash", "cash"),
+        ("Mpesa", "Mpesa"),
+        ("Bank_Transfer", "Bank_Transfer"),
+        ("Cheque", "Cheque"),
+        ("Other", "Other"),
     ]
 
     customer_id = models.ForeignKey(
-        CustomerUser,
-        on_delete=models.CASCADE,
-        null=False,
-        related_name='payments'
+        CustomerUser, on_delete=models.CASCADE, null=False, related_name="payments"
     )
     payment_fees = models.DecimalField(max_digits=12, decimal_places=2, null=False)
-    down_payment = models.DecimalField(max_digits=12, decimal_places=2, null=False, default=500)
-    student_bonus = models.DecimalField(max_digits=12, decimal_places=2, null=True, default=0.00)
+    down_payment = models.DecimalField(
+        max_digits=12, decimal_places=2, null=False, default=500
+    )
+    student_bonus = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, default=0.00
+    )
     plan = models.IntegerField(null=False)
     subplan = models.IntegerField(null=True)
     payment_method = models.CharField(max_length=100, choices=PAYMENT_METHOD_CHOICES)
@@ -249,14 +253,17 @@ class PaymentInformation(models.Model):
             return self.payment_fees - self.down_payment
         except (TypeError, ValueError):
             return 0.00
-        
+
 
 @property
 def student_balance(self):
     try:
-        return float(self.payment_fees or 0) - (float(self.down_payment or 0) + float(self.student_bonus or 0))
+        return float(self.payment_fees or 0) - (
+            float(self.down_payment or 0) + float(self.student_bonus or 0)
+        )
     except (TypeError, ValueError):
         return 0.0
+
 
 @property
 def jobsupport_balance(self):
@@ -266,13 +273,12 @@ def jobsupport_balance(self):
         return 0.0
 
 
-
 class Payment_History(models.Model):
     customer = models.ForeignKey(
         CustomerUser,
         verbose_name="Client Name",
         on_delete=models.CASCADE,
-        related_name="customer_payment_history"
+        related_name="customer_payment_history",
     )
     payment_fees = models.IntegerField(null=False)
     down_payment = models.IntegerField(default=500)
@@ -295,10 +301,46 @@ class Payment_History(models.Model):
         verbose_name_plural = "Payment History"
         ordering = ["-contract_submitted_date"]
 
-    
+ 
+
+
+class OverBoughtSold(models.Model):
+    symbol = models.CharField(max_length=255, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    last = models.FloatField(null=True, blank=True)
+    volume = models.PositiveIntegerField(null=True, blank=True)
+    RSI = models.FloatField(null=True, blank=True)
+    EPS = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    PE = models.FloatField(null=True, blank=True)
+    rank = models.CharField(max_length=255, null=True, blank=True)
+    profit_margins = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # Decimal for percentage
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    @property
+    def condition_integer(self):
+        try:
+            rsi_value = float(self.RSI)  
+            if rsi_value > 30:  
+                return 1
+            else:
+                return 0
+        except (ValueError, TypeError):  
+            return 1 
+
+    class Meta:
+        verbose_name_plural = "Oversold"
+
+    def __str__(self):
+        return self.symbol if self.symbol else "No Symbol"
 
 
 
+
+
+                
+
+        
 
 
 

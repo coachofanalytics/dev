@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from accounts.models import All_transaction, Transaction, CustomerUser,PaymentInformation,Payment_History
+from accounts.models import All_transaction, Transaction, CustomerUser,PaymentInformation,Payment_History,OverBoughtSold
 
 class AllTransactionModelTest(TestCase):
     """✅ Tests for the All_transaction model."""
@@ -253,5 +253,42 @@ class PaymentHistoryModelTest(TestCase):
         self.assertIsNotNone(self.payment.contract_submitted_date)
         self.assertEqual(self.payment.client_date, "2025-01-12")
         self.assertEqual(self.payment.rep_date, "2025-01-13")
+
+
+
+
+
+class OverBoughtSoldModelTest(TestCase):
+    
+    def setUp(self):
+        # Create test data
+        self.stock = OverBoughtSold.objects.create(
+            symbol="AAPL",
+            RSI="35",  # Set a valid RSI value above 30 to test condition_integer
+            description="Apple Inc.",
+            last="150",
+            volume="10000",
+            EPS="5.2",
+            PE="30",
+            rank="1",
+            profit_margins="20%",
+        )
+
+    def test_condition_integer_oversold(self):
+        # Test if condition_integer returns 1 for RSI >= 30
+        self.assertEqual(self.stock.condition_integer, 1)  # RSI is 35, should return 1
+
+    def test_condition_integer_undervalued(self):
+        # Set a value for RSI below 30 to test if it returns 0
+        self.stock.RSI = "25"
+        self.stock.save()
+        self.assertEqual(self.stock.condition_integer, 0)  # RSI is 25, should return 0
+
+    def test_str_method(self):
+        # Test the string representation of the model
+        self.assertEqual(str(self.stock), "AAPL")  # should return 'AAPL' based on __str__ method
+
+
+
 
 
