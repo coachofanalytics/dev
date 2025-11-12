@@ -1,0 +1,27 @@
+<div class="widget-content">
+    <h6 class="mb-3"><i class="fas fa-user-shield me-2"></i>HR Services & Quick Links</h6>
+    <div class="row g-3">
+        {% for link in hr_links %}
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 text-primary" style="font-size: 1.5rem;">
+                                <i class="{{ link.icon }}"></i>
+                            </div>
+                            <div>
+                                <h6 class="card-title mb-1">{{ link.title }}</h6>
+                                <p class="card-text text-muted small mb-2">{{ link.description }}</p>
+                                <a href="{{ link.url }}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-muted text-center py-3">
+                <i class="fas fa-info-circle me-1"></i>No HR resources available at this time.
+            </div>
+        {% endfor %}
+    </div>
+</div>

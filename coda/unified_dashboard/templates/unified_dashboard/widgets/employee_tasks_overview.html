@@ -1,0 +1,80 @@
+<div class="widget-content">
+    <div class="analytics-summary">
+        <h6 class="mb-3"><i class="fas fa-tasks me-2"></i>Tasks & Evidence Overview</h6>
+        <div class="row text-center">
+            <div class="col-4">
+                <div class="metric-card compact">
+                    <div class="metric-icon">
+                        <i class="fas fa-clipboard-list text-primary"></i>
+                    </div>
+                    <div class="metric-value">{{ employee_task_summary.assigned|default:0 }}</div>
+                    <div class="metric-label">Assigned</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="metric-card compact">
+                    <div class="metric-icon">
+                        <i class="fas fa-hourglass-half text-warning"></i>
+                    </div>
+                    <div class="metric-value">{{ employee_task_summary.pending|default:0 }}</div>
+                    <div class="metric-label">Pending</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="metric-card compact">
+                    <div class="metric-icon">
+                        <i class="fas fa-check-circle text-success"></i>
+                    </div>
+                    <div class="metric-value">{{ employee_task_summary.completed|default:0 }}</div>
+                    <div class="metric-label">Completed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-activity mt-3">
+        <h6 class="mb-2"><i class="fas fa-history me-2"></i>Recent Completions</h6>
+        <div class="activity-list">
+            {% if employee_task_history %}
+                {% for history in employee_task_history %}
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ history.activity }}</strong>
+                                <div class="text-muted small">{{ history.submitted|date:"M d, Y H:i" }}</div>
+                            </div>
+                            <span class="badge bg-success">{{ history.points }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="activity-item text-muted text-center py-2">
+                    <i class="fas fa-info-circle me-1"></i>No recent task updates recorded.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-3 g-2">
+        <div class="col-md-6">
+            <a href="{% url 'management:tasks' %}" class="btn btn-outline-primary w-100">
+                <i class="fas fa-list me-1"></i> View My Tasks
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'management:user_evidence' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-file-upload me-1"></i> Submit Evidence
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{{ daf_current_url|default:'#' }}" class="btn btn-outline-primary w-100">
+                <i class="fas fa-file-invoice-dollar me-1"></i> My DAF Summary
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{{ daf_history_url|default:'#' }}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-history me-1"></i> Last DAF History
+            </a>
+        </div>
+    </div>
+</div>

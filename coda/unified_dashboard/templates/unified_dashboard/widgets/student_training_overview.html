@@ -1,0 +1,63 @@
+<div class="widget-content">
+    <h6 class="mb-3"><i class="fas fa-graduation-cap me-2"></i>Student Training Hub</h6>
+
+    <div class="row g-3">
+        {% for link in student_training_links %}
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 text-primary" style="font-size: 1.5rem;">
+                                <i class="{{ link.icon }}"></i>
+                            </div>
+                            <div>
+                                <h6 class="card-title mb-1">{{ link.title }}</h6>
+                                <p class="card-text text-muted small mb-2">{{ link.description }}</p>
+                                <a href="{{ link.url }}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center text-muted py-3">
+                <i class="fas fa-info-circle me-1"></i>No training resources available right now.
+            </div>
+        {% endfor %}
+    </div>
+
+    <hr class="my-4">
+
+    <h6 class="mb-2"><i class="fas fa-calendar-alt me-2"></i>Upcoming Sessions</h6>
+    <div class="list-group list-group-flush">
+        {% if student_training_sessions %}
+            {% for session in student_training_sessions %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ session.title }}</strong>
+                        {% if session.group %}
+                            <span class="badge bg-light text-dark ms-2">{{ session.group|title }}</span>
+                        {% endif %}
+                        <div class="text-muted small">
+                            {% if session.created_at %}
+                                {{ session.created_at|date:"M d, Y" }}
+                            {% endif %}
+                            {% if session.scheduled_time %}
+                                · {{ session.scheduled_time|time:"g:i A" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if session.link %}
+                        <a href="{{ session.link }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">
+                            Join
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="list-group-item text-center text-muted">
+                <i class="fas fa-calendar me-1"></i>No upcoming sessions scheduled.
+            </div>
+        {% endif %}
+    </div>
+</div>

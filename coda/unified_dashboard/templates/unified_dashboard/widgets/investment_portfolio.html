@@ -1,42 +1,70 @@
 <div class="widget-content">
     <div class="analytics-summary">
         <div class="row">
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-chart-line text-success"></i>
+            {% if investment_cards %}
+                {% for card in investment_cards %}
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="{{ card.icon }}"></i>
+                            </div>
+                            <div class="metric-value">
+                                {% if card.decimals is not None %}
+                                    {% if card.prefix %}{{ card.prefix }}{% endif %}
+                                    {{ card.value|floatformat:card.decimals }}
+                                    {% if card.suffix %}{{ card.suffix }}{% endif %}
+                                {% elif card.date_format %}
+                                    {% if card.value %}
+                                        {{ card.value|date:card.date_format }}
+                                    {% else %}
+                                        {{ card.fallback|default:"N/A" }}
+                                    {% endif %}
+                                {% else %}
+                                    {{ card.value|default:card.fallback|default:"0" }}
+                                {% endif %}
+                            </div>
+                            <div class="metric-label">{{ card.label }}</div>
+                        </div>
                     </div>
-                    <div class="metric-value">$0</div>
-                    <div class="metric-label">Total Investment</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-percentage text-info"></i>
+                {% endfor %}
+            {% else %}
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-chart-line text-success"></i>
+                        </div>
+                        <div class="metric-value">$0</div>
+                        <div class="metric-label">Total Investment</div>
                     </div>
-                    <div class="metric-value">0%</div>
-                    <div class="metric-label">ROI</div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-coins text-warning"></i>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-percentage text-info"></i>
+                        </div>
+                        <div class="metric-value">0%</div>
+                        <div class="metric-label">ROI</div>
                     </div>
-                    <div class="metric-value">0</div>
-                    <div class="metric-label">Active Plans</div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <div class="metric-icon">
-                        <i class="fas fa-calendar text-primary"></i>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-coins text-warning"></i>
+                        </div>
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Active Plans</div>
                     </div>
-                    <div class="metric-value">0</div>
-                    <div class="metric-label">Maturity Date</div>
                 </div>
-            </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-calendar text-primary"></i>
+                        </div>
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Maturity Date</div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
     
@@ -58,10 +86,27 @@
     <div class="recent-activity mt-4">
         <h6><i class="fas fa-history"></i> Recent Investment Activity</h6>
         <div class="activity-list">
-            <div class="activity-item">
-                <i class="fas fa-info-circle text-muted"></i>
-                <span class="text-muted">No recent investment activity</span>
-            </div>
+            {% if investment_activity %}
+                {% for activity in investment_activity %}
+                    <div class="activity-item">
+                        <i class="fas fa-info-circle text-muted"></i>
+                        <div>
+                            <small class="text-muted">
+                                {{ activity.timestamp|date:"M d, Y H:i" }}
+                                • {{ activity.managed_account.account_name|default:activity.managed_account.account_number }}
+                            </small>
+                            <div>
+                                <strong>{{ activity.get_activity_type_display }}</strong> – {{ activity.description }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="activity-item">
+                    <i class="fas fa-info-circle text-muted"></i>
+                    <span class="text-muted">No recent investment activity</span>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

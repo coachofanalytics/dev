@@ -16,7 +16,8 @@ def departments (request):
     ]
 
     # Fetch all Departments
-    departments = Department.objects.filter(name__in=required_departments)
+    # departments = Department.objects.filter(name__in=required_departments)
+    departments = Department.objects.filter(is_active=True)
     return {'departments': departments}
 
 def categories (request):

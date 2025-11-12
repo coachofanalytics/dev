@@ -16,6 +16,7 @@ import json
 import logging
 
 from main.models import Company
+from accounts.models import Department
 from ..core.base import BaseFinanceView, login_required_finance, company_required, json_response, error_json_response
 from ...models import Budget, BudgetCategory, BudgetSubCategory, BudgetEstimateProjection
 from ...services.budget.estimation import BudgetEstimationService
@@ -32,6 +33,39 @@ class BudgetDashboardView(BaseFinanceView):
         super().__init__()
         self.estimation_service = BudgetEstimationService()
         self.consolidation_service = BudgetConsolidationService()
+    
+    def _resolve_department(self, department_input, company=None):
+        """Normalize department input (id, slug, name, or instance) into Department object."""
+        if not department_input:
+            return None
+        
+        if isinstance(department_input, Department):
+            return department_input
+
+        department_qs = Department.objects.all()
+        if company and hasattr(company, 'departments'):
+            try:
+                department_ids = company.departments.values_list('pk', flat=True)
+                department_qs = department_qs.filter(pk__in=department_ids)
+            except Exception:
+                # If company.departments is not configured as expected, fall back to all departments
+                pass
+
+        try:
+            if isinstance(department_input, int):
+                return department_qs.get(pk=department_input)
+            
+            if isinstance(department_input, str):
+                if department_input.isdigit():
+                    return department_qs.get(pk=int(department_input))
+                
+                return department_qs.filter(
+                    Q(slug__iexact=department_input) | Q(name__iexact=department_input)
+                ).first()
+        except Department.DoesNotExist:
+            return None
+
+        return None
     
     def log_error(self, message, exception):
         """Log error with context"""
@@ -361,6 +395,18 @@ def unified_budget_dashboard(request, company_slug, company=None):
                 return redirect('main:dashboard')
         
         user_department = view.get_user_department(request, company)
+        selected_department = view._resolve_department(user_department, company)
+
+        # Allow explicit department selection via query string overrides
+        department_param = (
+            request.GET.get('department_id')
+            or request.GET.get('department')
+            or request.GET.get('department_slug')
+        )
+        if department_param:
+            override_department = view._resolve_department(department_param, company)
+            if override_department:
+                selected_department = override_department
         
         # Get active tab from request
         active_tab = request.GET.get('tab', 'overview')
@@ -369,42 +415,42 @@ def unified_budget_dashboard(request, company_slug, company=None):
         context = {
             'company': company,
             'departments': company.departments.all() if hasattr(company, 'departments') else [],
-            'selected_department': user_department,
+            'selected_department': selected_department,
             'active_tab': active_tab,
         }
         
         # Load tab-specific data
         if active_tab == 'overview':
             context.update(view._get_overview_tab_data(
-                company, user_department, view.estimation_service, view.consolidation_service
+                company, selected_department, view.estimation_service, view.consolidation_service
             ))
         elif active_tab == 'approvals':
             context.update(view._get_approvals_tab_data(
-                company, user_department, request.user
+                company, selected_department, request.user
             ))
         elif active_tab == 'requests':
             context.update(view._get_requests_tab_data(
-                company, user_department, request.user
+                company, selected_department, request.user
             ))
         elif active_tab == 'projections':
             context.update(view._get_projections_tab_data(
-                company, user_department
+                company, selected_department
             ))
         elif active_tab == 'planning':
             context.update(view._get_planning_tab_data(
-                company, user_department, view.estimation_service
+                company, selected_department, view.estimation_service
             ))
         elif active_tab == 'analytics':
             context.update(view._get_analytics_tab_data(
-                company, user_department, view.consolidation_service
+                company, selected_department, view.consolidation_service
             ))
         elif active_tab == 'estimation':
             context.update(view._get_estimation_tab_data(
-                company, user_department, view.estimation_service
+                company, selected_department, view.estimation_service
             ))
         elif active_tab == 'editing':
             context.update(view._get_editing_tab_data(
-                company, user_department
+                company, selected_department
             ))
         else:
             context['active_tab'] = 'overview'

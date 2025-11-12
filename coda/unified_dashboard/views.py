@@ -6,12 +6,18 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
+from django.urls import reverse
+from decimal import Decimal
+from urllib.parse import urlencode
 import json
 import logging
 
 from .models import DashboardWidget, UserDashboardPreferences, DashboardService, UserServiceAccess, DashboardAnalytics
 from accounts.models import CategoryChoices
 from finance.services import FinancialAnalyticsService
+from investing.models import ManagedTradingAccount
+from investing.services.managed_trading_service import ManagedTradingService
+from management.models import Meetings, Task, TaskHistory
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +27,8 @@ def get_user_role(user):
     if not user.is_authenticated:
         return 'guest'
     
-    # Check if user is staff/admin
-    if user.is_staff or user.is_superuser:
+    # Superusers always receive the admin dashboard
+    if user.is_superuser:
         return 'admin'
     
     # Get user category
@@ -35,9 +41,16 @@ def get_user_role(user):
             4: 'investor',     # INVESTOR - Financial, strategic, KCC members
             5: 'explorer',     # EXPLORER - Visitors, researchers, networkers
         }
-        return category_mapping.get(user.category, 'explorer')
-    else:
-        return 'explorer'
+        mapped_role = category_mapping.get(user.category)
+        if mapped_role:
+            return mapped_role
+
+    # Fallback to admin if user is staff without category mapping
+    if user.is_staff:
+        return 'admin'
+
+    # Default to explorer if no category found
+    return 'explorer'
 
 
 def get_dashboard_config(user_role, user=None):
@@ -112,19 +125,19 @@ def get_dashboard_config(user_role, user=None):
             'title': 'Employee Dashboard',
             'sections': [
                 {
-                    'title': 'Company Agenda',
-                    'type': 'iframe',
-                    'url': '/management/companyagenda/'
+                    'title': 'Company Agenda Overview',
+                    'type': 'widget',
+                    'template': 'unified_dashboard/widgets/employee_company_agenda.html'
                 },
                 {
-                    'title': 'Task Management',
-                    'type': 'iframe',
-                    'url': '/management/userdashboard/'
+                    'title': 'Tasks & Evidence Workspace',
+                    'type': 'widget',
+                    'template': 'unified_dashboard/widgets/employee_tasks_overview.html'
                 },
                 {
-                    'title': 'HR Services',
-                    'type': 'iframe',
-                    'url': '/hr/'
+                    'title': 'HR Services & Policies',
+                    'type': 'widget',
+                    'template': 'unified_dashboard/widgets/employee_hr_services.html'
                 }
             ],
             'quick_actions': [
@@ -138,9 +151,9 @@ def get_dashboard_config(user_role, user=None):
             'title': 'Student Dashboard',
             'sections': [
                 {
-                    'title': 'Training Dashboard',
-                    'type': 'iframe',
-                    'url': '/professional_services/train/'
+                    'title': 'Training & Sessions',
+                    'type': 'widget',
+                    'template': 'unified_dashboard/widgets/student_training_overview.html'
                 },
                 {
                     'title': 'Learning Progress',
@@ -159,9 +172,9 @@ def get_dashboard_config(user_role, user=None):
             'title': 'Consultant Dashboard',
             'sections': [
                 {
-                    'title': 'Interview Management',
-                    'type': 'iframe',
-                    'url': '/professional_services/interview_roles/'
+                    'title': 'Interview Management Hub',
+                    'type': 'widget',
+                    'template': 'unified_dashboard/widgets/consultant_interview_overview.html'
                 },
                 {
                     'title': 'Service Catalog',
@@ -252,6 +265,9 @@ def unified_dashboard(request):
         financial_summary = {}
         financial_cards = []
         financial_activity = []
+        investment_summary = {}
+        investment_cards = []
+        investment_activity = []
 
         if user_role in ('admin', 'investor'):
             analytics_service = FinancialAnalyticsService()
@@ -302,6 +318,274 @@ def unified_dashboard(request):
                 ]
 
                 financial_activity = analytics_data.get('recent_rejections', [])[:5]
+
+        if user_role == 'investor':
+            accounts = ManagedTradingAccount.objects.filter(client=request.user).prefetch_related(
+                'activities', 'positions'
+            )
+
+            if accounts.exists():
+                managed_service = ManagedTradingService()
+                total_balance = Decimal('0')
+                total_initial = Decimal('0')
+                total_profit = Decimal('0')
+                active_plans = accounts.filter(status='active').count()
+                maturity_dates = []
+                recent_activity = []
+
+                for account in accounts:
+                    total_balance += account.current_balance or Decimal('0')
+                    total_initial += account.initial_capital or Decimal('0')
+                    total_profit += account.total_profit_loss or Decimal('0')
+
+                    summary = managed_service.get_account_summary(account)
+                    maturity_dates.extend(
+                        [
+                            pos.expiration_date
+                            for pos in summary['positions']['upcoming_expirations']
+                            if getattr(pos, 'expiration_date', None)
+                        ]
+                    )
+                    recent_activity.extend(summary['activity']['recent'])
+
+                roi = Decimal('0')
+                if total_initial > 0:
+                    roi = ((total_balance - total_initial) / total_initial) * 100
+
+                next_maturity = min(maturity_dates) if maturity_dates else None
+
+                investment_summary = {
+                    'total_balance': total_balance,
+                    'total_initial': total_initial,
+                    'total_profit_loss': total_profit,
+                    'roi': roi,
+                    'active_plans': active_plans,
+                    'next_maturity': next_maturity,
+                }
+
+                investment_cards = [
+                    {
+                        'icon': 'fas fa-chart-line text-success',
+                        'label': 'Total Balance',
+                        'value': total_balance,
+                        'prefix': '$',
+                        'decimals': 2,
+                    },
+                    {
+                        'icon': 'fas fa-percentage text-info',
+                        'label': 'ROI',
+                        'value': roi,
+                        'suffix': '%',
+                        'decimals': 1,
+                    },
+                    {
+                        'icon': 'fas fa-coins text-warning',
+                        'label': 'Active Accounts',
+                        'value': active_plans,
+                        'decimals': 0,
+                    },
+                    {
+                        'icon': 'fas fa-calendar text-primary',
+                        'label': 'Next Expiration',
+                        'value': next_maturity,
+                        'decimals': None,
+                        'date_format': 'M d, Y',
+                        'fallback': 'N/A',
+                    },
+                ]
+
+                investment_activity = sorted(
+                    recent_activity,
+                    key=lambda activity: getattr(activity, 'timestamp', getattr(activity, 'created_at', timezone.now())),
+                    reverse=True,
+                )[:5]
+
+        company_agenda_items = []
+        employee_task_summary = {}
+        employee_task_history = []
+        hr_links = []
+        daf_current_url = None
+        daf_history_url = None
+        student_training_links = []
+        student_training_sessions = []
+        consultant_interview_links = []
+        consultant_interview_stats = {}
+        consultant_recent_interviews = []
+
+        if user_role in ('applicant', 'admin'):
+            meetings_qs = Meetings.objects.filter(is_active=True).order_by('meeting_time')[:5]
+            company_agenda_items = [
+                {
+                    'topic': meeting.meeting_topic or 'Company Meeting',
+                    'group': meeting.group.title() if meeting.group else '',
+                    'time': meeting.meeting_time,
+                    'link': meeting.meeting_link,
+                    'description': meeting.meeting_description,
+                }
+                for meeting in meetings_qs
+            ]
+
+            tasks_qs = Task.objects.filter(employee=request.user)
+            assigned_count = tasks_qs.count()
+
+            # Task model does not store completion status; fall back to history entries
+            completed_count = TaskHistory.objects.filter(employee=request.user).count()
+            completed_count = min(completed_count, assigned_count) if assigned_count else completed_count
+            pending_count = max(assigned_count - completed_count, 0)
+
+            employee_task_summary = {
+                'assigned': assigned_count,
+                'completed': completed_count,
+                'pending': pending_count,
+            }
+
+            history_qs = TaskHistory.objects.filter(employee=request.user).order_by('-submission')[:5]
+            employee_task_history = [
+                {
+                    'activity': history.activity_name,
+                    'points': history.point,
+                    'submitted': history.submission,
+                }
+                for history in history_qs
+            ]
+
+
+            query_base = {
+                'username': request.user.username,
+                'pay_type': 'usertasks',
+            }
+            daf_current_url = f"{reverse('management:user_pay')}?{urlencode(query_base)}"
+
+            history_query = query_base.copy()
+            history_query['pay_type'] = 'usertaskhistory'
+            daf_history_url = f"{reverse('management:user_pay')}?{urlencode(history_query)}"
+
+            hr_links = [
+                {
+                    'title': 'Company Policies',
+                    'description': 'Review company-wide policies and guidelines.',
+                    'url': reverse('management:policies'),
+                    'icon': 'fas fa-book',
+                },
+                {
+                    'title': 'Benefits Overview',
+                    'description': 'Explore employee benefits and resources.',
+                    'url': reverse('management:benefits'),
+                    'icon': 'fas fa-hand-holding-heart',
+                },
+                {
+                    'title': 'Employee Contract',
+                    'description': 'View or sign the latest employee contract.',
+                    'url': reverse('management:employee_contract'),
+                    'icon': 'fas fa-file-signature',
+                },
+                {
+                    'title': 'Meeting Calendar',
+                    'description': 'Browse upcoming company meetings.',
+                    'url': reverse('management:meetings', kwargs={'status': 'company'}),
+                    'icon': 'fas fa-calendar-alt',
+                },
+            ]
+        
+        if user_role == 'student':
+            student_training_links = [
+                {
+                    'title': 'Training Center',
+                    'description': 'Access curated learning modules and practice assets.',
+                    'url': reverse('professional_services:train'),
+                    'icon': 'fas fa-chalkboard-teacher',
+                },
+                {
+                    'title': 'Training Schedule',
+                    'description': 'Confirm upcoming coaching sessions and DSU events.',
+                    'url': reverse('professional_services:Schedule'),
+                    'icon': 'fas fa-calendar-check',
+                },
+                {
+                    'title': 'Interview Prep',
+                    'description': 'Review question banks and rehearsal resources.',
+                    'url': reverse('professional_services:interview_roles'),
+                    'icon': 'fas fa-user-tie',
+                },
+                {
+                    'title': 'Job Tracker',
+                    'description': 'Track open opportunities and your submissions.',
+                    'url': reverse('professional_services:job-list'),
+                    'icon': 'fas fa-briefcase',
+                },
+            ]
+
+            training_sessions_qs = Meetings.objects.filter(
+                is_active=True,
+                category=3
+            ).order_by('created_at')[:5]
+
+            student_training_sessions = [
+                {
+                    'title': session.meeting_topic or 'Training Session',
+                    'group': session.group,
+                    'scheduled_time': session.meeting_time,
+                    'created_at': getattr(session, 'created_at', None),
+                    'link': session.meeting_link,
+                }
+                for session in training_sessions_qs
+            ]
+
+        if user_role == 'consultant':
+            from professional_services.models import Interviews, JobRoles, ClientAssessment
+
+            interviews_qs = Interviews.objects.filter(is_active=True).order_by('-upload_date')[:5]
+
+            consultant_recent_interviews = [
+                {
+                    'category': interview.category,
+                    'question_type': interview.question_type,
+                    'uploaded_at': interview.upload_date,
+                    'link': interview.link,
+                }
+                for interview in interviews_qs
+            ]
+
+            category_breakdown = list(
+                Interviews.objects.filter(is_active=True)
+                .values('category')
+                .annotate(count=Count('id'))
+                .order_by('-count')[:5]
+            )
+
+            consultant_interview_stats = {
+                'total_interviews': Interviews.objects.filter(is_active=True).count(),
+                'active_roles': JobRoles.objects.filter(is_active=True).count(),
+                'interview_clients': ClientAssessment.objects.filter(category='Interview').count(),
+                'top_categories': category_breakdown,
+            }
+
+            consultant_interview_links = [
+                {
+                    'title': 'Manage Prep Questions',
+                    'description': 'Review and update interview preparation content.',
+                    'url': reverse('professional_services:interview_roles'),
+                    'icon': 'fas fa-tasks',
+                },
+                {
+                    'title': 'Upload Interviews',
+                    'description': 'Add new interview assignments or recordings.',
+                    'url': reverse('professional_services:uploadinterview'),
+                    'icon': 'fas fa-upload',
+                },
+                {
+                    'title': 'View Responses',
+                    'description': 'Track candidate submissions and follow-ups.',
+                    'url': reverse('professional_services:responses'),
+                    'icon': 'fas fa-comments',
+                },
+                {
+                    'title': 'Client Assessments',
+                    'description': 'Evaluate client readiness and development plans.',
+                    'url': reverse('professional_services:dsu'),
+                    'icon': 'fas fa-clipboard-check',
+                },
+            ]
         
         # Simplified context without complex model queries for now
         context = {
@@ -316,6 +600,20 @@ def unified_dashboard(request):
             'financial_summary': financial_summary,
             'financial_cards': financial_cards,
             'financial_activity': financial_activity,
+            'investment_summary': investment_summary,
+            'investment_cards': investment_cards,
+            'investment_activity': investment_activity,
+            'company_agenda_items': company_agenda_items,
+            'employee_task_summary': employee_task_summary,
+            'employee_task_history': employee_task_history,
+            'hr_links': hr_links,
+            'daf_current_url': daf_current_url,
+            'daf_history_url': daf_history_url,
+            'student_training_links': student_training_links,
+            'student_training_sessions': student_training_sessions,
+            'consultant_interview_links': consultant_interview_links,
+            'consultant_interview_stats': consultant_interview_stats,
+            'consultant_recent_interviews': consultant_recent_interviews,
         }
         
         return render(request, 'unified_dashboard/dashboard.html', context)
@@ -586,12 +884,12 @@ def get_role_based_links(request):
     # Staff users get management-specific links (prioritize staff status over category)
     if user.is_staff:
         links.update({
-            'My DAF': reverse('management:user_pay') + '?' + urlencode({'username': user.username, 'pay_type': 'usertasks'}),
-            'Last DAF': reverse('management:user_pay') + '?' + urlencode({'username': user.username, 'pay_type': 'usertaskhistory'}),
+            'Company Agenda': reverse('management:companyagenda'),
+            'My DAF (Current)': reverse('management:user_pay') + '?' + urlencode({'username': user.username, 'pay_type': 'usertasks'}),
+            'Last DAF (History)': reverse('management:user_pay') + '?' + urlencode({'username': user.username, 'pay_type': 'usertaskhistory'}),
             'Tasks': reverse('management:tasks'),
-            # 'Task History': reverse('management:taskhistory'),
             'My Evidence': reverse('management:user_evidence') + '?' + urlencode({'username': user.username}),
-            'Evidence': reverse('management:user_evidence'),
+            'Evidence Inbox': reverse('management:user_evidence'),
             'My Sessions': reverse('management:user_session', args=[user.username]),
             'My Time': reverse('accounts:account-profile', args=[user]),
             'My Meetings': reverse('management:meetings', kwargs={'status': 'company 2'}),
