@@ -17,6 +17,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
 
+from accounts.services.credential_store import credential_store
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,15 +34,27 @@ class UnusualWhalesService:
     """
     
     def __init__(self):
-        self.api_key = getattr(settings, 'UNUSUAL_WHALES_API_KEY', None)
-        self.enabled = getattr(settings, 'UNUSUAL_WHALES_ENABLED', False) and self.api_key
+        config = credential_store.get(
+            "unusual_whales",
+            fallback_environments=["prod", "production"],
+        )
+        self.api_key = (
+            getattr(settings, 'UNUSUAL_WHALES_API_KEY', None)
+            or config.get('api_key')
+            or config.get('token')
+        )
+        env_enabled = getattr(settings, 'UNUSUAL_WHALES_ENABLED', False)
+        config_enabled = config.get('enabled')
+        if config_enabled is None:
+            self.enabled = bool(self.api_key and env_enabled)
+        else:
+            self.enabled = bool(self.api_key and config_enabled)
         # Unusual Whales API base (v1)
         # All endpoint paths below include the /api prefix explicitly
         self.base_url = 'https://api.unusualwhales.com'
-        self.headers = {
-            'Authorization': f'Bearer {self.api_key}',
-            'Accept': 'application/json'
-        }
+        self.headers = {'Accept': 'application/json'}
+        if self.api_key:
+            self.headers['Authorization'] = f'Bearer {self.api_key}'
         self.cache_enabled = getattr(settings, 'UW_CACHE_ENABLED', True)
         self.cache_ttl = int(getattr(settings, 'UW_CACHE_TTL_SECONDS', 600) or 600)
         self.last_fetch_stats = None

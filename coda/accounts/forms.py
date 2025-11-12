@@ -1,3 +1,5 @@
+import json
+
 from django import forms
 from django.forms import Textarea
 from accounts.choices import (
@@ -209,6 +211,13 @@ class CredentialCategoryForm(forms.ModelForm):
 
 
 class CredentialForm(forms.ModelForm):
+    payload_json = forms.CharField(
+        label="Integration Payload (JSON)",
+        widget=Textarea(attrs={"rows": 6, "placeholder": '{"account_sid": "..."}'}),
+        required=False,
+        help_text="Optional JSON payload to encrypt (e.g. API keys, secrets). Leave blank to keep existing payload.",
+    )
+
     class Meta:
         model = Credential
         fields = [
@@ -217,17 +226,25 @@ class CredentialForm(forms.ModelForm):
             "added_by",
             "slug",
             "user_types",
+            "integration_key",
+            "environment",
+            "credential_type",
             "description",
+            "notes",
             "password",
             "link_name",
             "link",
+            "rotation_frequency_days",
             "is_active",
             "is_featured",
+            "payload_json",
         ]
         labels = {
             "link_name": "username/email",
             "link": "Link/url",
             "user_types": "Specify Who Can Access this Credential?",
+            "integration_key": "Integration Key",
+            "environment": "Environment",
         }
         widgets = {
             # Use SelectMultiple below
@@ -235,7 +252,37 @@ class CredentialForm(forms.ModelForm):
                 attrs={"class": "form-control", "id": "category"}
             ),
             "description": Textarea(attrs={"cols": 40, "rows": 2}),
+            "notes": Textarea(attrs={"cols": 40, "rows": 2}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            payload = self.instance.get_payload()
+            if payload:
+                self.fields["payload_json"].initial = json.dumps(payload, indent=2, sort_keys=True)
+
+    def clean_payload_json(self):
+        payload_raw = self.cleaned_data.get("payload_json", "")
+        if not payload_raw:
+            return {}
+        try:
+            payload = json.loads(payload_raw)
+        except json.JSONDecodeError as exc:
+            raise forms.ValidationError(f"Invalid JSON: {exc}") from exc
+        if not isinstance(payload, dict):
+            raise forms.ValidationError("Payload must be a JSON object (key/value pairs).")
+        return payload
+
+    def save(self, commit=True):
+        payload = self.cleaned_data.pop("payload_json", None)
+        instance = super().save(commit=False)
+        if payload is not None:
+            instance.set_payload(payload)
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
 
 
 class LoginForm(forms.Form):

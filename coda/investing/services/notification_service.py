@@ -12,6 +12,8 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
+from accounts.services.credential_store import credential_store
+
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -455,6 +457,14 @@ CODA Investment Team
 
         return sorted(emails)
 
+    def _twilio_config(self) -> dict:
+        if not hasattr(self, "_twilio_config_cache"):
+            self._twilio_config_cache = credential_store.get(
+                "twilio",
+                fallback_environments=["prod", "production"],
+            )
+        return self._twilio_config_cache
+
     def _twilio_client(self):
         """
         Lazily instantiate and cache the Twilio client if credentials exist.
@@ -464,6 +474,11 @@ CODA Investment Team
         
         account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
         auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
+        if not account_sid or not auth_token:
+            config = self._twilio_config()
+            account_sid = account_sid or config.get('account_sid')
+            auth_token = auth_token or config.get('auth_token')
+
         if not account_sid or not auth_token:
             logger.info("Twilio credentials missing; SMS/WhatsApp disabled.")
             self._cached_twilio_client = None
@@ -490,18 +505,32 @@ CODA Investment Team
         if not phone_number:
             return False
         
-        from_number = getattr(settings, 'TWILIO_FROM_NUMBER', '')
+        config = self._twilio_config()
+        from_number = (
+            getattr(settings, 'TWILIO_FROM_NUMBER', '')
+            or config.get('sms_from')
+            or config.get('from_number')
+        )
+        messaging_service_sid = (
+            getattr(settings, 'TWILIO_MESSAGING_SERVICE_SID', '')
+            or config.get('messaging_service_sid')
+        )
         client = self._twilio_client()
-        if not client or not from_number:
+        if not client or (not from_number and not messaging_service_sid):
             logger.info("SMS disabled - would send to %s: %s", phone_number, message)
             return False
         
         try:
-            sms = client.messages.create(
-                to=phone_number,
-                from_=from_number,
-                body=message
-            )
+            create_kwargs = {
+                "to": phone_number,
+                "body": message,
+            }
+            if messaging_service_sid:
+                create_kwargs["messaging_service_sid"] = messaging_service_sid
+            else:
+                create_kwargs["from_"] = from_number
+
+            sms = client.messages.create(**create_kwargs)
             logger.info("✅ SMS sent to %s (SID %s)", phone_number, sms.sid)
             return True
         except Exception as exc:
@@ -545,8 +574,14 @@ CODA Investment Team
             logger.info(f"WhatsApp disabled - would send to {phone_number}: {template_name}")
             return False
         
+        config = self._twilio_config()
+
         client = self._twilio_client()
-        whatsapp_from = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+        whatsapp_from = (
+            getattr(settings, 'TWILIO_WHATSAPP_FROM', '')
+            or config.get('whatsapp_from')
+            or 'whatsapp:+14155238886'
+        )
         if not client or not whatsapp_from:
             logger.info("WhatsApp disabled - would send %s template to %s", template_name, phone_number)
             return False

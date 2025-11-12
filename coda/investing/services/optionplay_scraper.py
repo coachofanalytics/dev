@@ -15,6 +15,8 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from django.conf import settings
 
+from accounts.services.credential_store import credential_store
+
 # Optional imports (only needed when scraper is used)
 try:
     import pandas as pd
@@ -35,15 +37,30 @@ class OptionPlayScraperService:
     - Covered Calls
     """
     
-    def __init__(self):
+    def __init__(self, username: Optional[str] = None, password: Optional[str] = None):
         """Initialize scraper with credentials from environment"""
         if not PANDAS_AVAILABLE:
             logger.warning("❌ pandas not installed - scraper unavailable")
             self.is_configured = False
             return
-        
-        self.username = os.environ.get('OPTIONPLAY_USERNAME')
-        self.password = os.environ.get('OPTIONPLAY_PASSWORD')
+
+        config = credential_store.get(
+            "optionplay",
+            fallback_environments=["prod", "production"],
+        )
+
+        self.username = (
+            username
+            or os.environ.get('OPTIONPLAY_USERNAME')
+            or getattr(settings, 'OPTIONPLAY_USERNAME', None)
+            or config.get('username')
+        )
+        self.password = (
+            password
+            or os.environ.get('OPTIONPLAY_PASSWORD')
+            or getattr(settings, 'OPTIONPLAY_PASSWORD', None)
+            or config.get('password')
+        )
         
         if not self.username or not self.password:
             logger.warning("OptionPlay credentials not found in environment variables")

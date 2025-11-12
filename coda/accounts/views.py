@@ -668,20 +668,8 @@ def security_verification(request):
 @method_decorator(login_required, name="dispatch")
 class CredentialUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Credential
+    form_class = CredentialForm
     success_url = "/accounts/credentials"
-    fields = [
-        "category",
-        "name",
-        "added_by",
-        "slug",
-        "user_types",
-        "description",
-        "password",
-        "link_name",
-        "link",
-        "is_active",
-        "is_featured",
-    ]
 
     def form_valid(self, form):
         # if form.instance.added_by==self.request.user:

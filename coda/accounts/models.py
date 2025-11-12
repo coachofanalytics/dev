@@ -1,14 +1,21 @@
 from datetime import timedelta
 from decimal import *
+import json
+import logging
+
 from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
+from django_countries.fields import CountryField
+
 from accounts.modelmanager import DepartmentManager
 from management.utils import unique_slug_generator
-from django_countries.fields import CountryField
+from ai_services.services.token_encryption_service import TokenEncryptionService
+
+logger = logging.getLogger(__name__)
 
 # from accounts.choices import UserCategory as CategoryChoices, ApplicantSubCategoryChoices as SubCategoryChoices
 from accounts.choices import UserCategory as CategoryChoices
@@ -568,6 +575,14 @@ class Credential(models.Model):
         ("Employee", "Employee"),
         ("Other", "Other"),
     ]
+
+    class CredentialType(models.TextChoices):
+        API = "api", "API keys / secrets"
+        OAUTH = "oauth", "OAuth tokens"
+        LOGIN = "login", "Username / password"
+        WEBHOOK = "webhook", "Webhook / endpoints"
+        OTHER = "other", "Other"
+
     category = models.ManyToManyField(
         CredentialCategory, blank=True, related_name="credentialcategory"
     )
@@ -594,9 +609,64 @@ class Credential(models.Model):
         choices=USER_CHOICES,
         default="Other",
     )
+    integration_key = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="System identifier (e.g. 'twilio', 'optionplay', 'unusual_whales').",
+    )
+    environment = models.CharField(
+        max_length=20,
+        default="prod",
+        help_text="Environment this credential applies to (e.g. local, staging, uat, prod).",
+    )
+    credential_type = models.CharField(
+        max_length=32,
+        choices=CredentialType.choices,
+        default=CredentialType.API,
+    )
+    payload_encrypted = models.TextField(
+        blank=True,
+        help_text="Encrypted JSON payload containing key/value pairs for this integration.",
+    )
+    payload_last_updated = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when the payload was last rotated or updated.",
+    )
+    last_rotated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Last time secrets were rotated.",
+    )
+    rotation_frequency_days = models.PositiveIntegerField(
+        default=0,
+        help_text="Optional reminder cadence for credential rotation. Zero disables reminders.",
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="Operational notes, onboarding steps, or escalation details.",
+    )
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Non-sensitive metadata (account IDs, contact info, etc.).",
+    )
 
     class Meta:
         verbose_name_plural = "credentials"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["integration_key", "environment"],
+                name="unique_integration_environment",
+                condition=~models.Q(integration_key=""),
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["integration_key", "environment"],
+                name="accounts_cr_integr_3dd65a_idx",
+            ),
+        ]
 
     def clean(self):
         """Validate Credential model data"""
@@ -611,16 +681,64 @@ class Credential(models.Model):
         if self.link and not self.link.startswith(("http://", "https://")):
             raise ValidationError("Link must start with http:// or https://")
 
+    # ------------------------------------------------------------------ #
+    # Payload helpers
+    # ------------------------------------------------------------------ #
+    @property
+    def _encryption_service(self) -> TokenEncryptionService:
+        if not hasattr(self, "_token_encryption_service"):
+            self._token_encryption_service = TokenEncryptionService()
+        return self._token_encryption_service
+
+    def _serialize_payload(self, payload: dict | None) -> str:
+        if not payload:
+            return ""
+        return json.dumps(payload, sort_keys=True)
+
+    def set_payload(self, payload: dict | None):
+        """
+        Encrypt and store the credential payload. Accepts any JSON-serialisable object.
+        """
+        serialized = self._serialize_payload(payload)
+        if not serialized:
+            self.payload_encrypted = ""
+        else:
+            self.payload_encrypted = self._encryption_service.encrypt_token(serialized)
+        self.payload_last_updated = timezone.now()
+
+    def get_payload(self, default=None) -> dict:
+        """
+        Decrypt credential payload into a dictionary.
+        """
+        if not self.payload_encrypted:
+            return default if default is not None else {}
+        try:
+            decrypted = self._encryption_service.decrypt_token(self.payload_encrypted)
+            return json.loads(decrypted)
+        except Exception:
+            logger.exception("Failed to decrypt payload for credential %s", self.pk)
+            return default if default is not None else {}
+
+    def get_value(self, key: str, default=None):
+        """
+        Helper to retrieve a single value from the payload.
+        """
+        payload = self.get_payload()
+        return payload.get(key, default)
+
     def save(self, *args, **kwargs):
         """Override save to ensure validation"""
         self.clean()
+        if not self.integration_key and self.slug:
+            self.integration_key = self.slug.lower()
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("management:credential")
 
     def __str__(self):
-        return self.name
+        env_label = f" [{self.environment}]" if self.environment else ""
+        return f"{self.name}{env_label}"
 
 # ========================================SLUGS GENERATOR====================================================
 def credentialcategory_pre_save_receiver(sender, instance, *args, **kwargs):

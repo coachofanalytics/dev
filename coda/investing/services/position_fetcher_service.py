@@ -20,6 +20,7 @@ from django.conf import settings
 from django.utils import timezone
 from typing import List, Dict, Optional
 
+from accounts.services.credential_store import credential_store
 from ..models import SuggestedPosition, OptionPlayRawData
 from .optionplay_scraper import OptionPlayScraperService  # NEW: Web scraper
 from .optionplay_converter import OptionPlayConverterService  # NEW: CSV converter
@@ -36,7 +37,23 @@ class PositionFetcherService:
     
     def __init__(self):
         # OptionPlay API (Primary)
-        self.optionplay_api_key = getattr(settings, 'OPTIONPLAY_API_KEY', None)
+        optionplay_config = credential_store.get(
+            "optionplay",
+            fallback_environments=["prod", "production"],
+        )
+        self.optionplay_api_key = (
+            getattr(settings, 'OPTIONPLAY_API_KEY', None)
+            or optionplay_config.get('api_key')
+            or optionplay_config.get('api_token')
+        )
+        self.optionplay_username = (
+            getattr(settings, 'OPTIONPLAY_USERNAME', None)
+            or optionplay_config.get('username')
+        )
+        self.optionplay_password = (
+            getattr(settings, 'OPTIONPLAY_PASSWORD', None)
+            or optionplay_config.get('password')
+        )
         self.optionplay_base_url = "https://api.optionplay.com/v1"
         
         # TD Ameritrade API (Fallback)
@@ -165,7 +182,10 @@ class PositionFetcherService:
         # Fallback to Scraper (SECONDARY)
         try:
             logger.info("🕸️  Falling back to OptionPlay web scraper (Playwright)...")
-            scraper = OptionPlayScraperService()
+            scraper = OptionPlayScraperService(
+                username=self.optionplay_username,
+                password=self.optionplay_password,
+            )
             
             if not scraper.is_configured:
                 logger.warning("⚠️  Scraper not configured (OPTIONPLAY_USERNAME, OPTIONPLAY_PASSWORD)")
