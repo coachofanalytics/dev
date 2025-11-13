@@ -287,7 +287,7 @@ class Scholarship(models.Model):
     deadline = models.DateField(blank=True, null=True)
     amount = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    
 
     class Meta:
         verbose_name = "Scholarship"
