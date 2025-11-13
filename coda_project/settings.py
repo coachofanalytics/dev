@@ -182,15 +182,15 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 #     }
 # }
 #<<<<<<< 25.10_DC48_UAT_UO
-DATABASES = {
-    'default': {
-        "ENGINE": 'django.db.backends.postgresql',
-        "NAME": 'DC48K',
-        "USER": 'postgres',
-        "PASSWORD": 'California123!',
-        "HOST": 'localhost',  
-    }
-}
+# DATABASES = {
+#     'default': {
+#         "ENGINE": 'django.db.backends.postgresql',
+#         "NAME": 'DC48K',
+#         "USER": 'postgres',
+#         "PASSWORD": 'California123!',
+#         "HOST": 'localhost',  
+#     }
+# }
 #=======
 #>>>>>>> 25.10_DC48_UAT_ND
 
