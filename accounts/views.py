@@ -34,6 +34,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from flask import request
 from accounts.choices import CategoryChoices
 from accounts.utils import CATEGORY_FEES, convert_kes_to_usd, get_exchange_rate, send_verification_email
 from coda_project import settings
@@ -50,8 +51,8 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from .models import CustomerUser, Membership
-from .forms import CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
+from .models import Account, CustomerUser, Membership
+from .forms import AccountForm, CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
 from finance.utils import DYCDefaultPayments
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, get_user_model
@@ -436,4 +437,20 @@ def custom_social_login(request):
     
     except:
     
-        return render(request, "accounts/registration/join.html", {"form": UserForm()})        
+        return render(request, "accounts/registration/join.html", {"form": UserForm()})
+# account list view
+def account_list(request):
+    accounts = Account.objects.all().order_by('-created_at')
+    return render(request, 'accounts/account_list.html', {'accounts': accounts})
+def create_account(request):
+    if request.method == 'POST':
+        form = AccountForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:account_list')
+    else:
+        form = AccountForm()
+    return render(request, 'accounts/create_account.html', {'form': form})
+def account_details(request, pk):
+    account = get_object_or_404(Account, pk=pk)
+    return render(request, 'accounts/account_details.html', {'account': account})
