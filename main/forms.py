@@ -38,6 +38,16 @@ class DonationOrganizationForm(forms.ModelForm):
         fields = ['donor_name', 'email', 'amount', 'message']
 
 
+# Simple search form for scholarships used by the scholarship_search view/template
+class ScholarshipSearchForm(forms.Form):
+    search_keyword = forms.CharField(required=False, label='', widget=forms.TextInput(attrs={'id': 'search-keyword', 'placeholder': 'Search by title or provider'}))
+    FILTER_CHOICES = [('', 'All'), ('Undergraduate', 'Undergraduate'), ('Postgraduate', 'Postgraduate'), ('Doctorate', 'Doctorate')]
+    filter_level = forms.ChoiceField(choices=FILTER_CHOICES, required=False)
+    filter_field = forms.CharField(required=False, label='', widget=forms.TextInput(attrs={'placeholder': 'e.g. STEM, Business'}))
+    filter_location = forms.CharField(required=False, label='', widget=forms.TextInput(attrs={'placeholder': 'Country or region'}))
+    filter_status = forms.BooleanField(required=False, label='Closing soon only')
+
+
 
 
         

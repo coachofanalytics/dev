@@ -205,6 +205,9 @@ def team_list(request):
 
 from django.shortcuts import render
 from .models import Service,ContactUs
+from django.db.models import Q
+from .models import Scholarship
+from .forms import ScholarshipSearchForm
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
@@ -305,7 +308,12 @@ class AboutView(TemplateView):
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
-    context = {'initial_view': initial_view}
+    # Flag to indicate a successful mentorship request submission
+    mentorship_success = request.GET.get('mentorship') == 'success'
+    context = {
+        'initial_view': initial_view,
+        'mentorship_success': mentorship_success,
+    }
     return render(request, 'main/education/education.html', context)
 
 
@@ -388,5 +396,35 @@ class DonationDeleteView(DeleteView):
     model = Donation_organization
     template_name = 'main/snippets_templates/table/donation_confirm_delete.html'
     success_url = reverse_lazy('main:donation')
+
+
+# Scholarship search view — renders the scholarship search template and handles basic filters
+def scholarship_search(request):
+    scholarships = Scholarship.objects.all()
+    form = ScholarshipSearchForm(request.GET or None)
+    if form.is_valid():
+        data = form.cleaned_data
+        kw = data.get('search_keyword')
+        if kw:
+            scholarships = scholarships.filter(
+                Q(title__icontains=kw) | Q(provider__icontains=kw)
+            )
+        level = data.get('filter_level')
+        if level:
+            scholarships = scholarships.filter(level=level)
+        field = data.get('filter_field')
+        if field:
+            scholarships = scholarships.filter(field__icontains=field)
+        location = data.get('filter_location')
+        if location:
+            scholarships = scholarships.filter(location__icontains=location)
+        if data.get('filter_status'):
+            scholarships = scholarships.filter(status__icontains='Closing')
+    context = {
+        'scholarships': scholarships,
+        'form': form,
+        'result_count': scholarships.count(),
+    }
+    return render(request, 'scholarship_app/scholarship_search.html', context)
 
 

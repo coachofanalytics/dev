@@ -39,6 +39,9 @@ urlpatterns = [
 
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
 
+    # Scholarship search (root-level /scholarship)
+    path('scholarship', views.scholarship_search, name='scholarship_search'),
+
     # Education and training views
 
     path('education/', views.education_landing, name = 'education_landing'),
