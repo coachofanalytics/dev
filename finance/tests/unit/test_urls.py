@@ -49,7 +49,7 @@ from finance.views import Default_Payment_Fees_update
 class DefaultPaymentFeesURLsTest(SimpleTestCase):
 
     def test_update_url_resolves(self):
-        url = reverse('Default_Payment_Fees_update', kwargs={'pk': 1})
+        url = reverse('Default_Payment_Fees_updatesss', kwargs={'pk': 1})
         self.assertEqual(resolve(url).func, Default_Payment_Fees_update)
 
 
