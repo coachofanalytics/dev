@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Settings - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="mb-4">
+            <h2><i class="bi bi-gear"></i> Account Settings</h2>
+            <p class="text-muted">Manage your account preferences and security settings</p>
+        </div>
+
+        <!-- Account Information Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-circle"></i> Account Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-person"></i> Username:</strong>
+                        <p class="mb-0">{{ user.username }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-envelope"></i> Email:</strong>
+                        <p class="mb-0">{{ user.email }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-person-badge"></i> Full Name:</strong>
+                        <p class="mb-0">{{ user.get_full_name|default:"Not set" }}</p>
+                    </div>
+                    {% if user_type %}
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-tag"></i> Account Type:</strong>
+                        <p class="mb-0">
+                            <span class="badge bg-{% if user.is_superuser %}danger{% elif 'Staff' in user_type %}warning{% else %}info{% endif %}">
+                                {{ user_type }}
+                            </span>
+                        </p>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-calendar"></i> Member Since:</strong>
+                        <p class="mb-0">{{ user.date_joined|date:"F d, Y" }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-clock-history"></i> Last Login:</strong>
+                        <p class="mb-0">{{ user.last_login|date:"F d, Y, g:i a"|default:"Never" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Settings Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-lines-fill"></i> Profile Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-1"><i class="bi bi-pencil-square"></i> Edit Profile</h6>
+                        <p class="text-muted mb-0">Update your profile information, contact details, and professional information</p>
+                    </div>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Edit Profile
+                    </a>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1"><i class="bi bi-eye"></i> View Profile</h6>
+                        <p class="text-muted mb-0">See how your profile appears to others</p>
+                    </div>
+                    <a href="{% url 'profile' user.username %}" class="btn btn-outline-primary">
+                        <i class="bi bi-eye"></i> View Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Security Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-1"><i class="bi bi-key"></i> Change Password</h6>
+                        <p class="text-muted mb-0">Update your password to keep your account secure</p>
+                    </div>
+                    <a href="{% url 'password_change' %}" class="btn btn-danger">
+                        <i class="bi bi-key"></i> Change Password
+                    </a>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1"><i class="bi bi-arrow-clockwise"></i> Reset Password</h6>
+                        <p class="text-muted mb-0">Forgot your password? Reset it via email</p>
+                    </div>
+                    <a href="{% url 'password_reset' %}" class="btn btn-outline-danger">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Password
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_superuser %}
+        <!-- Admin Settings Card (Superusers Only) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-shield-fill-check"></i> Admin Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1"><i class="bi bi-gear-wide-connected"></i> Admin Panel</h6>
+                        <p class="text-muted mb-0">Access the Django admin interface for advanced management</p>
+                    </div>
+                    <a href="/admin/" class="btn btn-dark">
+                        <i class="bi bi-shield-fill-check"></i> Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.staff %}
+        <!-- Staff Settings Card (Staff Only) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-shield-check"></i> Staff Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1"><i class="bi bi-speedometer2"></i> Staff Dashboard</h6>
+                        <p class="text-muted mb-0">Access your staff dashboard and management tools</p>
+                    </div>
+                    <a href="{% url 'staff_dashboard' %}" class="btn btn-warning">
+                        <i class="bi bi-speedometer2"></i> Staff Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Account Activity Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-activity"></i> Account Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle"></i> <strong>Account Status:</strong> Active
+                    <br>
+                    <small class="text-muted">Your account is in good standing. Last activity: {{ user.last_login|date:"F d, Y, g:i a"|default:"N/A" }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mb-4">
+            {% if user.is_superuser %}
+                <a href="/admin/" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Admin
+                </a>
+            {% elif user.staff %}
+                <a href="{% url 'staff_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            {% elif profile and profile.category %}
+                <a href="{% url profile.dashboard_url %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Home
+                </a>
+            {% endif %}
+
+            <a href="{% url 'profile' user.username %}" class="btn btn-primary">
+                <i class="bi bi-person"></i> View My Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+POST /wp-json/wp/v2/users
+Host: yourdomain.com
+Authorization: Basic base64(claude:VzHOUPRk88PxPWR1m0GHAgh#)
+Content-Type: application/json
+
+{
+  "username": "claude",
+  "email": "claude@beastfoodz.com",
+  "password": "VzHOUPRk88PxPWR1m0GHAgh#"
+}

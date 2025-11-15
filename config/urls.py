@@ -33,8 +33,9 @@ urlpatterns = [
 
     # Profile and Dashboard URLs
     path('profile/', accounts_views.profile, name='profile'),
+    path('edit-profile/', accounts_views.edit_profile, name='edit_profile'),
+    path('settings/', accounts_views.user_settings, name='settings'),
     path('profile/<str:username>/', accounts_views.profile, name='profile'),
-    path('profile/edit/', accounts_views.edit_profile, name='edit_profile'),
     path('dashboard/investor/', accounts_views.investor_dashboard, name='investor_dashboard'),
     path('dashboard/business/', accounts_views.business_dashboard, name='business_dashboard'),
     path('dashboard/individual/', accounts_views.individual_dashboard, name='individual_dashboard'),
@@ -44,7 +45,17 @@ urlpatterns = [
     path('staff/users/', accounts_views.staff_users_list, name='staff_users_list'),
     path('staff/categories/', accounts_views.staff_categories_list, name='staff_categories_list'),
 
-    # Password Reset URLs
+    # Payment and Wallet URLs
+    path('payments/', include('payments.urls')),
+    # Marketplace URLs
+    path('marketplace/', include('marketplace.urls')),
+    # Password Management URLs
+    path('password-change/',
+         auth_views.PasswordChangeView.as_view(template_name='registration/password_change_form.html', success_url='/password-change/done/'),
+         name='password_change'),
+    path('password-change/done/',
+         auth_views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'),
+         name='password_change_done'),
     path('password-reset/',
          auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html'),
          name='password_reset'),

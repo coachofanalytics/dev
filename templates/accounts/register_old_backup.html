@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Biashara Bridges</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/auth-pages.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Left Side - Image Slideshow -->
+        <div class="auth-image-side">
+            <div class="auth-image-overlay"></div>
+            <div class="auth-image-slideshow">
+                <div class="auth-slide active" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-50.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-51.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-52.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/WhatsApp-Image-2025-08-29-at-14.38.48_03a152b6.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-48.jpg');"></div>
+            </div>
+            <div class="auth-content">
+                <h1 class="auth-title">Join Biashara Bridges</h1>
+                <p class="auth-subtitle">Create your account and unlock opportunities</p>
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Network with Business Leaders</span>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>Find Investment Opportunities</span>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="bi bi-building"></i>
+                        <span>Grow Your Business</span>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="bi bi-globe"></i>
+                        <span>Connect Globally</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Registration Form -->
+        <div class="auth-form-side">
+            <div class="auth-form-container auth-form-scrollable">
+                <div class="auth-form-header">
+                    <i class="bi bi-person-plus-fill auth-icon"></i>
+                    <h2 class="auth-form-title">Create Your Account</h2>
+                    <p class="auth-form-subtitle">Start your journey with us today</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="auth-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person"></i> First Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                                   id="{{ form.first_name.id_for_label }}"
+                                   name="{{ form.first_name.name }}"
+                                   value="{{ form.first_name.value|default:'' }}"
+                                   placeholder="Enter first name"
+                                   required>
+                            {% if form.first_name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.first_name.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person"></i> Last Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                                   id="{{ form.last_name.id_for_label }}"
+                                   name="{{ form.last_name.name }}"
+                                   value="{{ form.last_name.value|default:'' }}"
+                                   placeholder="Enter last name"
+                                   required>
+                            {% if form.last_name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.last_name.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-at"></i> Username <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                               id="{{ form.username.id_for_label }}"
+                               name="{{ form.username.name }}"
+                               value="{{ form.username.value|default:'' }}"
+                               placeholder="Choose a username"
+                               required>
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.username.errors }}
+                        </div>
+                        {% else %}
+                        <div class="form-text">
+                            150 characters or fewer. Letters, digits and @/./+/-/_ only.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="bi bi-envelope"></i> Email Address <span class="text-danger">*</span>
+                        </label>
+                        <input type="email"
+                               class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                               id="{{ form.email.id_for_label }}"
+                               name="{{ form.email.name }}"
+                               value="{{ form.email.value|default:'' }}"
+                               placeholder="your.email@example.com"
+                               required>
+                        {% if form.email.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.email.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">
+                            <i class="bi bi-tag"></i> Registration Category <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select {% if form.category.errors %}is-invalid{% endif %}"
+                                id="{{ form.category.id_for_label }}"
+                                name="{{ form.category.name }}"
+                                required>
+                            <option value="">Select your category...</option>
+                            {% for value, label in form.fields.category.choices %}
+                            <option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.category.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.category.errors }}
+                        </div>
+                        {% else %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Choose Investor if you're looking to invest, Business if you have a business, or Individual if you're seeking opportunities.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.country.id_for_label }}" class="form-label">
+                            <i class="bi bi-globe"></i> Country <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select {% if form.country.errors %}is-invalid{% endif %}"
+                                id="{{ form.country.id_for_label }}"
+                                name="{{ form.country.name }}"
+                                required>
+                            <option value="">Select your country...</option>
+                            {% for value, label in form.fields.country.choices %}
+                            {% if value %}
+                            <option value="{{ value }}" {% if form.country.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if form.country.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.country.errors }}
+                        </div>
+                        {% else %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Select your country. The phone country code will be auto-populated.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label">
+                            <i class="bi bi-telephone"></i> Phone Number <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control {% if form.phone.errors %}is-invalid{% endif %}"
+                               id="{{ form.phone.id_for_label }}"
+                               name="{{ form.phone.name }}"
+                               value="{{ form.phone.value|default:'' }}"
+                               placeholder="Enter phone number"
+                               required>
+                        {% if form.phone.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.phone.errors }}
+                        </div>
+                        {% else %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Country code will be added automatically based on your selected country.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.document.id_for_label }}" class="form-label">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Resume / Business Profile <span class="text-danger">*</span>
+                        </label>
+                        <input type="file"
+                               class="form-control {% if form.document.errors %}is-invalid{% endif %}"
+                               id="{{ form.document.id_for_label }}"
+                               name="{{ form.document.name }}"
+                               accept=".pdf,.doc,.docx"
+                               required>
+                        {% if form.document.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.document.errors }}
+                        </div>
+                        {% else %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> <strong>Required:</strong> Upload your resume (individuals), business profile (businesses), or portfolio (investors). Accepted formats: PDF, DOC, DOCX.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock"></i> Password <span class="text-danger">*</span>
+                        </label>
+                        <input type="password"
+                               class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                               id="{{ form.password1.id_for_label }}"
+                               name="{{ form.password1.name }}"
+                               placeholder="Create a strong password"
+                               required>
+                        {% if form.password1.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.password1.errors }}
+                        </div>
+                        {% else %}
+                        <div class="form-text">
+                            <ul class="mb-0">
+                                <li>Your password must contain at least 8 characters.</li>
+                                <li>Your password can't be entirely numeric.</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock-fill"></i> Confirm Password <span class="text-danger">*</span>
+                        </label>
+                        <input type="password"
+                               class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                               id="{{ form.password2.id_for_label }}"
+                               name="{{ form.password2.name }}"
+                               placeholder="Re-enter your password"
+                               required>
+                        {% if form.password2.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.password2.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                        <label class="form-check-label" for="agreeTerms">
+                            I agree to the <a href="#" class="text-decoration-none">Terms & Conditions</a>
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-check"></i> Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <div class="auth-footer">
+                    <p>
+                        Already have an account?
+                        <a href="{% url 'login' %}" class="auth-link">Sign in here</a>
+                    </p>
+                    <p>
+                        <a href="{% url 'home' %}" class="auth-link">
+                            <i class="bi bi-house"></i> Back to Home
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Country Codes Script -->
+    <script src="{% static 'js/country-codes.js' %}"></script>
+
+    <!-- Image Slideshow Script -->
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.auth-slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        // Change image every 5 seconds
+        setInterval(nextSlide, 5000);
+    </script>
+</body>
+</html>

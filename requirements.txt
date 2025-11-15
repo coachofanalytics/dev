@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 asgiref==3.10.0
 Django==5.2.7
 pillow==12.0.0
@@ -6,12 +5,8 @@ psycopg2-binary==2.9.11
 python-decouple==3.8
 sqlparse==0.5.3
 tzdata==2025.2
-=======
-asgiref==3.10.0
-Django==5.2.7
-pillow==12.0.0
-psycopg2-binary==2.9.11
-python-decouple==3.8
-sqlparse==0.5.3
-tzdata==2025.2
->>>>>>> 4372396bb28edaacf987601e99c0fe19f72e7fe8
+# Payment Gateway Dependencies
+stripe==13.1.2
+paypalrestsdk==1.13.3
+cryptography==46.0.3
+requests==2.32.5

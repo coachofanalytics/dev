@@ -1,0 +1,715 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wallet - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .gradient-bg {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .currency-toggle-btn {
+        min-width: 100px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 2px solid #667eea;
+        background: white;
+        color: #667eea;
+    }
+
+    .currency-toggle-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .currency-toggle-btn.active {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+        border-color: var(--purple-end);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .balance-card {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .balance-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    .balance-amount {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin: 1rem 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .balance-secondary {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    .stats-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        height: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+    }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .icon-deposited {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .icon-spent {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .icon-available {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .rate-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .rate-badge {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .transaction-table {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .transaction-table th {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+    }
+
+    .transaction-table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .transaction-table tbody tr:hover {
+        background-color: #f8f9ff;
+    }
+
+    .action-btn {
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .action-btn-primary {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+    }
+
+    .action-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .action-btn-outline {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .action-btn-outline:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .wallet-status {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .wallet-active {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+
+    .wallet-inactive {
+        background: rgba(255, 255, 255, 0.3);
+        color: #ffc107;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .balance-amount {
+            font-size: 2.5rem;
+        }
+
+        .balance-secondary {
+            font-size: 1rem;
+        }
+
+        .stats-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="gradient-text mb-2">My Wallet</h1>
+            <p class="text-muted">Manage your funds and transactions</p>
+        </div>
+    </div>
+
+    <!-- Currency Toggle Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                    <div>
+                        <h5 class="mb-3">Select Currency</h5>
+                        <div class="btn-group" role="group" aria-label="Currency toggle">
+                            <button type="button"
+                                    class="currency-toggle-btn {% if selected_currency == 'USD' %}active{% endif %}"
+                                    data-currency="USD"
+                                    id="btnUSD">
+                                <i class="bi bi-currency-dollar"></i> USD
+                            </button>
+                            <button type="button"
+                                    class="currency-toggle-btn {% if selected_currency == 'KES' %}active{% endif %}"
+                                    data-currency="KES"
+                                    id="btnKES">
+                                <i class="bi bi-cash"></i> KES
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3 mt-md-0">
+                        <div class="text-muted small">
+                            <i class="bi bi-clock"></i> Exchange Rate
+                        </div>
+                        <div class="fw-bold">1 USD = {{ usd_to_kes_rate|floatformat:2 }} KES</div>
+                        {% if rate_updated_at %}
+                        <div class="text-muted small">
+                            Updated: {{ rate_updated_at|date:"M d, Y H:i" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Display Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="balance-card fade-in">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h5 class="mb-0">Available Balance</h5>
+                        {% if wallet.is_active %}
+                        <span class="wallet-status wallet-active">
+                            <i class="bi bi-check-circle-fill"></i> Active
+                        </span>
+                        {% else %}
+                        <span class="wallet-status wallet-inactive">
+                            <i class="bi bi-exclamation-circle-fill"></i> Inactive
+                        </span>
+                        {% endif %}
+                    </div>
+                    <i class="bi bi-wallet2" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                </div>
+
+                {% if selected_currency == 'USD' %}
+                <div class="balance-amount" id="primaryBalance">
+                    ${{ balance_in_usd|floatformat:2 }}
+                </div>
+                <div class="balance-secondary" id="secondaryBalance">
+                    ≈ KSh {{ balance_in_kes|floatformat:2 }}
+                </div>
+                {% else %}
+                <div class="balance-amount" id="primaryBalance">
+                    KSh {{ balance_in_kes|floatformat:2 }}
+                </div>
+                <div class="balance-secondary" id="secondaryBalance">
+                    ≈ ${{ balance_in_usd|floatformat:2 }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="stats-icon icon-deposited">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </div>
+                    <h6 class="text-muted mb-2">Total Deposited</h6>
+                    {% if selected_currency == 'USD' %}
+                    <h3 class="mb-0 fw-bold" id="totalDeposited">${{ total_deposited|floatformat:2 }}</h3>
+                    {% else %}
+                    <h3 class="mb-0 fw-bold" id="totalDeposited">KSh {{ total_deposited|floatformat:2 }}</h3>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="stats-icon icon-spent">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </div>
+                    <h6 class="text-muted mb-2">Total Spent</h6>
+                    {% if selected_currency == 'USD' %}
+                    <h3 class="mb-0 fw-bold" id="totalSpent">${{ total_spent|floatformat:2 }}</h3>
+                    {% else %}
+                    <h3 class="mb-0 fw-bold" id="totalSpent">KSh {{ total_spent|floatformat:2 }}</h3>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="stats-icon icon-available">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <h6 class="text-muted mb-2">Available Balance</h6>
+                    {% if selected_currency == 'USD' %}
+                    <h3 class="mb-0 fw-bold" id="availableBalance">${{ balance_in_usd|floatformat:2 }}</h3>
+                    {% else %}
+                    <h3 class="mb-0 fw-bold" id="availableBalance">KSh {{ balance_in_kes|floatformat:2 }}</h3>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Rates Information Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card rate-card">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up-arrow gradient-text"></i> Current Exchange Rates
+                        </h5>
+                        <span class="rate-badge">
+                            <i class="bi bi-broadcast"></i> Live
+                        </span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3" style="font-size: 2rem;">
+                                    <i class="bi bi-currency-dollar text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">USD to KES</div>
+                                    <div class="fw-bold fs-5">1 USD = {{ usd_to_kes_rate|floatformat:2 }} KES</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3" style="font-size: 2rem;">
+                                    <i class="bi bi-cash text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">KES to USD</div>
+                                    <div class="fw-bold fs-5">1 KES = {{ kes_to_usd_rate|floatformat:4 }} USD</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if rate_updated_at %}
+                    <div class="mt-3 pt-3 border-top">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i>
+                            Last updated: {{ rate_updated_at|date:"F d, Y at H:i" }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history gradient-text"></i> All Transactions
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table transaction-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ transaction.created_at|date:"M d, Y" }}</div>
+                                        <small class="text-muted">{{ transaction.created_at|date:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if transaction.transaction_type == 'deposit' %}
+                                            <i class="bi bi-arrow-down-circle text-success me-2" style="font-size: 1.2rem;"></i>
+                                            {% elif transaction.transaction_type == 'withdrawal' %}
+                                            <i class="bi bi-arrow-up-circle text-danger me-2" style="font-size: 1.2rem;"></i>
+                                            {% elif transaction.transaction_type == 'payment' %}
+                                            <i class="bi bi-credit-card text-primary me-2" style="font-size: 1.2rem;"></i>
+                                            {% else %}
+                                            <i class="bi bi-arrow-left-right text-info me-2" style="font-size: 1.2rem;"></i>
+                                            {% endif %}
+                                            <span class="text-capitalize">{{ transaction.transaction_type }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">
+                                            {% if transaction.currency == 'USD' %}
+                                                ${{ transaction.amount|floatformat:2 }}
+                                            {% else %}
+                                                KSh {{ transaction.amount|floatformat:2 }}
+                                            {% endif %}
+                                        </span>
+                                        <small class="text-muted d-block">{{ transaction.currency }}</small>
+                                    </td>
+                                    <td>
+                                        {% if transaction.status == 'completed' or transaction.status == 'success' %}
+                                        <span class="status-badge status-success">
+                                            <i class="bi bi-check-circle"></i> Success
+                                        </span>
+                                        {% elif transaction.status == 'pending' %}
+                                        <span class="status-badge status-pending">
+                                            <i class="bi bi-clock"></i> Pending
+                                        </span>
+                                        {% elif transaction.status == 'failed' %}
+                                        <span class="status-badge status-failed">
+                                            <i class="bi bi-x-circle"></i> Failed
+                                        </span>
+                                        {% else %}
+                                        <span class="status-badge status-pending">
+                                            {{ transaction.status|title }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h5 class="mt-3">No Transactions Yet</h5>
+                        <p class="text-muted">Your transaction history will appear here once you make your first transaction.</p>
+                        <a href="{% url 'payments:deposit_initiate' %}" class="btn action-btn-primary mt-3">
+                            <i class="bi bi-plus-circle"></i> Make Your First Deposit
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currencyButtons = document.querySelectorAll('.currency-toggle-btn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    currencyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const selectedCurrency = this.getAttribute('data-currency');
+
+            // Don't toggle if already active
+            if (this.classList.contains('active')) {
+                return;
+            }
+
+            // Show loading overlay
+            loadingOverlay.classList.add('show');
+
+            // Get CSRF token
+            const csrftoken = getCookie('csrftoken');
+
+            // Make AJAX request to toggle currency
+            fetch("{% url 'payments:toggle_currency_view' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    currency: selectedCurrency
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Update button states
+                    currencyButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Update balance displays
+                    updateBalanceDisplay(data);
+
+                    // Update statistics
+                    updateStatistics(data);
+
+                    // Hide loading overlay
+                    loadingOverlay.classList.remove('show');
+
+                    // Add fade-in animation
+                    const balanceCard = document.querySelector('.balance-card');
+                    balanceCard.classList.remove('fade-in');
+                    void balanceCard.offsetWidth; // Trigger reflow
+                    balanceCard.classList.add('fade-in');
+                } else {
+                    throw new Error(data.message || 'Failed to toggle currency');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingOverlay.classList.remove('show');
+
+                // Show error message
+                showError('Failed to switch currency. Please try again.');
+            });
+        });
+    });
+
+    function updateBalanceDisplay(data) {
+        const primaryBalance = document.getElementById('primaryBalance');
+        const secondaryBalance = document.getElementById('secondaryBalance');
+
+        if (data.selected_currency === 'USD') {
+            primaryBalance.textContent = `$${parseFloat(data.balance_in_usd).toFixed(2)}`;
+            secondaryBalance.textContent = `≈ KSh ${parseFloat(data.balance_in_kes).toFixed(2)}`;
+        } else {
+            primaryBalance.textContent = `KSh ${parseFloat(data.balance_in_kes).toFixed(2)}`;
+            secondaryBalance.textContent = `≈ $${parseFloat(data.balance_in_usd).toFixed(2)}`;
+        }
+    }
+
+    function updateStatistics(data) {
+        const totalDeposited = document.getElementById('totalDeposited');
+        const totalSpent = document.getElementById('totalSpent');
+        const availableBalance = document.getElementById('availableBalance');
+
+        if (data.selected_currency === 'USD') {
+            totalDeposited.textContent = `$${parseFloat(data.total_deposited || 0).toFixed(2)}`;
+            totalSpent.textContent = `$${parseFloat(data.total_spent || 0).toFixed(2)}`;
+            availableBalance.textContent = `$${parseFloat(data.balance_in_usd).toFixed(2)}`;
+        } else {
+            totalDeposited.textContent = `KSh ${parseFloat(data.total_deposited || 0).toFixed(2)}`;
+            totalSpent.textContent = `KSh ${parseFloat(data.total_spent || 0).toFixed(2)}`;
+            availableBalance.textContent = `KSh ${parseFloat(data.balance_in_kes).toFixed(2)}`;
+        }
+    }
+
+    function showError(message) {
+        // Create error alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+        alertDiv.style.zIndex = '10000';
+        alertDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(alertDiv);
+
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+
+    // Helper function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

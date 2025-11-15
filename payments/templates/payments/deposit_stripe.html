@@ -1,0 +1,575 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Deposit with Stripe - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .payment-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .payment-header h1 {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .payment-header p {
+        color: #6c757d;
+        font-size: 16px;
+    }
+
+    .payment-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+
+    .amount-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .amount-label {
+        font-size: 13px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .amount-display {
+        font-size: 32px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .amount-details {
+        font-size: 12px;
+        color: #6c757d;
+        line-height: 1.6;
+    }
+
+    .security-badges {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 15px 0;
+        padding: 15px 0;
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .security-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #28a745;
+    }
+
+    .security-badge i {
+        font-size: 16px;
+    }
+
+    .form-section {
+        margin-bottom: 25px;
+    }
+
+    .form-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+        display: block;
+        font-size: 14px;
+    }
+
+    .form-control {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 15px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+
+    /* Stripe Elements Styling */
+    .StripeElement {
+        box-sizing: border-box;
+        height: 45px;
+        padding: 12px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background-color: white;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        transition: box-shadow 150ms ease;
+        font-size: 15px;
+    }
+
+    .StripeElement--focus {
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        border-color: #667eea;
+    }
+
+    .StripeElement--invalid {
+        border-color: #dc3545;
+    }
+
+    #stripeErrorMessage {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 8px;
+        display: none;
+    }
+
+    #stripeErrorMessage.show {
+        display: block;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-submit.primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-submit.primary:hover:not(:disabled) {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-submit.secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-submit.secondary:hover:not(:disabled) {
+        background: #f8f9ff;
+    }
+
+    .payment-processing {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .payment-processing.show {
+        display: block;
+    }
+
+    .spinner-border {
+        width: 50px;
+        height: 50px;
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+
+    .processing-text {
+        font-size: 16px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .processing-subtext {
+        font-size: 13px;
+        color: #adb5bd;
+    }
+
+    .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #2196F3;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 20px;
+        color: #0c5460;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .info-box strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #084298;
+    }
+
+    .form-helper-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .alert-container {
+        margin-bottom: 25px;
+    }
+
+    .back-button {
+        margin-bottom: 20px;
+    }
+
+    .divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+    }
+
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #dee2e6;
+    }
+
+    .divider span {
+        background: white;
+        padding: 0 10px;
+        color: #6c757d;
+        font-size: 13px;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="alert-container">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="back-button">
+        <a href="{% url 'payments:deposit_initiate' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Change Payment Method
+        </a>
+    </div>
+
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1>Complete Your Deposit</h1>
+            <p>Secure payment powered by Stripe</p>
+        </div>
+
+        <div class="payment-card">
+            <!-- Amount Summary -->
+            <div class="amount-summary">
+                <div class="amount-label">Deposit Amount</div>
+                <div class="amount-display">{{ amount|floatformat:2 }} KES</div>
+                <div class="amount-details">
+                    Processing fee will be calculated based on your card details
+                </div>
+            </div>
+
+            <!-- Security Badges -->
+            <div class="security-badges">
+                <div class="security-badge">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Secure</span>
+                </div>
+                <div class="security-badge">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Encrypted</span>
+                </div>
+                <div class="security-badge">
+                    <i class="bi bi-credit-card"></i>
+                    <span>PCI Compliant</span>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <form id="stripeForm">
+                {% csrf_token %}
+
+                <!-- Card Information Section -->
+                <div class="form-section">
+                    <h6 class="form-section-title">Card Information</h6>
+
+                    <div class="form-group">
+                        <label class="form-label">Card Details</label>
+                        <div id="card-element"></div>
+                        <div id="stripeErrorMessage"></div>
+                    </div>
+                </div>
+
+                <!-- Cardholder Information Section -->
+                <div class="form-section">
+                    <h6 class="form-section-title">Cardholder Information</h6>
+
+                    <div class="form-group">
+                        <label class="form-label" for="cardholderName">Cardholder Name</label>
+                        <input type="text"
+                               id="cardholderName"
+                               class="form-control"
+                               placeholder="John Doe"
+                               required>
+                        <div class="form-helper-text">Full name as it appears on your card</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="billingEmail">Email Address</label>
+                        <input type="email"
+                               id="billingEmail"
+                               class="form-control"
+                               placeholder="john@example.com"
+                               required>
+                        <div class="form-helper-text">Receipt will be sent to this email</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="billingCountry">Country</label>
+                        <select id="billingCountry" class="form-control" required>
+                            <option value="">Select your country</option>
+                            <option value="KE" selected>Kenya</option>
+                            <option value="US">United States</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="CA">Canada</option>
+                            <option value="AU">Australia</option>
+                            <option value="DE">Germany</option>
+                            <option value="FR">France</option>
+                            <option value="IT">Italy</option>
+                            <option value="ES">Spain</option>
+                            <option value="NL">Netherlands</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="billingPostal">Postal Code</label>
+                        <input type="text"
+                               id="billingPostal"
+                               class="form-control"
+                               placeholder="00100"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Terms Acceptance -->
+                <div class="form-section">
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   id="termsCheck"
+                                   required>
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the <a href="#" target="_blank">payment terms</a> and confirm this transaction
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <strong>🔒 Payment Security:</strong>
+                    Your card information is processed securely by Stripe and is never stored on our servers. We use the latest encryption standards to protect your data.
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn-submit primary" id="submitBtn">
+                        <i class="bi bi-lock-fill"></i> Pay {{ amount|floatformat:2 }} KES
+                    </button>
+                    <a href="{% url 'payments:deposit_initiate' %}" class="btn-submit secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+
+            <!-- Payment Processing -->
+            <div class="payment-processing" id="processingDiv">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <div class="processing-text">Processing Your Payment</div>
+                <div class="processing-subtext">Please wait while we securely process your card information...</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const elements = stripe.elements();
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '15px',
+                color: '#333',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif'
+            }
+        }
+    });
+
+    cardElement.mount('#card-element');
+
+    const form = document.getElementById('stripeForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const processingDiv = document.getElementById('processingDiv');
+    const errorDiv = document.getElementById('stripeErrorMessage');
+    const termsCheck = document.getElementById('termsCheck');
+
+    // Handle real-time validation
+    cardElement.on('change', function(event) {
+        if (event.error) {
+            errorDiv.textContent = event.error.message;
+            errorDiv.classList.add('show');
+        } else {
+            errorDiv.textContent = '';
+            errorDiv.classList.remove('show');
+        }
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Validate terms
+        if (!termsCheck.checked) {
+            alert('Please accept the payment terms and conditions');
+            return;
+        }
+
+        // Disable submit button and show processing state
+        submitBtn.disabled = true;
+        form.style.display = 'none';
+        processingDiv.classList.add('show');
+
+        // Create payment method
+        const result = await stripe.createPaymentMethod({
+            type: 'card',
+            card: cardElement,
+            billing_details: {
+                name: document.getElementById('cardholderName').value,
+                email: document.getElementById('billingEmail').value,
+                address: {
+                    country: document.getElementById('billingCountry').value,
+                    postal_code: document.getElementById('billingPostal').value
+                }
+            }
+        });
+
+        if (result.error) {
+            errorDiv.textContent = result.error.message;
+            errorDiv.classList.add('show');
+            submitBtn.disabled = false;
+            form.style.display = 'block';
+            processingDiv.classList.remove('show');
+        } else {
+            // Send payment method to server
+            const formData = new FormData(form);
+            formData.append('payment_method_id', result.paymentMethod.id);
+
+            try {
+                const response = await fetch('{% url "payments:deposit_stripe_process" %}', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Redirect to success page
+                    window.location.href = data.redirect_url;
+                } else if (data.requires_action) {
+                    // Handle 3D Secure
+                    const confirmResult = await stripe.confirmCardPayment(data.client_secret);
+                    if (confirmResult.error) {
+                        errorDiv.textContent = confirmResult.error.message;
+                        errorDiv.classList.add('show');
+                        submitBtn.disabled = false;
+                        form.style.display = 'block';
+                        processingDiv.classList.remove('show');
+                    } else {
+                        window.location.href = data.redirect_url;
+                    }
+                } else {
+                    errorDiv.textContent = data.error || 'Payment processing failed. Please try again.';
+                    errorDiv.classList.add('show');
+                    submitBtn.disabled = false;
+                    form.style.display = 'block';
+                    processingDiv.classList.remove('show');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.add('show');
+                submitBtn.disabled = false;
+                form.style.display = 'block';
+                processingDiv.classList.remove('show');
+            }
+        }
+    });
+
+    // Auto-hide alerts
+    document.querySelectorAll('.alert').forEach(alert => {
+        setTimeout(() => {
+            new bootstrap.Alert(alert).close();
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

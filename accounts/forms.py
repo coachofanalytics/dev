@@ -6,7 +6,7 @@ from .models import UserProfile, Category
 
 class UserRegistrationForm(UserCreationForm):
     """
-    Custom user registration form with additional fields including category and document upload.
+    Custom user registration form with additional fields including category, country, phone, and document upload.
     """
     email = forms.EmailField(
         required=True,
@@ -40,13 +40,228 @@ class UserRegistrationForm(UserCreationForm):
         }),
         help_text='Select your registration category'
     )
+    country = forms.ChoiceField(
+        required=True,
+        choices=[('', 'Select your country...')] + [
+            ('Afghanistan', 'Afghanistan'),
+            ('Albania', 'Albania'),
+            ('Algeria', 'Algeria'),
+            ('Andorra', 'Andorra'),
+            ('Angola', 'Angola'),
+            ('Antigua and Barbuda', 'Antigua and Barbuda'),
+            ('Argentina', 'Argentina'),
+            ('Armenia', 'Armenia'),
+            ('Australia', 'Australia'),
+            ('Austria', 'Austria'),
+            ('Azerbaijan', 'Azerbaijan'),
+            ('Bahamas', 'Bahamas'),
+            ('Bahrain', 'Bahrain'),
+            ('Bangladesh', 'Bangladesh'),
+            ('Barbados', 'Barbados'),
+            ('Belarus', 'Belarus'),
+            ('Belgium', 'Belgium'),
+            ('Belize', 'Belize'),
+            ('Benin', 'Benin'),
+            ('Bhutan', 'Bhutan'),
+            ('Bolivia', 'Bolivia'),
+            ('Bosnia and Herzegovina', 'Bosnia and Herzegovina'),
+            ('Botswana', 'Botswana'),
+            ('Brazil', 'Brazil'),
+            ('Brunei', 'Brunei'),
+            ('Bulgaria', 'Bulgaria'),
+            ('Burkina Faso', 'Burkina Faso'),
+            ('Burundi', 'Burundi'),
+            ('Cabo Verde', 'Cabo Verde'),
+            ('Cambodia', 'Cambodia'),
+            ('Cameroon', 'Cameroon'),
+            ('Canada', 'Canada'),
+            ('Central African Republic', 'Central African Republic'),
+            ('Chad', 'Chad'),
+            ('Chile', 'Chile'),
+            ('China', 'China'),
+            ('Colombia', 'Colombia'),
+            ('Comoros', 'Comoros'),
+            ('Congo', 'Congo'),
+            ('Costa Rica', 'Costa Rica'),
+            ('Croatia', 'Croatia'),
+            ('Cuba', 'Cuba'),
+            ('Cyprus', 'Cyprus'),
+            ('Czech Republic', 'Czech Republic'),
+            ('Democratic Republic of the Congo', 'Democratic Republic of the Congo'),
+            ('Denmark', 'Denmark'),
+            ('Djibouti', 'Djibouti'),
+            ('Dominica', 'Dominica'),
+            ('Dominican Republic', 'Dominican Republic'),
+            ('East Timor', 'East Timor'),
+            ('Ecuador', 'Ecuador'),
+            ('Egypt', 'Egypt'),
+            ('El Salvador', 'El Salvador'),
+            ('Equatorial Guinea', 'Equatorial Guinea'),
+            ('Eritrea', 'Eritrea'),
+            ('Estonia', 'Estonia'),
+            ('Eswatini', 'Eswatini'),
+            ('Ethiopia', 'Ethiopia'),
+            ('Fiji', 'Fiji'),
+            ('Finland', 'Finland'),
+            ('France', 'France'),
+            ('Gabon', 'Gabon'),
+            ('Gambia', 'Gambia'),
+            ('Georgia', 'Georgia'),
+            ('Germany', 'Germany'),
+            ('Ghana', 'Ghana'),
+            ('Greece', 'Greece'),
+            ('Grenada', 'Grenada'),
+            ('Guatemala', 'Guatemala'),
+            ('Guinea', 'Guinea'),
+            ('Guinea-Bissau', 'Guinea-Bissau'),
+            ('Guyana', 'Guyana'),
+            ('Haiti', 'Haiti'),
+            ('Honduras', 'Honduras'),
+            ('Hungary', 'Hungary'),
+            ('Iceland', 'Iceland'),
+            ('India', 'India'),
+            ('Indonesia', 'Indonesia'),
+            ('Iran', 'Iran'),
+            ('Iraq', 'Iraq'),
+            ('Ireland', 'Ireland'),
+            ('Israel', 'Israel'),
+            ('Italy', 'Italy'),
+            ('Ivory Coast', 'Ivory Coast'),
+            ('Jamaica', 'Jamaica'),
+            ('Japan', 'Japan'),
+            ('Jordan', 'Jordan'),
+            ('Kazakhstan', 'Kazakhstan'),
+            ('Kenya', 'Kenya'),
+            ('Kiribati', 'Kiribati'),
+            ('Kuwait', 'Kuwait'),
+            ('Kyrgyzstan', 'Kyrgyzstan'),
+            ('Laos', 'Laos'),
+            ('Latvia', 'Latvia'),
+            ('Lebanon', 'Lebanon'),
+            ('Lesotho', 'Lesotho'),
+            ('Liberia', 'Liberia'),
+            ('Libya', 'Libya'),
+            ('Liechtenstein', 'Liechtenstein'),
+            ('Lithuania', 'Lithuania'),
+            ('Luxembourg', 'Luxembourg'),
+            ('Madagascar', 'Madagascar'),
+            ('Malawi', 'Malawi'),
+            ('Malaysia', 'Malaysia'),
+            ('Maldives', 'Maldives'),
+            ('Mali', 'Mali'),
+            ('Malta', 'Malta'),
+            ('Marshall Islands', 'Marshall Islands'),
+            ('Mauritania', 'Mauritania'),
+            ('Mauritius', 'Mauritius'),
+            ('Mexico', 'Mexico'),
+            ('Micronesia', 'Micronesia'),
+            ('Moldova', 'Moldova'),
+            ('Monaco', 'Monaco'),
+            ('Mongolia', 'Mongolia'),
+            ('Montenegro', 'Montenegro'),
+            ('Morocco', 'Morocco'),
+            ('Mozambique', 'Mozambique'),
+            ('Myanmar', 'Myanmar'),
+            ('Namibia', 'Namibia'),
+            ('Nauru', 'Nauru'),
+            ('Nepal', 'Nepal'),
+            ('Netherlands', 'Netherlands'),
+            ('New Zealand', 'New Zealand'),
+            ('Nicaragua', 'Nicaragua'),
+            ('Niger', 'Niger'),
+            ('Nigeria', 'Nigeria'),
+            ('North Korea', 'North Korea'),
+            ('North Macedonia', 'North Macedonia'),
+            ('Norway', 'Norway'),
+            ('Oman', 'Oman'),
+            ('Pakistan', 'Pakistan'),
+            ('Palau', 'Palau'),
+            ('Palestine', 'Palestine'),
+            ('Panama', 'Panama'),
+            ('Papua New Guinea', 'Papua New Guinea'),
+            ('Paraguay', 'Paraguay'),
+            ('Peru', 'Peru'),
+            ('Philippines', 'Philippines'),
+            ('Poland', 'Poland'),
+            ('Portugal', 'Portugal'),
+            ('Qatar', 'Qatar'),
+            ('Romania', 'Romania'),
+            ('Russia', 'Russia'),
+            ('Rwanda', 'Rwanda'),
+            ('Saint Kitts and Nevis', 'Saint Kitts and Nevis'),
+            ('Saint Lucia', 'Saint Lucia'),
+            ('Saint Vincent and the Grenadines', 'Saint Vincent and the Grenadines'),
+            ('Samoa', 'Samoa'),
+            ('San Marino', 'San Marino'),
+            ('Sao Tome and Principe', 'Sao Tome and Principe'),
+            ('Saudi Arabia', 'Saudi Arabia'),
+            ('Senegal', 'Senegal'),
+            ('Serbia', 'Serbia'),
+            ('Seychelles', 'Seychelles'),
+            ('Sierra Leone', 'Sierra Leone'),
+            ('Singapore', 'Singapore'),
+            ('Slovakia', 'Slovakia'),
+            ('Slovenia', 'Slovenia'),
+            ('Solomon Islands', 'Solomon Islands'),
+            ('Somalia', 'Somalia'),
+            ('South Africa', 'South Africa'),
+            ('South Korea', 'South Korea'),
+            ('South Sudan', 'South Sudan'),
+            ('Spain', 'Spain'),
+            ('Sri Lanka', 'Sri Lanka'),
+            ('Sudan', 'Sudan'),
+            ('Suriname', 'Suriname'),
+            ('Sweden', 'Sweden'),
+            ('Switzerland', 'Switzerland'),
+            ('Syria', 'Syria'),
+            ('Tajikistan', 'Tajikistan'),
+            ('Tanzania', 'Tanzania'),
+            ('Thailand', 'Thailand'),
+            ('Togo', 'Togo'),
+            ('Tonga', 'Tonga'),
+            ('Trinidad and Tobago', 'Trinidad and Tobago'),
+            ('Tunisia', 'Tunisia'),
+            ('Turkey', 'Turkey'),
+            ('Turkmenistan', 'Turkmenistan'),
+            ('Tuvalu', 'Tuvalu'),
+            ('Uganda', 'Uganda'),
+            ('Ukraine', 'Ukraine'),
+            ('United Arab Emirates', 'United Arab Emirates'),
+            ('United Kingdom', 'United Kingdom'),
+            ('United States', 'United States'),
+            ('Uruguay', 'Uruguay'),
+            ('Uzbekistan', 'Uzbekistan'),
+            ('Vanuatu', 'Vanuatu'),
+            ('Vatican City', 'Vatican City'),
+            ('Venezuela', 'Venezuela'),
+            ('Vietnam', 'Vietnam'),
+            ('Yemen', 'Yemen'),
+            ('Zambia', 'Zambia'),
+            ('Zimbabwe', 'Zimbabwe'),
+        ],
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'id': 'id_country'
+        }),
+        help_text='Select your country'
+    )
+    phone = forms.CharField(
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter phone number',
+            'id': 'id_phone'
+        }),
+        help_text='Enter your phone number (country code will be added automatically)'
+    )
     document = forms.FileField(
-        required=False,
+        required=True,
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'accept': '.pdf,.doc,.docx'
         }),
-        help_text='Upload your resume/business profile (Optional - PDF, DOC, DOCX)'
+        help_text='Upload your resume/business profile (Required - PDF, DOC, DOCX)'
     )
 
     class Meta:
@@ -68,13 +283,30 @@ class UserRegistrationForm(UserCreationForm):
             'placeholder': 'Re-enter your password'
         })
 
+    def clean_username(self):
+        """
+        Validate that the username is unique (case-insensitive) and normalize to lowercase.
+        """
+        username = self.cleaned_data.get('username')
+        if username:
+            # Normalize to lowercase
+            username = username.lower()
+            # Check if username exists (case-insensitive)
+            if User.objects.filter(username__iexact=username).exists():
+                raise forms.ValidationError('This username is already taken.')
+        return username
+
     def clean_email(self):
         """
-        Validate that the email is unique.
+        Validate that the email is unique (case-insensitive) and normalize to lowercase.
         """
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('This email address is already registered.')
+        if email:
+            # Normalize to lowercase
+            email = email.lower()
+            # Check if email exists (case-insensitive)
+            if User.objects.filter(email__iexact=email).exists():
+                raise forms.ValidationError('This email address is already registered.')
         return email
 
     def save(self, commit=True):
@@ -88,9 +320,11 @@ class UserRegistrationForm(UserCreationForm):
 
         if commit:
             user.save()
-            # Update the user's profile with category and document
+            # Update the user's profile with category, country, phone, and document
             profile = user.profile
             profile.category = self.cleaned_data['category']
+            profile.country = self.cleaned_data['country']
+            profile.phone = self.cleaned_data['phone']
             if self.cleaned_data.get('document'):
                 profile.document = self.cleaned_data['document']
             profile.save()

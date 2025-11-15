@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Opportunities{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Investment Opportunities</h1>
+    
+    <div class="row">
+        {% if opportunities %}
+            {% for opp in opportunities %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ opp.title }}</h5>
+                        <p class="text-muted">{{ opp.industry }}</p>
+                        <p class="text-success">${{ opp.amount_seeking }}</p>
+                        <p>Equity: {{ opp.equity_percentage }}%</p>
+                        <a href="{% url 'marketplace:opportunity_detail' opp.slug %}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12"><div class="alert alert-info">No opportunities found.</div></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

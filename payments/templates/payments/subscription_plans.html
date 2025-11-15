@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Subscription Plans - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .plans-container {
+        padding: 60px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-bottom: 50px;
+    }
+
+    .plans-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .plans-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .plans-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .plan-card {
+        height: 100%;
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .plan-card.featured {
+        border: 2px solid #667eea;
+    }
+
+    .plan-card.featured::before {
+        content: "POPULAR";
+        position: absolute;
+        top: 20px;
+        right: -30px;
+        background: #667eea;
+        color: white;
+        padding: 5px 40px;
+        transform: rotate(45deg);
+        font-weight: 600;
+        font-size: 0.85rem;
+        z-index: 10;
+    }
+
+    .plan-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .plan-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .plan-price {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .plan-price small {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    .plan-duration {
+        font-size: 0.95rem;
+        opacity: 0.85;
+    }
+
+    .plan-body {
+        padding: 30px 20px;
+    }
+
+    .plan-description {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 25px;
+        min-height: 50px;
+    }
+
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 30px;
+    }
+
+    .plan-features li {
+        padding: 12px 0;
+        border-bottom: 1px solid #e9ecef;
+        color: #495057;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .plan-features li:last-child {
+        border-bottom: none;
+    }
+
+    .plan-features li i {
+        color: #28a745;
+        margin-right: 12px;
+        font-weight: 600;
+        width: 20px;
+    }
+
+    .plan-features li.unavailable {
+        opacity: 0.5;
+    }
+
+    .plan-features li.unavailable i {
+        color: #dc3545;
+    }
+
+    .badge-owned {
+        display: inline-block;
+        background: #28a745;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .btn-subscribe {
+        width: 100%;
+        padding: 12px;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-subscribe-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-subscribe-primary:hover {
+        color: white;
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-subscribe-secondary {
+        background: #f8f9fa;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-subscribe-secondary:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.02);
+    }
+
+    .btn-manage {
+        width: 100%;
+        padding: 12px;
+        font-weight: 600;
+        border-radius: 8px;
+        background: #28a745;
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-manage:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+        transform: scale(1.02);
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    .comparison-section {
+        background: #f8f9fa;
+        padding: 40px;
+        border-radius: 15px;
+        margin-top: 50px;
+    }
+
+    .comparison-section h3 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+        .plans-container {
+            padding: 40px 0;
+        }
+
+        .plans-header h1 {
+            font-size: 2rem;
+        }
+
+        .plan-price {
+            font-size: 2rem;
+        }
+
+        .plan-card.featured::before {
+            top: 15px;
+            right: -25px;
+            padding: 3px 30px;
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="plans-container">
+    <div class="container">
+        <div class="plans-header">
+            <h1>Choose Your Plan</h1>
+            <p>Select the perfect plan to grow your business with Biashara Bridges</p>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5 mb-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{{ message.tags|default:'info-circle' }}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4 mb-5">
+        {% for plan in plans %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card plan-card {% if plan.is_featured %}featured{% endif %}">
+                    <div class="plan-header">
+                        <div class="plan-name">{{ plan.name }}</div>
+                        <div class="plan-price">
+                            ${{ plan.price|floatformat:2 }}
+                            <small>/{{ plan.billing_period }}</small>
+                        </div>
+                        <div class="plan-duration">{{ plan.get_billing_period_display }}</div>
+                    </div>
+
+                    <div class="plan-body">
+                        {% if user_plans|dictsort:"plan_id" %}
+                            {% for user_plan in user_plans %}
+                                {% if user_plan.plan_id == plan.id %}
+                                    <div class="badge-owned">
+                                        <i class="bi bi-check-circle"></i> You're subscribed
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        <p class="plan-description">{{ plan.description }}</p>
+
+                        <ul class="plan-features">
+                            {% for feature in plan.get_features_list %}
+                                <li {% if not feature.is_included %}class="unavailable"{% endif %}>
+                                    <i class="bi {% if feature.is_included %}bi-check-circle-fill{% else %}bi-dash-circle-fill{% endif %}"></i>
+                                    {{ feature.name }}
+                                </li>
+                            {% empty %}
+                                <li><i class="bi bi-check-circle-fill"></i> Premium features included</li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if plan.id in user_subscriptions %}
+                            <a href="{% url 'payments:my_subscriptions' %}" class="btn btn-manage">
+                                <i class="bi bi-check-circle"></i> Current Plan
+                            </a>
+                        {% elif has_active_subscription %}
+                            <button class="btn btn-subscribe btn-subscribe-secondary" disabled>
+                                <i class="bi bi-lock"></i> Already Subscribed
+                            </button>
+                        {% else %}
+                            <a href="{% url 'payments:subscription_detail' plan.id %}" class="btn btn-subscribe btn-subscribe-primary">
+                                <i class="bi bi-plus-circle"></i> View Plan Details
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i> No subscription plans available at the moment.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if plans %}
+        <div class="comparison-section">
+            <h3>Plan Comparison</h3>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="bg-light">Feature</th>
+                            {% for plan in plans %}
+                                <th class="text-center bg-light">{{ plan.name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plan in plans %}
+                            {% for feature in plan.get_features_list %}
+                                <tr>
+                                    <td>{{ feature.name }}</td>
+                                    {% for compare_plan in plans %}
+                                        <td class="text-center">
+                                            {% if feature in compare_plan.get_features_list %}
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                            {% else %}
+                                                <i class="bi bi-dash-circle text-muted"></i>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="100%" class="text-center text-muted">No features to compare</td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

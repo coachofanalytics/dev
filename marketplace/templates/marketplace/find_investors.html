@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find Investors{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="bi bi-people"></i> Find Investors</h1>
+
+    <!-- Search Form -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" name="search" class="form-control" placeholder="Search by name or keywords..." value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Investor Cards Grid -->
+    <div class="row">
+        {% if investors %}
+            {% for investor_profile in investors %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm investor-card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center mb-3">
+                            {% if investor_profile.profile_picture %}
+                            <img src="{{ investor_profile.user.profile.profile_picture.url }}" alt="{{ investor_profile.user.get_full_name }}" class="rounded-circle me-3" width="60" height="60" style="object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; font-size: 24px;">
+                                {{ investor_profile.user.get_full_name|first|upper }}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="card-title mb-1">{{ investor_profile.user.get_full_name }}</h5>
+                                {% if investor_profile.category %}
+                                <span class="badge bg-success">{{ investor_profile.user.profile.category.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if investor_profile.bio %}
+                        <p class="card-text text-muted flex-grow-1">
+                            {{ investor_profile.user.profile.bio|truncatewords:25 }}
+                        </p>
+                        {% else %}
+                        <p class="card-text text-muted flex-grow-1 fst-italic">
+                            No bio available
+                        </p>
+                        {% endif %}
+
+                        <div class="mt-3">
+                            {% if investor.investor_profile %}
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-cash-stack"></i>
+                                    Investment Range: ${{ investor_profile.user.investor_profile.investment_range_min|default:"N/A" }} - ${{ investor_profile.user.investor_profile.investment_range_max|default:"N/A" }}
+                                </small>
+                            </div>
+                            {% if investor.investor_profile.industries %}
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-tag"></i>
+                                    Industries: {{ investor_profile.user.investor_profile.industries|truncatewords:5 }}
+                                </small>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+
+                            <a href="{% url 'profile' investor_profile.user.username %}" class="btn btn-primary btn-sm w-100">
+                                <i class="bi bi-eye"></i> View Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No investors found matching your criteria.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination (if needed) -->
+    {% if investors.has_other_pages %}
+    <nav aria-label="Investor pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if investors.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ investors.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+            </li>
+            {% endif %}
+
+            {% for num in investors.paginator.page_range %}
+            {% if investors.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > investors.number|add:'-3' and num < investors.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if investors.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ investors.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Back to Dashboard Button -->
+    <div class="text-center mt-4">
+        <a href="{% url 'business_dashboard' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<style>
+    .investor-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    .investor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+</style>
+{% endblock %}

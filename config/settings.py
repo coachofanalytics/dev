@@ -41,6 +41,8 @@ INSTALLED_APPS = [
 
     # Local apps
     'accounts',
+    'payments',
+    'marketplace',
 ]
 
 MIDDLEWARE = [
@@ -108,6 +110,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Authentication backends
+# Use custom backend for case-insensitive username/email authentication
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.CaseInsensitiveAuthBackend',  # Custom case-insensitive backend
+    'django.contrib.auth.backends.ModelBackend',     # Fallback to default backend
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -154,3 +163,53 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 # EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 # DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@biasharabridges.com')
+
+# ============================================================================
+# PAYMENT GATEWAY SETTINGS
+# ============================================================================
+
+# Stripe Configuration
+STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
+STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
+
+# PayPal Configuration
+PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID', default='')
+PAYPAL_CLIENT_SECRET = config('PAYPAL_CLIENT_SECRET', default='')
+PAYPAL_MODE = config('PAYPAL_MODE', default='sandbox')  # 'sandbox' or 'live'
+
+# M-Pesa Configuration (Safaricom - Kenya)
+MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY', default='')
+MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET', default='')
+MPESA_BUSINESS_SHORTCODE = config('MPESA_BUSINESS_SHORTCODE', default='')
+MPESA_PASSKEY = config('MPESA_PASSKEY', default='')
+MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL', default='')
+MPESA_INITIATOR_NAME = config('MPESA_INITIATOR_NAME', default='')
+MPESA_SECURITY_CREDENTIAL = config('MPESA_SECURITY_CREDENTIAL', default='')
+
+# Payment Settings
+PAYMENT_CURRENCY = 'USD'
+# Payment Currency
+DEFAULT_CURRENCY = "USD"
+
+MINIMUM_DEPOSIT_AMOUNT = 1.00  # Minimum amount users can deposit
+MAXIMUM_DEPOSIT_AMOUNT = 10000.00  # Maximum amount per transaction
+MINIMUM_WALLET_BALANCE = 0.00  # Minimum wallet balance allowed
+
+# Webhook URLs (for production, use full domain)
+STRIPE_WEBHOOK_URL = config('STRIPE_WEBHOOK_URL', default='/webhooks/stripe/')
+PAYPAL_WEBHOOK_URL = config('PAYPAL_WEBHOOK_URL', default='/webhooks/paypal/')
+MPESA_WEBHOOK_URL = config('MPESA_WEBHOOK_URL', default='/webhooks/mpesa/')
+
+# Payment Gateway Feature Flags
+ENABLE_STRIPE = config('ENABLE_STRIPE', default=True, cast=bool)
+ENABLE_PAYPAL = config('ENABLE_PAYPAL', default=True, cast=bool)
+ENABLE_MPESA = config('ENABLE_MPESA', default=True, cast=bool)
+ENABLE_WALLET_PAYMENTS = config('ENABLE_WALLET_PAYMENTS', default=True, cast=bool)
+
+# Transaction Settings
+TRANSACTION_TIMEOUT_SECONDS = 300  # 5 minutes timeout for pending transactions
+AUTO_CANCEL_PENDING_INVOICES_DAYS = 7  # Auto-cancel unpaid invoices after 7 days
+
+# Security Settings for API Keys Encryption
+PAYMENT_ENCRYPTION_KEY = config('PAYMENT_ENCRYPTION_KEY', default='')  # Fernet encryption key

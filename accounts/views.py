@@ -36,14 +36,20 @@ def register(request):
 @login_required
 def profile(request, username=None):
     """
-    Display user profile.
+    Display user profile - accessible to all logged-in users.
     """
     if username:
         user = get_object_or_404(User, username=username)
     else:
         user = request.user
 
-    profile = user.profile
+    # Get or create profile for the user
+    profile, created = UserProfile.objects.get_or_create(user=user)
+
+    if created and user == request.user:
+        messages.info(request, 'Profile created. Please complete your profile information.')
+        return redirect('edit_profile')
+
     is_own_profile = request.user == user
 
     context = {
@@ -57,9 +63,13 @@ def profile(request, username=None):
 @login_required
 def edit_profile(request):
     """
-    Edit user profile view.
+    Edit user profile view - accessible to all logged-in users.
     """
-    profile = request.user.profile
+    # Get or create profile for the user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if created:
+        messages.info(request, 'Profile created. Please complete your profile information.')
 
     if request.method == 'POST':
         form = ProfileEditForm(request.POST, request.FILES, instance=profile, user=request.user)
@@ -67,6 +77,8 @@ def edit_profile(request):
             form.save()
             messages.success(request, 'Your profile has been updated successfully!')
             return redirect('profile', username=request.user.username)
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = ProfileEditForm(instance=profile, user=request.user)
 
@@ -211,3 +223,28 @@ def staff_categories_list(request):
         'staff': request.user.staff,
     }
     return render(request, 'accounts/staff_categories_list.html', context)
+
+
+@login_required
+def user_settings(request):
+    """
+    User settings page - accessible to all logged-in users.
+    Provides access to account settings including password reset.
+    """
+    # Get or create profile for the user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    # Determine user type for display
+    user_type = None
+    if request.user.is_superuser:
+        user_type = 'Superuser'
+    elif hasattr(request.user, 'staff') and request.user.staff.is_active:
+        user_type = f'Staff - {request.user.staff.role.name}'
+    elif profile.category:
+        user_type = profile.category.name
+
+    context = {
+        'profile': profile,
+        'user_type': user_type,
+    }
+    return render(request, 'accounts/settings.html', context)

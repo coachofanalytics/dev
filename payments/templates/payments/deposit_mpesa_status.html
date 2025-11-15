@@ -1,0 +1,565 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}M-Pesa Payment Status - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-container {
+        max-width: 550px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .status-card {
+        background: white;
+        border-radius: 12px;
+        padding: 40px 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .status-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+    }
+
+    .status-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .status-message {
+        font-size: 16px;
+        color: #6c757d;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-bottom: 30px;
+        font-size: 14px;
+    }
+
+    .badge-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Animation */
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.7;
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .spinner-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .transaction-details {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .detail-row:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: #6c757d;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .detail-value {
+        color: #333;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: right;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+        flex-direction: column;
+    }
+
+    .btn-action {
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e9ecef;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #dee2e6;
+    }
+
+    .info-box {
+        background: #e3f2fd;
+        border-left: 4px solid #2196F3;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 20px;
+        color: #0c5460;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .info-box strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #084298;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 20px;
+        color: #664d03;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .warning-box strong {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .error-box {
+        background: #f8d7da;
+        border-left: 4px solid #dc3545;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 20px;
+        color: #721c24;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .error-box strong {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .help-box {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+
+    .help-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .help-item {
+        margin-bottom: 12px;
+        font-size: 13px;
+    }
+
+    .help-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .help-item strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #333;
+    }
+
+    .help-item p {
+        margin: 0;
+        color: #6c757d;
+    }
+
+    .status-updates {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .update-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .update-item:last-child {
+        border-bottom: none;
+    }
+
+    .update-time {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .refresh-info {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .auto-refresh-badge {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="status-container">
+        <!-- Status Card -->
+        <div class="status-card" id="statusCard">
+            <div class="status-icon" id="statusIcon">⏳</div>
+            <h1 class="status-title" id="statusTitle">Waiting for Payment</h1>
+            <p class="status-message" id="statusMessage">
+                We're waiting for you to complete the M-Pesa payment on your phone.
+                Please enter your M-Pesa PIN to complete the transaction.
+            </p>
+            <span class="status-badge badge-pending" id="statusBadge">Pending</span>
+
+            <!-- Spinner (shown during pending state) -->
+            <div class="spinner-container" id="spinnerContainer">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Transaction Details -->
+            <div class="transaction-details">
+                <div class="detail-row">
+                    <span class="detail-label">Amount</span>
+                    <span class="detail-value">{{ amount|floatformat:2 }} KES</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Reference ID</span>
+                    <span class="detail-value" id="refId" style="font-family: monospace; font-size: 12px;">{{ reference_id }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Phone Number</span>
+                    <span class="detail-value">+254{{ phone_number }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value" id="statusDetail">Awaiting Payment</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Last Updated</span>
+                    <span class="detail-value" id="lastUpdated">Just now</span>
+                </div>
+            </div>
+
+            <!-- Refresh Info -->
+            <div class="refresh-info">
+                <span class="auto-refresh-badge">Auto-Refreshing</span>
+                Status updates automatically every 5 seconds
+            </div>
+
+            <!-- Status Updates Log -->
+            <div class="status-updates" id="statusUpdates">
+                <div class="update-item">
+                    <span class="update-time">{{ now|date:"H:i:s" }}</span> - Payment initiated
+                </div>
+            </div>
+
+            <!-- Info Box (Pending) -->
+            <div class="info-box" id="pendingInfo">
+                <strong>💡 What's happening:</strong>
+                An M-Pesa payment popup should have appeared on your phone. Look for a prompt to enter your M-Pesa PIN. If you don't see it, check your phone notifications or dial *150*00# to access M-Pesa.
+            </div>
+
+            <!-- Success Box (Hidden) -->
+            <div class="info-box" id="successInfo" style="display: none; background: #d4edda; border-left-color: #28a745; color: #155724;">
+                <strong>✅ Payment Successful!</strong>
+                Your M-Pesa payment has been confirmed. Your wallet will be credited within a few moments. Check your transaction history for details.
+            </div>
+
+            <!-- Failed Box (Hidden) -->
+            <div class="error-box" id="failedInfo" style="display: none;">
+                <strong>❌ Payment Failed</strong>
+                The M-Pesa payment could not be processed. Please check your phone for an error message from Safaricom and try again.
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn-action btn-primary" id="retryBtn" onclick="location.reload();" style="display: none;">
+                    <i class="bi bi-arrow-repeat"></i> Retry Payment
+                </button>
+                <a href="{% url 'payments:wallet_dashboard' %}" class="btn-action btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Wallet
+                </a>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="help-box">
+            <h5 class="help-title">Need Help?</h5>
+            <div class="help-item">
+                <strong>Payment Not Appearing?</strong>
+                <p>Check that M-Pesa is sending you payment prompts. Ensure you have a strong signal and that your phone number is registered with Safaricom.</p>
+            </div>
+            <div class="help-item">
+                <strong>How to Check Payment Status</strong>
+                <p>You can check your M-Pesa statement by dialing *150*4*1# on your phone. Your transaction should appear there if it was processed.</p>
+            </div>
+            <div class="help-item">
+                <strong>Still Waiting After 10 Minutes?</strong>
+                <p>Payments are usually instant. If you've been waiting longer, try refreshing this page or contact our support team for assistance.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusCard = document.getElementById('statusCard');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusTitle = document.getElementById('statusTitle');
+    const statusMessage = document.getElementById('statusMessage');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusDetail = document.getElementById('statusDetail');
+    const lastUpdated = document.getElementById('lastUpdated');
+    const spinnerContainer = document.getElementById('spinnerContainer');
+    const pendingInfo = document.getElementById('pendingInfo');
+    const successInfo = document.getElementById('successInfo');
+    const failedInfo = document.getElementById('failedInfo');
+    const retryBtn = document.getElementById('retryBtn');
+    const statusUpdates = document.getElementById('statusUpdates');
+    const referenceId = '{{ reference_id }}';
+    let checkCount = 0;
+    const maxChecks = 120; // Check for 10 minutes (120 * 5 seconds)
+
+    // Initial check after 2 seconds
+    setTimeout(checkPaymentStatus, 2000);
+
+    // Then check every 5 seconds
+    const statusCheckInterval = setInterval(() => {
+        if (checkCount >= maxChecks) {
+            clearInterval(statusCheckInterval);
+            showTimeout();
+        } else {
+            checkPaymentStatus();
+        }
+    }, 5000);
+
+    function checkPaymentStatus() {
+        checkCount++;
+
+        fetch(`/api/payments/mpesa-status/${referenceId}/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update last checked time
+            const now = new Date();
+            lastUpdated.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            // Add update to log
+            addStatusUpdate(`Status: ${data.status}`);
+
+            if (data.status === 'completed') {
+                showSuccess();
+                clearInterval(statusCheckInterval);
+            } else if (data.status === 'failed') {
+                showFailed();
+                clearInterval(statusCheckInterval);
+            } else if (data.status === 'cancelled') {
+                showCancelled();
+                clearInterval(statusCheckInterval);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking payment status:', error);
+            addStatusUpdate('Unable to check status');
+        });
+    }
+
+    function showSuccess() {
+        statusIcon.textContent = '✅';
+        statusIcon.style.animation = 'none';
+        statusTitle.textContent = 'Payment Successful!';
+        statusMessage.textContent = 'Your M-Pesa payment has been completed successfully. Your wallet will be credited immediately.';
+        statusBadge.textContent = 'Completed';
+        statusBadge.className = 'status-badge badge-success';
+        statusDetail.textContent = 'Completed';
+        spinnerContainer.style.display = 'none';
+        pendingInfo.style.display = 'none';
+        successInfo.style.display = 'block';
+        retryBtn.style.display = 'none';
+
+        // Redirect after 3 seconds
+        setTimeout(() => {
+            window.location.href = '{% url "payments:wallet_dashboard" %}';
+        }, 3000);
+    }
+
+    function showFailed() {
+        statusIcon.textContent = '❌';
+        statusIcon.style.animation = 'none';
+        statusTitle.textContent = 'Payment Failed';
+        statusMessage.textContent = 'The M-Pesa payment could not be completed. Please check your phone for error details from Safaricom.';
+        statusBadge.textContent = 'Failed';
+        statusBadge.className = 'status-badge badge-failed';
+        statusDetail.textContent = 'Failed';
+        spinnerContainer.style.display = 'none';
+        pendingInfo.style.display = 'none';
+        failedInfo.style.display = 'block';
+        retryBtn.style.display = 'block';
+    }
+
+    function showCancelled() {
+        statusIcon.textContent = '⚠️';
+        statusIcon.style.animation = 'none';
+        statusTitle.textContent = 'Payment Cancelled';
+        statusMessage.textContent = 'The M-Pesa payment was cancelled. No funds have been deducted from your account.';
+        statusBadge.textContent = 'Cancelled';
+        statusBadge.className = 'status-badge badge-failed';
+        statusDetail.textContent = 'Cancelled';
+        spinnerContainer.style.display = 'none';
+        pendingInfo.style.display = 'none';
+        retryBtn.style.display = 'block';
+    }
+
+    function showTimeout() {
+        statusIcon.textContent = '⏱️';
+        statusIcon.style.animation = 'none';
+        statusTitle.textContent = 'Payment Timed Out';
+        statusMessage.textContent = 'We stopped waiting for payment confirmation after 10 minutes. You can retry or check your M-Pesa balance to see if the payment went through.';
+        statusBadge.textContent = 'Timed Out';
+        statusBadge.className = 'status-badge badge-failed';
+        statusDetail.textContent = 'Timed Out';
+        spinnerContainer.style.display = 'none';
+        pendingInfo.style.display = 'none';
+        retryBtn.style.display = 'block';
+    }
+
+    function addStatusUpdate(message) {
+        const now = new Date();
+        const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const updateItem = document.createElement('div');
+        updateItem.className = 'update-item';
+        updateItem.innerHTML = `<span class="update-time">${time}</span> - ${message}`;
+        statusUpdates.insertBefore(updateItem, statusUpdates.firstChild);
+
+        // Keep only last 10 updates
+        while (statusUpdates.children.length > 10) {
+            statusUpdates.removeChild(statusUpdates.lastChild);
+        }
+    }
+
+    // Handle page visibility for better performance
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // Page is hidden, reduce frequency
+            // Handled by the clearInterval above
+        } else {
+            // Page is visible, do immediate check
+            checkPaymentStatus();
+        }
+    });
+});
+</script>
+{% endblock %}

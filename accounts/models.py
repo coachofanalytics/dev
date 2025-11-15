@@ -99,6 +99,7 @@ class UserProfile(models.Model):
     job_title = models.CharField(max_length=100, blank=True, help_text='Your current job title or position')
 
     # Contact Information
+    country = models.CharField(max_length=100, blank=True, help_text='Country')
     phone = models.CharField(max_length=20, blank=True, help_text='Contact phone number')
     alternate_email = models.EmailField(max_length=200, blank=True, help_text='Alternative email address')
     location = models.CharField(max_length=100, blank=True, help_text='City, Country')

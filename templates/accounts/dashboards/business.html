@@ -63,13 +63,16 @@
                 <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
             </div>
             <div class="list-group list-group-flush">
-                <a href="#" class="list-group-item list-group-item-action">
+                <a href="{% url 'marketplace:update_business_profile' %}" class="list-group-item list-group-item-action">
                     <i class="bi bi-pencil-square"></i> Update Business Profile
                 </a>
-                <a href="#" class="list-group-item list-group-item-action">
+                <a href="{% url 'marketplace:post_investment_opportunity' %}" class="list-group-item list-group-item-action">
                     <i class="bi bi-cash-stack"></i> Post Investment Opportunity
                 </a>
-                <a href="#" class="list-group-item list-group-item-action">
+                <a href="{% url 'marketplace:post_job_opportunity' %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-briefcase"></i> Post Job Opportunity
+                </a>
+                <a href="{% url 'marketplace:find_investors' %}" class="list-group-item list-group-item-action">
                     <i class="bi bi-search"></i> Find Investors
                 </a>
                 <a href="{% url 'profile' user.username %}" class="list-group-item list-group-item-action">
