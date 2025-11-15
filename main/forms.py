@@ -29,12 +29,11 @@ class DonationOrganizationForm(forms.ModelForm):
         model = Donation_organization
         fields = ['donor_name', 'email', 'amount', 'message']
 
-
+# DonorForm for the organization spelled with underscore
 class DonorForm(forms.ModelForm):
     class Meta:
         model = Donation_organisation
         fields = ['donor_name', 'email', 'amount', 'message']
-
 
 # Contact Message Form
 class MessageForm(forms.ModelForm):
@@ -94,3 +93,4 @@ class ScholarshipSearchForm(forms.Form):
             }
         )
     )
+

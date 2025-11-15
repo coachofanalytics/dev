@@ -13,18 +13,19 @@ from .models import Assets,Description, News, Page, Service, SubService,Team, Sa
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
+#<<<<<<< HEAD
 from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
 #>>>>>>> 25.10_DC48_UAT_ND
+#=======
+from .models import (
+    Assets, Description, News, Page, Service, Scholarship, SubService, Team,
+    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry
+)
+#>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
-from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
-##=======
-from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
-from accounts.models import CustomerUser
-from .utils import image_view,path_values
+from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
-from main.forms import ContactForm
-#>>>>>>> origin/25.10_DC48K_UAT_FN
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
@@ -279,6 +280,9 @@ def subscribe_alerts(request):
 
 from django.shortcuts import render
 from .models import Service,ContactUs
+from django.db.models import Q
+from .models import Scholarship
+from .forms import ScholarshipSearchForm
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
@@ -528,7 +532,12 @@ def add_message(request):
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
-    context = {'initial_view': initial_view}
+    # Flag to indicate a successful mentorship request submission
+    mentorship_success = request.GET.get('mentorship') == 'success'
+    context = {
+        'initial_view': initial_view,
+        'mentorship_success': mentorship_success,
+    }
     return render(request, 'main/education/education.html', context)
 
 
@@ -613,36 +622,41 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
-#>>>>>>> origin/25.10_DC48K_UAT_FN
-
-# Scholarship views
-
+# Scholarship search view — renders the scholarship search template and handles basic filters
 def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
     if form.is_valid():
         data = form.cleaned_data
-        # apply filter
-        if data['search_keyword']:
+        # keyword search
+        kw = data.get('search_keyword')
+        if kw:
             scholarships = scholarships.filter(
-                Q(title__icontains=data['search_keyword']) |
-                Q(provider__icontains=data['search_keyword']) 
+                Q(title__icontains=kw) | Q(provider__icontains=kw)
             )
-        if data['filter_level'] and data['filter_level'] != 'All':
-            scholarships = scholarships.filter(level=data['filter_level'])
-
-        if data['filter_field'] and data['filter_field'] != 'All':
-            scholarships = scholarships.filter(field=data['filter_field'])
-
-        if data['filter_location'] and data['filter_location'] != 'All':
-            scholarships = scholarships.filter(location=data['filter_location'])
-
-        if data['filter_status']:
-            scholarships = scholarships.filter(status='Closing soon')
+        # level filter
+        level = data.get('filter_level')
+        if level:
+            scholarships = scholarships.filter(level=level)
+        # field filter
+        field = data.get('filter_field')
+        if field:
+            scholarships = scholarships.filter(field=field)
+        # location filter
+        location = data.get('filter_location')
+        if location:
+            scholarships = scholarships.filter(location=location)
+        # status
+        if data.get('filter_status'):
+            scholarships = scholarships.filter(status__icontains='Closing')
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
+#<<<<<<< HEAD
     return render(request, 'scholarship_app/scholarship_search.html',context)
 #>>>>>>> 25.10_DC48_UAT_ND
+#=======
+    return render(request, 'scholarship_app/scholarship_search.html', context)
+#>>>>>>> origin/25.11_DC48K_UAT_FN

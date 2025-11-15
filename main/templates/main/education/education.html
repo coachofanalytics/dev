@@ -31,6 +31,18 @@
     <!-- Navigation is provided by base template's navbar include -->
 
     <main class="mx-auto pb-16">
+        <!-- Mentorship success modal (shows after successful form submission) -->
+        <div id="mentorship-success-modal" role="dialog" aria-modal="true" aria-labelledby="mentorship-success-title" style="display:none;">
+            <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 mx-4">
+                    <h2 id="mentorship-success-title" class="text-xl font-semibold text-gray-900 mb-2">Thank you</h2>
+                    <p class="text-gray-700 mb-4">Thank you for your request — we will review it and get back to you shortly.</p>
+                    <div class="text-right">
+                        <button id="mentorship-success-close" class="bg-brand-blue text-white px-4 py-2 rounded">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
                 <div class="p-8 md:p-12 lg:p-16">
@@ -185,45 +197,37 @@
     </script>
 
     <script>
-        // Load the course registration fragment in-place when the Register button is clicked
+        // Show mentorship success modal if the view was passed a success flag
+        (function(){
+            const show = "{{ mentorship_success|yesno:'true,false' }}" === "true";
+            if(!show) return;
+            const modal = document.getElementById('mentorship-success-modal');
+            const close = document.getElementById('mentorship-success-close');
+            if(!modal) return;
+            modal.style.display = 'block';
+            // focus the close button for accessibility
+            if(close) close.focus();
+            close && close.addEventListener('click', function(){
+                modal.style.display = 'none';
+                // remove the mentorship query param from the URL so refresh won't show the modal again
+                try{
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('mentorship');
+                    window.history.replaceState({}, document.title, url.pathname + url.search);
+                }catch(e){ /* ignore */ }
+            });
+        })();
+    </script>
+
+    <script>
+        // Navigate to the dedicated Course Registration page when Register is clicked
         (function(){
             const btn = document.getElementById('register-courses-btn');
-            const container = document.getElementById('course-register-container');
-            if(!btn || !container) return;
-
+            if(!btn) return;
             btn.addEventListener('click', function(e){
-                // if JS enabled, fetch the fragment and inject it; otherwise allow normal navigation
+                // Ensure we always redirect to the full registration page
                 e.preventDefault();
-                const url = btn.getAttribute('href') + '?partial=1';
-                // show a small loading placeholder
-                container.innerHTML = '<div class="p-6 bg-white rounded shadow text-center">Loading courses…</div>';
-                fetch(url, { credentials: 'same-origin' })
-                    .then(r => {
-                        if(!r.ok) throw new Error('Network error');
-                        return r.text();
-                    })
-                    .then(html => {
-                        container.innerHTML = html;
-                        // After injecting, the fragment's JS needs to be executed. We'll evaluate any <script> tags present.
-                        const scripts = Array.from(container.querySelectorAll('script'));
-                        scripts.forEach(oldScript => {
-                            const s = document.createElement('script');
-                            if (oldScript.src) {
-                                s.src = oldScript.src;
-                            } else {
-                                s.textContent = oldScript.textContent;
-                            }
-                            document.body.appendChild(s);
-                            oldScript.remove();
-                        });
-                        // Scroll to the injected container
-                        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    })
-                    .catch(err => {
-                        console.error('Failed to load courses fragment', err);
-                        // fallback: navigate to the full page
-                        window.location.href = btn.getAttribute('href');
-                    });
+                window.location.href = btn.getAttribute('href');
             });
         })();
     </script>
