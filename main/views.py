@@ -9,7 +9,7 @@ from django.views.generic import (
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, EmergencyHelpActivations
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -219,7 +219,7 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
         return reverse('main:images') 
     
 def crisis_page(request):
-    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
+    hotlines = EmergencyHotlines.objects.filter(is_active=True).order_by("sort_order", "id")
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
