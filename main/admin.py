@@ -18,7 +18,7 @@ admin.site.register(ContactUs)
 admin.site.register(SafetyAlertSubscription)
 admin.site.register(EmergencyHotline)
 admin.site.register(StaffContact)
-admin.site.register(EmergencyHelpActivation)
+admin.site.register(EmergencyHelpActivations)
 
 #=======
 admin.site.register(Donation_organisation)

@@ -9,7 +9,7 @@ from django.views.generic import (
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, EmergencyHelpActivation
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, EmergencyHelpActivations
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -401,7 +401,7 @@ def activate_helpline(request):
         ip = request.META.get('REMOTE_ADDR')
 
     # Log activation
-    EmergencyHelpActivation.objects.create(
+    EmergencyHelpActivations.objects.create(
         event_type="callback_requested",
         name=name,
         phone=phone,

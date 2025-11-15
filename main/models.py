@@ -220,7 +220,7 @@ class StaffContact(models.Model):
         return self.name
 
 
-class EmergencyHelpActivation(models.Model):
+class EmergencyHelpActivations(models.Model):
     EVENT_CHOICES = (
         ("call_link_clicked", "Call Link Clicked"),
         ("callback_requested", "Callback Requested"),
