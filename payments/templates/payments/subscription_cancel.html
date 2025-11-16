@@ -1,0 +1,701 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cancel Subscription - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cancel-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 40px;
+    }
+
+    .cancel-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .cancel-subtitle {
+        opacity: 0.95;
+        font-size: 1.1rem;
+    }
+
+    .cancel-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .confirmation-card {
+        background: white;
+        border-radius: 10px;
+        padding: 40px;
+        border: 2px solid #e9ecef;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .confirmation-card h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .confirmation-card h2 i {
+        color: #dc3545;
+        font-size: 2.2rem;
+    }
+
+    .plan-summary {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 25px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+
+    .plan-summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e9ecef;
+        align-items: center;
+    }
+
+    .plan-summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .plan-summary-label {
+        font-weight: 600;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .plan-summary-value {
+        font-weight: 700;
+        color: #212529;
+        font-size: 1.1rem;
+    }
+
+    .warning-section {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .warning-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #856404;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .warning-title i {
+        font-size: 1.5rem;
+    }
+
+    .warning-content {
+        color: #856404;
+        line-height: 1.8;
+    }
+
+    .warning-list {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0 0 0;
+    }
+
+    .warning-list li {
+        padding: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .warning-list li i {
+        color: #ff9800;
+        font-weight: 600;
+    }
+
+    .consequences-section {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .consequences-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .consequences-title i {
+        color: #dc3545;
+    }
+
+    .consequence-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-left: 4px solid #dc3545;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .consequence-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .consequence-item-title {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 8px;
+    }
+
+    .consequence-item-description {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .refund-section {
+        background: #d4edda;
+        border: 2px solid #28a745;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .refund-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #155724;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .refund-title i {
+        font-size: 1.5rem;
+    }
+
+    .refund-content {
+        color: #155724;
+        line-height: 1.8;
+    }
+
+    .refund-list {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0 0 0;
+    }
+
+    .refund-list li {
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .refund-list li i {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .actions-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 40px;
+    }
+
+    .btn-cancel-confirm {
+        padding: 15px;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-cancel-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-cancel-danger:hover {
+        background: #c82333;
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-cancel-back {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-cancel-back:hover {
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+    }
+
+    .reason-section {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .reason-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 20px;
+    }
+
+    .reason-group {
+        margin-bottom: 15px;
+    }
+
+    .reason-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .reason-item:hover {
+        background: #e9ecef;
+    }
+
+    .reason-item input[type="radio"] {
+        margin-right: 12px;
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    .reason-item label {
+        cursor: pointer;
+        margin-bottom: 0;
+        flex: 1;
+    }
+
+    .reason-item-text {
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .reason-item-description {
+        display: block;
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 4px;
+    }
+
+    .feedback-section {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+        display: none;
+    }
+
+    .feedback-section.active {
+        display: block;
+    }
+
+    .feedback-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+    }
+
+    .form-control textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 5px;
+        color: #0c5de4;
+        margin-top: 20px;
+        font-size: 0.95rem;
+    }
+
+    .info-box i {
+        margin-right: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-header {
+            padding: 30px 0;
+        }
+
+        .cancel-title {
+            font-size: 2rem;
+        }
+
+        .confirmation-card {
+            padding: 25px;
+        }
+
+        .actions-section {
+            grid-template-columns: 1fr;
+        }
+
+        .plan-summary {
+            padding: 15px;
+        }
+
+        .warning-section,
+        .consequences-section,
+        .refund-section,
+        .reason-section,
+        .feedback-section {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cancel-header">
+    <div class="container">
+        <h1 class="cancel-title">Cancel Subscription</h1>
+        <p class="cancel-subtitle">We're sorry to see you go. Please review what you'll lose before confirming.</p>
+    </div>
+</div>
+
+<div class="container cancel-container mb-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{{ message.tags|default:'info-circle' }}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'payments:confirm_cancel' subscription.id %}" id="cancelForm">
+        {% csrf_token %}
+
+        <!-- Subscription Summary -->
+        <div class="confirmation-card">
+            <h2>
+                <i class="bi bi-exclamation-circle-fill"></i>
+                Confirm Subscription Cancellation
+            </h2>
+
+            <div class="plan-summary">
+                <div class="plan-summary-row">
+                    <span class="plan-summary-label">
+                        <i class="bi bi-tag"></i> Plan
+                    </span>
+                    <span class="plan-summary-value">{{ subscription.plan.name }}</span>
+                </div>
+
+                <div class="plan-summary-row">
+                    <span class="plan-summary-label">
+                        <i class="bi bi-calendar-check"></i> Active Until
+                    </span>
+                    <span class="plan-summary-value">{{ subscription.end_date|date:"F d, Y" }}</span>
+                </div>
+
+                <div class="plan-summary-row">
+                    <span class="plan-summary-label">
+                        <i class="bi bi-clock-history"></i> Days Remaining
+                    </span>
+                    <span class="plan-summary-value">{{ subscription.days_until_expiry }}</span>
+                </div>
+
+                <div class="plan-summary-row">
+                    <span class="plan-summary-label">
+                        <i class="bi bi-credit-card"></i> Amount Paid
+                    </span>
+                    <span class="plan-summary-value">${{ subscription.plan.price|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Section -->
+        <div class="warning-section">
+            <div class="warning-title">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                Important: What Will Happen
+            </div>
+            <div class="warning-content">
+                <p>Canceling your subscription will immediately disable access to the following:</p>
+                <ul class="warning-list">
+                    <li>
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>All premium features included in this plan</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Priority support and assistance</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Advanced analytics and reports</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Access will be removed on {{ subscription.end_date|date:"F d, Y" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Consequences Section -->
+        <div class="consequences-section">
+            <div class="consequences-title">
+                <i class="bi bi-info-circle-fill"></i>
+                What You'll Lose
+            </div>
+
+            <div class="consequence-item">
+                <div class="consequence-item-title">
+                    <i class="bi bi-tools"></i> Premium Features
+                </div>
+                <div class="consequence-item-description">
+                    You will lose access to all premium features included in the {{ subscription.plan.name }} plan.
+                </div>
+            </div>
+
+            <div class="consequence-item">
+                <div class="consequence-item-title">
+                    <i class="bi bi-headset"></i> Priority Support
+                </div>
+                <div class="consequence-item-description">
+                    Your priority support access will be revoked. You can still contact our basic support team.
+                </div>
+            </div>
+
+            <div class="consequence-item">
+                <div class="consequence-item-title">
+                    <i class="bi bi-graph-up"></i> Analytics
+                </div>
+                <div class="consequence-item-description">
+                    Advanced analytics, reports, and insights will no longer be available.
+                </div>
+            </div>
+
+            <div class="consequence-item">
+                <div class="consequence-item-title">
+                    <i class="bi bi-lightning"></i> Auto-Renewal
+                </div>
+                <div class="consequence-item-description">
+                    Your subscription will not automatically renew after {{ subscription.end_date|date:"F d, Y" }}.
+                </div>
+            </div>
+        </div>
+
+        <!-- Refund Section -->
+        <div class="refund-section">
+            <div class="refund-title">
+                <i class="bi bi-cash-coin"></i>
+                Refund Policy
+            </div>
+            <div class="refund-content">
+                <p>Based on our refund policy:</p>
+                <ul class="refund-list">
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Your current subscription is valid until {{ subscription.end_date|date:"F d, Y" }}</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>No refunds will be issued for the remaining active subscription period</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>You can subscribe to a different plan anytime</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Contact support if you purchased within the last 30 days</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Cancellation Reason Section -->
+        <div class="reason-section">
+            <div class="reason-title">
+                <i class="bi bi-chat-left-text"></i> Why are you canceling? (Optional)
+            </div>
+            <div class="reason-group">
+                <div class="reason-item">
+                    <input type="radio" name="cancellation_reason" value="too_expensive" id="reason-expensive">
+                    <label for="reason-expensive">
+                        <span class="reason-item-text">Too expensive</span>
+                        <span class="reason-item-description">The price is higher than I expected</span>
+                    </label>
+                </div>
+
+                <div class="reason-item">
+                    <input type="radio" name="cancellation_reason" value="missing_features" id="reason-features">
+                    <label for="reason-features">
+                        <span class="reason-item-text">Missing features</span>
+                        <span class="reason-item-description">The plan doesn't have what I need</span>
+                    </label>
+                </div>
+
+                <div class="reason-item">
+                    <input type="radio" name="cancellation_reason" value="poor_support" id="reason-support">
+                    <label for="reason-support">
+                        <span class="reason-item-text">Poor customer support</span>
+                        <span class="reason-item-description">Support response time is too slow</span>
+                    </label>
+                </div>
+
+                <div class="reason-item">
+                    <input type="radio" name="cancellation_reason" value="not_using" id="reason-using">
+                    <label for="reason-using">
+                        <span class="reason-item-text">Not using the features</span>
+                        <span class="reason-item-description">I don't use the service enough</span>
+                    </label>
+                </div>
+
+                <div class="reason-item">
+                    <input type="radio" name="cancellation_reason" value="switching" id="reason-switching">
+                    <label for="reason-switching">
+                        <span class="reason-item-text">Switching to a competitor</span>
+                        <span class="reason-item-description">Using a different service</span>
+                    </label>
+                </div>
+
+                <div class="reason-item">
+                    <input type="radio" name="cancellation_reason" value="other" id="reason-other">
+                    <label for="reason-other">
+                        <span class="reason-item-text">Other reason</span>
+                        <span class="reason-item-description">Please tell us more</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="feedback-section" id="feedbackSection">
+            <div class="feedback-title">
+                <i class="bi bi-chat-left-text"></i> Additional Feedback (Optional)
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="feedback">Tell us how we can improve</label>
+                <textarea class="form-control" id="feedback" name="cancellation_feedback" placeholder="Your feedback helps us improve..."></textarea>
+            </div>
+            <div class="info-box">
+                <i class="bi bi-info-circle"></i>
+                Your feedback will help us improve our service and offer better value to our customers.
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-section">
+            <button type="submit" class="btn-cancel-confirm btn-cancel-danger" onclick="return confirm('Are you absolutely sure you want to cancel this subscription? This action cannot be undone.');">
+                <i class="bi bi-trash3"></i>
+                Yes, Cancel My Subscription
+            </button>
+            <a href="{% url 'payments:my_subscriptions' %}" class="btn-cancel-confirm btn-cancel-back">
+                <i class="bi bi-arrow-left"></i>
+                No, Keep My Subscription
+            </a>
+        </div>
+
+        <div class="info-box" style="margin-top: 30px;">
+            <i class="bi bi-shield-check"></i>
+            <strong>Need help?</strong> Before you cancel, consider contacting our support team. We may be able to offer you a discount or help you find a better plan.
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reasonRadios = document.querySelectorAll('input[name="cancellation_reason"]');
+        const feedbackSection = document.getElementById('feedbackSection');
+
+        reasonRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    feedbackSection.classList.add('active');
+                } else {
+                    feedbackSection.classList.remove('active');
+                }
+            });
+        });
+
+        // Check if other is already selected
+        const selectedReason = document.querySelector('input[name="cancellation_reason"]:checked');
+        if (selectedReason && selectedReason.value === 'other') {
+            feedbackSection.classList.add('active');
+        }
+    });
+</script>
+{% endblock %}

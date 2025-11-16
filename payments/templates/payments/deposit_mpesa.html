@@ -1,0 +1,683 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Deposit with M-Pesa - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mpesa-container {
+        max-width: 550px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .mpesa-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .mpesa-header h1 {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .mpesa-header p {
+        color: #6c757d;
+        font-size: 16px;
+    }
+
+    .mpesa-logo {
+        font-size: 64px;
+        margin-bottom: 15px;
+    }
+
+    .payment-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+
+    .amount-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .amount-label {
+        font-size: 13px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .amount-display {
+        font-size: 32px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-section {
+        margin-bottom: 25px;
+    }
+
+    .form-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+        display: block;
+        font-size: 14px;
+    }
+
+    .form-control {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 15px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+
+    .form-helper-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .phone-input-group {
+        display: flex;
+        gap: 0;
+    }
+
+    .phone-prefix {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px 0 0 8px;
+        border-right: none;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .phone-input {
+        flex: 1;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .instruction-box {
+        background: #e3f2fd;
+        border-left: 4px solid #2196F3;
+        border-radius: 6px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .instruction-title {
+        font-weight: 600;
+        color: #1565c0;
+        margin-bottom: 12px;
+        font-size: 16px;
+    }
+
+    .instruction-steps {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .instruction-steps li {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: #0c5460;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .instruction-steps li:last-child {
+        margin-bottom: 0;
+    }
+
+    .instruction-steps .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        background: #1976d2;
+        color: white;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .info-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #664d03;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .info-box strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #856404;
+    }
+
+    .success-box {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #155724;
+        font-size: 13px;
+        line-height: 1.6;
+        display: none;
+    }
+
+    .success-box.show {
+        display: block;
+    }
+
+    .success-box strong {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-submit.primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-submit.primary:hover:not(:disabled) {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-submit.secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-submit.secondary:hover:not(:disabled) {
+        background: #f8f9ff;
+    }
+
+    .processing-state {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .processing-state.show {
+        display: block;
+    }
+
+    .spinner-border {
+        width: 50px;
+        height: 50px;
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+
+    .processing-text {
+        font-size: 16px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .processing-subtext {
+        font-size: 13px;
+        color: #adb5bd;
+    }
+
+    .alert-container {
+        margin-bottom: 25px;
+    }
+
+    .back-button {
+        margin-bottom: 20px;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 8px;
+        display: none;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .feature-card {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .feature-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+
+    .feature-text {
+        font-size: 13px;
+        color: #333;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="alert-container">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="back-button">
+        <a href="{% url 'payments:deposit_initiate' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Change Payment Method
+        </a>
+    </div>
+
+    <div class="mpesa-container">
+        <div class="mpesa-header">
+            <div class="mpesa-logo">📱</div>
+            <h1>M-Pesa Deposit</h1>
+            <p>Complete your deposit securely via Safaricom M-Pesa</p>
+        </div>
+
+        <div class="payment-card">
+            <!-- Amount Summary -->
+            <div class="amount-summary">
+                <div class="amount-label">Deposit Amount</div>
+                <div class="amount-display">{{ amount|floatformat:2 }} KES</div>
+            </div>
+
+            <!-- Features -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">Instant Credit</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-text">Secure</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-text">Mobile Money</div>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="instruction-box">
+                <div class="instruction-title">How to Complete Your Deposit</div>
+                <ul class="instruction-steps">
+                    <li>
+                        <div class="step-number">1</div>
+                        <div>
+                            <strong>Dial USSD code</strong><br>
+                            On your registered M-Pesa number, dial: <code>*150*00#</code>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-number">2</div>
+                        <div>
+                            <strong>Select "Lipa na M-Pesa Online"</strong><br>
+                            Choose the online payment option from the menu
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-number">3</div>
+                        <div>
+                            <strong>Enter business details</strong><br>
+                            Follow the prompts and enter our business shortcode
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-number">4</div>
+                        <div>
+                            <strong>Confirm transaction</strong><br>
+                            Enter the amount ({{ amount|floatformat:2 }} KES) and confirm with your M-Pesa PIN
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-number">5</div>
+                        <div>
+                            <strong>Funds credited immediately</strong><br>
+                            Your wallet will be updated instantly upon successful payment
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Phone Number Form -->
+            <form id="mpesaForm">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <h6 class="form-section-title">Your Phone Number</h6>
+
+                    <div class="form-group">
+                        <label class="form-label">M-Pesa Phone Number</label>
+                        <div class="phone-input-group">
+                            <div class="phone-prefix">+254</div>
+                            <input type="tel"
+                                   id="phoneNumber"
+                                   name="phone_number"
+                                   class="form-control phone-input"
+                                   placeholder="712 345 678"
+                                   pattern="[0-9\s]{9,10}"
+                                   required>
+                        </div>
+                        <div class="form-helper-text">
+                            Enter the phone number registered with M-Pesa (without +254 prefix)
+                        </div>
+                        <div class="error-message" id="phoneError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   id="confirmPhone"
+                                   required>
+                            <label class="form-check-label" for="confirmPhone">
+                                I confirm this is my registered M-Pesa phone number
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Details -->
+                <div class="form-section">
+                    <h6 class="form-section-title">Transaction Details</h6>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   id="termsCheck"
+                                   required>
+                            <label class="form-check-label" for="termsCheck">
+                                I understand this will initiate an M-Pesa payment of {{ amount|floatformat:2 }} KES and agree to the <a href="#" target="_blank">transaction terms</a>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <strong>⏱️ Processing Time:</strong>
+                    Most M-Pesa transactions are processed instantly. If your transaction is pending, we'll automatically retry it periodically. You can check the status in your transaction history.
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn-submit primary" id="submitBtn">
+                        <i class="bi bi-phone-fill"></i> Initiate M-Pesa Payment
+                    </button>
+                    <a href="{% url 'payments:deposit_initiate' %}" class="btn-submit secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+
+            <!-- Processing State -->
+            <div class="processing-state" id="processingDiv">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <div class="processing-text">Initiating M-Pesa Payment</div>
+                <div class="processing-subtext">Please wait while we initiate your M-Pesa payment...</div>
+            </div>
+
+            <!-- Success State -->
+            <div class="success-box" id="successDiv">
+                <strong>✅ Payment Initiated Successfully!</strong>
+                A payment prompt has been sent to your M-Pesa phone number. Please check your phone and complete the payment within the next 5 minutes.
+            </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="payment-card">
+            <h6 class="form-section-title">❓ Frequently Asked Questions</h6>
+
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="false">
+                            How long does it take for funds to appear in my wallet?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body" style="font-size: 13px;">
+                            Most M-Pesa deposits are credited instantly to your wallet upon successful payment confirmation. In rare cases, it may take up to 5 minutes.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false">
+                            What if the payment fails?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body" style="font-size: 13px;">
+                            If the payment fails, you'll receive an M-Pesa notification immediately. No charges will be deducted from your account. You can retry the payment at any time.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false">
+                            Is there a fee for M-Pesa deposits?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body" style="font-size: 13px;">
+                            There is a small fixed processing fee of 50 KES per transaction. This fee was disclosed during the amount selection step.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false">
+                            Can I use a different M-Pesa number?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body" style="font-size: 13px;">
+                            Yes, you can use any registered M-Pesa number. However, we recommend using the primary account associated with your Biashara Bridges profile for security purposes.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('mpesaForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const processingDiv = document.getElementById('processingDiv');
+    const successDiv = document.getElementById('successDiv');
+    const phoneInput = document.getElementById('phoneNumber');
+    const confirmPhone = document.getElementById('confirmPhone');
+    const termsCheck = document.getElementById('termsCheck');
+    const phoneError = document.getElementById('phoneError');
+
+    // Format phone number input
+    phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        if (value.length > 10) {
+            value = value.slice(0, 10);
+        }
+        this.value = value;
+
+        // Format display: XXX XXX XXX
+        if (value.length > 0) {
+            if (value.length <= 3) {
+                this.value = value;
+            } else if (value.length <= 6) {
+                this.value = value.slice(0, 3) + ' ' + value.slice(3);
+            } else {
+                this.value = value.slice(0, 3) + ' ' + value.slice(3, 6) + ' ' + value.slice(6);
+            }
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Validate phone number
+        const phoneValue = phoneInput.value.replace(/\s/g, '');
+        if (phoneValue.length < 9 || phoneValue.length > 10) {
+            phoneError.textContent = 'Please enter a valid M-Pesa phone number (9-10 digits)';
+            phoneError.classList.add('show');
+            return;
+        }
+
+        // Validate checkboxes
+        if (!confirmPhone.checked) {
+            alert('Please confirm this is your registered M-Pesa phone number');
+            return;
+        }
+
+        if (!termsCheck.checked) {
+            alert('Please accept the transaction terms');
+            return;
+        }
+
+        // Clear previous errors
+        phoneError.classList.remove('show');
+
+        // Disable submit button and show processing state
+        submitBtn.disabled = true;
+        form.style.display = 'none';
+        processingDiv.classList.add('show');
+
+        // Submit form via AJAX
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('{% url "payments:deposit_mpesa_initiate" %}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success message
+                processingDiv.classList.remove('show');
+                successDiv.classList.add('show');
+
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || '{% url "payments:deposit_mpesa_status" %}';
+                }, 3000);
+            } else {
+                // Handle error
+                phoneError.textContent = data.error || 'Failed to initiate payment. Please try again.';
+                phoneError.classList.add('show');
+                submitBtn.disabled = false;
+                form.style.display = 'block';
+                processingDiv.classList.remove('show');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            phoneError.textContent = 'An error occurred. Please try again.';
+            phoneError.classList.add('show');
+            submitBtn.disabled = false;
+            form.style.display = 'block';
+            processingDiv.classList.remove('show');
+        }
+    });
+
+    // Auto-hide alerts
+    document.querySelectorAll('.alert').forEach(alert => {
+        setTimeout(() => {
+            new bootstrap.Alert(alert).close();
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

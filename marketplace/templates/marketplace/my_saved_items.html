@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Saved Items{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1>My Saved Items</h1>
+    {% if saved_items %}
+    <div class="list-group">
+        {% for item in saved_items %}
+        <div class="list-group-item">{{ item.content_object }}</div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No saved items yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

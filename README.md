@@ -1,2 +1,0 @@
-# uat
-for testing purposes

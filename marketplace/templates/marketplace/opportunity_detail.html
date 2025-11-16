@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ opportunity.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1>{{ opportunity.title }}</h1>
+    <p class="lead">{{ opportunity.description }}</p>
+    <p>Amount Seeking: ${{ opportunity.amount_seeking }}</p>
+    <p>Equity Offered: {{ opportunity.equity_percentage }}%</p>
+    <a href="{% url 'marketplace:browse_opportunities' %}" class="btn btn-secondary">Back to Opportunities</a>
+</div>
+{% endblock %}

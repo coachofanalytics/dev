@@ -1,143 +1,163 @@
-from django.utils import timezone
-from datetime import datetime,timedelta
 from django.db import models
-
-from django.contrib.auth.models import AbstractUser, Group, Permission
-from accounts.choices import CategoryChoices, SubCategoryChoices
-from accounts.modelmanager import DepartmentManager
-from django_countries.fields import CountryField
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
-
-class CustomerUser(AbstractUser):
-    
-    groups = models.ManyToManyField(Group, related_name='custom_user_set')
-
-    user_permissions = models.ManyToManyField(Permission, related_name='custom_user_set')
-    def get_category_display_name(self):
-        return dict(CategoryChoices.choices).get(self.category, 'Unknown')    
-
-    # added this column here
-    def get_subcategory_display_name(self):
-        return dict(SubCategoryChoices.choices).get(self.subcategory, 'Unknown')    
-
-    class Score(models.IntegerChoices):
-        Male = 1
-        Female = 2
-    id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    date_joined = models.DateTimeField(default=timezone.now)
-    email = models.CharField(max_length=255)
-    category = models.IntegerField(choices=CategoryChoices.choices, default=999)
-    # added this column here
-    is_admin = models.BooleanField("Is admin", default=False)
-    is_member = models.BooleanField("Is Member", default=False)
-    email_verified = models.BooleanField(default=False)
-    verification_token = models.UUIDField( unique=True, null=True, blank=True)
-    class Meta:
-        # ordering = ["-date_joined"]
-        ordering = ["username"]
-        verbose_name_plural = "Users"
-
-    @property
-    def full_name(self):
-        fullname = f'{self.first_name},{self.last_name}'
-        return fullname
-    
-    @property
-    def user_details(self):
-        user_details = (
-            f"Username: {self.username}\n"
-           
-            # f"Country: {self.country.name if self.country else 'N/A'}"
-        )
-        return user_details
-    
-    @property
-    def is_recent(self):
-        return self.date_joined >= timezone.now() - timedelta(days=365)
-    
-    @property
-    def tenure(self):
-        number_days=(timezone.now().date() - self.date_joined.date()).days
-        months=number_days/30
-        return months
-class Membership(models.Model):
-    PAYMENT_STATUS = [
-        ('PAID', 'Paid'),
-        ('NOT_PAID', 'Not Paid'),
-    ]
-
-    member = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='memberships')
-    fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    currency = models.CharField(max_length=10, default="KES")
-    status = models.CharField(max_length=10, choices=PAYMENT_STATUS, default='NOT_PAID')
-    paid_date = models.DateTimeField(null=True, blank=True)  # Tracks the date when payment is made
-
-    def __str__(self):
-        return f"{self.member.full_name} - {self.status}"
-
-    @property
-    def is_paid(self):
-        return self.status == 'PAID' and self.paid_date is not None
-
-
-class Department(models.Model):
-    """Department Table will provide a list of the different departments in CODA"""
-
-    # Department
-    # BASIC = "Basic"
-    HR = "HR Department"
-    IT = "IT Department"
-    MKT = "Marketing Department"
-    FIN = "Finance Department"
-    SECURITY = "Security Department"
-    MANAGEMENT = "Management Department"
-    # Project = "Project"
-    HEALTH = "Health Department"
-    Other = "Other"
-    DEPARTMENT_CHOICES = [
-        # (BASIC, "BASIC Department"),
-        (HR, "HR Department"),
-        (IT, "IT Department"),
-        (MKT, "Marketing Department"),
-        (FIN, "Finance Department"),
-        # (Project, "Project"),
-        (SECURITY, "Security Department"),
-        (MANAGEMENT, "Management Department"),
-        (HEALTH, "Health Department"),
-        (Other, "Other"),
-    ]
-
-    name = models.CharField(
-        max_length=100,
-        choices=DEPARTMENT_CHOICES,
-        default=Other,
-    )
-
-    description = models.TextField(max_length=500, null=True, blank=True)
-    slug = models.SlugField(
-        verbose_name=("Department safe URL"), max_length=255, unique=True
-    )
-    # created_date = models.DateTimeField(_('entered on'),default=timezone.now, editable=True)
-    is_featured = models.BooleanField("Is featured", default=True)
+class Category(models.Model):
+    """
+    Dynamic registration categories that can be managed by superadmin.
+    """
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+    description = models.TextField(max_length=200, blank=True)
+    icon = models.CharField(max_length=50, default='bi-tag', help_text='Bootstrap icon class')
     is_active = models.BooleanField(default=True)
-
-    objects=DepartmentManager()
-
-    @classmethod
-    def get_default_pk(cls):
-        cat, created = cls.objects.get_or_create(
-            name="Other", defaults=dict(description="this is not an cat")
-        )
-        return cat.pk
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = ("Department")
-        verbose_name_plural = ("Departments")
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+        ordering = ['name']
 
-    # def get_absolute_url(self):
-    #     return reverse('management:department_list', args=[self.slug])
     def __str__(self):
-        return self.name    
+        return self.name
+
+
+class Role(models.Model):
+    """
+    Staff roles with different permissions.
+    """
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(max_length=300, blank=True)
+    can_manage_users = models.BooleanField(default=False, help_text='Can add, edit, delete users')
+    can_manage_categories = models.BooleanField(default=False, help_text='Can add, edit, delete categories')
+    can_manage_staff = models.BooleanField(default=False, help_text='Can add, edit, delete staff members')
+    can_view_reports = models.BooleanField(default=True, help_text='Can view system reports')
+    can_moderate_content = models.BooleanField(default=False, help_text='Can moderate user content')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Role'
+        verbose_name_plural = 'Roles'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Staff(models.Model):
+    """
+    Internal staff members with assigned roles.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff')
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='staff_members')
+    employee_id = models.CharField(max_length=20, unique=True)
+    department = models.CharField(max_length=100, blank=True)
+    is_active = models.BooleanField(default=True)
+    hired_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True, help_text='Internal notes about this staff member')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Staff'
+        verbose_name_plural = 'Staff'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.username} - {self.role}"
+
+
+class UserProfile(models.Model):
+    """
+    Extended user profile model with category and document upload.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+    # Profile Image
+    profile_image = models.ImageField(
+        upload_to='profile_images/%Y/%m/%d/',
+        blank=True,
+        null=True,
+        help_text='Upload your profile picture'
+    )
+
+    # Documents
+    document = models.FileField(
+        upload_to='user_documents/%Y/%m/%d/',
+        blank=True,
+        null=True,
+        help_text='Upload your resume (for individuals), business profile (for businesses), or portfolio (for investors)'
+    )
+
+    # Basic Information
+    bio = models.TextField(max_length=500, blank=True, help_text='Tell us about yourself or your business')
+    company_name = models.CharField(max_length=200, blank=True, help_text='Company or Organization name')
+    job_title = models.CharField(max_length=100, blank=True, help_text='Your current job title or position')
+
+    # Contact Information
+    country = models.CharField(max_length=100, blank=True, help_text='Country')
+    phone = models.CharField(max_length=20, blank=True, help_text='Contact phone number')
+    alternate_email = models.EmailField(max_length=200, blank=True, help_text='Alternative email address')
+    location = models.CharField(max_length=100, blank=True, help_text='City, Country')
+    address = models.TextField(max_length=300, blank=True, help_text='Full address (optional)')
+
+    # Online Presence
+    website = models.URLField(max_length=200, blank=True, help_text='Your website or company website')
+    linkedin_url = models.URLField(max_length=200, blank=True, help_text='LinkedIn profile URL')
+    twitter_handle = models.CharField(max_length=50, blank=True, help_text='Twitter username (without @)')
+    facebook_url = models.URLField(max_length=200, blank=True, help_text='Facebook profile or page URL')
+
+    # Professional Details
+    years_of_experience = models.IntegerField(blank=True, null=True, help_text='Years of professional experience')
+    industry = models.CharField(max_length=100, blank=True, help_text='Industry or sector')
+    skills = models.TextField(max_length=500, blank=True, help_text='Your skills or areas of expertise (comma separated)')
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profiles'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        category_name = self.category.name if self.category else 'No Category'
+        return f"{self.user.username} - {category_name}"
+
+    @property
+    def dashboard_url(self):
+        """
+        Return the appropriate dashboard URL name based on user category.
+        """
+        if not self.category:
+            return 'home'
+
+        dashboard_urls = {
+            'investor': 'investor_dashboard',
+            'business': 'business_dashboard',
+            'individual': 'individual_dashboard',
+        }
+        return dashboard_urls.get(self.category.slug, 'home')
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """
+    Automatically create a UserProfile when a new User is created.
+    """
+    if created:
+        UserProfile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """
+    Save the UserProfile when the User is saved.
+    """
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

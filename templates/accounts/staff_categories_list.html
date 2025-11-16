@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Categories - Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-tags"></i> Manage Categories</h2>
+            <div>
+                <a href="{% url 'staff_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                <a href="/admin/accounts/category/add/" class="btn btn-primary">
+                    <i class="bi bi-tag"></i> Add New Category
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for category in categories %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h4 class="card-title mb-1">
+                            <i class="{{ category.icon }} text-primary"></i> {{ category.name }}
+                        </h4>
+                        <span class="badge bg-{{ category.is_active|yesno:'success,secondary' }}">
+                            {{ category.is_active|yesno:'Active,Inactive' }}
+                        </span>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <a href="/admin/accounts/category/{{ category.id }}/change/" class="btn btn-outline-primary" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <p class="card-text text-muted mb-3">
+                    {{ category.description|default:"No description provided" }}
+                </p>
+
+                <div class="border-top pt-3">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h5 class="text-primary mb-0">{{ category.user_count }}</h5>
+                            <small class="text-muted">Users</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-success mb-0">
+                                <code>{{ category.slug }}</code>
+                            </h5>
+                            <small class="text-muted">Slug</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> Created: {{ category.created_at|date:"M d, Y" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">No Categories Found</h4>
+                <p class="text-muted">Create your first category to get started.</p>
+                <a href="/admin/accounts/category/add/" class="btn btn-primary">
+                    <i class="bi bi-tag"></i> Add Category
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }}'s Profile - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <!-- Profile Card -->
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" alt="{{ profile_user.get_full_name }}" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                    <i class="bi bi-person-circle text-primary" style="font-size: 6rem;"></i>
+                    {% endif %}
+                </div>
+                <h3 class="card-title">{{ profile_user.get_full_name|default:profile_user.username }}</h3>
+                <p class="text-muted">@{{ profile_user.username }}</p>
+
+                {% if profile.job_title %}
+                <p class="text-muted mb-2">{{ profile.job_title }}</p>
+                {% endif %}
+
+                {% if profile.category %}
+                <span class="badge bg-{% if profile.category.slug == 'investor' %}success{% elif profile.category.slug == 'business' %}primary{% else %}info{% endif %} mb-3">
+                    <i class="bi bi-{% if profile.category.slug == 'investor' %}cash-stack{% elif profile.category.slug == 'business' %}building{% else %}person{% endif %}"></i>
+                    {{ profile.category.name }}
+                </span>
+                {% endif %}
+
+                <hr>
+
+                <!-- Contact Information -->
+                {% if profile.location %}
+                <p class="mb-2">
+                    <i class="bi bi-geo-alt"></i> {{ profile.location }}
+                </p>
+                {% endif %}
+
+                {% if profile.phone %}
+                <p class="mb-2">
+                    <i class="bi bi-telephone"></i> {{ profile.phone }}
+                </p>
+                {% endif %}
+
+                <p class="mb-2">
+                    <i class="bi bi-envelope"></i> {{ profile_user.email }}
+                </p>
+
+                {% if profile.alternate_email %}
+                <p class="mb-2">
+                    <i class="bi bi-envelope-plus"></i> {{ profile.alternate_email }}
+                </p>
+                {% endif %}
+
+                <hr>
+
+                <p class="text-muted small">
+                    <i class="bi bi-calendar"></i> Joined {{ profile.created_at|date:"F Y" }}
+                </p>
+
+                {% if is_own_profile %}
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Edit Profile
+                    </a>
+                    {% if profile.category %}
+                    <a href="{% url profile.dashboard_url %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-speedometer2"></i> My Dashboard
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Online Presence Card -->
+        {% if profile.website or profile.linkedin_url or profile.twitter_handle or profile.facebook_url %}
+        <div class="card shadow-sm mt-3">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-globe"></i> Online Presence</h5>
+                <hr>
+                <div class="d-grid gap-2">
+                    {% if profile.website %}
+                    <a href="{{ profile.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-globe"></i> Website
+                    </a>
+                    {% endif %}
+                    {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-linkedin"></i> LinkedIn
+                    </a>
+                    {% endif %}
+                    {% if profile.twitter_handle %}
+                    <a href="https://twitter.com/{{ profile.twitter_handle }}" target="_blank" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-twitter"></i> Twitter
+                    </a>
+                    {% endif %}
+                    {% if profile.facebook_url %}
+                    <a href="{{ profile.facebook_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-facebook"></i> Facebook
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+        <!-- About Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <i class="bi bi-person-lines-fill"></i> About
+                </h4>
+                <hr>
+                {% if profile.bio %}
+                <p>{{ profile.bio }}</p>
+                {% else %}
+                <p class="text-muted">
+                    {% if is_own_profile %}
+                    You haven't added a bio yet. Click "Edit Profile" to add one.
+                    {% else %}
+                    No bio available.
+                    {% endif %}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Professional Information -->
+        {% if profile.company_name or profile.industry or profile.years_of_experience or profile.skills %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <i class="bi bi-briefcase"></i> Professional Information
+                </h4>
+                <hr>
+                <div class="row">
+                    {% if profile.company_name %}
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-building"></i> Company/Organization:</strong>
+                        <p class="text-muted mb-0">{{ profile.company_name }}</p>
+                    </div>
+                    {% endif %}
+                    {% if profile.industry %}
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-diagram-3"></i> Industry:</strong>
+                        <p class="text-muted mb-0">{{ profile.industry }}</p>
+                    </div>
+                    {% endif %}
+                    {% if profile.years_of_experience %}
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="bi bi-clock-history"></i> Experience:</strong>
+                        <p class="text-muted mb-0">{{ profile.years_of_experience }} years</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if profile.skills %}
+                <div class="mt-2">
+                    <strong><i class="bi bi-award"></i> Skills & Expertise:</strong>
+                    <p class="text-muted">{{ profile.skills }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Contact Details -->
+        {% if profile.address %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <i class="bi bi-geo-alt"></i> Location Details
+                </h4>
+                <hr>
+                <p class="mb-0">{{ profile.address }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Documents Section -->
+        {% if profile.document %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <i class="bi bi-file-earmark-text"></i> Documents
+                </h4>
+                <hr>
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 2rem;"></i>
+                    <div class="ms-3">
+                        <p class="mb-0"><strong>
+                            {% if profile.category %}
+                                {% if profile.category.slug == 'investor' %}Portfolio/Investment Profile
+                                {% elif profile.category.slug == 'business' %}Business Profile
+                                {% else %}Resume/CV{% endif %}
+                            {% else %}
+                                Document
+                            {% endif %}
+                        </strong></p>
+                        {% if is_own_profile %}
+                        <a href="{{ profile.document.url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Category-specific Information -->
+        {% if profile.category %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <i class="bi bi-{% if profile.category.slug == 'investor' %}cash-stack{% elif profile.category.slug == 'business' %}building{% else %}briefcase{% endif %}"></i>
+                    {% if profile.category.slug == 'investor' %}Investment Profile
+                    {% elif profile.category.slug == 'business' %}Business Information
+                    {% else %}Professional Profile{% endif %}
+                </h4>
+                <hr>
+                <p class="text-muted">
+                    {% if profile.category.slug == 'investor' %}
+                    Investor looking to connect with businesses and investment opportunities on the Biashara Bridges platform.
+                    {% elif profile.category.slug == 'business' %}
+                    Business seeking partnerships, investments, or collaboration opportunities through Biashara Bridges.
+                    {% else %}
+                    Individual professional seeking business opportunities and networking connections.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not profile.bio and not profile.company_name and not profile.industry and not profile.skills and not profile.document and is_own_profile %}
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i> <strong>Complete your profile!</strong> Add more information to help others connect with you.
+            <a href="{% url 'edit_profile' %}" class="alert-link">Edit your profile now</a>.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

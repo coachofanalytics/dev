@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Dashboard - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="bi bi-shield-check text-warning"></i> Staff Dashboard</h2>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-person-badge"></i> {{ user.get_full_name|default:user.username }} |
+                    <span class="badge bg-warning text-dark">{{ role.name }}</span>
+                    {% if staff.department %} | {{ staff.department }}{% endif %}
+                </p>
+            </div>
+            <a href="{% url 'profile' user.username %}" class="btn btn-outline-primary">
+                <i class="bi bi-person"></i> My Profile
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-warning text-dark shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title"><i class="bi bi-stars"></i> Welcome, {{ user.first_name }}!</h4>
+                <p class="card-text mb-0">{{ role.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-people text-primary" style="font-size: 3rem;"></i>
+                <h3 class="mt-3">{{ total_users }}</h3>
+                <p class="text-muted mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-tags text-success" style="font-size: 3rem;"></i>
+                <h3 class="mt-3">{{ total_categories }}</h3>
+                <p class="text-muted mb-0">Categories</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-shield-fill-check text-warning" style="font-size: 3rem;"></i>
+                <h3 class="mt-3">{{ total_staff }}</h3>
+                <p class="text-muted mb-0">Active Staff</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% if role.can_manage_users %}
+                <a href="{% url 'staff_users_list' %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-people"></i> Manage Users
+                    <span class="badge bg-primary float-end">{{ total_users }}</span>
+                </a>
+                <a href="/admin/auth/user/add/" class="list-group-item list-group-item-action">
+                    <i class="bi bi-person-plus"></i> Add New User
+                </a>
+                {% endif %}
+
+                {% if role.can_manage_categories %}
+                <a href="{% url 'staff_categories_list' %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tags"></i> Manage Categories
+                    <span class="badge bg-success float-end">{{ total_categories }}</span>
+                </a>
+                <a href="/admin/accounts/category/add/" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tag"></i> Add New Category
+                </a>
+                {% endif %}
+
+                {% if role.can_manage_staff %}
+                <a href="/admin/accounts/staff/" class="list-group-item list-group-item-action">
+                    <i class="bi bi-shield-check"></i> Manage Staff
+                    <span class="badge bg-warning float-end">{{ total_staff }}</span>
+                </a>
+                <a href="/admin/accounts/role/" class="list-group-item list-group-item-action">
+                    <i class="bi bi-award"></i> Manage Roles
+                </a>
+                {% endif %}
+
+                {% if role.can_view_reports %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-graph-up"></i> View Reports
+                </a>
+                {% endif %}
+
+                {% if role.can_moderate_content %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-flag"></i> Moderate Content
+                </a>
+                {% endif %}
+
+                {% if user.is_superuser or user.is_staff %}
+                <a href="/admin/" class="list-group-item list-group-item-action">
+                    <i class="bi bi-gear"></i> Django Admin Panel
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Users</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for user in recent_users %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-person-circle"></i>
+                            <strong>{{ user.get_full_name|default:user.username }}</strong>
+                            {% if user.profile.category %}
+                            <span class="badge bg-info ms-2">{{ user.profile.category.name }}</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">{{ user.date_joined|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="list-group-item text-muted text-center">
+                    No users yet
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Distribution -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> User Distribution by Category</h5>
+            </div>
+            <div class="card-body">
+                {% if category_stats %}
+                <div class="row">
+                    {% for stat in category_stats %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-primary">{{ stat.count }}</h3>
+                                <p class="mb-0">{{ stat.category__name|default:"Uncategorized" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">
+                    <i class="bi bi-inbox" style="font-size: 3rem;"></i><br>
+                    No category data available yet.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role Permissions Info -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Your Permissions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-{% if role.can_manage_users %}check-circle text-success{% else %}x-circle text-danger{% endif %}"></i>
+                                Manage Users
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-{% if role.can_manage_categories %}check-circle text-success{% else %}x-circle text-danger{% endif %}"></i>
+                                Manage Categories
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-{% if role.can_manage_staff %}check-circle text-success{% else %}x-circle text-danger{% endif %}"></i>
+                                Manage Staff
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-{% if role.can_view_reports %}check-circle text-success{% else %}x-circle text-danger{% endif %}"></i>
+                                View Reports
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-{% if role.can_moderate_content %}check-circle text-success{% else %}x-circle text-danger{% endif %}"></i>
+                                Moderate Content
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

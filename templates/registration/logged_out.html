@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Logged Out - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-5 text-center">
+                <i class="bi bi-box-arrow-right text-primary" style="font-size: 5rem;"></i>
+                <h2 class="mt-4">You've Been Logged Out</h2>
+                <p class="text-muted mt-3">
+                    Thank you for using Biashara Bridges.
+                    You have been successfully logged out.
+                </p>
+
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Log In Again
+                    </a>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house"></i> Go to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
