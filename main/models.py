@@ -251,7 +251,7 @@ class MedicalResourceInquiry(models.Model):
 
 
 # Scholarship model with filters
-class Scholarship(models.Model):
+class Scholarship(models.Model): # database table for scholarships
     LEVEL_CHOICES = [
         ('Undergraduate', 'Undergraduate'),
         ('Masters', 'Masters'),
