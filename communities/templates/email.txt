@@ -1,0 +1,9 @@
+Thank you for joining the community, {{ name }}!
+
+We are thrilled to have you with us. If you have any questions or suggestions, feel free to contact us anytime.
+
+To access your dashboard, please click the link below:
+{{ dashboard_url }}
+
+Best regards,
+Community Team

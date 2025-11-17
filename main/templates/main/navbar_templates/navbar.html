@@ -139,7 +139,7 @@
                 
                         <!-- Community Support -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Community Support</a>
+                            <a href="{% url 'home' %}">Community Support</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Forums and Networking</a>
                                 <a href="#">Community Events</a>
@@ -168,7 +168,7 @@
                 
                         <!-- Crisis Management -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Crisis Management</a>
+                            <a href="{% url 'main:crisis_page' %}">Crisis Management</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Emergency Response</a>
                                 <a href="#">Advisories</a>
@@ -177,10 +177,10 @@
                 
                         <!-- Education and Training -->
                         <div class="sub-dropdown">
-                            <a href="#">Education and Training</a>
+                            <a href="{% url 'main:education_landing' %}">Education and Training</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Scholarships</a>
-                                <a href="#">Training Sessions</a>
+                                <a href="{% url 'main:scholarship_search' %}">Scholarships</a>
+                                <a href="{% url 'main:education_landing' %}">Training Sessions</a>
                             </div>
                         </div>
                     </div>

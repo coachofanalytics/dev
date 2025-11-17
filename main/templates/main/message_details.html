@@ -1,0 +1,22 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm p-4">
+        <h2 class="mb-4">Message Details</h2>
+
+        <ul class="list-group mb-4">
+            <li class="list-group-item"><strong>Name:</strong> {{ message.name }}</li>
+            <li class="list-group-item"><strong>Email:</strong> {{ message.email }}</li>
+            <li class="list-group-item"><strong>Message:</strong> {{ message.message }}</li>
+            <li class="list-group-item"><strong>Submitted At:</strong> {{ message.submitted_at|date:"F j, Y, g:i a" }}</li>
+        </ul>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'main:edit_message' message.id %}" class="btn btn-primary">✏️ Edit</a>
+            <a href="{% url 'main:delete_message' message.id %}" class="btn btn-danger">🗑️ Delete</a>
+            <a href="{% url 'main:message_list' %}" class="btn btn-outline-secondary">⬅️ Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

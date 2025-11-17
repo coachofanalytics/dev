@@ -120,6 +120,13 @@ class LoginForm(forms.Form):
 #             'agree': 'I agree to the terms and conditions'
 #         }
 
+
+# form for account model
+class AccountForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ('name',)
+
 class MembershipRegistrationForm(forms.Form):
     email = forms.EmailField(label="Email", required=True)
     first_name = forms.CharField(label="First Name", max_length=100, required=True)
