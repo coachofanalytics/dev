@@ -1,12 +1,18 @@
 asgiref==3.10.0
-Django==5.2.7
+Django>=4.2,<5.0
 pillow==12.0.0
 psycopg2-binary==2.9.11
 python-decouple==3.8
 sqlparse==0.5.3
 tzdata==2025.2
+gunicorn
+python-dotenv
+whitenoise
+dj-database-url
 # Payment Gateway Dependencies
 stripe==13.1.2
 paypalrestsdk==1.13.3
 cryptography==46.0.3
 requests==2.32.5
+
+
