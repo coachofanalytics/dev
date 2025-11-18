@@ -33,10 +33,23 @@ class BudgetDashboardView(BaseFinanceView):
         super().__init__()
         self.estimation_service = BudgetEstimationService()
         self.consolidation_service = BudgetConsolidationService()
+        
+        # Phase 2: Management Integration Service for activity data
+        try:
+            from finance.services.management_integration_service import ManagementIntegrationService
+            self.management_api = ManagementIntegrationService()
+        except ImportError:
+            self.management_api = None
+            logger.warning("ManagementIntegrationService not available")
     
     def _resolve_department(self, department_input, company=None):
         """Normalize department input (id, slug, name, or instance) into Department object."""
         if not department_input:
+            return None
+        
+        # Explicitly check for Company objects and reject them
+        if isinstance(department_input, Company):
+            logger.warning(f"Company object passed to _resolve_department: {department_input}. Returning None.")
             return None
         
         if isinstance(department_input, Department):
@@ -71,6 +84,22 @@ class BudgetDashboardView(BaseFinanceView):
         """Log error with context"""
         logger.error(f"{message}: {str(exception)}", exc_info=True)
     
+    def _check_projections_exist(self, company):
+        """Safely check if budget projections exist for a company."""
+        try:
+            # Check if the budget relationship exists in the model
+            if not hasattr(BudgetEstimateProjection, 'budget'):
+                return False
+            
+            # Try to query - handle database schema issues gracefully
+            return BudgetEstimateProjection.objects.filter(
+                budget__company=company
+            ).exists()
+        except Exception as e:
+            # If there's a database schema issue, return False gracefully
+            logger.warning(f"Could not check budget projections: {e}")
+            return False
+    
     def _get_overview_tab_data(self, company, department, estimation_service, consolidation_service):
         """Get data for Overview tab."""
         try:
@@ -78,6 +107,42 @@ class BudgetDashboardView(BaseFinanceView):
             budget_filter = Q(company=company)
             if department:
                 budget_filter &= Q(department=department)
+            
+            # Phase 2: Get Management activity data for budget validation
+            management_activity_data = None
+            management_evidence_data = None
+            if self.management_api:
+                try:
+                    from datetime import date
+                    from dateutil.relativedelta import relativedelta
+                    last_month = date.today() - relativedelta(months=1)
+                    
+                    # Get activity totals from Management
+                    activity_result = self.management_api.get_activity_totals(
+                        month=last_month.month,
+                        year=last_month.year,
+                        department_id=department.id if department else None,
+                        include_evidence=True,
+                        include_validation=True,
+                        use_direct_call=True
+                    )
+                    
+                    if activity_result.get('success'):
+                        management_activity_data = activity_result.get('data', {})
+                    
+                    # Get evidence validation
+                    evidence_result = self.management_api.get_evidence_validation(
+                        month=last_month.month,
+                        year=last_month.year,
+                        department_id=department.id if department else None,
+                        use_direct_call=True
+                    )
+                    
+                    if evidence_result.get('success'):
+                        management_evidence_data = evidence_result.get('data', {})
+                        
+                except Exception as e:
+                    logger.warning(f"Could not fetch Management activity data: {e}")
             
             # Get budget summary by category
             category_summary = {}
@@ -143,6 +208,9 @@ class BudgetDashboardView(BaseFinanceView):
                     'active_budgets': total_budgets,  # Simplified - same as total
                     'total_amount': {'total': total_estimated, 'total_usd': total_estimated_usd},
                     'monthly_average': monthly_average,
+                    # Phase 2: Management activity data for budget validation
+                    'management_activity_data': management_activity_data,
+                    'management_evidence_data': management_evidence_data,
                     'monthly_average_usd': monthly_average_usd,
                     'data_source': 'real_transactions',
                     'data_quality': f'{total_budgets} budget items tracked',
@@ -155,7 +223,7 @@ class BudgetDashboardView(BaseFinanceView):
                         'variance_percentage': (total_variance / total_estimated * 100) if total_estimated > 0 else 0,
                     }
                 ,
-                'has_projections': BudgetEstimateProjection.objects.filter(budget__company=company).exists()
+                'has_projections': self._check_projections_exist(company)
                 }
             }
         
@@ -219,10 +287,37 @@ class BudgetDashboardView(BaseFinanceView):
         """Get data for Approvals tab."""
         try:
             from ...models import BudgetRequest
+            from accounts.models import Department
             
-            # Build filter
-            request_filter = Q(department__company=company, status='pending')
+            # Ensure department is a Department instance, not a string or company
             if department:
+                # Explicitly reject Company objects
+                if isinstance(department, Company):
+                    logger.warning(f"Company object passed to _get_approvals_tab_data: {department}. Setting department to None.")
+                    department = None
+                elif not isinstance(department, Department):
+                    if isinstance(department, str):
+                        try:
+                            department = Department.objects.get(slug=department) or Department.objects.get(name=department)
+                        except Department.DoesNotExist:
+                            department = None
+                    else:
+                        department = None
+            
+            # Build filter - ensure company is a Company instance
+            if not hasattr(company, 'id'):
+                # If company is a string (slug), get the Company object
+                from main.models import Company
+                try:
+                    company = Company.objects.get(slug=company)
+                except Company.DoesNotExist:
+                    company = None
+            
+            if not company:
+                return {'approvals_data': {'error': 'Company not found'}}
+            
+            request_filter = Q(department__company=company, status='pending')
+            if department and isinstance(department, Department):
                 request_filter &= Q(department=department)
             
             # Get pending requests
@@ -392,7 +487,7 @@ def unified_budget_dashboard(request, company_slug, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         user_department = view.get_user_department(request, company)
         selected_department = view._resolve_department(user_department, company)
@@ -479,7 +574,7 @@ def budget_planning_view(request, company_slug, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         user_department = view.get_user_department(request, company)
         

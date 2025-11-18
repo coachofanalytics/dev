@@ -85,15 +85,15 @@
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-credit-card"></i> Card Details</h5>
                     
-                    <!-- Stripe Elements will be inserted here -->
+                    <!-- Stripe Payment Element will be inserted here -->
                     <form id="payment-form">
                         {% csrf_token %}
-                        <div id="card-element" class="form-control" style="height: 50px; padding: 10px; background-color: white; color: black;">
-                            <!-- Stripe Elements will create form elements here -->
+                        <div id="payment-element">
+                            <!-- Stripe Payment Element will create form elements here -->
                         </div>
                         
                         <!-- Display form errors -->
-                        <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+                        <div id="payment-errors" role="alert" class="text-danger mt-2"></div>
                         
                         <!-- Payment amount (hidden) -->
                         <input type="hidden" id="payment-amount" value="{{ payment_info.get_fee_balance }}">
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!stripePublishableKey || stripePublishableKey === '' || stripePublishableKey === 'None') {
         console.error('Stripe publishable key is not available');
-        document.getElementById('card-element').innerHTML = 
+        document.getElementById('payment-element').innerHTML = 
             '<div class="alert alert-warning">Stripe is not configured. Please contact support or use manual payment details.</div>';
         document.getElementById('submit-payment').disabled = true;
         return;
@@ -151,40 +151,101 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize Stripe
     const stripe = Stripe(stripePublishableKey);
-    const elements = stripe.elements();
     
     // Get initial values from hidden input
     const fullAmount = parseFloat(document.getElementById('payment-amount').value);
     const maxAmount = fullAmount;
     
-    // Create card element
-    const cardElement = elements.create('card', {
-        style: {
-            base: {
-                fontSize: '16px',
-                color: '#424770',
-                backgroundColor: '#ffffff',
-                '::placeholder': {
-                    color: '#aab7c4',
-                },
-            },
-            invalid: {
-                color: '#9e2146',
-            },
-        },
-    });
+    // Payment Element and client secret
+    let elements;
+    let paymentElement;
+    let currentClientSecret = null;
+    let isInitializing = false;
+    let updateTimeout = null;
     
-    // Mount the card element with error handling
-    try {
-        cardElement.mount('#card-element');
-        console.log('Stripe Elements mounted successfully');
-    } catch (error) {
-        console.error('Error mounting Stripe Elements:', error);
-        document.getElementById('card-element').innerHTML = 
-            '<div class="alert alert-danger">Error loading payment form. Please try refreshing the page or use manual payment details.</div>';
-        document.getElementById('submit-payment').disabled = true;
-        return;
+    // Function to create PaymentIntent and Payment Element
+    async function initializePaymentElement(amount) {
+        // Prevent multiple simultaneous initializations
+        if (isInitializing) {
+            console.log('Payment Element initialization already in progress, skipping...');
+            return false;
+        }
+        
+        isInitializing = true;
+        
+        try {
+            // Get PaymentIntent from server
+            const response = await fetch('{% url "finance:stripe_payment_intent" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({
+                    amount: amount,
+                }),
+            });
+            
+            const result = await response.json();
+            
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            
+            console.log('PaymentIntent created:', result);
+            currentClientSecret = result.client_secret;
+            
+            // Only create Payment Element if it doesn't exist
+            if (!elements || !paymentElement) {
+                // Create new Payment Element
+                elements = stripe.elements({
+                    clientSecret: currentClientSecret,
+                });
+                paymentElement = elements.create('payment');
+                paymentElement.mount('#payment-element');
+                
+                // Set up Payment Element error handling
+                paymentElement.on('change', function(event) {
+                    const displayError = document.getElementById('payment-errors');
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                        submitButton.disabled = true;
+                    } else {
+                        displayError.textContent = '';
+                        submitButton.disabled = false;
+                    }
+                });
+                
+                // Wait for Payment Element to be ready
+                await new Promise((resolve) => {
+                    paymentElement.on('ready', () => {
+                        console.log('Payment Element ready');
+                        submitButton.disabled = false;
+                        isInitializing = false;
+                        resolve();
+                    });
+                });
+            } else {
+                // Element already exists, just update the client secret
+                // Note: We can't update client secret on existing element, so we'll create new PaymentIntent on submit
+                console.log('Payment Element already exists, will update on submit');
+                currentClientSecret = result.client_secret;
+                isInitializing = false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error initializing Payment Element:', error);
+            const errorElement = document.getElementById('payment-errors');
+            errorElement.textContent = error.message || 'Failed to initialize payment form. Please try again.';
+            submitButton.disabled = true;
+            isInitializing = false;
+            return false;
+        }
     }
+    
+    // Initialize Payment Element on page load with initial amount
+    initializePaymentElement(fullAmount);
     
     // Handle amount type change
     const amountTypeSelect = document.getElementById('amount-type');
@@ -212,7 +273,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Enable/disable submit button
         const isValidAmount = amount > 0 && amount <= maxAmount;
-        submitButton.disabled = !isValidAmount;
+        submitButton.disabled = !isValidAmount || !paymentElement;
+        
+        // Don't update Payment Element on every keystroke - we'll create new PaymentIntent on submit
+        // Just update the display and button text
     }
     
     // Event listeners for amount changes
@@ -226,20 +290,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    partialAmountInput.addEventListener('input', updateAmount);
-    partialAmountInput.addEventListener('blur', updateAmount);
-    
-    // Handle real-time validation errors from the card Element
-    cardElement.on('change', function(event) {
-        const displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-            submitButton.disabled = true;
-        } else {
-            displayError.textContent = '';
-            updateAmount(); // Re-enable if amount is valid
-        }
+    // Debounce input events to avoid too many updates
+    partialAmountInput.addEventListener('input', function() {
+        updateAmount();
     });
+    
+    partialAmountInput.addEventListener('blur', function() {
+        updateAmount();
+    });
+    
+    // Payment Element error handling will be set up after element is created
     
     // Handle form submission
     const form = document.getElementById('payment-form');
@@ -259,7 +319,15 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         
         try {
-            // Get PaymentIntent from server first
+            // Ensure Payment Element is mounted
+            if (!elements || !paymentElement) {
+                const initialized = await initializePaymentElement(amount);
+                if (!initialized) {
+                    throw new Error('Failed to initialize payment form');
+                }
+            }
+            
+            // Create new PaymentIntent with current amount (amount may have changed)
             const response = await fetch('{% url "finance:stripe_payment_intent" %}', {
                 method: 'POST',
                 headers: {
@@ -277,19 +345,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(result.error);
             }
             
-            console.log('PaymentIntent created:', result);
+            console.log('New PaymentIntent created for submission:', result);
+            currentClientSecret = result.client_secret;
             
-            // Confirm payment with card element using confirmPayment (more reliable)
+            // Unmount old element and create new one with new client secret
+            if (paymentElement) {
+                try {
+                    paymentElement.unmount();
+                } catch (e) {
+                    console.log('Element already unmounted or destroyed');
+                }
+            }
+            
+            // Create new elements instance with new client secret
+            elements = stripe.elements({
+                clientSecret: currentClientSecret,
+            });
+            paymentElement = elements.create('payment');
+            paymentElement.mount('#payment-element');
+            
+            // Set up error handling for new element
+            paymentElement.on('change', function(event) {
+                const displayError = document.getElementById('payment-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+            
+            // Wait for element to be ready
+            await new Promise((resolve) => {
+                paymentElement.on('ready', () => {
+                    console.log('Payment Element ready for confirmation');
+                    resolve();
+                });
+            });
+            
+            // Confirm payment with Payment Element
             const {error: confirmError, paymentIntent} = await stripe.confirmPayment({
-                clientSecret: result.client_secret,
                 elements: elements,
                 confirmParams: {
-                    payment_method_data: {
-                        billing_details: {
-                            name: 'Test User',
-                        },
-                    },
+                    return_url: window.location.origin + '{% url "finance:payment_success" %}',
                 },
+                redirect: 'if_required',
             });
             
             if (confirmError) {
@@ -324,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('Payment error:', error);
-            const errorElement = document.getElementById('card-errors');
+            const errorElement = document.getElementById('payment-errors');
             errorElement.textContent = error.message || 'Payment failed. Please try again.';
             submitButton.disabled = false;
             submitButton.innerHTML = '<i class="fas fa-lock"></i> Pay $' + amount.toFixed(2);

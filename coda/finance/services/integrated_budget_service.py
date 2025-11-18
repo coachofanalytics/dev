@@ -41,11 +41,32 @@ class IntegratedBudgetService:
     2. Budget items (from BudgetEstimateProjection, non-zero amounts)
     3. Real-time compliance checking
     4. Admin controls and regulations
+    
+    Phase 2: Now supports consuming Management Budget Integration APIs
     """
     
-    def __init__(self):
+    def __init__(self, use_api: bool = False):
+        """
+        Initialize the service.
+        
+        Args:
+            use_api: If True, use Management Budget Integration APIs instead of direct DB queries
+        """
         self.compliance_service = EmployeeComplianceService()
         self.logger = logging.getLogger(__name__)
+        self.use_api = use_api
+        
+        if use_api:
+            try:
+                from finance.services.management_integration_service import ManagementIntegrationService
+                self.management_api = ManagementIntegrationService()
+                self.logger.info("Using Management Budget Integration APIs")
+            except ImportError:
+                self.logger.warning("ManagementIntegrationService not available, falling back to direct queries")
+                self.use_api = False
+                self.management_api = None
+        else:
+            self.management_api = None
     
     def get_monthly_budget_summary(self, target_month: int, target_year: int, 
                                  department: Optional[Department] = None) -> Dict[str, Any]:
@@ -100,11 +121,22 @@ class IntegratedBudgetService:
         """
         Get salary information for compliant employees based on last month's tasks.
         
+        Phase 2: Can use Management Budget Integration API or direct DB queries.
+        
         Uses the same logic as payslip calculation:
         - Get TaskHistory records for target month/year
         - Calculate earnings using (point/mxpoint) * mxearning
         - Include only employees meeting 33% compliance threshold
         """
+        # Phase 2: Try API first if enabled
+        if self.use_api and self.management_api:
+            try:
+                return self._get_salaries_from_api(target_month, target_year, department)
+            except Exception as e:
+                self.logger.warning(f"API call failed, falling back to direct query: {e}")
+                # Fall through to direct query
+        
+        # Direct database query (original implementation)
         try:
             # Get TaskHistory records for the target month (last month's tasks)
             task_filter = Q(
@@ -189,6 +221,57 @@ class IntegratedBudgetService:
                 'total_employees': 0,
                 'error': str(e)
             }
+    
+    def _get_salaries_from_api(
+        self,
+        target_month: int,
+        target_year: int,
+        department: Optional[Department] = None
+    ) -> Dict[str, Any]:
+        """
+        Get salary information from Management Budget Integration API.
+        
+        Phase 2: API-based implementation.
+        """
+        try:
+            # Call Management API
+            api_result = self.management_api.get_activity_totals(
+                month=target_month,
+                year=target_year,
+                department_id=department.id if department else None,
+                include_evidence=True,
+                include_validation=True
+            )
+            
+            if not api_result['success']:
+                raise Exception(f"API call failed: {api_result.get('errors', [])}")
+            
+            api_data = api_result['data']
+            totals = api_data.get('totals', {})
+            validation_status = api_data.get('validation_status', {})
+            
+            # Extract employee data from by_department breakdown
+            # Note: API returns aggregated data, so we need to reconstruct employee-level data
+            # For now, return aggregated totals - can be enhanced to parse employee details
+            
+            compliant_count = validation_status.get('compliant_employees', 0)
+            total_employees = validation_status.get('total_employees', 0)
+            non_compliant_count = total_employees - compliant_count
+            
+            return {
+                'compliant_employees': [],  # Can be enhanced to parse from API response
+                'non_compliant_employees': [],  # Can be enhanced to parse from API response
+                'total_amount': Decimal(str(totals.get('total_earnings', 0))),
+                'compliant_count': compliant_count,
+                'non_compliant_count': non_compliant_count,
+                'total_employees': total_employees,
+                'api_data': api_data,  # Include raw API data for reference
+                'source': 'api'
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting salaries from API: {e}")
+            raise
     
     def _get_budget_items_summary(self, target_month: int, target_year: int, 
                                 department: Optional[Department] = None) -> Dict[str, Any]:

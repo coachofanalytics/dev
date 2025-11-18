@@ -6,6 +6,7 @@ before sending to clients for batch approval.
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
@@ -35,8 +36,10 @@ from ...models import (
 from ...services import PositionFetcherService, BatchApprovalService, ManagedTradingService
 from ...services.unusual_whales_service import UnusualWhalesService
 from ...services.position_ranking_service import PositionRankingService
+from ...services.portfolio_preset_service import PortfolioPresetBuilder
 from ...utils import build_preview_payloads
 from ...tasks import managed_income_scheduler
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -117,12 +120,18 @@ def suggested_positions_list(request):
     # ========== PHASE 10A: SMART POSITION RANKING ==========
     top_5_recommended = []
     all_ranked = []
+    portfolio_presets = []
     
     ranker = PositionRankingService()
+    preset_builder = PortfolioPresetBuilder()
     if pending.exists():
         try:
             all_ranked = ranker.rank_positions(pending)
             top_5_recommended = ranker.get_top_n(all_ranked, n=5)
+            portfolio_presets = preset_builder.build_presets(
+                pending,
+                pre_ranked=all_ranked,
+            )
             
             logger.info(f"🏆 Top 5 ranked: {[item['position'].symbol for item in top_5_recommended]}")
         except Exception as e:
@@ -290,6 +299,7 @@ def suggested_positions_list(request):
         'ttl_minutes': ttl_minutes,
         'fetch_windows': ['9:00 AM ET', '1:00 PM ET'],
         'latest_fetch_at': latest_fetch_at,
+        'portfolio_presets': portfolio_presets,
     }
     return render(request, 'investing/staff/suggested_positions.html', context)
 
@@ -592,6 +602,210 @@ def create_batch_from_suggestions(request):
     
     return redirect('investing:suggested_positions_list')
 
+
+@staff_member_required
+@require_POST
+def create_batch_from_preset(request):
+    """
+    Create a PositionBatch from a selected portfolio preset.
+    Server rebuilds the preset to ensure integrity.
+    """
+    logger.info("🔵 [BATCH CREATE] Starting batch creation from preset")
+    preset_code = request.POST.get('preset_code')
+    account_id = request.POST.get('account_id')
+    exclude_suggestion_ids = request.POST.getlist('exclude_suggestion_ids')  # List of suggestion IDs to exclude
+    
+    logger.info(f"🔵 [BATCH CREATE] Preset code: {preset_code}, Account ID: {account_id}, Exclude: {exclude_suggestion_ids}")
+    
+    if not preset_code:
+        logger.warning("🔴 [BATCH CREATE] Missing preset code")
+        messages.error(request, "❌ Missing preset code.")
+        return redirect('investing:suggested_positions_list')
+
+    # Rebuild suggestions and presets
+    pending = SuggestedPosition.objects.filter(review_status='pending').order_by('-ai_score')
+    logger.info(f"🔵 [BATCH CREATE] Found {pending.count()} pending suggestions")
+    
+    if not pending.exists():
+        logger.warning("🔴 [BATCH CREATE] No pending suggestions available")
+        messages.error(request, "❌ No pending suggestions available.")
+        return redirect('investing:suggested_positions_list')
+
+    ranker = PositionRankingService()
+    all_ranked = ranker.rank_positions(pending)
+    logger.info(f"🔵 [BATCH CREATE] Ranked {len(all_ranked)} positions")
+    
+    builder = PortfolioPresetBuilder()
+    presets = builder.build_presets(pending, pre_ranked=all_ranked)
+    logger.info(f"🔵 [BATCH CREATE] Built {len(presets)} presets")
+    
+    selected_preset = next((p for p in presets if p['config'].code == preset_code), None)
+    if not selected_preset:
+        logger.warning(f"🔴 [BATCH CREATE] Preset '{preset_code}' not found in built presets")
+        messages.warning(request, f"⚠️ Preset '{preset_code}' not found or has no eligible suggestions.")
+        return redirect('investing:suggested_positions_list')
+    
+    positions_count = len(selected_preset.get('positions', []))
+    logger.info(f"🔵 [BATCH CREATE] Selected preset '{preset_code}' has {positions_count} positions")
+    
+    if not selected_preset.get('positions'):
+        logger.warning(f"🔴 [BATCH CREATE] Preset '{preset_code}' has no positions")
+        messages.warning(request, "⚠️ Selected preset has no eligible suggestions.")
+        return redirect('investing:suggested_positions_list')
+
+    # Filter out excluded suggestions if any
+    if exclude_suggestion_ids:
+        exclude_ids = [int(id_str) for id_str in exclude_suggestion_ids if id_str.isdigit()]
+        if exclude_ids:
+            logger.info(f"🔵 [BATCH CREATE] Excluding {len(exclude_ids)} suggestions: {exclude_ids}")
+            selected_preset['positions'] = [
+                pos for pos in selected_preset['positions']
+                if pos['suggestion'].id not in exclude_ids
+            ]
+            logger.info(f"🔵 [BATCH CREATE] After filtering: {len(selected_preset['positions'])} positions remaining")
+            
+            if not selected_preset['positions']:
+                logger.warning("🔴 [BATCH CREATE] All positions were excluded")
+                messages.warning(request, "⚠️ All positions were excluded. Please select at least one position.")
+                return redirect('investing:suggested_positions_list')
+
+    # Get selected account or choose first active managed account
+    if account_id:
+        try:
+            account = ManagedTradingAccount.objects.get(
+                id=int(account_id),
+                trading_enabled=True
+            )
+            logger.info(f"🔵 [BATCH CREATE] Using selected account: {account.id} ({account.account_name})")
+        except (ManagedTradingAccount.DoesNotExist, ValueError):
+            logger.warning(f"🔴 [BATCH CREATE] Invalid account ID: {account_id}")
+            messages.error(request, f"❌ Invalid account selected: {account_id}.")
+            return redirect('investing:suggested_positions_list')
+    else:
+        # Choose first active managed account
+        # Check both is_active=True OR status='active' to be more flexible
+        account = ManagedTradingAccount.objects.filter(
+            Q(is_active=True) | Q(status='active')
+        ).filter(trading_enabled=True).order_by('id').first()
+    
+    if not account:
+        # Check if any accounts exist at all
+        total_accounts = ManagedTradingAccount.objects.count()
+        inactive_accounts = ManagedTradingAccount.objects.exclude(
+            Q(is_active=True) | Q(status='active')
+        ).count()
+        
+        logger.error(f"🔴 [BATCH CREATE] No active managed accounts available. Total accounts: {total_accounts}, Inactive: {inactive_accounts}")
+        
+        if total_accounts == 0:
+            error_msg = (
+                "❌ No managed accounts found. "
+                f"<a href='{reverse('investing:create_managed_account')}' class='alert-link'>Create a managed account first</a>."
+            )
+        elif inactive_accounts > 0:
+            error_msg = (
+                f"❌ No active managed accounts found. Found {total_accounts} account(s) but none are active. "
+                f"<a href='{reverse('investing:managed_accounts_list')}' class='alert-link'>View accounts</a> to activate one."
+            )
+        else:
+            error_msg = (
+                f"❌ No active managed accounts available. "
+                f"<a href='{reverse('investing:managed_accounts_list')}' class='alert-link'>View accounts</a> to activate one."
+            )
+        
+        messages.error(request, error_msg)
+        return redirect('investing:suggested_positions_list')
+    
+    logger.info(f"🔵 [BATCH CREATE] Using account: {account.id} ({account.account_name}) [status={account.status}, is_active={account.is_active}]")
+
+    # Convert to positions and create batch
+    try:
+        logger.info("🔵 [BATCH CREATE] Starting transaction...")
+        with transaction.atomic():
+            created_positions = []
+            trading_service = ManagedTradingService()
+            
+            logger.info(f"🔵 [BATCH CREATE] Processing {len(selected_preset['positions'])} suggestions...")
+            for idx, item in enumerate(selected_preset['positions'], 1):
+                suggestion = item['suggestion']
+                logger.info(f"🔵 [BATCH CREATE] [{idx}/{len(selected_preset['positions'])}] Creating position for {suggestion.symbol} {suggestion.strategy} (ID: {suggestion.id})")
+                
+                position_data = {
+                    'symbol': suggestion.symbol,
+                    'strategy': suggestion.strategy,
+                    'positions': suggestion.positions,
+                    'expiration_date': suggestion.expiration_date,
+                    'capital_required': float(suggestion.capital_required),
+                    'premium_collected': float(suggestion.premium_collected),
+                    'max_profit': float(suggestion.max_profit),
+                    'max_loss': float(suggestion.max_loss),
+                    'position_delta': float(suggestion.position_delta),
+                    'position_theta': float(suggestion.position_theta),
+                    'position_gamma': float(suggestion.position_gamma),
+                    'position_vega': float(suggestion.position_vega),
+                    'notes': f"Created from preset {selected_preset['config'].name}",
+                }
+                
+                try:
+                    position = trading_service.create_position(account, position_data, deduct_balance=False)
+                    position.status = 'pending'
+                    position.requires_client_approval = True
+                    position.save()
+                    logger.info(f"🟢 [BATCH CREATE] Position {position.id} created successfully")
+
+                    suggestion.created_position = position
+                    suggestion.review_status = 'converted'
+                    suggestion.save(update_fields=['created_position', 'review_status'])
+                    created_positions.append(position)
+                    logger.info(f"🟢 [BATCH CREATE] Suggestion {suggestion.id} marked as converted")
+                except Exception as pos_exc:
+                    logger.error(f"🔴 [BATCH CREATE] Failed to create position for {suggestion.symbol}: {pos_exc}", exc_info=True)
+                    raise
+
+            logger.info(f"🔵 [BATCH CREATE] Created {len(created_positions)} positions, now creating batch...")
+            
+            # Create weekly batch using service (links pending positions automatically)
+            batch_service = BatchApprovalService()
+            batch = batch_service.create_weekly_batch(account)
+            
+            if batch:
+                logger.info(f"🟢 [BATCH CREATE] Batch {batch.batch_number} created successfully (ID: {batch.id})")
+            else:
+                logger.warning("🟡 [BATCH CREATE] Batch service returned None (might be pending next cycle)")
+
+        # Audit log and success message (outside transaction)
+        if batch:
+            try:
+                TradingActivity.objects.create(
+                    managed_account=account,
+                    activity_type='alert_generated',
+                    description=f"Batch created from preset {selected_preset['config'].name}",
+                    data_snapshot={
+                        'batch_number': getattr(batch, 'batch_number', None),
+                        'preset_code': selected_preset['config'].code,
+                        'positions': [p.id for p in created_positions],
+                    },
+                    performed_by=request.user if request.user.is_authenticated else None,
+                )
+                logger.info(f"🟢 [BATCH CREATE] Audit log created for batch {batch.batch_number}")
+            except Exception as audit_exc:
+                logger.warning(f"🟡 [BATCH CREATE] Audit log write failed: {audit_exc}", exc_info=True)
+            
+            success_msg = f"✅ Batch #{batch.batch_number} created successfully from preset '{selected_preset['config'].name}' with {len(created_positions)} positions."
+            logger.info(f"🟢 [BATCH CREATE] SUCCESS: {success_msg}")
+            messages.success(request, success_msg)
+        else:
+            success_msg = f"✅ Created {len(created_positions)} positions successfully. Batch will be created on next cycle."
+            logger.info(f"🟡 [BATCH CREATE] PARTIAL SUCCESS: {success_msg}")
+            messages.success(request, success_msg)
+            
+    except Exception as exc:
+        error_msg = f"❌ Failed to create batch: {str(exc)}"
+        logger.error(f"🔴 [BATCH CREATE] ERROR: {error_msg}", exc_info=True)
+        messages.error(request, error_msg)
+
+    logger.info("🔵 [BATCH CREATE] Redirecting to suggestions list...")
+    return redirect('investing:suggested_positions_list')
 
 @staff_member_required
 @require_POST

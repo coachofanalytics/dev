@@ -31,26 +31,33 @@ def create_payment_intent(request):
     Create a Stripe PaymentIntent for the payment
     """
     if not stripe_available:
+        print("[Stripe][DEBUG] stripe library unavailable in create_payment_intent")
         return JsonResponse({'error': 'Stripe is not available'}, status=503)
     
     try:
         data = json.loads(request.body)
         amount = float(data.get('amount', 0))
+        print(f"[Stripe][DEBUG] Incoming PaymentIntent request amount={amount} user={request.user.id}")
         
         if amount <= 0:
+            print("[Stripe][DEBUG] Invalid amount received for PaymentIntent")
             return JsonResponse({'error': 'Invalid amount'}, status=400)
         
         # Get user's payment information
         try:
             payment_info = Payment_Information.objects.filter(
-                customer_id=request.user.id
-            ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').order_by('-id').first()
+                customer=request.user
+            ).only('id', 'customer', 'payment_fees', 'down_payment', 'plan').order_by('-id').first()
         except Exception as db_error:
             logger.warning(f"Database query issue: {db_error}")
+            print(f"[Stripe][DEBUG] Payment info lookup failed: {db_error}")
             return JsonResponse({'error': 'Payment information not found'}, status=400)
         
         if not payment_info:
+            print("[Stripe][DEBUG] No payment information found for user")
             return JsonResponse({'error': 'No payment information found'}, status=400)
+        
+        print(f"[Stripe][DEBUG] Using PaymentInformation id={payment_info.id} plan={payment_info.plan}")
         
         # Create PaymentIntent with setup_future_usage for better reliability
         intent = stripe.PaymentIntent.create(
@@ -64,6 +71,7 @@ def create_payment_intent(request):
                 'reference': f"STRIPE-{request.user.id}-{amount}"
             }
         )
+        print(f"[Stripe][DEBUG] PaymentIntent created status={intent.status} id={intent.id}")
         
         return JsonResponse({
             'client_secret': intent.client_secret,
@@ -106,6 +114,7 @@ def stripe_webhook(request):
     Handle Stripe webhooks for payment confirmation
     """
     if not stripe_available:
+        print("[Stripe][DEBUG] Webhook received but stripe not available")
         from django.http import HttpResponse
         return HttpResponse(status=503)
     
@@ -122,15 +131,19 @@ def stripe_webhook(request):
         )
     except ValueError:
         logger.error("Invalid payload")
+        print("[Stripe][DEBUG] Webhook invalid payload")
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError:
         logger.error("Invalid signature")
+        print("[Stripe][DEBUG] Webhook signature verification failed")
         return HttpResponse(status=400)
     
     # Handle the event
+    print(f"[Stripe][DEBUG] Webhook event type={event['type']}")
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
         logger.info(f"Payment succeeded: {payment_intent['id']}")
+        print(f"[Stripe][DEBUG] Payment succeeded webhook for intent={payment_intent['id']}")
         
         # Extract metadata
         metadata = payment_intent.get('metadata', {})
@@ -142,7 +155,7 @@ def stripe_webhook(request):
         if user_id and payment_info_id and reference:
             try:
                 # Get payment info
-                payment_info = Payment_Information.objects.only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').get(id=payment_info_id)
+                payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=payment_info_id)
                 
                 # Save payment history
                 user = CustomerUser.objects.get(id=int(user_id))
@@ -157,19 +170,24 @@ def stripe_webhook(request):
                 
                 if ok:
                     logger.info(f"Payment history saved for Stripe payment {payment_intent['id']}")
+                    print(f"[Stripe][DEBUG] Payment history saved for intent={payment_intent['id']}")
                 else:
                     logger.error(f"Failed to save payment history for Stripe payment {payment_intent['id']}")
+                    print(f"[Stripe][DEBUG] Failed to save payment history for intent={payment_intent['id']}")
                     
             except Exception as e:
                 logger.error(f"Error processing Stripe webhook: {str(e)}")
+                print(f"[Stripe][DEBUG] Exception while handling webhook: {e}")
     
     elif event['type'] == 'payment_intent.payment_failed':
         payment_intent = event['data']['object']
         logger.warning(f"Payment failed: {payment_intent['id']}")
+        print(f"[Stripe][DEBUG] Payment failed webhook for intent={payment_intent['id']}")
         
         # You could save failed payment attempts here if needed
         
     else:
         logger.info(f"Unhandled event type: {event['type']}")
+        print(f"[Stripe][DEBUG] Unhandled webhook type {event['type']}")
     
     return HttpResponse(status=200)

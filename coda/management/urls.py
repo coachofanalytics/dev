@@ -16,6 +16,41 @@ from management.views_enhanced_dashboard import (
                      )
 # Import task reset selective views
 from management.views_task_reset_selective import reset_tasks_select, reset_all_tasks
+# Phase 1: Activity Summary API endpoints
+# Note: views/__init__.py now re-exports everything from views.py and Phase 1 views
+from management.views import (
+    activity_summary_api,
+    activity_analytics_api,
+    get_intelligent_assignment_suggestions,
+    meeting_link_review_dashboard,
+    approve_meeting_link,
+    override_meeting_link,
+    reject_meeting_link,
+    get_meeting_link_suggestions
+)
+
+# Phase 2: Budget Integration API endpoints
+from management.views import (
+    budget_activity_totals_api,
+    budget_evidence_validation_api
+)
+
+# Phase 3: Forecasting, Trend Analysis, Compliance KPI, and Anomaly Detection API endpoints
+from management.views import (
+    activity_forecast_api,
+    budget_forecast_api,
+    trend_analysis_api,
+    employee_trend_analysis_api,
+    compliance_kpis_api,
+    compliance_history_api,
+    anomaly_detection_api,
+    # Analytics Dashboard Views
+    analytics_dashboard,
+    activity_forecast_dashboard,
+    trend_analysis_dashboard,
+    compliance_dashboard,
+    anomaly_detection_dashboard
+)
 
 # Import insights views from views directory (temporarily commented for testing)
 # from management.views import insights_views
@@ -162,6 +197,46 @@ urlpatterns = [
 # path('ai-api/data-quality/', ai_dashboard_views.get_data_quality_report, name='ai_data_quality'),
 # path('ai-api/export-report/', ai_dashboard_views.export_performance_report, name='ai_export_report'),
 
+    # Phase 1: Activity Summary API Endpoints
+    path('api/activity/summary/', activity_summary_api, name='activity-summary-api'),
+    path('api/activity/analytics/', activity_analytics_api, name='activity-analytics-api'),
+    
+    # Phase 1: Intelligent Assignment API Endpoints
+    path('api/task-assignment/suggestions/', get_intelligent_assignment_suggestions, name='intelligent-assignment-suggestions'),
+    
+    # Phase 1: Meeting Link Review
+    path('meeting-links/review/', meeting_link_review_dashboard, name='meeting-link-review'),
+    path('api/meeting-links/<int:link_id>/approve/', approve_meeting_link, name='approve-meeting-link'),
+    path('api/meeting-links/<int:link_id>/override/', override_meeting_link, name='override-meeting-link'),
+    path('api/meeting-links/<int:link_id>/reject/', reject_meeting_link, name='reject-meeting-link'),
+    path('api/meeting-links/<int:link_id>/suggestions/', get_meeting_link_suggestions, name='meeting-link-suggestions'),
+    
+    # Phase 2: Budget Integration API endpoints
+    path('api/budget/activity-totals/', budget_activity_totals_api, name='budget-activity-totals-api'),
+    path('api/budget/evidence-validation/', budget_evidence_validation_api, name='budget-evidence-validation-api'),
+    
+    # Phase 3: Forecasting API endpoints
+    path('api/forecast/activity/', activity_forecast_api, name='activity-forecast-api'),
+    path('api/forecast/budget/', budget_forecast_api, name='budget-forecast-api'),
+    
+    # Phase 3: Trend Analysis API endpoints
+    path('api/trends/analysis/', trend_analysis_api, name='trend-analysis-api'),
+    path('api/trends/employee/<int:employee_id>/', employee_trend_analysis_api, name='employee-trend-analysis-api'),
+    
+    # Phase 3: Compliance KPI API endpoints
+    path('api/compliance/kpis/', compliance_kpis_api, name='compliance-kpis-api'),
+    path('api/compliance/history/', compliance_history_api, name='compliance-history-api'),
+    
+    # Phase 3: Anomaly Detection API endpoints
+    path('api/anomalies/detect/', anomaly_detection_api, name='anomaly-detection-api'),
+    
+    # Phase 3: Analytics Dashboard Views
+    path('analytics/', analytics_dashboard, name='analytics-dashboard'),
+    path('analytics/forecast/activity/', activity_forecast_dashboard, name='activity-forecast-dashboard'),
+    path('analytics/trends/', trend_analysis_dashboard, name='trend-analysis-dashboard'),
+    path('analytics/compliance/', compliance_dashboard, name='compliance-dashboard'),
+    path('analytics/anomalies/', anomaly_detection_dashboard, name='anomaly-detection-dashboard'),
+    
     # Enhanced Dashboard URLs
     path('enhanced-dashboard/', enhanced_task_dashboard, name='enhanced-dashboard'),
     path('api/refresh-dashboard/', refresh_dashboard, name='refresh-dashboard'),

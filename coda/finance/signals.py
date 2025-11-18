@@ -1,11 +1,22 @@
+import logging
+from decimal import Decimal
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 from datetime import datetime
-from finance.models import Transaction, Budget, BudgetCategory, BudgetSubCategory
+from finance.models import (
+    Transaction,
+    Budget,
+    BudgetCategory,
+    BudgetSubCategory,
+    LoanApplication,
+    Payment_Information,
+)
 from main.models import Company
 from accounts.models import Department
 from django.contrib.auth import get_user_model
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 @receiver(post_save, sender=Transaction)
@@ -109,5 +120,95 @@ def sync_transaction_to_budget(sender, instance, created, **kwargs):
             end_date=instance.transaction_date.date() if hasattr(instance.transaction_date, 'date') else instance.transaction_date,
             description=truncated_description,
             receipt_link=truncated_receipt_link
+        )
+
+
+def _safe_int(value) -> int:
+    """Convert Decimal/float to int safely."""
+    try:
+        return int(Decimal(str(value)))
+    except Exception:
+        return 0
+
+
+@receiver(post_save, sender=LoanApplication)
+def sync_payment_info_on_loan_approval(sender, instance, created, **kwargs):
+    """
+    Ensure approved loans automatically create Payment_Information entries
+    so the unified payment system has context for repayments.
+    """
+    if instance.status != 'approved':
+        return
+
+    try:
+        payment_ref = f"loan-{instance.id}"
+        total_payable = instance.total_payable or instance.amount_requested or Decimal('0')
+        monthly_payment = instance.monthly_payment or Decimal('0')
+        plan_months = instance.duration or (instance.loan_product.term_months if instance.loan_product else 0)
+        borrower = instance.borrower
+        borrower_signature = borrower.username or borrower.get_full_name() or borrower.email or "client"
+        approver_signature = (
+            instance.approved_by.get_full_name()
+            if instance.approved_by and instance.approved_by.get_full_name()
+            else (instance.approved_by.username if instance.approved_by else "LoanSystem")
+        )
+        currency = (getattr(instance, "user_currency", None) or "USD")[:3].upper()
+        now = timezone.now()
+
+        defaults = {
+            'customer': borrower,
+            'payment_fees': _safe_int(total_payable),
+            'down_payment': _safe_int(monthly_payment),
+            'student_bonus': 0,
+            'plan': plan_months or 0,
+            'subplan': instance.loan_plan_id,
+            'pricing_plan': instance.loan_product.id if instance.loan_product else None,
+            'client_signature': borrower_signature,
+            'company_rep': approver_signature,
+            'client_date': now.strftime("%Y-%m-%d"),
+            'rep_date': now.strftime("%Y-%m-%d"),
+            'amount': total_payable,
+            'currency': currency,
+            'payment_method': 'loan',
+            'status': 'pending',
+            'payment_date': now,
+            'notes': f"Loan {instance.application_number} approved on {now.strftime('%Y-%m-%d')}",
+            'transaction_id': payment_ref,
+        }
+
+        payment_info, created_info = Payment_Information.objects.get_or_create(
+            transaction_id=payment_ref,
+            defaults=defaults,
+        )
+
+        if not created_info:
+            payment_info.payment_fees = defaults['payment_fees']
+            payment_info.down_payment = defaults['down_payment']
+            payment_info.plan = defaults['plan']
+            payment_info.subplan = defaults['subplan']
+            payment_info.pricing_plan = defaults['pricing_plan']
+            payment_info.amount = defaults['amount']
+            payment_info.currency = defaults['currency']
+            payment_info.payment_method = 'loan'
+            payment_info.status = 'pending'
+            payment_info.payment_date = now
+            payment_info.notes = defaults['notes']
+            payment_info.client_signature = payment_info.client_signature or borrower_signature
+            payment_info.company_rep = defaults['company_rep']
+            payment_info.client_date = defaults['client_date']
+            payment_info.rep_date = defaults['rep_date']
+            payment_info.save()
+
+        logger.info(
+            "Synced Payment_Information for approved loan %s (payment record %s)",
+            instance.id,
+            payment_info.id,
+        )
+    except Exception as exc:
+        logger.error(
+            "Failed to sync Payment_Information for loan %s: %s",
+            instance.id,
+            exc,
+            exc_info=True,
         )
 

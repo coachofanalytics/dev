@@ -19,6 +19,8 @@ from .models import (
     BudgetRequest, ApprovalPolicy,
     # Loan models
     LoanApplication, LoanProduct,
+    # Payment models
+    Payment_Information, Payment_History,
     # Food models
     Food, FoodPriceHistory, FoodInventory, FoodPurchaseTransaction, 
     FoodConsumptionLog, FoodRestockRequest, Supplier,
@@ -104,6 +106,86 @@ class LoanApplicationAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Payment_Information)
+class PaymentInformationAdmin(admin.ModelAdmin):
+    """Admin interface for payment information records"""
+    
+    list_display = [
+        'customer', 'payment_fees', 'down_payment', 'plan',
+        'payment_method', 'contract_submitted_date'
+    ]
+    
+    list_filter = [
+        'payment_method', 'plan', 'is_active', 'is_featured', 'contract_submitted_date'
+    ]
+    
+    search_fields = [
+        'customer__username', 'customer__first_name', 'customer__last_name',
+        'description'
+    ]
+    
+    readonly_fields = []
+    
+    fieldsets = (
+        ('Customer', {
+            'fields': ('customer', 'payment_method')
+        }),
+        ('Financials', {
+            'fields': ('payment_fees', 'down_payment', 'plan', 'subplan', 'pricing_plan')
+        }),
+        ('Audit', {
+            'fields': ('contract_submitted_date', 'description')
+        }),
+        ('Signatures', {
+            'fields': ('client_signature', 'company_rep', 'client_date', 'rep_date')
+        }),
+        ('Status Flags', {
+            'fields': ('is_active', 'is_featured')
+        }),
+    )
+
+
+@admin.register(Payment_History)
+class PaymentHistoryAdmin(admin.ModelAdmin):
+    """Admin interface for payment history records"""
+    
+    list_display = [
+        'customer', 'payment_fees', 'down_payment', 'fee_balance_display',
+        'plan', 'payment_method', 'contract_submitted_date'
+    ]
+    
+    list_filter = [
+        'payment_method', 'plan', 'is_active', 'is_featured', 'contract_submitted_date'
+    ]
+    
+    search_fields = [
+        'customer__username', 'customer__first_name', 'customer__last_name',
+        'description'
+    ]
+    
+    readonly_fields = []
+    
+    fieldsets = (
+        ('Customer', {
+            'fields': ('customer', 'payment_method', 'payment_purpose')
+        }),
+        ('Financials', {
+            'fields': ('payment_fees', 'down_payment', 'plan', 'subplan', 'pricing_plan')
+        }),
+        ('Audit', {
+            'fields': ('contract_submitted_date', 'description')
+        }),
+        ('Signatures', {
+            'fields': ('client_signature', 'company_rep', 'client_date', 'rep_date')
+        }),
+        ('Status Flags', {
+            'fields': ('is_active', 'is_featured')
+        }),
+    )
+    
+    def fee_balance_display(self, obj):
+        return obj.fee_balance
+    fee_balance_display.short_description = "Fee Balance"
 @admin.register(BudgetRequest)
 class BudgetRequestAdmin(admin.ModelAdmin):
     """Admin interface for budget requests"""

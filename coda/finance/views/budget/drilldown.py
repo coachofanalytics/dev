@@ -152,7 +152,7 @@ def budget_category_detail(request, company_slug, category_id, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         # Get category
         category = get_object_or_404(BudgetCategory, id=category_id)
@@ -358,7 +358,7 @@ def budget_comparison_view(request, company_slug, category_id, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         # Get category
         category = get_object_or_404(BudgetCategory, id=category_id)
@@ -400,7 +400,7 @@ def budget_item_edit(request, company_slug, item_id, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         # Get budget item
         budget = get_object_or_404(

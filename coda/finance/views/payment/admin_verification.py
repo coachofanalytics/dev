@@ -35,7 +35,7 @@ def admin_payment_verification_dashboard(request):
         search_query = request.GET.get('search', '')
         
         # Base queryset - all payments
-        payments = Payment_History.objects.all().select_related('customer').order_by('-payment_date')
+        payments = Payment_History.objects.all().select_related('customer').order_by('-contract_submitted_date')
         
         # Apply status filter
         if status_filter != 'all':
@@ -60,7 +60,7 @@ def admin_payment_verification_dashboard(request):
             'pending_count': all_payments.filter(status='pending').count(),
             'completed_today': all_payments.filter(
                 status='completed',
-                payment_date__date=timezone.now().date()
+                contract_submitted_date__date=timezone.now().date()
             ).count(),
             'failed_count': all_payments.filter(status='failed').count(),
             'needs_review': all_payments.filter(status='pending').count(),  # TODO: Add proof_uploaded field

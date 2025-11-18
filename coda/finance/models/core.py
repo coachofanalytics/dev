@@ -56,20 +56,9 @@ else:
 # CORE FINANCE MODELS
 # =============================================================================
 
-class PaymentBase(ContractBase):
-    """Base model for payment-related models"""
+class PaymentBase(models.Model):
+    """Shared fields for legacy payment tables (information + history)."""
     
-    # Payment Status Choices
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('processing', 'Processing'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
-        ('cancelled', 'Cancelled'),
-        ('refunded', 'Refunded'),
-    ]
-    
-    # Payment Method Choices
     PAYMENT_METHOD_CHOICES = [
         ('mpesa', 'M-Pesa'),
         ('bank_transfer', 'Bank Transfer'),
@@ -77,54 +66,25 @@ class PaymentBase(ContractBase):
         ('card', 'Card'),
         ('mobile_money', 'Mobile Money'),
         ('other', 'Other'),
+        ('loan', 'Loan Disbursement'),
     ]
     
-    # Basic payment fields
-    amount = models.DecimalField(
-        max_digits=15, 
-        decimal_places=2, 
-        help_text="Payment amount"
-    )
-    currency = models.CharField(
-        max_length=3, 
-        default='KES', 
-        help_text="Currency code (ISO 4217)"
-    )
-    payment_method = models.CharField(
-        max_length=20, 
-        choices=PAYMENT_METHOD_CHOICES, 
-        default='mpesa',
-        help_text="Payment method used"
-    )
-    status = models.CharField(
-        max_length=20, 
-        choices=STATUS_CHOICES, 
-        default='pending',
-        help_text="Payment status"
-    )
-    transaction_id = models.CharField(
-        max_length=100, 
-        unique=True, 
-        null=True, 
-        blank=True,
-        help_text="External transaction ID"
-    )
-    payment_date = models.DateTimeField(
-        default=timezone.now,
-        help_text="Date and time of payment"
-    )
-    notes = models.TextField(
-        blank=True, 
-        null=True,
-        help_text="Additional payment notes"
-    )
+    payment_method = models.CharField(max_length=100, choices=PAYMENT_METHOD_CHOICES, default='loan')
+    contract_submitted_date = models.DateTimeField(default=timezone.now)
+    client_signature = models.CharField(max_length=1000)
+    company_rep = models.CharField(max_length=1000)
+    client_date = models.CharField(max_length=100, blank=True, null=True)
+    rep_date = models.CharField(max_length=100, blank=True, null=True)
+    is_active = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
+    description = models.TextField(blank=True, null=True)
     
     class Meta:
         abstract = True
-        ordering = ['-payment_date']
+        ordering = ['-contract_submitted_date']
     
     def __str__(self):
-        return "{} {} - {}".format(self.amount, self.currency, self.get_status_display())
+        return f"{self.payment_method} | {self.client_signature}"
 
 
 class Payment_Information(PaymentBase):
@@ -134,6 +94,7 @@ class Payment_Information(PaymentBase):
         User,
         verbose_name=("Client Name"),
         on_delete=models.CASCADE,
+        db_column='customer_id_id'
     )
     payment_fees = models.IntegerField()
     down_payment = models.IntegerField(default=500)
@@ -141,7 +102,11 @@ class Payment_Information(PaymentBase):
     plan = models.IntegerField()
     subplan = models.IntegerField(null=True)
     pricing_plan = models.IntegerField(null=True)
-    client_signature = models.CharField(max_length=1000)
+    
+    class Meta:
+        db_table = 'finance_payment_information'
+        managed = False
+        ordering = ['-contract_submitted_date']
 
     def __str__(self):
         return "Payment Info for {} - Plan {}".format(self.customer.username, self.plan)
@@ -161,14 +126,23 @@ class Payment_History(PaymentBase):
     )
     payment_fees = models.IntegerField()
     down_payment = models.IntegerField(default=500)
-    fee_balance = models.IntegerField(default=0, help_text="Calculated as payment_fees - down_payment")
     student_bonus = models.IntegerField(null=True, blank=True)
     plan = models.IntegerField()
     subplan = models.IntegerField(null=True)
     pricing_plan = models.IntegerField(null=True)
+    payment_purpose = models.CharField(max_length=50, blank=True, null=True)
+    
+    class Meta:
+        db_table = 'finance_payment_history'
+        managed = False
+        ordering = ['-contract_submitted_date']
 
     def __str__(self):
         return "Payment History for {} - Plan {}".format(self.customer.username, self.plan)
+    
+    @property
+    def fee_balance(self):
+        return self.payment_fees - self.down_payment
 
 
 class DeletedPaymentHistory(models.Model):

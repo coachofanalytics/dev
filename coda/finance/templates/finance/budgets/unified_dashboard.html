@@ -78,6 +78,62 @@
         </div>
     </div>
 
+    <!-- Budget Actions Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="border-left: 4px solid #007bff;">
+                <div class="card-header" style="background-color: #007bff; color: white;">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Budget Actions</h5>
+                    <small>Quick access to budget management functions</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'finance:budget_request_form' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-plus-circle me-2"></i>Create Request
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'finance:budget_requests_list' %}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-list me-2"></i>My Requests
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="?tab=approvals{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}" class="btn btn-outline-success btn-block">
+                                <i class="fas fa-check-circle me-2"></i>Approvals
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="?tab=projections{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}" class="btn btn-outline-warning btn-block">
+                                <i class="fas fa-chart-line me-2"></i>Projections
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="?tab=planning{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-calendar-alt me-2"></i>Planning
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="?tab=overview{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}" class="btn btn-outline-dark btn-block">
+                                <i class="fas fa-chart-pie me-2"></i>Overview
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="?tab=analytics{% if selected_department %}&department_id={{ selected_department.id }}{% endif %}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-chart-bar me-2"></i>Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'finance:projections-list' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-file-alt me-2"></i>All Projections
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation Tabs -->
     <div class="row">
         <div class="col-12">

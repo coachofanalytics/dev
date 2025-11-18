@@ -123,7 +123,7 @@ def verify_payment_receipt(request, payment_id):
         
         context = {
             'payment': payment,
-            'receipt_number': f"RCPT-{payment.id}-{payment.payment_date.strftime('%Y%m') if hasattr(payment, 'payment_date') else timezone.now().strftime('%Y%m')}",
+            'receipt_number': f"RCPT-{payment.id}-{payment.contract_submitted_date.strftime('%Y%m') if hasattr(payment, 'contract_submitted_date') else timezone.now().strftime('%Y%m')}",
             'verified': True,
             'verification_date': timezone.now(),
         }

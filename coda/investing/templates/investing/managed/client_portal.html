@@ -1,5 +1,6 @@
 {% extends "main/base_templates/new_base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -7,12 +8,157 @@
 <div class="container-fluid py-4">
     <!-- Header -->
     <div class="row mb-4">
-        <div class="col">
+        <div class="col-md-8">
             <h2><i class="fa fa-user-circle"></i> My Managed Accounts</h2>
             <p class="text-muted">Track your options trading accounts managed by CODA</p>
         </div>
+        <div class="col-md-4 text-end d-flex gap-2 justify-content-end align-items-start">
+            {% if client_analytics and client_analytics.total_closed_positions > 0 %}
+            <button class="btn btn-info" onclick="document.getElementById('client-analytics-section').scrollIntoView({ behavior: 'smooth', block: 'start' });">
+                <i class="fa fa-chart-bar"></i> View Analytics
+            </button>
+            {% endif %}
+        </div>
     </div>
     
+    {% if auto_metrics %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-success border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-1">Automation Wins (90d)</h6>
+                    <div class="d-flex justify-content-between align-items-end">
+                        <span class="display-6 fw-bold">{{ auto_metrics.total }}</span>
+                        <small class="text-muted">Live: {{ auto_metrics.live }} · Closed: {{ auto_metrics.closed }}</small>
+                    </div>
+                    <p class="text-muted small mb-0">Positions fast-tracked by the CODA desk after client consent.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-primary border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-1">Win Rate</h6>
+                    <div class="d-flex justify-content-between align-items-end">
+                        <span class="display-6 fw-bold">
+                            {% if auto_metrics.win_rate is not None %}
+                                {{ auto_metrics.win_rate|floatformat:1 }}%
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">Wins {{ auto_metrics.wins }} · Losses {{ auto_metrics.losses }}</small>
+                    </div>
+                    <p class="text-muted small mb-0">Demonstrates how automation filters the best spreads.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-1">Avg Realized P&amp;L</h6>
+                    <div class="d-flex justify-content-between align-items-end">
+                        <span class="display-6 fw-bold">
+                            {% if auto_metrics.avg_realized_pnl is not None %}
+                                ${{ auto_metrics.avg_realized_pnl|floatformat:0 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">Per closed auto-approval</small>
+                    </div>
+                    <p class="text-muted small mb-0">Net of fees/commissions per position.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-dark border-2 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-1">Avg Entry Lag</h6>
+                    <div class="d-flex justify-content-between align-items-end">
+                        <span class="display-6 fw-bold">
+                            {% if auto_metrics.avg_time_to_entry_minutes %}
+                                {{ auto_metrics.avg_time_to_entry_minutes|floatformat:0 }} min
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">Timeout → trader execution</small>
+                    </div>
+                    <p class="text-muted small mb-0">Shows how quickly the desk moves once automation approves.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if client_analytics and client_analytics.total_closed_positions > 0 %}
+    <!-- Client Analytics Widgets (Phase 4) -->
+    <div id="client-analytics-section" class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📊 Your Performance (Last 90 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-muted mb-1">Closed Positions</h6>
+                                <h3 class="mb-0">{{ client_analytics.total_closed_positions }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-muted mb-1">Win Rate</h6>
+                                <h3 class="mb-0 {% if client_analytics.win_rate and client_analytics.win_rate >= 60 %}text-success{% elif client_analytics.win_rate and client_analytics.win_rate >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                    {% if client_analytics.win_rate %}
+                                        {{ client_analytics.win_rate|floatformat:1 }}%
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </h3>
+                                <small class="text-muted">
+                                    {{ client_analytics.winning_positions }} wins / {{ client_analytics.losing_positions }} losses
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-muted mb-1">Avg P&L per Position</h6>
+                                <h3 class="mb-0 {% if client_analytics.avg_pnl and client_analytics.avg_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if client_analytics.avg_pnl %}
+                                        ${{ client_analytics.avg_pnl|floatformat:0 }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-muted mb-1">Positions by Tier</h6>
+                                {% if client_analytics.tier_breakdown %}
+                                    {% for tier, count in client_analytics.tier_breakdown.items %}
+                                        <div class="small mb-1">
+                                            <span class="badge {% if tier == 'apex' %}bg-dark{% elif tier == 'strong' %}bg-success{% else %}bg-info{% endif %}">
+                                                {{ tier|title }}
+                                            </span>
+                                            <strong>{{ count }}</strong>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">No tier data</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Portfolio Summary -->
     {% if has_accounts %}
     <div class="row mb-4">
@@ -50,6 +196,245 @@
         </div>
     </div>
     
+    {% if upgrade_pitch %}
+    <div id="upgrade-section" class="card border-0 shadow-sm mb-4">
+        <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
+            <div>
+                <h5 class="mb-1">Why step up to {{ upgrade_pitch.target.name }}?</h5>
+                <p class="mb-2 text-muted small">
+                    Target income: <strong class="text-success">${{ upgrade_pitch.target.monthly_target }}/mo</strong> · 
+                    Fee: <strong class="text-primary">${{ upgrade_pitch.target.monthly_fee }}/mo</strong> · 
+                    Automation: {{ upgrade_pitch.target.automation }}.
+                </p>
+                {% if upgrade_pitch.target.code == 'consultative' %}
+                <div class="alert alert-warning mb-2 small">
+                    <strong>⭐ Premium Tier Upgrade:</strong><br>
+                    <strong>Consultative ($420/mo):</strong> Full automation + full management — CODA sets, executes & manages everything.<br>
+                    <strong>Income Target:</strong> ${{ upgrade_pitch.target.monthly_target }}/mo | <strong>Net Potential:</strong> ~${{ upgrade_pitch.target.net_potential }}/mo<br>
+                    <em>Completely hands-off — perfect for busy professionals who want maximum income with zero management effort.</em>
+                </div>
+                {% elif upgrade_pitch.current.code == 'consultative' %}
+                <div class="alert alert-info mb-2 small">
+                    <strong>Service Model Change:</strong><br>
+                    <strong>Consultative (Current):</strong> Full-service — CODA sets, executes & manages everything ($420/mo).<br>
+                    <strong>{{ upgrade_pitch.target.name }} (Lower Tier):</strong> {{ upgrade_pitch.target.service_description }} (${{ upgrade_pitch.target.monthly_fee }}/mo).<br>
+                    <em>Note: Lower tiers require you to manage positions yourself.</em>
+                </div>
+                {% elif upgrade_pitch.target.net_potential %}
+                <p class="mb-2 small">
+                    <strong class="text-success">Base net potential: ~${{ upgrade_pitch.target.net_potential }}/mo</strong> 
+                    (target income minus base fee, performance fees apply on profits above hurdle)
+                </p>
+                {% endif %}
+                <ul class="mb-0 small text-muted">
+                    {% for item in upgrade_pitch.target.includes %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="text-center mt-3 mt-lg-0">
+                {% if auto_metrics and auto_metrics.win_rate %}
+                <p class="mb-1 text-success fw-bold">
+                    {{ auto_metrics.win_rate|floatformat:1 }}% win rate on auto-approved trades
+                </p>
+                {% endif %}
+                <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-outline-primary">
+                    Discuss Upgrade
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tier_matrix %}
+    <div id="plan-comparison" class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-0">Plan Comparison</h5>
+                    <p class="text-muted small mb-0">See how automation, data, and targets scale with each tier.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Plan</th>
+                            <th>Income Target</th>
+                            <th>Fee Structure</th>
+                            <th>Service Model</th>
+                            <th>Capital Sleeve</th>
+                            <th>Data &amp; Automation</th>
+                            <th>Included Benefits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tier in tier_matrix %}
+                        <tr>
+                            <td>
+                                <strong>{{ tier.name }}</strong>
+                                {% if tier.code == 'consultative' %}
+                                <span class="badge bg-warning text-dark ms-1">⭐ Premium</span>
+                                {% endif %}
+                                <br>
+                                <span class="badge {% if tier.code == 'consultative' %}bg-warning text-dark{% elif tier.code == 'elite' %}bg-dark{% elif tier.code == 'balanced' %}bg-success{% elif tier.code == 'starter' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ tier.status }}
+                                </span>
+                                {% if tier.capital_requirement %}
+                                <br><small class="text-muted">Min: ${{ tier.capital_requirement|intcomma }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong class="text-success">${{ tier.monthly_target }}/mo</strong><br>
+                                <small class="text-muted">Target income goal</small>
+                            </td>
+                            <td>
+                                <strong class="text-primary">${{ tier.monthly_fee }}/mo</strong><br>
+                                {% if tier.fee_breakdown %}
+                                <small class="text-muted">{{ tier.fee_breakdown }}</small><br>
+                                {% endif %}
+                                <small class="text-muted">{{ tier.fee_structure|default:'' }}</small>
+                                {% if tier.net_potential and tier.net_potential > 0 %}
+                                <br><small class="text-success">
+                                    Base net: ~${{ tier.net_potential }}/mo (before performance fees)
+                                </small>
+                                {% endif %}
+                                {% if tier.performance_fee_note %}
+                                <br><small class="text-muted"><em>{{ tier.performance_fee_note }}</em></small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tier.service_model %}
+                                <strong class="{% if tier.code == 'consultative' %}text-warning{% elif tier.code == 'elite' %}text-primary{% else %}text-info{% endif %}">
+                                    {{ tier.service_model }}
+                                </strong><br>
+                                <small class="text-muted">{{ tier.service_description|default:tier.service_model }}</small>
+                                {% else %}
+                                <small class="text-muted">—</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ tier.capital_profile }}</td>
+                            <td>
+                                <small class="d-block">{{ tier.data_access }}</small>
+                                <small class="text-muted">{{ tier.automation }}</small>
+                            </td>
+                            <td>
+                                <ul class="list-unstyled mb-0 small">
+                                    {% for benefit in tier.includes %}
+                                    <li>• {{ benefit }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+{% if portfolio_presets_public %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="mb-0">Portfolio Sleeves Preview</h5>
+                <p class="text-muted small mb-0">Read-only preview of current sleeves. Upgrade to enable automation.</p>
+            </div>
+        </div>
+        <div class="row g-3">
+            {% for preset in portfolio_presets_public %}
+            <div class="col-lg-4">
+                <div class="border rounded-3 h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-0">{{ preset.config.name }}</h6>
+                            <small class="text-muted">{{ preset.config.description }}</small>
+                        </div>
+                        <span class="badge {% if preset.config.target_tier == 'consultative' %}bg-warning text-dark{% elif preset.config.target_tier == 'elite' %}bg-dark{% elif preset.config.target_tier == 'balanced' %}bg-success{% elif preset.config.target_tier == 'starter' %}bg-info{% else %}bg-secondary{% endif %}">
+                            {{ preset.config.target_tier|title }}
+                        </span>
+                    </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between"><span class="small text-muted">Ideas</span><strong>{{ preset.positions|length }}/{{ preset.config.max_positions }}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="small text-muted">Capital</span><strong>${{ preset.total_capital|floatformat:0 }}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="small text-muted">Premium</span><strong>${{ preset.total_premium|floatformat:0 }}</strong></div>
+                        <div class="d-flex justify-content-between"><span class="small text-muted">Avg DTE</span><strong>{{ preset.avg_dte|floatformat:0 }}d</strong></div>
+                    </div>
+                    <div class="mt-3">
+                        {% if preset.positions %}
+                        <table class="table table-sm table-borderless mb-0">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th>Symbol</th>
+                                    <th>Strategy</th>
+                                    <th>Prob</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in preset.positions %}
+                                <tr>
+                                    <td><strong>{{ item.suggestion.symbol }}</strong></td>
+                                    <td><small>{{ item.suggestion.get_strategy_display }}</small></td>
+                                    <td><span class="badge bg-success">{{ item.suggestion.probability_of_profit }}%</span></td>
+                                    <td><small>{{ item.score|floatformat:0 }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="alert alert-light border mt-2 mb-0 small">
+                            Waiting for more qualifying signals to populate.
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">
+                                <i class="fa fa-lock me-1"></i>Requires {{ preset.config.target_tier|title }} plan
+                            </span>
+                        </div>
+                        {% if accounts %}
+                            {% with primary_account=accounts.0 %}
+                                {% if primary_account.fee_tier == 'consultative' and preset.config.target_tier != 'consultative' %}
+                                    {# Consultative client can request review #}
+                                    <button 
+                                        class="btn btn-outline-info btn-sm w-100 request-review-btn"
+                                        data-account-id="{{ primary_account.id }}"
+                                        data-preset-code="{{ preset.config.code }}"
+                                        data-preset-name="{{ preset.config.name }}">
+                                        <i class="fa fa-comments"></i> Request Review
+                                    </button>
+                                {% elif primary_account.fee_tier != preset.config.target_tier %}
+                                    {# Client needs upgrade #}
+                                    <button 
+                                        class="btn btn-primary btn-sm w-100 upgrade-cta-btn"
+                                        data-target-tier="{{ preset.config.target_tier }}">
+                                        <i class="fa fa-arrow-up"></i> Upgrade to {{ preset.config.target_tier|title }}
+                                    </button>
+                                {% else %}
+                                    {# Client has the tier but automation might still be locked #}
+                                    <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                        <i class="fa fa-lock"></i> Automation Locked
+                                    </button>
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                <i class="fa fa-lock"></i> Automation Locked
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
     <!-- Accounts List -->
     <div class="row">
         {% for account in accounts %}
@@ -119,5 +504,98 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Upgrade CTA buttons - scroll to upgrade section
+    document.querySelectorAll('.upgrade-cta-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const upgradeSection = document.getElementById('upgrade-section');
+            if (upgradeSection) {
+                upgradeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add highlight effect
+                upgradeSection.style.transition = 'box-shadow 0.3s ease';
+                upgradeSection.style.boxShadow = '0 0 20px rgba(0, 123, 255, 0.5)';
+                setTimeout(function() {
+                    upgradeSection.style.boxShadow = '';
+                }, 2000);
+            } else {
+                // Fallback to plan comparison section
+                const planSection = document.getElementById('plan-comparison');
+                if (planSection) {
+                    planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    });
+
+    // Handle Request Review buttons for consultative clients
+    document.querySelectorAll('.request-review-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const accountId = this.getAttribute('data-account-id');
+            const presetCode = this.getAttribute('data-preset-code');
+            const presetName = this.getAttribute('data-preset-name');
+            
+            // Disable button during request
+            this.disabled = true;
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('account_id', accountId);
+            formData.append('preset_code', presetCode);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            // Make AJAX request
+            fetch('{% url "investing:request_portfolio_review" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.innerHTML = '<i class="fa fa-check"></i> Request Submitted!';
+                    this.classList.remove('btn-outline-info');
+                    this.classList.add('btn-success');
+                    // Show success message (Bootstrap alert)
+                    const accountManagerName = data.account_manager || 'your account manager';
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                    alertDiv.innerHTML = `
+                        <strong>Success!</strong> Your review request for "${presetName}" has been submitted. ${accountManagerName} will review your request and contact you soon.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    this.parentElement.appendChild(alertDiv);
+                    // Auto-dismiss after 5 seconds
+                    setTimeout(function() {
+                        alertDiv.remove();
+                    }, 5000);
+                } else {
+                    throw new Error(data.error || 'Request failed');
+                }
+            })
+            .catch(error => {
+                this.disabled = false;
+                this.innerHTML = originalText;
+                // Show error message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                alertDiv.innerHTML = `
+                    <strong>Error!</strong> ${error.message || 'Failed to submit review request. Please try again.'}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                this.parentElement.appendChild(alertDiv);
+                setTimeout(function() {
+                    alertDiv.remove();
+                }, 5000);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
 

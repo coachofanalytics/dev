@@ -21,6 +21,7 @@ from .views.managed_trading import (
     multi_file_analyzer,
     api_bulk_actions,
     analytics,
+    preset_analytics,
 )
 
 urlpatterns = [
@@ -58,6 +59,7 @@ urlpatterns = [
     path('client/<int:account_id>/', client.client_account_detail, name='client_account_detail_legacy'),
     path('portal/', client.client_portal, name='client_portal'),
     path('portal/accounts/<int:account_id>/', client.client_account_detail, name='client_account_detail'),
+    path('portal/request-review/', client.request_portfolio_review, name='request_portfolio_review'),
 
     # Onboarding & compliance (Phase 6)
     path('onboarding/risk-assessment/', onboarding.risk_assessment_view, name='risk_assessment'),
@@ -82,7 +84,10 @@ urlpatterns = [
     path('staff/suggestions/fetch-quick/', position_suggestions.fetch_positions_quick, name='fetch_positions_quick'),
     path('staff/suggestions/trigger-scheduler/', position_suggestions.trigger_managed_income_scheduler, name='trigger_managed_income_scheduler'),
     path('staff/suggestions/create-batch/', position_suggestions.create_batch_from_suggestions, name='create_batch_from_suggestions'),
+    path('staff/suggestions/create-batch-from-preset/', position_suggestions.create_batch_from_preset, name='create_batch_from_preset'),
     path('staff/suggestions/update-account-limit/', position_suggestions.update_account_position_limit, name='update_account_position_limit'),
+    path('staff/analytics/presets/', preset_analytics.preset_analytics_dashboard, name='preset_analytics_dashboard'),
+    path('staff/analytics/positions/<int:position_id>/feedback/', preset_analytics.add_position_feedback, name='add_position_feedback'),
     path('api/suggestions/<int:suggestion_id>/approve/', position_suggestions.ajax_approve_position, name='ajax_approve_position'),
     path('api/suggestions/<int:suggestion_id>/reject/', position_suggestions.ajax_reject_position, name='ajax_reject_position'),
     path('api/suggestions/accept-top-5/', position_suggestions.accept_top_5, name='accept_top_5'),

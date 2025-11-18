@@ -3384,7 +3384,7 @@ class SupplierListView(ListView):
     template_name = "finance/payments/food.html"
 
     context_object_name = "suppliers"
-    ordering = ["-created_at"]
+    ordering = ["-id"]
 
 
 def foodlist(request):

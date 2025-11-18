@@ -1,7 +1,7 @@
 {% extends "main/base_templates/new_base.html" %}
 {% load static %}
 
-{% block title %}Enhanced Task Dashboard{% endblock %}
+{% block title %}Task Dashboard{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -60,6 +60,23 @@
         margin: 5px;
         min-width: 150px;
     }
+    /* Ensure buttons are clickable */
+    button.btn {
+        cursor: pointer;
+        pointer-events: auto;
+        position: relative;
+        z-index: 1;
+    }
+    button.btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    /* Ensure no overlays block buttons */
+    .card-body button,
+    .d-grid button {
+        position: relative;
+        z-index: 10;
+    }
     .task-list {
         max-height: 400px;
         overflow-y: auto;
@@ -116,7 +133,7 @@
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>🎯 Enhanced Task Dashboard</h2>
+                <h2>🎯 Task Dashboard</h2>
                 <div class="text-muted">
                     Welcome, <strong>{{ user.get_full_name|default:user.username }}</strong>
                 </div>
@@ -195,26 +212,182 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" onclick="refreshDashboard()">
-                    🔄 Refresh Dashboard
-                </button>
-                <button class="btn btn-success" onclick="viewMyTasks()">
-                    📋 My Tasks
-                </button>
-                <button class="btn btn-info" onclick="viewTaskHistory()">
-                    📈 Task History
-                </button>
-                <button class="btn btn-warning" onclick="viewLeaderboard()">
-                    🏆 Leaderboard
-                </button>
-                <button class="btn btn-secondary" onclick="exportMyData()">
-                    📁 Export My Data
-                </button>
-                <button class="btn btn-dark" onclick="viewTierBenefits()">
-                    🎁 Tier Benefits
-                </button>
+            <!-- Quick Actions -->
+            <div class="row mt-3 mb-3">
+                <div class="col-12">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <a href="{% url 'management:leaderboard' %}" class="btn btn-warning btn-lg flex-fill">
+                            🏆 Leaderboard
+                        </a>
+                        <a href="{% url 'management:export-my-data' %}" class="btn btn-secondary btn-lg flex-fill">
+                            📁 Export My Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Services Navigation -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card dashboard-card" style="border-left-color: #28a745;">
+                        <div class="card-header" style="background-color: #28a745; color: white;">
+                            <h5>👤 Employee Services</h5>
+                            <small>Quick access to your profile, meetings, evidence, and more</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-primary mb-3">📋 Tasks & Evidence</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'management:tasks' %}" class="btn btn-outline-primary btn-lg">
+                                            📋 My Tasks
+                                        </a>
+                                        <a href="{% url 'management:task-history' %}" class="btn btn-outline-primary btn-lg">
+                                            📈 Task History
+                                        </a>
+                                        <a href="{% url 'management:user_evidence' %}?username={{ user.username }}" class="btn btn-outline-primary btn-lg">
+                                            📄 My Evidence
+                                        </a>
+                                        <a href="{% url 'management:user_evidence' %}" class="btn btn-outline-primary btn-lg">
+                                            📥 Evidence Inbox
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-info mb-3">👤 Profile & Account</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'accounts:account-profile' user.username %}" class="btn btn-outline-info btn-lg">
+                                            👤 My Profile
+                                        </a>
+                                        {% if user.profile %}
+                                        <a href="{% url 'main:update_profile' user.profile.id %}" class="btn btn-outline-info btn-lg">
+                                            ✏️ Edit Profile
+                                        </a>
+                                        {% endif %}
+                                        <a href="{% url 'accounts:account-profile' user.username %}" class="btn btn-outline-info btn-lg">
+                                            ⏰ My Time
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-success mb-3">📅 Meetings & Schedule</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'management:meetings' 'company 2' %}" class="btn btn-outline-success btn-lg">
+                                            📅 My Meetings
+                                        </a>
+                                        <a href="{% url 'main:my_availability' %}" class="btn btn-outline-success btn-lg">
+                                            📆 My Schedule
+                                        </a>
+                                        <a href="{% url 'management:companyagenda' %}" class="btn btn-outline-success btn-lg">
+                                            📋 Company Agenda
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-warning mb-3">🎓 Training & Payroll</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'management:user_session' user.username %}" class="btn btn-outline-warning btn-lg">
+                                            🎓 My Sessions
+                                        </a>
+                                        {% if user.is_staff %}
+                                        <a href="{% url 'management:user_pay' %}?username={{ user.username }}&pay_type=usertasks" class="btn btn-outline-warning btn-lg">
+                                            💰 My DAF (Current)
+                                        </a>
+                                        <a href="{% url 'management:user_pay' %}?username={{ user.username }}&pay_type=usertaskhistory" class="btn btn-outline-warning btn-lg">
+                                            📊 Last DAF (History)
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3: Advanced Analytics Navigation -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card dashboard-card" style="border-left-color: #6f42c1;">
+                        <div class="card-header" style="background-color: #6f42c1; color: white;">
+                            <h5>📊 Advanced Analytics (Phase 3)</h5>
+                            <small>Forecasting, Trends, Compliance & Anomaly Detection</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Forecasting Section -->
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-primary mb-3">🔮 Forecasting</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'management:activity-forecast-dashboard' %}?months_ahead=3" class="btn btn-outline-primary btn-lg">
+                                            📈 Activity Forecast
+                                        </a>
+                                        <a href="{% url 'management:budget-forecast-api' %}?months_ahead=3" class="btn btn-outline-primary btn-lg">
+                                            💰 Budget Forecast
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Trend Analysis Section -->
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-info mb-3">📉 Trend Analysis</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'management:trend-analysis-dashboard' %}?months_back=12" class="btn btn-outline-info btn-lg">
+                                            📊 Historical Trends
+                                        </a>
+                                        <a href="{% url 'management:trend-analysis-dashboard' %}?months_back=12&employee_id={{ user.id }}" class="btn btn-outline-info btn-lg">
+                                            👤 My Performance Trends
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Compliance Section -->
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-success mb-3">✅ Compliance Monitoring</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'management:compliance-dashboard' %}" class="btn btn-outline-success btn-lg">
+                                            📋 Real-time Compliance KPIs
+                                        </a>
+                                        <a href="{% url 'management:compliance-dashboard' %}?months_back=12" class="btn btn-outline-success btn-lg">
+                                            📜 Compliance History
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Anomaly Detection Section -->
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-warning mb-3">⚠️ Anomaly Detection</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'management:anomaly-detection-dashboard' %}" class="btn btn-outline-warning btn-lg">
+                                            🔍 Detect Anomalies
+                                        </a>
+                                        <a href="{% url 'management:analytics-dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                                            🎯 All Analytics Dashboard
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Stats for Analytics -->
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <strong>💡 Tip:</strong> Use these analytics tools to:
+                                        <ul class="mb-0 mt-2">
+                                            <li>Forecast future activity and budget needs</li>
+                                            <li>Analyze historical trends and patterns</li>
+                                            <li>Monitor compliance in real-time</li>
+                                            <li>Detect anomalies and unusual patterns</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Quick Stats -->
@@ -379,8 +552,15 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// Debug: Check if script is loading
+console.log('Task Dashboard JavaScript loaded');
+
+// Define all functions FIRST before any code that might fail
+// This ensures functions are available even if initialization code fails
+
 // Dashboard functionality
 function refreshDashboard() {
+    console.log('refreshDashboard() called');
     showLoading('Refreshing dashboard...');
     
     fetch('{% url "management:refresh-dashboard" %}', {
@@ -407,15 +587,24 @@ function refreshDashboard() {
 }
 
 function viewMyTasks() {
-    window.location.href = '{% url "management:tasks" %}';
+    console.log('viewMyTasks() called');
+    const url = '{% url "management:tasks" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
 }
 
 function viewTaskHistory() {
-    window.location.href = '{% url "management:task-history" %}';
+    console.log('viewTaskHistory() called');
+    const url = '{% url "management:task-history" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
 }
 
 function viewLeaderboard() {
-    window.location.href = '{% url "management:leaderboard" %}';
+    console.log('viewLeaderboard() called');
+    const url = '{% url "management:leaderboard" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
 }
 
 function exportMyData() {
@@ -448,7 +637,13 @@ function exportMyData() {
 }
 
 function viewTierBenefits() {
-    const currentTier = document.getElementById('currentTier').textContent;
+    const currentTierEl = document.getElementById('currentTier');
+    if (!currentTierEl) {
+        console.error('currentTier element not found');
+        alert('Tier information not available');
+        return;
+    }
+    const currentTier = currentTierEl.textContent;
     const tierInfo = {
         'Bronze': {
             benefits: ['Basic access', 'Monthly reports'],
@@ -472,6 +667,147 @@ function viewTierBenefits() {
     const benefitsList = info.benefits.map(benefit => `• ${benefit}`).join('\n');
     
     alert(`${currentTier} Tier Benefits:\n\n${benefitsList}\n\nKeep completing tasks to unlock more benefits!`);
+}
+
+// Phase 3: Advanced Analytics Navigation Functions
+function viewActivityForecast() {
+    console.log('viewActivityForecast() called');
+    const url = '{% url "management:activity-forecast-dashboard" %}?months_ahead=3';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewBudgetForecast() {
+    console.log('viewBudgetForecast() called');
+    const url = '{% url "management:budget-forecast-api" %}?months_ahead=3';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewTrendAnalysis() {
+    console.log('viewTrendAnalysis() called');
+    const url = '{% url "management:trend-analysis-dashboard" %}?months_back=12';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewEmployeeTrends() {
+    console.log('viewEmployeeTrends() called');
+    const employeeId = {{ user.id }};
+    const url = '{% url "management:trend-analysis-dashboard" %}?months_back=12&employee_id=' + employeeId;
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewComplianceKPIs() {
+    console.log('viewComplianceKPIs() called');
+    const url = '{% url "management:compliance-dashboard" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewComplianceHistory() {
+    console.log('viewComplianceHistory() called');
+    const url = '{% url "management:compliance-dashboard" %}?months_back=12';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewAnomalyDetection() {
+    console.log('viewAnomalyDetection() called');
+    const url = '{% url "management:anomaly-detection-dashboard" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewAllAnalytics() {
+    console.log('viewAllAnalytics() called');
+    const url = '{% url "management:analytics-dashboard" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+// Employee Services Navigation Functions
+function viewMyEvidence() {
+    console.log('viewMyEvidence() called');
+    const url = '{% url "management:user_evidence" %}?username={{ user.username }}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewEvidenceInbox() {
+    console.log('viewEvidenceInbox() called');
+    const url = '{% url "management:user_evidence" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewMyProfile() {
+    console.log('viewMyProfile() called');
+    const url = '{% url "accounts:account-profile" user.username %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function editMyProfile() {
+    console.log('editMyProfile() called');
+    {% if user.profile %}
+    const url = '{% url "main:update_profile" user.profile.id %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+    {% else %}
+    console.log('Profile not found');
+    alert('Profile not found. Please contact support.');
+    {% endif %}
+}
+
+function viewMyTime() {
+    console.log('viewMyTime() called');
+    const url = '{% url "accounts:account-profile" user.username %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewMyMeetings() {
+    console.log('viewMyMeetings() called');
+    const url = '{% url "management:meetings" "company 2" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewMySchedule() {
+    console.log('viewMySchedule() called');
+    const url = '{% url "main:my_availability" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewCompanyAgenda() {
+    console.log('viewCompanyAgenda() called');
+    const url = '{% url "management:companyagenda" %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewMySessions() {
+    console.log('viewMySessions() called');
+    const url = '{% url "management:user_session" user.username %}';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewMyDAF() {
+    console.log('viewMyDAF() called');
+    const url = '{% url "management:user_pay" %}?username={{ user.username }}&pay_type=usertasks';
+    console.log('Navigating to:', url);
+    window.location.href = url;
+}
+
+function viewLastDAF() {
+    console.log('viewLastDAF() called');
+    const url = '{% url "management:user_pay" %}?username={{ user.username }}&pay_type=usertaskhistory';
+    console.log('Navigating to:', url);
+    window.location.href = url;
 }
 
 function submitEvidence() {
@@ -569,6 +905,10 @@ function loadMoreTasks() {
 
 function submitEvidenceForm() {
     const form = document.getElementById('evidenceForm');
+    if (!form) {
+        console.error('evidenceForm not found');
+        return;
+    }
     const formData = new FormData(form);
     
     showLoading('Submitting evidence...');
@@ -657,16 +997,26 @@ function showToast(message, type) {
 function updateDashboardData(data) {
     // Update dashboard with new data
     if (data.total_points !== undefined) {
-        document.getElementById('totalPoints').textContent = data.total_points;
+        const totalPointsEl = document.getElementById('totalPoints');
+        if (totalPointsEl) {
+            totalPointsEl.textContent = data.total_points;
+        }
     }
     if (data.completion_rate !== undefined) {
-        document.getElementById('completionRate').textContent = data.completion_rate + '%';
+        const completionRateEl = document.getElementById('completionRate');
+        if (completionRateEl) {
+            completionRateEl.textContent = data.completion_rate + '%';
+        }
     }
     // Update other fields as needed
 }
 
 function appendTasksToTable(tasks) {
     const taskList = document.getElementById('taskList');
+    if (!taskList) {
+        console.error('taskList element not found');
+        return;
+    }
     tasks.forEach(task => {
         const taskDiv = document.createElement('div');
         taskDiv.className = `task-item ${task.point > 0 ? 'completed' : 'pending'}`;
@@ -689,10 +1039,16 @@ function appendTasksToTable(tasks) {
     });
 }
 
-// Initialize tier progress chart
+// Initialize tier progress chart - wrapped in try-catch to prevent script failure
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('tierProgressChart').getContext('2d');
-    new Chart(ctx, {
+    try {
+        const chartEl = document.getElementById('tierProgressChart');
+        if (!chartEl) {
+            console.warn('tierProgressChart element not found, skipping chart initialization');
+            return;
+        }
+        const ctx = chartEl.getContext('2d');
+        new Chart(ctx, {
         type: 'line',
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -713,11 +1069,61 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    } catch (error) {
+        console.error('Error initializing chart:', error);
+    }
 });
 
 // Auto-refresh dashboard every 5 minutes
 setInterval(function() {
     refreshDashboard();
 }, 300000);
+
+// Debug: Test button attachment and function availability
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Testing button attachment');
+    
+    // Test if functions are defined
+    const functions = [
+        'viewMyTasks', 'viewTaskHistory', 'viewLeaderboard', 'viewMyEvidence',
+        'viewEvidenceInbox', 'viewMyProfile', 'editMyProfile', 'viewMyTime',
+        'viewMyMeetings', 'viewMySchedule', 'viewCompanyAgenda', 'viewMySessions',
+        'viewMyDAF', 'viewLastDAF', 'viewActivityForecast', 'viewBudgetForecast',
+        'viewTrendAnalysis', 'viewEmployeeTrends', 'viewComplianceKPIs',
+        'viewComplianceHistory', 'viewAnomalyDetection', 'viewAllAnalytics'
+    ];
+    
+    functions.forEach(funcName => {
+        if (typeof window[funcName] === 'function') {
+            console.log('✅ Function', funcName, 'is defined');
+        } else {
+            console.error('❌ Function', funcName, 'is NOT defined');
+        }
+    });
+    
+    // Test button onclick handlers
+    const buttons = document.querySelectorAll('button[onclick]');
+    console.log('Found', buttons.length, 'buttons with onclick handlers');
+    
+    buttons.forEach((btn, index) => {
+        const onclick = btn.getAttribute('onclick');
+        console.log(`Button ${index + 1}:`, onclick ? 'Has onclick' : 'No onclick', '-', btn.textContent.trim().substring(0, 30));
+    });
+    
+    // Test if buttons are clickable
+    const testButton = document.querySelector('button[onclick*="viewMyTasks"]');
+    if (testButton) {
+        console.log('✅ Found test button (viewMyTasks)');
+        console.log('Button style:', window.getComputedStyle(testButton).pointerEvents);
+        console.log('Button z-index:', window.getComputedStyle(testButton).zIndex);
+    } else {
+        console.error('❌ Could not find test button');
+    }
+});
+
+// Also log when page is fully loaded
+window.addEventListener('load', function() {
+    console.log('Page fully loaded - All resources loaded');
+});
 </script>
 {% endblock %}

@@ -174,6 +174,25 @@ class PositionRankingService:
         # Generate recommendation
         recommendation = self._generate_recommendation(total_score)
         selection_reason = self._generate_selection_reason(position, whales_score, earnings_score, profit_score, dte_score)
+
+        signal_meta = self._evaluate_signal_intent(
+            position,
+            whales_score,
+            earnings_score,
+            profit_score,
+            dte_score,
+        )
+        tier_label, minimum_fee_tier = self._determine_signal_tier(
+            total_score,
+            signal_meta['follow_probability'],
+            signal_meta['fade_probability'],
+        )
+        self._sync_signal_metadata(
+            position,
+            tier_label,
+            minimum_fee_tier,
+            signal_meta,
+        )
         
         return {
             'position': position,
@@ -188,7 +207,13 @@ class PositionRankingService:
             'penalties': penalties,
             'rank': 0,  # Set later
             'recommendation': recommendation,
-            'selection_reason': selection_reason
+            'selection_reason': selection_reason,
+            'signal_tier': tier_label,
+            'minimum_fee_tier': minimum_fee_tier,
+            'signal_intent': signal_meta['intent'],
+            'follow_probability': signal_meta['follow_probability'],
+            'fade_probability': signal_meta['fade_probability'],
+            'momentum_snapshot': signal_meta['momentum_snapshot'],
         }
     
     def _score_whales_signal(self, position) -> Decimal:
@@ -799,6 +824,126 @@ class PositionRankingService:
                 symbols,
             )
         return count
+
+    # ------------------------------------------------------------------ #
+    # Signal Classification Helpers
+    # ------------------------------------------------------------------ #
+
+    def _evaluate_signal_intent(
+        self,
+        position,
+        whales_score: Decimal,
+        earnings_score: Decimal,
+        profit_score: Decimal,
+        dte_score: Decimal,
+    ) -> Dict[str, Decimal]:
+        """
+        Lightweight follow/fade classifier that blends flow, ROC, and
+        basic momentum proxies captured during ingestion.
+        """
+        ai_score = position.ai_score or Decimal('50')
+        theta = position.position_theta or Decimal('0')
+        delta = position.position_delta or Decimal('0')
+        prob = position.probability_of_profit or Decimal('0')
+
+        whales_bias = whales_score - Decimal('50')
+        profit_bias = profit_score - Decimal('50')
+        dte_bias = dte_score - Decimal('50')
+
+        follow_probability = Decimal('50')
+        follow_probability += whales_bias * Decimal('0.4')
+        follow_probability += profit_bias * Decimal('0.2')
+        follow_probability += dte_bias * Decimal('0.1')
+        follow_probability += (ai_score - Decimal('50')) * Decimal('0.2')
+
+        # Penalize aggressive theta bleed or extreme delta
+        theta_penalty = min(Decimal('15'), abs(theta) * Decimal('3'))
+        delta_penalty = max(Decimal('0'), (abs(delta) - Decimal('0.35')) * Decimal('100'))
+        follow_probability -= theta_penalty
+        follow_probability -= delta_penalty
+
+        follow_probability = max(Decimal('0'), min(Decimal('100'), follow_probability))
+        fade_probability = Decimal('100') - follow_probability
+
+        if follow_probability - fade_probability >= Decimal('10'):
+            intent = 'follow'
+        elif fade_probability - follow_probability >= Decimal('10'):
+            intent = 'fade'
+        else:
+            intent = 'neutral'
+
+        momentum_snapshot = {
+            'ai_score': float(ai_score),
+            'probability_of_profit': float(prob),
+            'theta': float(theta),
+            'delta': float(delta),
+            'whales_score': float(whales_score),
+            'profit_score': float(profit_score),
+            'dte_score': float(dte_score),
+            'earnings_score': float(earnings_score),
+        }
+
+        return {
+            'follow_probability': follow_probability.quantize(Decimal('0.01')),
+            'fade_probability': fade_probability.quantize(Decimal('0.01')),
+            'intent': intent,
+            'momentum_snapshot': momentum_snapshot,
+        }
+
+    def _determine_signal_tier(
+        self,
+        total_score: Decimal,
+        follow_probability: Decimal,
+        fade_probability: Decimal,
+    ) -> (str, str):
+        """
+        Map score + classifier output to commercial tier metadata.
+        """
+        if total_score >= Decimal('92') and follow_probability >= fade_probability:
+            return 'apex', 'elite'
+        if total_score >= Decimal('84'):
+            return 'strong', 'balanced'
+        return 'watchlist', 'consultative'
+
+    def _sync_signal_metadata(
+        self,
+        position: SuggestedPosition,
+        tier_label: str,
+        minimum_fee_tier: str,
+        signal_meta: Dict[str, Decimal],
+    ) -> None:
+        """
+        Persist classifier outputs on SuggestedPosition for downstream UIs.
+        """
+        updates = {}
+        now = timezone.now()
+
+        follow_prob = signal_meta['follow_probability']
+        fade_prob = signal_meta['fade_probability']
+        intent = signal_meta['intent']
+        snapshot = signal_meta['momentum_snapshot']
+
+        if position.signal_tier != tier_label:
+            updates['signal_tier'] = tier_label
+        if position.minimum_fee_tier != minimum_fee_tier:
+            updates['minimum_fee_tier'] = minimum_fee_tier
+        if position.signal_intent != intent:
+            updates['signal_intent'] = intent
+        if position.follow_probability != follow_prob:
+            updates['follow_probability'] = follow_prob
+        if position.fade_probability != fade_prob:
+            updates['fade_probability'] = fade_prob
+        if position.momentum_snapshot != snapshot:
+            updates['momentum_snapshot'] = snapshot
+
+        last_eval = position.signal_last_evaluated
+        if updates or last_eval is None or now - last_eval > timedelta(minutes=30):
+            updates['signal_last_evaluated'] = now
+
+        if updates:
+            for field, value in updates.items():
+                setattr(position, field, value)
+            position.save(update_fields=list(updates.keys()))
     
     def _get_sector(self, position) -> str:
         """

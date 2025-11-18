@@ -16,6 +16,8 @@ __all__ = [
     'UnusualWhalesService',
     'BrokerAPIService',
     'PredictiveAnalyticsService',
+    'PresetPerformanceAnalytics',
+    'SignalTierAnalytics',
 ]
 
 _MODULE_MAP = {
@@ -32,6 +34,8 @@ _MODULE_MAP = {
     'UnusualWhalesService': '.unusual_whales_service',
     'BrokerAPIService': '.broker_api_service',
     'PredictiveAnalyticsService': '.predictive_analytics_service',
+    'PresetPerformanceAnalytics': '.preset_performance_analytics',
+    'SignalTierAnalytics': '.preset_performance_analytics',
 }
 
 

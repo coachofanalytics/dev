@@ -39,7 +39,7 @@ def enhanced_budget_projection_approvals(request):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     # Initialize services
     compliance_service = EmployeeComplianceService()
@@ -155,7 +155,7 @@ def compliance_report_dashboard(request):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     # Initialize services
     compliance_service = EmployeeComplianceService()
@@ -220,7 +220,7 @@ def individual_compliance_detail(request, employee_id):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     from accounts.models import CustomerUser
     
@@ -268,7 +268,7 @@ def department_compliance_detail(request, department_id):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     from accounts.models import Department
     
@@ -306,7 +306,7 @@ def budget_compliance_integration(request, budget_id):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     try:
         budget = get_object_or_404(BudgetEstimateProjection, id=budget_id)
@@ -337,7 +337,7 @@ def compliance_export(request):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     try:
         compliance_service = EmployeeComplianceService()

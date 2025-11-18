@@ -7,6 +7,20 @@
 {% block content %}
 <div class="container-fluid mt-4">
     
+    <!-- Django Messages -->
+    {% if messages %}
+    <div class="row mb-3">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                <strong>{{ message|safe }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-8">
@@ -17,6 +31,9 @@
             <button class="btn btn-outline-secondary mb-2" id="themeToggleBtn" type="button">
                 🌙 Dark Mode
             </button>
+            <a href="{% url 'investing:preset_analytics_dashboard' %}" class="btn btn-info mb-2" title="View preset and signal tier analytics">
+                📊 Analytics Dashboard
+            </a>
             <a href="{% url 'investing:fetch_positions_quick' %}" class="btn btn-primary me-2">
                 🔄 Fetch New Positions
             </a>
@@ -190,6 +207,280 @@
         </div>
     </div>
     
+    {% if portfolio_presets %}
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="mb-1">🧺 Portfolio Sleeves</h4>
+                    <p class="text-muted mb-0 small">Pre-built bundles mapped to each plan tier. Use as-is or click into the table to edit before batching.</p>
+                </div>
+                <span class="badge bg-dark text-uppercase">Phase 2</span>
+            </div>
+            <div class="row g-3">
+                {% for preset in portfolio_presets %}
+                <div class="col-lg-4">
+                    <div class="border rounded-3 h-100 p-3 {% if preset.is_complete %}border-success{% else %}border-warning{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-0">{{ preset.config.name }}</h6>
+                                <small class="text-muted">{{ preset.config.description }}</small>
+                            </div>
+                            <span class="badge {% if preset.config.target_tier == 'elite' %}bg-dark{% elif preset.config.target_tier == 'balanced' %}bg-success{% else %}bg-info{% endif %}">
+                                {{ preset.config.target_tier|title }}
+                            </span>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="small text-muted">Ideas</span>
+                                <strong>{{ preset.positions|length }}/{{ preset.config.max_positions }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="small text-muted">Capital</span>
+                                <strong>${{ preset.total_capital|floatformat:0 }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="small text-muted">Premium</span>
+                                <strong>${{ preset.total_premium|floatformat:0 }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="small text-muted">Avg DTE</span>
+                                <strong>{{ preset.avg_dte|floatformat:0 }}d</strong>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            {% if preset.positions %}
+                            <table class="table table-sm table-borderless mb-0">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th>Symbol</th>
+                                        <th>Strategy</th>
+                                        <th>Prob</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in preset.positions %}
+                                    <tr>
+                                        <td><strong>{{ item.suggestion.symbol }}</strong></td>
+                                        <td><small>{{ item.suggestion.get_strategy_display }}</small></td>
+                                        <td><span class="badge bg-success">{{ item.suggestion.probability_of_profit }}%</span></td>
+                                        <td><small>{{ item.score|floatformat:0 }}</small></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <div class="alert alert-light border mt-2 mb-0 small">
+                                Waiting for more qualifying signals. Keep at least {{ preset.config.min_probability }}% probability and {{ preset.config.strategy_whitelist|length }} strategy mix to populate.
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge {% if preset.config.target_tier == 'consultative' %}bg-warning text-dark{% elif preset.config.target_tier == 'elite' %}bg-dark{% elif preset.config.target_tier == 'balanced' %}bg-success{% elif preset.config.target_tier == 'starter' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ preset.config.target_tier|title }}
+                                </span>
+                                {% if not preset.is_complete %}
+                                <span class="badge bg-warning text-dark ms-1" title="Additional qualifying signals required">
+                                    Needs {{ preset.slots_remaining }} more
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                {% if preset.is_complete %}
+                                <button
+                                    type="button"
+                                    class="btn btn-success btn-sm ready-to-batch-btn"
+                                    data-preset-code="{{ preset.config.code }}"
+                                    data-preset-name="{{ preset.config.name }}"
+                                    data-preset-ideas="{{ preset.positions|length }}"
+                                    data-preset-capital="{{ preset.total_capital|floatformat:0 }}"
+                                    data-preset-premium="{{ preset.total_premium|floatformat:0 }}"
+                                    data-preset-dte="{{ preset.avg_dte|floatformat:0 }}"
+                                    data-preset-positions='[{% for item in preset.positions %}{"id": {{ item.suggestion.id }}, "symbol": "{{ item.suggestion.symbol|escapejs }}", "strategy": "{{ item.suggestion.strategy|escapejs }}", "premium": {{ item.premium|floatformat:2 }}, "capital": {{ item.capital|floatformat:2 }}}{% if not forloop.last %},{% endif %}{% endfor %}]'>
+                                    Ready to Batch
+                                </button>
+                                {% else %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm" disabled>Waiting</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Preset Confirm Modal -->
+    <div class="modal fade" id="presetBatchModal" tabindex="-1" aria-labelledby="presetBatchLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="presetBatchLabel">Create Batch from Preset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <strong id="presetName"></strong>
+                        <ul class="list-unstyled small mb-0 mt-2">
+                            <li>Ideas: <span id="presetIdeas"></span></li>
+                            <li>Capital: $<span id="presetCapital"></span></li>
+                            <li>Premium: $<span id="presetPremium"></span></li>
+                            <li>Avg DTE: <span id="presetDte"></span>d</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Account Selection -->
+                    <div class="mb-3">
+                        <label for="accountSelect" class="form-label">Select Account <span class="text-danger">*</span></label>
+                        <select class="form-select" id="accountSelect" name="account_id" required>
+                            <option value="">-- Select Account --</option>
+                            {% for account in active_accounts %}
+                            <option value="{{ account.id }}">{{ account.account_name }} ({{ account.account_number }}) - {{ account.get_fee_tier_display }}</option>
+                            {% empty %}
+                            <option disabled>No active accounts available</option>
+                            {% endfor %}
+                        </select>
+                        {% if not active_accounts %}
+                        <small class="text-danger">No active accounts found. <a href="{% url 'investing:managed_accounts_list' %}">Create one first</a>.</small>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Editable Positions List -->
+                    <div class="mb-3">
+                        <label class="form-label">Positions to Include <span class="text-muted">(uncheck to exclude)</span></label>
+                        <div id="positionsList" class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Positions will be populated by JavaScript -->
+                        </div>
+                        <small class="text-muted" id="positionsCount"></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" action="{% url 'investing:create_batch_from_preset' %}" class="d-inline" id="batchCreateForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="preset_code" id="presetCodeInput" value="">
+                        <input type="hidden" name="account_id" id="accountIdInput" value="">
+                        <div id="excludeInputsContainer"></div>
+                        <button type="submit" class="btn btn-primary" id="createBatchBtn" disabled>Create Batch</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle Ready to Batch button clicks
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.ready-to-batch-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const code = this.getAttribute('data-preset-code');
+                    const name = this.getAttribute('data-preset-name');
+                    const ideas = parseInt(this.getAttribute('data-preset-ideas'));
+                    const capital = this.getAttribute('data-preset-capital');
+                    const premium = this.getAttribute('data-preset-premium');
+                    const dte = this.getAttribute('data-preset-dte');
+                    const positionsDataJson = this.getAttribute('data-preset-positions');
+                    openPresetModal(code, name, ideas, capital, premium, dte, positionsDataJson);
+                });
+            });
+        });
+        
+        function openPresetModal(code, name, ideas, capital, premium, dte, positionsDataJson) {
+            document.getElementById('presetCodeInput').value = code;
+            document.getElementById('presetName').innerText = name;
+            document.getElementById('presetIdeas').innerText = ideas;
+            document.getElementById('presetCapital').innerText = capital;
+            document.getElementById('presetPremium').innerText = premium;
+            document.getElementById('presetDte').innerText = dte;
+            
+            // Parse positions data
+            let positions = [];
+            try {
+                positions = JSON.parse(positionsDataJson);
+            } catch (e) {
+                console.error('Error parsing positions data:', e, positionsDataJson);
+            }
+            
+            // Render positions list with checkboxes
+            const positionsListDiv = document.getElementById('positionsList');
+            const excludeInputsContainer = document.getElementById('excludeInputsContainer');
+            excludeInputsContainer.innerHTML = '';
+            
+            if (positions.length === 0) {
+                positionsListDiv.innerHTML = '<p class="text-muted mb-0">No positions available</p>';
+                document.getElementById('positionsCount').textContent = '0 positions selected';
+                document.getElementById('createBatchBtn').disabled = true;
+            } else {
+                let html = '';
+                positions.forEach(function(pos) {
+                    const checkboxId = 'pos-' + pos.id;
+                    html += '<div class="form-check mb-2 border-bottom pb-2">';
+                    html += '<input class="form-check-input position-checkbox" type="checkbox" checked data-suggestion-id="' + pos.id + '" id="' + checkboxId + '" onchange="updatePositionsCount()">';
+                    html += '<label class="form-check-label w-100" for="' + checkboxId + '">';
+                    html += '<strong>' + pos.symbol + '</strong> - ' + pos.strategy + '<br>';
+                    html += '<small class="text-muted">Premium: $' + parseFloat(pos.premium).toFixed(2) + ' | Capital: $' + parseFloat(pos.capital).toFixed(2) + '</small>';
+                    html += '</label>';
+                    html += '</div>';
+                });
+                positionsListDiv.innerHTML = html;
+                updatePositionsCount();
+            }
+            
+            // Reset account selection
+            document.getElementById('accountSelect').value = '';
+            document.getElementById('accountIdInput').value = '';
+            updateCreateButtonState();
+            
+            var modal = new bootstrap.Modal(document.getElementById('presetBatchModal'));
+            modal.show();
+        }
+        
+        function updatePositionsCount() {
+            const checkboxes = document.querySelectorAll('.position-checkbox');
+            const checked = document.querySelectorAll('.position-checkbox:checked');
+            const excludeInputsContainer = document.getElementById('excludeInputsContainer');
+            
+            excludeInputsContainer.innerHTML = '';
+            
+            // Add hidden inputs for unchecked positions (to exclude them)
+            checkboxes.forEach(function(checkbox) {
+                if (!checkbox.checked) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'exclude_suggestion_ids';
+                    input.value = checkbox.getAttribute('data-suggestion-id');
+                    excludeInputsContainer.appendChild(input);
+                }
+            });
+            
+            document.getElementById('positionsCount').textContent = 
+                checked.length + ' of ' + checkboxes.length + ' positions selected';
+            
+            updateCreateButtonState();
+        }
+        
+        function updateCreateButtonState() {
+            const accountSelected = document.getElementById('accountSelect').value !== '';
+            const hasSelectedPositions = document.querySelectorAll('.position-checkbox:checked').length > 0;
+            document.getElementById('createBatchBtn').disabled = !(accountSelected && hasSelectedPositions);
+        }
+        
+        // Update account input when select changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountSelect = document.getElementById('accountSelect');
+            if (accountSelect) {
+                accountSelect.addEventListener('change', function() {
+                    document.getElementById('accountIdInput').value = this.value;
+                    updateCreateButtonState();
+                });
+            }
+        });
+    </script>
+
     {% if heatmap_symbols or heatmap_strategies %}
     <div class="d-flex justify-content-end mb-2">
         <button class="btn btn-outline-primary btn-sm" type="button" id="heatmapToggleBtn" onclick="toggleHeatmapPanel()">

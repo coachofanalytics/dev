@@ -32,10 +32,16 @@ from accounts.models import CustomerUser
 logger = logging.getLogger(__name__)
 
 
-@login_required
+try:
+    from core.permissions import require_employee
+except ImportError:
+    from accounts.permissions import require_employee
+
+@require_employee
 def enhanced_task_dashboard(request):
     """
-    Main enhanced task dashboard view.
+    Task Dashboard - Main task management dashboard for employees.
+    (Previously "Enhanced Task Dashboard")
     """
     try:
         user = request.user

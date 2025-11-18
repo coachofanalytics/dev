@@ -133,8 +133,35 @@ def reset_tasks_select(request):
                 ).exclude(employee__email=None)
                 
                 # Create TaskHistory records (only for tasks with points)
+                # OPTION 1: Set daf_date based on when reset is run
+                from dateutil.relativedelta import relativedelta
+                from datetime import date
+                import calendar
+                
+                current_date = date.today()
+                if current_date.day == 1:
+                    # Running on 1st - use last day of previous month
+                    last_month = current_date - relativedelta(months=1)
+                    last_day = calendar.monthrange(last_month.year, last_month.month)[1]
+                    default_daf_date = date(last_month.year, last_month.month, last_day)
+                else:
+                    # Manual reset - use same day of last month
+                    default_daf_date = current_date - relativedelta(months=1)
+                
                 bulk_history = []
                 for task in tasks_to_move:
+                    # Use task submission date if available, otherwise use default
+                    daf_date_value = default_daf_date
+                    if task.submission:
+                        from django.utils import timezone
+                        submission_date = timezone.localtime(task.submission).date()
+                        if submission_date.month == current_date.month and submission_date.year == current_date.year:
+                            # Submitted this month, use calculated daf_date
+                            daf_date_value = default_daf_date
+                        else:
+                            # Older submission, use submission - 1 month
+                            daf_date_value = submission_date - relativedelta(months=1)
+                    
                     bulk_history.append(
                         TaskHistory(
                             group=task.group,
@@ -150,6 +177,7 @@ def reset_tasks_select(request):
                             submission=task.submission,
                             is_active=task.is_active,
                             featured=task.featured,
+                            daf_date=daf_date_value,  # Set daf_date when creating TaskHistory
                         )
                     )
                 

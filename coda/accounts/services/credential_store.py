@@ -120,7 +120,7 @@ class CredentialStore:
                     Q(environment=environment),
                     Q(is_active=True),
                 )
-                .order_by("-payload_last_updated", "-updated_at")
+                .order_by("-payload_last_updated", "-entry_date")
                 .first()
             )
         except Exception:

@@ -142,10 +142,10 @@ def show_payment_details(request, method):
     Shows payment details when automated payment fails or is unavailable
     """
     try:
-        # Get user's payment information - avoid updated_at field that doesn't exist
+        # Get user's payment information
         payment_info = Payment_Information.objects.filter(
-            customer_id=request.user.id
-        ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').order_by('-id').first()
+            customer=request.user
+        ).only('id', 'customer', 'payment_fees', 'down_payment', 'plan').order_by('-id').first()
         
         if not payment_info:
             messages.error(request, 'No payment information found. Please create a payment first.')

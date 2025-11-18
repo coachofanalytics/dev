@@ -69,7 +69,7 @@ def unified_budget_dashboard(request, company_slug="coda"):
         company = Company.objects.get(slug=company_slug)
     except Company.DoesNotExist:
         messages.error(request, "Company not found")
-        return redirect("main:dashboard")
+        return redirect("dashboard:unified_dashboard")
     
     # Get active tab from request (default: overview)
     active_tab = request.GET.get('tab', 'overview')
@@ -385,7 +385,15 @@ def _get_approvals_tab_data(company, department, user):
         )
         
         if department:
-            pending_requests = pending_requests.filter(department=department)
+            # Ensure department is a Department instance, not a string
+            if isinstance(department, str):
+                try:
+                    from accounts.models import Department
+                    department = Department.objects.get(slug=department) or Department.objects.get(name=department)
+                except Department.DoesNotExist:
+                    department = None
+            if department and isinstance(department, Department):
+                pending_requests = pending_requests.filter(department=department)
         
         # User's requests
         user_requests = BudgetRequest.objects.filter(
@@ -402,11 +410,29 @@ def _get_approvals_tab_data(company, department, user):
         #     pending_disbursements = pending_disbursements.filter(department=department)
         
         # Budget estimate projections awaiting approval
-        pending_projections = BudgetEstimateProjection.objects.filter(
-            budget__company=company,
-            # Note: BudgetEstimateProjection doesn't have status field
-            # status='submitted'
-        )
+        # Safely query - handle database schema issues gracefully
+        pending_projections = []
+        try:
+            if hasattr(BudgetEstimateProjection, 'budget'):
+                try:
+                    pending_projections = BudgetEstimateProjection.objects.filter(
+                        budget__company=company
+                    )
+                except Exception:
+                    # If budget relationship doesn't work, try company directly
+                    if hasattr(BudgetEstimateProjection, 'company'):
+                        pending_projections = BudgetEstimateProjection.objects.filter(
+                            company=company
+                        )
+            elif hasattr(BudgetEstimateProjection, 'company'):
+                pending_projections = BudgetEstimateProjection.objects.filter(
+                    company=company
+                )
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Could not query budget projections: {e}")
+            pending_projections = []
         
         # Note: BudgetEstimateProjection doesn't have department field
         # if department:
@@ -624,7 +650,7 @@ def unified_budget_planning(request, company_slug="coda"):
         company = Company.objects.get(slug=company_slug)
     except Company.DoesNotExist:
         messages.error(request, "Company not found")
-        return redirect("main:dashboard")
+        return redirect("dashboard:unified_dashboard")
     
     # Get timeframe from request (default: monthly)
     timeframe = request.GET.get('timeframe', 'monthly')

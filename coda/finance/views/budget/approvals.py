@@ -68,7 +68,7 @@ def budget_approval_dashboard(request, company_slug, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         user_department = view.get_user_department(request, company)
         
@@ -117,7 +117,7 @@ def budget_approval_detail(request, company_slug, request_id, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         # Get budget request
         budget_request = get_object_or_404(
@@ -488,7 +488,7 @@ def enhanced_budget_projection_approvals(request):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     # Initialize services
     if not EmployeeComplianceService:
@@ -608,7 +608,7 @@ def compliance_report_dashboard(request):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     # Initialize services
     if not EmployeeComplianceService:
@@ -680,7 +680,7 @@ def individual_compliance_detail(request, employee_id):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     if not EmployeeComplianceService:
         messages.warning(request, "Compliance service not available.")
@@ -732,7 +732,7 @@ def department_compliance_detail(request, department_id):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     if not EmployeeComplianceService:
         messages.warning(request, "Compliance service not available.")
@@ -774,7 +774,7 @@ def budget_compliance_integration(request, budget_id):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     try:
         budget = get_object_or_404(BudgetEstimateProjection, id=budget_id)
@@ -805,7 +805,7 @@ def compliance_export(request):
     # Check permissions
     if not user.is_staff and not user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('dashboard:unified_dashboard')
     
     if not EmployeeComplianceService:
         messages.warning(request, "Compliance service not available.")

@@ -1506,20 +1506,20 @@ class ManagedTradingAccount(TimeStampedModel):
     
     # Fee Structure
     ACTIVE_FEE_TIER_CHOICES = [
+        ('starter', 'Starter - $99/mo + 15% over 5% hurdle'),
         ('balanced', 'Balanced Automation - $249/mo + 12% over 6% hurdle'),
-        ('consultative', 'Consultative Coaching - Legacy $420 Plan'),
-        ('elite', 'Elite Desk (Coming Soon) - $399/mo + 18% over 5% hurdle'),
+        ('elite', 'Elite - $399/mo + 14% over 5% hurdle'),
+        ('consultative', 'Consultative - $420/mo + 10% over 8% hurdle (Premium Full Management)'),
         ('custom', 'Custom Fee Structure'),
     ]
     LEGACY_FEE_TIER_CHOICES = [
-        ('starter', 'Starter - Legacy (inactive)'),
         ('professional', 'Professional - Legacy (inactive)'),
         ('premium', 'Premium - Legacy (inactive)'),
         ('co_invest', 'Co-Investment - Legacy (inactive)'),
     ]
     FEE_TIER_CHOICES = ACTIVE_FEE_TIER_CHOICES + LEGACY_FEE_TIER_CHOICES
-    APPLICATION_SELECTABLE_TIERS = ['balanced', 'consultative']
-    PREVIEW_ONLY_TIERS = ['elite']
+    APPLICATION_SELECTABLE_TIERS = ['starter', 'balanced', 'elite', 'consultative']
+    PREVIEW_ONLY_TIERS = []
 
     fee_tier = models.CharField(
         max_length=20,
@@ -2259,6 +2259,7 @@ class TradingActivity(TimeStampedModel):
         ('rule_changed', 'Rule Changed'),
         ('fee_calculated', 'Fee Calculated'),
         ('session_completed', 'Coaching Session Completed'),
+        ('client_review_requested', 'Client Review Requested'),
         ('other', 'Other Activity')
     ]
     activity_type = models.CharField(
@@ -3388,6 +3389,103 @@ class SuggestedPosition(TimeStampedModel):
         ],
         help_text="Confidence level based on data availability"
     )
+
+    captured_underlying_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Underlying price recorded at fetch time"
+    )
+    captured_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when this suggestion was captured"
+    )
+    valid_until = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When this suggestion should expire if not actioned"
+    )
+    price_tolerance = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Allowed deviation ($) from captured underlying price"
+    )
+    time_tolerance_minutes = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Minutes this suggestion remains valid"
+    )
+    fetch_batch_id = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Identifier for the upstream fetch batch"
+    )
+    persisted_from_last_fetch = models.BooleanField(
+        default=False,
+        help_text="True when this symbol/strategy persisted across consecutive fetches"
+    )
+    consistency_streak = models.IntegerField(
+        default=1,
+        help_text="Number of consecutive fetches this symbol/strategy has appeared"
+    )
+
+    SIGNAL_TIER_CHOICES = [
+        ('apex', 'Excellent (Apex)'),
+        ('strong', 'High (Strong)'),
+        ('watchlist', 'Good (Watchlist)'),
+    ]
+    SIGNAL_INTENT_CHOICES = [
+        ('follow', 'Follow Flow'),
+        ('fade', 'Fade Exhaustion'),
+        ('neutral', 'Neutral / Manual Review'),
+    ]
+
+    signal_tier = models.CharField(
+        max_length=20,
+        choices=SIGNAL_TIER_CHOICES,
+        default='watchlist',
+        help_text="Commercial tier this signal belongs to (maps to client plan access)"
+    )
+    minimum_fee_tier = models.CharField(
+        max_length=20,
+        choices=ManagedTradingAccount.FEE_TIER_CHOICES,
+        default='balanced',
+        help_text="Minimum client plan required to auto-deliver this signal"
+    )
+    signal_intent = models.CharField(
+        max_length=20,
+        choices=SIGNAL_INTENT_CHOICES,
+        default='neutral',
+        help_text="Classifier output describing whether to follow or fade the flow"
+    )
+    follow_probability = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Probability (%) that following the flow is preferred"
+    )
+    fade_probability = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Probability (%) that fading the move is safer"
+    )
+    momentum_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Captured technical indicators (RSI, VWAP distance, volume z-score, etc.)"
+    )
+    signal_last_evaluated = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the follow/fade classifier last refreshed this record"
+    )
     
     # Staff Review
     REVIEW_STATUS_CHOICES = [
@@ -4036,6 +4134,25 @@ class OptionsPositionHistory(TimeStampedModel):
     ai_post_analysis = models.TextField(
         blank=True,
         help_text="AI-generated analysis of why position succeeded/failed"
+    )
+    
+    # Staff Feedback (Phase 4)
+    staff_feedback = models.TextField(
+        blank=True,
+        help_text="Staff notes/annotations on trade outcome for learning and improvement"
+    )
+    feedback_added_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='position_feedbacks',
+        help_text="Staff member who added feedback"
+    )
+    feedback_added_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When feedback was added"
     )
     ai_confidence_at_entry = models.DecimalField(
         max_digits=5,

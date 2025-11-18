@@ -27,7 +27,7 @@ def payment_dashboard(request):
         search_query = request.GET.get('search', '')
         
         # Base queryset - user's payments only
-        payments = Payment_History.objects.filter(customer=request.user).order_by('-payment_date')
+        payments = Payment_History.objects.filter(customer=request.user).order_by('-contract_submitted_date')
         
         # Apply status filter
         if status_filter != 'all':
@@ -68,10 +68,10 @@ def payment_dashboard(request):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         
-        # Get user's payment information - avoid updated_at field that doesn't exist
+        # Get user's payment information
         payment_info = Payment_Information.objects.filter(
-            customer_id=request.user.id
-        ).only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').order_by('-id').first()
+            customer=request.user
+        ).only('id', 'customer', 'payment_fees', 'down_payment', 'plan').order_by('-id').first()
         
         context = {
             'payments': page_obj,

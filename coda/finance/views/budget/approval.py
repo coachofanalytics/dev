@@ -41,7 +41,7 @@ def budget_approval_dashboard(request, company_slug, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         user_department = view.get_user_department(request, company)
         
@@ -90,7 +90,7 @@ def budget_approval_detail(request, company_slug, request_id, company=None):
         if not company:
             company = view.get_company(request, company_slug)
             if not company:
-                return redirect('main:dashboard')
+                return redirect('dashboard:unified_dashboard')
         
         # Get budget request (BudgetRequest doesn't have company field)
         budget_request = get_object_or_404(

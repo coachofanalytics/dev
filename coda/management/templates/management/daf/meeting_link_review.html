@@ -1,0 +1,313 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Meeting Link Review{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Meeting-to-Task Link Review</h2>
+            <p class="text-muted">Review and manage automatic meeting-to-task links</p>
+        </div>
+    </div>
+
+    <!-- Statistics Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Auto-Link Rate</h5>
+                    <h3 class="{% if stats.target_met %}text-success{% else %}text-warning{% endif %}">
+                        {{ stats.auto_link_rate }}%
+                    </h3>
+                    <p class="text-muted">
+                        {% if stats.target_met %}
+                            <span class="badge bg-success">Target Met (≥80%)</span>
+                        {% else %}
+                            <span class="badge bg-warning">Below Target</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Meetings</h5>
+                    <h3>{{ stats.total_meetings }}</h3>
+                    <p class="text-muted">Last 30 days</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Linked Meetings</h5>
+                    <h3>{{ stats.linked_meetings }}</h3>
+                    <p class="text-muted">Successfully linked</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Meeting Links (Last 7 Days)</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_links %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Meeting Topic</th>
+                                        <th>Attendee</th>
+                                        <th>Linked Task</th>
+                                        <th>Category</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for link in recent_links %}
+                                    <tr>
+                                        <td>
+                                            <small>{{ link.description|truncatewords:10 }}</small>
+                                        </td>
+                                        <td>{{ link.added_by.get_full_name|default:link.added_by.username }}</td>
+                                        <td>
+                                            <strong>{{ link.task.activity_name }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                {{ link.task.category.title|default:"General" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small>{{ link.created_at|date:"M d, Y" }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-success btn-sm approve-link" 
+                                                        data-link-id="{{ link.id }}"
+                                                        title="Approve">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="btn btn-warning btn-sm override-link" 
+                                                        data-link-id="{{ link.id }}"
+                                                        title="Override">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm reject-link" 
+                                                        data-link-id="{{ link.id }}"
+                                                        title="Reject">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if recent_links.has_other_pages %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if recent_links.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ recent_links.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in recent_links.paginator.page_range %}
+                                    {% if recent_links.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if recent_links.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ recent_links.next_page_number }}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">No recent meeting links to review.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Override Modal -->
+<div class="modal fade" id="overrideModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Override Meeting Link</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select a different task for this meeting:</p>
+                <div id="taskSuggestions"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmOverride">Confirm Override</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Approve link
+    document.querySelectorAll('.approve-link').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const linkId = this.dataset.linkId;
+            approveLink(linkId);
+        });
+    });
+
+    // Reject link
+    document.querySelectorAll('.reject-link').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const linkId = this.dataset.linkId;
+            if (confirm('Are you sure you want to reject this link?')) {
+                rejectLink(linkId);
+            }
+        });
+    });
+
+    // Override link
+    document.querySelectorAll('.override-link').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const linkId = this.dataset.linkId;
+            showOverrideModal(linkId);
+        });
+    });
+
+    function approveLink(linkId) {
+        fetch(`/management/api/meeting-links/${linkId}/approve/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+
+    function rejectLink(linkId) {
+        fetch(`/management/api/meeting-links/${linkId}/reject/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+
+    function showOverrideModal(linkId) {
+        fetch(`/management/api/meeting-links/${linkId}/suggestions/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const suggestionsDiv = document.getElementById('taskSuggestions');
+                    suggestionsDiv.innerHTML = '';
+                    
+                    data.suggestions.forEach(suggestion => {
+                        const radio = document.createElement('div');
+                        radio.className = 'form-check';
+                        radio.innerHTML = `
+                            <input class="form-check-input" type="radio" name="taskSelect" 
+                                   value="${suggestion.task_id}" id="task${suggestion.task_id}">
+                            <label class="form-check-label" for="task${suggestion.task_id}">
+                                <strong>${suggestion.activity_name}</strong> - ${suggestion.category}
+                            </label>
+                        `;
+                        suggestionsDiv.appendChild(radio);
+                    });
+
+                    const modal = new bootstrap.Modal(document.getElementById('overrideModal'));
+                    modal.show();
+
+                    document.getElementById('confirmOverride').onclick = function() {
+                        const selectedTask = document.querySelector('input[name="taskSelect"]:checked');
+                        if (selectedTask) {
+                            overrideLink(linkId, selectedTask.value);
+                        } else {
+                            alert('Please select a task');
+                        }
+                    };
+                }
+            });
+    }
+
+    function overrideLink(linkId, taskId) {
+        fetch(`/management/api/meeting-links/${linkId}/override/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `task_id=${taskId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
+

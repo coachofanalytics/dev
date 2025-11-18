@@ -1,0 +1,312 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block page_title %}Preset & Signal Tier Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>📊 Preset & Signal Tier Analytics</h2>
+            <p class="text-muted">Performance metrics for portfolio presets and signal tiers</p>
+        </div>
+        <div class="col-md-4 text-end d-flex gap-2 justify-content-end align-items-start flex-wrap">
+            <a href="{% url 'investing:suggested_positions_list' %}" class="btn btn-secondary">
+                <i class="fa fa-arrow-left"></i> Back to Suggestions
+            </a>
+            <a href="{% url 'investing:managed_accounts_list' %}" class="btn btn-outline-secondary">
+                <i class="fa fa-briefcase"></i> Manage Accounts
+            </a>
+            <a href="{% url 'investing:investment_dashboard' %}" class="btn btn-outline-primary">
+                <i class="fa fa-home"></i> Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="days" class="form-label">Days Back</label>
+                    <select name="days" id="days" class="form-select">
+                        <option value="30" {% if days_back == 30 %}selected{% endif %}>30 days</option>
+                        <option value="60" {% if days_back == 60 %}selected{% endif %}>60 days</option>
+                        <option value="90" {% if days_back == 90 %}selected{% endif %}>90 days</option>
+                        <option value="180" {% if days_back == 180 %}selected{% endif %}>180 days</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="preset" class="form-label">Preset Filter</label>
+                    <select name="preset" id="preset" class="form-select">
+                        <option value="">All Presets</option>
+                        <option value="core_income" {% if preset_filter == 'core_income' %}selected{% endif %}>Core Income</option>
+                        <option value="balanced_engine" {% if preset_filter == 'balanced_engine' %}selected{% endif %}>Balanced Engine</option>
+                        <option value="apex_aggressive" {% if preset_filter == 'apex_aggressive' %}selected{% endif %}>Apex Aggressive</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="tier" class="form-label">Tier Filter</label>
+                    <select name="tier" id="tier" class="form-select">
+                        <option value="">All Tiers</option>
+                        <option value="apex" {% if tier_filter == 'apex' %}selected{% endif %}>Apex</option>
+                        <option value="strong" {% if tier_filter == 'strong' %}selected{% endif %}>Strong</option>
+                        <option value="watchlist" {% if tier_filter == 'watchlist' %}selected{% endif %}>Watchlist</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Overall Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <h3>{{ overall_stats.total_suggestions|intcomma }}</h3>
+                    <p class="mb-0">Total Suggestions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <h3>{{ overall_stats.total_positions|intcomma }}</h3>
+                    <p class="mb-0">Converted to Positions</p>
+                    <small>{{ overall_stats.conversion_rate|floatformat:1 }}% conversion rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card {% if overall_stats.overall_win_rate and overall_stats.overall_win_rate >= 60 %}bg-success{% else %}bg-warning{% endif %} text-white h-100">
+                <div class="card-body text-center">
+                    <h3>
+                        {% if overall_stats.overall_win_rate %}
+                            {{ overall_stats.overall_win_rate|floatformat:1 }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </h3>
+                    <p class="mb-0">Overall Win Rate</p>
+                    <small>{{ overall_stats.closed_positions }} closed positions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card {% if overall_stats.overall_avg_pnl and overall_stats.overall_avg_pnl >= 0 %}bg-success{% else %}bg-danger{% endif %} text-white h-100">
+                <div class="card-body text-center">
+                    <h3>
+                        {% if overall_stats.overall_avg_pnl %}
+                            ${{ overall_stats.overall_avg_pnl|floatformat:0 }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </h3>
+                    <p class="mb-0">Avg P&L per Position</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preset Performance -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">📈 Preset Performance</h5>
+        </div>
+        <div class="card-body">
+            {% if preset_performance.presets %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Preset</th>
+                            <th>Total Positions</th>
+                            <th>Closed</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>Win Rate</th>
+                            <th>Avg P&L</th>
+                            <th>Avg ROI</th>
+                            <th>Capital Efficiency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for preset in preset_performance.presets %}
+                        <tr>
+                            <td><strong>{{ preset.preset_name }}</strong></td>
+                            <td>{{ preset.total_positions }}</td>
+                            <td>{{ preset.closed_positions }}</td>
+                            <td><span class="badge bg-success">{{ preset.winning_positions }}</span></td>
+                            <td><span class="badge bg-danger">{{ preset.losing_positions }}</span></td>
+                            <td>
+                                {% if preset.win_rate %}
+                                    <span class="badge {% if preset.win_rate >= 60 %}bg-success{% elif preset.win_rate >= 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ preset.win_rate|floatformat:1 }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if preset.avg_pnl %}
+                                    <span class="{% if preset.avg_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ preset.avg_pnl|floatformat:0 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if preset.avg_roi %}
+                                    {{ preset.avg_roi|floatformat:1 }}%
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if preset.capital_efficiency %}
+                                    {{ preset.capital_efficiency|floatformat:1 }}%
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> No preset performance data available for the selected period.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Signal Tier Performance -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">🎯 Signal Tier Performance</h5>
+        </div>
+        <div class="card-body">
+            {% if tier_performance.tiers %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tier</th>
+                            <th>Total Suggestions</th>
+                            <th>Converted</th>
+                            <th>Conversion Rate</th>
+                            <th>Closed</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>Win Rate</th>
+                            <th>Avg P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tier in tier_performance.tiers %}
+                        <tr>
+                            <td>
+                                <span class="badge {% if tier.tier == 'apex' %}bg-dark{% elif tier.tier == 'strong' %}bg-success{% else %}bg-info{% endif %}">
+                                    {{ tier.tier|title }}
+                                </span>
+                            </td>
+                            <td>{{ tier.total_suggestions }}</td>
+                            <td>{{ tier.converted_to_position }}</td>
+                            <td>
+                                {% if tier.conversion_rate %}
+                                    {{ tier.conversion_rate|floatformat:1 }}%
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ tier.closed_positions }}</td>
+                            <td><span class="badge bg-success">{{ tier.winning_positions }}</span></td>
+                            <td><span class="badge bg-danger">{{ tier.losing_positions }}</span></td>
+                            <td>
+                                {% if tier.win_rate %}
+                                    <span class="badge {% if tier.win_rate >= 60 %}bg-success{% elif tier.win_rate >= 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ tier.win_rate|floatformat:1 }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tier.avg_pnl %}
+                                    <span class="{% if tier.avg_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ tier.avg_pnl|floatformat:0 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> No tier performance data available for the selected period.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Positions Table -->
+    {% if preset_performance.presets %}
+    {% for preset in preset_performance.presets %}
+        {% if preset.positions %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">{{ preset.preset_name }} - Recent Positions</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Strategy</th>
+                                <th>P&L</th>
+                                <th>ROI</th>
+                                <th>Closed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pos in preset.positions %}
+                                {% if forloop.counter <= 10 %}
+                            <tr>
+                                <td><strong>{{ pos.symbol }}</strong></td>
+                                <td><small>{{ pos.strategy }}</small></td>
+                                <td>
+                                    <span class="{% if pos.pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ pos.pnl|floatformat:0 }}
+                                    </span>
+                                </td>
+                                <td>{{ pos.roi|floatformat:1 }}%</td>
+                                <td><small>{{ pos.closed_at|date:"M d, Y" }}</small></td>
+                            </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+    
+</div>
+{% endblock %}
+

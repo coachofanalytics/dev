@@ -461,4 +461,6 @@ urlpatterns += [
 from django.urls import include
 urlpatterns += [
     path('food/', include('finance.urls_food', namespace='food')),
+    # Fallback 'dashboard' URL for any unnamespaced references
+    path('dashboard/', lambda request: redirect('dashboard:unified_dashboard'), name='dashboard'),
 ]

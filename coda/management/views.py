@@ -904,13 +904,46 @@ def get_user_data(employee):
 def bulk_update_daf_date():
     """
     Update daf_date for existing TaskHistory records using bulk_update.
+    For tasks created this month, set daf_date to same day of last month (e.g., Nov 4 -> Oct 4).
     """
-    tasks = TaskHistory.objects.exclude(submission__isnull=True).filter(daf_date__isnull=True)
-    for task in tasks:
-        task.daf_date = task.submission - relativedelta(months=1)
+    from django.utils import timezone
+    from datetime import date
     
-    TaskHistory.objects.bulk_update(tasks, ['daf_date'])
-    print(f"{tasks.count()} records updated successfully with daf_date.")
+    # Find tasks with NULL daf_date
+    tasks = TaskHistory.objects.exclude(submission__isnull=True).filter(daf_date__isnull=True)
+    
+    current_date = date.today()
+    start_of_current_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    updated_tasks = []
+    for task in tasks:
+        if task.submission:
+            submission_date = timezone.localtime(task.submission).date()
+            
+            # If task was created/submitted this month, set daf_date to same day of last month
+            # (e.g., Nov 4 -> Oct 4)
+            if submission_date.month == current_date.month and submission_date.year == current_date.year:
+                # Same day, last month
+                task.daf_date = submission_date - relativedelta(months=1)
+            else:
+                # Older submission, use submission - 1 month
+                task.daf_date = submission_date - relativedelta(months=1)
+        elif task.created_at:
+            # Fallback to created_at if submission is not available
+            created_date = timezone.localtime(task.created_at).date()
+            if created_date.month == current_date.month and created_date.year == current_date.year:
+                # Same day, last month
+                task.daf_date = created_date - relativedelta(months=1)
+            else:
+                task.daf_date = created_date - relativedelta(months=1)
+        
+        updated_tasks.append(task)
+    
+    if updated_tasks:
+        TaskHistory.objects.bulk_update(updated_tasks, ['daf_date'])
+        print(f"{len(updated_tasks)} records updated successfully with daf_date.")
+    else:
+        print("No records to update.")
 
 def payslip(request, *args, **kwargs):
     """

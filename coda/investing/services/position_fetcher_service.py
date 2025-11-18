@@ -17,6 +17,7 @@ import logging
 from decimal import Decimal
 from datetime import datetime, date, timedelta
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from typing import List, Dict, Optional
 
@@ -25,6 +26,7 @@ from ..models import SuggestedPosition, OptionPlayRawData
 from .optionplay_scraper import OptionPlayScraperService  # NEW: Web scraper
 from .optionplay_converter import OptionPlayConverterService  # NEW: CSV converter
 from .position_scoring_service import PositionScoringService
+from .signal_validation_service import SignalValidationService
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +95,11 @@ class PositionFetcherService:
             
             if positions and len(positions) >= filters.get('max_positions', 5):
                 logger.info(f"✅ OptionPlay returned {len(positions)} positions")
-                suggested_positions = self._save_suggested_positions(positions, source='optionplay')
+                suggested_positions = self._save_suggested_positions(
+                    positions,
+                    source='optionplay',
+                    batch_id=self._generate_batch_id('optionplay'),
+                )
                 return suggested_positions
             else:
                 logger.warning(f"⚠️  OptionPlay returned only {len(positions) if positions else 0} positions")
@@ -107,7 +113,11 @@ class PositionFetcherService:
             positions = self._fetch_from_thinkorswim(filters)
             logger.info(f"✅ Thinkorswim returned {len(positions)} positions")
             if positions:
-                suggested_positions = self._save_suggested_positions(positions, source='thinkorswim')
+                suggested_positions = self._save_suggested_positions(
+                    positions,
+                    source='thinkorswim',
+                    batch_id=self._generate_batch_id('thinkorswim'),
+                )
                 return suggested_positions
             else:
                 logger.warning("⚠️  Thinkorswim returned 0 positions; falling back to MOCK for testing")
@@ -121,7 +131,11 @@ class PositionFetcherService:
             positions = self._fetch_from_database(filters)
             if positions:
                 logger.info(f"✅ Database returned {len(positions)} positions")
-                suggested_positions = self._save_suggested_positions(positions, source='manual')
+                suggested_positions = self._save_suggested_positions(
+                    positions,
+                    source='manual',
+                    batch_id=self._generate_batch_id('manual'),
+                )
                 return suggested_positions
             else:
                 logger.warning("⚠️  No unprocessed data in database")
@@ -131,7 +145,11 @@ class PositionFetcherService:
         # Last resort: Return mock data for testing
         logger.info("🎭 Returning mock data for testing...")
         mock_positions = self._get_mock_positions(filters)
-        suggested_positions = self._save_suggested_positions(mock_positions, source='manual')
+        suggested_positions = self._save_suggested_positions(
+            mock_positions,
+            source='manual',
+            batch_id=self._generate_batch_id('mock'),
+        )
         return suggested_positions
     
     def _get_default_filters(self) -> Dict:
@@ -570,7 +588,13 @@ class PositionFetcherService:
     # DATABASE OPERATIONS
     # ========================================================================
     
-    def _save_suggested_positions(self, positions: List[Dict], source: str) -> List[SuggestedPosition]:
+    def _save_suggested_positions(
+        self,
+        positions: List[Dict],
+        source: str,
+        *,
+        batch_id: Optional[str] = None,
+    ) -> List[SuggestedPosition]:
         """
         Save fetched positions to SuggestedPosition model
         
@@ -583,29 +607,73 @@ class PositionFetcherService:
         """
         suggested_positions = []
         scorer: Optional[PositionScoringService] = None
+        validator: Optional[SignalValidationService] = None
+        batch_identifier = batch_id or self._generate_batch_id(source)
         
         for pos_data in positions:
             try:
+                if validator is None:
+                    validator = SignalValidationService()
+                clean_data = validator.clean_payload(pos_data)
+                captured_at = clean_data.get('captured_at') or timezone.now()
+                time_tolerance = clean_data.get('time_tolerance_minutes')
+                if time_tolerance is None and clean_data.get('time_tolerance'):
+                    try:
+                        time_tolerance = int(clean_data.get('time_tolerance'))
+                    except (TypeError, ValueError):
+                        time_tolerance = None
+
+                valid_until = None
+                if time_tolerance:
+                    valid_until = captured_at + timedelta(minutes=time_tolerance)
+
+                previous_entry = SuggestedPosition.objects.filter(
+                    symbol=clean_data['symbol'],
+                    strategy=clean_data['strategy'],
+                ).order_by('-fetched_at').first()
+
+                persisted = False
+                streak = 1
+                if previous_entry and previous_entry.fetched_at:
+                    delta = captured_at - previous_entry.fetched_at
+                    if delta <= timedelta(hours=24):
+                        persisted = True
+                        streak = (previous_entry.consistency_streak or 1) + 1
+
+                self._dedupe_pending_position(
+                    symbol=clean_data['symbol'],
+                    strategy=clean_data['strategy'],
+                    expiration_date=clean_data['expiration_date'],
+                )
+
                 suggested_pos = SuggestedPosition.objects.create(
                     source=source,
-                    symbol=pos_data['symbol'],
-                    strategy=pos_data['strategy'],
-                    positions=pos_data['positions'],
-                    expiration_date=pos_data['expiration_date'],
-                    dte=pos_data['dte'],
-                    premium_collected=pos_data['premium_collected'],
-                    capital_required=pos_data['capital_required'],
-                    max_profit=pos_data['max_profit'],
-                    max_loss=pos_data['max_loss'],
-                    breakeven=pos_data.get('breakeven'),
-                    probability_of_profit=pos_data['probability_of_profit'],
-                    position_delta=pos_data.get('position_delta', Decimal('0.0000')),
-                    position_theta=pos_data.get('position_theta', Decimal('0.0000')),
-                    position_gamma=pos_data.get('position_gamma', Decimal('0.0000')),
-                    position_vega=pos_data.get('position_vega', Decimal('0.0000')),
-                    ai_confidence=pos_data.get('ai_confidence'),
-                    ai_reasoning=pos_data.get('ai_reasoning', ''),
-                    api_response_data=pos_data.get('api_response_data', {}),
+                    symbol=clean_data['symbol'],
+                    strategy=clean_data['strategy'],
+                    positions=clean_data['positions'],
+                    expiration_date=clean_data['expiration_date'],
+                    dte=clean_data['dte'],
+                    premium_collected=clean_data['premium_collected'],
+                    capital_required=clean_data['capital_required'],
+                    max_profit=clean_data['max_profit'],
+                    max_loss=clean_data['max_loss'],
+                    breakeven=clean_data.get('breakeven'),
+                    probability_of_profit=clean_data['probability_of_profit'],
+                    position_delta=clean_data.get('position_delta', Decimal('0.0000')),
+                    position_theta=clean_data.get('position_theta', Decimal('0.0000')),
+                    position_gamma=clean_data.get('position_gamma', Decimal('0.0000')),
+                    position_vega=clean_data.get('position_vega', Decimal('0.0000')),
+                    ai_confidence=clean_data.get('ai_confidence'),
+                    ai_reasoning=clean_data.get('ai_reasoning', ''),
+                    api_response_data=clean_data.get('api_response_data', {}),
+                    captured_underlying_price=clean_data.get('captured_underlying_price'),
+                    captured_at=captured_at,
+                    valid_until=valid_until,
+                    price_tolerance=clean_data.get('price_tolerance'),
+                    time_tolerance_minutes=time_tolerance,
+                    fetch_batch_id=batch_identifier,
+                    persisted_from_last_fetch=persisted,
+                    consistency_streak=streak,
                     review_status='pending'
                 )
 
@@ -615,17 +683,17 @@ class PositionFetcherService:
 
                 try:
                     score_payload = {
-                        'symbol': pos_data.get('symbol'),
-                        'strategy': pos_data.get('strategy'),
-                        'premium': pos_data.get('premium_collected'),
-                        'max_loss': pos_data.get('max_loss'),
-                        'dte': pos_data.get('dte'),
-                        'iv_rank': pos_data.get('iv_rank'),
-                        'delta': pos_data.get('position_delta'),
-                        'theta': pos_data.get('position_theta'),
-                        'volume': pos_data.get('volume'),
-                        'open_interest': pos_data.get('open_interest'),
-                        'days_to_earnings': pos_data.get('days_to_earnings'),
+                        'symbol': clean_data.get('symbol'),
+                        'strategy': clean_data.get('strategy'),
+                        'premium': clean_data.get('premium_collected'),
+                        'max_loss': clean_data.get('max_loss'),
+                        'dte': clean_data.get('dte'),
+                        'iv_rank': clean_data.get('iv_rank'),
+                        'delta': clean_data.get('position_delta'),
+                        'theta': clean_data.get('position_theta'),
+                        'volume': clean_data.get('volume'),
+                        'open_interest': clean_data.get('open_interest'),
+                        'days_to_earnings': clean_data.get('days_to_earnings'),
                     }
                     score_result = scorer.score_position(score_payload)
                     breakdown_raw = score_result.get('breakdown', {}) or {}
@@ -658,12 +726,46 @@ class PositionFetcherService:
                 suggested_positions.append(suggested_pos)
                 logger.info(f"✅ Saved: {suggested_pos}")
             
+            except ValidationError as validation_exc:
+                logger.warning(
+                    "⚠️ Validation failed for %s %s: %s",
+                    pos_data.get('symbol'),
+                    pos_data.get('strategy'),
+                    validation_exc,
+                )
+                continue
             except Exception as e:
                 logger.error(f"❌ Failed to save position {pos_data.get('symbol', 'UNKNOWN')}: {e}")
                 continue
         
         logger.info(f"✅ Saved {len(suggested_positions)} suggested positions to database")
         return suggested_positions
+
+    def _dedupe_pending_position(self, symbol: str, strategy: str, expiration_date: date) -> None:
+        """
+        Remove existing pending suggestions for the same symbol/strategy/expiry.
+        """
+        duplicates = SuggestedPosition.objects.filter(
+            symbol=symbol,
+            strategy=strategy,
+            expiration_date=expiration_date,
+            review_status='pending',
+        )
+        if duplicates.exists():
+            count = duplicates.count()
+            duplicates.delete()
+            logger.info(
+                "🧹 Removed %s duplicate pending suggestion(s) for %s %s %s",
+                count,
+                symbol,
+                strategy,
+                expiration_date,
+            )
+
+    def _generate_batch_id(self, source: Optional[str]) -> str:
+        stamp = timezone.now().strftime("%Y%m%d%H%M%S")
+        label = (source or "fetch").lower()
+        return f"{label}-{stamp}"
     
     # ========================================================================
     # DATABASE FALLBACK (Manually Uploaded CSV Data)

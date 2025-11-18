@@ -102,17 +102,19 @@ def payment_method_selection(request):
         # Query without any default ordering to avoid field conflicts
         try:
             payment_info = Payment_Information.objects.filter(
-                customer_id=request.user.id
-            ).order_by('-id').only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan').first()
+                customer=request.user
+            ).order_by('-id').only('id', 'customer', 'payment_fees', 'down_payment', 'plan').first()
         except Exception as db_error:
             logger.warning(f"Database query issue, trying alternate method: {db_error}")
             # Fallback: use raw query to avoid model ordering issues
             from django.db import connection
             with connection.cursor() as cursor:
+                print(f"[Payments][DEBUG] Raw query fallback for payment info (selection) user_id={request.user.id}")
+                print(f"[Payments][DEBUG] Raw query fallback for payment info (processing) user_id={request.user.id}")
                 cursor.execute("""
-                    SELECT id, customer_id, payment_fees, down_payment, plan 
+                    SELECT id, customer_id_id, payment_fees, down_payment, plan 
                     FROM finance_payment_information 
-                    WHERE customer_id = %s 
+                    WHERE customer_id_id = %s 
                     ORDER BY id DESC 
                     LIMIT 1
                 """, [request.user.id])
@@ -134,29 +136,36 @@ def payment_method_selection(request):
             try:
                 from finance.utilities.payment_utils import PaymentUtils
                 named_url, absolute_url = PaymentUtils.get_persona_redirect_url(request.user)
+                print(f"[Payments][DEBUG] Persona redirect lookup for user={request.user.username}: named_url={named_url} absolute_url={absolute_url}")
                 if named_url:
+                    print(f"[Payments][DEBUG] Redirecting via persona named_url={named_url}")
                     return redirect(reverse(named_url))
                 if absolute_url:
+                    print(f"[Payments][DEBUG] Redirecting via persona absolute_url={absolute_url}")
                     return redirect(absolute_url)
             except Exception:
                 pass
             
             # If no payment context found, redirect to loan application or service selection
+            print("[Payments][DEBUG] No payment context found; redirecting user to onboarding flows")
             messages.error(request, 'No payment context found. Please select a service or apply for a loan to continue.')
             
             # Try to redirect to loan application first
             try:
+                print("[Payments][DEBUG] Redirecting to finance:loan-home")
                 return redirect('finance:loan-home')
             except Exception:
                 pass
             
             # Fallback to finance index
             try:
+                print("[Payments][DEBUG] Redirecting to finance:finance-index")
                 return redirect('finance:finance-index')
             except Exception:
                 pass
             
             # Last resort - show error page
+            print("[Payments][DEBUG] Rendering no_payment_context fallback")
             return render(request, 'finance/payments/no_payment_context.html', {
                 'error_message': 'No payment context found. Please contact support or select a service.'
             })
@@ -180,14 +189,13 @@ def payment_method_selection(request):
             'balance': balance,
             'payment_info': payment_info,
         }
-        print(f"DEBUG: Context created successfully: {context}")
-        
-        print("DEBUG: About to render template")
+        print(f"[Payments][DEBUG] Context created successfully for user={request.user.username}: total={total_amount} down={down_payment} balance={balance}")
+        print("[Payments][DEBUG] Rendering payment method selection")
         return render(request, 'finance/payments/method_selection.html', context)
         
     except Exception as e:
-        print(f"DEBUG: Exception occurred: {str(e)}")
-        print(f"DEBUG: Exception type: {type(e)}")
+        print(f"[Payments][DEBUG] Exception in payment_method_selection for user={request.user.username}: {e}")
+        print(f"[Payments][DEBUG] Exception type: {type(e)}")
         import traceback
         print(f"DEBUG: Full traceback: {traceback.format_exc()}")
         logger.error(f"Error in payment method selection: {str(e)}")
@@ -209,17 +217,17 @@ def payment_processing(request, method):
         # Get payment information - avoid ordering issues
         try:
             payment_info = Payment_Information.objects.filter(
-                customer_id=request.user.id
-            ).order_by('-id').only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan').first()
+                customer=request.user
+            ).order_by('-id').only('id', 'customer', 'payment_fees', 'down_payment', 'plan').first()
         except Exception as db_error:
             logger.warning(f"Database query issue in payment processing: {db_error}")
             # Fallback: use raw query to avoid model ordering issues
             from django.db import connection
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT id, customer_id, payment_fees, down_payment, plan 
+                    SELECT id, customer_id_id, payment_fees, down_payment, plan 
                     FROM finance_payment_information 
-                    WHERE customer_id = %s 
+                    WHERE customer_id_id = %s 
                     ORDER BY id DESC 
                     LIMIT 1
                 """, [request.user.id])
@@ -237,6 +245,7 @@ def payment_processing(request, method):
                     payment_info = None
         
         if not payment_info:
+            print(f"[Payments][DEBUG] No payment_info found for user={request.user.username} during processing")
             messages.error(request, 'No payment information found.')
             return redirect('finance:unified_method_selection')
         
@@ -245,15 +254,15 @@ def payment_processing(request, method):
         payment_service = None
         
         if request.method == 'POST':
-            print(f"DEBUG: Processing POST request for {method}")
+            print(f"[Payments][DEBUG] Processing POST request for method={method}")
             # Process payment based on method
             result = process_payment_by_method(
                 request, method, payment_info, payment_service
             )
-            print(f"DEBUG: Payment processing result: {result}")
+            print(f"[Payments][DEBUG] Payment processing result={result}")
             return result
         else:
-            print(f"DEBUG: Showing payment form for {method}")
+            print(f"[Payments][DEBUG] Showing payment form for method={method}")
             # Show payment form
             return show_payment_form(request, method, payment_info)
             
@@ -462,13 +471,16 @@ def process_stripe_payment(request, payment_info, payment_service):
         getattr(settings, 'STRIPE_PUBLISHABLE_KEY', None),
         getattr(settings, 'STRIPE_SECRET_KEY', None)
     ])
+    print(f"[Stripe][DEBUG] process_stripe_payment creds_present={has_stripe_creds} publishable_set={bool(getattr(settings, 'STRIPE_PUBLISHABLE_KEY', None))}")
     
     if not has_stripe_creds:
         logger.info(f"Stripe credentials not available for user {request.user.username}, showing payment details")
+        print("[Stripe][DEBUG] Missing Stripe credentials, falling back to manual instructions")
         return show_payment_details(request, 'stripe')
     
     # Show Stripe Elements form
     logger.info(f"Showing Stripe Elements form for user {request.user.username}")
+    print(f"[Stripe][DEBUG] Rendering Stripe form for user={request.user.username}")
     return show_payment_form(request, 'stripe', payment_info)
 @login_required
 def payment_success(request):
@@ -603,7 +615,7 @@ def verify_mpesa_otp(request):
             return redirect('finance:mpesa_otp_confirmation')
         
         # OTP is valid - process payment
-        payment_info = Payment_Information.objects.only('id', 'customer_id', 'payment_fees', 'down_payment', 'plan', 'created_at').get(id=mpesa_data['payment_info_id'])
+        payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=mpesa_data['payment_info_id'])
         
         # Create payment record
         reference = mpesa_data['reference']

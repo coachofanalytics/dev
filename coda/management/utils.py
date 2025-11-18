@@ -87,11 +87,79 @@ def get_tasks(employee, selected_month, selected_year, pay_type):
             )
         else:
             # Fetch TaskHistory records for staff employees
-            tasks = TaskHistory.objects.filter(
-                employee=employee,
+            # Fix: Include tasks from last month that were moved this month
+            # When viewing last month (default for usertaskhistory), also show tasks that were moved this month
+            from dateutil.relativedelta import relativedelta
+            last_month = current_date - relativedelta(months=1)
+            start_of_current_month = current_date.replace(day=1)
+            
+            # Build comprehensive filter that handles:
+            # 1. Tasks with daf_date matching selected month/year
+            # 2. Tasks from last month that were moved this month (even if daf_date is NULL or different)
+            # 3. Tasks with NULL daf_date that were created/moved recently
+            
+            filter_conditions = Q()
+            
+            # Primary filter: daf_date matches selected month/year
+            filter_conditions |= Q(
                 daf_date__month=selected_month,
                 daf_date__year=selected_year
             )
+            
+            # If viewing last month (which is the default for usertaskhistory):
+            # Also include tasks that were moved this month (created_at or submission this month)
+            # This catches tasks moved on Nov 4th that should show when viewing October
+            if selected_month == last_month.month and selected_year == last_month.year:
+                # MOST IMPORTANT: Include ALL tasks created this month when viewing last month
+                # This catches tasks moved at the beginning of the month (like Nov 4th) for last month's work
+                filter_conditions |= Q(
+                    created_at__gte=start_of_current_month
+                )
+                # Also include tasks with submission this month
+                filter_conditions |= Q(
+                    submission__gte=start_of_current_month
+                )
+                # Include tasks with NULL daf_date (they might be from last month)
+                filter_conditions |= Q(
+                    daf_date__isnull=True
+                )
+            
+            # If viewing current month:
+            # Also include tasks from last month that were moved this month
+            if is_current_month:
+                filter_conditions |= Q(
+                    daf_date__month=last_month.month,
+                    daf_date__year=last_month.year,
+                    created_at__gte=start_of_current_month
+                )
+                filter_conditions |= Q(
+                    daf_date__month=last_month.month,
+                    daf_date__year=last_month.year,
+                    submission__gte=start_of_current_month
+                )
+                filter_conditions |= Q(
+                    daf_date__isnull=True,
+                    created_at__gte=start_of_current_month
+                )
+                filter_conditions |= Q(
+                    daf_date__isnull=True,
+                    submission__gte=start_of_current_month
+                )
+            
+            tasks = TaskHistory.objects.filter(
+                employee=employee
+            ).filter(filter_conditions)
+            
+            # Debug logging (can be removed in production)
+            if tasks.count() == 0:
+                logger.debug(
+                    f"No TaskHistory found for employee {employee.username} "
+                    f"with selected_month={selected_month}, selected_year={selected_year}, "
+                    f"pay_type={pay_type}. Filter conditions: {filter_conditions}"
+                )
+                # Check if employee has any TaskHistory at all
+                total_count = TaskHistory.objects.filter(employee=employee).count()
+                logger.debug(f"Total TaskHistory records for {employee.username}: {total_count}")
     else:
         raise ValueError(
             f"Invalid pay_type: {pay_type}. Expected 'payslip', 'task_payslip', 'usertasks', 'usertaskhistory', 'tasks', 'taskhistory'."
