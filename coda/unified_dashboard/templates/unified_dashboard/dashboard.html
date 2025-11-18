@@ -302,67 +302,19 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- Accessible Dashboards (Permission-Based) -->
+        {% if accessible_dashboards %}
+        <div class="dashboard-header mt-4">
+            <h2><i class="fas fa-th"></i> Available Dashboards</h2>
+            <p>Dashboards you have access to based on your role and permissions</p>
+        </div>
         <div class="quick-actions">
-            {% for action in quick_actions %}
-            <a href="{{ action.url }}" class="quick-action-card" onclick="trackServiceAccess('{{ action.title }}')">
-                <i class="{{ action.icon }}"></i>
-                <span>{{ action.title }}</span>
+            {% for dashboard in accessible_dashboards %}
+            <a href="{{ dashboard.url }}" class="quick-action-card">
+                <i class="{{ dashboard.icon }}"></i>
+                <span>{{ dashboard.title }}</span>
             </a>
             {% endfor %}
-        </div>
-
-        <!-- Role-Based Links (from Management System) -->
-        {% if role_based_links %}
-        <div class="role-based-links">
-            <div class="dashboard-header">
-                <h2><i class="fas fa-user-cog"></i> My Account Services</h2>
-                <p>Quick access to your personalized services based on your role</p>
-            </div>
-            <div class="quick-actions">
-                {% for link_name, link_url in role_based_links.items %}
-                <a href="{{ link_url }}" class="quick-action-card" target="_blank">
-                    {% if link_name == 'My Tasks' %}
-                        <i class="fas fa-tasks"></i>
-                    {% elif link_name == 'Task History' %}
-                        <i class="fas fa-history"></i>
-                    {% elif link_name == 'Edit Profile' %}
-                        <i class="fas fa-user-edit"></i>
-                    {% elif link_name == 'Make a Payment' %}
-                        <i class="fas fa-credit-card"></i>
-                    {% elif link_name == 'My Evidence' or link_name == 'Evidence' %}
-                        <i class="fas fa-file-alt"></i>
-                    {% elif link_name == 'My Sessions' %}
-                        <i class="fas fa-graduation-cap"></i>
-                    {% elif link_name == 'Job Placement' %}
-                        <i class="fas fa-briefcase"></i>
-                    {% elif link_name == 'My Time' %}
-                        <i class="fas fa-clock"></i>
-                    {% elif link_name == 'My Meetings' %}
-                        <i class="fas fa-calendar"></i>
-                    {% elif link_name == 'My Schedule' %}
-                        <i class="fas fa-calendar-alt"></i>
-                    {% elif link_name == 'My DAF' or link_name == 'Last DAF' %}
-                        <i class="fas fa-chart-pie"></i>
-                    {% elif link_name == 'Professional Services' %}
-                        <i class="fas fa-briefcase"></i>
-                    {% elif link_name == 'Job Tracking' %}
-                        <i class="fas fa-search"></i>
-                    {% elif link_name == 'Apply for Loan' %}
-                        <i class="fas fa-money-bill-wave"></i>
-                    {% elif 'Data Analysis' in link_name or 'Analytics' in link_name %}
-                        <i class="fas fa-chart-line"></i>
-                    {% elif 'Programming' in link_name or 'Code' in link_name %}
-                        <i class="fas fa-code"></i>
-                    {% elif 'Business' in link_name or 'General' in link_name %}
-                        <i class="fas fa-briefcase"></i>
-                    {% else %}
-                        <i class="fas fa-external-link-alt"></i>
-                    {% endif %}
-                    <span>{{ link_name }}</span>
-                </a>
-                {% endfor %}
-            </div>
         </div>
         {% endif %}
 

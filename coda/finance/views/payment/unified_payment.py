@@ -460,10 +460,11 @@ def process_venmo_payment(request, payment_info, payment_service):
     return show_payment_details(request, 'venmo')
 def process_stripe_payment(request, payment_info, payment_service):
     """
-    Process Stripe payment with automatic fallback
-    Try Stripe API if credentials available, otherwise show payment details
+    Process Stripe payment using Checkout Session (server-side, no JavaScript)
+    Redirects to Stripe's hosted checkout page
     """
-    import os
+    from django.shortcuts import redirect
+    from django.urls import reverse
     from django.conf import settings
     
     # Check if Stripe credentials are available
@@ -471,17 +472,24 @@ def process_stripe_payment(request, payment_info, payment_service):
         getattr(settings, 'STRIPE_PUBLISHABLE_KEY', None),
         getattr(settings, 'STRIPE_SECRET_KEY', None)
     ])
-    print(f"[Stripe][DEBUG] process_stripe_payment creds_present={has_stripe_creds} publishable_set={bool(getattr(settings, 'STRIPE_PUBLISHABLE_KEY', None))}")
+    print(f"[Stripe][DEBUG] process_stripe_payment creds_present={has_stripe_creds}")
     
     if not has_stripe_creds:
         logger.info(f"Stripe credentials not available for user {request.user.username}, showing payment details")
         print("[Stripe][DEBUG] Missing Stripe credentials, falling back to manual instructions")
         return show_payment_details(request, 'stripe')
     
-    # Show Stripe Elements form
-    logger.info(f"Showing Stripe Elements form for user {request.user.username}")
-    print(f"[Stripe][DEBUG] Rendering Stripe form for user={request.user.username}")
-    return show_payment_form(request, 'stripe', payment_info)
+    # Get amount from request (default to full balance)
+    amount = payment_info.get_fee_balance()
+    if request.method == 'POST':
+        amount = float(request.POST.get('amount', amount))
+    elif request.method == 'GET':
+        amount = float(request.GET.get('amount', amount))
+    
+    # Redirect to create Checkout Session (which will redirect to Stripe)
+    logger.info(f"Redirecting to Stripe Checkout for user {request.user.username} amount={amount}")
+    print(f"[Stripe][DEBUG] Redirecting to Checkout Session for user={request.user.username} amount={amount}")
+    return redirect(f"{reverse('finance:stripe_checkout_session')}?amount={amount}")
 @login_required
 def payment_success(request):
     """Unified payment success view"""
@@ -545,7 +553,34 @@ def show_payment_form(request, method, payment_info):
             logger.info(f"Manual payment method {method} requested, redirecting to payment details")
             return show_payment_details(request, method)
         
-        # For automated methods (PayPal, Stripe), show their specific forms
+        # For Stripe, redirect to Checkout Session (server-side, no form needed)
+        if method == 'stripe':
+            from django.urls import reverse
+            from django.conf import settings
+            
+            # Check if Stripe credentials are available
+            has_stripe_creds = all([
+                getattr(settings, 'STRIPE_PUBLISHABLE_KEY', None),
+                getattr(settings, 'STRIPE_SECRET_KEY', None)
+            ])
+            
+            if not has_stripe_creds:
+                logger.info(f"Stripe credentials not available, showing payment details")
+                return show_payment_details(request, 'stripe')
+            
+            # Get amount from request (default to full balance)
+            amount = payment_info.get_fee_balance()
+            if request.method == 'POST':
+                amount = float(request.POST.get('amount', amount))
+            elif request.method == 'GET':
+                amount = float(request.GET.get('amount', amount))
+            
+            # Redirect to create Checkout Session (which will redirect to Stripe)
+            logger.info(f"Redirecting to Stripe Checkout for user {request.user.username} amount={amount}")
+            print(f"[Stripe][DEBUG] Redirecting to Checkout Session from show_payment_form amount={amount}")
+            return redirect(f"{reverse('finance:stripe_checkout_session')}?amount={amount}")
+        
+        # For other automated methods (PayPal), show their specific forms
         method_info = PAYMENT_METHODS.get(method, {})
         context = {
             'method': method,
@@ -553,17 +588,15 @@ def show_payment_form(request, method, payment_info):
             'payment_info': payment_info,
         }
         
-        # Add Stripe-specific context
-        if method == 'stripe':
-            from django.conf import settings
-            context['stripe_publishable_key'] = getattr(settings, 'STRIPE_PUBLISHABLE_KEY', '')
-        
         template_name = f'finance/payments/{method}_form.html'
 
         return render(request, template_name, context)
         
     except Exception as e:
         logger.error(f"Error showing payment form for {method}: {str(e)}")
+        print(f"[Payments][DEBUG] Error showing payment form for {method}: {e}")
+        import traceback
+        traceback.print_exc()
         messages.error(request, f'Error loading {method} payment form.')
         return redirect('finance:unified_method_selection')
 @login_required

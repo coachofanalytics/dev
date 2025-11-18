@@ -9,10 +9,12 @@ app = Celery('coda_project')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 app.conf.beat_schedule = {
-    # 'run_on_every_1st': {
-    #     'task': 'task_history',
-    #     'schedule': crontab(0, 0, day_of_month='1'),
-    # },
+    # Monthly task reset - runs on 1st of each month at midnight
+    # OPTION 1: Reset on 1st of month
+    'monthly_task_reset': {
+        'task': 'task_history',  # Maps to dump_data() function
+        'schedule': crontab(hour=0, minute=0, day_of_month='1'),  # 1st at 00:00
+    },
 
     # 'login_no_activity_send_sms': {
     #     'task': 'SendMsgApplicatUser',

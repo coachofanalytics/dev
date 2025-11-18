@@ -322,7 +322,23 @@ PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
 PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')
 
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
-STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY') or os.environ.get('STRIPE_TEST_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET') or os.environ.get('STRIPE_TEST_WEBHOOK_SECRET')
+
+def _mask_secret(value: str, label: str) -> None:
+    """Print a masked version of sensitive keys for debugging in non-production environments."""
+    try:
+        if value:
+            masked = f"{value[:6]}…{value[-4:]}" if len(value) > 10 else value
+            print(f"[Stripe] Loaded {label}: {masked}")
+        else:
+            print(f"[Stripe] {label} not configured")
+    except Exception:
+        print(f"[Stripe] Unable to display {label}")
+
+if os.environ.get('ENVIRONMENT', '').lower() != 'production':
+    _mask_secret(STRIPE_SECRET_KEY, "secret key")
+    _mask_secret(STRIPE_WEBHOOK_SECRET, "webhook secret")
 
 # settings.py
 MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY')

@@ -86,6 +86,7 @@ coda/finance/
 
 | Date | Change | Files | Dev |
 |------|--------|-------|-----|
+| Nov 14, 2025 | Auto-create Payment_Information on loan approval | finance/signals.py | AI |
 | Oct 22, 2025 | 7-doc migration | All docs | AI |
 | Oct 13, 2025 | Disabled (missing module) | urls.py | CM |
 | Sept 2025 | Unified payment flow | payment_views.py | CM |

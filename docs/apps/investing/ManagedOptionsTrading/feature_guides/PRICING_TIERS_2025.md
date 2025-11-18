@@ -41,13 +41,22 @@ _Goal: preserve the legacy $420 sleeve for the existing client while introducing
 
 ---
 
+## Client-Facing Narrative (Phase 3 ✅)
+
+- **Automation proof**: the client portal now displays the same 90-day auto-approval metrics (win rate, realized P&L, execution lag) that staff sees.  
+- **Upgrade CTA**: legacy clients see an inline upgrade card referencing those metrics plus the Balanced/Elite deliverables.  
+- **Plan comparison table**: the tier matrix is rendered directly in the portal so “why pay more?” is answered with live data.  
+- **Source of truth**: all metrics pull from `PositionRankingService.get_auto_approval_metrics()` to keep staff + client copy in sync.
+
+---
+
 ## Next Engineering Tasks
 
-1. Surface the tier comparison in the client dashboard and staff console.  
-2. Add configuration for plan-to-sleeve mapping and UW subscription cadence.  
-3. Build portfolio preset auto-ranking so “Balanced” portfolios can be auto-approved similar to top suggestions.
+1. Add configuration for plan-to-sleeve mapping and UW subscription cadence (currently hard-coded).  
+2. Wire portfolio auto-entry once Schwab broker API access is granted (Balanced/Elite).  
+3. Extend the scenario explorer to reference the new presets / automation stats.
 
-_Document owner: Investing Engineering • Last updated: Nov 10, 2025_
+_Document owner: Investing Engineering • Last updated: Nov 14, 2025_
 
 
 

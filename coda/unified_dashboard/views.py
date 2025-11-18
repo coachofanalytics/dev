@@ -93,6 +93,8 @@ def get_dashboard_config(user_role, user=None):
                 {'title': 'Smart Collateral', 'url': '/finance/admin/smart-collateral-dashboard/', 'icon': 'fas fa-shield-alt'},
                 {'title': 'Portfolio & Presentations', 'url': '/portfolio/', 'icon': 'fas fa-briefcase'},
                 {'title': 'Platform Health', 'url': '/ai_services/diaspora/ai-health/', 'icon': 'fas fa-heartbeat'},
+                {'title': 'Management Analytics', 'url': '/management/analytics/', 'icon': 'fas fa-chart-bar'},
+                {'title': 'Task Dashboard', 'url': '/management/enhanced-dashboard/', 'icon': 'fas fa-tachometer-alt'},
             ]
         },
         'investor': {
@@ -143,6 +145,8 @@ def get_dashboard_config(user_role, user=None):
             'quick_actions': [
                 {'title': 'Company Agenda', 'url': '/management/companyagenda/', 'icon': 'fas fa-calendar-alt'},
                 {'title': 'My Tasks', 'url': '/management/userdashboard/', 'icon': 'fas fa-tasks'},
+                {'title': 'Task Dashboard', 'url': '/management/enhanced-dashboard/', 'icon': 'fas fa-tachometer-alt'},
+                {'title': 'Analytics', 'url': '/management/analytics/', 'icon': 'fas fa-chart-line'},
                 {'title': 'HR Services', 'url': '/hr/', 'icon': 'fas fa-user-tie'},
                 {'title': 'Help Center', 'url': '/help/', 'icon': 'fas fa-question-circle'},
             ]
@@ -261,6 +265,9 @@ def unified_dashboard(request):
                 'icon': 'fas fa-database',
                 'url': '/dashboard/admin/backup-database/',
             })
+        
+        # Get accessible dashboards using permission system
+        accessible_dashboards = get_accessible_dashboards(request.user)
 
         financial_summary = {}
         financial_cards = []
@@ -593,6 +600,7 @@ def unified_dashboard(request):
             'dashboard_config': dashboard_config,
             'role_based_links': role_based_links,
             'quick_actions': quick_actions,
+            'accessible_dashboards': accessible_dashboards,
             'recent_activities': get_recent_activities(request.user),
             'notifications': get_user_notifications(request.user),
             'title': 'CODA Command Center - ' + dashboard_config["title"],
@@ -895,6 +903,9 @@ def get_role_based_links(request):
             'My Meetings': reverse('management:meetings', kwargs={'status': 'company 2'}),
             'My Schedule': reverse('main:my_availability'),
             'Apply for Loan': reverse('finance:loan-home'),
+            # Phase 3: Analytics links
+            'Task Dashboard': reverse('management:enhanced-dashboard'),
+            'Analytics': reverse('management:analytics-dashboard'),
         })
     # Category-specific links (only for non-staff users)
     elif user.category == 1:  # Job Applicant
@@ -1058,6 +1069,23 @@ def unified_department_view(request, department_slug=None):
 def is_admin_user(user):
     """Check if user is admin/staff/superuser"""
     return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+def get_accessible_dashboards(user):
+    """
+    Get list of dashboards user has access to.
+    Uses the centralized permission system.
+    """
+    try:
+        from core.permissions import get_user_dashboards
+        return get_user_dashboards(user)
+    except ImportError:
+        try:
+            from accounts.permissions import get_user_dashboards
+            return get_user_dashboards(user)
+        except ImportError:
+            # Fallback if permissions not available
+            return []
 
 
 @login_required

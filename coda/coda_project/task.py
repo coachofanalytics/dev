@@ -36,11 +36,60 @@ ACTIVITY_LIST = ['BOG', 'BI Sessions', 'DAF Sessions', 'Project', 'web sessions'
 
 @shared_task(name="task_history")
 def dump_data(request):
+    """
+    Monthly task reset: Move tasks from Task to TaskHistory.
+    
+    OPTION 1 IMPLEMENTATION: Reset on 1st of month
+    - When run on 1st: daf_date = last day of previous month (e.g., Nov 1 -> Oct 31)
+    - When run manually (not 1st): daf_date = same day of last month (e.g., Nov 4 -> Oct 4)
+    
+    This function is scheduled to run automatically on the 1st of each month at midnight.
+    """
     try:
+        import calendar
         bulk_object = []
+        
+        # Calculate daf_date based on when reset is run
+        from dateutil.relativedelta import relativedelta
+        from datetime import date
+        from django.utils import timezone
+        
+        current_date = date.today()
+        
+        # OPTION 1: If running on 1st of month, set daf_date to last day of previous month
+        if current_date.day == 1:
+            # Automated reset on 1st - use last day of previous month
+            last_month = current_date - relativedelta(months=1)
+            last_day = calendar.monthrange(last_month.year, last_month.month)[1]
+            default_daf_date = date(last_month.year, last_month.month, last_day)
+        else:
+            # Manual reset (not on 1st) - use same day of last month
+            default_daf_date = current_date - relativedelta(months=1)
         
         ai_services_data = Task.objects.exclude(employee__email=None)
         for data in ai_services_data:
+            
+            # Default: use calculated daf_date
+            daf_date_value = default_daf_date
+            
+            # If task has a submission date, use that to calculate daf_date more accurately
+            if data.submission:
+                submission_date = timezone.localtime(data.submission).date()
+                
+                # If submission is this month, task was performed last month
+                if submission_date.month == current_date.month and submission_date.year == current_date.year:
+                    # Submitted this month, so task was performed last month
+                    if current_date.day == 1:
+                        # Running on 1st: use last day of previous month
+                        last_month = current_date - relativedelta(months=1)
+                        last_day = calendar.monthrange(last_month.year, last_month.month)[1]
+                        daf_date_value = date(last_month.year, last_month.month, last_day)
+                    else:
+                        # Manual reset: use same day of last month
+                        daf_date_value = submission_date - relativedelta(months=1)
+                else:
+                    # Submission is from a previous month, use submission - 1 month
+                    daf_date_value = submission_date - relativedelta(months=1)
             
             bulk_object.append(
                 TaskHistory(
@@ -57,6 +106,7 @@ def dump_data(request):
                     submission=data.submission,
                     is_active=data.is_active,
                     featured=data.featured,
+                    daf_date=daf_date_value,  # Set daf_date when creating TaskHistory
                 )
             )
 

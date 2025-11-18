@@ -33,7 +33,9 @@ from .views.payment.admin_verification import (
     bulk_approve_payments,
 )
 from .views.payment.stripe_views import (
-    create_payment_intent,
+    create_checkout_session,
+    stripe_checkout_success,
+    stripe_checkout_cancel,
     stripe_webhook,
 )
 
@@ -452,8 +454,10 @@ urlpatterns += [
     path('unified/mpesa-otp/', unified_mpesa_otp, name='mpesa_otp_confirmation'),
     path('unified/verify-otp/', unified_verify_otp, name='verify_mpesa_otp'),
     
-    # Stripe Payment Integration
-    path('stripe/payment-intent/', create_payment_intent, name='stripe_payment_intent'),
+    # Stripe Payment Integration (Checkout Session - server-side, no JavaScript)
+    path('stripe/checkout/', create_checkout_session, name='stripe_checkout_session'),
+    path('stripe/checkout/success/', stripe_checkout_success, name='stripe_checkout_success'),
+    path('stripe/checkout/cancel/', stripe_checkout_cancel, name='stripe_checkout_cancel'),
     path('stripe/webhook/', stripe_webhook, name='stripe_webhook'),
 ]
 

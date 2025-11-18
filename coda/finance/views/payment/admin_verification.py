@@ -30,40 +30,42 @@ def admin_payment_verification_dashboard(request):
     """
     try:
         # Get filter parameters
-        status_filter = request.GET.get('status', 'pending')
         method_filter = request.GET.get('method', 'all')
         search_query = request.GET.get('search', '')
+        active_filter = request.GET.get('active', 'all')
         
         # Base queryset - all payments
         payments = Payment_History.objects.all().select_related('customer').order_by('-contract_submitted_date')
         
-        # Apply status filter
-        if status_filter != 'all':
-            payments = payments.filter(status=status_filter)
+        # Apply active filter (using is_active instead of status)
+        if active_filter == 'active':
+            payments = payments.filter(is_active=True)
+        elif active_filter == 'inactive':
+            payments = payments.filter(is_active=False)
         
         # Apply method filter
         if method_filter != 'all':
             payments = payments.filter(payment_method__icontains=method_filter)
         
-        # Apply search
+        # Apply search (using available fields)
         if search_query:
             payments = payments.filter(
                 Q(id__icontains=search_query) |
                 Q(customer__username__icontains=search_query) |
                 Q(customer__email__icontains=search_query) |
-                Q(notes__icontains=search_query)
+                Q(description__icontains=search_query) |
+                Q(payment_purpose__icontains=search_query)
             )
         
         # Calculate summary statistics
         all_payments = Payment_History.objects.all()
         stats = {
-            'pending_count': all_payments.filter(status='pending').count(),
-            'completed_today': all_payments.filter(
-                status='completed',
+            'active_count': all_payments.filter(is_active=True).count(),
+            'inactive_count': all_payments.filter(is_active=False).count(),
+            'today_count': all_payments.filter(
                 contract_submitted_date__date=timezone.now().date()
             ).count(),
-            'failed_count': all_payments.filter(status='failed').count(),
-            'needs_review': all_payments.filter(status='pending').count(),  # TODO: Add proof_uploaded field
+            'total_count': all_payments.count(),
         }
         
         # Pagination
@@ -74,7 +76,7 @@ def admin_payment_verification_dashboard(request):
         context = {
             'payments': page_obj,
             'stats': stats,
-            'status_filter': status_filter,
+            'active_filter': active_filter,
             'method_filter': method_filter,
             'search_query': search_query,
         }
@@ -96,8 +98,10 @@ def approve_payment(request, payment_id):
     try:
         payment = get_object_or_404(Payment_History, id=payment_id)
         
-        if payment.status != 'pending':
-            messages.warning(request, 'This payment is not in pending status.')
+        # Note: Payment_History doesn't have a status field
+        # Using is_active to track payment state
+        if not payment.is_active:
+            messages.warning(request, 'This payment is not active.')
             return redirect('finance:admin_payment_verification')
         
         # Prevent staff from approving own payments
@@ -105,12 +109,12 @@ def approve_payment(request, payment_id):
             messages.error(request, 'You cannot approve your own payment.')
             return redirect('finance:admin_payment_verification')
         
-        # Update payment status
-        payment.status = 'completed'
+        # Mark payment as active (completed)
+        payment.is_active = True
         
-        # Add verification notes
+        # Add verification notes (using description field)
         verification_note = f"\nVerified by {request.user.username} on {timezone.now().strftime('%Y-%m-%d %H:%M')}"
-        payment.notes = (payment.notes or '') + verification_note
+        payment.description = (payment.description or '') + verification_note
         payment.save()
         
         # Send confirmation email to customer
@@ -155,8 +159,10 @@ def reject_payment(request, payment_id):
     try:
         payment = get_object_or_404(Payment_History, id=payment_id)
         
-        if payment.status != 'pending':
-            messages.warning(request, 'This payment is not in pending status.')
+        # Note: Payment_History doesn't have a status field
+        # Using is_active to track payment state
+        if not payment.is_active:
+            messages.warning(request, 'This payment is not active.')
             return redirect('finance:admin_payment_verification')
         
         # Prevent staff from rejecting own payments
@@ -168,12 +174,12 @@ def reject_payment(request, payment_id):
         if request.method == 'POST':
             rejection_reason = request.POST.get('reason', 'Payment verification failed')
             
-            # Update payment status
-            payment.status = 'failed'
+            # Mark payment as inactive (failed/rejected)
+            payment.is_active = False
             
-            # Add rejection notes
+            # Add rejection notes (using description field)
             rejection_note = f"\nRejected by {request.user.username} on {timezone.now().strftime('%Y-%m-%d %H:%M')}: {rejection_reason}"
-            payment.notes = (payment.notes or '') + rejection_note
+            payment.description = (payment.description or '') + rejection_note
             payment.save()
             
             # Send rejection email to customer
@@ -272,8 +278,8 @@ def bulk_approve_payments(request):
                     if payment.customer == request.user:
                         continue
                     
-                    payment.status = 'completed'
-                    payment.notes = (payment.notes or '') + f"\nBulk approved by {request.user.username} on {timezone.now().strftime('%Y-%m-%d %H:%M')}"
+                    payment.is_active = True
+                    payment.description = (payment.description or '') + f"\nBulk approved by {request.user.username} on {timezone.now().strftime('%Y-%m-%d %H:%M')}"
                     payment.save()
                     
                     # Send email

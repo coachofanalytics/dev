@@ -22,39 +22,34 @@ def payment_dashboard(request):
     """
     try:
         # Get filter parameters
-        status_filter = request.GET.get('status', 'all')
         method_filter = request.GET.get('method', 'all')
         search_query = request.GET.get('search', '')
         
         # Base queryset - user's payments only
         payments = Payment_History.objects.filter(customer=request.user).order_by('-contract_submitted_date')
         
-        # Apply status filter
-        if status_filter != 'all':
-            payments = payments.filter(status=status_filter)
-        
         # Apply method filter
         if method_filter != 'all':
             payments = payments.filter(payment_method__icontains=method_filter)
         
-        # Apply search
+        # Apply search (using available fields)
         if search_query:
             payments = payments.filter(
                 Q(id__icontains=search_query) |
-                Q(notes__icontains=search_query) |
-                Q(transaction_id__icontains=search_query)
+                Q(description__icontains=search_query) |
+                Q(payment_purpose__icontains=search_query)
             )
         
-        # Calculate summary statistics
+        # Calculate summary statistics (without status field)
         all_payments = Payment_History.objects.filter(customer=request.user)
         
         stats = {
             'total_payments': all_payments.count(),
             'total_amount': all_payments.aggregate(total=Sum('payment_fees'))['total'] or 0,
-            'pending_count': all_payments.filter(status='pending').count(),
-            'completed_count': all_payments.filter(status='completed').count(),
-            'failed_count': all_payments.filter(status='failed').count(),
-            'pending_amount': all_payments.filter(status='pending').aggregate(total=Sum('payment_fees'))['total'] or 0,
+            # Note: status field doesn't exist in Payment_History model
+            # Using is_active as a proxy if needed
+            'active_count': all_payments.filter(is_active=True).count(),
+            'inactive_count': all_payments.filter(is_active=False).count(),
         }
         
         # Get method breakdown
@@ -78,7 +73,6 @@ def payment_dashboard(request):
             'stats': stats,
             'method_stats': method_stats,
             'payment_info': payment_info,
-            'status_filter': status_filter,
             'method_filter': method_filter,
             'search_query': search_query,
             'available_methods': ['PayPal', 'Stripe', 'MPESA', 'CashApp', 'Zelle', 'Venmo'],
@@ -105,8 +99,10 @@ def retry_payment(request, payment_id):
             customer=request.user
         )
         
-        if payment.status != 'failed':
-            messages.warning(request, 'This payment is not in failed status.')
+        # Note: Payment_History doesn't have a status field
+        # Check is_active instead or remove this check
+        if not payment.is_active:
+            messages.warning(request, 'This payment is not active.')
             return redirect('finance:payment_dashboard')
         
         # Store retry context in session

@@ -113,6 +113,24 @@
 - Templated WhatsApp and email messages.
 - Logging of outreach for compliance.
 
+#### 🔍 Phase 3 Strategy Enhancements Discovery *(in progress)*
+
+**Goal:** Quantify how OptionPlay candidates align with Unusual Whales flow and feed that data back into the rotation cadence—without building a parallel analytics stack.  
+
+**What already exists (reuse, don’t duplicate):**
+- `python manage.py evaluate_optionplay_outcomes` → persists win/loss records via `OptionPlayOutcomeService`.
+- Staff suggestions UI → already shows AI scores, UW notes, and now validity timers/consistency streaks.
+- New `StrategyInsightsService` + `python manage.py generate_strategy_insights` (lookback configurable) → aggregates overlap ratios, rotation mix, outcome win rates, and streak leaders straight from `SuggestedPosition` + `SuggestedPositionOutcome`.
+
+**Must Have (Phase 3 sign-off checklist):**
+- [ ] Desk runs `generate_strategy_insights` weekly, captures summary in runbook or attaches JSON to `docs/apps/investing/ManagedOptionsTrading/strategy_logs/`.
+- [ ] Rotation targets (60% credit spreads / 30% covered calls / 10% LEAPS) compared against actual mix; variance <±0.10 recorded with rationale when out of band.
+- [ ] Overlap ratio ≥25% or desk-approved exception documented (e.g., low UW flow week).
+- [ ] Outcomes report includes win/loss split for each strategy bucket (credit spreads, covered calls, LEAPS) using existing outcome records.
+- [ ] Insights surfaced in trader stand-up + compliance notes—no new dashboards; update existing `04_IMPLEMENTATION.md` “Change History” when cadence/process changes.
+
+**Deliverables:** Weekly CLI output + annotated screenshot of staff suggestions table (consistency badge + validity timer) archived in `strategy_logs/`, plus rotation variance notes appended to TradingPlan2.
+
 #### 📣 Phase 3 Premium Engagement
 
 **ER-024: Premium Alert Tier (Higher Plan)**  
@@ -121,6 +139,26 @@
 - Toggle in account settings controlling instruction visibility.
 - Workflow to capture client acknowledgement before sending entry/exit details.
 - Audit trail of premium alerts sent.
+
+#### 💼 Phase 4 Pricing Narrative & Client Metrics *(planning)*
+
+**Goal:** Refresh client-facing messaging and dashboards using existing assets—no net-new dashboard stack.  
+
+**Reuse before build:**
+- `templates/investing/investment_dashboard.html` for income vs. target cards, batch pipeline notices, onboarding CTA.
+- `templates/investing/risk_management_dashboard.html` for compliance/risk visualisations already backed by `RiskManagementService`.
+- Staff suggestions upgrades (validity timers, consistency badges, proposed sleeve card) as compliant screenshot sources.
+- ER-022/ER-023 assets (Managed Income Dashboard + Scenario Upsell templates) for narrative hooks.
+
+**Must Have for Phase 4 readiness:**
+- [ ] Inventory current metrics/partials and map each to the pricing narrative touchpoints (Balanced $249 + 12% over 6%, Consultative legacy $420, Elite teaser).
+- [ ] Update copy blocks directly inside existing templates/partials—no parallel landing pages.
+- [ ] Define client-safe metric set (income progress, UW confirmation %, rotation variance) and ensure it renders via existing context (extend serializers/services instead of new queries).
+- [ ] Document the scenario explorer workflow (staff preview modal + sleeve card) in `TradingPlan2.md` for marketing/compliance screenshots.
+- [ ] Log any required query refactors (e.g., reuse `StrategyInsightsService` output) in `04_IMPLEMENTATION.md` Change History.
+- [ ] Production prep checklist: verify Playwright browsers baked into slug, run `playwright install-deps` prior to promoting `codamakutano` → `codatrainingapp`, and reuse existing monitoring hooks (no new deploy scripts).
+
+**Sign-off artifacts:** Pricing copy deck, dashboard context matrix, and appended change notes—kept alongside existing documentation.
 
 ---
 

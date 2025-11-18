@@ -114,6 +114,7 @@ def get_database_config():
         return get_sqlite_config(memory=True)
 
     DB_TYPE = db_type_env or 'clone'
+    DB_TYPE = 'uat'
     print("🗄️  DB_TYPE: ", DB_TYPE)
     USE_POSTGRESQL = os.environ.get('USE_POSTGRESQL', 'False').lower() == 'true'
    
