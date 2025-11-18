@@ -1,6 +1,7 @@
 from django.test import TestCase
-from finance.models import OverBoughtSold,PaymentInformation
+from finance.models import OverBoughtSold,PaymentInformation,PayslipConfig
 from django.utils import timezone
+from decimal import Decimal
 
 class OverBoughtSoldRegressionTest(TestCase):
     """
@@ -222,3 +223,73 @@ class DefaultPaymentFeesRegressionTest(TestCase):
         )
         new_count = Default_Payment_Fees.objects.count()
         self.assertEqual(new_count, initial_count + 1)
+
+
+
+
+
+
+from django.core.exceptions import ValidationError
+
+
+class PayslipConfigRegressionTests(TestCase):
+    """
+    Regression tests ensure that previously fixed issues DO NOT reappear.
+    Add new regression cases anytime a bug is fixed.
+    """
+
+    def setUp(self):
+        self.config = PayslipConfig.objects.create(
+            loan_status=True,
+            loan_amount=Decimal("100000.00"),
+            loan_repayment_percentage=Decimal("10.00"),
+            laptop_status=True,
+            lb_amount=Decimal("30000.00"),
+            ls_amount=Decimal("3500.00"),
+            ls_max_limit=Decimal("40000.00"),
+            rp_starting_period="Month 1",
+            rp_starting_amount=Decimal("1500.00"),
+            rp_increment_percentage=Decimal("5.00"),
+        )
+
+    def test_decimal_values_do_not_round_or_truncate(self):
+        """Ensure decimal precision is preserved."""
+        self.assertEqual(self.config.loan_amount, Decimal("100000.00"))
+        self.assertEqual(self.config.ls_amount, Decimal("3500.00"))
+
+    def test_boolean_fields_store_correct_values(self):
+        """Ensure boolean fields save & load correctly."""
+        self.assertTrue(self.config.loan_status)
+        self.assertTrue(self.config.laptop_status)
+
+    def test_string_representation_no_crash(self):
+        """Ensure __str__ works without errors."""
+        s = str(self.config)
+        self.assertIn("Loan Status", s)
+        self.assertIn("Laptop Status", s)
+
+    def test_no_negative_values_allowed(self):
+        """
+        Regression Test:
+        Ensures negative values raise a ValidationError.
+        Note: Django ONLY validates negatives when full_clean() is called.
+        """
+        invalid_config = PayslipConfig(
+            loan_status=True,
+            loan_amount=Decimal("-100"),
+            loan_repayment_percentage=Decimal("10.00"),
+            laptop_status=True,
+            lb_amount=Decimal("30000.00"),
+            ls_amount=Decimal("3500.00"),
+            ls_max_limit=Decimal("40000.00"),
+            rp_starting_period="Month 1",
+            rp_starting_amount=Decimal("1500.00"),
+            rp_increment_percentage=Decimal("5.00"),
+        )
+
+        with self.assertRaises(ValidationError):
+            invalid_config.full_clean()  # This triggers validators
+
+    def test_required_fields_not_empty(self):
+        """Ensure rp_starting_period is not blank."""
+        self.assertNotEqual(self.config.rp_starting_period, "")

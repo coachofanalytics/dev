@@ -1,6 +1,7 @@
 from django.test import TestCase
-from finance.models import OverBoughtSold,PaymentInformation ,Default_Payment_Fees 
+from finance.models import OverBoughtSold,PaymentInformation ,Default_Payment_Fees ,PayslipConfig
 from django.utils import timezone# adjust app name if different
+from decimal import Decimal
 
 class OverBoughtSoldModelTest(TestCase):
     def setUp(self):
@@ -110,3 +111,58 @@ class DefaultPaymentFeesModelTest(TestCase):
     def test_default_payment_fees_str(self):
         # Test the string representation of the Default_Payment_Fees instance
         self.assertEqual(str(self.payment_fee), f"Default Payment Fee {self.payment_fee.id}")
+
+
+
+
+class PayslipConfigModelTest(TestCase):
+
+    def setUp(self):
+        self.config = PayslipConfig.objects.create(
+            loan_status=True,
+            loan_amount=Decimal("120000.00"),
+            loan_repayment_percentage=Decimal("10.00"),
+            laptop_status=True,
+            lb_amount=Decimal("45000.00"),
+            ls_amount=Decimal("5000.00"),
+            ls_max_limit=Decimal("50000.00"),
+            rp_starting_period="Month 1",
+            rp_starting_amount=Decimal("2500.00"),
+            rp_increment_percentage=Decimal("5.00"),
+        )
+
+    def test_model_creation(self):
+        """Ensure PayslipConfig object is created successfully."""
+        self.assertTrue(PayslipConfig.objects.exists())
+
+    def test_string_representation(self):
+        """Check that __str__ method returns expected format."""
+        expected = "PayslipConfig - Loan Status: True, Laptop Status: True"
+        self.assertEqual(str(self.config), expected)
+
+    def test_fields_values(self):
+        """Verify stored values match what was provided."""
+        self.assertEqual(self.config.loan_status, True)
+        self.assertEqual(self.config.loan_amount, Decimal("120000.00"))
+        self.assertEqual(self.config.loan_repayment_percentage, Decimal("10.00"))
+        self.assertEqual(self.config.laptop_status, True)
+        self.assertEqual(self.config.lb_amount, Decimal("45000.00"))
+        self.assertEqual(self.config.ls_amount, Decimal("5000.00"))
+        self.assertEqual(self.config.ls_max_limit, Decimal("50000.00"))
+        self.assertEqual(self.config.rp_starting_period, "Month 1")
+        self.assertEqual(self.config.rp_starting_amount, Decimal("2500.00"))
+        self.assertEqual(self.config.rp_increment_percentage, Decimal("5.00"))
+
+    def test_decimal_precision(self):
+        """Ensure decimal fields maintain precision."""
+        self.assertEqual(self.config.loan_amount.quantize(Decimal("0.00")), Decimal("120000.00"))
+        self.assertEqual(self.config.ls_amount.quantize(Decimal("0.00")), Decimal("5000.00"))
+
+    def test_field_types(self):
+        """Check that fields are of correct data types."""
+        self.assertIsInstance(self.config.loan_status, bool)
+        self.assertIsInstance(self.config.laptop_status, bool)
+        self.assertIsInstance(self.config.loan_amount, Decimal)
+        self.assertIsInstance(self.config.ls_amount, Decimal)
+        self.assertIsInstance(self.config.rp_starting_period, str)
+

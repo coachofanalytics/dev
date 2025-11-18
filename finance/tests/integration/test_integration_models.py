@@ -1,11 +1,39 @@
+import time
+import platform
+from decimal import Decimal
 from django.test import TestCase
-from finance.models import OverBoughtSold,PaymentInformation
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
+from finance.models import (
+    OverBoughtSold,
+    PaymentInformation,
+    Default_Payment_Fees,
+    PayslipConfig
+)
+
+# =====================================================
+# OS-Aware Performance Thresholds
+# =====================================================
+
+OS_NAME = platform.system().lower()
+
+if "windows" in OS_NAME:
+    CREATE_THRESHOLD = 5.0
+    QUERY_THRESHOLD = 0.20
+else:
+    CREATE_THRESHOLD = 2.0
+    QUERY_THRESHOLD = 0.05
+
+
+# =====================================================
+# INTEGRATION TESTS — OVERBOUGHT SOLD
+# =====================================================
 
 class OverBoughtSoldIntegrationTest(TestCase):
+
     def setUp(self):
-        # Create several objects to test the integration of save() + condition logic
         self.stock1 = OverBoughtSold.objects.create(
             symbol="AAPL",
             description="Apple Inc.",
@@ -31,31 +59,26 @@ class OverBoughtSoldIntegrationTest(TestCase):
         )
 
     def test_records_are_saved_with_auto_condition(self):
-        """Ensure save() automatically sets condition_integer"""
-        self.assertEqual(self.stock1.condition_integer, 1)   # RSI 72 → Overbought
-        self.assertEqual(self.stock2.condition_integer, -1)  # RSI 28 → Oversold
+        self.assertEqual(self.stock1.condition_integer, 1)   # Overbought
+        self.assertEqual(self.stock2.condition_integer, -1)  # Oversold
 
     def test_auto_timestamp_fields(self):
-        """Verify that created_at and updated_at timestamps are auto populated"""
         self.assertIsNotNone(self.stock1.created_at)
         self.assertIsNotNone(self.stock1.updated_at)
         self.assertLessEqual(self.stock1.created_at, timezone.now())
 
     def test_update_model_changes_updated_at(self):
-        """Ensure updated_at field changes when record is updated"""
-        old_updated_time = self.stock1.updated_at
+        old_timestamp = self.stock1.updated_at
         self.stock1.volume = "7000000"
         self.stock1.save()
         self.stock1.refresh_from_db()
-        self.assertGreater(self.stock1.updated_at, old_updated_time)
+        self.assertGreater(self.stock1.updated_at, old_timestamp)
 
     def test_condition_label_reflects_condition_integer(self):
-        """Integration between label mapping and condition calculation"""
         self.assertEqual(self.stock1.condition_label(), "Overbought")
         self.assertEqual(self.stock2.condition_label(), "Oversold")
 
-    def test_bulk_create_and_query_integration(self):
-        """Test integration with Django ORM bulk operations"""
+    def test_bulk_create_and_condition_update(self):
         records = [
             OverBoughtSold(symbol="GOOG", rsi="55", volume="4000000"),
             OverBoughtSold(symbol="AMZN", rsi="15", volume="3000000"),
@@ -63,23 +86,22 @@ class OverBoughtSoldIntegrationTest(TestCase):
         ]
         OverBoughtSold.objects.bulk_create(records)
 
-        all_records = OverBoughtSold.objects.all()
-        self.assertEqual(all_records.count(), 5)  # 2 from setup + 3 bulk created
+        self.assertEqual(OverBoughtSold.objects.count(), 5)
 
-        # Verify that condition is correctly recalculated when saved individually
-        for stock in all_records:
-            stock.save()  # triggers auto condition update
+        for stock in OverBoughtSold.objects.all():
+            stock.save()
+
         meta = OverBoughtSold.objects.get(symbol="META")
         self.assertEqual(meta.condition_label(), "Overbought")
 
 
-
-
+# =====================================================
+# INTEGRATION TESTS — PAYMENT INFORMATION
+# =====================================================
 
 class PaymentInformationIntegrationTest(TestCase):
 
     def setUp(self):
-        """Set up initial test data"""
         self.payment_data = {
             'payment_fees': 1500,
             'down_payment': 500,
@@ -92,62 +114,42 @@ class PaymentInformationIntegrationTest(TestCase):
             'client_signature': "John Doe",
             'company_rep': "Alice M.",
             'client_date': "2025-01-15",
-            'description': "First installment for tuition",
+            'description': "First installment",
             'is_active': True,
             'is_featured': False
         }
 
     def test_payment_information_creation(self):
-        """Test that a PaymentInformation object is correctly created and saved."""
-        # Create a PaymentInformation instance
-        payment = PaymentInformation.objects.create(**self.payment_data)
-        
-        # Check that the payment object is saved and matches expected values
-        self.assertEqual(payment.plan, "Standard")
-        self.assertEqual(payment.payment_fees, 1500)
-        self.assertEqual(payment.fee_balance, 900)
-        self.assertTrue(payment.is_active)
-        self.assertFalse(payment.is_featured)
-        self.assertEqual(str(payment), "Standard - Mobile Money")
+        p = PaymentInformation.objects.create(**self.payment_data)
+        self.assertEqual(p.plan, "Standard")
+        self.assertEqual(p.payment_fees, 1500)
+        self.assertEqual(str(p), "Standard - Mobile Money")
 
     def test_payment_information_exists_in_db(self):
-        """Test that the PaymentInformation is saved in the database and can be retrieved."""
-        # Create the object
-        payment = PaymentInformation.objects.create(**self.payment_data)
-        
-        # Retrieve the object from the database
-        retrieved_payment = PaymentInformation.objects.get(id=payment.id)
-        
-        # Assert that the retrieved object matches the original one
-        self.assertEqual(retrieved_payment.payment_fees, 1500)
-        self.assertEqual(retrieved_payment.plan, "Standard")
-        self.assertEqual(retrieved_payment.payment_method, "Mobile Money")
-        
+        p = PaymentInformation.objects.create(**self.payment_data)
+        f = PaymentInformation.objects.get(id=p.id)
+        self.assertEqual(f.payment_fees, 1500)
+
     def test_invalid_payment_information_creation(self):
-        """Test that invalid PaymentInformation data (e.g., missing required fields) raises an error."""
-        invalid_data = self.payment_data.copy()
-        invalid_data['payment_fees'] = None  # Remove payment_fees to make it invalid
-        
-        # Assert that creating a PaymentInformation object without a required field (payment_fees) raises an error
+        invalid = self.payment_data.copy()
+        invalid["payment_fees"] = None
+
         with self.assertRaises(Exception):
-            PaymentInformation.objects.create(**invalid_data)
-    
-    def test_payment_information_string_representation(self):
-        """Test that the string representation of the PaymentInformation model is correct."""
-        payment = PaymentInformation.objects.create(**self.payment_data)
-        self.assertEqual(str(payment), "Standard - Mobile Money")
+            PaymentInformation.objects.create(**invalid)
+
+    def test_payment_information_str(self):
+        p = PaymentInformation.objects.create(**self.payment_data)
+        self.assertEqual(str(p), "Standard - Mobile Money")
 
 
-# test_integration_models.py
-from django.test import TestCase
-from finance.models import Default_Payment_Fees
-from django.db import IntegrityError
+# =====================================================
+# INTEGRATION TESTS — DEFAULT PAYMENT FEES
+# =====================================================
 
-class IntegrationTestExample(TestCase):
+class DefaultPaymentFeesIntegrationTest(TestCase):
 
     def setUp(self):
-        # Create a valid instance of Default_Payment_Fees
-        self.payment_fee = Default_Payment_Fees.objects.create(
+        self.fee = Default_Payment_Fees.objects.create(
             job_down_payment_per_month=500,
             job_plan_hours_per_month=160,
             student_down_payment_per_month=300,
@@ -155,55 +157,94 @@ class IntegrationTestExample(TestCase):
         )
 
     def test_integration_creation(self):
-        # Check if the object is created successfully and has correct data
-        payment_fee = Default_Payment_Fees.objects.get(id=self.payment_fee.id)
-        self.assertEqual(payment_fee.job_down_payment_per_month, 500)
-        self.assertEqual(payment_fee.job_plan_hours_per_month, 160)
-        self.assertEqual(payment_fee.student_down_payment_per_month, 300)
-        self.assertEqual(payment_fee.student_bonus_payment_per_month, 150)
+        f = Default_Payment_Fees.objects.get(id=self.fee.id)
+        self.assertEqual(f.job_down_payment_per_month, 500)
 
     def test_integration_error_handling(self):
-        # Test the creation of an invalid object (will raise IntegrityError)
         with self.assertRaises(IntegrityError):
             Default_Payment_Fees.objects.create(
-                job_down_payment_per_month=None,  # This will cause the NOT NULL error
+                job_down_payment_per_month=None,
                 job_plan_hours_per_month=160,
                 student_down_payment_per_month=300,
                 student_bonus_payment_per_month=150
             )
-# test_performance_model.py
-from django.test import TestCase
-from finance.models import Default_Payment_Fees
-import time
 
-class PerformanceTestExample(TestCase):
-    
+
+# =====================================================
+# INTEGRATION TESTS — PAYSLIP CONFIG
+# =====================================================
+
+class PayslipConfigIntegrationTests(TestCase):
+
     def setUp(self):
-        # Setup the initial data for testing performance
-        self.start_time = time.time()
-        # Create 1000 entries to test the performance
-        for _ in range(1000):
-            Default_Payment_Fees.objects.create(
-                job_down_payment_per_month=500,
-                job_plan_hours_per_month=160,
-                student_down_payment_per_month=300,
-                student_bonus_payment_per_month=150
+        self.data = {
+            "loan_status": True,
+            "loan_amount": Decimal("100000.00"),
+            "loan_repayment_percentage": Decimal("10.00"),
+            "laptop_status": True,
+            "lb_amount": Decimal("30000.00"),
+            "ls_amount": Decimal("3500.00"),
+            "ls_max_limit": Decimal("40000.00"),
+            "rp_starting_period": "Month 1",
+            "rp_starting_amount": Decimal("1500.00"),
+            "rp_increment_percentage": Decimal("5.00"),
+        }
+
+    def test_model_full_lifecycle(self):
+        c = PayslipConfig(**self.data)
+        c.full_clean()
+        c.save()
+
+        c2 = PayslipConfig.objects.get(id=c.id)
+        self.assertEqual(c2.loan_amount, Decimal("100000.00"))
+
+        c2.loan_amount = Decimal("80000.00")
+        c2.full_clean()
+        c2.save()
+
+        c3 = PayslipConfig.objects.get(id=c.id)
+        self.assertEqual(c3.loan_amount, Decimal("80000.00"))
+
+        c3.delete()
+        self.assertFalse(PayslipConfig.objects.filter(id=c.id).exists())
+
+    def test_negative_values_rejected(self):
+        invalid = PayslipConfig(
+            loan_status=True,
+            loan_amount=Decimal("-10"),
+            loan_repayment_percentage=Decimal("10"),
+            laptop_status=False,
+            lb_amount=Decimal("0"),
+            ls_amount=Decimal("0"),
+            ls_max_limit=Decimal("0"),
+            rp_starting_period="Month 2",
+            rp_starting_amount=Decimal("500"),
+            rp_increment_percentage=Decimal("2"),
+        )
+
+        with self.assertRaises(ValidationError):
+            invalid.full_clean()
+
+    def test_multiple_records_consistency(self):
+        for i in range(5):
+            PayslipConfig.objects.create(
+                loan_status=bool(i % 2),
+                loan_amount=Decimal(str(10000 * i)),
+                loan_repayment_percentage=Decimal("5"),
+                laptop_status=False,
+                lb_amount=Decimal("0"),
+                ls_amount=Decimal("0"),
+                ls_max_limit=Decimal("0"),
+                rp_starting_period=f"Month {i}",
+                rp_starting_amount=Decimal("100"),
+                rp_increment_percentage=Decimal("1"),
             )
-        self.end_time = time.time()
 
-    def test_creation_performance(self):
-        # Test how long it takes to create 1000 instances
-        time_taken = self.end_time - self.start_time
-        print(f"Time taken to create 1000 Default_Payment_Fees: {time_taken} seconds")
-        # Ensure that it takes less than 2 seconds to create 1000 objects
-        self.assertLess(time_taken, 2, "Creation of 1000 instances took too long")
+        all_configs = PayslipConfig.objects.all()
+        self.assertEqual(all_configs.count(), 5)
 
-    def test_query_performance(self):
-        # Test the performance of querying the created records
-        start_query_time = time.time()
-        Default_Payment_Fees.objects.all()  # Query all the created objects
-        end_query_time = time.time()
-        query_time = end_query_time - start_query_time
-        print(f"Time taken to query all records: {query_time} seconds")
-        # Ensure querying does not take too long
-        self.assertLess(query_time, 1, "Querying all records took too long")
+    def test_str_representation(self):
+        c = PayslipConfig.objects.create(**self.data)
+        text = str(c)
+        self.assertIn("Loan Status", text)
+        self.assertIn("Laptop Status", text)

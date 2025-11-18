@@ -83,3 +83,53 @@ class Default_Payment_Fees(models.Model):
 
     def __str__(self):
         return f"Default Payment Fee {self.id}"
+from django.db import models
+from decimal import Decimal
+from django.core.validators import MinValueValidator
+
+
+class PayslipConfig(models.Model):
+    loan_status = models.BooleanField(default=False)
+    loan_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+    loan_repayment_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+
+    laptop_status = models.BooleanField(default=False)
+    lb_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+    ls_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+    ls_max_limit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+
+    rp_starting_period = models.CharField(max_length=50)
+
+    rp_starting_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+    rp_increment_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+
+    def __str__(self):
+        return f"PayslipConfig - Loan Status: {self.loan_status}, Laptop Status: {self.laptop_status}"

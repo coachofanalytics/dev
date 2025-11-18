@@ -180,3 +180,85 @@ class PaymentInformationPerformanceTest(TestCase):
             # Force the queryset evaluation by converting it to a list
             payments = list(PaymentInformation.objects.all())  # Convert to list to force query evaluation
             self.assertGreater(len(payments), 0)  # Ensure there are results
+
+
+
+import time
+from django.test import TestCase
+from finance.models import PayslipConfig
+from decimal import Decimal
+
+
+class PayslipConfigPerformanceTests(TestCase):
+
+    def setUp(self):
+        self.config = PayslipConfig.objects.create(
+            loan_status=True,
+            loan_amount=Decimal("100000.00"),
+            loan_repayment_percentage=Decimal("10.00"),
+            laptop_status=True,
+            lb_amount=Decimal("30000.00"),
+            ls_amount=Decimal("3500.00"),
+            ls_max_limit=Decimal("40000.00"),
+            rp_starting_period="Month 1",
+            rp_starting_amount=Decimal("1500.00"),
+            rp_increment_percentage=Decimal("5.00"),
+        )
+
+    def test_single_instance_query_speed(self):
+        start = time.time()
+        obj = PayslipConfig.objects.get(id=self.config.id)
+        end = time.time()
+        self.assertIsNotNone(obj)
+        self.assertLess(end - start, 0.05)  # 50 ms for Windows
+
+    def test_bulk_creation_performance(self):
+        items = [
+            PayslipConfig(
+                loan_status=True,
+                loan_amount=Decimal("50000.00"),
+                loan_repayment_percentage=Decimal("7.00"),
+                laptop_status=False,
+                lb_amount=Decimal("0.00"),
+                ls_amount=Decimal("0.00"),
+                ls_max_limit=Decimal("0.00"),
+                rp_starting_period="Month 1",
+                rp_starting_amount=Decimal("1200.00"),
+                rp_increment_percentage=Decimal("3.00"),
+            )
+            for _ in range(1000)
+        ]
+
+        start = time.time()
+        PayslipConfig.objects.bulk_create(items)
+        end = time.time()
+
+        self.assertLess(end - start, 0.50)  # 500 ms for Windows
+
+    def test_queryset_iteration_performance(self):
+        for i in range(500):
+            PayslipConfig.objects.create(
+                loan_status=False,
+                loan_amount=Decimal("20000.00"),
+                loan_repayment_percentage=Decimal("5.00"),
+                laptop_status=False,
+                lb_amount=Decimal("0.00"),
+                ls_amount=Decimal("0.00"),
+                ls_max_limit=Decimal("0.00"),
+                rp_starting_period="Month 2",
+                rp_starting_amount=Decimal("800.00"),
+                rp_increment_percentage=Decimal("2.00"),
+            )
+
+        start = time.time()
+        for obj in PayslipConfig.objects.all():
+            _ = obj.loan_amount
+        end = time.time()
+
+        self.assertLess(end - start, 0.20)  # 200 ms
+
+    def test_string_representation_performance(self):
+        start = time.time()
+        _ = str(self.config)
+        end = time.time()
+        self.assertLess(end - start, 0.02)  # 20 ms
