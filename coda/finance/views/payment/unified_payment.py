@@ -553,9 +553,8 @@ def show_payment_form(request, method, payment_info):
             logger.info(f"Manual payment method {method} requested, redirecting to payment details")
             return show_payment_details(request, method)
         
-        # For Stripe, redirect to Checkout Session (server-side, no form needed)
+        # For Stripe, show payment form (user enters amount, then submits to Checkout)
         if method == 'stripe':
-            from django.urls import reverse
             from django.conf import settings
             
             # Check if Stripe credentials are available
@@ -568,17 +567,18 @@ def show_payment_form(request, method, payment_info):
                 logger.info(f"Stripe credentials not available, showing payment details")
                 return show_payment_details(request, 'stripe')
             
-            # Get amount from request (default to full balance)
-            amount = payment_info.get_fee_balance()
-            if request.method == 'POST':
-                amount = float(request.POST.get('amount', amount))
-            elif request.method == 'GET':
-                amount = float(request.GET.get('amount', amount))
+            # Show the payment form (user will enter amount and submit)
+            method_info = PAYMENT_METHODS.get(method, {})
+            context = {
+                'method': method,
+                'method_info': method_info,
+                'payment_info': payment_info,
+            }
             
-            # Redirect to create Checkout Session (which will redirect to Stripe)
-            logger.info(f"Redirecting to Stripe Checkout for user {request.user.username} amount={amount}")
-            print(f"[Stripe][DEBUG] Redirecting to Checkout Session from show_payment_form amount={amount}")
-            return redirect(f"{reverse('finance:stripe_checkout_session')}?amount={amount}")
+            template_name = 'finance/payments/stripe_form.html'
+            logger.info(f"Showing Stripe payment form for user {request.user.username}")
+            print(f"[Stripe][DEBUG] Showing payment form for user={request.user.username}")
+            return render(request, template_name, context)
         
         # For other automated methods (PayPal), show their specific forms
         method_info = PAYMENT_METHODS.get(method, {})

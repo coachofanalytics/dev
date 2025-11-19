@@ -26,30 +26,35 @@ def save_payment_history(user, payment_info, method, reference, amount, status="
     """Save payment history record - matches payment processing expectations"""
     try:
         from finance.models import Payment_History
+        from django.utils import timezone
         
-        # Calculate fee_balance (required database field)
-        fee_balance = amount - payment_info.down_payment
+        # fee_balance is a computed property, not a database field - don't set it
+        # Convert amount to integer (payment_fees is IntegerField)
+        payment_fees_value = int(round(float(amount)))
         
         payment_history = Payment_History.objects.create(
             customer=user,
-            payment_fees=amount,
-            payment_method=method,
+            payment_fees=payment_fees_value,
+            payment_method=method.lower(),
             plan=payment_info.plan,
-            subplan=payment_info.subplan,
-            pricing_plan=payment_info.pricing_plan,
-            down_payment=payment_info.down_payment,
-            fee_balance=int(fee_balance),
-            student_bonus=payment_info.student_bonus,
-            notes=f"Payment via {method} - Ref: {reference}",
-            contract_submitted_date=payment_info.contract_submitted_date,
-            client_signature=payment_info.client_signature,
-            company_rep=payment_info.company_rep,
-            client_date=payment_info.client_date,
-            rep_date=payment_info.rep_date,
+            subplan=payment_info.subplan if hasattr(payment_info, 'subplan') else None,
+            pricing_plan=payment_info.pricing_plan if hasattr(payment_info, 'pricing_plan') else None,
+            down_payment=payment_info.down_payment if hasattr(payment_info, 'down_payment') else 0,
+            student_bonus=payment_info.student_bonus if hasattr(payment_info, 'student_bonus') else None,
+            description=f"Payment via {method} - Ref: {reference}",
+            contract_submitted_date=payment_info.contract_submitted_date if hasattr(payment_info, 'contract_submitted_date') else timezone.now(),
+            client_signature=payment_info.client_signature if hasattr(payment_info, 'client_signature') else user.username,
+            company_rep=payment_info.company_rep if hasattr(payment_info, 'company_rep') else 'CODA System',
+            client_date=payment_info.client_date if hasattr(payment_info, 'client_date') else timezone.now().strftime('%Y-%m-%d'),
+            rep_date=payment_info.rep_date if hasattr(payment_info, 'rep_date') else timezone.now().strftime('%Y-%m-%d'),
+            is_active=True,
         )
+        print(f"[Payments][DEBUG] Payment history saved: id={payment_history.id} amount={amount} method={method} reference={reference}")
         return True
     except Exception as e:
         print(f"Error saving payment history: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def validate_user_payment_eligibility(user, amount, payment_method="general"):

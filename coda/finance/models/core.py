@@ -112,8 +112,20 @@ class Payment_Information(PaymentBase):
         return "Payment Info for {} - Plan {}".format(self.customer.username, self.plan)
     
     def get_fee_balance(self):
-        """Calculate fee_balance dynamically - column doesn't exist in database"""
-        return self.payment_fees - self.down_payment
+        """Calculate fee_balance dynamically - subtracts payments already made"""
+        from django.db.models import Sum
+        
+        # Get total of all payments made
+        total_payments = Payment_History.objects.filter(
+            customer=self.customer,
+            is_active=True
+        ).aggregate(total=Sum('payment_fees'))['total'] or 0
+        
+        # Balance = original amount - down payment - payments made
+        balance = self.payment_fees - self.down_payment - total_payments
+        
+        # Ensure balance doesn't go negative
+        return max(0, balance)
 
 
 class Payment_History(PaymentBase):

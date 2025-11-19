@@ -42,460 +42,121 @@
                 </div>
             </div>
 
-            <!-- Payment Amount Selection -->
+            <!-- Payment Amount Form (Python/Django - No JavaScript) -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-dollar-sign"></i> Payment Amount</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="amount-type">Payment Type:</label>
-                                <select id="amount-type" class="form-control">
-                                    <option value="full">Full Payment (${{ payment_info.get_fee_balance|floatformat:2 }})</option>
-                                    <option value="partial">Partial Payment</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group" id="partial-amount-group" style="display: none;">
-                                <label for="partial-amount">Enter Amount:</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">$</span>
-                                    </div>
-                                    <input type="number" id="partial-amount" class="form-control" 
-                                           min="1" max="{{ payment_info.get_fee_balance }}" 
-                                           step="0.01" placeholder="0.00" 
-                                           style="background-color: white; color: black;">
-                                </div>
-                                <small class="text-muted">Minimum: $1.00, Maximum: ${{ payment_info.get_fee_balance|floatformat:2 }}</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <div id="amount-display" class="alert alert-info">
-                            <strong>Amount to Pay: ${{ payment_info.get_fee_balance|floatformat:2 }}</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stripe Payment Form -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-credit-card"></i> Card Details</h5>
                     
-                    <!-- Stripe Payment Element will be inserted here -->
-                    <form id="payment-form">
+                    <form method="POST" action="{% url 'finance:stripe_checkout_session' %}" id="payment-amount-form">
                         {% csrf_token %}
-                        <div id="payment-element">
-                            <!-- Loading state -->
-                            <div id="payment-element-loading" class="text-center py-4">
-                                <div class="spinner-border text-warning" role="status">
-                                    <span class="visually-hidden">Loading payment form...</span>
+                        
+                        <div class="form-group mb-3">
+                            <label for="amount-type">Payment Type:</label>
+                            <select id="amount-type" name="amount_type" class="form-control" onchange="togglePartialAmount()">
+                                <option value="full">Full Payment (${{ payment_info.get_fee_balance|floatformat:2 }})</option>
+                                <option value="partial">Partial Payment</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3" id="partial-amount-group" style="display: none;">
+                            <label for="amount">Enter Amount:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
                                 </div>
-                                <p class="mt-2 text-muted">Loading secure payment form...</p>
+                                <input type="number" 
+                                       id="amount" 
+                                       name="amount" 
+                                       class="form-control" 
+                                       min="1" 
+                                       max="{{ payment_info.get_fee_balance }}" 
+                                       step="0.01" 
+                                       placeholder="0.00"
+                                       value="{{ payment_info.get_fee_balance }}"
+                                       required>
+                            </div>
+                            <small class="text-muted">Minimum: $1.00, Maximum: ${{ payment_info.get_fee_balance|floatformat:2 }}</small>
+                        </div>
+                        
+                        <input type="hidden" id="full-amount" value="{{ payment_info.get_fee_balance }}">
+                        
+                        <div class="mt-3 mb-3">
+                            <div id="amount-display" class="alert alert-info">
+                                <strong>Amount to Pay: $<span id="display-amount">{{ payment_info.get_fee_balance|floatformat:2 }}</span></strong>
                             </div>
                         </div>
                         
-                        <!-- Display form errors -->
-                        <div id="payment-errors" role="alert" class="text-danger mt-2"></div>
-                        
-                        <!-- Payment amount (hidden) -->
-                        <input type="hidden" id="payment-amount" value="{{ payment_info.get_fee_balance }}">
-                        
-                        <div class="mt-4">
-                            <button id="submit-payment" class="btn btn-warning btn-lg w-100" disabled>
-                                <i class="fas fa-lock"></i> Pay ${{ payment_info.get_fee_balance|floatformat:2 }}
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-lock"></i> Proceed to Secure Checkout
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Fallback Option -->
-            <div class="card shadow-sm mb-4 border-warning">
-                <div class="card-body text-center">
-                    <h6><i class="fas fa-exclamation-triangle"></i> Having trouble with the card form?</h6>
-                    <p class="text-muted small mb-3">
-                        You can also pay using other methods or get manual payment details
+            <!-- Information Card -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-info-circle"></i> Secure Payment</h5>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-shield-alt text-success"></i> Your payment will be processed securely by Stripe.
+                        You will be redirected to Stripe's secure checkout page to complete your payment.
                     </p>
-                    <a href="{% url 'finance:payment_details' 'stripe' %}" class="btn btn-outline-warning">
-                        <i class="fas fa-info-circle"></i> Get Manual Payment Details
-                    </a>
                 </div>
-            </div>
-
-            <!-- Security Notice -->
-            <div class="alert alert-info">
-                <i class="fas fa-shield-alt"></i>
-                <strong>Secure Payment:</strong>
-                Your payment information is processed securely by Stripe. 
-                We never store your card details.
             </div>
 
         </div>
     </div>
 </div>
 
-<!-- Stripe JavaScript -->
-<script src="https://js.stripe.com/v3/"></script>
+<!-- Simple JavaScript for UI only (no Stripe integration) -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if Stripe publishable key is available
-    const stripePublishableKey = '{{ stripe_publishable_key }}';
+function togglePartialAmount() {
+    const amountType = document.getElementById('amount-type').value;
+    const partialGroup = document.getElementById('partial-amount-group');
+    const amountInput = document.getElementById('amount');
+    const fullAmount = parseFloat(document.getElementById('full-amount').value);
+    const displayAmount = document.getElementById('display-amount');
     
-    console.log('Stripe publishable key:', stripePublishableKey);
+    if (amountType === 'partial') {
+        partialGroup.style.display = 'block';
+        amountInput.value = '';
+        amountInput.required = true;
+        
+        // Update display when user types
+        amountInput.addEventListener('input', function() {
+            const value = parseFloat(this.value) || 0;
+            if (value > 0 && value <= fullAmount) {
+                displayAmount.textContent = value.toFixed(2);
+            }
+        });
+    } else {
+        partialGroup.style.display = 'none';
+        amountInput.value = fullAmount;
+        amountInput.required = false;
+        displayAmount.textContent = fullAmount.toFixed(2);
+    }
+}
+
+// Set default amount on form submit
+document.getElementById('payment-amount-form').addEventListener('submit', function(e) {
+    const amountType = document.getElementById('amount-type').value;
+    const amountInput = document.getElementById('amount');
+    const fullAmount = parseFloat(document.getElementById('full-amount').value);
     
-    if (!stripePublishableKey || stripePublishableKey === '' || stripePublishableKey === 'None') {
-        console.error('Stripe publishable key is not available');
-        const loadingElement = document.getElementById('payment-element-loading');
-        if (loadingElement) {
-            loadingElement.innerHTML = '<div class="alert alert-warning">Stripe is not configured. Please contact support or use manual payment details.</div>';
-        } else {
-            document.getElementById('payment-element').innerHTML = 
-            '<div class="alert alert-warning">Stripe is not configured. Please contact support or use manual payment details.</div>';
-        }
-        document.getElementById('submit-payment').disabled = true;
-        return;
+    if (amountType === 'full') {
+        amountInput.value = fullAmount;
     }
     
-    // Initialize Stripe
-    const stripe = Stripe(stripePublishableKey);
-    
-    // Get initial values from hidden input
-    const fullAmount = parseFloat(document.getElementById('payment-amount').value);
-    const maxAmount = fullAmount;
-    
-    // Payment Element variables
-    let elements = null;
-    let paymentElement = null;
-    let currentClientSecret = null;
-    
-    // Initialize Payment Element on page load with initial amount
-    async function initializePaymentElement() {
-        const loadingElement = document.getElementById('payment-element-loading');
-        if (loadingElement) {
-            loadingElement.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-warning"></div><p class="mt-2 text-muted">Loading payment form...</p></div>';
-        }
-        
-        try {
-            const amount = parseFloat(document.getElementById('payment-amount').value);
-            
-            // Create PaymentIntent
-            const response = await fetch('{% url "finance:stripe_payment_intent" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: JSON.stringify({ amount: amount }),
-            });
-            
-            const result = await response.json();
-            if (result.error) {
-                throw new Error(result.error);
-            }
-            
-            console.log('PaymentIntent created on page load:', result);
-            currentClientSecret = result.client_secret;
-            
-            // Create Payment Element
-            elements = stripe.elements({ clientSecret: currentClientSecret });
-            paymentElement = elements.create('payment');
-            
-            // Set up error handling
-            paymentElement.on('change', function(event) {
-                const displayError = document.getElementById('payment-errors');
-                displayError.textContent = event.error ? event.error.message : '';
-            });
-            
-            // Mount element
-            paymentElement.mount('#payment-element');
-            console.log('Payment Element mounted on page load');
-            
-            // Wait for ready
-            await new Promise((resolve) => {
-                const timeout = setTimeout(() => {
-                    console.warn('Payment Element ready timeout');
-                    resolve();
-                }, 10000);
-                
-                paymentElement.on('ready', () => {
-                    clearTimeout(timeout);
-                    console.log('Payment Element ready');
-                    if (loadingElement) {
-                        loadingElement.style.display = 'none';
-                    }
-                    resolve();
-                });
-                
-                paymentElement.on('loaderror', (error) => {
-                    clearTimeout(timeout);
-                    console.error('Payment Element load error:', error);
-                    if (loadingElement) {
-                        loadingElement.innerHTML = '<div class="alert alert-danger">Failed to load payment form. Please refresh the page.</div>';
-                    }
-                    resolve(); // Continue anyway
-                });
-            });
-            
-        } catch (error) {
-            console.error('Error initializing Payment Element:', error);
-            const loadingElement = document.getElementById('payment-element-loading');
-            if (loadingElement) {
-                loadingElement.innerHTML = '<div class="alert alert-danger">Failed to initialize payment form: ' + error.message + '</div>';
-            }
-        }
+    // Validate amount
+    const amount = parseFloat(amountInput.value);
+    if (amount <= 0 || amount > fullAmount) {
+        e.preventDefault();
+        alert('Please enter a valid amount between $1.00 and $' + fullAmount.toFixed(2));
+        return false;
     }
-    
-    // Initialize on page load
-    initializePaymentElement();
-    
-    // Handle amount type change
-    const amountTypeSelect = document.getElementById('amount-type');
-    const partialAmountGroup = document.getElementById('partial-amount-group');
-    const partialAmountInput = document.getElementById('partial-amount');
-    const amountDisplay = document.getElementById('amount-display');
-    const paymentAmountInput = document.getElementById('payment-amount');
-    const submitButton = document.getElementById('submit-payment');
-    
-    function updateAmount() {
-        const amountType = amountTypeSelect.value;
-        let amount = fullAmount;
-        
-        if (amountType === 'partial') {
-            const partialAmount = parseFloat(partialAmountInput.value) || 0;
-            if (partialAmount > 0 && partialAmount <= maxAmount) {
-                amount = partialAmount;
-            }
-        }
-        
-        // Update display
-        amountDisplay.innerHTML = '<strong>Amount to Pay: $' + amount.toFixed(2) + '</strong>';
-        paymentAmountInput.value = amount;
-        submitButton.innerHTML = '<i class="fas fa-lock"></i> Pay $' + amount.toFixed(2);
-        
-        // Enable/disable submit button
-        const isValidAmount = amount > 0 && amount <= maxAmount;
-        submitButton.disabled = !isValidAmount || !paymentElement;
-        
-        // Don't update Payment Element on every keystroke - we'll create new PaymentIntent on submit
-        // Just update the display and button text
-    }
-    
-    // Event listeners for amount changes
-    amountTypeSelect.addEventListener('change', function() {
-        if (this.value === 'partial') {
-            partialAmountGroup.style.display = 'block';
-            partialAmountInput.focus();
-        } else {
-            partialAmountGroup.style.display = 'none';
-            updateAmount();
-        }
-    });
-    
-    // Debounce input events to avoid too many updates
-    partialAmountInput.addEventListener('input', function() {
-        updateAmount();
-    });
-    
-    partialAmountInput.addEventListener('blur', function() {
-        updateAmount();
-    });
-    
-    // Payment Element error handling will be set up after element is created
-    
-    // Handle form submission - just confirm payment
-    const form = document.getElementById('payment-form');
-    form.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        
-        const amount = parseFloat(document.getElementById('payment-amount').value);
-        
-        // Validate amount
-        if (amount <= 0 || amount > maxAmount) {
-            alert('Please enter a valid amount between $1.00 and $' + maxAmount.toFixed(2));
-            return;
-        }
-        
-        // Check if Payment Element is ready
-        if (!paymentElement || !elements) {
-            document.getElementById('payment-errors').textContent = 'Payment form is not ready. Please wait a moment and try again.';
-            return;
-        }
-        
-        // If amount changed, create new PaymentIntent and update element
-        if (amount !== fullAmount) {
-            try {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating amount...';
-                
-                // Create new PaymentIntent
-                const response = await fetch('{% url "finance:stripe_payment_intent" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    },
-                    body: JSON.stringify({ amount: amount }),
-                });
-                
-                const result = await response.json();
-                if (result.error) {
-                    throw new Error(result.error);
-                }
-                
-                // Unmount old element
-                try {
-                    paymentElement.unmount();
-                } catch (e) {
-                    // Ignore
-                }
-                
-                // Create new element with new client secret
-                currentClientSecret = result.client_secret;
-                elements = stripe.elements({ clientSecret: currentClientSecret });
-                paymentElement = elements.create('payment');
-                
-                paymentElement.on('change', function(event) {
-                    const displayError = document.getElementById('payment-errors');
-                    displayError.textContent = event.error ? event.error.message : '';
-                });
-                
-                paymentElement.mount('#payment-element');
-                
-                // Wait for ready
-                await new Promise((resolve) => {
-                    const timeout = setTimeout(resolve, 5000);
-                    paymentElement.on('ready', () => {
-                        clearTimeout(timeout);
-                        resolve();
-                    });
-                });
-                
-            } catch (error) {
-                console.error('Error updating amount:', error);
-                document.getElementById('payment-errors').textContent = error.message || 'Failed to update amount. Please try again.';
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fas fa-lock"></i> Pay $' + amount.toFixed(2);
-                return;
-            }
-        }
-        
-        // Confirm payment
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Payment...';
-        document.getElementById('payment-errors').textContent = '';
-        
-        try {
-            const {error: confirmError, paymentIntent} = await stripe.confirmPayment({
-                elements: elements,
-                confirmParams: {
-                    return_url: window.location.origin + '{% url "finance:payment_success" %}',
-                },
-                redirect: 'if_required',
-            });
-            
-            if (confirmError) {
-                throw new Error(confirmError.message);
-            }
-            
-            if (paymentIntent.status === 'succeeded') {
-                const successData = {
-                    reference: paymentIntent.id,
-                    amount: amount,
-                    method: 'stripe'
-                };
-                
-                await fetch('{% url "finance:unified_success" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    },
-                    body: JSON.stringify(successData),
-                });
-                
-                window.location.href = '{% url "finance:unified_success" %}';
-            }
-        } catch (error) {
-            console.error('Payment confirmation error:', error);
-            document.getElementById('payment-errors').textContent = error.message || 'Payment failed. Please try again.';
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fas fa-lock"></i> Pay $' + amount.toFixed(2);
-        }
-    });
-    
-    // Initialize amount display
-    updateAmount();
 });
 </script>
 
-<style>
-#card-element {
-    border: 1px solid #ced4da;
-    border-radius: 0.375rem;
-    padding: 0.75rem;
-    background-color: #fff !important;
-    color: #000 !important;
-}
-
-#card-element input {
-    background-color: #fff !important;
-    color: #000 !important;
-    border: none !important;
-    outline: none !important;
-}
-
-#card-element input:focus {
-    background-color: #fff !important;
-    color: #000 !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.StripeElement--focus {
-    border-color: #80bdff !important;
-    outline: 0 !important;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-    background-color: #fff !important;
-}
-
-.StripeElement--invalid {
-    border-color: #dc3545 !important;
-    background-color: #fff !important;
-}
-
-.StripeElement--complete {
-    background-color: #fff !important;
-    color: #000 !important;
-}
-
-/* Ensure all Stripe Elements are visible and interactive */
-.StripeElement {
-    background-color: #fff !important;
-    color: #000 !important;
-}
-
-.StripeElement * {
-    background-color: #fff !important;
-    color: #000 !important;
-}
-
-/* Fix for partial amount input */
-#partial-amount {
-    background-color: #fff !important;
-    color: #000 !important;
-    border: 1px solid #ced4da !important;
-}
-
-#partial-amount:focus {
-    background-color: #fff !important;
-    color: #000 !important;
-    border-color: #80bdff !important;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-}
-</style>
-{% endblock content %}
+{% endblock %}

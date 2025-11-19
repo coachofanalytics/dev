@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.utils import timezone
 from finance.models import Payment_Information, Payment_History
 from finance.utils import save_payment_history
 from accounts.models import CustomerUser
@@ -41,22 +42,7 @@ def create_checkout_session(request):
     from django.urls import reverse
     
     try:
-        # Get amount from POST or GET
-        if request.method == 'POST':
-            data = json.loads(request.body) if request.body else {}
-            amount = float(data.get('amount', request.POST.get('amount', 0)))
-        else:
-            amount = float(request.GET.get('amount', 0))
-        
-        print(f"[Stripe][DEBUG] Creating Checkout Session amount={amount} user={request.user.id}")
-        
-        if amount <= 0:
-            print("[Stripe][DEBUG] Invalid amount received for Checkout Session")
-            from django.contrib import messages
-            messages.error(request, 'Invalid payment amount.')
-            return redirect('finance:payment_method_selection')
-        
-        # Get user's payment information
+        # Get user's payment information first (needed for amount calculation)
         try:
             payment_info = Payment_Information.objects.filter(
                 customer=request.user
@@ -73,6 +59,30 @@ def create_checkout_session(request):
             from django.contrib import messages
             messages.error(request, 'No payment information found.')
             return redirect('finance:payment_method_selection')
+        
+        # Get amount from POST (form submission) or GET (direct link)
+        if request.method == 'POST':
+            # Handle form POST (from stripe_form.html)
+            amount_type = request.POST.get('amount_type', 'full')
+            
+            if amount_type == 'full':
+                # Get full amount from payment info
+                amount = float(payment_info.get_fee_balance())
+            else:
+                # Partial payment - get amount from form
+                amount = float(request.POST.get('amount', 0))
+            
+            print(f"[Stripe][DEBUG] Form POST: amount_type={amount_type} amount={amount} user={request.user.id}")
+        else:
+            # GET request - get amount from query string (default to full balance)
+            amount = float(request.GET.get('amount', payment_info.get_fee_balance()))
+            print(f"[Stripe][DEBUG] GET request: amount={amount} user={request.user.id}")
+        
+        if amount <= 0:
+            print("[Stripe][DEBUG] Invalid amount received for Checkout Session")
+            from django.contrib import messages
+            messages.error(request, 'Invalid payment amount. Please enter a valid amount.')
+            return redirect('finance:unified_processing', method='stripe')
         
         print(f"[Stripe][DEBUG] Using PaymentInformation id={payment_info.id} plan={payment_info.plan}")
         
@@ -216,13 +226,31 @@ def stripe_checkout_success(request):
                         logger.error(f"Failed to save payment history for Stripe Checkout {session_id}")
                         print(f"[Stripe][DEBUG] Failed to save payment history for session={session_id}")
                         messages.warning(request, 'Payment completed but there was an issue saving the record. Please contact support.')
+                    
+                    # Store payment details in session for success page
+                    request.session['payment_reference'] = reference
+                    request.session['payment_amount'] = amount
+                    request.session['payment_method'] = 'Stripe'
+                    request.session['payment_date'] = timezone.now().isoformat()
+                    print(f"[Stripe][DEBUG] Stored payment details in session: amount={amount} method=Stripe reference={reference}")
                         
                 except Exception as e:
                     logger.error(f"Error processing Stripe Checkout success: {str(e)}")
                     print(f"[Stripe][DEBUG] Exception while handling checkout success: {e}")
+                    import traceback
+                    traceback.print_exc()
                     messages.warning(request, 'Payment completed but there was an issue processing it. Please contact support.')
+                    # Still store basic info even if save failed
+                    request.session['payment_reference'] = reference
+                    request.session['payment_amount'] = amount
+                    request.session['payment_method'] = 'Stripe'
             else:
                 messages.warning(request, 'Payment completed but metadata was missing. Please contact support.')
+                # Store basic info from session (get amount from checkout session)
+                amount_from_session = getattr(checkout_session, 'amount_total', 0) / 100 if hasattr(checkout_session, 'amount_total') else 0
+                request.session['payment_reference'] = f"STRIPE-{session_id}"
+                request.session['payment_amount'] = amount_from_session
+                request.session['payment_method'] = 'Stripe'
         else:
             messages.warning(request, 'Payment session found but payment status is not paid.')
         
