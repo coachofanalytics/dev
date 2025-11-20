@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db.models import Sum
 from decimal import Decimal
+from django_ratelimit.decorators import ratelimit
 
 from .models import Wallet, Transaction, SubscriptionPlan, UserSubscription, Invoice
 from .forms import DepositForm, MPesaDepositForm, StripePaymentMethodForm
@@ -236,6 +237,7 @@ def deposit_initiate(request):
 
 
 @login_required
+@ratelimit(key='user', rate='20/h', method='POST')
 def deposit_stripe(request):
     try:
         wallet = Wallet.objects.get(user=request.user)
@@ -256,18 +258,19 @@ def deposit_stripe(request):
                 payment_gateway = PaymentGatewayFactory.create_gateway('stripe')
 
                 transaction = Transaction.objects.create(
+                    user=request.user,
                     wallet=wallet,
                     amount=deposit_amount_decimal,
                     transaction_type='deposit',
                     payment_gateway='stripe',
                     status='pending',
-                    external_reference=None,
+                    gateway_transaction_id=None,
                 )
 
                 payment_result = payment_gateway.process_payment(
                     amount=deposit_amount_decimal,
                     currency=settings.DEFAULT_CURRENCY,
-                    token=form.cleaned_data['stripe_token'],
+                    token=form.cleaned_data['payment_method_id'],
                     description=f'Wallet deposit - User {request.user.id}',
                     metadata={
                         'user_id': request.user.id,
@@ -327,6 +330,7 @@ def deposit_stripe(request):
 
 
 @login_required
+@ratelimit(key='user', rate='20/h', method='POST')
 def deposit_paypal(request):
     try:
         wallet = Wallet.objects.get(user=request.user)
@@ -344,12 +348,13 @@ def deposit_paypal(request):
         payment_gateway = PaymentGatewayFactory.create_gateway('paypal')
 
         transaction = Transaction.objects.create(
+            user=request.user,
             wallet=wallet,
             amount=deposit_amount_decimal,
             transaction_type='deposit',
             payment_gateway='paypal',
             status='pending',
-            external_reference=None,
+            gateway_transaction_id=None,
         )
 
         request.session['paypal_transaction_id'] = transaction.id
@@ -357,13 +362,13 @@ def deposit_paypal(request):
         return_url = request.build_absolute_uri('payments:deposit_paypal_execute')
         cancel_url = request.build_absolute_uri('payments:deposit_paypal_cancel')
 
-        payment_result = payment_gateway.create_payment(
+        payment_result = payment_gateway.process_payment(
             amount=deposit_amount_decimal,
             currency=settings.DEFAULT_CURRENCY,
-            description=f'Wallet deposit - User {request.user.id}',
-            return_url=return_url,
-            cancel_url=cancel_url,
             metadata={
+                'description': f'Wallet deposit - User {request.user.id}',
+                'return_url': return_url,
+                'cancel_url': cancel_url,
                 'user_id': request.user.id,
                 'transaction_id': transaction.id,
                 'wallet_id': wallet.id,
@@ -371,7 +376,7 @@ def deposit_paypal(request):
         )
 
         if payment_result['success']:
-            return redirect(payment_result['redirect_url'])
+            return redirect(payment_result['approval_url'])
         else:
             transaction.status = 'failed'
             transaction.save()
@@ -468,6 +473,7 @@ def deposit_paypal_cancel(request):
 
 
 @login_required
+@ratelimit(key='user', rate='20/h', method='POST')
 def deposit_mpesa(request):
     try:
         wallet = Wallet.objects.get(user=request.user)
@@ -490,22 +496,26 @@ def deposit_mpesa(request):
                 payment_gateway = PaymentGatewayFactory.create_gateway('mpesa')
 
                 transaction = Transaction.objects.create(
+                    user=request.user,
                     wallet=wallet,
                     amount=deposit_amount_decimal,
                     transaction_type='deposit',
                     payment_gateway='mpesa',
                     status='pending',
-                    external_reference=phone_number,
+                    gateway_transaction_id=phone_number,
                 )
 
                 request.session['mpesa_transaction_id'] = transaction.id
                 request.session['mpesa_phone_number'] = phone_number
 
-                stk_result = payment_gateway.stk_push(
+                stk_result = payment_gateway.process_payment(
                     amount=deposit_amount_decimal,
-                    phone_number=phone_number,
-                    account_reference=f'WALLET-{transaction.id}',
-                    transaction_desc=f'Wallet deposit - User {request.user.id}',
+                    currency=settings.DEFAULT_CURRENCY,
+                    metadata={
+                        'phone_number': phone_number,
+                        'reference': f'WALLET-{transaction.id}',
+                        'description': f'Wallet deposit - User {request.user.id}',
+                    }
                 )
 
                 if stk_result['success']:

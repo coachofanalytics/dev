@@ -1,0 +1,1059 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$MYPxeoRVlBM0YLC5YVyIah$PP/DQV9WVyb5EkDbELMj+qReTu/rIhzJ/+ngNz4U/n4=",
+    "last_login": "2025-11-15T17:47:59.865Z",
+    "is_superuser": true,
+    "username": "biasharaadmin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@biasharabridges.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-11-04T01:58:49.516Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$6ET2HsvCItfJrgbhDfRmpU$mkrhKEsquVkPd1LyFFb1r5tOm/zijTk8kflKxUOmYLI=",
+    "last_login": "2025-11-09T21:49:31.762Z",
+    "is_superuser": false,
+    "username": "pmzomo",
+    "first_name": "Peter",
+    "last_name": "nzomo",
+    "email": "pmzomo@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-04T02:09:30Z",
+    "groups": [],
+    "user_permissions": [
+      [
+        "add_category",
+        "accounts",
+        "category"
+      ],
+      [
+        "change_category",
+        "accounts",
+        "category"
+      ],
+      [
+        "delete_category",
+        "accounts",
+        "category"
+      ],
+      [
+        "view_category",
+        "accounts",
+        "category"
+      ],
+      [
+        "add_role",
+        "accounts",
+        "role"
+      ],
+      [
+        "change_role",
+        "accounts",
+        "role"
+      ],
+      [
+        "delete_role",
+        "accounts",
+        "role"
+      ],
+      [
+        "view_role",
+        "accounts",
+        "role"
+      ],
+      [
+        "add_staff",
+        "accounts",
+        "staff"
+      ],
+      [
+        "change_staff",
+        "accounts",
+        "staff"
+      ],
+      [
+        "delete_staff",
+        "accounts",
+        "staff"
+      ],
+      [
+        "view_staff",
+        "accounts",
+        "staff"
+      ],
+      [
+        "add_userprofile",
+        "accounts",
+        "userprofile"
+      ],
+      [
+        "change_userprofile",
+        "accounts",
+        "userprofile"
+      ],
+      [
+        "delete_userprofile",
+        "accounts",
+        "userprofile"
+      ],
+      [
+        "view_userprofile",
+        "accounts",
+        "userprofile"
+      ],
+      [
+        "add_logentry",
+        "admin",
+        "logentry"
+      ],
+      [
+        "change_logentry",
+        "admin",
+        "logentry"
+      ],
+      [
+        "delete_logentry",
+        "admin",
+        "logentry"
+      ],
+      [
+        "view_logentry",
+        "admin",
+        "logentry"
+      ],
+      [
+        "add_group",
+        "auth",
+        "group"
+      ],
+      [
+        "change_group",
+        "auth",
+        "group"
+      ],
+      [
+        "delete_group",
+        "auth",
+        "group"
+      ],
+      [
+        "view_group",
+        "auth",
+        "group"
+      ],
+      [
+        "add_permission",
+        "auth",
+        "permission"
+      ],
+      [
+        "change_permission",
+        "auth",
+        "permission"
+      ],
+      [
+        "delete_permission",
+        "auth",
+        "permission"
+      ],
+      [
+        "view_permission",
+        "auth",
+        "permission"
+      ],
+      [
+        "add_user",
+        "auth",
+        "user"
+      ],
+      [
+        "change_user",
+        "auth",
+        "user"
+      ],
+      [
+        "delete_user",
+        "auth",
+        "user"
+      ],
+      [
+        "view_user",
+        "auth",
+        "user"
+      ],
+      [
+        "add_contenttype",
+        "contenttypes",
+        "contenttype"
+      ],
+      [
+        "change_contenttype",
+        "contenttypes",
+        "contenttype"
+      ],
+      [
+        "delete_contenttype",
+        "contenttypes",
+        "contenttype"
+      ],
+      [
+        "view_contenttype",
+        "contenttypes",
+        "contenttype"
+      ],
+      [
+        "add_session",
+        "sessions",
+        "session"
+      ],
+      [
+        "change_session",
+        "sessions",
+        "session"
+      ],
+      [
+        "delete_session",
+        "sessions",
+        "session"
+      ],
+      [
+        "view_session",
+        "sessions",
+        "session"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$vavJqtpcPqab87p5sDA5TL$iDoEPIVhZUR/VEssDZSYH9dorgjz9yiNShml1QUbdWs=",
+    "last_login": "2025-11-09T21:50:50.840Z",
+    "is_superuser": false,
+    "username": "pmzomo2",
+    "first_name": "mwongela",
+    "last_name": "nzomo",
+    "email": "nzomopeter@yahoo.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-04T03:03:59.736Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$yuBOr324oRhEsP3GnfQ2Dl$XQ9zHTkUebcOV1eNxZnXwC+SCdNmsiUgfq1cHmkxazE=",
+    "last_login": "2025-11-15T17:47:27.411Z",
+    "is_superuser": false,
+    "username": "Fuschia",
+    "first_name": "Fuschia",
+    "last_name": "Creativity",
+    "email": "fuschiasocialmedia@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-04T06:49:46.834Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$rjp3dkOUJvIjmCCICVXLmy$IkXNLDBCarv5KmSph/JCaHjm0ct0TQmTtEVrukBU2Hk=",
+    "last_login": "2025-11-14T17:09:17.051Z",
+    "is_superuser": false,
+    "username": "kivuva",
+    "first_name": "tony",
+    "last_name": "kivuva",
+    "email": "tony@roguecreativez.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-04T06:57:01.519Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$aJ24Q5mo6pICshAqaICKBi$iUNmqu6eCRezdT+x5b1EhkrcI88d7i06NyusdTUtKq0=",
+    "last_login": "2025-11-09T21:50:36.235Z",
+    "is_superuser": false,
+    "username": "pmzomo3",
+    "first_name": "Peter",
+    "last_name": "Nzomo",
+    "email": "pmzomo@outlook.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-05T17:17:24.130Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$TXAcLwD19UIp7yECYsnEbS$9bVxgz/MnoGKNKBjl6vr21oYNnjNuvx8dB9ukFIFKF4=",
+    "last_login": "2025-11-09T17:16:50.548Z",
+    "is_superuser": false,
+    "username": "techstartup",
+    "first_name": "TechVenture",
+    "last_name": "Team",
+    "email": "tech@startup.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-09T16:35:44.872Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$tcKUI4buskAbuTDXtObGEN$P7YBaWDkUHEfWkItdRnnV/FP09i1LF8h0chhLC9lXU4=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "greeneco",
+    "first_name": "GreenEco",
+    "last_name": "Team",
+    "email": "info@greeneco.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-09T16:35:45.653Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$iKm2P9XsfOLE1jcbnrB4hm$PvUaGI90x744BNhsw18zeiGoWiPCmnapjYQYfMPda8w=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "fooddelivery",
+    "first_name": "QuickBite",
+    "last_name": "Team",
+    "email": "hello@fooddelivery.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-09T16:35:46.331Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "gj4vj5aook7r403yq80lx7x95uvf3zvx",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQRO_iGkWJP4lDB1Scwtpde2ULyUisQ4O4O0ZKAc0Ub2beSwXYWg6bpEcoUR3Vog6_DIFuqX4LILpvtcmwIxkuIOlaJVUprTzTqZ_O-_zPkUFyF4wcvY_sZpjAIkRtEN3qjLWo_UTYk2ZtF9DerGyZDNiJR3aeV0Ja1PsD6Xk6AQ:1vI922:hmyWGEUnN_etGAM2JBPUxt2YkZsclkJnhCa2cl2-HRo",
+    "expire_date": "2025-11-23T17:16:50.558Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "klevx380rn8eqz15aopfu49z1md3iag6",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGkW24y8dUHEKa73eyBaSkdiYBnF3gpQC2nlv5iUSjLWmwfRIrYijMOLwyzLgjfp3AMT76CtPO-LpAkzXztS5re1Jp0067_e_RgWuWyBANGiMw-wBYlhQB2WzhBhnaZRyMtiZ1GxBZ-2No-IzLqqgtt5m67V4fwDCzjjb:1vKKMx:9Fu6GaTtp634ldHWcvIPO_GA7GmTDb3EXMPkjSCNmOI",
+    "expire_date": "2025-11-29T17:47:27.430Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "rqlywm3psgpemrluqino5j05pryjue9j",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGkWOHccxHVBxCmu9HyVCMhLr0CDuTpBSQDvvzbxMhrXNeVV-5IXM0fTm8MsK4I3rdwDE-1qbdjvS7gLK16pcdWnLk0-bdN7vf40ZdN4CTNH2KBJjIvTTMMrgrA3OT-JCCZLSyFYcCUMEmjySD1RsLxBKTADm_QHf7To2:1vKKNT:87wXyAdMDcgp4wWAoCbI2oWZ0xeKWq1SD_1fBCOIIQw",
+    "expire_date": "2025-11-29T17:47:59.871Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "z2r8rnan4rkvy0djiizzi9kner6i0w01",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hCglIJL9z1DM8MMUjWQlHZlvLsh6UK3_73332KBY8_L0XhbVhJXYcTld0OITy4d0APKvcpYy76tKLsiT9rkXIlft9P9O8jQcq_HIQYmcmFk1mCV19YSe5MMKaUhOs-RlB6tw-AGNMkhEaaJAgyTR_H5Avc8OJU:1vG78P:VPz9-AaylXw8mPfWyKqGIH5wWF2NqXPu8CRtgbXjKRk",
+    "expire_date": "2025-11-18T02:51:01.583Z"
+  }
+},
+{
+  "model": "accounts.category",
+  "pk": 1,
+  "fields": {
+    "name": "Investor",
+    "slug": "investor",
+    "description": "Looking to invest in businesses and opportunities",
+    "icon": "bi-cash-stack",
+    "is_active": true,
+    "created_at": "2025-11-04T02:32:03.030Z",
+    "updated_at": "2025-11-04T02:32:03.030Z"
+  }
+},
+{
+  "model": "accounts.category",
+  "pk": 2,
+  "fields": {
+    "name": "Business",
+    "slug": "business",
+    "description": "Business seeking partnerships, investments, or collaborations",
+    "icon": "bi-building",
+    "is_active": true,
+    "created_at": "2025-11-04T02:32:03.033Z",
+    "updated_at": "2025-11-04T02:32:03.033Z"
+  }
+},
+{
+  "model": "accounts.category",
+  "pk": 3,
+  "fields": {
+    "name": "Individual",
+    "slug": "individual",
+    "description": "Individual seeking job opportunities and professional connections",
+    "icon": "bi-person",
+    "is_active": true,
+    "created_at": "2025-11-04T02:32:03.034Z",
+    "updated_at": "2025-11-04T02:32:03.034Z"
+  }
+},
+{
+  "model": "accounts.role",
+  "pk": 1,
+  "fields": {
+    "name": "User Manager",
+    "description": "Can manage all users, add, edit, and delete user accounts",
+    "can_manage_users": true,
+    "can_manage_categories": false,
+    "can_manage_staff": false,
+    "can_view_reports": true,
+    "can_moderate_content": true,
+    "created_at": "2025-11-04T02:32:03.037Z",
+    "updated_at": "2025-11-04T02:32:03.037Z"
+  }
+},
+{
+  "model": "accounts.role",
+  "pk": 2,
+  "fields": {
+    "name": "Content Moderator",
+    "description": "Can moderate user content and reports",
+    "can_manage_users": false,
+    "can_manage_categories": false,
+    "can_manage_staff": false,
+    "can_view_reports": true,
+    "can_moderate_content": true,
+    "created_at": "2025-11-04T02:32:03.039Z",
+    "updated_at": "2025-11-04T02:32:03.039Z"
+  }
+},
+{
+  "model": "accounts.role",
+  "pk": 3,
+  "fields": {
+    "name": "Administrator",
+    "description": "Full access to all system features including categories and staff management",
+    "can_manage_users": true,
+    "can_manage_categories": true,
+    "can_manage_staff": true,
+    "can_view_reports": true,
+    "can_moderate_content": true,
+    "created_at": "2025-11-04T02:32:03.041Z",
+    "updated_at": "2025-11-04T02:32:03.041Z"
+  }
+},
+{
+  "model": "accounts.staff",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "pmzomo"
+    ],
+    "role": 1,
+    "employee_id": "staff001",
+    "department": "",
+    "is_active": true,
+    "hired_date": null,
+    "notes": "",
+    "created_at": "2025-11-04T02:42:29.549Z",
+    "updated_at": "2025-11-04T02:42:29.549Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "pmzomo2"
+    ],
+    "category": 3,
+    "profile_image": "profile_images/2025/11/04/Peter_Nzomo1.JPG",
+    "document": "user_documents/2025/11/04/Peter_Nzomo.pdf",
+    "bio": "I’m a software developer and quantitative systems engineer at Clicksoft Kenya, specializing in algorithmic trading and financial automation. I design and build advanced trading systems using MQL5, Python, PHP, JavaScript, and MySQL, with integrations to platforms such as MetaTrader 5 and Deriv.com. My work focuses on high-performance strategy optimization, GPU-accelerated backtesting, and real-time trading automation across forex, crypto, and synthetic indices.",
+    "company_name": "Sayari Cyber Technologies",
+    "job_title": "Co- founder",
+    "country": "",
+    "phone": "+254715420188",
+    "alternate_email": "",
+    "location": "Nairobi, Kenya",
+    "address": "",
+    "website": "",
+    "linkedin_url": "https://www.linkedin.com/in/peter-nzomo-31689a8a/",
+    "twitter_handle": "pmwongela",
+    "facebook_url": "",
+    "years_of_experience": 7,
+    "industry": "Technology, Programming",
+    "skills": "Programming Languages: Python, MQL5, PHP, JavaScript, SQL\r\nFrameworks & Tools: MetaTrader 5, Deriv API, Django, Flask, Node.js\r\nTrading & Quant Development: Algorithmic trading systems, Expert Advisors, automated execution, GPU-accelerated backtesting,\r\nData & Analytics: Pandas, NumPy, cuDF, Numba, data visualization\r\nDatabases: MySQL, PostgreSQL, SQLite\r\nDevOps & Workflow: Git/GitHub, AWS, Docker, RESTful APIs, WebSocket integrations",
+    "created_at": "2025-11-04T03:04:00.478Z",
+    "updated_at": "2025-11-09T21:50:50.843Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "biasharaadmin"
+    ],
+    "category": null,
+    "profile_image": "",
+    "document": "",
+    "bio": "",
+    "company_name": "",
+    "job_title": "",
+    "country": "",
+    "phone": "",
+    "alternate_email": "",
+    "location": "",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "",
+    "facebook_url": "",
+    "years_of_experience": null,
+    "industry": "",
+    "skills": "",
+    "created_at": "2025-11-04T06:08:16.043Z",
+    "updated_at": "2025-11-15T17:47:59.868Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "pmzomo"
+    ],
+    "category": null,
+    "profile_image": "",
+    "document": "",
+    "bio": "",
+    "company_name": "",
+    "job_title": "",
+    "country": "",
+    "phone": "",
+    "alternate_email": "",
+    "location": "",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "",
+    "facebook_url": "",
+    "years_of_experience": null,
+    "industry": "",
+    "skills": "",
+    "created_at": "2025-11-04T06:08:16.055Z",
+    "updated_at": "2025-11-09T21:49:31.767Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "Fuschia"
+    ],
+    "category": 2,
+    "profile_image": "",
+    "document": "user_documents/2025/11/04/NZOMO_KENYA_POWER_Utility_bill.pdf",
+    "bio": "",
+    "company_name": "",
+    "job_title": "",
+    "country": "Kenya",
+    "phone": "+254 742316106",
+    "alternate_email": "",
+    "location": "",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "",
+    "facebook_url": "",
+    "years_of_experience": null,
+    "industry": "",
+    "skills": "",
+    "created_at": "2025-11-04T06:49:47.597Z",
+    "updated_at": "2025-11-15T17:47:27.415Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "kivuva"
+    ],
+    "category": 1,
+    "profile_image": "",
+    "document": "user_documents/2025/11/04/Wiper_2027_Digital_Playbook.pdf",
+    "bio": "",
+    "company_name": "",
+    "job_title": "",
+    "country": "Kenya",
+    "phone": "+254 71540188",
+    "alternate_email": "",
+    "location": "",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "",
+    "facebook_url": "",
+    "years_of_experience": null,
+    "industry": "",
+    "skills": "",
+    "created_at": "2025-11-04T06:57:02.349Z",
+    "updated_at": "2025-11-14T17:09:17.060Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "pmzomo3"
+    ],
+    "category": 2,
+    "profile_image": "profile_images/2025/11/05/Peter_Nzomo12.JPG",
+    "document": "user_documents/2025/11/05/biashara_platform.pdf",
+    "bio": "a software design and development business based in mombasa",
+    "company_name": "sayari web",
+    "job_title": "Developer",
+    "country": "Kenya",
+    "phone": "+254 735882954",
+    "alternate_email": "nzomopeter@yahoo.com",
+    "location": "Mombasa, kenya",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "@pmwongela2",
+    "facebook_url": "",
+    "years_of_experience": 7,
+    "industry": "technology",
+    "skills": "full stack development",
+    "created_at": "2025-11-05T17:17:24.948Z",
+    "updated_at": "2025-11-09T21:50:36.241Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "techstartup"
+    ],
+    "category": null,
+    "profile_image": "",
+    "document": "",
+    "bio": "",
+    "company_name": "",
+    "job_title": "",
+    "country": "",
+    "phone": "",
+    "alternate_email": "",
+    "location": "",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "",
+    "facebook_url": "",
+    "years_of_experience": null,
+    "industry": "",
+    "skills": "",
+    "created_at": "2025-11-09T16:35:44.907Z",
+    "updated_at": "2025-11-09T17:16:50.551Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "greeneco"
+    ],
+    "category": null,
+    "profile_image": "",
+    "document": "",
+    "bio": "",
+    "company_name": "",
+    "job_title": "",
+    "country": "",
+    "phone": "",
+    "alternate_email": "",
+    "location": "",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "",
+    "facebook_url": "",
+    "years_of_experience": null,
+    "industry": "",
+    "skills": "",
+    "created_at": "2025-11-09T16:35:45.654Z",
+    "updated_at": "2025-11-09T16:35:46.326Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "fooddelivery"
+    ],
+    "category": null,
+    "profile_image": "",
+    "document": "",
+    "bio": "",
+    "company_name": "",
+    "job_title": "",
+    "country": "",
+    "phone": "",
+    "alternate_email": "",
+    "location": "",
+    "address": "",
+    "website": "",
+    "linkedin_url": "",
+    "twitter_handle": "",
+    "facebook_url": "",
+    "years_of_experience": null,
+    "industry": "",
+    "skills": "",
+    "created_at": "2025-11-09T16:35:46.331Z",
+    "updated_at": "2025-11-09T16:35:47.031Z"
+  }
+},
+{
+  "model": "payments.wallet",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "pmzomo"
+    ],
+    "balance": "0.00",
+    "currency": "USD",
+    "is_active": true,
+    "created_at": "2025-11-06T06:53:39.089Z",
+    "updated_at": "2025-11-09T21:49:31.770Z"
+  }
+},
+{
+  "model": "payments.wallet",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "kivuva"
+    ],
+    "balance": "0.00",
+    "currency": "USD",
+    "is_active": true,
+    "created_at": "2025-11-06T11:27:24.705Z",
+    "updated_at": "2025-11-14T17:09:17.069Z"
+  }
+},
+{
+  "model": "payments.wallet",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "Fuschia"
+    ],
+    "balance": "0.00",
+    "currency": "USD",
+    "is_active": true,
+    "created_at": "2025-11-07T05:45:27.092Z",
+    "updated_at": "2025-11-15T17:47:27.418Z"
+  }
+},
+{
+  "model": "payments.wallet",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "pmzomo2"
+    ],
+    "balance": "0.00",
+    "currency": "USD",
+    "is_active": true,
+    "created_at": "2025-11-07T05:46:20.527Z",
+    "updated_at": "2025-11-09T21:50:50.849Z"
+  }
+},
+{
+  "model": "payments.wallet",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "techstartup"
+    ],
+    "balance": "0.00",
+    "currency": "USD",
+    "is_active": true,
+    "created_at": "2025-11-09T16:35:44.930Z",
+    "updated_at": "2025-11-09T17:16:50.554Z"
+  }
+},
+{
+  "model": "payments.wallet",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "greeneco"
+    ],
+    "balance": "0.00",
+    "currency": "USD",
+    "is_active": true,
+    "created_at": "2025-11-09T16:35:45.655Z",
+    "updated_at": "2025-11-09T16:35:46.327Z"
+  }
+},
+{
+  "model": "payments.wallet",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "fooddelivery"
+    ],
+    "balance": "0.00",
+    "currency": "USD",
+    "is_active": true,
+    "created_at": "2025-11-09T16:35:46.332Z",
+    "updated_at": "2025-11-09T16:35:47.032Z"
+  }
+},
+{
+  "model": "marketplace.businessprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "techstartup"
+    ],
+    "company_name": "TechVenture Inc",
+    "industry": "Technology",
+    "company_size": "1-10",
+    "founded_date": "2020-01-01",
+    "investment_seeking": "500000.00",
+    "equity_offered": "15.00",
+    "funding_stage": "seed",
+    "annual_revenue": "100000.00",
+    "business_plan": "",
+    "pitch_deck": "",
+    "financial_statements": "",
+    "profile_views": 5,
+    "created_at": "2025-11-09T16:35:45.648Z",
+    "updated_at": "2025-11-09T16:35:45.648Z"
+  }
+},
+{
+  "model": "marketplace.businessprofile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "greeneco"
+    ],
+    "company_name": "GreenEco Solutions",
+    "industry": "Renewable Energy",
+    "company_size": "11-50",
+    "founded_date": "2020-01-01",
+    "investment_seeking": "2000000.00",
+    "equity_offered": "20.00",
+    "funding_stage": "series_a",
+    "annual_revenue": "500000.00",
+    "business_plan": "",
+    "pitch_deck": "",
+    "financial_statements": "",
+    "profile_views": 3,
+    "created_at": "2025-11-09T16:35:46.329Z",
+    "updated_at": "2025-11-09T16:35:46.329Z"
+  }
+},
+{
+  "model": "marketplace.businessprofile",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "fooddelivery"
+    ],
+    "company_name": "QuickBite Delivery",
+    "industry": "Food & Beverage",
+    "company_size": "51-200",
+    "founded_date": "2020-01-01",
+    "investment_seeking": "5000000.00",
+    "equity_offered": "10.00",
+    "funding_stage": "series_b",
+    "annual_revenue": "2000000.00",
+    "business_plan": "",
+    "pitch_deck": "",
+    "financial_statements": "",
+    "profile_views": 2,
+    "created_at": "2025-11-09T16:35:47.034Z",
+    "updated_at": "2025-11-09T16:35:47.034Z"
+  }
+},
+{
+  "model": "marketplace.investmentopportunity",
+  "pk": 1,
+  "fields": {
+    "business": [
+      "techstartup"
+    ],
+    "title": "Seed Funding for AI Analytics Platform",
+    "slug": "seed-funding-for-ai-analytics-platform",
+    "description": "Building AI-powered analytics platform for businesses.",
+    "amount_seeking": "500000.00",
+    "minimum_investment": "25000.00",
+    "equity_percentage": "15.00",
+    "investment_type": "equity",
+    "industry": "Technology",
+    "stage": "seed",
+    "status": "open",
+    "deadline": "2026-02-07",
+    "views": 0,
+    "saves": 0,
+    "created_at": "2025-11-09T16:35:47.046Z",
+    "updated_at": "2025-11-09T16:35:47.046Z"
+  }
+},
+{
+  "model": "marketplace.investmentopportunity",
+  "pk": 2,
+  "fields": {
+    "business": [
+      "greeneco"
+    ],
+    "title": "Solar Energy Expansion Investment",
+    "slug": "solar-energy-expansion-investment",
+    "description": "Revolutionizing renewable energy access in East Africa.",
+    "amount_seeking": "2000000.00",
+    "minimum_investment": "100000.00",
+    "equity_percentage": "20.00",
+    "investment_type": "equity",
+    "industry": "Renewable Energy",
+    "stage": "series_a",
+    "status": "open",
+    "deadline": "2026-02-07",
+    "views": 4,
+    "saves": 0,
+    "created_at": "2025-11-09T16:35:47.050Z",
+    "updated_at": "2025-11-09T16:35:47.050Z"
+  }
+},
+{
+  "model": "marketplace.jobopportunity",
+  "pk": 1,
+  "fields": {
+    "business": [
+      "techstartup"
+    ],
+    "title": "Senior Full Stack Developer",
+    "slug": "senior-full-stack-developer",
+    "description": "Join our tech startup as Senior Full Stack Developer.",
+    "requirements": "Python, React, 5+ years experience",
+    "responsibilities": "Lead development team, architect solutions",
+    "job_type": "full_time",
+    "experience_level": "senior",
+    "location": "Nairobi, Kenya",
+    "remote_option": true,
+    "salary_min": "80000.00",
+    "salary_max": "120000.00",
+    "salary_currency": "USD",
+    "status": "open",
+    "posted_date": "2025-11-09T16:35:47.058Z",
+    "deadline": "2026-01-08",
+    "views": 1,
+    "applications_count": 0,
+    "saves": 0,
+    "created_at": "2025-11-09T16:35:47.058Z",
+    "updated_at": "2025-11-09T16:35:47.058Z"
+  }
+},
+{
+  "model": "marketplace.jobopportunity",
+  "pk": 2,
+  "fields": {
+    "business": [
+      "greeneco"
+    ],
+    "title": "Solar Energy Engineer",
+    "slug": "solar-energy-engineer",
+    "description": "Experienced Solar Energy Engineer needed.",
+    "requirements": "Engineering degree, 3+ years solar experience",
+    "responsibilities": "Design solar systems, manage installations",
+    "job_type": "full_time",
+    "experience_level": "mid",
+    "location": "Kigali, Rwanda",
+    "remote_option": false,
+    "salary_min": "50000.00",
+    "salary_max": "70000.00",
+    "salary_currency": "USD",
+    "status": "open",
+    "posted_date": "2025-11-09T16:35:47.062Z",
+    "deadline": "2026-01-08",
+    "views": 4,
+    "applications_count": 0,
+    "saves": 0,
+    "created_at": "2025-11-09T16:35:47.062Z",
+    "updated_at": "2025-11-09T16:35:47.062Z"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2025-11-04T02:40:24.372Z",
+    "user": [
+      "biasharaadmin"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "2",
+    "object_repr": "pmzomo",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"User permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2025-11-04T02:42:29.550Z",
+    "user": [
+      "biasharaadmin"
+    ],
+    "content_type": [
+      "accounts",
+      "staff"
+    ],
+    "object_id": "1",
+    "object_repr": "Peter nzomo - User Manager",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+}
+]

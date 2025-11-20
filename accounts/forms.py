@@ -309,6 +309,37 @@ class UserRegistrationForm(UserCreationForm):
                 raise forms.ValidationError('This email address is already registered.')
         return email
 
+    def clean_document(self):
+        """
+        Validate uploaded document file size and type.
+        """
+        import mimetypes
+        document = self.cleaned_data.get('document')
+
+        if document:
+            # Check file size (5MB limit)
+            max_size = 5 * 1024 * 1024  # 5MB in bytes
+            if document.size > max_size:
+                raise forms.ValidationError('File size must not exceed 5MB.')
+
+            # Check file extension
+            allowed_extensions = ['.pdf', '.doc', '.docx']
+            file_name = document.name.lower()
+            if not any(file_name.endswith(ext) for ext in allowed_extensions):
+                raise forms.ValidationError('Only PDF, DOC, and DOCX files are allowed.')
+
+            # Check MIME type
+            mime_type, _ = mimetypes.guess_type(document.name)
+            allowed_mimes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ]
+            if mime_type not in allowed_mimes:
+                raise forms.ValidationError('Invalid file type. Please upload a valid document.')
+
+        return document
+
     def save(self, commit=True):
         """
         Save the user with the email field and profile information.
@@ -446,6 +477,64 @@ class ProfileEditForm(forms.ModelForm):
             self.fields['first_name'].initial = self.user.first_name
             self.fields['last_name'].initial = self.user.last_name
             self.fields['email'].initial = self.user.email
+
+    def clean_profile_image(self):
+        """
+        Validate uploaded profile image size and type.
+        """
+        import mimetypes
+        image = self.cleaned_data.get('profile_image')
+
+        if image:
+            # Check file size (2MB limit for images)
+            max_size = 2 * 1024 * 1024  # 2MB in bytes
+            if image.size > max_size:
+                raise forms.ValidationError('Image size must not exceed 2MB.')
+
+            # Check file extension
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+            file_name = image.name.lower()
+            if not any(file_name.endswith(ext) for ext in allowed_extensions):
+                raise forms.ValidationError('Only JPG, PNG, and GIF images are allowed.')
+
+            # Check MIME type
+            mime_type, _ = mimetypes.guess_type(image.name)
+            allowed_mimes = ['image/jpeg', 'image/png', 'image/gif']
+            if mime_type not in allowed_mimes:
+                raise forms.ValidationError('Invalid image type. Please upload a valid image.')
+
+        return image
+
+    def clean_document(self):
+        """
+        Validate uploaded document file size and type.
+        """
+        import mimetypes
+        document = self.cleaned_data.get('document')
+
+        if document:
+            # Check file size (5MB limit)
+            max_size = 5 * 1024 * 1024  # 5MB in bytes
+            if document.size > max_size:
+                raise forms.ValidationError('File size must not exceed 5MB.')
+
+            # Check file extension
+            allowed_extensions = ['.pdf', '.doc', '.docx']
+            file_name = document.name.lower()
+            if not any(file_name.endswith(ext) for ext in allowed_extensions):
+                raise forms.ValidationError('Only PDF, DOC, and DOCX files are allowed.')
+
+            # Check MIME type
+            mime_type, _ = mimetypes.guess_type(document.name)
+            allowed_mimes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ]
+            if mime_type not in allowed_mimes:
+                raise forms.ValidationError('Invalid file type. Please upload a valid document.')
+
+        return document
 
     def save(self, commit=True):
         profile = super(ProfileEditForm, self).save(commit=False)

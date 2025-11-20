@@ -4,14 +4,18 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 from .forms import UserRegistrationForm, ProfileEditForm
 from .models import UserProfile, Staff, Role, Category
 from django.db.models import Count
 
 
+@ratelimit(key='ip', rate='5/h', method='POST')
 def register(request):
     """
     User registration view with file upload support.
+    Rate limited to 5 registration attempts per hour per IP.
     """
     if request.user.is_authenticated:
         return redirect('home')
@@ -122,9 +126,11 @@ def individual_dashboard(request):
     return render(request, 'accounts/dashboards/individual.html', context)
 
 
+@method_decorator(ratelimit(key='ip', rate='10/h', method='POST'), name='dispatch')
 class CustomLoginView(LoginView):
     """
     Custom login view that redirects users to their category-specific dashboard.
+    Rate limited to 10 login attempts per hour per IP.
     """
     template_name = 'registration/login.html'
 

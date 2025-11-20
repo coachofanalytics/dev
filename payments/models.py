@@ -20,13 +20,6 @@ class Wallet(models.Model):
         verbose_name = 'Wallet'
         verbose_name_plural = 'Wallets'
 
-
-    def get_features_list(self):
-        """Return features as a list for template compatibility"""
-        if isinstance(self.features, list):
-            return self.features
-        return []
-
     def __str__(self):
         return f"{self.user.username}'s Wallet - ${self.balance}"
 
@@ -185,6 +178,7 @@ class Transaction(models.Model):
     gateway_transaction_id = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     metadata = models.JSONField(default=dict, blank=True, help_text="Store gateway response, fees, and other details")
+    retry_count = models.IntegerField(default=0, help_text="Number of retry attempts for failed transactions")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

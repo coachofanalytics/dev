@@ -9,10 +9,18 @@ gunicorn
 python-dotenv
 whitenoise
 dj-database-url
+django-ratelimit
 # Payment Gateway Dependencies
 stripe==13.1.2
 paypalrestsdk==1.13.3
 cryptography==46.0.3
 requests==2.32.5
+
+# Task Queue
+celery==5.4.0
+redis==5.0.1
+
+# PDF Generation
+reportlab==4.0.7
 
 
