@@ -180,19 +180,40 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark enterprise-navbar">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand" href="{% url 'home' %}" style="{% if user.is_authenticated %}margin-left: 50px;{% endif %}">
                 <img src="https://biasharabridges.com/wp-content/uploads/2025/09/Biasharabridgeslogo3.png" alt="Biashara Bridges" height="40" class="d-inline-block align-text-top">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if not user.is_authenticated %}
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        <a class="nav-link" href="https://biasharabridges.com/" target="_blank">Home</a>
                     </li>
-                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://biasharabridges.com/about/" target="_blank">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://biasharabridges.com/projects/" target="_blank">Projects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://biasharabridges.com/services/" target="_blank">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://biasharabridges.com/partners/" target="_blank">Partners</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://biasharabridges.com/gallery/" target="_blank">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://biasharabridges.com/news/" target="_blank">News</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://biasharabridges.com/contact/" target="_blank">Contact</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item">
                         {% if user.is_superuser %}
