@@ -1,11 +1,13 @@
-/* Enterprise Header Styling */
+/* Enterprise Header Styling - Gold & Blue Theme */
 
 :root {
-    --header-gradient-start: #667eea;
-    --header-gradient-end: #764ba2;
-    --header-shadow: rgba(102, 126, 234, 0.1);
-    --text-primary: #2d3748;
-    --text-secondary: #718096;
+    --header-gradient-start: #111518;
+    --header-gradient-end: #2a2e33;
+    --gold-primary: #b49044;
+    --gold-bright: #f7b500;
+    --header-shadow: rgba(180, 144, 68, 0.15);
+    --text-primary: #111518;
+    --text-secondary: #687279;
 }
 
 /* Main Navigation */
@@ -17,35 +19,38 @@
     top: 0;
     z-index: 1030;
     backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--gold-primary);
 }
 
 /* Brand Styling */
 .navbar-brand {
     font-size: 1.5rem;
     font-weight: 700;
-    color: white !important;
+    color: var(--gold-bright) !important;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     transition: all 0.3s ease;
+    font-family: 'Yeseva One', serif;
 }
 
 .navbar-brand:hover {
     transform: translateY(-2px);
-    color: white !important;
+    color: var(--gold-primary) !important;
 }
 
 .brand-icon {
     width: 40px;
     height: 40px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(180, 144, 68, 0.2);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(180, 144, 68, 0.5);
+    color: var(--gold-bright);
 }
 
 .brand-text {
@@ -57,17 +62,19 @@
 .brand-title {
     font-size: 1.25rem;
     font-weight: 700;
+    color: var(--gold-bright);
 }
 
 .brand-subtitle {
     font-size: 0.75rem;
     opacity: 0.9;
     font-weight: 400;
+    color: var(--gold-primary);
 }
 
 /* Navigation Links */
 .enterprise-navbar .nav-link {
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: rgba(237, 239, 242, 0.9) !important;
     font-weight: 500;
     font-size: 0.95rem;
     padding: 0.6rem 1.25rem !important;
@@ -79,8 +86,8 @@
 }
 
 .enterprise-navbar .nav-link:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: white !important;
+    background: rgba(180, 144, 68, 0.2);
+    color: var(--gold-bright) !important;
     transform: translateY(-2px);
 }
 
@@ -90,11 +97,11 @@
 
 /* User Dropdown */
 .user-dropdown-toggle {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    background: rgba(180, 144, 68, 0.2) !important;
+    border: 1px solid rgba(180, 144, 68, 0.5) !important;
     border-radius: 50px !important;
     padding: 0.5rem 1.25rem !important;
-    color: white !important;
+    color: var(--gold-bright) !important;
     font-weight: 500;
     transition: all 0.3s ease;
     display: flex;
@@ -103,9 +110,9 @@
 }
 
 .user-dropdown-toggle:hover {
-    background: rgba(255, 255, 255, 0.25) !important;
+    background: rgba(247, 181, 0, 0.3) !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(180, 144, 68, 0.3);
 }
 
 .user-dropdown-toggle::after {
@@ -116,14 +123,14 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-bright) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1rem;
-    color: white;
+    color: var(--text-primary);
     font-weight: 600;
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    border: 2px solid var(--gold-bright);
 }
 
 .user-info {
@@ -136,11 +143,13 @@
 .user-name {
     font-size: 0.9rem;
     font-weight: 600;
+    color: var(--gold-bright);
 }
 
 .user-role {
     font-size: 0.75rem;
     opacity: 0.9;
+    color: var(--gold-primary);
 }
 
 /* User Badge */
@@ -151,6 +160,8 @@
     border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    background: var(--gold-primary);
+    color: var(--text-primary);
 }
 
 /* Dropdown Menu */
@@ -161,6 +172,7 @@
     padding: 0.5rem;
     margin-top: 0.5rem;
     min-width: 260px;
+    background: #ffffff;
 }
 
 .enterprise-dropdown-menu .dropdown-item {
@@ -181,13 +193,13 @@
 }
 
 .enterprise-dropdown-menu .dropdown-item:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    color: var(--header-gradient-start);
+    background: linear-gradient(135deg, rgba(180, 144, 68, 0.1) 0%, rgba(247, 181, 0, 0.1) 100%);
+    color: var(--gold-primary);
     transform: translateX(4px);
 }
 
 .enterprise-dropdown-menu .dropdown-item:hover i {
-    color: var(--header-gradient-start);
+    color: var(--gold-primary);
 }
 
 .enterprise-dropdown-menu .dropdown-divider {
@@ -197,8 +209,8 @@
 
 /* Dashboard Quick Access */
 .dashboard-link {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    border-left: 3px solid var(--header-gradient-start);
+    background: linear-gradient(135deg, rgba(180, 144, 68, 0.1) 0%, rgba(247, 181, 0, 0.1) 100%);
+    border-left: 3px solid var(--gold-primary);
 }
 
 /* Logout Button */
@@ -217,9 +229,9 @@
 
 /* Auth Buttons (Login/Register) */
 .btn-auth-login {
-    color: white !important;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--gold-bright) !important;
+    background: rgba(180, 144, 68, 0.2);
+    border: 1px solid rgba(180, 144, 68, 0.5);
     padding: 0.5rem 1.25rem;
     border-radius: 8px;
     font-weight: 500;
@@ -227,24 +239,26 @@
 }
 
 .btn-auth-login:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(247, 181, 0, 0.3);
     transform: translateY(-2px);
+    border-color: var(--gold-bright);
 }
 
 .btn-auth-register {
-    background: white !important;
-    color: var(--header-gradient-start) !important;
+    background: var(--gold-primary) !important;
+    color: var(--text-primary) !important;
     padding: 0.5rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
     border: none;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(180, 144, 68, 0.3);
 }
 
 .btn-auth-register:hover {
+    background: var(--gold-bright) !important;
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(247, 181, 0, 0.4);
 }
 
 /* Mobile Responsive */
@@ -252,29 +266,29 @@
     .brand-subtitle {
         display: none;
     }
-    
+
     .brand-title {
         font-size: 1.1rem;
     }
-    
+
     .user-info {
         display: none;
     }
-    
+
     .enterprise-navbar .navbar-collapse {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(180, 144, 68, 0.1);
         backdrop-filter: blur(10px);
         margin-top: 1rem;
         padding: 1rem;
         border-radius: 12px;
     }
-    
+
     .user-dropdown-toggle {
         justify-content: center;
         width: 100%;
         margin-top: 0.5rem;
     }
-    
+
     .btn-auth-register {
         width: 100%;
         margin-top: 0.5rem;
@@ -283,17 +297,17 @@
 
 /* Navbar Toggler */
 .navbar-toggler {
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(180, 144, 68, 0.5);
     border-radius: 8px;
     padding: 0.5rem 0.75rem;
 }
 
 .navbar-toggler:focus {
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(180, 144, 68, 0.25);
 }
 
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(247, 181, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 /* Notification Badge */
@@ -325,4 +339,25 @@
 
 .enterprise-navbar {
     animation: fadeIn 0.5s ease;
+}
+
+/* Sidebar styling with gold theme */
+.sidebar {
+    background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+    border-right: 2px solid var(--gold-primary);
+}
+
+.sidebar-menu-link {
+    color: rgba(237, 239, 242, 0.9);
+}
+
+.sidebar-menu-link:hover {
+    background: rgba(180, 144, 68, 0.2);
+    color: var(--gold-bright);
+}
+
+.sidebar-menu-link.active {
+    background: rgba(180, 144, 68, 0.3);
+    color: var(--gold-bright);
+    border-left: 3px solid var(--gold-bright);
 }
