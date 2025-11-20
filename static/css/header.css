@@ -12,21 +12,21 @@
 
 /* Main Navigation */
 .enterprise-navbar {
-    background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
-    box-shadow: 0 4px 20px var(--header-shadow);
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 0.75rem 0;
     position: sticky;
     top: 0;
     z-index: 1030;
     backdrop-filter: blur(10px);
-    border-bottom: 2px solid var(--gold-primary);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Brand Styling */
 .navbar-brand {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--gold-bright) !important;
+    color: var(--gold-primary) !important;
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -38,21 +38,21 @@
 
 .navbar-brand:hover {
     transform: translateY(-2px);
-    color: var(--gold-primary) !important;
+    color: var(--gold-bright) !important;
 }
 
 .brand-icon {
     width: 40px;
     height: 40px;
-    background: rgba(180, 144, 68, 0.2);
+    background: rgba(180, 144, 68, 0.1);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(180, 144, 68, 0.5);
-    color: var(--gold-bright);
+    border: 2px solid var(--gold-primary);
+    color: var(--gold-primary);
 }
 
 .brand-text {
@@ -64,19 +64,19 @@
 .brand-title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--gold-bright);
+    color: var(--gold-primary);
 }
 
 .brand-subtitle {
     font-size: 0.75rem;
-    opacity: 0.9;
+    opacity: 0.8;
     font-weight: 400;
-    color: var(--gold-primary);
+    color: var(--text-secondary);
 }
 
 /* Navigation Links */
 .enterprise-navbar .nav-link {
-    color: rgba(237, 239, 242, 0.9) !important;
+    color: var(--text-primary) !important;
     font-weight: 500;
     font-size: 0.95rem;
     padding: 0.6rem 1.25rem !important;
@@ -88,8 +88,8 @@
 }
 
 .enterprise-navbar .nav-link:hover {
-    background: rgba(180, 144, 68, 0.2);
-    color: var(--gold-bright) !important;
+    background: rgba(180, 144, 68, 0.15);
+    color: var(--gold-primary) !important;
     transform: translateY(-2px);
 }
 
@@ -99,11 +99,11 @@
 
 /* User Dropdown */
 .user-dropdown-toggle {
-    background: rgba(180, 144, 68, 0.2) !important;
-    border: 1px solid rgba(180, 144, 68, 0.5) !important;
+    background: rgba(180, 144, 68, 0.1) !important;
+    border: 1px solid rgba(180, 144, 68, 0.3) !important;
     border-radius: 50px !important;
     padding: 0.5rem 1.25rem !important;
-    color: var(--gold-bright) !important;
+    color: var(--text-primary) !important;
     font-weight: 500;
     transition: all 0.3s ease;
     display: flex;
@@ -112,9 +112,9 @@
 }
 
 .user-dropdown-toggle:hover {
-    background: rgba(247, 181, 0, 0.3) !important;
+    background: rgba(180, 144, 68, 0.2) !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(180, 144, 68, 0.3);
+    box-shadow: 0 2px 8px rgba(180, 144, 68, 0.2);
 }
 
 .user-dropdown-toggle::after {
@@ -145,13 +145,13 @@
 .user-name {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--gold-bright);
+    color: var(--text-primary);
 }
 
 .user-role {
     font-size: 0.75rem;
-    opacity: 0.9;
-    color: var(--gold-primary);
+    opacity: 0.7;
+    color: var(--text-secondary);
 }
 
 /* User Badge */
@@ -309,7 +309,7 @@
 }
 
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(247, 181, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(180, 144, 68, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 /* Notification Badge */
