@@ -18,18 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import TemplateView
+from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 from accounts import views as accounts_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('', RedirectView.as_view(pattern_name='login', permanent=False), name='home'),
 
     # Authentication URLs
     path('register/', accounts_views.register, name='register'),
     path('login/', accounts_views.CustomLoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
 
     # Profile and Dashboard URLs
     path('profile/', accounts_views.profile, name='profile'),
