@@ -95,9 +95,7 @@ git commit -m "Major upgrade: bug fixes, security, Celery, auto-renewals
 - Created transaction and subscription services
 - Added custom exceptions for better error handling
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
