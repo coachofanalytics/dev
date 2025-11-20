@@ -32,6 +32,8 @@
     gap: 0.75rem;
     transition: all 0.3s ease;
     font-family: 'Yeseva One', serif;
+    position: relative;
+    z-index: 1050;
 }
 
 .navbar-brand:hover {
@@ -352,10 +354,12 @@
 }
 
 .sidebar-menu-link:hover {
-    background: rgba(247, 181, 0, 0.25);
+    background: linear-gradient(90deg, rgba(247, 181, 0, 0.3) 0%, rgba(180, 144, 68, 0.25) 100%);
     color: var(--gold-bright);
+    border-left: 3px solid var(--gold-bright);
     transform: translateX(4px);
     transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(247, 181, 0, 0.2);
 }
 
 .sidebar-menu-link.active {
