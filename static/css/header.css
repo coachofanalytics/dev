@@ -341,9 +341,9 @@
     animation: fadeIn 0.5s ease;
 }
 
-/* Sidebar styling with gold theme */
+/* Sidebar styling with blue gradient theme */
 .sidebar {
-    background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
     border-right: 2px solid var(--gold-primary);
 }
 
