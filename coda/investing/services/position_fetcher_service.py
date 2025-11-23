@@ -21,7 +21,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from typing import List, Dict, Optional
 
-from accounts.services.credential_store import credential_store
+from shared_core.services.credential_store import credential_store
 from ..models import SuggestedPosition, OptionPlayRawData
 from .optionplay_scraper import OptionPlayScraperService  # NEW: Web scraper
 from .optionplay_converter import OptionPlayConverterService  # NEW: CSV converter

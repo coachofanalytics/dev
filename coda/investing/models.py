@@ -5,9 +5,20 @@ from decimal import *
 from django.utils import timezone
 from datetime import datetime, date, timedelta
 from django.urls import reverse
-from main.models import TimeStampedModel, ContractBase, DocumentMixin, StatusMixin
+from shared_core.models import TimeStampedModel, ContractBase, DocumentMixin, StatusMixin
 from django.contrib.auth import get_user_model
-from ai_services.services.token_encryption_service import TokenEncryptionService
+# Optional import for lightweight branches
+try:
+    from ai_services.services.token_encryption_service import TokenEncryptionService
+except ImportError:
+    # Stub for lightweight branches where ai_services is removed
+    class TokenEncryptionService:
+        @staticmethod
+        def encrypt_token(token):
+            return token
+        @staticmethod
+        def decrypt_token(encrypted_token):
+            return encrypted_token
 
 # Import shared constants (Single Source of Truth) - Added Nov 5, 2025
 # Constants import - COMMENTED OUT temporarily (Nov 5, 2025)
