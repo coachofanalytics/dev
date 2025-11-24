@@ -4232,3 +4232,4 @@ class OptionsPositionHistory(TimeStampedModel):
                 self.performance_category = 'loss'
         
         super().save(*args, **kwargs)
+# TEST CHANGE: Added on 2025-11-23 to test merge conflicts with shared_core
