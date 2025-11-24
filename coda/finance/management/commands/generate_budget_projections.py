@@ -20,7 +20,7 @@ from finance.models import (
     BudgetSubCategory, BudgetEstimateProjection,
     Company
 )
-from accounts.models import Department
+from shared_core.users import Department
 
 
 class Command(BaseCommand):

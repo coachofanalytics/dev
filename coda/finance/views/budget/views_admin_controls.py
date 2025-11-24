@@ -27,7 +27,7 @@ import json
 import logging
 
 from finance.services.admin_controls_service import AdminControlsService
-from accounts.models import Department
+from shared_core.users import Department
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

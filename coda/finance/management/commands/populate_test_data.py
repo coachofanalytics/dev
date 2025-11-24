@@ -16,8 +16,8 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 import random
 
-from main.models import Companyas
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 from finance.models import (
     Budget, BudgetCategory, BudgetSubCategory, Transaction,
     BudgetEstimationTemplate, MultiYearBudgetPlan

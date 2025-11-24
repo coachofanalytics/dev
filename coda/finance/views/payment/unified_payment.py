@@ -8,7 +8,7 @@ from django.urls import reverse
 import logging
 
 from finance.models import Payment_Information, Payment_History
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from finance.utils import validate_amount, save_payment_history, validate_user_payment_eligibility
 from core.utils import generate_and_send_otp
 from .payment_details import show_payment_details

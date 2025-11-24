@@ -17,6 +17,7 @@ from main.models import (
     DocumentMixin,
     StatusMixin,
     UserReferenceMixin,
+    Company,
 )
 
 __all__ = [
@@ -25,5 +26,6 @@ __all__ = [
     'DocumentMixin',
     'StatusMixin',
     'UserReferenceMixin',
+    'Company',
 ]
 

@@ -20,7 +20,7 @@ class KCCOptimizationAnalytics:
         """Generate comprehensive KCC optimization report"""
         try:
             from finance.models import LoanApplication
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             # Get KCC members
             kcc_members = CustomerUser.objects.filter(

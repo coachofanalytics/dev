@@ -5,7 +5,15 @@ from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-from professional_services.models import ActivityLinks, FeaturedActivity, FeaturedCategory, FeaturedSubCategory
+# Optional import for lightweight branches
+try:
+    from professional_services.models import ActivityLinks, FeaturedActivity, FeaturedCategory, FeaturedSubCategory
+except ImportError:
+    # Stub classes for lightweight branches where professional_services is removed
+    ActivityLinks = None
+    FeaturedActivity = None
+    FeaturedCategory = None
+    FeaturedSubCategory = None
 from .utils import unique_slug_generator,slug_pre_save_receiver
 from django.urls import reverse
 from django.utils import timezone
@@ -527,29 +535,30 @@ class ClientAvailability(models.Model):
     time_zone = models.CharField(max_length=4,null=True, choices=TIME_ZONE_CHOICES,default='CST')
     
     # Foreign Keys to link availability with category, subcategory, task, and links
+    # Using string references for compatibility with lightweight branches where professional_services may be removed
     category = models.ForeignKey(
-        FeaturedCategory, 
+        'professional_services.FeaturedCategory', 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 
         related_name="Categories"
     )
     subcategory = models.ForeignKey(
-        FeaturedSubCategory, 
+        'professional_services.FeaturedSubCategory', 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 
         related_name="subcategory"
     )
     task = models.ForeignKey(
-        FeaturedActivity, 
+        'professional_services.FeaturedActivity', 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 
         related_name="task"
     )
     activity_links = models.ForeignKey(
-        ActivityLinks, 
+        'professional_services.ActivityLinks', 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 

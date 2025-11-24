@@ -201,7 +201,7 @@ def api_suggest_category(request):
     # Pattern 2: Department + Amount
     if department_id and amount:
         try:
-            from accounts.models import Department
+            from shared_core.users import Department
             dept = Department.objects.get(id=department_id)
             
             if dept.name == 'HR Department' and 1000 <= amount <= 50000:
