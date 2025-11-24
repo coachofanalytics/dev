@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import datetime,date
-from main.models import TimeStampedModel
+from shared_core.models import TimeStampedModel
+# AI Services app migrated to use shared_core - 25.11_AI_SERVICES_DEV_CM test change
 from management.models import Requirement
 from professional_services.models import Prep_Questions,JobRole
 from django.utils.translation import gettext_lazy as _

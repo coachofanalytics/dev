@@ -15,7 +15,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from ai_services.models import GotoMeetings, Meeting, MeetingAttendee
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 import logging
 
 logger = logging.getLogger(__name__)

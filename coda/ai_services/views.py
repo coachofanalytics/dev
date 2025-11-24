@@ -42,8 +42,8 @@ from django.urls import path, reverse
 from django.contrib.auth.decorators import login_required
 from django.views.generic import (ListView,DetailView,CreateView,DetailView)
 from main.utils import (App_Categories,Automation,Stocks,General,
-						all_applications,generate_chatbot_response,
-						openai_user_message)
+						all_applications,openai_user_message)
+from shared_core.utils import generate_chatbot_response
 from finance.utils import update_link
 from ai_services.forms import OpenaiForm,UseCaseForm
 from ai_services.utils import (
