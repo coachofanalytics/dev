@@ -29,7 +29,8 @@ from professional_services.forms import (
     PrepQuestionsForm,TrainingResponseForm,
     InterviewForm, DSUForm ,RoleForm,UserAnswerForm
 )
-from main.utils import (generate_chatbot_response, data_interview,openai_user_message,
+from shared_core.utils import generate_chatbot_response
+from main.utils import (data_interview,openai_user_message,
                     path_values,job_support,split_sentences,
                     today_date
                     )
