@@ -14,7 +14,9 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 # importing modules
 from management.models import Task, TaskHistory,Advertisement,TaskLinks
-from accounts.models import CustomerUser, TaskGroups
+from shared_core.users import CustomerUser
+# Infrastructure migrated to use shared_core - 25.11_INFRASTRUCTURE_DEV_CM test change
+from accounts.models import TaskGroups
 from finance.models import LoanApplication,PayslipConfig
 from ai_services.models import ReplyMail, GotoMeetings
 from management.utils import employee_group_level, increment_in_graduation_of_employee
