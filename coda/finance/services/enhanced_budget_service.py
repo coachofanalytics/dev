@@ -23,7 +23,7 @@ from finance.services.email_service import EmailService
 
 # Import models
 from finance.models import BudgetEstimateProjection, BudgetRequest, BudgetCategory, BudgetSubCategory
-from accounts.models import CustomerUser, Department
+from shared_core.users import CustomerUser, Department
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

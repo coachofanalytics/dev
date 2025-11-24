@@ -12,8 +12,8 @@ from finance.models import (
     LoanApplication,
     Payment_Information,
 )
-from main.models import Company
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)

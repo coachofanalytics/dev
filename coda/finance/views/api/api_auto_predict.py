@@ -22,7 +22,7 @@ from collections import Counter
 import logging
 
 from finance.models import Transaction, BudgetCategory, BudgetSubCategory
-from accounts.models import Department
+from shared_core.users import Department
 from finance.services.hybrid_ai_service import HybridAIPredictionService
 
 logger = logging.getLogger(__name__)

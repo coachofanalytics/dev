@@ -8,7 +8,7 @@ This provides:
 - ReturnsFilter: Filter for returns/performance data
 - CredentialFilter: Filter for credentials
 """
-from main.filters import ReturnsFilter, CredentialFilter
+from main.filters import ReturnsFilter, CredentialFilter, FoodFilter
 
-__all__ = ['ReturnsFilter', 'CredentialFilter']
+__all__ = ['ReturnsFilter', 'CredentialFilter', 'FoodFilter']
 

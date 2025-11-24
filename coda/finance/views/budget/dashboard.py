@@ -15,8 +15,8 @@ from decimal import Decimal
 import json
 import logging
 
-from main.models import Company
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 from ..core.base import BaseFinanceView, login_required_finance, company_required, json_response, error_json_response
 from ...models import Budget, BudgetCategory, BudgetSubCategory, BudgetEstimateProjection
 from ...services.budget.estimation import BudgetEstimationService
@@ -287,7 +287,7 @@ class BudgetDashboardView(BaseFinanceView):
         """Get data for Approvals tab."""
         try:
             from ...models import BudgetRequest
-            from accounts.models import Department
+            from shared_core.users import Department
             
             # Ensure department is a Department instance, not a string or company
             if department:
@@ -307,7 +307,7 @@ class BudgetDashboardView(BaseFinanceView):
             # Build filter - ensure company is a Company instance
             if not hasattr(company, 'id'):
                 # If company is a string (slug), get the Company object
-                from main.models import Company
+                from shared_core.models import Company
                 try:
                     company = Company.objects.get(slug=company)
                 except Company.DoesNotExist:

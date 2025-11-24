@@ -10,7 +10,7 @@ from decimal import Decimal
 from django.db.models import Q, Sum, Count, Avg
 from datetime import datetime, timedelta
 from finance.models import LoanApplication, Payment
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 
 class CreditScoringService:

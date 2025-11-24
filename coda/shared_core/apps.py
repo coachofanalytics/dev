@@ -15,3 +15,4 @@ class SharedCoreConfig(AppConfig):
         """App is ready"""
         pass
 
+

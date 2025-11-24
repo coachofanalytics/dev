@@ -222,7 +222,7 @@ def individual_compliance_detail(request, employee_id):
         messages.error(request, "You don't have permission to access this page.")
         return redirect('dashboard:unified_dashboard')
     
-    from accounts.models import CustomerUser
+    from shared_core.users import CustomerUser
     
     try:
         employee = get_object_or_404(CustomerUser, id=employee_id)
@@ -270,7 +270,7 @@ def department_compliance_detail(request, department_id):
         messages.error(request, "You don't have permission to access this page.")
         return redirect('dashboard:unified_dashboard')
     
-    from accounts.models import Department
+    from shared_core.users import Department
     
     try:
         department = get_object_or_404(Department, id=department_id)

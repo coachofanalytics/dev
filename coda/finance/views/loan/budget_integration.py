@@ -27,7 +27,7 @@ def loan_eligibility_check(request, company_slug):
     """
     Check loan eligibility based on budget availability
     """
-    from main.models import Company
+    from shared_core.models import Company
     company = get_object_or_404(Company, slug=company_slug)
     user_department = getattr(request.user, 'department', None)
     
@@ -75,7 +75,7 @@ def loan_application_with_budget(request, company_slug):
     """
     Enhanced loan application that considers budget constraints
     """
-    from main.models import Company
+    from shared_core.models import Company
     company = get_object_or_404(Company, slug=company_slug)
     user_department = getattr(request.user, 'department', None)
     
@@ -163,7 +163,7 @@ def loan_budget_dashboard(request, company_slug):
     """
     Dashboard showing loan-budget integration status
     """
-    from main.models import Company
+    from shared_core.models import Company
     company = get_object_or_404(Company, slug=company_slug)
     user_department = getattr(request.user, 'department', None)
     
@@ -239,7 +239,7 @@ def budget_loan_impact_analysis(request, company_slug):
     """
     Analyze the impact of loans on budget categories
     """
-    from main.models import Company
+    from shared_core.models import Company
     company = get_object_or_404(Company, slug=company_slug)
     user_department = getattr(request.user, 'department', None)
     

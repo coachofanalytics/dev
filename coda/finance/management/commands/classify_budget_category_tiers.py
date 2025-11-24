@@ -27,7 +27,7 @@ import csv
 import json
 
 from finance.models import Transaction, BudgetCategory
-from main.models import Company
+from shared_core.models import Company
 
 
 class Command(BaseCommand):

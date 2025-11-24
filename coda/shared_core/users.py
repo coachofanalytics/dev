@@ -8,8 +8,8 @@ This provides:
 - CustomerUser: Custom user model
 - UserCategory: User category choices
 """
-from accounts.models import CustomerUser
+from accounts.models import CustomerUser, Department
 from accounts.choices import UserCategory
 
-__all__ = ['CustomerUser', 'UserCategory']
+__all__ = ['CustomerUser', 'Department', 'UserCategory']
 

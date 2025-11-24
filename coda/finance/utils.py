@@ -177,7 +177,7 @@ def get_eligible_kcc_guarantors(limit=5):
     - Must be active users
     """
     try:
-        from accounts.models import CustomerUser
+        from shared_core.users import CustomerUser
         from django.utils import timezone
 
         # Get active KCC members who are not staff
@@ -303,7 +303,7 @@ def get_eligible_staff_guarantors(limit=5):
     - Must be active users
     """
     try:
-        from accounts.models import CustomerUser
+        from shared_core.users import CustomerUser
         from datetime import date, timedelta
         from django.utils import timezone
 

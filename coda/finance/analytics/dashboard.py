@@ -54,7 +54,7 @@ class AnalyticsDashboard:
         """Get overview metrics for the dashboard"""
         try:
             from finance.models import LoanApplication
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             # Basic counts
             total_loans = LoanApplication.objects.count()
@@ -170,7 +170,7 @@ class AnalyticsDashboard:
     def _get_user_type_distribution(self):
         """Get user type distribution"""
         try:
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             from finance.models import LoanApplication
             
             distribution = []
@@ -249,7 +249,7 @@ class AnalyticsDashboard:
     def _get_kcc_insights(self):
         """Get KCC-specific insights"""
         try:
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             from finance.models import LoanApplication
             
             kcc_members = CustomerUser.objects.filter(

@@ -17,6 +17,7 @@ from main.utils import (
     generate_chatbot_response,
     today_date,
     date_converter,
+    countdown_in_month,
 )
 
 __all__ = [
@@ -25,5 +26,6 @@ __all__ = [
     'generate_chatbot_response',
     'today_date',
     'date_converter',
+    'countdown_in_month',
 ]
 

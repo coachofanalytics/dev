@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Sum, Count, Avg, Q
 from django.db.models.functions import TruncMonth, TruncYear
 from finance.models import Transaction, BudgetCategory, Budget, CodaBudget
-from accounts.models import Department
+from shared_core.users import Department
 from decimal import Decimal
 from collections import defaultdict
 from datetime import datetime, timedelta
