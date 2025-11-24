@@ -12,7 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from accounts.models import Department
+from shared_core.users import Department
 from finance.models import LoanProduct, LoanApplication, Payment_Information, Budget, BudgetRequest, ApprovalPolicy, DisbursementRequest, AutomationAuditLog
 from investing.models import Investment_rates, Investor_Information
 from management.models import Task, Meetings
