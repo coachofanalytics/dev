@@ -22,7 +22,7 @@ from management.services.utilities_service import UtilitiesService
 
 # Import models
 from management.models import TaskHistory
-from accounts.models import Department
+from shared_core.users import Department
 
 logger = logging.getLogger(__name__)
 

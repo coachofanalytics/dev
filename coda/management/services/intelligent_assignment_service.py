@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.db.models import Q, Count, Sum, Avg, F
 
 from management.models import TaskHistory, Task
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from management.services.simple_ai_service import SimpleAIService
 
 

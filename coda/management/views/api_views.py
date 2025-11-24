@@ -21,7 +21,7 @@ from django.db.models import Q, Sum, Count, F
 
 from management.services.taskhistory_analyzer import TaskHistoryAnalyzer
 from management.models import TaskHistory, Task, TaskCategory
-from accounts.models import Department
+from shared_core.users import Department
 
 logger = logging.getLogger(__name__)
 

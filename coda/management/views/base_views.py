@@ -29,7 +29,7 @@ from management.services.utilities_service import UtilitiesService
 
 # Import models
 from management.models import Task, TaskHistory, TaskLinks, TaskCategory
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 logger = logging.getLogger(__name__)
 

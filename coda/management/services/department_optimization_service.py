@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.db.models import Q, Count, Sum, Avg, F, Max, Min
 
 from management.models import TaskHistory
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from management.services.simple_ai_service import SimpleAIService
 from management.services.intelligent_assignment_service import IntelligentAssignmentService
 

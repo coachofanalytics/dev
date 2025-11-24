@@ -15,7 +15,8 @@ from django.db.models import Sum, Count, Q
 from django.contrib.auth import get_user_model
 from management.models import Task, TaskHistory
 from management.services.employee_compliance_service import EmployeeComplianceService
-from accounts.choices import UserCategory as CategoryChoices, ApplicantSubCategoryChoices
+from shared_core.users import UserCategory as CategoryChoices
+from accounts.choices import ApplicantSubCategoryChoices
 from coda_project.task import dump_data
 from decimal import Decimal
 from unittest.mock import Mock

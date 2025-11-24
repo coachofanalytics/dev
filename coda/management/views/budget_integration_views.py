@@ -24,7 +24,7 @@ from django.db import transaction
 
 from management.models import TaskHistory, TaskLinks, Task, TaskCategory
 from management.services.taskhistory_analyzer import TaskHistoryAnalyzer
-from accounts.models import Department, CustomerUser
+from shared_core.users import CustomerUser, Department
 
 logger = logging.getLogger(__name__)
 

@@ -18,7 +18,8 @@ from django.contrib.auth import get_user_model
 
 # Import models
 from management.models import Task, TaskHistory, TaskCategory, TaskLinks
-from accounts.models import CustomerUser, Department, TaskGroups
+from shared_core.users import CustomerUser, Department
+from accounts.models import TaskGroups
 
 # Import AI services for enhancement
 try:
