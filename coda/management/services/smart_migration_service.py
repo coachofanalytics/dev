@@ -19,7 +19,7 @@ from django.contrib.auth import get_user_model
 
 # Import models
 from management.models import Task, TaskHistory, TaskCategory, TaskLinks, TaskGroups
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from management.utils import employee_group_level, increment_in_graduation_of_employee
 
 logger = logging.getLogger(__name__)

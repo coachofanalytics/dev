@@ -19,7 +19,7 @@ import joblib
 import os
 
 from management.models import TaskHistory
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from ai_services.ai_integration_service import RealAIService
 
 

@@ -49,7 +49,7 @@ except ImportError:
 
 # Import models
 from management.models import Task, TaskHistory, TaskLinks
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

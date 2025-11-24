@@ -12,9 +12,10 @@ from django.db.models.signals import pre_save
 from coda_project import settings
 from management.utils import unique_slug_generator,split_num_str
 from django.contrib.auth import get_user_model
-from accounts.models import CustomerUser, TaskGroups,Department
+from shared_core.users import CustomerUser, Department
+from accounts.models import TaskGroups
 from professional_services.models import  FeaturedCategory,FeaturedSubCategory,FeaturedActivity
-from main.models import TimeStampedModel
+from shared_core.models import TimeStampedModel
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 

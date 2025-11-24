@@ -5,7 +5,7 @@ from datetime import datetime
 from professional_services.models import DSU,ClientAssessment,BackgroundCheck
 from management.models import Assignment, Grievance, TaskLinks, Policy, Requirement, Task,TaskHistory,Meetings,TaskCategory
 # from finance.models import Transaction, Inflow
-from accounts.models import Department
+from shared_core.users import Department
 from accounts.models import UserProfile
 from django import forms
 # from captcha.fields import ReCaptchaV2CheckboxField  

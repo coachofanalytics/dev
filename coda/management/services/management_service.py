@@ -19,7 +19,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import datetime, timedelta
 
-from accounts.models import Department
+from shared_core.users import Department
 from .base_service import BaseManagementService
 
 logger = logging.getLogger(__name__)

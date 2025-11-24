@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.core.paginator import Paginator
 
 from management.models import TaskLinks, Task
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from ai_services.models import GotoMeetings
 from management.services.meeting_linking_service import MeetingLinkingService
 

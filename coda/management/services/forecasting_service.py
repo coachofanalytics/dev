@@ -22,7 +22,7 @@ from django.contrib.auth import get_user_model
 
 from management.models import TaskHistory, Task, TaskCategory
 from management.services.taskhistory_analyzer import TaskHistoryAnalyzer
-from accounts.models import CustomerUser, Department
+from shared_core.users import CustomerUser, Department
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

@@ -15,7 +15,8 @@ from django.utils import timezone
 
 from management.services.intelligent_assignment_service import IntelligentAssignmentService
 from management.models import Task, TaskCategory, TaskHistory
-from accounts.models import CustomerUser, TaskGroups
+from shared_core.users import CustomerUser
+from accounts.models import TaskGroups
 from management.utils import employee_group_level
 
 logger = logging.getLogger(__name__)
