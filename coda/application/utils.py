@@ -1,5 +1,5 @@
 from professional_services.models import FeaturedCategory
-from main.utils import path_values
+from shared_core.utils import path_values
 
 def interview_view(sub_title):
     title="Data Preparation"

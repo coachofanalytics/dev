@@ -1,4 +1,4 @@
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from datetime import datetime, timedelta
 from mail.custom_email import send_email
 
