@@ -2,7 +2,7 @@ import uuid
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from professional_services.models import ClientAssessment
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from django.contrib.auth.models import AbstractUser
 from mail.custom_email import send_email
 from accounts.utils import send_verification_email

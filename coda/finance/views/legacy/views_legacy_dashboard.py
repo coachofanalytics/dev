@@ -11,8 +11,8 @@ from django.contrib import messages
 from django.db.models import Sum, Count
 from decimal import Decimal
 
-from main.models import Company
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 from finance.models import Budget, Transaction, Inflow, BudgetRequest, DisbursementRequest
 from finance.services.budget.estimation import BudgetEstimationService
 

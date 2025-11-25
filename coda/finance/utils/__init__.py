@@ -179,7 +179,7 @@ def check_user_loan_eligibility(user):
 def get_eligible_staff_guarantors(limit=5):
     """Get eligible staff members who can act as guarantors"""
     try:
-        from accounts.models import CustomerUser
+        from shared_core.users import CustomerUser
         from datetime import timedelta
         from django.utils import timezone
         
@@ -216,7 +216,7 @@ def get_eligible_staff_guarantors(limit=5):
 def get_eligible_kcc_guarantors(limit=5):
     """Get eligible KCC members who can act as guarantors"""
     try:
-        from accounts.models import CustomerUser
+        from shared_core.users import CustomerUser
         from django.utils import timezone
         
         # Get active KCC members who are not staff

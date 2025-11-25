@@ -41,6 +41,7 @@ AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend
 
 # Application definition
 INSTALLED_APPS = [
+    "shared_core.apps.SharedCoreConfig",  # Shared core package - must be first
     "main.apps.MainConfig",
     "accounts.apps.AccountsConfig",
     "application.apps.ApplicationConfig",

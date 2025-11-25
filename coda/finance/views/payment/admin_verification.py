@@ -53,8 +53,7 @@ def admin_payment_verification_dashboard(request):
                 Q(id__icontains=search_query) |
                 Q(customer__username__icontains=search_query) |
                 Q(customer__email__icontains=search_query) |
-                Q(description__icontains=search_query) |
-                Q(payment_purpose__icontains=search_query)
+                Q(description__icontains=search_query)
             )
         
         # Calculate summary statistics
@@ -272,7 +271,9 @@ def bulk_approve_payments(request):
             approved_count = 0
             for payment_id in payment_ids:
                 try:
-                    payment = Payment_History.objects.get(id=payment_id, status='pending')
+                    # Note: Payment_History doesn't have a status field
+                    # Only get active payments that need approval
+                    payment = Payment_History.objects.get(id=payment_id, is_active=True)
                     
                     # Skip own payments
                     if payment.customer == request.user:

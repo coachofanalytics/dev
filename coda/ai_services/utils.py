@@ -36,8 +36,8 @@ from django.core.management.base import BaseCommand
 from finance.models import (Transaction, Budget, BudgetCategory,
                             BudgetSubCategory,WebCategory,WebSubCategory
                             )
-from accounts.models import Department
-from main.models import Company
+from shared_core.users import Department
+from shared_core.models import Company
 
 from django.contrib.auth import get_user_model
 # To encode the data

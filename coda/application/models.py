@@ -1,7 +1,8 @@
 # from coda_project.application.views import first_interview
 from django.db import models
 from django.utils import timezone
-from main.models import TimeStampedModel
+from shared_core.models import TimeStampedModel
+# Application app migrated to use shared_core - 25.11_APPLICATION_DEV_CM test change
 from main.models import Assets
 from django.db.models import Q
 from django.contrib.auth import get_user_model

@@ -10,8 +10,9 @@ from urllib.parse import urlencode
 from django.utils.text import slugify
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
-# from accounts.choices import UserCategory as CategoryChoices
-from accounts.choices import UserCategory as CategoryChoices, ApplicantSubCategoryChoices
+# Lazy import to avoid circular dependency with accounts.models
+# from shared_core.users import UserCategory as CategoryChoices
+# from accounts.choices import ApplicantSubCategoryChoices
 from importlib import import_module
 import logging
 logger = logging.getLogger(__name__)
@@ -603,6 +604,9 @@ def lap_save_bonus(payslip_config):
     if payslip_config.laptop_status:
         laptop_saving =Decimal(0.00)
         total_laptop_savings=Decimal(0.00)
+        # Lazy import to avoid circular dependency
+        from shared_core.users import UserCategory as CategoryChoices
+        from accounts.choices import ApplicantSubCategoryChoices
         laptop_bonus=payslip_config.lb_amount if payslip_config.user.category==CategoryChoices.APPLICANT and payslip_config.user.sub_category==ApplicantSubCategoryChoices.FULL_TIME else Decimal(0.00)
 
     else:
@@ -626,6 +630,9 @@ def deductions(employee, user_data, payslip_config, total_pay):
     # lap_saving = Decimal('500')
     loan_payment = Decimal('0')
 
+    # Lazy import to avoid circular dependency
+    from shared_core.users import UserCategory as CategoryChoices
+    from accounts.choices import ApplicantSubCategoryChoices
     if employee.category == CategoryChoices.APPLICANT and employee.sub_category == ApplicantSubCategoryChoices.FULL_TIME:
         if payslip_config:
             # print(employee.category, employee.sub_category)

@@ -20,7 +20,7 @@ from ai_services.models import (
 from ai_services.services.token_encryption_service import (
     TokenEncryptionService, OAuthTokenManager
 )
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 
 @pytest.mark.django_db

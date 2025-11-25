@@ -24,8 +24,8 @@ from django.contrib.auth import get_user_model
 from decimal import Decimal
 import json
 
-from main.models import Company
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 from finance.models import Budget, CodaBudget, BudgetCategory, BudgetSubCategory
 from finance.services.budget.estimation import BudgetEstimationService as EnhancedBudgetEstimationService
 from finance.services.budget.consolidation import BudgetConsolidationService

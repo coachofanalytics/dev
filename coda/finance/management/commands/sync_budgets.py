@@ -14,8 +14,8 @@ from decimal import Decimal
 
 from finance.models import Budget, BudgetCategory, Transaction
 from finance.services.budget_service import BudgetService
-from main.models import Company
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 
 
 User = get_user_model()

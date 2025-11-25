@@ -24,7 +24,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from accounts.models import Department
+from shared_core.users import Department
 from management.models import TaskHistory, Task
 from management.utils import calculate_total_pay
 from management.services.employee_compliance_service import EmployeeComplianceService

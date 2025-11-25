@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 from finance.models import Payment_Information, Payment_History
 from finance.utils import save_payment_history
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 logger = logging.getLogger(__name__)
 

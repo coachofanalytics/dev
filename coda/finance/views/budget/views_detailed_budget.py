@@ -13,8 +13,8 @@ from django.utils import timezone
 from decimal import Decimal
 import json
 
-from main.models import Company
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 from finance.models import BudgetCategory, BudgetEstimateProjection
 from finance.models import BudgetItemDetail, BudgetEstimateItem
 from finance.services.data_quality_service import DataQualityService

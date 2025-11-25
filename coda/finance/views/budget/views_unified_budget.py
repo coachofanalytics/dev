@@ -27,8 +27,8 @@ from decimal import Decimal
 import json
 import logging
 
-from main.models import Company
-from accounts.models import Department
+from shared_core.models import Company
+from shared_core.users import Department
 from finance.models import (
     Budget, BudgetCategory, BudgetSubCategory, 
     BudgetEstimateProjection, MultiYearBudgetPlan,
@@ -388,7 +388,7 @@ def _get_approvals_tab_data(company, department, user):
             # Ensure department is a Department instance, not a string
             if isinstance(department, str):
                 try:
-                    from accounts.models import Department
+                    from shared_core.users import Department
                     department = Department.objects.get(slug=department) or Department.objects.get(name=department)
                 except Department.DoesNotExist:
                     department = None

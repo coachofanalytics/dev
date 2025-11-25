@@ -29,9 +29,9 @@ from django.views.generic import (
     DetailView,
     DeleteView,
 )
-from accounts.models import CustomerUser, Department
+from shared_core.users import CustomerUser, Department
 from finance.services.eligibility_service import EligibilityService
-from accounts.choices import UserCategory as CategoryChoices
+from shared_core.users import UserCategory as CategoryChoices
 from finance.models import (
     Payment_Information,
     Payment_History,
@@ -66,9 +66,10 @@ from finance.forms import (
 from dateutil.relativedelta import relativedelta
 from mail.custom_email import send_email
 from coda_project.settings import payment_details
-from main.utils import path_values, countdown_in_month, dates_functionality
-from main.filters import FoodFilter
-from main.models import Service, ServiceCategory, Pricing, Company
+from shared_core.utils import path_values, countdown_in_month, dates_functionality
+from shared_core.filters import FoodFilter
+from shared_core.models import Company
+from main.models import Service, ServiceCategory, Pricing
 from investing.models import Investment_rates, Investor_Information
 from investing.utils import calculate_investor_returns
 from management.utils import paytime
@@ -85,7 +86,7 @@ from google.oauth2.credentials import Credentials
 # In finance/views.py:
 from core.utils import verify_otp
 
-from accounts.mixins import FilteredListViewMixin
+from shared_core.mixins import FilteredListViewMixin
 
 # Import service layer (OUR ARCHITECTURE!)
 from finance.services import (
@@ -117,6 +118,7 @@ rate = round(Decimal(usd_to_kes), 2)
 
 logger = logging.getLogger(__name__)
 
+# Finance app migrated to use shared_core - 25.12_FINANCE_DEV test change
 
 def finance_index(request):
     """Finance app index view - redirects to appropriate dashboard based on user role"""

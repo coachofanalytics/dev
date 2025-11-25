@@ -23,7 +23,7 @@ class FinancialAnalyticsService(ModelService):
         """Get comprehensive system overview metrics"""
         try:
             from finance.models import LoanApplication
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             # Basic counts
             total_loans = LoanApplication.objects.count()
@@ -104,7 +104,7 @@ class FinancialAnalyticsService(ModelService):
         """Get KCC-specific performance analytics"""
         try:
             from finance.models import LoanApplication
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             # Get KCC members
             kcc_members = CustomerUser.objects.filter(
@@ -152,7 +152,7 @@ class FinancialAnalyticsService(ModelService):
         """Get staff-specific performance analytics"""
         try:
             from finance.models import LoanApplication
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             staff_users = CustomerUser.objects.filter(category=2)
             
@@ -797,7 +797,7 @@ class FinancialAnalyticsService(ModelService):
         """Get overview metrics for the dashboard"""
         try:
             from finance.models import LoanApplication
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             # Basic counts
             total_loans = LoanApplication.objects.count()
@@ -880,7 +880,7 @@ class FinancialAnalyticsService(ModelService):
     def _get_user_type_distribution(self):
         """Get user type distribution"""
         try:
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             distribution = []
             
@@ -958,7 +958,7 @@ class FinancialAnalyticsService(ModelService):
     def _get_kcc_insights(self):
         """Get KCC-specific insights"""
         try:
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             from finance.models import LoanApplication
             
             kcc_members = CustomerUser.objects.filter(

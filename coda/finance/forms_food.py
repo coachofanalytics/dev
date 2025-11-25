@@ -139,7 +139,7 @@ class BulkConsumptionLogForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Import here to avoid circular import
-        from main.models import Department
+        from shared_core.users import Department
         self.fields['location'].queryset = Department.objects.filter(is_active=True)
 
 

@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 import json
 from finance.models import BudgetCategory, BudgetSubCategory, BudgetItemLibrary, Transaction, Budget, CodaBudget
-from main.models import Company
+from shared_core.models import Company
 from decimal import Decimal
 
 

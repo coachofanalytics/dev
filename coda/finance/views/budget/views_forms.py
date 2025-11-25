@@ -15,7 +15,7 @@ from django.db.models import Q
 from finance.models import BudgetRequest, BudgetCategory, ApprovalPolicy
 from finance.forms.budget import BudgetRequestForm
 from finance.services.automation_service import BudgetRequestService, ApprovalEngineService
-from accounts.models import Department
+from shared_core.users import Department
 
 from finance.services.smart_approval_service import SmartApprovalService
 

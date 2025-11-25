@@ -17,7 +17,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from accounts.services.credential_store import credential_store
+from shared_core.services.credential_store import credential_store
 
 logger = logging.getLogger(__name__)
 

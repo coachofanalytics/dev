@@ -24,7 +24,7 @@ class BaseFinanceView:
     def get_company(self, request, company_slug):
         """Get company object from slug with error handling."""
         try:
-            from main.models import Company
+            from shared_core.models import Company
             company = Company.objects.get(slug=company_slug)
             return company
         except Company.DoesNotExist:
@@ -67,7 +67,7 @@ def company_required(view_func):
     """
     def wrapper(request, company_slug, *args, **kwargs):
         try:
-            from main.models import Company
+            from shared_core.models import Company
             company = Company.objects.get(slug=company_slug)
             # Add company to kwargs for use in view
             kwargs['company'] = company

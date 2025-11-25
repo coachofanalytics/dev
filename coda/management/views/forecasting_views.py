@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
 from management.services.forecasting_service import ForecastingService
-from accounts.models import Department
+from shared_core.users import Department
 from management.models import TaskCategory
 
 logger = logging.getLogger(__name__)

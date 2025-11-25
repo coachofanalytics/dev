@@ -10,7 +10,7 @@ from django.db.models.functions import Cast
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from accounts.choices import UserCategory as CategoryChoices
+from shared_core.users import UserCategory as CategoryChoices
 from marketing.models import Ads,Whatsapp_Groups
 from coda_project import settings
 from .forms import UpdateUserCategoryForm, WhatsappForm,AdsForm
@@ -18,8 +18,10 @@ from django.db.models import Count
 from django.urls import reverse
 from mail.custom_email import send_email
 
-from accounts.models import CustomerUser, UserGroups
-from main.utils import path_values,courses,get_15th_of_next_month,notification_days,today_date,switch_groups
+from shared_core.users import CustomerUser
+from accounts.models import UserGroups
+from shared_core.utils import path_values, today_date
+from main.utils import courses,get_15th_of_next_month,notification_days,switch_groups
 
 from ai_services.utils import Run_Command
 from ai_services.models import Editable

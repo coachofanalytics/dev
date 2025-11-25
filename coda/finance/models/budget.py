@@ -17,12 +17,12 @@ User = get_user_model()
 
 # Import models from other apps
 try:
-    from main.models import Company, TimeStampedModel, StatusMixin
+    from shared_core.models import Company, TimeStampedModel, StatusMixin
 except ImportError:
     Company = TimeStampedModel = StatusMixin = None
 
 try:
-    from accounts.models import Department
+    from shared_core.users import Department
 except ImportError:
     Department = None
 

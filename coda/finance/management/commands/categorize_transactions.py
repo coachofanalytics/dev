@@ -5,7 +5,7 @@ Uses patterns, keywords, and machine learning to auto-assign categories
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from finance.models import Transaction, BudgetCategory
-from accounts.models import Department
+from shared_core.users import Department
 from decimal import Decimal
 from collections import defaultdict
 import re
