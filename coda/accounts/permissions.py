@@ -267,15 +267,15 @@ except ImportError:
         if not user.is_authenticated:
             return dashboards
         
-        # All authenticated users
-        dashboards.append({
-            'name': 'unified',
-            'title': 'Main Dashboard',
-            'url': '/dashboard/',
-            'icon': 'fas fa-tachometer-alt'
-        })
+        # All authenticated users - Removed 'Main Dashboard' (redundant on /dashboard page)
+        # dashboards.append({
+        #     'name': 'unified',
+        #     'title': 'Main Dashboard',
+        #     'url': '/dashboard/',
+        #     'icon': 'fas fa-tachometer-alt'
+        # })
         
-        # Employee dashboards
+        # Employee dashboards - Removed 'Analytics' and 'Task History' per user request
         if is_employee(user):
             dashboards.append({
                 'name': 'task',
@@ -283,18 +283,20 @@ except ImportError:
                 'url': '/management/enhanced-dashboard/',
                 'icon': 'fas fa-tasks'
             })
-            dashboards.append({
-                'name': 'analytics',
-                'title': 'Analytics',
-                'url': '/management/analytics/',
-                'icon': 'fas fa-chart-bar'
-            })
-            dashboards.append({
-                'name': 'task_history',
-                'title': 'Task History',
-                'url': '/management/task-history/',
-                'icon': 'fas fa-history'
-            })
+            # Removed Analytics button - can be accessed via other navigation
+            # dashboards.append({
+            #     'name': 'analytics',
+            #     'title': 'Analytics',
+            #     'url': '/management/analytics/',
+            #     'icon': 'fas fa-chart-bar'
+            # })
+            # Removed Task History button - can be accessed via Task Dashboard
+            # dashboards.append({
+            #     'name': 'task_history',
+            #     'title': 'Task History',
+            #     'url': '/management/task-history/',
+            #     'icon': 'fas fa-history'
+            # })
         
         # Finance dashboards
         if is_finance_staff(user):

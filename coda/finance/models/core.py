@@ -146,7 +146,7 @@ class Payment_History(PaymentBase):
     plan = models.IntegerField()
     subplan = models.IntegerField(null=True)
     pricing_plan = models.IntegerField(null=True)
-    payment_purpose = models.CharField(max_length=50, blank=True, null=True)
+    # payment_purpose = models.CharField(max_length=50, blank=True, null=True)  # Commented out: column doesn't exist in production DB
     
     class Meta:
         db_table = 'finance_payment_history'

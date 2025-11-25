@@ -36,8 +36,7 @@ def payment_dashboard(request):
         if search_query:
             payments = payments.filter(
                 Q(id__icontains=search_query) |
-                Q(description__icontains=search_query) |
-                Q(payment_purpose__icontains=search_query)
+                Q(description__icontains=search_query)
             )
         
         # Calculate summary statistics (without status field)
