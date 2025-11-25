@@ -31,17 +31,21 @@ except ImportError:
     Investment_rates = None
 
 try:
-    from main.models import Company, Service, ServiceCategory, TimeStampedModel, ContractBase, StatusMixin
+    from shared_core.models import Company, TimeStampedModel, ContractBase, StatusMixin
+    from main.models import Service, ServiceCategory
 except ImportError:
-    Company = Service = ServiceCategory = TimeStampedModel = ContractBase = StatusMixin = None
+    Company = TimeStampedModel = ContractBase = StatusMixin = None
+    Service = ServiceCategory = None
 
 try:
-    from main.utils import dates_functionality, date_converter, PayChoices
+    from shared_core.utils import dates_functionality, date_converter
+    from main.utils import PayChoices
 except ImportError:
-    dates_functionality = date_converter = PayChoices = None
+    dates_functionality = date_converter = None
+    PayChoices = None
 
 try:
-    from accounts.models import Department
+    from shared_core.users import Department
 except ImportError:
     Department = None
 
@@ -142,7 +146,7 @@ class Payment_History(PaymentBase):
     plan = models.IntegerField()
     subplan = models.IntegerField(null=True)
     pricing_plan = models.IntegerField(null=True)
-    payment_purpose = models.CharField(max_length=50, blank=True, null=True)
+    # payment_purpose = models.CharField(max_length=50, blank=True, null=True)  # Commented out: column doesn't exist in production DB
     
     class Meta:
         db_table = 'finance_payment_history'

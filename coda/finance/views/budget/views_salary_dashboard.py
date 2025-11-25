@@ -26,7 +26,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
 
-from accounts.models import Department
+from shared_core.users import Department
 from finance.services.integrated_budget_service import IntegratedBudgetService
 from management.services.employee_compliance_service import EmployeeComplianceService
 

@@ -14,7 +14,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from .models import Transaction, BudgetCategory
-from accounts.models import Department
+from shared_core.users import Department
 from decimal import Decimal
 import re
 

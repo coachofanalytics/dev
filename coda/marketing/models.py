@@ -1,5 +1,7 @@
 from django.db import models
-from main.models import Assets,TimeStampedModel
+from main.models import Assets
+from shared_core.models import TimeStampedModel
+# Marketing app migrated to use shared_core - 25.11_MARKETING_DEV_CM test change
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.text import slugify

@@ -13,7 +13,7 @@ from django.db.models import Q, Count, Sum, Avg, F
 from django.core.exceptions import ValidationError
 
 from management.models import TaskHistory
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 
 class DataValidationService:

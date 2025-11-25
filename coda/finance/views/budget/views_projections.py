@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.utils import timezone
 
 from finance.models import BudgetEstimateProjection
-from accounts.models import Department
-from main.models import Company
+from shared_core.users import Department
+from shared_core.models import Company
 
 
 @login_required

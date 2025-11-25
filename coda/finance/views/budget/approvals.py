@@ -28,7 +28,7 @@ import json
 import csv
 import logging
 
-from main.models import Company
+from shared_core.models import Company
 from ..core.base import BaseFinanceView, login_required_finance, company_required, json_response, error_json_response
 from ...models import Budget, BudgetCategory, BudgetSubCategory, BudgetRequest, ApprovalPolicy, BudgetEstimateProjection
 from finance.services.automation_service import ApprovalEngineService
@@ -686,7 +686,7 @@ def individual_compliance_detail(request, employee_id):
         messages.warning(request, "Compliance service not available.")
         return redirect('finance:compliance-dashboard')
     
-    from accounts.models import CustomerUser
+    from shared_core.users import CustomerUser
     
     try:
         employee = get_object_or_404(CustomerUser, id=employee_id)
@@ -738,7 +738,7 @@ def department_compliance_detail(request, department_id):
         messages.warning(request, "Compliance service not available.")
         return redirect('finance:compliance-dashboard')
     
-    from accounts.models import Department
+    from shared_core.users import Department
     
     try:
         department = get_object_or_404(Department, id=department_id)

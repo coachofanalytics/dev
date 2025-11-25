@@ -4,8 +4,8 @@ Shared test fixtures for CODA test suite
 import pytest
 from decimal import Decimal
 from django.utils import timezone
-from accounts.models import CustomerUser
-from management.models import Department
+from shared_core.users import CustomerUser
+from shared_core.users import Department
 from finance.models import Food, FoodInventory, Supplier
 
 

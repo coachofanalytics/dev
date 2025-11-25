@@ -19,7 +19,7 @@ from django.conf import settings
 from django.db.models import Avg, Count
 
 from finance.models import Transaction, BudgetCategory, BudgetSubCategory
-from accounts.models import Department
+from shared_core.users import Department
 
 logger = logging.getLogger(__name__)
 

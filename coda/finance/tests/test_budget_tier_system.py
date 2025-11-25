@@ -17,8 +17,8 @@ from decimal import Decimal
 from finance.models import BudgetCategory, BudgetRequest, ApprovalPolicy
 from finance.services.smart_approval_service import SmartApprovalService
 from finance.services.automation_service import BudgetRequestService
-from accounts.models import Department
-from main.models import Company
+from shared_core.users import Department
+from shared_core.models import Company
 
 User = get_user_model()
 

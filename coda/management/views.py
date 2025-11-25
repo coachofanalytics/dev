@@ -30,8 +30,8 @@ from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from shared_core.users import UserCategory as CategoryChoices
 from accounts.choices import (
-    UserCategory as CategoryChoices,
     ApplicantSubCategoryChoices,
     StudentSubCategoryChoices,
     ConsultantSubCategoryChoices,
@@ -41,7 +41,7 @@ from accounts.choices import (
 from accounts.utils import send_verification_email,calculate_login_bonus
 from core.utils import generate_password
 from accounts.views import create_profile
-from accounts.mixins import FilteredListViewMixin
+from shared_core.mixins import FilteredListViewMixin
 from mail.custom_email import send_email
 from management.forms import (
     AssignmentUploadForm,
@@ -84,7 +84,8 @@ from management.models import (
 )
 from professional_services.models import DSU,ClientAssessment,BackgroundCheck
 from finance.models import LoanApplication,PayslipConfig
-from accounts.models import Tracker, Department, TaskGroups,CustomerUser
+from shared_core.users import CustomerUser, Department
+from accounts.models import Tracker, TaskGroups
 from main.filters import RequirementFilter,TaskHistoryFilter
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -96,7 +97,7 @@ from management.utils import (paytime,payinitial,paymentconfigurations,
                                get_bonus_and_summary,compute_total_points,
                                defined_links,task_assignment_random,get_selected_month_year
                         )
-from main.utils import countdown_in_month, generate_chatbot_response,path_values
+from shared_core.utils import countdown_in_month, generate_chatbot_response,path_values
 from django.contrib.auth.decorators import login_required, user_passes_test
 from management.permission import check_payment_history_permission_job_support, check_payment_history_permission_student
 from .utils import split_review_by_sections, suggestions, upload_file_to_drive
@@ -815,7 +816,7 @@ class TaskListView(FilteredListViewMixin, ListView):
         employee_id = self.request.GET.get('employee')
         if employee_id:
             try:
-                from accounts.models import CustomerUser
+                from shared_core.users import CustomerUser
                 filtered_employee = CustomerUser.objects.get(id=employee_id)
                 context['filtered_employee'] = filtered_employee
             except (CustomerUser.DoesNotExist, ValueError):

@@ -6,7 +6,7 @@ This command addresses the issue where employee categories are used as a proxy f
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from accounts.models import CustomerUser, Department
+from shared_core.users import CustomerUser, Department
 
 
 class Command(BaseCommand):

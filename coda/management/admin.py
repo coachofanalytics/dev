@@ -2,7 +2,8 @@ from django import forms
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from accounts.models import CustomerUser, TaskGroups
+from shared_core.users import CustomerUser
+from accounts.models import TaskGroups
 from management.models import *
 from django.contrib import messages
 

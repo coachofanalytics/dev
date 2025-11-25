@@ -11,7 +11,8 @@ from professional_services.modelmanager import(InterviewQuerySet,RoleQuerySet,In
                               CategoryManager,SubCategoryManager,ActivityManager)
 
 # User=settings.AUTH_USER_MODEL
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
+# Professional Services app migrated to use shared_core - 25.11_PROFESSIONAL_SERVICES_DEV_CM test change
 User = get_user_model()
 
     

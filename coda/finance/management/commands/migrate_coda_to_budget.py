@@ -9,7 +9,7 @@ from django.db import transaction
 from django.utils import timezone
 from decimal import Decimal
 from finance.models import Budget, CodaBudget
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 import logging
 
 logger = logging.getLogger(__name__)

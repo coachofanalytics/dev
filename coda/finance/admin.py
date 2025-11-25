@@ -167,7 +167,7 @@ class PaymentHistoryAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Customer', {
-            'fields': ('customer', 'payment_method', 'payment_purpose')
+            'fields': ('customer', 'payment_method')
         }),
         ('Financials', {
             'fields': ('payment_fees', 'down_payment', 'plan', 'subplan', 'pricing_plan')

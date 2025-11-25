@@ -12,7 +12,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
-from accounts.services.credential_store import credential_store
+from shared_core.services.credential_store import credential_store
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

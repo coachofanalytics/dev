@@ -69,10 +69,15 @@ from django.contrib import messages
 from django.views.generic import ListView, UpdateView, DetailView
 from django.http import JsonResponse
 from django import template
-from accounts.mixins import FilteredListViewMixin
+from shared_core.mixins import FilteredListViewMixin
 
-# Application Imports
-from finance.models import Payment_Information, Transaction
+# Application Imports - Optional for lightweight branches
+try:
+    from finance.models import Payment_Information, Transaction
+except ImportError:
+    # Stubs for lightweight branches where finance is removed
+    Payment_Information = None
+    Transaction = None
 from .models import (
     Investor_Information,
     Investment_rates,
@@ -90,9 +95,14 @@ from .models import (
     InvestmentReport,
     InvestmentUpgradeOffer,
 )
-from accounts.models import CustomerUser
-from accounts.choices import UserCategory as CategoryChoices
-from ai_services.models import Editable
+from shared_core.users import CustomerUser, UserCategory as CategoryChoices
+# Optional import for lightweight branches
+try:
+    from ai_services.models import Editable
+except ImportError:
+    # Stub for lightweight branches where ai_services is removed
+    class Editable:
+        pass
 
 
 # Utility Imports
@@ -102,14 +112,14 @@ from .utils import (
     investment_rules,
     calculate_investor_returns,
 )
-from main.utils import (
+from shared_core.utils import (
     path_values,
     dates_functionality,
     generate_chatbot_response,
     today_date,
     date_converter,
 )
-from main.filters import ReturnsFilter
+from shared_core.filters import ReturnsFilter
 from main.context_processors import fetch_service_descriptions
 # from .filters import PortfolioFilter  # DELETED Nov 5, 2025 - Portfolio model removed
 from .forms import (

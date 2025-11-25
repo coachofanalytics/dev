@@ -13,7 +13,8 @@ import json
 import logging
 
 from .models import DashboardWidget, UserDashboardPreferences, DashboardService, UserServiceAccess, DashboardAnalytics
-from accounts.models import CategoryChoices
+from shared_core.users import UserCategory as CategoryChoices
+# Unified Dashboard app migrated to use shared_core - 25.11_UNIFIED_DASHBOARD_DEV_CM test change
 from finance.services import FinancialAnalyticsService
 from investing.models import ManagedTradingAccount
 from investing.services.managed_trading_service import ManagedTradingService
@@ -1001,7 +1002,7 @@ def unified_department_view(request, department_slug=None):
     Unified department view that handles both admin and staff views
     Consolidates all department functionality into one place
     """
-    from accounts.models import Department
+    from shared_core.users import Department
     from management.models import SubCategory, Link
     from management.views import defined_links
     

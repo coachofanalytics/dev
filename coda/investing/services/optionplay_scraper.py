@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from django.conf import settings
 
-from accounts.services.credential_store import credential_store
+from shared_core.services.credential_store import credential_store
 
 # Optional imports (only needed when scraper is used)
 try:

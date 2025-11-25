@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404,render, redirect
 from django.db.models import Q
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -31,9 +31,9 @@ from .utils import (alteryx_list,
                     rewardpoints,
                     interview_description,
                     interview_view)
-from main.utils import path_values
+from shared_core.utils import path_values
 from application.permission import check_client_assesment
-from accounts.mixins import FilteredListViewMixin
+from shared_core.mixins import FilteredListViewMixin
 from django.views.generic import ListView
 
 

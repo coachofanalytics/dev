@@ -14,7 +14,7 @@ from decimal import Decimal
 import json
 import logging
 
-from main.models import Company
+from shared_core.models import Company
 from finance.views.core.base import BaseFinanceView, login_required_finance, company_required, json_response, error_json_response
 from finance.models import Budget, BudgetCategory, BudgetSubCategory, BudgetRequest, ApprovalPolicy
 from finance.forms import forms as legacy_forms

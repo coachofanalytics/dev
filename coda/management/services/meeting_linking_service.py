@@ -16,7 +16,7 @@ from django.db.models import Q, Count, F, Max
 from django.contrib.auth import get_user_model
 
 from management.models import Task, TaskHistory, TaskLinks, TaskCategory
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 from ai_services.models import GotoMeetings, MeetingActivityMapping
 
 logger = logging.getLogger(__name__)

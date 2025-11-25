@@ -26,7 +26,7 @@ import logging
 
 from finance.services.realtime_compliance_service import RealtimeComplianceService
 from management.services.employee_compliance_service import EmployeeComplianceService
-from accounts.models import Department
+from shared_core.users import Department
 
 logger = logging.getLogger(__name__)
 

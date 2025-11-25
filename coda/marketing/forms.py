@@ -1,6 +1,5 @@
 from django import forms
-from accounts.choices import UserCategory as CategoryChoices
-from accounts.models import CustomerUser
+from shared_core.users import UserCategory as CategoryChoices, CustomerUser
 from marketing.models import Ads,Whatsapp_Groups
 from django.utils.translation import gettext_lazy as _
 from django_countries.widgets import CountrySelectWidget

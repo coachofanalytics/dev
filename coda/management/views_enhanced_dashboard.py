@@ -27,7 +27,7 @@ from management.services.task_standardization_service import TaskStandardization
 
 # Import models
 from management.models import Task, TaskHistory, TaskCategory, TaskLinks
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 logger = logging.getLogger(__name__)
 

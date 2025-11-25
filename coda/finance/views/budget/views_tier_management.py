@@ -22,7 +22,7 @@ import logging
 
 from finance.models import BudgetCategory, BudgetRequest, AutomationAuditLog
 from finance.services.smart_approval_service import SmartApprovalService
-from main.models import Company
+from shared_core.models import Company
 
 logger = logging.getLogger(__name__)
 

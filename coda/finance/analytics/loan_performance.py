@@ -142,7 +142,7 @@ class LoanPerformanceAnalytics:
         """Get performance metrics by user type"""
         try:
             from finance.models import LoanApplication
-            from accounts.models import CustomerUser
+            from shared_core.users import CustomerUser
             
             user_performance = {}
             

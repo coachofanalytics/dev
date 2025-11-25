@@ -268,7 +268,7 @@ def unified_department_dashboard(request, department_name='finance'):
     try:
         # Get department from database if available
         try:
-            from accounts.models import Department
+            from shared_core.users import Department
             try:
                 db_department = Department.objects.get(slug=department_name, is_active=True)
                 department_display_name = db_department.name

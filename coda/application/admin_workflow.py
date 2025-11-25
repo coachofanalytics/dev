@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from .models import ApplicationWorkflow, WorkflowStatusLog
 from .services import workflow_service
-from accounts.models import CustomerUser
+from shared_core.users import CustomerUser
 
 
 def is_staff_user(user):

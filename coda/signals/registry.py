@@ -11,8 +11,8 @@ from django.utils.text import slugify
 from django.core.mail import send_mail
 from django.conf import settings
 
-from accounts.models import CustomerUser, UserGroups, LoginHistory
-from accounts.choices import UserCategory as CategoryChoices
+from shared_core.users import CustomerUser, UserCategory as CategoryChoices
+from accounts.models import UserGroups, LoginHistory
 from accounts.utils import send_email_to_applicant
 
 
