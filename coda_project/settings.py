@@ -69,10 +69,6 @@ INSTALLED_APPS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-STATICFILES_DIR =[
-    BASE_DIR, "main/static"
-]
-
 CRONJOBS = [
     # ("*/1 * * * *", "coda_project.cron.my_backup"),
     ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
@@ -240,8 +236,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_ROOT = os.path.join(BASE_DIR,  "staticfiles")
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # If you have a project-level static directory
-    # Add other directories if necessary
+    # Django automatically finds static files in app directories when apps are in INSTALLED_APPS
+    # No project-level static directory exists, so this list is empty
 ]
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
