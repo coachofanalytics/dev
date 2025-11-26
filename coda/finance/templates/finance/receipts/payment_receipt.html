@@ -41,10 +41,13 @@
         
         <!-- Header -->
         <div class="header">
-            <div class="company-name">CODA ANALYTICS</div>
+            {% if company_logo_url %}
+            <img src="{{ company_logo_url }}" alt="{{ company_display_name|default:company_name }}" style="max-height: 60px; margin-bottom: 10px;">
+            {% endif %}
+            <div class="company-name">{{ company_display_name|default:"CODA ANALYTICS" }}</div>
             <div class="company-tagline">Professional Training & Development</div>
             <div style="margin-top: 10px; color: #666; font-size: 12px;">
-                {{ company_website }} | {{ company_email }}
+                {{ company_website|default:"www.codanalytics.net" }} | {{ company_email|default:"info@codanalytics.net" }}
             </div>
         </div>
 
@@ -159,8 +162,11 @@
                 <strong>Thank you for your payment!</strong>
             </p>
             <p>
-                This is an official receipt from CODA Analytics.<br>
-                For questions about this payment, please contact {{ company_email }}<br>
+                This is an official receipt from {{ company_name|default:"CODA Analytics" }}.<br>
+                For questions about this payment, please contact {{ company_email|default:"info@codanalytics.net" }}<br>
+                {% if company_address %}
+                Address: {{ company_address }}<br>
+                {% endif %}
                 Keep this receipt for your records.
             </p>
             <p style="margin-top: 20px; font-size: 10px; color: #999;">

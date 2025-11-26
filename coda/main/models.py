@@ -191,6 +191,32 @@ class Company(TimeStampedModel):
     )
     description = models.TextField(max_length=500, null=True, blank=True)
     relation=models.IntegerField(choices=Coda_Relation.choices, default=4)
+    
+    # Receipt branding fields
+    logo = models.ImageField(
+        upload_to="company_logos/",
+        null=True,
+        blank=True,
+        help_text="Company logo for receipts and emails (kept for future use)"
+    )
+    receipt_email = models.EmailField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Email address for sending receipts (e.g., info@domain.com)"
+    )
+    display_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="Display name for receipts (e.g., 'CODA ANALYTICS' or 'DC48K')"
+    )
+    address = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Company address for receipts"
+    )
 
     class Meta:
         verbose_name = _("Company")
