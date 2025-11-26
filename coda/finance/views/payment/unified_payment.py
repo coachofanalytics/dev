@@ -96,40 +96,92 @@ def payment_method_selection(request):
     """
     Unified payment method selection view
     Shows all available payment methods with consistent UI
+    Checks for loans FIRST, then service payments
     """
     try:
-        # Get user's payment information
-        # Query without any default ordering to avoid field conflicts
-        try:
-            payment_info = Payment_Information.objects.filter(
-                customer=request.user
-            ).order_by('-id').only('id', 'customer', 'payment_fees', 'down_payment', 'plan').first()
-        except Exception as db_error:
-            logger.warning(f"Database query issue, trying alternate method: {db_error}")
-            # Fallback: use raw query to avoid model ordering issues
-            from django.db import connection
-            with connection.cursor() as cursor:
-                print(f"[Payments][DEBUG] Raw query fallback for payment info (selection) user_id={request.user.id}")
-                print(f"[Payments][DEBUG] Raw query fallback for payment info (processing) user_id={request.user.id}")
-                cursor.execute("""
-                    SELECT id, customer_id_id, payment_fees, down_payment, plan 
-                    FROM finance_payment_information 
-                    WHERE customer_id_id = %s 
-                    ORDER BY id DESC 
-                    LIMIT 1
-                """, [request.user.id])
-                result = cursor.fetchone()
-                if result:
-                    # Create a simple object with the needed attributes
-                    payment_info = type('PaymentInfo', (), {
-                        'id': result[0],
-                        'customer_id': result[1],
-                        'payment_fees': result[2],
-                        'down_payment': result[3],
-                        'plan': result[4]
-                    })()
-                else:
-                    payment_info = None
+        from finance.models import LoanApplication
+        
+        payment_info = None
+        payment_source = None  # Track if payment is for 'loan' or 'service'
+        
+        # PRIORITY 1: Check for active loans first (highest priority)
+        active_loans = LoanApplication.objects.filter(
+            borrower=request.user,
+            status__in=['active', 'approved', 'disbursed']
+        ).first()
+        
+        if active_loans:
+            # User has active loan - create payment_info from loan
+            logger.info(f"User {request.user.username} has active loan: {active_loans.id}")
+            
+            # Use balance_amount (outstanding balance) if available, otherwise total_payable or amount_requested
+            if hasattr(active_loans, 'balance_amount') and active_loans.balance_amount:
+                loan_amount = float(active_loans.balance_amount)
+            elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
+                loan_amount = float(active_loans.total_payable)
+            else:
+                loan_amount = float(active_loans.amount_requested or 0)
+            
+            # Create payment_info-like object from loan
+            # Add get_fee_balance() method that returns loan balance
+            class LoanPaymentInfo:
+                def __init__(self, loan, amount):
+                    self.id = loan.id
+                    self.customer = loan.borrower
+                    self.payment_fees = amount
+                    self.down_payment = 0  # Loans don't have down payments
+                    self.plan = None
+                    self.loan_application = loan
+                    self._loan = loan
+                
+                def get_fee_balance(self):
+                    """Calculate outstanding loan balance"""
+                    if hasattr(self._loan, 'balance_amount') and self._loan.balance_amount:
+                        return float(self._loan.balance_amount)
+                    # Fallback: return payment_fees (full loan amount if no payments made)
+                    return float(self.payment_fees)
+            
+            payment_info = LoanPaymentInfo(active_loans, loan_amount)
+            payment_source = 'loan'
+            logger.info(f"Created loan payment_info: amount=${loan_amount}, balance=${payment_info.get_fee_balance()}")
+        
+        # PRIORITY 2: If no active loan, check for service payment info
+        if not payment_info:
+            try:
+                payment_info = Payment_Information.objects.filter(
+                    customer=request.user
+                ).order_by('-id').only('id', 'customer', 'payment_fees', 'down_payment', 'plan').first()
+                
+                if payment_info:
+                    payment_source = 'service'
+                    logger.info(f"User {request.user.username} has service payment info: {payment_info.id}")
+            except Exception as db_error:
+                logger.warning(f"Database query issue, trying alternate method: {db_error}")
+                # Fallback: use raw query to avoid model ordering issues
+                from django.db import connection
+                with connection.cursor() as cursor:
+                    print(f"[Payments][DEBUG] Raw query fallback for payment info (selection) user_id={request.user.id}")
+                    cursor.execute("""
+                        SELECT id, customer_id_id, payment_fees, down_payment, plan 
+                        FROM finance_payment_information 
+                        WHERE customer_id_id = %s 
+                        ORDER BY id DESC 
+                        LIMIT 1
+                    """, [request.user.id])
+                    result = cursor.fetchone()
+                    if result:
+                        # Create a simple object with the needed attributes
+                        payment_info = type('PaymentInfo', (), {
+                            'id': result[0],
+                            'customer_id': result[1],
+                            'payment_fees': result[2],
+                            'down_payment': result[3],
+                            'plan': result[4],
+                            'customer': request.user  # Add customer for compatibility
+                        })()
+                        if payment_info:
+                            payment_source = 'service'
+                            logger.info(f"Created payment_info from raw query for user {request.user.username}")
         
         if not payment_info:
             # Route user to create payable context based on persona
@@ -175,12 +227,27 @@ def payment_method_selection(request):
         down_payment = payment_info.down_payment
         print(f"DEBUG: total_amount: {total_amount}, down_payment: {down_payment}")
         
-        # Calculate balance
-        balance = 0
-        if total_amount and down_payment:
-            balance = total_amount - down_payment
-        elif total_amount:
-            balance = total_amount
+        # Calculate balance using get_fee_balance() method (accounts for payments already made)
+        try:
+            balance = payment_info.get_fee_balance()
+        except Exception as e:
+            logger.warning(f"Error calculating fee balance: {e}, using fallback calculation")
+            # Fallback calculation
+            balance = 0
+            if total_amount and down_payment:
+                balance = total_amount - down_payment
+            elif total_amount:
+                balance = total_amount
+        
+        # CRITICAL: Check if balance is zero - redirect to success if already paid
+        if balance <= 0:
+            logger.info(f"User {request.user.username} has zero balance (${balance}), redirecting to success page")
+            messages.success(request, 'Your account balance is already paid in full. No payment needed!')
+            # Store in session for success page
+            request.session['payment_reference'] = 'BALANCE-PAID'
+            request.session['payment_amount'] = 0
+            request.session['payment_method'] = 'N/A'
+            return redirect('finance:unified_success')
         
         context = {
             'available_methods': PAYMENT_METHODS,
@@ -204,45 +271,246 @@ def payment_method_selection(request):
 
 
 @login_required
-def payment_processing(request, method):
+def payment_amount_selection(request, method):
     """
-    Unified payment processing view
-    Handles payment initiation for all methods
+    Shared payment amount selection page
+    Works for all payment methods - user enters amount before proceeding
+    Stores amount in session for use by all payment methods
     """
     if method not in PAYMENT_METHODS:
         messages.error(request, 'Invalid payment method selected.')
         return redirect('finance:unified_method_selection')
     
     try:
-        # Get payment information - avoid ordering issues
+        from finance.models import LoanApplication
+        
+        payment_info = None
+        payment_source = None
+        
+        # PRIORITY 1: Check for active loans first
+        active_loans = LoanApplication.objects.filter(
+            borrower=request.user,
+            status__in=['active', 'approved', 'disbursed']
+        ).first()
+        
+        if active_loans:
+            logger.info(f"User {request.user.username} has active loan: {active_loans.id} for amount selection")
+            
+            if hasattr(active_loans, 'balance_amount') and active_loans.balance_amount:
+                loan_amount = float(active_loans.balance_amount)
+            elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
+                loan_amount = float(active_loans.total_payable)
+            else:
+                loan_amount = float(active_loans.amount_requested or 0)
+            
+            class LoanPaymentInfo:
+                def __init__(self, loan, amount):
+                    self.id = loan.id
+                    self.customer = loan.borrower
+                    self.payment_fees = amount
+                    self.down_payment = 0
+                    self.plan = None
+                    self.loan_application = loan
+                    self._loan = loan
+                
+                def get_fee_balance(self):
+                    if hasattr(self._loan, 'balance_amount') and self._loan.balance_amount:
+                        return float(self._loan.balance_amount)
+                    return float(self.payment_fees)
+            
+            payment_info = LoanPaymentInfo(active_loans, loan_amount)
+            payment_source = 'loan'
+        
+        # PRIORITY 2: Check for service payment info
+        if not payment_info:
+            try:
+                payment_info = Payment_Information.objects.filter(
+                    customer=request.user
+                ).order_by('-id').only('id', 'customer', 'payment_fees', 'down_payment', 'plan').first()
+                
+                if payment_info:
+                    payment_source = 'service'
+            except Exception as db_error:
+                logger.warning(f"Database query issue: {db_error}")
+                from django.db import connection
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT id, customer_id_id, payment_fees, down_payment, plan 
+                        FROM finance_payment_information 
+                        WHERE customer_id_id = %s 
+                        ORDER BY id DESC 
+                        LIMIT 1
+                    """, [request.user.id])
+                    result = cursor.fetchone()
+                    if result:
+                        payment_info = type('PaymentInfo', (), {
+                            'id': result[0],
+                            'customer_id': result[1],
+                            'payment_fees': result[2],
+                            'down_payment': result[3],
+                            'plan': result[4],
+                            'customer': request.user
+                        })()
+                        if payment_info:
+                            payment_source = 'service'
+        
+        if not payment_info:
+            messages.error(request, 'No payment information found.')
+            return redirect('finance:unified_method_selection')
+        
+        # Calculate balance
         try:
-            payment_info = Payment_Information.objects.filter(
-                customer=request.user
-            ).order_by('-id').only('id', 'customer', 'payment_fees', 'down_payment', 'plan').first()
-        except Exception as db_error:
-            logger.warning(f"Database query issue in payment processing: {db_error}")
-            # Fallback: use raw query to avoid model ordering issues
-            from django.db import connection
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    SELECT id, customer_id_id, payment_fees, down_payment, plan 
-                    FROM finance_payment_information 
-                    WHERE customer_id_id = %s 
-                    ORDER BY id DESC 
-                    LIMIT 1
-                """, [request.user.id])
-                result = cursor.fetchone()
-                if result:
-                    # Create a simple object with the needed attributes
-                    payment_info = type('PaymentInfo', (), {
-                        'id': result[0],
-                        'customer_id': result[1],
-                        'payment_fees': result[2],
-                        'down_payment': result[3],
-                        'plan': result[4]
-                    })()
-                else:
-                    payment_info = None
+            balance = payment_info.get_fee_balance()
+        except Exception as e:
+            logger.warning(f"Error calculating fee balance: {e}")
+            balance = float(payment_info.payment_fees) - float(payment_info.down_payment or 0)
+        
+        # Check if balance is zero
+        if balance <= 0:
+            messages.success(request, 'Your account balance is already paid in full. No payment needed!')
+            request.session['payment_reference'] = 'BALANCE-PAID'
+            request.session['payment_amount'] = 0
+            request.session['payment_method'] = 'N/A'
+            return redirect('finance:unified_success')
+        
+        # Handle POST - form submission
+        if request.method == 'POST':
+            amount_type = request.POST.get('amount_type', 'full')
+            
+            if amount_type == 'full':
+                amount = float(balance)
+            else:
+                amount = float(request.POST.get('amount', 0))
+            
+            # Validate amount
+            if amount <= 0:
+                messages.error(request, 'Payment amount must be greater than zero.')
+                return redirect('finance:payment_amount_selection', method=method)
+            
+            if amount > balance:
+                messages.error(request, f'Payment amount cannot exceed balance of ${balance:.2f}.')
+                return redirect('finance:payment_amount_selection', method=method)
+            
+            # Store amount in session
+            request.session['payment_amount'] = amount
+            request.session['payment_source'] = payment_source
+            if hasattr(payment_info, 'loan_application'):
+                request.session['loan_application_id'] = payment_info.loan_application.id
+            logger.info(f"Payment amount stored in session: ${amount} for method={method} user={request.user.username}")
+            
+            # Redirect to payment processing
+            return redirect('finance:unified_processing', method=method)
+        
+        # GET - show form
+        method_info = PAYMENT_METHODS.get(method, {})
+        context = {
+            'method': method,
+            'method_info': method_info,
+            'payment_info': payment_info,
+            'balance': balance,
+            'total_amount': payment_info.payment_fees,
+            'down_payment': payment_info.down_payment,
+        }
+        
+        return render(request, 'finance/payments/payment_amount_selection.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in payment_amount_selection: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        messages.error(request, 'Error loading payment amount form. Please try again.')
+        return redirect('finance:unified_method_selection')
+
+
+@login_required
+def payment_processing(request, method):
+    """
+    Unified payment processing view
+    Handles payment initiation for all methods
+    Checks for loans FIRST, then service payments
+    """
+    if method not in PAYMENT_METHODS:
+        messages.error(request, 'Invalid payment method selected.')
+        return redirect('finance:unified_method_selection')
+    
+    try:
+        from finance.models import LoanApplication
+        
+        payment_info = None
+        payment_source = None
+        
+        # PRIORITY 1: Check for active loans first (highest priority)
+        active_loans = LoanApplication.objects.filter(
+            borrower=request.user,
+            status__in=['active', 'approved', 'disbursed']
+        ).first()
+        
+        if active_loans:
+            # User has active loan - create payment_info from loan
+            logger.info(f"User {request.user.username} has active loan: {active_loans.id} for payment processing")
+            
+            # Use balance_amount (outstanding balance) if available
+            if hasattr(active_loans, 'balance_amount') and active_loans.balance_amount:
+                loan_amount = float(active_loans.balance_amount)
+            elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
+                loan_amount = float(active_loans.total_payable)
+            else:
+                loan_amount = float(active_loans.amount_requested or 0)
+            
+            # Create payment_info-like object from loan
+            class LoanPaymentInfo:
+                def __init__(self, loan, amount):
+                    self.id = loan.id
+                    self.customer = loan.borrower
+                    self.payment_fees = amount
+                    self.down_payment = 0
+                    self.plan = None
+                    self.loan_application = loan
+                    self._loan = loan
+                
+                def get_fee_balance(self):
+                    """Calculate outstanding loan balance"""
+                    if hasattr(self._loan, 'balance_amount') and self._loan.balance_amount:
+                        return float(self._loan.balance_amount)
+                    return float(self.payment_fees)
+            
+            payment_info = LoanPaymentInfo(active_loans, loan_amount)
+            payment_source = 'loan'
+            logger.info(f"Created loan payment_info for processing: amount=${loan_amount}")
+        
+        # PRIORITY 2: If no active loan, check for service payment info
+        if not payment_info:
+            try:
+                payment_info = Payment_Information.objects.filter(
+                    customer=request.user
+                ).order_by('-id').only('id', 'customer', 'payment_fees', 'down_payment', 'plan').first()
+                
+                if payment_info:
+                    payment_source = 'service'
+            except Exception as db_error:
+                logger.warning(f"Database query issue in payment processing: {db_error}")
+                # Fallback: use raw query
+                from django.db import connection
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT id, customer_id_id, payment_fees, down_payment, plan 
+                        FROM finance_payment_information 
+                        WHERE customer_id_id = %s 
+                        ORDER BY id DESC 
+                        LIMIT 1
+                    """, [request.user.id])
+                    result = cursor.fetchone()
+                    if result:
+                        payment_info = type('PaymentInfo', (), {
+                            'id': result[0],
+                            'customer_id': result[1],
+                            'payment_fees': result[2],
+                            'down_payment': result[3],
+                            'plan': result[4],
+                            'customer': request.user
+                        })()
+                        if payment_info:
+                            payment_source = 'service'
         
         if not payment_info:
             print(f"[Payments][DEBUG] No payment_info found for user={request.user.username} during processing")
@@ -546,6 +814,14 @@ def payment_failed(request):
 def show_payment_form(request, method, payment_info):
     """Show payment form for the specified method"""
     try:
+        # Get any pre-selected amount from the shared amount selection step
+        selected_amount = None
+        try:
+            if 'payment_amount' in request.session:
+                selected_amount = float(request.session.get('payment_amount') or 0)
+        except (TypeError, ValueError):
+            selected_amount = None
+
         # For manual payment methods, redirect to payment details instead of showing forms
         manual_methods = ['mpesa', 'cashapp', 'zelle', 'venmo']
         
@@ -569,10 +845,12 @@ def show_payment_form(request, method, payment_info):
             
             # Show the payment form (user will enter amount and submit)
             method_info = PAYMENT_METHODS.get(method, {})
+            # If user selected an amount already, use it for display
             context = {
                 'method': method,
                 'method_info': method_info,
                 'payment_info': payment_info,
+                'selected_amount': selected_amount,
             }
             
             template_name = 'finance/payments/stripe_form.html'
@@ -582,10 +860,29 @@ def show_payment_form(request, method, payment_info):
         
         # For other automated methods (PayPal), show their specific forms
         method_info = PAYMENT_METHODS.get(method, {})
+        from django.conf import settings
+        
+        # CRITICAL: Check if balance is zero before showing payment form
+        try:
+            fee_balance = payment_info.get_fee_balance()
+            if fee_balance <= 0:
+                logger.info(f"User {request.user.username} has zero balance (${fee_balance}), redirecting to success page")
+                messages.success(request, 'Your account balance is already paid in full. No payment needed!')
+                # Store in session for success page
+                request.session['payment_reference'] = 'BALANCE-PAID'
+                request.session['payment_amount'] = 0
+                request.session['payment_method'] = 'N/A'
+                return redirect('finance:unified_success')
+        except Exception as e:
+            logger.warning(f"Error checking fee balance: {e}, continuing with payment form")
+            # If we can't check balance, continue (template will validate)
+        
         context = {
             'method': method,
             'method_info': method_info,
             'payment_info': payment_info,
+            'selected_amount': selected_amount,
+            'PAYPAL_CLIENT_ID': getattr(settings, 'PAYPAL_CLIENT_ID', None),  # Pass PayPal client ID to template
         }
         
         template_name = f'finance/payments/{method}_form.html'

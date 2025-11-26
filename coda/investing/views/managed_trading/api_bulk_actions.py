@@ -115,3 +115,4 @@ def bulk_approve_excellent(request):
         }, status=500)
 
 
+

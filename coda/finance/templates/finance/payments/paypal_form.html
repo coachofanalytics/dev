@@ -51,7 +51,8 @@
                             <strong>Quick & Secure</strong> - Click the button below to pay instantly
                         </div>
                         
-                        <input type="hidden" id="paypal-amount" value="{{ payment_info.down_payment }}">
+                        <!-- Amount comes from shared selection step if available, otherwise use full balance -->
+                        <input type="hidden" id="paypal-amount" value="{{ selected_amount|default:payment_info.get_fee_balance }}">
                         
                         <!-- PayPal Button Container -->
                         <div id="paypal-button-container" class="mb-3"></div>
@@ -94,7 +95,7 @@
 </div>
 
 <!-- Include PayPal JavaScript SDK -->
-<script src="https://www.paypal.com/sdk/js?client-id=AYsNJlHsAzemW-IvLkkf42iMHGdTMxFfupX6CTI2-rhDDfU67zTQ2n_lszMkxcrrYq_5Qltrw99Lep4D&currency=USD"></script>
+<script src="https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID|default:"AYsNJlHsAzemW-IvLkkf42iMHGdTMxFfupX6CTI2-rhDDfU67zTQ2n_lszMkxcrrYq_5Qltrw99Lep4D" }}&currency=USD"></script>
 
 <script>
 // Get CSRF token
@@ -134,20 +135,63 @@ function completeOrder(orderData) {
 }
 
 // Get payment amount
-var paypalAmount = document.getElementById('paypal-amount').value;
+var paypalAmount = parseFloat(document.getElementById('paypal-amount').value);
 
-// Render PayPal Buttons
-paypal.Buttons({
-    // Set up the transaction
-    createOrder: function(data, actions) {
-        return actions.order.create({
-            purchase_units: [{
-                amount: {
-                    value: paypalAmount
-                }
-            }]
-        });
-    },
+// Validate amount - CRITICAL: PayPal rejects zero amounts
+if (!paypalAmount || paypalAmount <= 0 || isNaN(paypalAmount)) {
+    console.error('Invalid payment amount:', paypalAmount);
+    console.error('This usually means the account balance is already paid in full.');
+    
+    // Show user-friendly message
+    var errorMessage = '<div class="alert alert-success">' +
+        '<h5><i class="fa fa-check-circle"></i> Account Already Paid</h5>' +
+        '<p>Your account balance is $0.00. No payment is needed at this time.</p>' +
+        '<p>If you believe this is an error, please contact support.</p>' +
+        '</div>';
+    document.getElementById('paypal-button-container').innerHTML = errorMessage;
+    
+    // Also show alert
+    alert('Your account balance is already paid in full. No payment needed!');
+} else {
+    console.log('Payment amount validated:', paypalAmount);
+    console.log('Amount is valid for PayPal processing');
+}
+
+// Validate PayPal SDK loaded
+if (typeof paypal === 'undefined') {
+    console.error('PayPal SDK failed to load!');
+    alert('PayPal SDK failed to load. Please check your internet connection and try again.');
+} else {
+    console.log('PayPal SDK loaded successfully');
+    console.log('PayPal Client ID:', '{{ PAYPAL_CLIENT_ID|default:"NOT SET" }}');
+    console.log('Payment amount:', paypalAmount);
+}
+
+// Render PayPal Buttons (only if amount is valid)
+if (paypalAmount && paypalAmount > 0 && typeof paypal !== 'undefined') {
+    paypal.Buttons({
+        // Set up the transaction
+        createOrder: function(data, actions) {
+            // Validate amount again before creating order
+            var amount = parseFloat(document.getElementById('paypal-amount').value);
+            if (!amount || amount <= 0) {
+                console.error('Invalid amount in createOrder:', amount);
+                throw new Error('Payment amount must be greater than zero');
+            }
+            
+            // Format amount to 2 decimal places (PayPal requirement)
+            var formattedAmount = amount.toFixed(2);
+            console.log('Creating PayPal order with amount:', formattedAmount);
+            
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: formattedAmount,
+                        currency_code: 'USD'
+                    }
+                }]
+            });
+        },
     
     // Finalize the transaction
     onApprove: function(data, actions) {
@@ -171,7 +215,20 @@ paypal.Buttons({
     // Handle errors
     onError: function(err) {
         console.error('PayPal error:', err);
-        alert('PayPal payment failed. Please try again or use manual payment option below.');
+        console.error('PayPal error details:', JSON.stringify(err, null, 2));
+        
+        // More detailed error message
+        var errorMsg = 'PayPal payment failed. ';
+        if (err && err.message) {
+            errorMsg += 'Error: ' + err.message;
+        } else if (err && err.name) {
+            errorMsg += 'Error: ' + err.name;
+        } else {
+            errorMsg += 'Please check browser console for details.';
+        }
+        errorMsg += ' Please try again or use manual payment option below.';
+        
+        alert(errorMsg);
     },
     
     // Handle cancellation
@@ -179,7 +236,11 @@ paypal.Buttons({
         console.log('PayPal payment cancelled by user');
         alert('Payment cancelled. You can try again or use manual payment option below.');
     }
-}).render('#paypal-button-container');
+    }).render('#paypal-button-container');
+} else {
+    console.error('Cannot render PayPal buttons: amount is invalid or SDK not loaded');
+    document.getElementById('paypal-button-container').innerHTML = '<div class="alert alert-danger">PayPal payment is not available. Please use manual payment option below.</div>';
+}
 </script>
 {% endblock %}
 

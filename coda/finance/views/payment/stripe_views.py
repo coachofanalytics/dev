@@ -42,6 +42,14 @@ def create_checkout_session(request):
     from django.urls import reverse
     
     try:
+        # Preferred: use amount selected in the shared amount selection step (if present)
+        selected_amount = None
+        try:
+            if 'payment_amount' in request.session:
+                selected_amount = float(request.session.get('payment_amount') or 0)
+        except (TypeError, ValueError):
+            selected_amount = None
+
         # Get user's payment information first (needed for amount calculation)
         try:
             payment_info = Payment_Information.objects.filter(
@@ -60,29 +68,38 @@ def create_checkout_session(request):
             messages.error(request, 'No payment information found.')
             return redirect('finance:payment_method_selection')
         
-        # Get amount from POST (form submission) or GET (direct link)
-        if request.method == 'POST':
-            # Handle form POST (from stripe_form.html)
-            amount_type = request.POST.get('amount_type', 'full')
-            
-            if amount_type == 'full':
-                # Get full amount from payment info
-                amount = float(payment_info.get_fee_balance())
-            else:
-                # Partial payment - get amount from form
-                amount = float(request.POST.get('amount', 0))
-            
-            print(f"[Stripe][DEBUG] Form POST: amount_type={amount_type} amount={amount} user={request.user.id}")
+        # Get amount from (in order of priority):
+        # 1) POST body (hidden field from stripe_form.html)
+        # 2) Session (shared amount selection step)
+        # 3) Query string fallback
+        # 4) Full fee balance
+        amount = None
+
+        if request.method == 'POST' and request.POST.get('amount'):
+            amount = float(request.POST.get('amount', 0))
+            print(f"[Stripe][DEBUG] Form POST amount={amount} user={request.user.id}")
+        elif selected_amount is not None and selected_amount > 0:
+            amount = selected_amount
+            print(f"[Stripe][DEBUG] Using selected_amount from session={amount} user={request.user.id}")
         else:
-            # GET request - get amount from query string (default to full balance)
+            # GET request or fallback - get amount from query string (default to full balance)
             amount = float(request.GET.get('amount', payment_info.get_fee_balance()))
-            print(f"[Stripe][DEBUG] GET request: amount={amount} user={request.user.id}")
+            print(f"[Stripe][DEBUG] GET/fallback amount={amount} user={request.user.id}")
         
         if amount <= 0:
             print("[Stripe][DEBUG] Invalid amount received for Checkout Session")
             from django.contrib import messages
             messages.error(request, 'Invalid payment amount. Please enter a valid amount.')
             return redirect('finance:unified_processing', method='stripe')
+
+        # Extra safety: do not allow more than outstanding balance
+        try:
+            max_amount = float(payment_info.get_fee_balance())
+            if amount > max_amount:
+                print(f"[Stripe][DEBUG] Amount {amount} greater than fee balance {max_amount}, capping to balance")
+                amount = max_amount
+        except Exception as balance_err:
+            logger.warning(f"Error checking Stripe max amount against balance: {balance_err}")
         
         print(f"[Stripe][DEBUG] Using PaymentInformation id={payment_info.id} plan={payment_info.plan}")
         

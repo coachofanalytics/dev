@@ -2302,66 +2302,120 @@ def pay(request, *args, **kwargs):
     return render(request, "finance/payments/pay.html", context)
 
 
+@login_required
+@csrf_exempt  # PayPal JavaScript SDK sends POST requests that need CSRF exemption
+@require_http_methods(["POST"])
 def paymentComplete(request):
-    payments = Payment_Information.objects.filter(customer_id=request.user.id).first()
-    customer = request.user
-    body = json.loads(request.body)
-    payment_fees = int(float(body["payment_fees"]))
-    down_payment = payments.down_payment
-    studend_bonus = payments.student_bonus
-    plan = payments.plan
-    subplan = payments.subplan
-    pricing_plan = payments.pricing_plan
-    # Calculate fee_balance (required field)
-    fee_balance = payment_fees - down_payment
-    payment_mothod = payments.payment_method
-    contract_submitted_date = payments.contract_submitted_date
-    client_signature = payments.client_signature
-    company_rep = payments.company_rep
-    client_date = payments.client_date
-    rep_date = payments.rep_date
+    """
+    Handle PayPal payment completion from JavaScript SDK
+    Fixed: Nov 5, 2025 - Added error handling, CSRF exemption, and proper field references
+    """
+    import logging
+    logger = logging.getLogger(__name__)
     
-    # Get PayPal transaction details if available
-    transaction_id = body.get("transaction_id", "")
-    payer_email = body.get("payer_email", "")
-    
-    Payment_History.objects.create(
-        customer=customer,
-        payment_fees=payment_fees,
-        down_payment=down_payment,
-        fee_balance=fee_balance,
-        student_bonus=studend_bonus,
-        plan=plan,
-        subplan=subplan,
-        pricing_plan=pricing_plan,
-        payment_method=payment_mothod,
-        contract_submitted_date=contract_submitted_date,
-        client_signature=client_signature,
-        company_rep=company_rep,
-        client_date=client_date,
-        rep_date=rep_date,
-        notes=f"PayPal Transaction ID: {transaction_id} | Payer: {payer_email}" if transaction_id else "",
-    )
     try:
-        if PayslipConfig.objects.filter(user__username=request.user.username).exists():
-            payslip_config = PayslipConfig.objects.get(
-                user__username=request.user.username
+        # Parse request body
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in paymentComplete request: {e}")
+            return JsonResponse({"error": "Invalid request format"}, status=400)
+        
+        # Validate required fields
+        if "payment_fees" not in body:
+            logger.error(f"Missing payment_fees in request from user {request.user.id}")
+            return JsonResponse({"error": "Payment amount is required"}, status=400)
+        
+        # Get payment information - FIXED: use 'customer' not 'customer_id'
+        payments = Payment_Information.objects.filter(customer=request.user).first()
+        if not payments:
+            logger.error(f"No payment information found for user {request.user.id}")
+            return JsonResponse({"error": "Payment information not found"}, status=404)
+        
+        customer = request.user
+        payment_fees = int(float(body["payment_fees"]))
+        down_payment = payments.down_payment
+        studend_bonus = payments.student_bonus
+        plan = payments.plan
+        subplan = payments.subplan
+        pricing_plan = payments.pricing_plan
+        
+        # Calculate fee_balance (required field)
+        fee_balance = payment_fees - down_payment
+        payment_mothod = payments.payment_method
+        contract_submitted_date = payments.contract_submitted_date
+        client_signature = payments.client_signature
+        company_rep = payments.company_rep
+        client_date = payments.client_date
+        rep_date = payments.rep_date
+        
+        # Get PayPal transaction details if available
+        transaction_id = body.get("transaction_id", "")
+        payer_email = body.get("payer_email", "")
+        
+        # Create payment history record
+        try:
+            payment_history = Payment_History.objects.create(
+                customer=customer,
+                payment_fees=payment_fees,
+                down_payment=down_payment,
+                fee_balance=fee_balance,
+                student_bonus=studend_bonus,
+                plan=plan,
+                subplan=subplan,
+                pricing_plan=pricing_plan,
+                payment_method=payment_mothod,
+                contract_submitted_date=contract_submitted_date,
+                client_signature=client_signature,
+                company_rep=company_rep,
+                client_date=client_date,
+                rep_date=rep_date,
+                notes=f"PayPal Transaction ID: {transaction_id} | Payer: {payer_email}" if transaction_id else "",
             )
-            payslip_config.loan_amount = payment_fees
-            payslip_config.installment_amount = down_payment
-            payslip_config.save()
-
-        else:
-            payslip_config = PayslipConfig.objects.create(
-                user=request.user.customer_id,
-                loan_amount=payment_fees,
-                loan_repayment_percentage=0,
-                installment_amount=down_payment,
-            )
-    except:
-        pass
-
-    return JsonResponse("Payment completed!", safe=False)
+            logger.info(f"PayPal payment history created: ID={payment_history.id} for user={request.user.id} amount=${payment_fees}")
+        except Exception as e:
+            logger.error(f"Error creating payment history for user {request.user.id}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({"error": "Failed to save payment record"}, status=500)
+        
+        # Update PayslipConfig if it exists
+        try:
+            if PayslipConfig.objects.filter(user__username=request.user.username).exists():
+                payslip_config = PayslipConfig.objects.get(
+                    user__username=request.user.username
+                )
+                payslip_config.loan_amount = payment_fees
+                payslip_config.installment_amount = down_payment
+                payslip_config.save()
+                logger.info(f"Updated PayslipConfig for user {request.user.username}")
+            else:
+                # FIXED: Use request.user instead of request.user.customer_id
+                payslip_config = PayslipConfig.objects.create(
+                    user=request.user,
+                    loan_amount=payment_fees,
+                    loan_repayment_percentage=0,
+                    installment_amount=down_payment,
+                )
+                logger.info(f"Created PayslipConfig for user {request.user.username}")
+        except Exception as e:
+            # Non-critical - log but don't fail
+            logger.warning(f"Error updating PayslipConfig for user {request.user.username}: {str(e)}")
+        
+        # Store payment details in session for success page
+        request.session['payment_reference'] = f"PAYPAL-{transaction_id}" if transaction_id else f"PAYPAL-{request.user.id}-{payment_fees}"
+        request.session['payment_amount'] = payment_fees
+        request.session['payment_method'] = 'PayPal'
+        request.session['payment_date'] = timezone.now().isoformat()
+        
+        logger.info(f"PayPal payment completed successfully for user {request.user.id}: ${payment_fees}")
+        return JsonResponse({"success": True, "message": "Payment completed!"}, status=200)
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in paymentComplete for user {request.user.id}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"error": "An unexpected error occurred. Please contact support."}, status=500)
 
 
 class DefaultPaymentListView(ListView):
