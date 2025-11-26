@@ -7,9 +7,14 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('main', '0006_merge_0005_auto_20251017_1430_0005_contactmessage'),
+        ('main', '0006_scholarship_trainingcourse'),
     ]
 
     operations = [
+        migrations.RunSQL(
+            sql="DROP TABLE IF EXISTS main_scholarship",
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.CreateModel(
             name='Scholarship',
             fields=[
