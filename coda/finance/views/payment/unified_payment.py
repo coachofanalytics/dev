@@ -114,9 +114,22 @@ def payment_method_selection(request):
             # User has active loan - create payment_info from loan
             logger.info(f"User {request.user.username} has active loan: {active_loans.id}")
             
+            # IMPORTANT: Refresh the loan object from database to get latest payments
+            # This ensures balance_amount property calculates with fresh payment data
+            active_loans.refresh_from_db()
+            
+            # Clear related objects cache to force fresh query for loan_payments
+            # This is critical because balance_amount depends on total_paid which sums loan_payments.all()
+            if hasattr(active_loans, '_loan_payments_cache'):
+                delattr(active_loans, '_loan_payments_cache')
+            if hasattr(active_loans, '_prefetched_objects_cache'):
+                active_loans._prefetched_objects_cache = {}
+            
             # Use balance_amount (outstanding balance) if available, otherwise total_payable or amount_requested
-            if hasattr(active_loans, 'balance_amount') and active_loans.balance_amount:
-                loan_amount = float(active_loans.balance_amount)
+            # balance_amount is a property that dynamically calculates: total_payable - total_paid
+            current_balance = float(active_loans.balance_amount) if active_loans.balance_amount else 0.0
+            if current_balance > 0:
+                loan_amount = current_balance
             elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
                 loan_amount = float(active_loans.total_payable)
             else:
@@ -135,15 +148,60 @@ def payment_method_selection(request):
                     self._loan = loan
                 
                 def get_fee_balance(self):
-                    """Calculate outstanding loan balance"""
-                    if hasattr(self._loan, 'balance_amount') and self._loan.balance_amount:
-                        return float(self._loan.balance_amount)
-                    # Fallback: return payment_fees (full loan amount if no payments made)
-                    return float(self.payment_fees)
+                    """
+                    Calculate outstanding loan balance using Loan model's balance_amount property
+                    Validates property result and falls back to direct calculation if property is incorrect
+                    """
+                    # Refresh loan from DB to ensure we get latest payment records
+                    self._loan.refresh_from_db()
+                    
+                    # Clear related objects cache to force fresh query for loan_payments
+                    if hasattr(self._loan, '_loan_payments_cache'):
+                        delattr(self._loan, '_loan_payments_cache')
+                    if hasattr(self._loan, '_prefetched_objects_cache'):
+                        self._loan._prefetched_objects_cache = {}
+                    
+                    # Calculate balance directly first to validate property result
+                    from decimal import Decimal
+                    total_paid = self._loan.total_paid
+                    total_payable = self._loan.total_payable or Decimal('0.00')
+                    calculated_balance = max(Decimal('0.00'), total_payable - total_paid)
+                    calculated_float = float(calculated_balance)
+                    
+                    # PRIORITY 1: Try using the loan's balance_amount property (from Loan model)
+                    # This is the proper way to get loan balance, but we validate it
+                    try:
+                        if hasattr(self._loan, 'balance_amount'):
+                            balance_property = self._loan.balance_amount
+                            if balance_property is not None:
+                                balance_float = float(balance_property)
+                                
+                                # VALIDATION: Check if property value makes sense
+                                # If property returns 0 but calculated balance > 0, property is wrong
+                                # If property and calculated are close (within $0.01), use property
+                                if balance_float >= 0:
+                                    difference = abs(balance_float - calculated_float)
+                                    if difference < 0.01:
+                                        # Property matches calculated - use property (preferred)
+                                        return balance_float
+                                    elif balance_float == 0 and calculated_float > 0:
+                                        # Property incorrectly returns 0 - use calculated
+                                        logger.warning(f"balance_amount property returns $0.0 but calculated is ${calculated_float}, using calculated")
+                                        return calculated_float
+                                    else:
+                                        # Property differs significantly - use calculated (more reliable)
+                                        logger.warning(f"balance_amount property (${balance_float}) differs from calculated (${calculated_float}), using calculated")
+                                        return calculated_float
+                    except Exception as e:
+                        logger.warning(f"Error using balance_amount property: {e}, using calculated value")
+                    
+                    # PRIORITY 2: Use calculated balance (fallback or when property is invalid)
+                    return calculated_float
             
             payment_info = LoanPaymentInfo(active_loans, loan_amount)
             payment_source = 'loan'
-            logger.info(f"Created loan payment_info: amount=${loan_amount}, balance=${payment_info.get_fee_balance()}")
+            current_balance_display = payment_info.get_fee_balance()
+            logger.info(f"Created loan payment_info: amount=${loan_amount}, balance=${current_balance_display}")
         
         # PRIORITY 2: If no active loan, check for service payment info
         if not payment_info:
@@ -160,7 +218,6 @@ def payment_method_selection(request):
                 # Fallback: use raw query to avoid model ordering issues
                 from django.db import connection
                 with connection.cursor() as cursor:
-                    print(f"[Payments][DEBUG] Raw query fallback for payment info (selection) user_id={request.user.id}")
                     cursor.execute("""
                         SELECT id, customer_id_id, payment_fees, down_payment, plan 
                         FROM finance_payment_information 
@@ -188,36 +245,29 @@ def payment_method_selection(request):
             try:
                 from finance.utilities.payment_utils import PaymentUtils
                 named_url, absolute_url = PaymentUtils.get_persona_redirect_url(request.user)
-                print(f"[Payments][DEBUG] Persona redirect lookup for user={request.user.username}: named_url={named_url} absolute_url={absolute_url}")
                 if named_url:
-                    print(f"[Payments][DEBUG] Redirecting via persona named_url={named_url}")
                     return redirect(reverse(named_url))
                 if absolute_url:
-                    print(f"[Payments][DEBUG] Redirecting via persona absolute_url={absolute_url}")
                     return redirect(absolute_url)
             except Exception:
                 pass
             
             # If no payment context found, redirect to loan application or service selection
-            print("[Payments][DEBUG] No payment context found; redirecting user to onboarding flows")
             messages.error(request, 'No payment context found. Please select a service or apply for a loan to continue.')
             
             # Try to redirect to loan application first
             try:
-                print("[Payments][DEBUG] Redirecting to finance:loan-home")
                 return redirect('finance:loan-home')
             except Exception:
                 pass
             
             # Fallback to finance index
             try:
-                print("[Payments][DEBUG] Redirecting to finance:finance-index")
                 return redirect('finance:finance-index')
             except Exception:
                 pass
             
             # Last resort - show error page
-            print("[Payments][DEBUG] Rendering no_payment_context fallback")
             return render(request, 'finance/payments/no_payment_context.html', {
                 'error_message': 'No payment context found. Please contact support or select a service.'
             })
@@ -225,7 +275,6 @@ def payment_method_selection(request):
         # Calculate amounts
         total_amount = payment_info.payment_fees
         down_payment = payment_info.down_payment
-        print(f"DEBUG: total_amount: {total_amount}, down_payment: {down_payment}")
         
         # Calculate balance using get_fee_balance() method (accounts for payments already made)
         try:
@@ -256,15 +305,9 @@ def payment_method_selection(request):
             'balance': balance,
             'payment_info': payment_info,
         }
-        print(f"[Payments][DEBUG] Context created successfully for user={request.user.username}: total={total_amount} down={down_payment} balance={balance}")
-        print("[Payments][DEBUG] Rendering payment method selection")
         return render(request, 'finance/payments/method_selection.html', context)
         
     except Exception as e:
-        print(f"[Payments][DEBUG] Exception in payment_method_selection for user={request.user.username}: {e}")
-        print(f"[Payments][DEBUG] Exception type: {type(e)}")
-        import traceback
-        print(f"DEBUG: Full traceback: {traceback.format_exc()}")
         logger.error(f"Error in payment method selection: {str(e)}")
         messages.error(request, 'Error loading payment methods. Please try again.')
         return redirect('finance:payments', title='history', status='completed')
@@ -296,8 +339,20 @@ def payment_amount_selection(request, method):
         if active_loans:
             logger.info(f"User {request.user.username} has active loan: {active_loans.id} for amount selection")
             
-            if hasattr(active_loans, 'balance_amount') and active_loans.balance_amount:
-                loan_amount = float(active_loans.balance_amount)
+            # Refresh loan from DB to get latest payments
+            active_loans.refresh_from_db()
+            
+            # Clear related objects cache to force fresh query for loan_payments
+            if hasattr(active_loans, '_loan_payments_cache'):
+                delattr(active_loans, '_loan_payments_cache')
+            if hasattr(active_loans, '_prefetched_objects_cache'):
+                active_loans._prefetched_objects_cache = {}
+            
+            # Force recalculation by accessing total_paid first
+            _ = active_loans.total_paid
+            current_balance = float(active_loans.balance_amount) if active_loans.balance_amount else 0.0
+            if current_balance > 0:
+                loan_amount = current_balance
             elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
                 loan_amount = float(active_loans.total_payable)
             else:
@@ -314,9 +369,24 @@ def payment_amount_selection(request, method):
                     self._loan = loan
                 
                 def get_fee_balance(self):
-                    if hasattr(self._loan, 'balance_amount') and self._loan.balance_amount:
-                        return float(self._loan.balance_amount)
-                    return float(self.payment_fees)
+                    """Calculate outstanding loan balance - refreshes loan to get latest payments"""
+                    # Refresh loan from DB to ensure we get latest payment records
+                    self._loan.refresh_from_db()
+                    
+                    # Clear related objects cache to force fresh query for loan_payments
+                    if hasattr(self._loan, '_loan_payments_cache'):
+                        delattr(self._loan, '_loan_payments_cache')
+                    if hasattr(self._loan, '_prefetched_objects_cache'):
+                        self._loan._prefetched_objects_cache = {}
+                    
+                    # Calculate balance directly instead of relying on property
+                    from decimal import Decimal
+                    total_paid = self._loan.total_paid
+                    total_payable = self._loan.total_payable or Decimal('0.00')
+                    
+                    # Calculate balance: total_payable - total_paid
+                    calculated_balance = max(Decimal('0.00'), total_payable - total_paid)
+                    return float(calculated_balance)
             
             payment_info = LoanPaymentInfo(active_loans, loan_amount)
             payment_source = 'loan'
@@ -449,9 +519,20 @@ def payment_processing(request, method):
             # User has active loan - create payment_info from loan
             logger.info(f"User {request.user.username} has active loan: {active_loans.id} for payment processing")
             
-            # Use balance_amount (outstanding balance) if available
-            if hasattr(active_loans, 'balance_amount') and active_loans.balance_amount:
-                loan_amount = float(active_loans.balance_amount)
+            # Refresh loan from DB to get latest payments
+            active_loans.refresh_from_db()
+            
+            # Clear related objects cache to force fresh query for loan_payments
+            if hasattr(active_loans, '_loan_payments_cache'):
+                delattr(active_loans, '_loan_payments_cache')
+            if hasattr(active_loans, '_prefetched_objects_cache'):
+                active_loans._prefetched_objects_cache = {}
+            
+            # Force recalculation by accessing total_paid first
+            _ = active_loans.total_paid
+            current_balance = float(active_loans.balance_amount) if active_loans.balance_amount else 0.0
+            if current_balance > 0:
+                loan_amount = current_balance
             elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
                 loan_amount = float(active_loans.total_payable)
             else:
@@ -469,10 +550,27 @@ def payment_processing(request, method):
                     self._loan = loan
                 
                 def get_fee_balance(self):
-                    """Calculate outstanding loan balance"""
-                    if hasattr(self._loan, 'balance_amount') and self._loan.balance_amount:
-                        return float(self._loan.balance_amount)
-                    return float(self.payment_fees)
+                    """Calculate outstanding loan balance - refreshes loan to get latest payments"""
+                    # Refresh loan from DB to ensure we get latest payment records
+                    self._loan.refresh_from_db()
+                    
+                    # Clear related objects cache to force fresh query for loan_payments
+                    if hasattr(self._loan, '_loan_payments_cache'):
+                        delattr(self._loan, '_loan_payments_cache')
+                    if hasattr(self._loan, '_prefetched_objects_cache'):
+                        self._loan._prefetched_objects_cache = {}
+                    
+                    # Calculate balance directly instead of relying on property
+                    # This ensures we get the correct value even if property has issues
+                    from decimal import Decimal
+                    total_paid = self._loan.total_paid
+                    total_payable = self._loan.total_payable or Decimal('0.00')
+                    
+                    # Calculate balance: total_payable - total_paid
+                    calculated_balance = max(Decimal('0.00'), total_payable - total_paid)
+                    balance_float = float(calculated_balance)
+                    
+                    return balance_float
             
             payment_info = LoanPaymentInfo(active_loans, loan_amount)
             payment_source = 'loan'
@@ -513,7 +611,6 @@ def payment_processing(request, method):
                             payment_source = 'service'
         
         if not payment_info:
-            print(f"[Payments][DEBUG] No payment_info found for user={request.user.username} during processing")
             messages.error(request, 'No payment information found.')
             return redirect('finance:unified_method_selection')
         
@@ -522,15 +619,12 @@ def payment_processing(request, method):
         payment_service = None
         
         if request.method == 'POST':
-            print(f"[Payments][DEBUG] Processing POST request for method={method}")
             # Process payment based on method
             result = process_payment_by_method(
                 request, method, payment_info, payment_service
             )
-            print(f"[Payments][DEBUG] Payment processing result={result}")
             return result
         else:
-            print(f"[Payments][DEBUG] Showing payment form for method={method}")
             # Show payment form
             return show_payment_form(request, method, payment_info)
             
@@ -740,11 +834,9 @@ def process_stripe_payment(request, payment_info, payment_service):
         getattr(settings, 'STRIPE_PUBLISHABLE_KEY', None),
         getattr(settings, 'STRIPE_SECRET_KEY', None)
     ])
-    print(f"[Stripe][DEBUG] process_stripe_payment creds_present={has_stripe_creds}")
     
     if not has_stripe_creds:
         logger.info(f"Stripe credentials not available for user {request.user.username}, showing payment details")
-        print("[Stripe][DEBUG] Missing Stripe credentials, falling back to manual instructions")
         return show_payment_details(request, 'stripe')
     
     # Get amount from request (default to full balance)
@@ -756,12 +848,10 @@ def process_stripe_payment(request, payment_info, payment_service):
     
     # Redirect to create Checkout Session (which will redirect to Stripe)
     logger.info(f"Redirecting to Stripe Checkout for user {request.user.username} amount={amount}")
-    print(f"[Stripe][DEBUG] Redirecting to Checkout Session for user={request.user.username} amount={amount}")
     return redirect(f"{reverse('finance:stripe_checkout_session')}?amount={amount}")
 @login_required
 def payment_success(request):
     """Unified payment success view"""
-    print(f"DEBUG: Payment success view called!")
     try:
         # Get payment data from session
         reference = request.session.get('payment_reference', 'DEMO-REF-001')
@@ -855,7 +945,6 @@ def show_payment_form(request, method, payment_info):
             
             template_name = 'finance/payments/stripe_form.html'
             logger.info(f"Showing Stripe payment form for user {request.user.username}")
-            print(f"[Stripe][DEBUG] Showing payment form for user={request.user.username}")
             return render(request, template_name, context)
         
         # For other automated methods (PayPal), show their specific forms
@@ -891,7 +980,6 @@ def show_payment_form(request, method, payment_info):
         
     except Exception as e:
         logger.error(f"Error showing payment form for {method}: {str(e)}")
-        print(f"[Payments][DEBUG] Error showing payment form for {method}: {e}")
         import traceback
         traceback.print_exc()
         messages.error(request, f'Error loading {method} payment form.')

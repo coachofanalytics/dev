@@ -2309,8 +2309,13 @@ def paymentComplete(request):
     """
     Handle PayPal payment completion from JavaScript SDK
     Fixed: Nov 5, 2025 - Added error handling, CSRF exemption, and proper field references
+    Updated: Now handles loan payments - checks session for loan_application_id
     """
     import logging
+    from finance.models import LoanApplication, LoanPayment
+    from django.utils import timezone
+    from decimal import Decimal
+    
     logger = logging.getLogger(__name__)
     
     try:
@@ -2326,6 +2331,60 @@ def paymentComplete(request):
             logger.error(f"Missing payment_fees in request from user {request.user.id}")
             return JsonResponse({"error": "Payment amount is required"}, status=400)
         
+        payment_amount = Decimal(str(body["payment_fees"]))
+        transaction_id = body.get("transaction_id", "")
+        payer_email = body.get("payer_email", "")
+        
+        # PRIORITY 1: Check if this is a loan payment (from session)
+        loan_application_id = request.session.get('loan_application_id')
+        if loan_application_id:
+            try:
+                loan_application = LoanApplication.objects.get(
+                    id=loan_application_id,
+                    borrower=request.user,
+                    status__in=['active', 'approved', 'disbursed']
+                )
+                
+                # Create LoanPayment record
+                loan_payment = LoanPayment.objects.create(
+                    loan_application=loan_application,
+                    payment_date=timezone.now().date(),
+                    amount=payment_amount,
+                    payment_type='regular',
+                    reference_number=f"PAYPAL-{transaction_id}" if transaction_id else None,
+                    notes=f"PayPal payment | Transaction ID: {transaction_id} | Payer: {payer_email}" if transaction_id else "PayPal payment"
+                )
+                
+                logger.info(f"Loan payment recorded: ID={loan_payment.id} for loan={loan_application.id} amount=${payment_amount}")
+                
+                # The loan's balance_amount is computed from total_paid property (which sums LoanPayment records)
+                # So the balance will automatically update when we query it next time
+                new_balance = loan_application.balance_amount
+                logger.info(f"Loan {loan_application.id} new balance: ${new_balance} (was ${loan_application.balance_amount + payment_amount})")
+                
+                # Store payment details in session for success page
+                request.session['payment_reference'] = loan_payment.reference_number or f"PAYPAL-{transaction_id}" if transaction_id else f"PAYPAL-{request.user.id}-{payment_amount}"
+                request.session['payment_amount'] = float(payment_amount)
+                request.session['payment_method'] = 'PayPal'
+                request.session['payment_date'] = timezone.now().isoformat()
+                
+                # Clear loan_application_id from session
+                if 'loan_application_id' in request.session:
+                    del request.session['loan_application_id']
+                
+                logger.info(f"Loan payment completed successfully for user {request.user.id}: ${payment_amount}")
+                return JsonResponse({"success": True, "message": "Payment completed!"}, status=200)
+                
+            except LoanApplication.DoesNotExist:
+                logger.warning(f"Loan application {loan_application_id} not found for user {request.user.id}, falling back to service payment")
+                # Fall through to service payment handling
+            except Exception as e:
+                logger.error(f"Error processing loan payment for user {request.user.id}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                return JsonResponse({"error": "Failed to process loan payment"}, status=500)
+        
+        # PRIORITY 2: Handle service payment (Payment_Information)
         # Get payment information - FIXED: use 'customer' not 'customer_id'
         payments = Payment_Information.objects.filter(customer=request.user).first()
         if not payments:
@@ -2333,7 +2392,7 @@ def paymentComplete(request):
             return JsonResponse({"error": "Payment information not found"}, status=404)
         
         customer = request.user
-        payment_fees = int(float(body["payment_fees"]))
+        payment_fees = int(float(payment_amount))
         down_payment = payments.down_payment
         studend_bonus = payments.student_bonus
         plan = payments.plan
@@ -2348,10 +2407,6 @@ def paymentComplete(request):
         company_rep = payments.company_rep
         client_date = payments.client_date
         rep_date = payments.rep_date
-        
-        # Get PayPal transaction details if available
-        transaction_id = body.get("transaction_id", "")
-        payer_email = body.get("payer_email", "")
         
         # Create payment history record
         try:
