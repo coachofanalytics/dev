@@ -86,6 +86,13 @@ def create_checkout_session(request):
         
         print(f"[Stripe][DEBUG] Using PaymentInformation id={payment_info.id} plan={payment_info.plan}")
         
+        # Detect organization from request domain
+        from shared_core.utils import detect_organization_from_request
+        organization = detect_organization_from_request(request)
+        company_id = organization.id if organization else None
+        company_slug = organization.slug if organization else 'coda'
+        print(f"[Stripe][DEBUG] Detected organization: {organization.name if organization else 'None'} (id: {company_id}, slug: {company_slug})")
+        
         # Build success and cancel URLs
         success_url = request.build_absolute_uri(reverse('finance:stripe_checkout_success'))
         cancel_url = request.build_absolute_uri(reverse('finance:stripe_checkout_cancel'))
@@ -116,6 +123,8 @@ def create_checkout_session(request):
                 'payment_info_id': str(payment_info.id),
                 'amount': str(amount),
                 'reference': f"STRIPE-CHECKOUT-{request.user.id}-{amount}",
+                'company_id': str(company_id) if company_id else None,  # ADD: Store company ID
+                'company_slug': company_slug,  # ADD: Store company slug
             },
         )
         
@@ -201,13 +210,23 @@ def stripe_checkout_success(request):
             payment_info_id = metadata.get('payment_info_id')
             amount = float(metadata.get('amount', 0))
             reference = metadata.get('reference', f"STRIPE-CHECKOUT-{session_id}")
+            company_id = metadata.get('company_id')  # Get company from metadata
+            
+            # Get company instance if company_id exists
+            company = None
+            if company_id:
+                try:
+                    from shared_core.models import Company
+                    company = Company.objects.filter(id=int(company_id)).first()
+                except Exception as e:
+                    logger.warning(f"Error retrieving company from metadata: {e}")
             
             if user_id and payment_info_id:
                 try:
                     # Get payment info
                     payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=payment_info_id)
                     
-                    # Save payment history
+                    # Save payment history with company
                     user = CustomerUser.objects.get(id=int(user_id))
                     ok = save_payment_history(
                         user=user,
@@ -215,7 +234,8 @@ def stripe_checkout_success(request):
                         method='Stripe',
                         reference=reference,
                         amount=amount,
-                        status='completed'
+                        status='completed',
+                        company=company  # ADD: Pass company to save_payment_history
                     )
                     
                     if ok:
@@ -328,13 +348,23 @@ def stripe_webhook(request):
         payment_info_id = metadata.get('payment_info_id')
         amount = float(metadata.get('amount', checkout_session.get('amount_total', 0) / 100))
         reference = metadata.get('reference', f"STRIPE-CHECKOUT-{checkout_session['id']}")
+        company_id = metadata.get('company_id')  # Get company from metadata
+        
+        # Get company instance if company_id exists
+        company = None
+        if company_id:
+            try:
+                from shared_core.models import Company
+                company = Company.objects.filter(id=int(company_id)).first()
+            except Exception as e:
+                logger.warning(f"Error retrieving company from webhook metadata: {e}")
         
         if user_id and payment_info_id and reference:
             try:
                 # Get payment info
                 payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=payment_info_id)
                 
-                # Save payment history
+                # Save payment history with company
                 user = CustomerUser.objects.get(id=int(user_id))
                 ok = save_payment_history(
                     user=user,
@@ -342,7 +372,8 @@ def stripe_webhook(request):
                     method='Stripe',
                     reference=reference,
                     amount=amount,
-                    status='completed'
+                    status='completed',
+                    company=company  # ADD: Pass company to save_payment_history
                 )
                 
                 if ok:
@@ -368,13 +399,23 @@ def stripe_webhook(request):
         payment_info_id = metadata.get('payment_info_id')
         reference = metadata.get('reference')
         amount = payment_intent['amount'] / 100  # Convert from cents
+        company_id = metadata.get('company_id')  # Get company from metadata
+        
+        # Get company instance if company_id exists
+        company = None
+        if company_id:
+            try:
+                from shared_core.models import Company
+                company = Company.objects.filter(id=int(company_id)).first()
+            except Exception as e:
+                logger.warning(f"Error retrieving company from payment_intent metadata: {e}")
         
         if user_id and payment_info_id and reference:
             try:
                 # Get payment info
                 payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=payment_info_id)
                 
-                # Save payment history
+                # Save payment history with company
                 user = CustomerUser.objects.get(id=int(user_id))
                 ok = save_payment_history(
                     user=user,
@@ -382,7 +423,8 @@ def stripe_webhook(request):
                     method='Stripe',
                     reference=reference,
                     amount=amount,
-                    status='completed'
+                    status='completed',
+                    company=company  # ADD: Pass company to save_payment_history
                 )
                 
                 if ok:

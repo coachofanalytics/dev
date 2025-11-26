@@ -9,6 +9,7 @@ from io import BytesIO
 import logging
 import base64
 from datetime import datetime
+from shared_core.utils import get_company_receipt_data
 
 # Optional qrcode import - gracefully handle if not installed
 try:
@@ -129,13 +130,12 @@ class PaymentReceiptService:
                 # Verification
                 'verification_url': verification_url,
                 'qr_code': qr_code_image,
-                
-                # Company Info
-                'company_name': 'CODA Analytics',
-                'company_email': settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'info@codanalytics.net',
-                'company_website': 'www.codanalytics.net',
-                'company_address': 'Nairobi, Kenya',
             }
+            
+            # Get company branding data (from payment_history.company or defaults)
+            company = getattr(payment_history, 'company', None)
+            company_data = get_company_receipt_data(company)
+            receipt_data.update(company_data)
             
             return receipt_data
             
