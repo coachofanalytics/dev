@@ -148,6 +148,16 @@ class Payment_History(PaymentBase):
     pricing_plan = models.IntegerField(null=True)
     # payment_purpose = models.CharField(max_length=50, blank=True, null=True)  # Commented out: column doesn't exist in production DB
     
+    # Organization/Company that processed this payment
+    company = models.ForeignKey(
+        'main.Company',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='payments',
+        help_text="Organization that processed this payment"
+    )
+    
     class Meta:
         db_table = 'finance_payment_history'
         managed = False

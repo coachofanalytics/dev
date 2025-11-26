@@ -22,15 +22,23 @@ def validate_amount(amount):
     except (ValueError, TypeError):
         return False, "Invalid amount format"
 
-def save_payment_history(user, payment_info, method, reference, amount, status="completed"):
+def save_payment_history(user, payment_info, method, reference, amount, status="completed", company=None):
     """Save payment history record - matches payment processing expectations"""
     try:
         from finance.models import Payment_History
         from django.utils import timezone
+        from shared_core.models import Company
         
         # fee_balance is a computed property, not a database field - don't set it
         # Convert amount to integer (payment_fees is IntegerField)
         payment_fees_value = int(round(float(amount)))
+        
+        # If company is None, try to get default CODA company
+        if company is None:
+            try:
+                company = Company.objects.filter(slug__iexact='coda').first()
+            except:
+                company = None
         
         payment_history = Payment_History.objects.create(
             customer=user,
@@ -47,9 +55,10 @@ def save_payment_history(user, payment_info, method, reference, amount, status="
             company_rep=payment_info.company_rep if hasattr(payment_info, 'company_rep') else 'CODA System',
             client_date=payment_info.client_date if hasattr(payment_info, 'client_date') else timezone.now().strftime('%Y-%m-%d'),
             rep_date=payment_info.rep_date if hasattr(payment_info, 'rep_date') else timezone.now().strftime('%Y-%m-%d'),
+            company=company,  # ADD: Store organization/company
             is_active=True,
         )
-        print(f"[Payments][DEBUG] Payment history saved: id={payment_history.id} amount={amount} method={method} reference={reference}")
+        print(f"[Payments][DEBUG] Payment history saved: id={payment_history.id} amount={amount} method={method} reference={reference} company={company.name if company else 'None'}")
         return True
     except Exception as e:
         print(f"Error saving payment history: {str(e)}")
