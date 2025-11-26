@@ -28,6 +28,124 @@ def reverse_delete_member_registration(apps, schema_editor):
     pass
 
 
+def apply_customeruser_changes_if_exists(apps, schema_editor):
+    """Apply field changes to CustomerUser only if the table exists"""
+    db_table = 'accounts_customeruser'
+    with connection.cursor() as cursor:
+        # Check if CustomerUser table exists
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = %s
+            );
+        """, [db_table])
+        exists = cursor.fetchone()[0]
+        
+        if exists:
+            # Table exists, apply the field changes
+            # Remove is_client field if it exists
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = %s AND column_name = 'is_client';
+            """, [db_table])
+            if cursor.fetchone():
+                cursor.execute('ALTER TABLE {} DROP COLUMN IF EXISTS is_client;'.format(db_table))
+            
+            # Remove sub_category field if it exists
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = %s AND column_name = 'sub_category';
+            """, [db_table])
+            if cursor.fetchone():
+                cursor.execute('ALTER TABLE {} DROP COLUMN IF EXISTS sub_category;'.format(db_table))
+            
+            # Add new fields if they don't exist
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = %s AND column_name = 'email_verified';
+            """, [db_table])
+            if not cursor.fetchone():
+                cursor.execute('ALTER TABLE {} ADD COLUMN email_verified BOOLEAN DEFAULT FALSE NOT NULL;'.format(db_table))
+            
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = %s AND column_name = 'is_member';
+            """, [db_table])
+            if not cursor.fetchone():
+                cursor.execute('ALTER TABLE {} ADD COLUMN is_member BOOLEAN DEFAULT FALSE NOT NULL;'.format(db_table))
+            
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = %s AND column_name = 'verification_token';
+            """, [db_table])
+            if not cursor.fetchone():
+                cursor.execute('ALTER TABLE {} ADD COLUMN verification_token UUID UNIQUE;'.format(db_table))
+        # If table doesn't exist, skip - migration 0001 will create it with correct structure
+
+
+def reverse_customeruser_changes(apps, schema_editor):
+    """Reverse the CustomerUser changes if needed"""
+    # This is a no-op for now since we can't easily reverse these changes
+    pass
+
+
+def add_membership_foreign_key_if_customeruser_exists(apps, schema_editor):
+    """Add foreign key to Membership only if CustomerUser table exists"""
+    customeruser_table = 'accounts_customeruser'
+    membership_table = 'accounts_membership'
+    
+    with connection.cursor() as cursor:
+        # Check if CustomerUser table exists
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = %s
+            );
+        """, [customeruser_table])
+        customeruser_exists = cursor.fetchone()[0]
+        
+        # Check if Membership table exists
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = %s
+            );
+        """, [membership_table])
+        membership_exists = cursor.fetchone()[0]
+        
+        # Check if foreign key column already exists
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = %s AND column_name = 'member_id';
+        """, [membership_table])
+        fk_exists = cursor.fetchone() is not None
+        
+        if customeruser_exists and membership_exists and not fk_exists:
+            cursor.execute(f'ALTER TABLE {membership_table} ADD COLUMN member_id INTEGER REFERENCES {customeruser_table}(id) ON DELETE CASCADE;')
+
+
+def reverse_membership_foreign_key(apps, schema_editor):
+    """Remove foreign key if needed"""
+    membership_table = 'accounts_membership'
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = %s AND column_name = 'member_id';
+        """, [membership_table])
+        if cursor.fetchone():
+            cursor.execute(f'ALTER TABLE {membership_table} DROP COLUMN IF EXISTS member_id CASCADE;')
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -57,42 +175,62 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
-        migrations.RemoveField(
-            model_name='customeruser',
-            name='is_client',
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunPython(
+                    apply_customeruser_changes_if_exists,
+                    reverse_customeruser_changes,
+                ),
+            ],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name='customeruser',
+                    name='is_client',
+                ),
+                migrations.RemoveField(
+                    model_name='customeruser',
+                    name='sub_category',
+                ),
+                migrations.AddField(
+                    model_name='customeruser',
+                    name='email_verified',
+                    field=models.BooleanField(default=False),
+                ),
+                migrations.AddField(
+                    model_name='customeruser',
+                    name='is_member',
+                    field=models.BooleanField(default=False, verbose_name='Is Member'),
+                ),
+                migrations.AddField(
+                    model_name='customeruser',
+                    name='verification_token',
+                    field=models.UUIDField(blank=True, null=True, unique=True),
+                ),
+                migrations.AlterField(
+                    model_name='customeruser',
+                    name='category',
+                    field=models.IntegerField(choices=[(1, 'Ordinary Member (Free)'), (2, 'Active Member'), (3, 'Executive Member'), (4, 'FBO & Ordinary (Free)'), (5, 'Active Organization'), (6, 'Royal Organization')], default=999),
+                ),
+                migrations.AlterField(
+                    model_name='customeruser',
+                    name='is_staff',
+                    field=models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status'),
+                ),
+            ],
         ),
-        migrations.RemoveField(
-            model_name='customeruser',
-            name='sub_category',
-        ),
-        migrations.AddField(
-            model_name='customeruser',
-            name='email_verified',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='customeruser',
-            name='is_member',
-            field=models.BooleanField(default=False, verbose_name='Is Member'),
-        ),
-        migrations.AddField(
-            model_name='customeruser',
-            name='verification_token',
-            field=models.UUIDField(blank=True, null=True, unique=True),
-        ),
-        migrations.AlterField(
-            model_name='customeruser',
-            name='category',
-            field=models.IntegerField(choices=[(1, 'Ordinary Member (Free)'), (2, 'Active Member'), (3, 'Executive Member'), (4, 'FBO & Ordinary (Free)'), (5, 'Active Organization'), (6, 'Royal Organization')], default=999),
-        ),
-        migrations.AlterField(
-            model_name='customeruser',
-            name='is_staff',
-            field=models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status'),
-        ),
-        migrations.AddField(
-            model_name='membership',
-            name='member',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to=settings.AUTH_USER_MODEL),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunPython(
+                    add_membership_foreign_key_if_customeruser_exists,
+                    reverse_membership_foreign_key,
+                ),
+            ],
+            state_operations=[
+                migrations.AddField(
+                    model_name='membership',
+                    name='member',
+                    field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to=settings.AUTH_USER_MODEL),
+                ),
+            ],
         ),
     ]
