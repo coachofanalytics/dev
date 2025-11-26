@@ -6,29 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0005_auto_20251017_1430'),
+        ('main', '0006_merge_0005_auto_20251017_1430_0005_contactmessage'),
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Scholarship',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('provider', models.CharField(blank=True, max_length=255, null=True)),
-                ('level', models.CharField(blank=True, max_length=100, null=True)),
-                ('field', models.CharField(blank=True, max_length=100, null=True)),
-                ('location', models.CharField(blank=True, max_length=200, null=True)),
-                ('deadline', models.DateField(blank=True, null=True)),
-                ('amount', models.CharField(blank=True, max_length=100, null=True)),
-                ('status', models.CharField(blank=True, max_length=50, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-            ],
-            options={
-                'verbose_name': 'Scholarship',
-                'verbose_name_plural': 'Scholarships',
-            },
-        ),
         migrations.CreateModel(
             name='TrainingCourse',
             fields=[

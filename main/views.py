@@ -115,9 +115,15 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
+#<<<<<<< HEAD
+    # Define page_instance for the home page or desired page
+    page_instance = Page.objects.filter(page_name='Home').first()
+    description = Description.objects.filter(page=page_instance)
+#=======
     # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
-    description = Description.objects.filter(page=page_instance)
+    description = Description.objects.filter(page = page_instance)
+#>>>>>>> origin/25.10_DC48K_UAT_FN
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
