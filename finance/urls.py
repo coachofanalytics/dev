@@ -34,4 +34,5 @@ urlpatterns = [
         views.Default_Payment_Fees_detail,
         name="Default_Payment_Fees_detail",
     ),
+    path('PayslipConfig_list/', views.PayslipConfig_list, name='payslip_config_list'),
 ]

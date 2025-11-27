@@ -37,3 +37,21 @@ class DefaultPaymentFeesTemplateIntegrationTest(TestCase):
     def test_delete_view_uses_correct_template(self):
         response = self.client.get(self.delete_url)
         self.assertTemplateUsed(response, "finance/Default_Payment_Fees_delete.html")
+
+
+
+
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+
+class DefaultPaymentFeesTemplateTest(TestCase):
+
+    def test_default_payment_fees_list_template(self):
+        """Test if the correct template is used for Default Payment Fees list view."""
+        url = reverse('Default_Payment_Fees_list')
+        response = self.client.get(url)
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')

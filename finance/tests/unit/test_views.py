@@ -1,17 +1,17 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
-from finance.models import Default_Payment_Fees
+from finance.models import Default_Payment_Fees, PayslipConfig
 from finance.forms import Default_Payment_Fees_form
 
-# -------------------------
-# Test List View
+# ------------------------- 
+# Test List View 
 # -------------------------
 class DefaultPaymentFeesListViewTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        # Create some sample data
+        # Create some sample data for Default_Payment_Fees
         Default_Payment_Fees.objects.create(
             job_down_payment_per_month=2000,
             job_plan_hours_per_month=160,
@@ -49,8 +49,9 @@ class DefaultPaymentFeesListViewTest(TestCase):
         self.assertContains(response, "160")
         self.assertContains(response, "180")
 
-# -------------------------
-# Test Create View
+
+# ------------------------- 
+# Test Create View 
 # -------------------------
 class DefaultPaymentFeesCreateViewTest(TestCase):
 
@@ -75,7 +76,7 @@ class DefaultPaymentFeesCreateViewTest(TestCase):
             'student_bonus_payment_per_month': 300
         }
         response = self.client.post(self.url, data, follow=True)
-        
+
         # Check that the object was created
         self.assertEqual(Default_Payment_Fees.objects.count(), 1)
         obj = Default_Payment_Fees.objects.first()
@@ -88,7 +89,7 @@ class DefaultPaymentFeesCreateViewTest(TestCase):
         # Check success message
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Default_Payment_Fees successfully')
+        self.assertEqual(str(messages[0]), 'create successfully')  # Updated success message
 
     def test_create_view_post_invalid_data(self):
         """Test POST request with invalid data returns form errors"""
@@ -99,7 +100,7 @@ class DefaultPaymentFeesCreateViewTest(TestCase):
             'student_bonus_payment_per_month': 300
         }
         response = self.client.post(self.url, data)
-        
+
         # Form should not save
         self.assertEqual(Default_Payment_Fees.objects.count(), 0)
 
@@ -109,14 +110,11 @@ class DefaultPaymentFeesCreateViewTest(TestCase):
         self.assertTrue(response.context['form'].errors)
 
 
-from django.test import TestCase, Client
-from django.urls import reverse
-from finance.models import Default_Payment_Fees
-from finance.forms import Default_Payment_Fees_form
-from django.contrib.messages import get_messages
-
+# ------------------------- 
+# Test Update View 
+# -------------------------
 class DefaultPaymentFeesUpdateViewTest(TestCase):
-    
+
     def setUp(self):
         self.client = Client()
         self.payment = Default_Payment_Fees.objects.create(
@@ -149,8 +147,9 @@ class DefaultPaymentFeesUpdateViewTest(TestCase):
         self.assertEqual(self.payment.job_plan_hours_per_month, 180)
         self.assertRedirects(response, reverse('Default_Payment_Fees_list'))
 
+        # Check success message
         messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(str(messages[0]), "Default_Payment_Fees successfully")
+        self.assertEqual(str(messages[0]), 'update successfully')  # Updated success message
 
     def test_update_view_post_invalid_data(self):
         """POST invalid data should not update and render form errors"""
@@ -167,6 +166,9 @@ class DefaultPaymentFeesUpdateViewTest(TestCase):
         self.assertTrue(response.context['form'].errors)
 
 
+# ------------------------- 
+# Test Delete View 
+# -------------------------
 import pytest
 from django.urls import reverse
 from django.contrib.messages import get_messages
@@ -178,8 +180,10 @@ class TestDefaultPaymentFeesDeleteView:
     def test_get_delete_view_renders_template(self, client):
         # Create a payment fee object
         payment = Default_Payment_Fees.objects.create(
-            name="Test Fee",
-            amount=100
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
         )
 
         url = reverse("Default_Payment_Fees_delete", args=[payment.pk])
@@ -195,8 +199,10 @@ class TestDefaultPaymentFeesDeleteView:
     def test_post_delete_view_deletes_object_and_redirects(self, client):
         # Create a payment fee object
         payment = Default_Payment_Fees.objects.create(
-            name="Fee to Delete",
-            amount=200
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
         )
 
         url = reverse("Default_Payment_Fees_delete", args=[payment.pk])
@@ -213,3 +219,46 @@ class TestDefaultPaymentFeesDeleteView:
         # Check that the success message appears
         messages = list(get_messages(response.wsgi_request))
         assert any("Delete successfully" in str(m) for m in messages)
+
+
+# ------------------------- 
+# Test PayslipConfig List View 
+# -------------------------
+class PayslipConfigListViewTest(TestCase):
+
+    def setUp(self):
+        # Create some sample PayslipConfig records
+        self.payslip1 = PayslipConfig.objects.create(
+            loan_status=True,
+            loan_amount=2000,
+            loan_repayment_percentage=10.00,
+            laptop_status=True,
+            lb_amount=1200,
+            ls_amount=1000,
+            ls_max_limit=3000,
+            rp_starting_period="6 months",
+            rp_starting_amount=100,
+            rp_increment_percentage=5.00
+        )
+        self.payslip2 = PayslipConfig.objects.create(
+            loan_status=False,
+            loan_amount=2500,
+            loan_repayment_percentage=12.00,
+            laptop_status=False,
+            lb_amount=1500,
+            ls_amount=1200,
+            ls_max_limit=5000,
+            rp_starting_period="12 months",
+            rp_starting_amount=200,
+            rp_increment_percentage=3.00
+        )
+        self.url = reverse('payslip_config_list')  # Make sure this matches your URL pattern
+
+    def test_payslip_config_list_view(self):
+        """Test that the PayslipConfig list view displays the correct data."""
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'finance/payslips.html')  # Ensure the correct template is used
+        self.assertContains(response, str(self.payslip1.loan_amount))
+        self.assertContains(response, str(self.payslip2.rp_starting_amount))

@@ -70,3 +70,69 @@ class DefaultPaymentFeesRegressionViews(TestCase):
         self.assertContains(response, str(self.payment.job_plan_hours_per_month))
         self.assertContains(response, str(self.payment.student_down_payment_per_month))
         self.assertContains(response, str(self.payment.student_bonus_payment_per_month))
+
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from finance.models import Default_Payment_Fees, PayslipConfig
+
+class TestRegressionViews(TestCase):
+
+    # ================================
+    # Regression Test for PayslipConfig List View
+    # ================================
+    def test_payslip_config_list_view(self):
+        """Ensure PayslipConfig list view still works after recent changes."""
+        # Create sample data
+        PayslipConfig.objects.create(
+            loan_status=True,
+            loan_amount=2000,
+            loan_repayment_percentage=10.00,
+            laptop_status=True,
+            lb_amount=1200,
+            ls_amount=1000,
+            ls_max_limit=3000,
+            rp_starting_period="6 months",
+            rp_starting_amount=100,
+            rp_increment_percentage=5.00
+        )
+
+        # Send GET request to the view
+        url = reverse('payslip_config_list')  # This should match your URL pattern
+        response = self.client.get(url)
+
+        # Assert status code
+        self.assertEqual(response.status_code, 200)
+        # Assert the correct template is used
+        self.assertTemplateUsed(response, 'finance/payslips.html')
+        # Assert content is rendered correctly
+        self.assertContains(response, "2000")
+        self.assertContains(response, "5.00")
+    
+    # ================================
+    # Regression Test for Default Payment Fees List View
+    # ================================
+    def test_default_payment_fees_list_view(self):
+        """Ensure Default Payment Fees list view still works after recent changes."""
+        # Create sample data
+        Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+
+        # Send GET request to the view
+        url = reverse('Default_Payment_Fees_list')  # This should match your URL pattern
+        response = self.client.get(url)
+
+        # Assert status code
+        self.assertEqual(response.status_code, 200)
+        # Assert the correct template is used
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')
+        # Assert content is rendered correctly
+        self.assertContains(response, "2000")
+        self.assertContains(response, "1500")

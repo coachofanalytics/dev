@@ -114,3 +114,74 @@ class DefaultPaymentFeesDeleteTemplateTest(TestCase):
         self.assertContains(response, "Are you sure you want to delete")
         self.assertContains(response, "Yes, Delete")
         self.assertContains(response, "Cancel")
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from finance.models import Default_Payment_Fees, PayslipConfig
+
+class TestTemplates(TestCase):
+
+    def test_payslip_config_list_template(self):
+        """Test if the correct template is used for PayslipConfig list view."""
+        # Create some sample data
+        PayslipConfig.objects.create(
+            loan_status=True,
+            loan_amount=2000,
+            loan_repayment_percentage=10.00,
+            laptop_status=True,
+            lb_amount=1200,
+            ls_amount=1000,
+            ls_max_limit=3000,
+            rp_starting_period="6 months",
+            rp_starting_amount=100,
+            rp_increment_percentage=5.00
+        )
+
+        url = reverse('payslip_config_list')  # This should match your URL pattern
+        response = self.client.get(url)
+
+        # Check if the correct template is used
+        self.assertTemplateUsed(response, 'finance/payslips.html')  # Ensure this matches the template used in your view
+
+    def test_default_payment_fees_list_template(self):
+        """Test if the correct template is used for Default Payment Fees list view."""
+        # Create some sample data
+        Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+
+        url = reverse('Default_Payment_Fees_list')  # This should match your URL pattern
+        response = self.client.get(url)
+
+        # Check if the correct template is used
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_list.html')  # Ensure this matches the template used in your view
+
+    def test_default_payment_fees_create_template(self):
+        """Test if the correct template is used for Default Payment Fees create view."""
+        url = reverse('Default_Payment_Fees_create')  # This should match your URL pattern
+        response = self.client.get(url)
+
+        # Check if the correct template is used
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_create.html')  # Ensure this matches the template used in your view
+
+    def test_default_payment_fees_update_template(self):
+        """Test if the correct template is used for Default Payment Fees update view."""
+        # Create a sample Default Payment Fee object to test update view
+        payment_fee = Default_Payment_Fees.objects.create(
+            job_down_payment_per_month=2000,
+            job_plan_hours_per_month=160,
+            student_down_payment_per_month=1500,
+            student_bonus_payment_per_month=300
+        )
+
+        url = reverse('Default_Payment_Fees_update', kwargs={'pk': payment_fee.pk})  # This should match your URL pattern
+        response = self.client.get(url)
+
+        # Check if the correct template is used
+        self.assertTemplateUsed(response, 'finance/Default_Payment_Fees_update.html')  # Ensure this matches the template used in your view
+

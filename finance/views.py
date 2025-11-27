@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import OverBoughtSold, PaymentInformation, Default_Payment_Fees
+from .models import OverBoughtSold, PaymentInformation, Default_Payment_Fees,PayslipConfig
 from .forms import Default_Payment_Fees_form
 
 
@@ -98,3 +98,7 @@ def Default_Payment_Fees_detail(request, pk):
     return render(
         request, "finance/Default_Payment_Fees_detail.html", {"payment": payment}
     )
+
+def PayslipConfig_list(request):
+    Payslips = PayslipConfig.objects.all()
+    return render(request, "finance/payslips.html", {"Payslips": Payslips})

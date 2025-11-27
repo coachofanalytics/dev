@@ -63,3 +63,29 @@ class DefaultPaymentFeesURLsTest(SimpleTestCase):
     def test_delete_url_resolves(self):
         url = reverse('Default_Payment_Fees_delete', kwargs={'pk': 1})
         self.assertEqual(resolve(url).func, Default_Payment_Fees_delete)
+
+from django.test import SimpleTestCase
+from django.urls import reverse, resolve
+from finance.views import Default_Payment_Fees_list, Default_Payment_Fees_create
+
+class TestDefaultPaymentFeesURLs(SimpleTestCase):
+
+    def test_default_payment_fees_list_reverse(self):
+        """Test if reverse for 'Default_Payment_Fees_list' generates the correct URL."""
+        url = reverse('Default_Payment_Fees_list')
+        self.assertEqual(url, '/finance/Default_Payment_Fees_list/')  # Ensure '/finance/' prefix is included
+
+    def test_default_payment_fees_list_resolves(self):
+        """Test if 'Default_Payment_Fees_list' URL resolves to the correct view."""
+        resolver = resolve('/finance/Default_Payment_Fees_list/')
+        self.assertEqual(resolver.func, Default_Payment_Fees_list)
+
+    def test_default_payment_fees_create_reverse(self):
+        """Test if reverse for 'Default_Payment_Fees_create' generates the correct URL."""
+        url = reverse('Default_Payment_Fees_create')
+        self.assertEqual(url, '/finance/Default_Payment_Fees_create/')  # Ensure '/finance/' prefix is included
+
+    def test_default_payment_fees_create_resolves(self):
+        """Test if 'Default_Payment_Fees_create' URL resolves to the correct view."""
+        resolver = resolve('/finance/Default_Payment_Fees_create/')
+        self.assertEqual(resolver.func, Default_Payment_Fees_create)
