@@ -42,50 +42,26 @@
                 </div>
             </div>
 
-            <!-- Payment Amount Form (Python/Django - No JavaScript) -->
+            <!-- Payment Amount (read-only - chosen on previous step) -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-dollar-sign"></i> Payment Amount</h5>
-                    
-                    <form method="POST" action="{% url 'finance:stripe_checkout_session' %}" id="payment-amount-form">
+
+                    <p class="mb-3">
+                        You are about to pay
+                        <strong class="text-success">
+                            ${{ selected_amount|default:payment_info.get_fee_balance|floatformat:2 }}
+                        </strong>
+                    </p>
+
+                    <form method="POST" action="{% url 'finance:stripe_checkout_session' %}">
                         {% csrf_token %}
-                        
-                        <div class="form-group mb-3">
-                            <label for="amount-type">Payment Type:</label>
-                            <select id="amount-type" name="amount_type" class="form-control" onchange="togglePartialAmount()">
-                                <option value="full">Full Payment (${{ payment_info.get_fee_balance|floatformat:2 }})</option>
-                                <option value="partial">Partial Payment</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group mb-3" id="partial-amount-group" style="display: none;">
-                            <label for="amount">Enter Amount:</label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">$</span>
-                                </div>
-                                <input type="number" 
-                                       id="amount" 
-                                       name="amount" 
-                                       class="form-control" 
-                                       min="1" 
-                                       max="{{ payment_info.get_fee_balance }}" 
-                                       step="0.01" 
-                                       placeholder="0.00"
-                                       value="{{ payment_info.get_fee_balance }}"
-                                       required>
-                            </div>
-                            <small class="text-muted">Minimum: $1.00, Maximum: ${{ payment_info.get_fee_balance|floatformat:2 }}</small>
-                        </div>
-                        
-                        <input type="hidden" id="full-amount" value="{{ payment_info.get_fee_balance }}">
-                        
-                        <div class="mt-3 mb-3">
-                            <div id="amount-display" class="alert alert-info">
-                                <strong>Amount to Pay: $<span id="display-amount">{{ payment_info.get_fee_balance|floatformat:2 }}</span></strong>
-                            </div>
-                        </div>
-                        
+
+                        <!-- Amount comes from shared selection step; do not allow editing here -->
+                        <input type="hidden"
+                               name="amount"
+                               value="{{ selected_amount|default:payment_info.get_fee_balance }}">
+
                         <div class="d-grid">
                             <button type="submit" class="btn btn-warning btn-lg">
                                 <i class="fas fa-lock"></i> Proceed to Secure Checkout
@@ -109,54 +85,5 @@
         </div>
     </div>
 </div>
-
-<!-- Simple JavaScript for UI only (no Stripe integration) -->
-<script>
-function togglePartialAmount() {
-    const amountType = document.getElementById('amount-type').value;
-    const partialGroup = document.getElementById('partial-amount-group');
-    const amountInput = document.getElementById('amount');
-    const fullAmount = parseFloat(document.getElementById('full-amount').value);
-    const displayAmount = document.getElementById('display-amount');
-    
-    if (amountType === 'partial') {
-        partialGroup.style.display = 'block';
-        amountInput.value = '';
-        amountInput.required = true;
-        
-        // Update display when user types
-        amountInput.addEventListener('input', function() {
-            const value = parseFloat(this.value) || 0;
-            if (value > 0 && value <= fullAmount) {
-                displayAmount.textContent = value.toFixed(2);
-            }
-        });
-    } else {
-        partialGroup.style.display = 'none';
-        amountInput.value = fullAmount;
-        amountInput.required = false;
-        displayAmount.textContent = fullAmount.toFixed(2);
-    }
-}
-
-// Set default amount on form submit
-document.getElementById('payment-amount-form').addEventListener('submit', function(e) {
-    const amountType = document.getElementById('amount-type').value;
-    const amountInput = document.getElementById('amount');
-    const fullAmount = parseFloat(document.getElementById('full-amount').value);
-    
-    if (amountType === 'full') {
-        amountInput.value = fullAmount;
-    }
-    
-    // Validate amount
-    const amount = parseFloat(amountInput.value);
-    if (amount <= 0 || amount > fullAmount) {
-        e.preventDefault();
-        alert('Please enter a valid amount between $1.00 and $' + fullAmount.toFixed(2));
-        return false;
-    }
-});
-</script>
 
 {% endblock %}

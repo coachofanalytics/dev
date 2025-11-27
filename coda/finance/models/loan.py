@@ -266,12 +266,18 @@ class LoanApplication(models.Model):
     @property
     def balance_amount(self):
         """Calculate remaining balance for payroll deductions.
-        For active loans, this represents the amount still owed."""
-        if self.status == 'active':
+        For active loans (active, approved, disbursed), this represents the amount still owed."""
+        # Check if loan is in an active state that can have payments
+        # This matches the logic in views: status__in=['active', 'approved', 'disbursed']
+        active_statuses = ['active', 'approved', 'disbursed']
+        if self.status in active_statuses:
             # Calculate total paid from payments
             total_paid = self.total_paid
             # Return remaining balance
-            return max(Decimal('0.00'), self.total_payable - total_paid)
+            if self.total_payable:
+                return max(Decimal('0.00'), self.total_payable - total_paid)
+            # If total_payable is not set, return 0 (shouldn't happen for active loans)
+            return Decimal('0.00')
         return Decimal('0.00')
     
     @property

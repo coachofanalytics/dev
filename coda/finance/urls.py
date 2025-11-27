@@ -6,6 +6,7 @@ from .views import legacy_views
 # Import organized payment views
 from .views.payment import (
     payment_method_selection as unified_payment_selection,
+    payment_amount_selection,
     payment_processing as unified_payment_processing,
     payment_success as unified_payment_success,
     payment_failed as unified_payment_failed,
@@ -422,6 +423,9 @@ urlpatterns = [
 urlpatterns += [
     # Payment Method Selection
     path('unified/methods/', unified_payment_selection, name='unified_method_selection'),
+    
+    # Payment Amount Selection (shared for all methods)
+    path('unified/amount/<str:method>/', payment_amount_selection, name='payment_amount_selection'),
     
     # Payment Processing
     path('unified/process/<str:method>/', unified_payment_processing, name='unified_processing'),

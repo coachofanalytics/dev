@@ -1,12 +1,13 @@
 import json
 import logging
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
+from django.urls import reverse
 from finance.models import Payment_Information, Payment_History
 from finance.utils import save_payment_history
 from shared_core.users import CustomerUser
@@ -33,73 +34,121 @@ def create_checkout_session(request):
     This redirects to Stripe's hosted checkout page
     """
     if not stripe_available:
-        print("[Stripe][DEBUG] stripe library unavailable in create_checkout_session")
         from django.contrib import messages
         messages.error(request, 'Stripe is not available. Please use another payment method.')
-        return redirect('finance:payment_method_selection')
-    
-    from django.shortcuts import redirect
-    from django.urls import reverse
-    
+        return redirect('finance:unified_method_selection')
+
     try:
-        # Get user's payment information first (needed for amount calculation)
+        # Preferred: use amount selected in the shared amount selection step (if present)
+        selected_amount = None
         try:
-            payment_info = Payment_Information.objects.filter(
-                customer=request.user
-            ).only('id', 'customer', 'payment_fees', 'down_payment', 'plan').order_by('-id').first()
-        except Exception as db_error:
-            logger.warning(f"Database query issue: {db_error}")
-            print(f"[Stripe][DEBUG] Payment info lookup failed: {db_error}")
-            from django.contrib import messages
-            messages.error(request, 'Payment information not found.')
-            return redirect('finance:payment_method_selection')
-        
+            if 'payment_amount' in request.session:
+                selected_amount = float(request.session.get('payment_amount') or 0)
+        except (TypeError, ValueError):
+            selected_amount = None
+
+        # Check if this is a loan payment (from session)
+        loan_application_id = request.session.get('loan_application_id')
+        payment_info = None
+        is_loan_payment = False
+
+        if loan_application_id:
+            try:
+                from finance.models import LoanApplication
+                loan_application = LoanApplication.objects.get(
+                    id=loan_application_id,
+                    borrower=request.user,
+                    status__in=['active', 'approved', 'disbursed']
+                )
+                # Create a dummy payment_info object for loan payments
+                class LoanPaymentInfo:
+                    def __init__(self, loan):
+                        self.id = loan.id
+                        self.customer = loan.borrower
+                payment_info = LoanPaymentInfo(loan_application)
+                is_loan_payment = True
+                logger.info(f"Processing loan payment for loan_id={loan_application_id}")
+            except Exception as e:
+                logger.warning(f"Loan application {loan_application_id} not found: {e}, falling back to service payment")
+
+        # If not a loan payment, get service payment information
         if not payment_info:
-            print("[Stripe][DEBUG] No payment information found for user")
-            from django.contrib import messages
-            messages.error(request, 'No payment information found.')
-            return redirect('finance:payment_method_selection')
-        
-        # Get amount from POST (form submission) or GET (direct link)
-        if request.method == 'POST':
-            # Handle form POST (from stripe_form.html)
-            amount_type = request.POST.get('amount_type', 'full')
-            
-            if amount_type == 'full':
-                # Get full amount from payment info
-                amount = float(payment_info.get_fee_balance())
-            else:
-                # Partial payment - get amount from form
-                amount = float(request.POST.get('amount', 0))
-            
-            print(f"[Stripe][DEBUG] Form POST: amount_type={amount_type} amount={amount} user={request.user.id}")
+            try:
+                payment_info = Payment_Information.objects.filter(
+                    customer=request.user
+                ).only('id', 'customer', 'payment_fees', 'down_payment', 'plan').order_by('-id').first()
+            except Exception as db_error:
+                logger.warning(f"Database query issue: {db_error}")
+                from django.contrib import messages
+                messages.error(request, 'Payment information not found.')
+                return redirect('finance:unified_method_selection')
+
+            if not payment_info:
+                from django.contrib import messages
+                messages.error(request, 'No payment information found.')
+                return redirect('finance:unified_method_selection')
+
+        # Get amount from (in order of priority):
+        # 1) POST body (hidden field from stripe_form.html)
+        # 2) Session (shared amount selection step)
+        # 3) Query string fallback
+        # 4) Full fee balance
+        amount = None
+
+        if request.method == 'POST' and request.POST.get('amount'):
+            amount = float(request.POST.get('amount', 0))
+        elif selected_amount is not None and selected_amount > 0:
+            amount = selected_amount
         else:
-            # GET request - get amount from query string (default to full balance)
-            amount = float(request.GET.get('amount', payment_info.get_fee_balance()))
-            print(f"[Stripe][DEBUG] GET request: amount={amount} user={request.user.id}")
-        
+            # GET request or fallback - get amount from query string or balance
+            if is_loan_payment:
+                # For loans, get balance from loan application
+                try:
+                    from finance.models import LoanApplication
+                    loan_app = LoanApplication.objects.get(id=loan_application_id, borrower=request.user)
+                    default_amount = float(loan_app.balance_amount)
+                except:
+                    default_amount = 0
+            else:
+                # For service payments, get from payment_info
+                default_amount = float(payment_info.get_fee_balance())
+
+            amount = float(request.GET.get('amount', default_amount))
+
         if amount <= 0:
-            print("[Stripe][DEBUG] Invalid amount received for Checkout Session")
             from django.contrib import messages
             messages.error(request, 'Invalid payment amount. Please enter a valid amount.')
             return redirect('finance:unified_processing', method='stripe')
-        
-        print(f"[Stripe][DEBUG] Using PaymentInformation id={payment_info.id} plan={payment_info.plan}")
-        
+
+        # Extra safety: do not allow more than outstanding balance
+        try:
+            if is_loan_payment:
+                from finance.models import LoanApplication
+                loan_app = LoanApplication.objects.get(id=loan_application_id, borrower=request.user)
+                max_amount = float(loan_app.balance_amount)
+            else:
+                max_amount = float(payment_info.get_fee_balance())
+
+            if amount > max_amount:
+                amount = max_amount
+        except Exception as balance_err:
+            logger.warning(f"Error checking Stripe max amount against balance: {balance_err}")
+
+
         # Detect organization from request domain
         from shared_core.utils import detect_organization_from_request
         organization = detect_organization_from_request(request)
         company_id = organization.id if organization else None
         company_slug = organization.slug if organization else 'coda'
         print(f"[Stripe][DEBUG] Detected organization: {organization.name if organization else 'None'} (id: {company_id}, slug: {company_slug})")
-        
+
         # Build success and cancel URLs
         success_url = request.build_absolute_uri(reverse('finance:stripe_checkout_success'))
         cancel_url = request.build_absolute_uri(reverse('finance:stripe_checkout_cancel'))
-        
+
         # Add session_id parameter to success URL for verification
         success_url += '?session_id={CHECKOUT_SESSION_ID}'
-        
+
         # Create Checkout Session
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
@@ -123,59 +172,62 @@ def create_checkout_session(request):
                 'payment_info_id': str(payment_info.id),
                 'amount': str(amount),
                 'reference': f"STRIPE-CHECKOUT-{request.user.id}-{amount}",
-                'company_id': str(company_id) if company_id else None,  # ADD: Store company ID
-                'company_slug': company_slug,  # ADD: Store company slug
+                # Loan payment metadata (from STG)
+                'is_loan_payment': 'true' if is_loan_payment else 'false',
+                'loan_application_id': str(loan_application_id) if loan_application_id else '',
+                # Receipt branding metadata (from DEV)
+                'company_id': str(company_id) if company_id else None,
+                'company_slug': company_slug,
             },
         )
-        
-        print(f"[Stripe][DEBUG] Checkout Session created id={checkout_session.id} url={checkout_session.url}")
-        
+
+
         # Redirect to Stripe Checkout
         return redirect(checkout_session.url)
-        
+
     except stripe._error.CardError as e:
         logger.error(f"Stripe card error: {str(e)}")
         from django.contrib import messages
         messages.error(request, str(e.user_message))
-        return redirect('finance:payment_method_selection')
-        
+        return redirect('finance:unified_method_selection')
+
     except stripe._error.RateLimitError as e:
         logger.error(f"Stripe rate limit error: {str(e)}")
         from django.contrib import messages
         messages.error(request, 'Too many requests. Please try again later.')
-        return redirect('finance:payment_method_selection')
-        
+        return redirect('finance:unified_method_selection')
+
     except stripe._error.InvalidRequestError as e:
         logger.error(f"Stripe invalid request error: {str(e)}")
         from django.contrib import messages
         messages.error(request, 'Invalid request. Please check your payment details.')
-        return redirect('finance:payment_method_selection')
-        
+        return redirect('finance:unified_method_selection')
+
     except stripe._error.AuthenticationError as e:
         logger.error(f"Stripe authentication error: {str(e)}")
         from django.contrib import messages
         messages.error(request, 'Payment service authentication failed.')
-        return redirect('finance:payment_method_selection')
-        
+        return redirect('finance:unified_method_selection')
+
     except stripe._error.APIConnectionError as e:
         logger.error(f"Stripe API connection error: {str(e)}")
         from django.contrib import messages
         messages.error(request, 'Payment service temporarily unavailable.')
-        return redirect('finance:payment_method_selection')
-        
+        return redirect('finance:unified_method_selection')
+
     except stripe._error.StripeError as e:
         logger.error(f"Stripe error: {str(e)}")
         from django.contrib import messages
         messages.error(request, 'Payment processing failed. Please try again.')
-        return redirect('finance:payment_method_selection')
-        
+        return redirect('finance:unified_method_selection')
+
     except Exception as e:
         logger.error(f"Unexpected error in create_checkout_session: {str(e)}")
         import traceback
         traceback.print_exc()
         from django.contrib import messages
         messages.error(request, 'An unexpected error occurred. Please try again.')
-        return redirect('finance:payment_method_selection')
+        return redirect('finance:unified_method_selection')
 
 
 @login_required
@@ -183,26 +235,23 @@ def stripe_checkout_success(request):
     """
     Handle successful Stripe Checkout payment
     """
-    from django.shortcuts import redirect
     from django.contrib import messages
-    from django.urls import reverse
-    
+
     session_id = request.GET.get('session_id')
-    
+
     if not session_id:
         messages.error(request, 'Invalid payment session.')
-        return redirect('finance:payment_method_selection')
-    
+        return redirect('finance:unified_method_selection')
+
     if not stripe_available:
         messages.error(request, 'Stripe is not available.')
-        return redirect('finance:payment_method_selection')
-    
+        return redirect('finance:unified_method_selection')
+
     try:
         # Retrieve the Checkout Session
         checkout_session = stripe.checkout.Session.retrieve(session_id)
-        
-        print(f"[Stripe][DEBUG] Checkout success session_id={session_id} payment_status={checkout_session.payment_status}")
-        
+
+
         if checkout_session.payment_status == 'paid':
             # Extract metadata
             metadata = checkout_session.metadata or {}
@@ -211,21 +260,72 @@ def stripe_checkout_success(request):
             amount = float(metadata.get('amount', 0))
             reference = metadata.get('reference', f"STRIPE-CHECKOUT-{session_id}")
             company_id = metadata.get('company_id')  # Get company from metadata
-            
+
             # Get company instance if company_id exists
             company = None
             if company_id:
                 try:
-                    from shared_core.models import Company
+                    from main.models import Company
                     company = Company.objects.filter(id=int(company_id)).first()
                 except Exception as e:
                     logger.warning(f"Error retrieving company from metadata: {e}")
-            
-            if user_id and payment_info_id:
+
+            # Check if this is a loan payment
+            is_loan_payment = metadata.get('is_loan_payment') == 'true'
+            loan_application_id = metadata.get('loan_application_id')
+
+            if is_loan_payment and loan_application_id:
+                try:
+                    from finance.models import LoanApplication, LoanPayment
+                    from decimal import Decimal
+
+                    loan_application = LoanApplication.objects.get(
+                        id=int(loan_application_id),
+                        borrower=request.user,
+                        status__in=['active', 'approved', 'disbursed']
+                    )
+
+                    # Create LoanPayment record
+                    loan_payment = LoanPayment.objects.create(
+                        loan_application=loan_application,
+                        payment_date=timezone.now().date(),
+                        amount=Decimal(str(amount)),
+                        payment_type='regular',
+                        reference_number=reference,
+                        notes=f"Stripe Checkout payment | Session: {session_id}"
+                    )
+
+                    logger.info(f"Loan payment recorded via Stripe: ID={loan_payment.id} for loan={loan_application.id} amount=${amount}")
+                    new_balance = loan_application.balance_amount
+                    logger.info(f"Loan {loan_application.id} new balance: ${new_balance}")
+
+                    messages.success(request, f'Loan payment of ${amount:.2f} completed successfully!')
+
+                    # Store payment details in session for success page
+                    request.session['payment_reference'] = reference
+                    request.session['payment_amount'] = amount
+                    request.session['payment_method'] = 'Stripe'
+                    request.session['payment_date'] = timezone.now().isoformat()
+
+                    # Clear loan_application_id from session
+                    if 'loan_application_id' in request.session:
+                        del request.session['loan_application_id']
+
+
+                except Exception as e:
+                    logger.error(f"Error processing Stripe loan payment: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
+                    messages.warning(request, 'Payment completed but there was an issue recording the loan payment. Please contact support.')
+                    request.session['payment_reference'] = reference
+                    request.session['payment_amount'] = amount
+                    request.session['payment_method'] = 'Stripe'
+
+            elif user_id and payment_info_id:
                 try:
                     # Get payment info
                     payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=payment_info_id)
-                    
+
                     # Save payment history with company
                     user = CustomerUser.objects.get(id=int(user_id))
                     ok = save_payment_history(
@@ -237,26 +337,22 @@ def stripe_checkout_success(request):
                         status='completed',
                         company=company  # ADD: Pass company to save_payment_history
                     )
-                    
+
                     if ok:
                         logger.info(f"Payment history saved for Stripe Checkout {session_id}")
-                        print(f"[Stripe][DEBUG] Payment history saved for session={session_id}")
                         messages.success(request, f'Payment of ${amount:.2f} completed successfully!')
                     else:
                         logger.error(f"Failed to save payment history for Stripe Checkout {session_id}")
-                        print(f"[Stripe][DEBUG] Failed to save payment history for session={session_id}")
                         messages.warning(request, 'Payment completed but there was an issue saving the record. Please contact support.')
-                    
+
                     # Store payment details in session for success page
                     request.session['payment_reference'] = reference
                     request.session['payment_amount'] = amount
                     request.session['payment_method'] = 'Stripe'
                     request.session['payment_date'] = timezone.now().isoformat()
-                    print(f"[Stripe][DEBUG] Stored payment details in session: amount={amount} method=Stripe reference={reference}")
-                        
+
                 except Exception as e:
                     logger.error(f"Error processing Stripe Checkout success: {str(e)}")
-                    print(f"[Stripe][DEBUG] Exception while handling checkout success: {e}")
                     import traceback
                     traceback.print_exc()
                     messages.warning(request, 'Payment completed but there was an issue processing it. Please contact support.')
@@ -273,20 +369,18 @@ def stripe_checkout_success(request):
                 request.session['payment_method'] = 'Stripe'
         else:
             messages.warning(request, 'Payment session found but payment status is not paid.')
-        
+
         # Redirect to unified success page
         return redirect('finance:unified_success')
-        
+
     except stripe._error.StripeError as e:
         logger.error(f"Stripe error retrieving checkout session: {str(e)}")
-        print(f"[Stripe][DEBUG] Error retrieving session: {e}")
         messages.error(request, 'Error verifying payment. Please contact support if payment was charged.')
-        return redirect('finance:payment_method_selection')
+        return redirect('finance:unified_method_selection')
     except Exception as e:
         logger.error(f"Unexpected error in stripe_checkout_success: {str(e)}")
-        print(f"[Stripe][DEBUG] Unexpected error: {e}")
         messages.error(request, 'An unexpected error occurred. Please contact support.')
-        return redirect('finance:payment_method_selection')
+        return redirect('finance:unified_method_selection')
 
 
 @login_required
@@ -295,10 +389,8 @@ def stripe_checkout_cancel(request):
     Handle cancelled Stripe Checkout payment
     """
     from django.contrib import messages
-    from django.shortcuts import redirect
-    
+
     messages.info(request, 'Payment was cancelled. You can try again when ready.')
-    print(f"[Stripe][DEBUG] Checkout cancelled by user={request.user.id}")
     return redirect('finance:payment_method_selection')
 
 
@@ -309,39 +401,34 @@ def stripe_webhook(request):
     Handle Stripe webhooks for payment confirmation (Checkout Sessions)
     """
     if not stripe_available:
-        print("[Stripe][DEBUG] Webhook received but stripe not available")
         from django.http import HttpResponse
         return HttpResponse(status=503)
-    
+
     import os
     from django.http import HttpResponse
-    
+
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
-    
+
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
     except ValueError:
         logger.error("Invalid payload")
-        print("[Stripe][DEBUG] Webhook invalid payload")
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError:
         logger.error("Invalid signature")
-        print("[Stripe][DEBUG] Webhook signature verification failed")
         return HttpResponse(status=400)
-    
+
     # Handle the event
-    print(f"[Stripe][DEBUG] Webhook event type={event['type']}")
-    
+
     # Handle Checkout Session completed (preferred for Checkout)
     if event['type'] == 'checkout.session.completed':
         checkout_session = event['data']['object']
         logger.info(f"Checkout session completed: {checkout_session['id']}")
-        print(f"[Stripe][DEBUG] Checkout session completed webhook for session={checkout_session['id']}")
-        
+
         # Extract metadata
         metadata = checkout_session.get('metadata', {})
         user_id = metadata.get('user_id')
@@ -349,21 +436,21 @@ def stripe_webhook(request):
         amount = float(metadata.get('amount', checkout_session.get('amount_total', 0) / 100))
         reference = metadata.get('reference', f"STRIPE-CHECKOUT-{checkout_session['id']}")
         company_id = metadata.get('company_id')  # Get company from metadata
-        
+
         # Get company instance if company_id exists
         company = None
         if company_id:
             try:
-                from shared_core.models import Company
+                from main.models import Company
                 company = Company.objects.filter(id=int(company_id)).first()
             except Exception as e:
                 logger.warning(f"Error retrieving company from webhook metadata: {e}")
-        
+
         if user_id and payment_info_id and reference:
             try:
                 # Get payment info
                 payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=payment_info_id)
-                
+
                 # Save payment history with company
                 user = CustomerUser.objects.get(id=int(user_id))
                 ok = save_payment_history(
@@ -375,24 +462,20 @@ def stripe_webhook(request):
                     status='completed',
                     company=company  # ADD: Pass company to save_payment_history
                 )
-                
+
                 if ok:
                     logger.info(f"Payment history saved for Stripe Checkout {checkout_session['id']}")
-                    print(f"[Stripe][DEBUG] Payment history saved for session={checkout_session['id']}")
                 else:
                     logger.error(f"Failed to save payment history for Stripe Checkout {checkout_session['id']}")
-                    print(f"[Stripe][DEBUG] Failed to save payment history for session={checkout_session['id']}")
-                    
+
             except Exception as e:
                 logger.error(f"Error processing Stripe webhook: {str(e)}")
-                print(f"[Stripe][DEBUG] Exception while handling webhook: {e}")
-    
+
     # Also handle payment_intent.succeeded for backwards compatibility
     elif event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
         logger.info(f"Payment succeeded: {payment_intent['id']}")
-        print(f"[Stripe][DEBUG] Payment succeeded webhook for intent={payment_intent['id']}")
-        
+
         # Extract metadata
         metadata = payment_intent.get('metadata', {})
         user_id = metadata.get('user_id')
@@ -400,21 +483,21 @@ def stripe_webhook(request):
         reference = metadata.get('reference')
         amount = payment_intent['amount'] / 100  # Convert from cents
         company_id = metadata.get('company_id')  # Get company from metadata
-        
+
         # Get company instance if company_id exists
         company = None
         if company_id:
             try:
-                from shared_core.models import Company
+                from main.models import Company
                 company = Company.objects.filter(id=int(company_id)).first()
             except Exception as e:
                 logger.warning(f"Error retrieving company from payment_intent metadata: {e}")
-        
+
         if user_id and payment_info_id and reference:
             try:
                 # Get payment info
                 payment_info = Payment_Information.objects.only('id', 'customer', 'payment_fees', 'down_payment', 'plan').get(id=payment_info_id)
-                
+
                 # Save payment history with company
                 user = CustomerUser.objects.get(id=int(user_id))
                 ok = save_payment_history(
@@ -426,25 +509,20 @@ def stripe_webhook(request):
                     status='completed',
                     company=company  # ADD: Pass company to save_payment_history
                 )
-                
+
                 if ok:
                     logger.info(f"Payment history saved for Stripe payment {payment_intent['id']}")
-                    print(f"[Stripe][DEBUG] Payment history saved for intent={payment_intent['id']}")
                 else:
                     logger.error(f"Failed to save payment history for Stripe payment {payment_intent['id']}")
-                    print(f"[Stripe][DEBUG] Failed to save payment history for intent={payment_intent['id']}")
-                    
+
             except Exception as e:
                 logger.error(f"Error processing Stripe webhook: {str(e)}")
-                print(f"[Stripe][DEBUG] Exception while handling webhook: {e}")
-    
+
     elif event['type'] == 'payment_intent.payment_failed':
         payment_intent = event['data']['object']
         logger.warning(f"Payment failed: {payment_intent['id']}")
-        print(f"[Stripe][DEBUG] Payment failed webhook for intent={payment_intent['id']}")
-        
+
     else:
         logger.info(f"Unhandled event type: {event['type']}")
-        print(f"[Stripe][DEBUG] Unhandled webhook type {event['type']}")
-    
+
     return HttpResponse(status=200)

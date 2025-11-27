@@ -76,8 +76,8 @@
                             
                             <div class="card-footer">
                                 {% if method_config.has_api %}
-                                    {# API available - go to processing form #}
-                                    <a href="{% url 'finance:unified_processing' method=method_key %}" 
+                                    {# API available - go to amount selection first #}
+                                    <a href="{% url 'finance:payment_amount_selection' method=method_key %}" 
                                        class="btn btn-primary btn-block">
                                         <i class="fa fa-arrow-right mr-2"></i>
                                         Continue with {{ method_config.name }}
