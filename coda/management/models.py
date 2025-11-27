@@ -475,6 +475,47 @@ class Task(models.Model):
             pay = round(compute_pay, 2)
             return pay
 
+    def clean(self):
+        """
+        Validate Task model data.
+        
+        Validations:
+        - point ≤ mxpoint
+        - mxpoint > 0
+        - mxearning ≥ 0
+        - point ≥ 0
+        """
+        from django.core.exceptions import ValidationError
+        
+        # Validation 1: point ≤ mxpoint
+        if self.point > self.mxpoint:
+            raise ValidationError({
+                'point': f'Point ({self.point}) cannot exceed maximum points ({self.mxpoint})'
+            })
+        
+        # Validation 2: mxpoint > 0
+        if self.mxpoint <= 0:
+            raise ValidationError({
+                'mxpoint': 'Maximum points must be greater than 0'
+            })
+        
+        # Validation 3: point ≥ 0
+        if self.point < 0:
+            raise ValidationError({
+                'point': 'Point cannot be negative'
+            })
+        
+        # Validation 4: mxearning ≥ 0
+        if self.mxearning < 0:
+            raise ValidationError({
+                'mxearning': 'Maximum earning cannot be negative'
+            })
+    
+    def save(self, *args, **kwargs):
+        """Override save to call clean() validation."""
+        self.full_clean()
+        super().save(*args, **kwargs)
+    
     class Meta:
         verbose_name_plural = "Tasks"
         ordering = ("-submission",)
@@ -650,6 +691,67 @@ class TaskHistory(models.Model):
         help_text=_("Date formart :mm/dd/yyyy"), auto_now=True, editable=True, null=True
     )
     objects = TaskManager()
+    
+    def clean(self):
+        """
+        Validate TaskHistory model data.
+        
+        Validations:
+        - point ≤ mxpoint
+        - mxpoint > 0
+        - daf_date is not in future
+        - daf_date is not too old (>2 years)
+        - daf_date is not missing
+        """
+        from django.core.exceptions import ValidationError
+        from datetime import date
+        
+        # Validation 1: point ≤ mxpoint
+        if self.point > self.mxpoint:
+            raise ValidationError({
+                'point': f'Point ({self.point}) cannot exceed maximum points ({self.mxpoint})'
+            })
+        
+        # Validation 2: mxpoint > 0
+        if self.mxpoint <= 0:
+            raise ValidationError({
+                'mxpoint': 'Maximum points must be greater than 0'
+            })
+        
+        # Validation 3: point ≥ 0
+        if self.point < 0:
+            raise ValidationError({
+                'point': 'Point cannot be negative'
+            })
+        
+        # Validation 4: mxearning ≥ 0
+        if self.mxearning < 0:
+            raise ValidationError({
+                'mxearning': 'Maximum earning cannot be negative'
+            })
+        
+        # Validation 5: daf_date validation
+        if not self.daf_date:
+            raise ValidationError({
+                'daf_date': 'daf_date is required for TaskHistory'
+            })
+        
+        # Validation 6: daf_date is not in future
+        if self.daf_date > date.today():
+            raise ValidationError({
+                'daf_date': f'daf_date ({self.daf_date}) cannot be in the future'
+            })
+        
+        # Validation 7: daf_date is not too old (warning only, not error)
+        two_years_ago = date.today().replace(year=date.today().year - 2)
+        if self.daf_date < two_years_ago:
+            # This is a warning, not an error - allow it but log it
+            pass
+    
+    def save(self, *args, **kwargs):
+        """Override save to call clean() validation."""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = "TaskHistory"

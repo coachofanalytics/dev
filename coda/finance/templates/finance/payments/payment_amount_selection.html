@@ -1,0 +1,163 @@
+{% extends 'main/base_templates/new_base.html' %}
+{% load static %}
+
+{% block title %}Enter Payment Amount - CODA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            
+            <!-- Header -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <i class="{{ method_info.icon|default:'fa fa-credit-card' }} fa-3x text-{{ method_info.color|default:'primary' }} mb-3"></i>
+                    <h2 class="mb-2">Enter Payment Amount</h2>
+                    <p class="text-muted">Complete your payment using {{ method_info.display_name|default:method_info.name }}</p>
+                </div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-receipt"></i> Payment Summary</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Total Amount:</strong>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong class="text-success">${{ total_amount|floatformat:2 }}</strong>
+                        </div>
+                        {% if down_payment %}
+                        <div class="col-6">
+                            <strong>Down Payment:</strong>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong class="text-primary">${{ down_payment|floatformat:2 }}</strong>
+                        </div>
+                        {% endif %}
+                        <div class="col-6">
+                            <strong>Outstanding Balance:</strong>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong class="text-warning">${{ balance|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Amount Form -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-dollar-sign"></i> Payment Amount</h5>
+                    
+                    <form method="POST" action="{% url 'finance:payment_amount_selection' method=method %}" id="payment-amount-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="amount-type">Payment Type:</label>
+                            <select id="amount-type" name="amount_type" class="form-control" onchange="togglePartialAmount()">
+                                <option value="full">Full Payment (${{ balance|floatformat:2 }})</option>
+                                <option value="partial">Partial Payment</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3" id="partial-amount-group" style="display: none;">
+                            <label for="amount">Enter Amount:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="number" 
+                                       id="amount" 
+                                       name="amount" 
+                                       class="form-control" 
+                                       min="1" 
+                                       max="{{ balance }}" 
+                                       step="0.01" 
+                                       placeholder="0.00"
+                                       value="{{ balance }}"
+                                       required>
+                            </div>
+                            <small class="text-muted">Minimum: $1.00, Maximum: ${{ balance|floatformat:2 }}</small>
+                        </div>
+                        
+                        <input type="hidden" id="full-amount" value="{{ balance }}">
+                        
+                        <div class="mt-3 mb-3">
+                            <div id="amount-display" class="alert alert-info">
+                                <strong>Amount to Pay: $<span id="display-amount">{{ balance|floatformat:2 }}</span></strong>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-{{ method_info.color|default:'primary' }} btn-lg">
+                                <i class="fas fa-arrow-right"></i> Continue with {{ method_info.display_name|default:method_info.name }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center">
+                <a href="{% url 'finance:unified_method_selection' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Payment Methods
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for amount selection (reused from Stripe form) -->
+<script>
+function togglePartialAmount() {
+    const amountType = document.getElementById('amount-type').value;
+    const partialGroup = document.getElementById('partial-amount-group');
+    const amountInput = document.getElementById('amount');
+    const fullAmount = parseFloat(document.getElementById('full-amount').value);
+    const displayAmount = document.getElementById('display-amount');
+    
+    if (amountType === 'partial') {
+        partialGroup.style.display = 'block';
+        amountInput.value = '';
+        amountInput.required = true;
+        
+        // Update display when user types
+        amountInput.addEventListener('input', function() {
+            const value = parseFloat(this.value) || 0;
+            if (value > 0 && value <= fullAmount) {
+                displayAmount.textContent = value.toFixed(2);
+            }
+        });
+    } else {
+        partialGroup.style.display = 'none';
+        amountInput.value = fullAmount;
+        amountInput.required = false;
+        displayAmount.textContent = fullAmount.toFixed(2);
+    }
+}
+
+// Set default amount on form submit
+document.getElementById('payment-amount-form').addEventListener('submit', function(e) {
+    const amountType = document.getElementById('amount-type').value;
+    const amountInput = document.getElementById('amount');
+    const fullAmount = parseFloat(document.getElementById('full-amount').value);
+    
+    if (amountType === 'full') {
+        amountInput.value = fullAmount;
+    }
+    
+    // Validate amount
+    const amount = parseFloat(amountInput.value);
+    if (amount <= 0 || amount > fullAmount) {
+        e.preventDefault();
+        alert('Please enter a valid amount between $1.00 and $' + fullAmount.toFixed(2));
+        return false;
+    }
+});
+</script>
+{% endblock %}
+
+

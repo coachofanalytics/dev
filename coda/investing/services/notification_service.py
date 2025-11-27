@@ -127,6 +127,9 @@ CODA Investment Team
         )
 
         notes_joined = ', '.join(allocation_summary.get('notes') or ['None'])
+        
+        # Fix: Extract join operation outside f-string (backslashes not allowed in f-string expressions)
+        recommendations_text = '\n'.join(allocation_lines)
 
         body = f"""
 Managed Income Allocation Preview ({timezone.now().strftime('%Y-%m-%d %H:%M %Z')})
@@ -138,7 +141,7 @@ Positions Selected: {totals.get('positions', 0)}
 Target Met: {'✅ Yes' if meets_target else '⚠️ Not yet'}
 
 Recommendations:
-{"\n".join(allocation_lines)}
+{recommendations_text}
 
 Notes: {notes_joined}
 {cache_line}

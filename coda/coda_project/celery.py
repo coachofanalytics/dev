@@ -10,10 +10,16 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 app.conf.beat_schedule = {
     # Monthly task reset - runs on 1st of each month at midnight
-    # OPTION 1: Reset on 1st of month
+    # Uses TaskResetService for proper error handling
     'monthly_task_reset': {
         'task': 'task_history',  # Maps to dump_data() function
         'schedule': crontab(hour=0, minute=0, day_of_month='1'),  # 1st at 00:00
+    },
+    
+    # Weekly evidence reminders - runs every Friday at 5 PM
+    'weekly_evidence_reminders': {
+        'task': 'management.tasks.send_weekly_evidence_reminders',
+        'schedule': crontab(hour=17, minute=0, day_of_week=4),  # Friday at 17:00
     },
 
     # 'login_no_activity_send_sms': {

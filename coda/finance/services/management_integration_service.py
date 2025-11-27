@@ -9,6 +9,8 @@ Management activity data via HTTP APIs or direct service calls.
 
 When both apps are in the same Django project, uses direct service calls.
 When apps are separate, uses HTTP API calls.
+
+Phase 3: Enhanced with error recovery, caching, and data validation.
 """
 
 import logging
@@ -18,6 +20,8 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import date
 from dateutil.relativedelta import relativedelta
+
+from finance.services.api_error_recovery import APIErrorRecovery, with_error_recovery
 
 logger = logging.getLogger(__name__)
 
@@ -39,20 +43,31 @@ class ManagementIntegrationService:
     - Budget Evidence Validation API
     """
     
-    def __init__(self, base_url: Optional[str] = None):
+    def __init__(self, base_url: Optional[str] = None, use_cache: bool = True):
         """
         Initialize the service.
         
         Args:
             base_url: Base URL for Management app APIs (defaults to settings.SITEURL)
+            use_cache: Whether to use response caching (default: True)
         """
         self.base_url = base_url or getattr(settings, 'SITEURL', 'http://localhost:8000')
         self.logger = logging.getLogger(__name__)
+        self.use_cache = use_cache
         
         # API endpoints
         self.activity_totals_endpoint = f"{self.base_url}/management/api/budget/activity-totals/"
         self.evidence_validation_endpoint = f"{self.base_url}/management/api/budget/evidence-validation/"
+        
+        # Error recovery service
+        self.error_recovery = APIErrorRecovery(
+            max_retries=3,
+            initial_delay=1.0,
+            backoff_factor=2.0,
+            cache_timeout=3600  # 1 hour
+        )
     
+    @with_error_recovery(max_retries=3, cache_timeout=3600, use_cache=True)
     def get_activity_totals(
         self,
         month: Optional[int] = None,
@@ -215,13 +230,39 @@ class ManagementIntegrationService:
                 f"Successfully fetched activity totals via HTTP API for {month}/{year}"
             )
             
-            return {
+            response_data = {
                 'success': True,
                 'data': result.get('data', {}),
                 'meta': result.get('meta', {}),
                 'errors': result.get('errors', []),
                 'source': 'http_api'
             }
+            
+            # Validate data completeness
+            if response_data['success']:
+                validation = self.error_recovery.validate_data_completeness(
+                    response_data['data'],
+                    required_fields=['period', 'totals'],
+                    min_records=0
+                )
+                
+                if not validation['is_complete']:
+                    response_data['warnings'] = response_data.get('warnings', [])
+                    response_data['warnings'].extend(validation['warnings'])
+                    self.logger.warning(f"Data completeness issues: {validation}")
+                
+                # Check data freshness
+                freshness = self.error_recovery.check_data_freshness(
+                    response_data,
+                    max_age_hours=24
+                )
+                
+                if not freshness['is_fresh']:
+                    response_data['warnings'] = response_data.get('warnings', [])
+                    response_data['warnings'].extend(freshness['warnings'])
+                    self.logger.warning(f"Data freshness issues: {freshness}")
+            
+            return response_data
             
         except Exception as e:
             self.logger.error(f"Error calling Management Activity Totals API: {e}", exc_info=True)

@@ -56,9 +56,9 @@ def get_payment_details_for_method(method):
                 'Enter your M-Pesa PIN and confirm'
             ],
             'details': {
-                'M-Pesa Number': os.environ.get('MPESA_PHONE_NUMBER', '+254 XXX XXX XXX'),
-                'Paybill/Till Number': os.environ.get('MPESA_PAYBILL', 'Contact support'),
-                'Account Number': 'Use Payment Reference below'
+                'M-Pesa Number': os.environ.get('MPESA_PHONE_NUMBER', '+254 728905233'),
+                'Paybill/Till Number': os.environ.get('MPESA_PAYBILL', '600100'),
+                'Account Number': os.environ.get('MPESA_ACCOUNT_NUMBER', '0100008710958')
             }
         },
         'cashapp': {
@@ -72,7 +72,7 @@ def get_payment_details_for_method(method):
                 'Email screenshot to support (optional)'
             ],
             'details': {
-                'CashApp Username': os.environ.get('CASHAPP', '$codanalytics'),
+                'CashApp Username': os.environ.get('CASHAPP', '$codainfo'),
                 'Note': 'Include payment reference in note field'
             }
         },
@@ -87,9 +87,9 @@ def get_payment_details_for_method(method):
                 'Keep confirmation number'
             ],
             'details': {
-                'Account Number': os.environ.get('STANBIC_ACCOUNT_NO', 'Contact support'),
-                'Routing Number': os.environ.get('STANBIC_ROUTING', 'Contact support'),
-                'Account Name': 'CODA Analytics',
+                'Account Number': os.environ.get('ZELLE_ACCOUNT_NUMBER', '354012506439'),
+                'Routing Number': os.environ.get('ZELLE_ROUTING_NUMBER', '081000032'),
+                'Account Name': os.environ.get('ZELLE_ACCOUNT_NAME', 'Crown Data Analysis And Consulting LLC'),
                 'Memo': 'Include payment reference'
             }
         },
@@ -104,7 +104,7 @@ def get_payment_details_for_method(method):
                 'Keep transaction confirmation'
             ],
             'details': {
-                'Venmo Username': os.environ.get('VENMO', '@codanalytics'),
+                'Venmo Username': os.environ.get('VENMO', '@coda_info'),
                 'Note': 'Include payment reference in note field'
             }
         },
@@ -139,30 +139,88 @@ def get_payment_details_for_method(method):
 def show_payment_details(request, method):
     """
     Universal payment details view
-    Shows payment details when automated payment fails or is unavailable
+    Shows payment details for ANY logged-in user
+    Accessible to investors, donors, loan borrowers, service clients, etc.
+    Amount can come from:
+    1. Query parameter (?amount=XXX)
+    2. Session (if set during payment flow)
+    3. User's outstanding balance (loan or service) if exists
+    4. User can specify custom amount in the form
     """
     try:
-        # Get user's payment information
-        payment_info = Payment_Information.objects.filter(
-            customer=request.user
-        ).only('id', 'customer', 'payment_fees', 'down_payment', 'plan').order_by('-id').first()
+        from finance.models import LoanApplication
         
+        payment_info = None
+        payment_source = None
+        suggested_amount = 0.0
+        
+        # PRIORITY 1: Check for active loans first (to suggest amount)
+        active_loans = LoanApplication.objects.filter(
+            borrower=request.user,
+            status__in=['active', 'approved', 'disbursed']
+        ).first()
+        
+        if active_loans:
+            # User has active loan - get balance for suggested amount
+            logger.info(f"User {request.user.username} has active loan: {active_loans.id} for payment details")
+            
+            active_loans.refresh_from_db()
+            if hasattr(active_loans, '_loan_payments_cache'):
+                delattr(active_loans, '_loan_payments_cache')
+            if hasattr(active_loans, '_prefetched_objects_cache'):
+                active_loans._prefetched_objects_cache = {}
+            
+            current_balance = float(active_loans.balance_amount) if active_loans.balance_amount else 0.0
+            if current_balance > 0:
+                suggested_amount = current_balance
+            elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
+                suggested_amount = float(active_loans.total_payable)
+            else:
+                suggested_amount = float(active_loans.amount_requested or 0)
+            
+            payment_source = 'loan'
+        
+        # PRIORITY 2: If no active loan, check for service payment info (to suggest amount)
         if not payment_info:
-            messages.error(request, 'No payment information found. Please create a payment first.')
-            # Redirect to loan application instead of method selection to avoid loop
+            payment_info = Payment_Information.objects.filter(
+                customer=request.user
+            ).only('id', 'customer', 'payment_fees', 'down_payment', 'plan').order_by('-id').first()
+            
+            if payment_info:
+                payment_source = 'service'
+                # Suggest down_payment or full payment_fees
+                suggested_amount = payment_info.down_payment if hasattr(payment_info, 'down_payment') and payment_info.down_payment else payment_info.payment_fees
+        
+        # Get amount from (in order of priority):
+        # 1) Query parameter (explicit amount specified)
+        # 2) Session (from payment flow)
+        # 3) Suggested amount (from loan or service balance)
+        amount = None
+        
+        if request.GET.get('amount'):
             try:
-                return redirect('finance:loan-home')
-            except Exception:
-                return redirect('finance:finance-index')
+                amount = float(request.GET.get('amount'))
+            except (ValueError, TypeError):
+                pass
+        
+        if amount is None and 'payment_amount' in request.session:
+            try:
+                amount = float(request.session.get('payment_amount'))
+            except (ValueError, TypeError):
+                pass
+        
+        if amount is None:
+            amount = suggested_amount
+        
+        # Default to 0 if still no amount (user can specify in form)
+        if amount is None or amount <= 0:
+            amount = 0.0
         
         # Generate payment reference
         payment_reference = generate_payment_reference(request.user.id, method)
         
         # Get method-specific payment details
         method_config = get_payment_details_for_method(method)
-        
-        # Calculate amounts
-        amount = payment_info.down_payment if hasattr(payment_info, 'down_payment') else payment_info.payment_fees
         
         # Check if this is a fallback (error scenario)
         error_message = request.GET.get('error', None)
@@ -171,9 +229,12 @@ def show_payment_details(request, method):
         context = {
             'method': method,
             'method_config': method_config,
-            'payment_info': payment_info,
+            'payment_info': payment_info,  # May be None - that's OK
+            'payment_source': payment_source,  # 'loan', 'service', or None
             'payment_reference': payment_reference,
             'amount': amount,
+            'suggested_amount': suggested_amount,  # Amount from loan/service if exists
+            'has_outstanding_balance': suggested_amount > 0,
             'user': request.user,
             'is_fallback': is_fallback,
             'error_message': error_message,
@@ -181,24 +242,30 @@ def show_payment_details(request, method):
             'timestamp': timezone.now()
         }
         
-        # Send email notification with payment details
-        try:
-            send_payment_details_email(
-                user=request.user,
-                method=method,
-                amount=amount,
-                reference=payment_reference,
-                method_config=method_config
-            )
-            messages.success(
-                request, 
-                f'Payment details sent to your email ({request.user.email})'
-            )
-        except Exception as e:
-            logger.error(f"Failed to send payment details email: {e}")
-            messages.warning(
+        # Send email notification with payment details (only if amount > 0)
+        if amount > 0:
+            try:
+                send_payment_details_email(
+                    user=request.user,
+                    method=method,
+                    amount=amount,
+                    reference=payment_reference,
+                    method_config=method_config
+                )
+                messages.success(
+                    request, 
+                    f'Payment details sent to your email ({request.user.email})'
+                )
+            except Exception as e:
+                logger.error(f"Failed to send payment details email: {e}")
+                messages.warning(
+                    request,
+                    'Payment details displayed below. Email notification failed - please save this information.'
+                )
+        else:
+            messages.info(
                 request,
-                'Payment details displayed below. Email notification failed - please save this information.'
+                'Please specify the payment amount. Payment details will be shown below.'
             )
         
         # Log the fallback event

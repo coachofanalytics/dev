@@ -7,6 +7,8 @@ employees are included in payroll submissions.
 
 Business Rule: "For a new month, an employee must meet 33% of their activities 
 by 15th of the month for the pay for last month to be approved"
+
+Uses unified ComplianceCalculator for point-based calculations.
 """
 
 import logging
@@ -22,6 +24,7 @@ from django.contrib.auth import get_user_model
 from management.models import Task, TaskHistory, TaskCategory, TaskLinks
 from shared_core.users import CustomerUser, Department
 from accounts.models import TaskGroups
+from management.services.compliance_calculator import ComplianceCalculator
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -31,94 +34,72 @@ class EmployeeComplianceService:
     """
     Service to check employee compliance with 33% completion rule.
     
+    Uses unified ComplianceCalculator for point-based calculations.
+    
     Provides comprehensive compliance checking for:
     - Individual employees
     - Department-level compliance
     - Company-wide compliance reports
     - Historical compliance tracking
+    - Employees who left company (still have tasks)
     """
     
     def __init__(self):
         self.logger = logger
         self.compliance_threshold = 33.0  # 33% threshold
+        self.calculator = ComplianceCalculator(threshold=self.compliance_threshold)
     
-    def check_33_percent_compliance(self, employee: User, target_month: int, target_year: int) -> Dict[str, Any]:
+    def check_33_percent_compliance(
+        self,
+        employee: User,
+        target_month: int,
+        target_year: int,
+        include_inactive: bool = False
+    ) -> Dict[str, Any]:
         """
         Check if employee meets 33% completion rule for given month.
         
+        Uses unified ComplianceCalculator with point-based formula:
+        (total_points / total_max_points) × 100 ≥ 33
+        
         Args:
-            employee: User object
+            employee: User object (can be active or inactive)
             target_month: Month to check (previous month)
             target_year: Year to check
-            
+            include_inactive: If True, include employees who left company
+        
         Returns:
             dict: {
                 'is_compliant': bool,
-                'completion_rate': float,
-                'total_tasks': int,
-                'completed_tasks': int,
-                'required_tasks': int,
-                'missing_tasks': int,
+                'completion_rate': float,  # Point-based percentage
+                'total_points': Decimal,
+                'total_max_points': Decimal,
+                'total_earnings': Decimal,
+                'task_count': int,
+                'employee_status': str,  # 'active', 'inactive', 'trainee'
                 'employee_name': str,
                 'department': str,
                 'target_month': int,
-                'target_year': int
+                'target_year': int,
+                'is_trainee': bool,  # True if 0 tasks
+                'has_left_company': bool  # True if employee is inactive
             }
         """
-        try:
-            # Get employee's tasks for the target month
-            tasks = TaskHistory.objects.filter(
-                employee=employee,
-                daf_date__month=target_month,
-                daf_date__year=target_year
-            )
-            
-            total_tasks = tasks.count()
-            completed_tasks = tasks.filter(point__gt=0).count()
-            
-            # Calculate completion rate
-            completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
-            
-            # Calculate required tasks (33% of total)
-            required_tasks = int(total_tasks * 0.33)
-            missing_tasks = max(0, required_tasks - completed_tasks)
-            
-            is_compliant = completion_rate >= self.compliance_threshold
-            
-            return {
-                'is_compliant': is_compliant,
-                'completion_rate': round(completion_rate, 2),
-                'total_tasks': total_tasks,
-                'completed_tasks': completed_tasks,
-                'required_tasks': required_tasks,
-                'missing_tasks': missing_tasks,
-                'employee_name': f"{employee.first_name} {employee.last_name}".strip() or employee.username,
-                'employee_username': employee.username,
-                'employee_email': employee.email,
-                'department': 'Unknown',  # TODO: Implement proper department detection
-                'target_month': target_month,
-                'target_year': target_year,
-                'threshold': self.compliance_threshold
-            }
-            
-        except Exception as e:
-            self.logger.error(f"Error checking compliance for employee {employee.username}: {e}")
-            return {
-                'is_compliant': False,
-                'completion_rate': 0.0,
-                'total_tasks': 0,
-                'completed_tasks': 0,
-                'required_tasks': 0,
-                'missing_tasks': 0,
-                'employee_name': f"{employee.first_name} {employee.last_name}".strip() or employee.username,
-                'employee_username': employee.username,
-                'employee_email': employee.email,
-                'department': 'Unknown',  # TODO: Implement proper department detection
-                'target_month': target_month,
-                'target_year': target_year,
-                'threshold': self.compliance_threshold,
-                'error': str(e)
-            }
+        # Use unified calculator
+        compliance = self.calculator.calculate_compliance(
+            employee,
+            target_month,
+            target_year,
+            include_inactive=include_inactive
+        )
+        
+        # Add backward compatibility fields
+        compliance['total_tasks'] = compliance.get('task_count', 0)
+        compliance['completed_tasks'] = compliance.get('task_count', 0)  # Approximate
+        compliance['required_tasks'] = int(compliance.get('task_count', 0) * 0.33)
+        compliance['missing_tasks'] = max(0, compliance['required_tasks'] - compliance['completed_tasks'])
+        
+        return compliance
     
     def get_department_compliance_report(self, department: Department, target_month: int, target_year: int) -> Dict[str, Any]:
         """
@@ -315,46 +296,33 @@ class EmployeeComplianceService:
             self.logger.error(f"Error getting non-compliant employees: {e}")
             return []
     
-    def get_compliant_employees(self, target_month: int, target_year: int) -> List[Dict[str, Any]]:
+    def get_compliant_employees(
+        self,
+        target_month: int,
+        target_year: int,
+        include_inactive: bool = False
+    ) -> List[Dict[str, Any]]:
         """
         Get list of all compliant employees.
+        
+        Uses unified ComplianceCalculator.
         
         Args:
             target_month: Month to check
             target_year: Year to check
-            
+            include_inactive: Include employees who left company
+        
         Returns:
             list: List of compliant employee data
         """
-        try:
-            compliant_employees = []
-            
-            # Get employees who have tasks in the target month
-            employees_with_tasks = TaskHistory.objects.filter(
-                daf_date__month=target_month,
-                daf_date__year=target_year
-            ).values_list('employee', flat=True).distinct()
-            
-            all_employees = CustomerUser.objects.filter(
-                id__in=employees_with_tasks,
-                is_staff=True,
-                is_active=True
-            )
-            
-            for employee in all_employees:
-                compliance = self.check_33_percent_compliance(employee, target_month, target_year)
-                
-                if compliance['is_compliant']:
-                    compliant_employees.append({
-                        'employee': employee,
-                        'compliance': compliance
-                    })
-            
-            return compliant_employees
-            
-        except Exception as e:
-            self.logger.error(f"Error getting compliant employees: {e}")
-            return []
+        # Use unified calculator
+        result = self.calculator.get_compliant_employees(
+            target_month,
+            target_year,
+            include_inactive=include_inactive
+        )
+        
+        return result['compliant_employees']
     
     def is_compliance_rule_active(self) -> bool:
         """
@@ -363,8 +331,7 @@ class EmployeeComplianceService:
         Returns:
             bool: True if rule is active (after 15th of month)
         """
-        current_date = datetime.now()
-        return current_date.day > 15
+        return self.calculator.is_rule_active()
     
     def get_current_target_month_year(self) -> Tuple[int, int]:
         """
@@ -373,15 +340,7 @@ class EmployeeComplianceService:
         Returns:
             tuple: (target_month, target_year) - previous month
         """
-        current_date = datetime.now()
-        if current_date.month == 1:
-            target_month = 12
-            target_year = current_date.year - 1
-        else:
-            target_month = current_date.month - 1
-            target_year = current_date.year
-        
-        return target_month, target_year
+        return self.calculator.get_current_target_period()
     
     def get_compliance_summary(self) -> Dict[str, Any]:
         """

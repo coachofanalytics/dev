@@ -5,6 +5,7 @@ Handles all payment-related views including method selection, processing, and ca
 
 from .unified_payment import (
     payment_method_selection,
+    payment_amount_selection,
     payment_processing,
     payment_success,
     payment_failed,
@@ -20,6 +21,7 @@ from .payment_details import (
 
 __all__ = [
     'payment_method_selection',
+    'payment_amount_selection',
     'payment_processing',
     'payment_success',
     'payment_failed',
