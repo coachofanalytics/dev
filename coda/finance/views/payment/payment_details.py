@@ -56,9 +56,9 @@ def get_payment_details_for_method(method):
                 'Enter your M-Pesa PIN and confirm'
             ],
             'details': {
-                'M-Pesa Number': os.environ.get('MPESA_PHONE_NUMBER', '+254 XXX XXX XXX'),
-                'Paybill/Till Number': os.environ.get('MPESA_PAYBILL', 'Contact support'),
-                'Account Number': 'Use Payment Reference below'
+                'M-Pesa Number': os.environ.get('MPESA_PHONE_NUMBER', '+254 728905233'),
+                'Paybill/Till Number': os.environ.get('MPESA_PAYBILL', '600100'),
+                'Account Number': os.environ.get('MPESA_ACCOUNT_NUMBER', '0100008710958')
             }
         },
         'cashapp': {
@@ -72,7 +72,7 @@ def get_payment_details_for_method(method):
                 'Email screenshot to support (optional)'
             ],
             'details': {
-                'CashApp Username': os.environ.get('CASHAPP', '$codanalytics'),
+                'CashApp Username': os.environ.get('CASHAPP', '$codainfo'),
                 'Note': 'Include payment reference in note field'
             }
         },
@@ -87,9 +87,9 @@ def get_payment_details_for_method(method):
                 'Keep confirmation number'
             ],
             'details': {
-                'Account Number': os.environ.get('STANBIC_ACCOUNT_NO', 'Contact support'),
-                'Routing Number': os.environ.get('STANBIC_ROUTING', 'Contact support'),
-                'Account Name': 'CODA Analytics',
+                'Account Number': os.environ.get('ZELLE_ACCOUNT_NUMBER', '354012506439'),
+                'Routing Number': os.environ.get('ZELLE_ROUTING_NUMBER', '081000032'),
+                'Account Name': os.environ.get('ZELLE_ACCOUNT_NAME', 'Crown Data Analysis And Consulting LLC'),
                 'Memo': 'Include payment reference'
             }
         },
@@ -104,7 +104,7 @@ def get_payment_details_for_method(method):
                 'Keep transaction confirmation'
             ],
             'details': {
-                'Venmo Username': os.environ.get('VENMO', '@codanalytics'),
+                'Venmo Username': os.environ.get('VENMO', '@coda_info'),
                 'Note': 'Include payment reference in note field'
             }
         },
