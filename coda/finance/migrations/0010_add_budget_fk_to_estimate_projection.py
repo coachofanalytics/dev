@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('finance', '0009_add_payment_history_company_field'),
+        ('finance', '0008_auto_20251118_2147'),  # Changed from 0009 to 0008 as 0009 doesn't exist in PROD
     ]
 
     operations = [
