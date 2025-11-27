@@ -139,72 +139,48 @@ def get_payment_details_for_method(method):
 def show_payment_details(request, method):
     """
     Universal payment details view
-    Shows payment details when automated payment fails or is unavailable
-    Checks for loans FIRST, then service payments
+    Shows payment details for ANY logged-in user
+    Accessible to investors, donors, loan borrowers, service clients, etc.
+    Amount can come from:
+    1. Query parameter (?amount=XXX)
+    2. Session (if set during payment flow)
+    3. User's outstanding balance (loan or service) if exists
+    4. User can specify custom amount in the form
     """
     try:
         from finance.models import LoanApplication
         
         payment_info = None
         payment_source = None
+        suggested_amount = 0.0
         
-        # PRIORITY 1: Check for active loans first (highest priority)
+        # PRIORITY 1: Check for active loans first (to suggest amount)
         active_loans = LoanApplication.objects.filter(
             borrower=request.user,
             status__in=['active', 'approved', 'disbursed']
         ).first()
         
         if active_loans:
-            # User has active loan - create payment_info from loan
+            # User has active loan - get balance for suggested amount
             logger.info(f"User {request.user.username} has active loan: {active_loans.id} for payment details")
             
-            # Refresh loan from DB to get latest payments
             active_loans.refresh_from_db()
-            
-            # Clear related objects cache
             if hasattr(active_loans, '_loan_payments_cache'):
                 delattr(active_loans, '_loan_payments_cache')
             if hasattr(active_loans, '_prefetched_objects_cache'):
                 active_loans._prefetched_objects_cache = {}
             
-            # Calculate loan amount (balance)
             current_balance = float(active_loans.balance_amount) if active_loans.balance_amount else 0.0
             if current_balance > 0:
-                loan_amount = current_balance
+                suggested_amount = current_balance
             elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
-                loan_amount = float(active_loans.total_payable)
+                suggested_amount = float(active_loans.total_payable)
             else:
-                loan_amount = float(active_loans.amount_requested or 0)
+                suggested_amount = float(active_loans.amount_requested or 0)
             
-            # Create payment_info-like object from loan
-            class LoanPaymentInfo:
-                def __init__(self, loan, amount):
-                    self.id = loan.id
-                    self.customer = loan.borrower
-                    self.payment_fees = amount
-                    self.down_payment = 0  # Loans don't have down payments
-                    self.plan = None
-                    self.loan_application = loan
-                    self._loan = loan
-                
-                def get_fee_balance(self):
-                    """Calculate outstanding loan balance"""
-                    self._loan.refresh_from_db()
-                    if hasattr(self._loan, '_loan_payments_cache'):
-                        delattr(self._loan, '_loan_payments_cache')
-                    if hasattr(self._loan, '_prefetched_objects_cache'):
-                        self._loan._prefetched_objects_cache = {}
-                    
-                    from decimal import Decimal
-                    total_paid = self._loan.total_paid
-                    total_payable = self._loan.total_payable or Decimal('0.00')
-                    calculated_balance = max(Decimal('0.00'), total_payable - total_paid)
-                    return float(calculated_balance)
-            
-            payment_info = LoanPaymentInfo(active_loans, loan_amount)
             payment_source = 'loan'
         
-        # PRIORITY 2: If no active loan, check for service payment info
+        # PRIORITY 2: If no active loan, check for service payment info (to suggest amount)
         if not payment_info:
             payment_info = Payment_Information.objects.filter(
                 customer=request.user
@@ -212,28 +188,39 @@ def show_payment_details(request, method):
             
             if payment_info:
                 payment_source = 'service'
+                # Suggest down_payment or full payment_fees
+                suggested_amount = payment_info.down_payment if hasattr(payment_info, 'down_payment') and payment_info.down_payment else payment_info.payment_fees
         
-        # If still no payment_info, redirect
-        if not payment_info:
-            messages.error(request, 'No payment information found. Please create a payment or apply for a loan first.')
+        # Get amount from (in order of priority):
+        # 1) Query parameter (explicit amount specified)
+        # 2) Session (from payment flow)
+        # 3) Suggested amount (from loan or service balance)
+        amount = None
+        
+        if request.GET.get('amount'):
             try:
-                return redirect('finance:loan-home')
-            except Exception:
-                return redirect('finance:finance-index')
+                amount = float(request.GET.get('amount'))
+            except (ValueError, TypeError):
+                pass
+        
+        if amount is None and 'payment_amount' in request.session:
+            try:
+                amount = float(request.session.get('payment_amount'))
+            except (ValueError, TypeError):
+                pass
+        
+        if amount is None:
+            amount = suggested_amount
+        
+        # Default to 0 if still no amount (user can specify in form)
+        if amount is None or amount <= 0:
+            amount = 0.0
         
         # Generate payment reference
         payment_reference = generate_payment_reference(request.user.id, method)
         
         # Get method-specific payment details
         method_config = get_payment_details_for_method(method)
-        
-        # Calculate amounts
-        # For loans, use payment_fees (which is the loan balance)
-        # For service payments, use down_payment if available, otherwise payment_fees
-        if payment_source == 'loan':
-            amount = payment_info.payment_fees  # This is the loan balance
-        else:
-            amount = payment_info.down_payment if hasattr(payment_info, 'down_payment') and payment_info.down_payment else payment_info.payment_fees
         
         # Check if this is a fallback (error scenario)
         error_message = request.GET.get('error', None)
@@ -242,9 +229,12 @@ def show_payment_details(request, method):
         context = {
             'method': method,
             'method_config': method_config,
-            'payment_info': payment_info,
+            'payment_info': payment_info,  # May be None - that's OK
+            'payment_source': payment_source,  # 'loan', 'service', or None
             'payment_reference': payment_reference,
             'amount': amount,
+            'suggested_amount': suggested_amount,  # Amount from loan/service if exists
+            'has_outstanding_balance': suggested_amount > 0,
             'user': request.user,
             'is_fallback': is_fallback,
             'error_message': error_message,
@@ -252,24 +242,30 @@ def show_payment_details(request, method):
             'timestamp': timezone.now()
         }
         
-        # Send email notification with payment details
-        try:
-            send_payment_details_email(
-                user=request.user,
-                method=method,
-                amount=amount,
-                reference=payment_reference,
-                method_config=method_config
-            )
-            messages.success(
-                request, 
-                f'Payment details sent to your email ({request.user.email})'
-            )
-        except Exception as e:
-            logger.error(f"Failed to send payment details email: {e}")
-            messages.warning(
+        # Send email notification with payment details (only if amount > 0)
+        if amount > 0:
+            try:
+                send_payment_details_email(
+                    user=request.user,
+                    method=method,
+                    amount=amount,
+                    reference=payment_reference,
+                    method_config=method_config
+                )
+                messages.success(
+                    request, 
+                    f'Payment details sent to your email ({request.user.email})'
+                )
+            except Exception as e:
+                logger.error(f"Failed to send payment details email: {e}")
+                messages.warning(
+                    request,
+                    'Payment details displayed below. Email notification failed - please save this information.'
+                )
+        else:
+            messages.info(
                 request,
-                'Payment details displayed below. Email notification failed - please save this information.'
+                'Please specify the payment amount. Payment details will be shown below.'
             )
         
         # Log the fallback event
