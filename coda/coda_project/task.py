@@ -41,13 +41,30 @@ def dump_data(request):
     """
     Monthly task reset: Move tasks from Task to TaskHistory.
     
-    OPTION 1 IMPLEMENTATION: Reset on 1st of month
-    - When run on 1st: daf_date = last day of previous month (e.g., Nov 1 -> Oct 31)
-    - When run manually (not 1st): daf_date = same day of last month (e.g., Nov 4 -> Oct 4)
+    Uses TaskResetService for proper error handling and recovery.
     
     This function is scheduled to run automatically on the 1st of each month at midnight.
+    For manual override, use TaskResetService.manual_reset() directly.
     """
     try:
+        from management.services.task_reset_service import TaskResetService
+        
+        reset_service = TaskResetService()
+        result = reset_service.reset_tasks(is_manual=False, dry_run=False)
+        
+        if not result['success']:
+            # Log error but don't raise - Celery will handle retry
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Task reset failed: {result.get('errors', [])}")
+        
+        return result['success']
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Task reset error: {str(e)}", exc_info=True)
+        # Re-raise for Celery retry mechanism
+        raise
         import calendar
         bulk_object = []
         
