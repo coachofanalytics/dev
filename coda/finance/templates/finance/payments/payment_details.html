@@ -45,7 +45,33 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-money-bill-wave"></i> Amount to Pay</h5>
-                    <h2 class="text-success mb-0">${{ amount|floatformat:2 }}</h2>
+                    {% if amount > 0 %}
+                        <h2 class="text-success mb-0">${{ amount|floatformat:2 }}</h2>
+                        {% if has_outstanding_balance %}
+                            <p class="text-muted small mb-0 mt-2">
+                                <i class="fas fa-info-circle"></i> Suggested amount based on your outstanding balance
+                            </p>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-2">No amount specified. Please enter the payment amount:</p>
+                            <form method="GET" action="{% url 'finance:payment_details' method %}">
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           name="amount" 
+                                           class="form-control" 
+                                           step="0.01" 
+                                           min="0.01" 
+                                           placeholder="Enter amount" 
+                                           required>
+                                    <button type="submit" class="btn btn-primary">
+                                        Update Amount
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
