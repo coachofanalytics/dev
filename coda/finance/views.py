@@ -235,11 +235,11 @@ def loan_application_home(request):
             is_active=True, product_type__in=["staff_emergency", "staff_development"]
         ).order_by("name")
     else:
-        # External users see general/external loans and other relevant types
+        # External users see general loans and other relevant types (excluding staff/KCC specific)
         loan_products = LoanProduct.objects.filter(
             is_active=True, 
             product_type__in=[
-                "external", "general", "business_startup", "education", 
+                "general", "business_startup", "education", 
                 "home_improvement", "medical_emergency", "vehicle_purchase", 
                 "debt_consolidation", "wedding_events"
             ]
@@ -571,12 +571,12 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
 
             # Validate user has access to this loan product
             if not request.user.is_superuser:
-                if is_kcc_member and plan.product_type != "kcc_member":
+                if is_kcc_member and plan.product_type != "kcc_premium":
                     messages.error(
                         request, "You can only apply for KCC member loan products."
                     )
                     return redirect("finance:loan-home")
-                elif request.user.category == 2 and plan.product_type != "staff_only":
+                elif request.user.category == 2 and plan.product_type not in ["staff_emergency", "staff_development"]:
                     messages.error(
                         request, "You can only apply for staff loan products."
                     )
@@ -584,10 +584,14 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
                 elif (
                     not is_kcc_member
                     and request.user.category != 2
-                    and plan.product_type not in ["external", "general"]
+                    and plan.product_type not in [
+                        "general", "business_startup", "education", 
+                        "home_improvement", "medical_emergency", "vehicle_purchase", 
+                        "debt_consolidation", "wedding_events"
+                    ]
                 ):
                     messages.error(
-                        request, "You can only apply for general loan products."
+                        request, "You can only apply for general or external loan products."
                     )
                     return redirect("finance:loan-home")
         else:
@@ -598,22 +602,34 @@ def apply_for_loan(request, plan_id=None, *args, **kwargs):
                 # Prioritize KCC Quick Cash (2 weeks) for new users
                 plan = LoanProduct.objects.filter(
                     is_active=True, 
-                    product_type="kcc_member",
+                    product_type="kcc_premium",
                     name__icontains="Quick Cash"
                 ).first()
                 
                 # If Quick Cash not found, get the first KCC member plan
                 if not plan:
                     plan = LoanProduct.objects.filter(
-                        is_active=True, product_type="kcc_member"
+                        is_active=True, product_type="kcc_premium"
                     ).first()
             elif request.user.category == 2:
+                # Staff members - prioritize emergency loans
                 plan = LoanProduct.objects.filter(
-                    is_active=True, product_type="staff_only"
+                    is_active=True, product_type="staff_emergency"
                 ).first()
+                # Fallback to development loans if no emergency loans
+                if not plan:
+                    plan = LoanProduct.objects.filter(
+                        is_active=True, product_type="staff_development"
+                    ).first()
             else:
+                # External users - get general or external-specific products
                 plan = LoanProduct.objects.filter(
-                    is_active=True, product_type__in=["external", "general"]
+                    is_active=True, 
+                    product_type__in=[
+                        "general", "business_startup", "education", 
+                        "home_improvement", "medical_emergency", "vehicle_purchase", 
+                        "debt_consolidation", "wedding_events"
+                    ]
                 ).first()
 
             if not plan:
