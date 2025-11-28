@@ -1266,9 +1266,11 @@ def newevidence(request, taskid):
                     if request.user.username in users:
                         messages.error(request, "You have already uploaded this link.")
                         return render(request, "management/daf/evidence_form.html", {"form": form})
-                    elif task.activity_name not in ACTIVITY_LIST:
-                        messages.error(request, "This link is already uploaded by another user.")
-                        return render(request, "management/daf/evidence_form.html", {"form": form})
+                    # TEMPORARY: Commented out to allow multiple employees to upload same link
+                    # TODO: Re-evaluate after testing period - may need activity-specific rules
+                    # elif task.activity_name not in ACTIVITY_LIST:
+                    #     messages.error(request, "This link is already uploaded by another user.")
+                    #     return render(request, "management/daf/evidence_form.html", {"form": form")
 
             temp_file_path = None
             original_filename = None
