@@ -26,36 +26,24 @@ class MemberDeleteView(DeleteView):
     success_url = reverse_lazy('accounts:member-list')
 import secrets
 import uuid
-import string, random
-from django.core.paginator import Paginator
+import string
 from django.contrib.auth import authenticate, login
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from flask import request
 from accounts.choices import CategoryChoices
-from accounts.utils import CATEGORY_FEES, convert_kes_to_usd, get_exchange_rate, send_verification_email
+from accounts.utils import CATEGORY_FEES, get_exchange_rate, send_verification_email
 from coda_project import settings
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import HttpRequest
-from django.contrib.auth.views import LoginView
 from django.views.generic import (
     CreateView,
     DeleteView,
-    DetailView,
     ListView,
     UpdateView,
 )
-from .models import Account, CustomerUser, Membership
+from .models import Account, CustomerUser
 from .forms import AccountForm, CustomAuthenticationForm, CustomUserCreationForm, UserForm,LoginForm
-from finance.utils import DYCDefaultPayments
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import get_user_model
 
 from .forms import MembershipRegistrationForm
 
@@ -214,11 +202,7 @@ def verify_email(request, token):
         # If the user doesn't exist, render the failure message
         return render(request, "accounts/registration/email_verification_notice.html", {"verification_status": "failed"})
 
-from django.contrib.auth import authenticate, login, get_user_model
-from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
-from .forms import LoginForm
-from .models import Membership  # Replace with the actual import path for Membership
 
 def login_view(request):
     form = LoginForm(request.POST or None)
@@ -345,8 +329,6 @@ def select_category(request):
     return render(request, "accounts/select_category.html")
 
 
-from django.http import HttpResponseRedirect  
-from django.http import HttpResponseRedirect  
 def custom_social_account_adapter_pre_social_login(request, sociallogin):
     print('Inside pre_social_login')
     user = sociallogin.user

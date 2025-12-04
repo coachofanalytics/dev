@@ -1,10 +1,9 @@
 
 import logging
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Sum
-from django.http import QueryDict, Http404, JsonResponse
+from django.http import QueryDict, Http404
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
@@ -14,18 +13,16 @@ from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm
 from .models import (
-    Budget, CodaBudget, Payment_Information, Payment_History,
+    Budget, CodaBudget, Payment_History,
     Default_Payment_Fees, Transaction
 )
 from .utils import (
-    check_default_fee, get_exchange_rate, compute_amt, category_subcategory
+    get_exchange_rate
 )
-from main.utils import path_values, countdown_in_month
+from main.utils import path_values
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.views.generic import CreateView
-from .models import Payment_Information
 
 # Initialize Logger
 logger = logging.getLogger(__name__)
@@ -176,7 +173,6 @@ def another_view(request, method):
 
 
 
-from django.shortcuts import render
 
 def payment(request, method):
     path_list, sub_title, pre_sub_title = path_values(request)

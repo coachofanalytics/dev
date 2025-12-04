@@ -1,16 +1,11 @@
 from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
-from datetime import datetime, date
+from datetime import datetime
 from decimal import *
-from enum import unique
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.db.models import Q
-from django.db.models import Sum
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.db.models.signals import pre_save, post_save
-from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from accounts.models import CustomerUser, Department

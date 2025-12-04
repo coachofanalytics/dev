@@ -1,6 +1,5 @@
 import django_filters 
 from accounts.models import User
-from finance.models import Food
 
 
 class UserFilter(django_filters.FilterSet):

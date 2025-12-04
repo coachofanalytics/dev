@@ -1,7 +1,5 @@
 from django.test import TestCase
 from accounts.models import User, Department, Credential, CredentialCategory, TaskGroups, Tracker
-from django.urls import reverse
-import datetime 
 
 from django.contrib.auth import get_user_model
 

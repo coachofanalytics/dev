@@ -18,12 +18,13 @@ admin.site.register(ContactUs)
 admin.site.register(SafetyAlertSubscription)
 admin.site.register(EmergencyHotline)
 admin.site.register(StaffContact)
-admin.site.register(EmergencyHelpActivation)
+#admin.site.register(EmergencyHelpActivation)
 
 #=======
 admin.site.register(Donation_organisation)
 admin.site.register(ContactMessage)
 admin.site.register(Donation_organization)
 admin.site.register(Scholarship)
+admin.site.register(Testimonial)
 #>>>>>>> 25.10_DC48_UAT_ND
 

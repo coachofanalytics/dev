@@ -1,16 +1,11 @@
 from django.shortcuts import render
 
 # Create your views here.
-from sched import Event
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 
-from main.forms import MessageForm
 from .utils import send_email
 from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm
 from .models import Post, ForumCategory, CommentP, EventCalendar  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models

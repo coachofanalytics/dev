@@ -1,5 +1,4 @@
 
-from asyncio import Event
 from django import forms
 from django.utils import timezone
 from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar

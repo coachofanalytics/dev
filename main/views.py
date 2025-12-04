@@ -1,27 +1,20 @@
 from django.shortcuts import redirect, render
-from datetime import datetime,date,timedelta
-from dateutil.relativedelta import relativedelta
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, EmergencyHelpActivation
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
+from .models import Scholarship, Donation_organisation, ContactMessage
 #>>>>>>> 25.10_DC48_UAT_ND
-from accounts.models import CustomerUser
-from .utils import image_view,path_values
 from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
-from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
-from accounts.models import CustomerUser
-from .utils import image_view,path_values
+from .models import Donation_organization, MedicalResourceInquiry
 from django.views.decorators.csrf import csrf_exempt
 from main.forms import ContactForm
 #>>>>>>> origin/25.10_DC48K_UAT_FN
@@ -152,7 +145,7 @@ def layout(request):
    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -277,8 +270,7 @@ def subscribe_alerts(request):
 
     
 
-from django.shortcuts import render
-from .models import Service,ContactUs
+from .models import ContactUs
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
@@ -397,14 +389,14 @@ def activate_helpline(request):
         ip = request.META.get('REMOTE_ADDR')
 
     # Log activation
-    EmergencyHelpActivation.objects.create(
-        event_type="callback_requested",
-        name=name,
-        phone=phone,
-        location=location,
-        notes=notes,
-        ip_address=ip,
-    )
+    # EmergencyHelpActivation.objects.create(
+    #     event_type="callback_requested",
+    #     name=name,
+    #     phone=phone,
+    #     location=location,
+    #     notes=notes,
+    #     ip_address=ip,
+    # )
 
     # Notify active staff via email
     recipients = list(
@@ -446,7 +438,7 @@ def donor_details(request, pk):
 def add_donor(request):
     if request.method == "POST":
         form = DonorForm(request.POST, request.FILES)
-        message=f'Thank You for your donation, we will get back to you within 48 hours.'
+        message='Thank You for your donation, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -509,7 +501,7 @@ def delete_message(request, pk):
 def add_message(request):
     if request.method == "POST":
         form = MessageForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
