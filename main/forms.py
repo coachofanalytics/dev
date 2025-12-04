@@ -1,5 +1,5 @@
 from django import forms
-from .models import Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 
 # Feedback / Contact Form
 class ContactForm(forms.ModelForm):
@@ -28,11 +28,12 @@ class DonationOrganizationForm(forms.ModelForm):
         model = Donation_organization
         fields = ['donor_name', 'email', 'amount', 'message']
 
-# DonorForm for the organization spelled with underscore
+
 class DonorForm(forms.ModelForm):
     class Meta:
         model = Donation_organisation
         fields = ['donor_name', 'email', 'amount', 'message']
+
 
 # Contact Message Form
 class MessageForm(forms.ModelForm):
@@ -92,15 +93,3 @@ class ScholarshipSearchForm(forms.Form):
             }
         )
     )
-
-class TestimonialForm(forms.ModelForm):
-    class Meta:
-        model = Testimonial
-        fields = ['name', 'position', 'organization', 'testimonial', 'image']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'position': forms.TextInput(attrs={'class': 'form-control'}),
-            'organization': forms.TextInput(attrs={'class': 'form-control'}),
-            'testimonial': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-        }
-

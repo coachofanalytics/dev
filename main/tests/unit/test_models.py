@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from main.models import Scholarship, TrainingCourse
+from main.models import Scholarship, TrainingCourse, Testimonial
 
 
 class EducationModelsTest(TestCase):
@@ -31,3 +31,45 @@ class EducationModelsTest(TestCase):
 		self.assertIsNotNone(t.id)
 		self.assertEqual(str(t), 'Test Course')
 
+
+from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from datetime import date
+
+
+class TestimonialModelTest(TestCase):
+
+    def setUp(self):
+        # Create a fake image file
+        self.image = SimpleUploadedFile(
+            "test.jpg",
+            b"file_content",
+            content_type="image/jpeg"
+        )
+
+        self.testimonial = Testimonial.objects.create(
+            name="John Doe",
+            position="Developer",
+            organization="Tech Corp",
+            testimonial="This is a great product!",
+            image=self.image,
+        )
+
+    def test_testimonial_creation(self):
+        """Test if the model instance is created correctly"""
+        self.assertEqual(self.testimonial.name, "John Doe")
+        self.assertEqual(self.testimonial.position, "Developer")
+        self.assertEqual(self.testimonial.organization, "Tech Corp")
+        self.assertEqual(self.testimonial.testimonial, "This is a great product!")
+        self.assertTrue(self.testimonial.image.name.startswith("Testimonial/"))
+
+    def test_auto_date_field(self):
+        """Test if date is auto-set on creation"""
+        self.assertEqual(self.testimonial.date, date.today())
+
+    def test_str_method(self):
+        """Test __str__ returns correct format"""
+        self.assertEqual(
+            str(self.testimonial),
+            "Testimonial from John Doe"
+        )

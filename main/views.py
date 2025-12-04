@@ -5,22 +5,19 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from flask import request
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets, ConsularAssistancePage,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations, Testimonial
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-#<<<<<<< HEAD
 from .models import Scholarship, Donation_organisation, ContactMessage
 #>>>>>>> 25.10_DC48_UAT_ND
-#=======
-from .models import (
-    Donation_organization, MedicalResourceInquiry
-)
-#>>>>>>> origin/25.11_DC48K_UAT_FN
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
+##=======
+from .models import Donation_organization, MedicalResourceInquiry
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, TestimonialForm
+from main.forms import ContactForm
+#>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
@@ -214,7 +211,7 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
         return reverse('main:images') 
     
 def crisis_page(request):
-    hotlines = EmergencyHot.objects.filter(is_active=True).order_by("sort_order", "id")
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
@@ -392,14 +389,14 @@ def activate_helpline(request):
         ip = request.META.get('REMOTE_ADDR')
 
     # Log activation
-    EmergencyHelpActivations.objects.create(
-        event_type="callback_requested",
-        name=name,
-        phone=phone,
-        location=location,
-        notes=notes,
-        ip_address=ip,
-    )
+    # EmergencyHelpActivation.objects.create(
+    #     event_type="callback_requested",
+    #     name=name,
+    #     phone=phone,
+    #     location=location,
+    #     notes=notes,
+    #     ip_address=ip,
+    # )
 
     # Notify active staff via email
     recipients = list(
@@ -523,12 +520,7 @@ def add_message(request):
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
-    # Flag to indicate a successful mentorship request submission
-    mentorship_success = request.GET.get('mentorship') == 'success'
-    context = {
-        'initial_view': initial_view,
-        'mentorship_success': mentorship_success,
-    }
+    context = {'initial_view': initial_view}
     return render(request, 'main/education/education.html', context)
 
 
@@ -613,124 +605,36 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
-# Scholarship search view — renders the scholarship search template and handles basic filters
+#>>>>>>> origin/25.10_DC48K_UAT_FN
+
+# Scholarship views
+
 def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
     if form.is_valid():
         data = form.cleaned_data
-        # keyword search
-        kw = data.get('search_keyword')
-        if kw:
+        # apply filter
+        if data['search_keyword']:
             scholarships = scholarships.filter(
-                Q(title__icontains=kw) | Q(provider__icontains=kw)
+                Q(title__icontains=data['search_keyword']) |
+                Q(provider__icontains=data['search_keyword']) 
             )
-        # level filter
-        level = data.get('filter_level')
-        if level:
-            scholarships = scholarships.filter(level=level)
-        # field filter
-        field = data.get('filter_field')
-        if field:
-            scholarships = scholarships.filter(field=field)
-        # location filter
-        location = data.get('filter_location')
-        if location:
-            scholarships = scholarships.filter(location=location)
-        # status
-        if data.get('filter_status'):
-            scholarships = scholarships.filter(status__icontains='Closing')
+        if data['filter_level'] and data['filter_level'] != 'All':
+            scholarships = scholarships.filter(level=data['filter_level'])
+
+        if data['filter_field'] and data['filter_field'] != 'All':
+            scholarships = scholarships.filter(field=data['filter_field'])
+
+        if data['filter_location'] and data['filter_location'] != 'All':
+            scholarships = scholarships.filter(location=data['filter_location'])
+
+        if data['filter_status']:
+            scholarships = scholarships.filter(status='Closing soon')
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
-#<<<<<<< HEAD
     return render(request, 'scholarship_app/scholarship_search.html',context)
 #>>>>>>> 25.10_DC48_UAT_ND
-#=======
-    return render(request, 'scholarship_app/scholarship_search.html', context)
-#>>>>>>> origin/25.11_DC48K_UAT_FN
-
-
-# def testimonial_list(request):
-#     testimonial = Testimonial.objects.all()
-#     return render(request, "main/snippets_templates/table/testimonial_list.html", {'testimonial': testimonial})
-
-# LIST
-def testimonial_list(request):
-    testimonials = Testimonial.objects.all()
-    return render(request, "main/testimonial/testimonial_list.html", {
-        'testimonials': testimonials
-    })
-
-
-
-
-def testimonial_detail(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk)
-    testimonials = Testimonial.objects.all()
-
-    return render(request, "main/testimonial/testimonial_detail.html", {
-        'testimonial': testimonial,
-        'testimonials': testimonials,
-    })
-
-
-
-
-def testimonial_create(request):
-    testimonials = Testimonial.objects.all()
-
-    if request.method == "POST":
-        form = TestimonialForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('main:testimonial_list')
-    else:
-        form = TestimonialForm()
-
-    return render(request, "main/testimonial/testimonial_form.html", {
-        'form': form,
-        'title': 'Add Testimonial',
-        'testimonials': testimonials,
-    })
-
-def testimonial_update(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk)
-    testimonials = Testimonial.objects.all()
-
-    if request.method == "POST":
-        form = TestimonialForm(request.POST, request.FILES, instance=testimonial)
-        if form.is_valid():
-            form.save()
-            return redirect('main:testimonial_list')
-    else:
-        form = TestimonialForm(instance=testimonial)
-
-    return render(request, "main/testimonial/testimonial_form.html", {
-        'form': form,
-        'title': 'Edit Testimonial',
-        'testimonials': testimonials,
-    })
-
-
-
-def testimonial_delete(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk)
-    testimonials = Testimonial.objects.all()
-
-    if request.method == "POST":
-        testimonial.delete()
-        return redirect('main:testimonial_list')
-
-    return render(request, "main/testimonial/testimonial_confirm_delete.html", {
-        'testimonial': testimonial,
-        'testimonials': testimonials,
-    })
-
-
-def consular_assistance(request):
-    page = ConsularAssistancePage.objects.first()
-    context = { 'page': page, }
-    return render(request, "main/consular_assistance.html", context)
