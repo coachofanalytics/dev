@@ -1,0 +1,127 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Testimonial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #fff;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .empty {
+            margin-top: 20px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Testimonial List</h1>
+        <a href="#" class="add-btn">+ Add Testimonial</a>
+
+    {% if testimonial %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position </th>
+                    <th>Organization</th>
+                    <th>Testimonial</th>
+                    <th>Image</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for testimonial in testimonial %}
+                <tr>
+                    <td>{{ testimonial.name }}</td>
+                    <td>{{ testimonial.position }}</td>
+                    <td>{{ testimonial.organization }}</td>
+                    <td>{{ testimonial.testimonial }}</td>
+                    <td>{{ testimonial.image}}</td>
+                    <td>{{ testimonial.date}}</td>
+                    <td>
+                        <a href="#" class="action-btn detail-btn">Details</a>
+                        <a href="#" class="action-btn edit-btn">Edit</a>
+                        <a href="#" class="action-btn delete-btn">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="empty">No donations have been made yet.</p>
+    {% endif %}
+        <style>
+            .add-btn {
+                display: inline-block;
+                margin-bottom: 15px;
+                background: #28a745;
+                color: #fff;
+                padding: 8px 18px;
+                border-radius: 4px;
+                text-decoration: none;
+                font-weight: bold;
+                transition: background 0.2s;
+            }
+            .add-btn:hover {
+                background: #218838;
+            }
+            .action-btn {
+                display: inline-block;
+                padding: 6px 14px;
+                border-radius: 4px;
+                color: #fff;
+                text-decoration: none;
+                margin-right: 4px;
+                font-size: 0.95em;
+                transition: background 0.2s;
+            }
+            .detail-btn {
+                background: #17a2b8;
+            }
+            .detail-btn:hover {
+                background: #117a8b;
+            }
+            .edit-btn {
+                background: #007bff;
+            }
+            .edit-btn:hover {
+                background: #0056b3;
+            }
+            .delete-btn {
+                background: #dc3545;
+            }
+            .delete-btn:hover {
+                background: #a71d2a;
+            }
+        </style>
+</body>
+</html>
+
+{% endblock %}

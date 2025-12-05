@@ -66,4 +66,7 @@ urlpatterns = [
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
+
+    path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
+
 ]    
