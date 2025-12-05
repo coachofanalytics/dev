@@ -25,7 +25,6 @@ from django.contrib.auth import views as auth_views
 from accounts import views as account_views
 from coda_project import settings
 
-from . import views
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"

@@ -466,13 +466,12 @@ def run_performance_tests():
     total_duration = total_end_time - total_start_time
     
     print(f"\n{'='*70}")
-    print(f"PERFORMANCE TEST SUITE COMPLETED")
+    print("PERFORMANCE TEST SUITE COMPLETED")
     print(f"Total duration: {total_duration:.2f} seconds")
     print(f"{'='*70}")
 
 if __name__ == "__main__":
     import django
-    from django.conf import settings
     from django.test.utils import setup_test_environment, teardown_test_environment
     
     django.setup()

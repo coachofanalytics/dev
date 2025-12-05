@@ -1,6 +1,7 @@
 from django.test import TestCase, override_settings
-from main.models import Scholarship
+from main.models import Scholarship, Testimonial
 from datetime import date
+from django.urls import reverse
 
 
 # Completely disable static files for these tests
@@ -216,3 +217,50 @@ class ScholarshipSimpleTest(TestCase):
         self.assertIn(scholarship.field, ['STEM', 'Humanities', 'Business', 'Arts'])
         self.assertIn(scholarship.location, ['Kenya', 'Global', 'UK', 'USA'])
         self.assertIn(scholarship.status, ['Open', 'Closing Soon', 'Closed'])
+
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class TestimonialTemplateTest(TestCase):
+    def setUp(self):
+        self.url = reverse("main:testimonial")
+
+        # Create some test testimonials
+        self.testimonial1 = Testimonial.objects.create(
+            name="Alice",
+            position="Manager",
+            organization="Company A",
+            testimonial="Great work!",
+        )
+        self.testimonial2 = Testimonial.objects.create(
+            name="Bob",
+            position="Engineer",
+            organization="Company B",
+            testimonial="Excellent support!",
+        )
+
+    def test_template_loads_correctly(self):
+        """Check that the testimonial page loads and uses the correct template"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "main/snippets_templates/table/testimonial_list.html")
+
+    def test_testimonial_content_displayed(self):
+        """Check that testimonial content is displayed in the template"""
+        response = self.client.get(self.url)
+        self.assertContains(response, self.testimonial1.name)
+        self.assertContains(response, self.testimonial1.position)
+        self.assertContains(response, self.testimonial1.organization)
+        self.assertContains(response, self.testimonial1.testimonial)
+
+        self.assertContains(response, self.testimonial2.name)
+        self.assertContains(response, self.testimonial2.position)
+        self.assertContains(response, self.testimonial2.organization)
+        self.assertContains(response, self.testimonial2.testimonial)
+
+    def test_no_testimonial_message(self):
+        """Check the message displayed when there are no testimonials"""
+        # Delete all testimonials
+        Testimonial.objects.all().delete()
+        response = self.client.get(self.url)
+        self.assertContains(response, "No Testimonial have been made yet.")

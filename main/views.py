@@ -1,29 +1,23 @@
 from django.shortcuts import redirect, render
-from datetime import datetime,date,timedelta
-from dateutil.relativedelta import relativedelta
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations, Testimonial
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
 #<<<<<<< HEAD
-from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
+from .models import Scholarship, Donation_organisation, ContactMessage
 #>>>>>>> 25.10_DC48_UAT_ND
 #=======
 from .models import (
-    Assets, Description, News, Page, Service, Scholarship, SubService, Team,
-    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry
+    Donation_organization, MedicalResourceInquiry
 )
 #>>>>>>> origin/25.11_DC48K_UAT_FN
-from accounts.models import CustomerUser
-from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
 from django.contrib.auth import get_user_model
@@ -153,7 +147,7 @@ def layout(request):
    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -278,11 +272,7 @@ def subscribe_alerts(request):
 
     
 
-from django.shortcuts import render
-from .models import Service,ContactUs
-from django.db.models import Q
-from .models import Scholarship
-from .forms import ScholarshipSearchForm
+from .models import ContactUs
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
@@ -450,7 +440,7 @@ def donor_details(request, pk):
 def add_donor(request):
     if request.method == "POST":
         form = DonorForm(request.POST, request.FILES)
-        message=f'Thank You for your donation, we will get back to you within 48 hours.'
+        message='Thank You for your donation, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -513,7 +503,7 @@ def delete_message(request, pk):
 def add_message(request):
     if request.method == "POST":
         form = MessageForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -660,3 +650,8 @@ def scholarship_search(request):
 #=======
     return render(request, 'scholarship_app/scholarship_search.html', context)
 #>>>>>>> origin/25.11_DC48K_UAT_FN
+
+
+def testimonial_list(request):
+    testimonial = Testimonial.objects.all()
+    return render(request, "main/snippets_templates/table/testimonial_list.html", {'testimonial': testimonial})

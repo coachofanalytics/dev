@@ -1,7 +1,7 @@
 import time
 from django.test import TestCase
 from main.models import Scholarship
-from datetime import date, timedelta
+from datetime import timedelta
 from django.utils import timezone
 import random
 

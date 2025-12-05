@@ -1,11 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Q
-from django.urls import reverse
-from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from accounts.models import CustomerUser
 
 User = get_user_model()
 
@@ -318,3 +314,19 @@ class TrainingCourse(models.Model):
 #>>>>>>> 25.10_DC48_UAT_ND
 #=======
 #>>>>>>> 25.10_DC48_UAT_ND
+
+class Testimonial(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+    position = models.CharField(max_length=100, null=False, blank=True)
+    organization = models.CharField(max_length=100, null=False, blank=True)
+    testimonial = models.TextField(null=False, blank=False)
+    image = models.ImageField(upload_to="Testimonial/", null=False, blank=True)
+    date = models.DateField(auto_now_add=True, null=False)
+
+    def __str__(self):
+        return f"Testimonial from {self.name}"
+
+    def save(self, *args, **kwargs):
+        # You can add more custom logic here if needed
+        super().save(*args, **kwargs)
+

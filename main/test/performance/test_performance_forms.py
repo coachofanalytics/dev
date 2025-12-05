@@ -1,12 +1,9 @@
 import time
 from django.test import TestCase, Client
 from django.test.utils import override_settings
-from django.core.files.uploadedfile import SimpleUploadedFile
-from main.models import Scholarship
 from main.forms import ScholarshipSearchForm  # Import your actual forms
 from datetime import timedelta
 from django.utils import timezone
-import random
 
 @override_settings(
     DEBUG=True,

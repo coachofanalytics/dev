@@ -1,5 +1,4 @@
 from django import forms
-from django.forms import ModelForm
 from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 
 # Feedback / Contact Form

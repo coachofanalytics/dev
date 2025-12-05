@@ -1,9 +1,8 @@
 from django.test import TestCase, Client
 from main.models import Scholarship
 from main.forms import ScholarshipForm
-from datetime import date, timedelta
+from datetime import timedelta
 from django.utils import timezone
-from django.urls import reverse, resolve
 
 
 class ScholarshipIntegrationTest(TestCase):

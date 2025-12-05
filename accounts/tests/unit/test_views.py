@@ -3,7 +3,6 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from accounts.views import *
-from main.forms import ContactForm
 import unittest
 from typing import Any
 

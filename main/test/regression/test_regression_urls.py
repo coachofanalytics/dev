@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.urls import reverse, resolve, NoReverseMatch
-from django.core.exceptions import ImproperlyConfigured
 
 class URLRegressionTest(TestCase):
     """Regression tests for URL configuration"""

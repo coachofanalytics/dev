@@ -1,17 +1,12 @@
-import os
-from django.urls import reverse, reverse_lazy
-from django.db.models import Q
-from django.contrib import messages
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from datetime import date
 
 import requests
 from accounts.choices import CategoryChoices
 from coda_project import settings
-from finance.utils import DYCDefaultPayments
 
 
-from django.contrib.auth.decorators import login_required
 
 # def get_default_sender():
 #     # Custom logic to determine the default sender
@@ -165,7 +160,6 @@ def get_exchange_rate(base, target):
 # ================================USERS========================================
 
 from django.core.mail import EmailMultiAlternatives
-from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.core.mail.backends.smtp import EmailBackend
 def send_verification_email(user,password=None):

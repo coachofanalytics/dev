@@ -2,7 +2,6 @@ import time
 from django.test import TestCase, Client
 from django.test.utils import override_settings
 from django.urls import reverse, resolve
-from django.core.management import call_command
 
 @override_settings(
     DEBUG=True,

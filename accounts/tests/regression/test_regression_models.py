@@ -1,4 +1,5 @@
-import os, unittest
+import os
+import unittest
 if not os.environ.get("CRISIS_RUN_REGRESSION"):
     raise unittest.SkipTest("Disabled: non-crisis regression tests")
 

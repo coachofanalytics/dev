@@ -1,6 +1,5 @@
 import datetime
 from django.test import TestCase
-from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from main.models import Scholarship

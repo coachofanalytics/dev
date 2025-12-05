@@ -1,8 +1,10 @@
 # main/test/unit/test_unit_views.py
 from django.test import TestCase, override_settings
-from main.models import Scholarship
-from datetime import date, timedelta
+from main.models import Scholarship, Testimonial
+from datetime import timedelta
 from django.utils import timezone
+from django.urls import reverse
+
 
 
 # Disable static files for tests to avoid the manifest issue
@@ -139,3 +141,80 @@ class ScholarshipSimpleTest(TestCase):
         
         self.assertEqual(Scholarship.objects.count(), 3)
         self.assertEqual(Scholarship.objects.get(title='Scholarship 1').provider, 'Provider 1')
+
+
+
+
+from django.test import TestCase, Client
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class TestimonialListViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("main:testimonial")  # use app_name if defined in urls.py
+        # Create a testimonial for testing
+        Testimonial.objects.create(
+            name="Person A",
+            position="Manager",
+            organization="Company X",
+            testimonial="Great service!"
+        )
+
+    def test_testimonial_list_status_code(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_testimonial_list_template(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, "main/snippets_templates/table/testimonial_list.html")
+
+    def test_testimonial_list_data(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "Great service!")
+
+    def test_page_contains_testimonial_content(self):
+        response = self.client.get(self.url)
+        testimonial = Testimonial.objects.first()
+        self.assertContains(response, testimonial.name)
+        self.assertContains(response, testimonial.testimonial)
+
+
+
+
+# @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+# class TestimonialListViewTest(TestCase):
+
+#     def setUp(self):
+#         self.client = Client()
+#         self.url = reverse("main:testimonial")  # include app_name prefix if needed
+
+#         # Create some test testimonials
+#         Testimonial.objects.create(
+#             name="Person A",
+#             testimonial="Good service",
+#             position="Manager",
+#             organization="Company A"
+#         )
+#         Testimonial.objects.create(
+#             name="Person B",
+#             testimonial="Excellent support",
+#             position="Director",
+#             organization="Company B"
+#         )
+
+#     def test_testimonial_list_status_code(self):
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, 200)
+
+#     def test_testimonial_list_template(self):
+#         response = self.client.get(self.url)
+#         self.assertTemplateUsed(response, "main/snippets_templates/table/testimonial_list.html")
+
+#     def test_testimonial_list_data(self):
+#         response = self.client.get(self.url)
+#         testimonials = response.context["testimonial"]  # key from your view
+#         self.assertEqual(len(testimonials), 2)
+
+#     def test_page_contains_testimonial_content(self):
+#         response = self.client.get(self.url)
+#         self.assertContains(response, "Good service")
+#         self.assertContains(response, "Excellent support")
