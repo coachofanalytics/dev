@@ -1,0 +1,119 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biashara Bridges — Landing</title>
+  <link rel="stylesheet" href="{% static 'landing/css/landing.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#"><img src="{% static 'landing/images/logo.svg' %}" alt="Biashara Bridges"/></a>
+      <nav class="site-nav">
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#partners">Partners</a>
+        <a href="#articles">Articles</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner container">
+        <h1>Trusted, transparent, and transformative partnerships</h1>
+        <p>Building Bridges Between Kenya, the U.S., &amp; the World.</p>
+        <div class="hero-cta">
+          <a class="btn primary" href="#">Learn More</a>
+          <a class="btn" href="#">Contact Us</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="container about">
+      <h2>Why Choose Us</h2>
+      <p>Biashara Bridges LLC is a U.S. and Kenya registered company led by the Kenyan diaspora. We specialize in international trade, diaspora investments, government engagement, and strategic partnerships that drive sustainable development.</p>
+      <div class="features">
+        <div class="feature">Government-to-Government (G2G)</div>
+        <div class="feature">Government-to-Business (G2B)</div>
+        <div class="feature">Business-to-Business (B2B)</div>
+      </div>
+    </section>
+
+    <section id="projects" class="container projects">
+      <h2>Featured Projects</h2>
+      <div class="project-grid">
+        <article class="project-card">
+          <img src="{% static 'landing/images/project1.jpg' %}" alt="Project 1">
+          <h3>Project One</h3>
+          <p>Short description of the project and its impact.</p>
+        </article>
+        <article class="project-card">
+          <img src="{% static 'landing/images/project2.jpg' %}" alt="Project 2">
+          <h3>Project Two</h3>
+          <p>Short description of the project and its impact.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="partners" class="container partners">
+      <h2>Our Partners</h2>
+      <div class="partners-grid">
+        <img src="{% static 'landing/images/logo-3.svg' %}" alt="Partner 1">
+        <img src="{% static 'landing/images/partner2.svg' %}" alt="Partner 2">
+        <img src="{% static 'landing/images/partner3.svg' %}" alt="Partner 3">
+      </div>
+    </section>
+
+    <section id="articles" class="container articles">
+      <h2>Articles</h2>
+      <div class="articles-grid">
+        <article class="article-card">
+          <img src="{% static 'landing/images/article1.jpg' %}" alt="Article 1">
+          <h3>Biashara Bridges at the Launch of the Diaspora Policy 2025</h3>
+          <p>Short excerpt about the event and key outcomes.</p>
+          <a class="readmore" href="#">Learn more</a>
+        </article>
+        <article class="article-card">
+          <img src="{% static 'landing/images/article2.jpg' %}" alt="Article 2">
+          <h3>Biashara Bridges Team meeting with the State Department</h3>
+          <p>Short excerpt about the meeting and next steps.</p>
+          <a class="readmore" href="#">Learn more</a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contact" class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <p>Address: Nairobi, Kenya | Cincinnati, Ohio, USA</p>
+        <p>Phone: +1 (513) 240-6808</p>
+        <p>Email: info@biasharabridges.com</p>
+      </div>
+      <div class="footer-col">
+        <h4>Important Links</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Cookies Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">Copyright © 2025 - Biashara Bridges</div>
+  </footer>
+
+  <div id="cookie-banner" class="cookie-banner">
+    <p>We respect your privacy. Cookies help us improve your experience.</p>
+    <div class="cookie-actions">
+      <button id="cookie-accept" class="btn primary">Accept All</button>
+      <button id="cookie-customize" class="btn">Customize</button>
+    </div>
+  </div>
+
+  <script src="{% static 'landing/js/landing.js' %}"></script>
+</body>
+</html>

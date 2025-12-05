@@ -91,6 +91,18 @@ DATABASES = {
     }
 }
 
+# Allow using SQLite for local development when requested via environment.
+# This is useful when PostgreSQL is not available locally.
+DB_ENGINE = config('DB_ENGINE', default='postgresql')
+USE_SQLITE_DEV = config('USE_SQLITE_DEV', default=False, cast=bool)
+if isinstance(DB_ENGINE, str) and DB_ENGINE.lower() in ('sqlite', 'sqlite3') or USE_SQLITE_DEV:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

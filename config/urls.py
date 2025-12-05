@@ -24,7 +24,7 @@ from accounts import views as accounts_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+     path('', TemplateView.as_view(template_name='landing.html'), name='home'),
 
     # Authentication URLs
     path('register/', accounts_views.register, name='register'),
