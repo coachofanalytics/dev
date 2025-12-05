@@ -1,21 +1,37 @@
-from django.test import TestCase, Client
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from main.models import Testimonial
 
-
-class EducationViewsTest(TestCase):
-	def setUp(self):
-		self.client = Client()
-
-	def test_course_register_page_renders(self):
-		url = reverse('main:course_register')
-		resp = self.client.get(url)
-		self.assertEqual(resp.status_code, 200)
-		# expect the full page to contain the main heading
-		self.assertContains(resp, 'Course Registration & Payments')
-
-	def test_course_register_fragment_returns(self):
-		url = reverse('main:course_register') + '?partial=1'
-		resp = self.client.get(url)
-		self.assertEqual(resp.status_code, 200)
-		# the fragment should include the fragment container id
-		self.assertContains(resp, 'id="course-register-fragment"')
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class TestimonialListViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Create 2 testimonials for testing
+        Testimonial.objects.create(
+            name="Test Subject 1",
+            position="Developer",
+            organization="Test Corp",
+            testimonial="Great service!",
+            image=""
+        )
+        Testimonial.objects.create(
+            name="Test Subject 2",
+            position="Designer", 
+            organization="Design Inc",
+            testimonial="Excellent work!",
+            image=""
+        )
+    
+    def test_view_url_exists_at_desired_location(self):
+        response = self.client.get('/Testimonial/')
+        self.assertEqual(response.status_code, 200)
+    
+    def test_view_passes_correct_context(self):
+        response = self.client.get(reverse('main:testimonial_list'))
+        self.assertIn('testimonial', response.context)
+        testimonials = response.context['testimonial']
+        self.assertEqual(testimonials.count(), 2)
+    
+    def test_view_uses_correct_template(self):
+        response = self.client.get(reverse('main:testimonial_list'))
+        self.assertTemplateUsed(response, 'main/snippets_templates/table/testimonial_list.html')

@@ -51,10 +51,14 @@ urlpatterns = [
     path('500/', views.hendler500, name='500-error'),
 
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
-    # Scholarship search (root-level /scholarship)
-    path('scholarship', views.scholarship_search, name='scholarship_search'),
 
+#<<<<<<< 25.11_DC48K_UAT_FN
     # Education and training views
+#=======
+    # Education pages removed — keep navbar buttons but links point to placeholders
+    # scholaship url
+    path('scholarship', views.scholarship_search, name='scholarship_search'),
+#>>>>>>> 25.10_DC48_UAT_ND
 
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
@@ -62,12 +66,7 @@ urlpatterns = [
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
-    path('testimonials/', views.testimonial_list, name='testimonial_list'),
-    path('testimonials/add/', views.testimonial_create, name='testimonial_create'),
-    path('testimonials/<int:pk>/', views.testimonial_detail, name='testimonial_detail'),
-    path('testimonials/<int:pk>/edit/', views.testimonial_update, name='testimonial_update'),
-    path('testimonials/<int:pk>/delete/', views.testimonial_delete, name='testimonial_delete'),
 
-    #consular
-    path('services/consular-assistance/', views.consular_assistance, name='consular_assistance'),
+    path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
+
 ]    

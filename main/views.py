@@ -10,7 +10,7 @@ from .models import Assets,Description, News, Page, Service, SubService,Team, Sa
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-from .models import Scholarship, Donation_organisation, ContactMessage
+from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
 #>>>>>>> 25.10_DC48_UAT_ND
 from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
@@ -638,3 +638,7 @@ def scholarship_search(request):
     }
     return render(request, 'scholarship_app/scholarship_search.html',context)
 #>>>>>>> 25.10_DC48_UAT_ND
+
+def testimonial_list(request):
+    testimonial = Testimonial.objects.all()
+    return render(request, "main/snippets_templates/table/testimonial_list.html",{"testimonial":testimonial})
