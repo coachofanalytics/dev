@@ -9,7 +9,8 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold">📊 OverBoughtSold Records</h2>
-    <a href="#" class="btn btn-success px-4 py-2 shadow-sm">+ Add New Record</a>
+    <!-- Removed the 'stock.id' from the URL and corrected it -->
+    <a href="{% url 'finance:overboughtsold_create' %}" class="btn btn-success px-4 py-2 shadow-sm">+ Add New Record</a>
 </div>
 
 <div class="table-container shadow-sm p-3 bg-white rounded-3">
@@ -63,7 +64,7 @@
 
 <style>
     .modern-table thead th {
-        background: #f8fafc; /* check issues */
+        background: #f8fafc;
         color: #2b2f32;
         font-weight: 600;
         padding: 14px;

@@ -1,19 +1,3 @@
-"""
-coda_project URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/3.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf import settings
@@ -23,9 +7,6 @@ from django.views.static import serve
 from django.contrib.auth import views as auth_views
 
 from accounts import views as account_views
-from coda_project import settings
-
-from . import views
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -35,9 +16,14 @@ handler500 = "main.views.hendler500"
 
 
 urlpatterns = [
+    # KEEP ONLY ONE ADMIN PATH
     path("admin/", admin.site.urls),
+
+    # Static + Media
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+
+    # Auth Views
     path(
         "logout/",
         auth_views.LogoutView.as_view(
@@ -45,7 +31,7 @@ urlpatterns = [
         ),
         name="account-logout",
     ),
-    
+
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(
@@ -72,19 +58,21 @@ urlpatterns = [
         account_views.PasswordResetCompleteView,
         name="password_reset_complete",
     ),
-    path("", include("main.urls", namespace="main")),
+
+    # App URLs
+    path("", include(("main.urls", "main"), namespace="main")),
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls")),
-    #redirect and custom url for social login
+
+    # Social Login
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),
     path('social_accounts/signup/', account_views.join),
     path('social_accounts/login/', account_views.login_view),
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
-
 ]
 
+
 if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-    ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
