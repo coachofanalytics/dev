@@ -25,28 +25,71 @@ def extract_assets_from_html(path):
     return assets, text
 
 
+def normalize_url(url):
+    """Normalize URL: strip protocol prefix, querystrings, and clean up path."""
+    # Remove protocol-relative prefix
+    if url.startswith('//'):
+        url = url[2:]
+    # Remove http(s):// prefix
+    if url.startswith('http://'):
+        url = url[7:]
+    elif url.startswith('https://'):
+        url = url[8:]
+    # Strip querystring
+    url = url.split('?')[0]
+    return url
+
 def local_asset_present(url):
     # convert URL path to local static path if possible
+    # Normalize the URL first
+    normalized = normalize_url(url)
+    
     # check if url contains '/wp-content' or '/static/landing/' etc
-    if url.startswith('/'):
-        # absolute path on site
+    if url.startswith('/') and not url.startswith('//'):
+        # absolute path on site (not protocol-relative)
         candidate = url.lstrip('/')
         local = os.path.join(BASE, candidate.replace('/', os.sep))
         return os.path.exists(local), local
-    if 'biasharabridges.com' in url:
-        # map to static/landing by taking basename
-        b = os.path.basename(url.split('?')[0])
-        # search static/landing recursively
+    
+    # For biasharabridges.com or protocol-relative URLs with biasharabridges.com
+    if 'biasharabridges.com' in normalized:
+        # Extract the path after the domain
+        if 'biasharabridges.com/' in normalized:
+            path_part = normalized.split('biasharabridges.com/', 1)[1]
+        else:
+            path_part = normalized.replace('biasharabridges.com', '')
+        
+        # Try direct path under static/landing
+        if path_part.startswith('wp-content/') or path_part.startswith('wp-includes/'):
+            direct_path = os.path.join(STATIC_DIR, path_part.replace('/', os.sep))
+            if os.path.exists(direct_path):
+                return True, direct_path
+        
+        # Fall back to basename search
+        b = os.path.basename(path_part) if path_part else ''
+        if b:
+            for root, dirs, files in os.walk(STATIC_DIR):
+                if b in files:
+                    return True, os.path.join(root, b)
+        return False, os.path.join(STATIC_DIR, path_part.replace('/', os.sep) if path_part else 'index')
+    
+    # For other hosts (fonts.googleapis.com, fonts.gstatic.com, etc.)
+    # Check if it's just a host reference (no path)
+    if '/' not in normalized or normalized.endswith('/'):
+        # This is a host-level reference, check for stub directory
+        host = normalized.rstrip('/')
+        stub_dir = os.path.join(STATIC_DIR, host)
+        if os.path.isdir(stub_dir):
+            return True, stub_dir
+        return False, stub_dir
+    
+    # Search by basename for other URLs
+    b = os.path.basename(normalized)
+    if b:
         for root, dirs, files in os.walk(STATIC_DIR):
             if b in files:
                 return True, os.path.join(root, b)
-        return False, os.path.join(STATIC_DIR, b)
-    # protocol-relative or other
-    b = os.path.basename(url.split('?')[0])
-    for root, dirs, files in os.walk(STATIC_DIR):
-        if b in files:
-            return True, os.path.join(root, b)
-    return False, os.path.join(STATIC_DIR, b)
+    return False, os.path.join(STATIC_DIR, b if b else 'unknown')
 
 
 if not os.path.exists(HOME_HTML):
