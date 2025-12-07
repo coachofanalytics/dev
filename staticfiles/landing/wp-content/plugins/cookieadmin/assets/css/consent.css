@@ -1,0 +1,600 @@
+:root {
+	--cookieadmin-primary-color: #001d39;
+	--cookieadmin-primary-hover-color: #985e23;
+	
+	--cookieadmin-secondary-color: #0046b2;
+	--cookieadmin-secondary-hover-color: #0065ff;
+	
+	--cookieadmin-txcolor: #0f172a;
+	
+	--cookieadmin-green-txtcolor: #3a8356;
+	--cookieadmin-warning-txtcolor: #9c7930;
+	--cookieadmin-red-txtcolor: #b55355;
+	
+	--cookieadmin-green-color: #15a448;
+	--cookieadmin-warning-color: #e9b306;
+	--cookieadmin-red-color: #dd2727;
+}
+
+/* Buttons End */
+
+/*  Consent page css */
+
+.cookieadmin-postbox-container { 
+	max-width: 92vw;
+	float: unset;
+	margin: 10px;
+}
+
+.cookieadmin_cookie_modal label, .cookieadmin_cookie_modal input {
+	padding: 5px;
+	margin-right: 5px;
+	font-size: 15px;
+}
+
+.cookieadmin_cookie_modal label{
+	font-weight: 501;
+}
+
+.cookieadmin_bottom{
+	bottom:20px;
+}
+
+.cookieadmin_top{
+	top: 20px;
+}
+
+.cookieadmin_right{
+	right: 15px;
+}
+
+.cookieadmin_left{
+	left:15px;
+}
+
+
+ 
+/* Modal animations  */
+@keyframes cookieadmin_slideUp {
+	from {
+		transform: translateY(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+@keyframes cookieadmin_slideSide {
+	from {
+		transform: translateX(-100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+/* Modal animations Ends */
+
+.cookieadmin_consent-header{
+	display: flex;
+	background: #12625f4d;
+	color: black;
+	padding: 12px;
+	box-sizing: border-box;
+	margin: 4px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.cookieadmin_consent-contents {
+	display: flex;
+	margin: 0px 5px;
+}
+
+.cookieadmin_consent_settings {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	background: #ffffff;
+	/*margin-left: -3px;*/
+}
+
+
+
+.cookieadmin-contents {
+	width: 100%;
+}
+
+.cookieadmin-setting {
+	display: flex;
+	padding: 6px 0px;
+	justify-content: flex-start;
+}
+
+.cookieadmin-setting-head {
+	width: 100%;
+	padding: 5px;
+	align-content: center;
+}
+
+.cookieadmin-setting-contents {
+	align-items: baseline;
+	padding: 5px;
+	margin: 5px;
+}
+
+.cookieadmin-setting-results {
+	align-items: baseline;
+	padding: 5px;
+	margin: 5px;
+	width: 80%;
+}
+
+.cookieadmin-button{
+	padding: 5px;
+	row-gap: 5px;
+}
+/* Consent page css End*/
+
+
+/* Website consent box  */
+
+.cookieadmin_law_container{
+	position: fixed;
+	width: 25%;
+	box-sizing: border-box;
+	z-index: 99999;
+	display: none;
+}
+
+.cookieadmin_consent_btns{
+	align-content: center;
+	display: flex;
+	justify-content: space-evenly;
+	flex-wrap: wrap;
+}
+
+.cookieadmin_box{
+	/*position: fixed;*/
+	width: 25%;
+	box-sizing: border-box;
+	display: none;
+}
+
+.cookieadmin_notice_group{
+	display: flex;
+	flex-direction: column;
+	gap: 10px; /* spacing between content and buttons */
+	align-items: flex-start;
+}
+
+
+.cookieadmin_consent_inside{
+	color: black;
+	background-color: #FFFFFF;
+	border: 1px solid #f4f4f4;
+	padding:15px;
+	border-radius: 4px;
+	box-shadow:1px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+#cookieadmin_notice_title{
+	font-weight: 601;
+	margin: 0px;
+	padding-left: 5px;
+}
+
+.cookieadmin_notice_con{
+	font-size: initial;
+	padding: 0px 6px;
+	flex: 1;
+}
+
+.cookieadmin_cookie_modal{
+	display: none;
+	flex-direction: column;
+	position: fixed;
+	max-height: 80vh;
+	background-color: #FFFFFF;
+	border: 1px solid #F4F4F4;
+	border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+	z-index: 999999;
+}
+
+.cookieadmin_center{
+	top: 10%;
+	left: 22%;
+	max-width: 60vw;
+}
+
+.cookieadmin_side{
+	flex-direction: column;
+	position: fixed;
+	width: 35vw;
+	bottom: 0px;
+	animation: 0.5s ease-out forwards cookieadmin_slideSide;
+	max-height: 100vh;
+	left: 0px;
+	top: 0px;
+	border-radius: 0px;
+}
+
+.cookieadmin_down{
+	position: fixed;
+	max-width: 100%;
+	max-height: 55vh;
+	bottom: 0px;
+	animation: 0.5s ease-out forwards cookieadmin_slideUp;
+}
+
+.cookieadmin_modal_overlay{
+	display: none; 
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5); 
+	z-index: 1000;
+}
+
+.cookieadmin_mod_head{
+	display: flex;
+	justify-content: space-between;
+}
+
+.cookieadmin_mod_head, .cookieadmin_wrapper{
+	padding: 15px;
+	border-bottom: 1px solid #CCCCCC;
+}
+
+.cookieadmin_close_pref{
+	background: none;
+	border: none;
+	align-self: baseline;
+	color: gray;
+	cursor: pointer;
+	padding: 0px;
+}
+
+.cookieadmin_preference_title{
+	font-size: 20px;
+	font-weight: 801;
+	margin: 9px;
+}
+
+.cookieadmin_preference_details{
+	padding: 0px 10px;
+}
+
+.cookieadmin_preference{
+	overflow: hidden;
+	height: 83px;
+	font-size: 15px;
+}
+
+.cookieadmin_showmore{
+	background: none;
+	border: none;
+	color: #1863dc;
+	padding: 0px;
+	cursor: pointer;
+}
+
+.cookieadmin_details_wrapper{
+	padding: 15px;
+	height: calc(100% - 6%);
+	overflow: auto;
+	scrollbar-width: thin;
+}
+
+.cookieadmin_types{
+	padding: 10px 10px;
+	border-top: 1px solid #CCCCCC;
+}
+
+.cookieadmin_header{
+	display: flex;
+	justify-content: space-between;
+}
+
+.cookieadmin_header > span > label{
+	cursor:pointer;
+}
+
+.cookieadmin_remark{
+	display:none;
+	justify-self:right;
+}
+
+.cookieadmin_act{
+	display: inline;
+	color: #1863dc;
+}
+
+.cookieadmin-nece-cookies{
+	display:none;
+	padding:1px;
+	border-radius: 10px;
+	margin: 0px 20px;
+	margin-right: 4rem;
+	font-size: smaller;
+	font-size: 1rem;
+	text-align: center;
+}
+
+.cookieadmin_desc{
+	padding:5px 20px;
+	font-size: 15px;
+	padding-right: 4rem;
+}
+
+.cookieadmin_footer{
+	left: 0px;
+	padding: 15px;
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+.cookieadmin_modal_footer{
+	left: 0px;
+	padding: 15px;
+	flex-wrap: wrap;
+	border-top: 1px solid #CCCCCC;
+}
+
+.cookieadmin_btn{
+	background-color: transparent;
+	border: 1px solid gray;
+	color: #1863dc;
+	padding: 0.4rem 0.9rem;
+	border-radius: 4px;
+	margin: 2px 5px;
+	cursor: pointer;
+	flex: auto;
+	text-wrap: auto;
+}
+
+.cookieadmin_btn:hover{
+	opacity: 0.8;
+}
+
+.cookieadmin_show_pref_cookies{
+	cursor: pointer;
+	font-size: 18px;
+}
+
+.cookieadmin_re_consent{
+	display: none;
+	position: fixed;
+	bottom: 15px;
+	left: 15px;
+	background: linear-gradient(to left, rgb(0, 51, 204) 0%, rgb(102, 102, 255) 100%);
+	height: 50px;
+	width: 50px;
+	border-radius: 50%;
+	cursor: pointer;
+	border: 0px;
+	z-index: 99999;
+	padding: 5px;
+}
+
+.cookieadmin-cookie-card {
+	background: ghostwhite;
+	border-radius: 10px;
+	padding: 16px;
+	font-family: 'Open Sans', 'Segoe UI', sans-serif;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+	margin: 10px auto;
+	text-align: left;
+}
+
+.cookieadmin-cookie-header {
+	display: flex;
+	justify-content: space-between;
+	font-size: 1rem;
+	margin-bottom: 6px;
+}
+
+.cookieadmin-cookie-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.cookieadmin-cookie-duration {
+  font-size: 0.85rem;
+}
+
+.cookieadmin-cookie-duration > b {
+  font-weight: bold;
+}
+
+.cookieadmin-cookie-description {
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.cookieadmin-cookie-tags {
+  display: flex;
+  gap: 8px;
+}
+
+.cookieadmin-tag {
+  background: #e0e0e0;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #333;
+}
+
+/* Website consent box End*/
+
+
+
+
+
+/* Checkbox switch Start */
+
+.cookieadmin_toggle, .cookieadmin_toggle_disabled {
+	position: relative;
+	display: inline-block;
+	width: 24px;
+	height: 11px;
+}
+
+/* Hide the checkbox input */
+.cookieadmin_toggle input, .cookieadmin_toggle_disabled input {
+	display: none;
+}
+
+/* Describe slider's look and position. */
+.cookieadmin_slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 21px;
+	width: 34px;
+	background-color: gray;
+	transition: .4s;
+	border-radius: 34px;
+}
+
+/* Describe the white ball's location 
+  and appearance in the slider. */
+.cookieadmin_slider:before {
+	position: absolute;
+	content: "";
+	height: 15px;
+	width: 15px;
+	left: 3.2px;
+	bottom: 3.2px;
+	background-color: white;
+	transition: .2s;
+	border-radius: 50%;
+}
+
+/* Modify the slider's background color to 
+  green once the checkbox has been selected. */
+input:checked+.cookieadmin_slider {
+	background-color: #3582c4;
+}
+
+/* When the checkbox is checked, shift the 
+  white ball towards the right within the slider. */
+input:checked+.cookieadmin_slider:before {
+	transform: translateX(13px);
+}
+
+input:disabled+.cookieadmin_slider {
+	background-color: #3582c4;
+}
+input:disabled+.cookieadmin_slider:before {
+	transform: translateX(13px);
+}
+
+/* Checkbox switch End */
+
+.cookieadmin-poweredby{
+margin-top: 10px;
+}
+
+.cookieadmin-poweredby a img{
+height: 15px;
+}
+
+.cookieadmin-poweredby a{
+color : unset;
+cursor: pointer;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 11px;
+gap: 2px;
+text-decoration: none;
+}
+
+.cookieadmin_modal_footer .cookieadmin-poweredby a{
+justify-content: end;
+}
+
+/* CSS for phones only */
+@media (max-width: 767px) {
+
+	.cookieadmin_center{
+		top: 10%;
+		left: 5%;
+		max-width: 90vw;
+	}
+
+	.cookieadmin_show_pref_cookies{
+		font-size: 14px;
+	}
+
+	.cookieadmin_law_container, .cookieadmin_box{
+		width: 90%;
+	}
+	
+	.cookieadmin_side{
+		width: 100%;
+	}
+}
+
+/* CSS for tablet */
+@media (min-width: 768px) and (max-width: 991px) {
+
+	.cookieadmin_box{
+		width: 45%;
+	}
+}
+
+/* CSS for small laptop */
+@media (min-width: 992px) and (max-width: 1199px) {
+
+	.cookieadmin_box{
+		width: 35%;
+	}
+	
+}
+/* CSS for HD TV screens */
+@media (min-width: 1200px) and (max-width: 1360px) {
+
+	.cookieadmin_box{
+		width: 30%;
+	}
+}
+
+/* Desktop Layout */
+@media (min-width: 768px) {
+	.cookieadmin_notice_group {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.cookieadmin_notice_con {
+		flex: 1; /* take remaining space */
+	}
+
+	.cookieadmin_consent_btns {
+		flex-shrink: 0;
+	}
+}
+
+@media (max-width:480px){
+	.cookieadmin_consent_inside .cookieadmin_btn {
+		width: 100%;
+		margin: 5px 0;
+	}
+	
+	.cookieadmin_modal_footer{
+		padding: 8px;
+	}
+}

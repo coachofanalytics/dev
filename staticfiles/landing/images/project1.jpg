@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#f2f6ff"/>
+  <text x="40" y="220" font-size="28" fill="#0b5cff" font-family="Arial">Project image</text>
+</svg>

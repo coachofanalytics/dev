@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="500" viewBox="0 0 1600 500">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#0b5cff" stop-opacity="1"/><stop offset="1" stop-color="#6fb2ff" stop-opacity="1"/></linearGradient>
+  </defs>
+  <rect width="1600" height="500" fill="url(#g)" />
+  <text x="80" y="280" font-size="48" fill="#fff" font-family="Arial">Trusted, transparent, and transformative partnerships</text>
+</svg>

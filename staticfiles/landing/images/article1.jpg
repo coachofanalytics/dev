@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#eef7f2"/>
+  <text x="40" y="220" font-size="28" fill="#1f8a59" font-family="Arial">Article image</text>
+</svg>

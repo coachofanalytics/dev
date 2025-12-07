@@ -5,6 +5,14 @@ psycopg2-binary==2.9.11
 python-decouple==3.8
 sqlparse==0.5.3
 tzdata==2025.2
+
+# Production Server
+gunicorn==21.2.0
+
+# Heroku/Production Dependencies
+whitenoise==6.6.0
+dj-database-url==2.1.0
+
 # Payment Gateway Dependencies
 stripe==13.1.2
 paypalrestsdk==1.13.3
