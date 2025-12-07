@@ -67,7 +67,7 @@ class UserRegistrationForm(UserCreationForm):
         })
     )
     category = forms.ModelChoiceField(
-        queryset=Category.objects.filter(is_active=True),
+        queryset=Category.objects.none(),  # Lazy load - set in __init__ to avoid import-time DB queries
         required=True,
         empty_label='Select your category...',
         widget=forms.Select(attrs={
@@ -306,6 +306,8 @@ class UserRegistrationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(UserRegistrationForm, self).__init__(*args, **kwargs)
+        # Set category queryset at runtime to avoid import-time DB queries (Heroku deployment fix)
+        self.fields['category'].queryset = Category.objects.filter(is_active=True)
         self.fields['username'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Choose a username'
