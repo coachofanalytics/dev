@@ -91,11 +91,12 @@ DATABASES = {
     }
 }
 
-# Allow using SQLite for local development when requested via environment.
-# This is useful when PostgreSQL is not available locally.
-DB_ENGINE = config('DB_ENGINE', default='postgresql')
-USE_SQLITE_DEV = config('USE_SQLITE_DEV', default=False, cast=bool)
-if isinstance(DB_ENGINE, str) and DB_ENGINE.lower() in ('sqlite', 'sqlite3') or USE_SQLITE_DEV:
+# Allow using SQLite for local development (default for easier setup).
+# Set USE_POSTGRESQL=True in environment to use PostgreSQL instead.
+DB_ENGINE = config('DB_ENGINE', default='sqlite')
+USE_SQLITE_DEV = config('USE_SQLITE_DEV', default=True, cast=bool)
+USE_POSTGRESQL = config('USE_POSTGRESQL', default=False, cast=bool)
+if not USE_POSTGRESQL and (isinstance(DB_ENGINE, str) and DB_ENGINE.lower() in ('sqlite', 'sqlite3') or USE_SQLITE_DEV):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -225,3 +226,105 @@ AUTO_CANCEL_PENDING_INVOICES_DAYS = 7  # Auto-cancel unpaid invoices after 7 day
 
 # Security Settings for API Keys Encryption
 PAYMENT_ENCRYPTION_KEY = config('PAYMENT_ENCRYPTION_KEY', default='')  # Fernet encryption key
+
+# ============================================================================
+# SECURITY SETTINGS (Production)
+# ============================================================================
+# These settings are enforced in production (when DEBUG=False)
+
+if not DEBUG:
+    # HTTPS/SSL Security
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # HTTP Strict Transport Security (HSTS)
+    # Start with a low value and increase once confirmed working
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Cookie Security
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+    
+    # Additional Security Headers
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True  # Deprecated but still useful for older browsers
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # Content Security Policy (optional - uncomment if needed)
+    # CSP_DEFAULT_SRC = ("'self'",)
+    # CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+    # CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'")
+    # CSP_IMG_SRC = ("'self'", "data:", "https:")
+    # CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com")
+    
+    # Session Security
+    SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1 week
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+    SESSION_SAVE_EVERY_REQUEST = True
+
+# Development-specific relaxed settings
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+# ============================================================================
+# FILE UPLOAD SECURITY
+# ============================================================================
+# Allowed file extensions and max file sizes
+
+# Document uploads (resumes, business profiles)
+ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx']
+MAX_DOCUMENT_SIZE_MB = 10  # 10 MB max
+
+# Image uploads (profile pictures)
+ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+MAX_IMAGE_SIZE_MB = 5  # 5 MB max
+
+# General file upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+
+# ============================================================================
+# LOGGING (Security-aware)
+# ============================================================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'security_file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'formatter': 'verbose',
+        } if not DEBUG else {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.security': {
+            'handlers': ['console'] if DEBUG else ['security_file', 'console'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'payments': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

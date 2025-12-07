@@ -1,7 +1,42 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.conf import settings
+from django.core.exceptions import ValidationError
+import os
 from .models import UserProfile, Category
+
+
+def validate_file_extension(value, allowed_extensions):
+    """Validate file extension against allowed list."""
+    ext = os.path.splitext(value.name)[1].lower()
+    if ext not in allowed_extensions:
+        raise ValidationError(
+            f'Unsupported file type. Allowed types: {", ".join(allowed_extensions)}'
+        )
+
+
+def validate_file_size(value, max_size_mb):
+    """Validate file size doesn't exceed maximum."""
+    max_size_bytes = max_size_mb * 1024 * 1024
+    if value.size > max_size_bytes:
+        raise ValidationError(f'File size cannot exceed {max_size_mb}MB.')
+
+
+def validate_document(value):
+    """Validate document uploads (PDF, DOC, DOCX)."""
+    allowed_extensions = getattr(settings, 'ALLOWED_DOCUMENT_EXTENSIONS', ['.pdf', '.doc', '.docx'])
+    max_size_mb = getattr(settings, 'MAX_DOCUMENT_SIZE_MB', 10)
+    validate_file_extension(value, allowed_extensions)
+    validate_file_size(value, max_size_mb)
+
+
+def validate_image(value):
+    """Validate image uploads."""
+    allowed_extensions = getattr(settings, 'ALLOWED_IMAGE_EXTENSIONS', ['.jpg', '.jpeg', '.png', '.gif', '.webp'])
+    max_size_mb = getattr(settings, 'MAX_IMAGE_SIZE_MB', 5)
+    validate_file_extension(value, allowed_extensions)
+    validate_file_size(value, max_size_mb)
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -257,11 +292,12 @@ class UserRegistrationForm(UserCreationForm):
     )
     document = forms.FileField(
         required=True,
+        validators=[validate_document],
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'accept': '.pdf,.doc,.docx'
         }),
-        help_text='Upload your resume/business profile (Required - PDF, DOC, DOCX)'
+        help_text='Upload your resume/business profile (Required - PDF, DOC, DOCX, max 10MB)'
     )
 
     class Meta:
@@ -371,7 +407,7 @@ class ProfileEditForm(forms.ModelForm):
         widgets = {
             'profile_image': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': 'image/*'
+                'accept': '.jpg,.jpeg,.png,.gif,.webp'
             }),
             'bio': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -446,6 +482,20 @@ class ProfileEditForm(forms.ModelForm):
             self.fields['first_name'].initial = self.user.first_name
             self.fields['last_name'].initial = self.user.last_name
             self.fields['email'].initial = self.user.email
+
+    def clean_profile_image(self):
+        """Validate profile image upload."""
+        image = self.cleaned_data.get('profile_image')
+        if image and hasattr(image, 'name'):
+            validate_image(image)
+        return image
+
+    def clean_document(self):
+        """Validate document upload."""
+        document = self.cleaned_data.get('document')
+        if document and hasattr(document, 'name'):
+            validate_document(document)
+        return document
 
     def save(self, commit=True):
         profile = super(ProfileEditForm, self).save(commit=False)
