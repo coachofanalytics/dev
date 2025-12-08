@@ -270,6 +270,8 @@ h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-backg
 <li id="menu-item-1653" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1653"><a href="{% static 'landing/gallery/' %}" class="ct-menu-link">Gallery</a></li>
 <li id="menu-item-1446" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1446"><a href="{% static 'landing/news/' %}" class="ct-menu-link">News/Articles</a></li>
 <li id="menu-item-1444" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1444"><a href="{% static 'landing/contact/' %}" class="ct-menu-link">Contact</a></li>
+<li id="menu-item-1444" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1444"><a href="{% url 'login' %}" class="ct-menu-link">LogIn</a></li>
+
 </ul></nav>
 
 </div></div></div></div></div></div></div><div data-device="mobile" data-transparent=""><div class="ct-sticky-container"><div data-sticky="shrink"><div data-row="middle" data-column-set="2" data-transparent-row="yes"><div class="ct-container"><div data-column="start" data-placements="1"><div data-items="primary">
@@ -329,10 +331,10 @@ h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-backg
 				<div class="elementor-element elementor-element-2221999 elementor-widget__width-inherit elementor-invisible elementor-widget elementor-widget-elementskit-dual-button" data-id="2221999" data-element_type="widget" data-settings="{&quot;_animation&quot;:&quot;zoomIn&quot;,&quot;ekit_we_effect_on&quot;:&quot;none&quot;}" data-widget_type="elementskit-dual-button.default">
 					<div class="ekit-wid-con" >
                 <div class="ekit-element-align-wrapper">
-                    <div class="ekit_double_button">                <a class="ekit-double-btn ekit-double-btn-one" href="{% static 'landing/contact/' %}">
+                    <div class="ekit_double_button">                <a class="ekit-double-btn ekit-double-btn-one" href="{% url 'login' %}">
                     Explore Opportunities                </a>
             
-            <a class="ekit-double-btn ekit-double-btn-two" href="{% static 'landing/contact/' %}">
+            <a class="ekit-double-btn ekit-double-btn-two" href="{% url 'login' %}">
                     Partner With Us                </a>
                   </div>
                 </div>
@@ -873,22 +875,24 @@ h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-backg
 				} );
 			</script>
 			<script id="cookieadmin_js-js-extra">
-var cookieadmin_policy = {"cookieadmin_layout":"box","cookieadmin_modal":"center","cookieadmin_position":"bottom_left","cookieadmin_days":"365","cookieadmin_notice_title":"We respect your privacy","cookieadmin_notice":"Cookies help us improve your experience, deliver personalized content, and analyze traffic. You can choose which cookies to allow by clicking \u003Cb\u003ECustomize\u003C/b\u003E. Click \u003Cb\u003EAccept All\u003C/b\u003E to consent or \u003Cb\u003EReject All\u003C/b\u003E to decline non-essential cookies.","cookieadmin_preference_title":"Personalize Your Cookie Preferences","cookieadmin_preference":"We use cookies to ensure smooth navigation and enable essential site functions. You can view detailed information about each cookie category below. \u003Cbr /\u003ECookies marked as \u003Cb\u003ENecessary\u003C/b\u003E are stored in your browser because they are essential for basic site functionality. \u003Cb\u003EThese cookies do not require your consent under GDPR.\u003C/b\u003E \u003Cbr /\u003EWe also use third-party cookies to analyze site usage, remember your preferences, and deliver relevant content and ads. These will only be activated with your consent. You can choose to enable or disable these cookies, but please note that turning off some types may affect your browsing experience.","reConsent_title":"Modify Cookie Preferences","cookieadmin_notice_title_color":"#000000","cookieadmin_notice_color":"#000000","cookieadmin_consent_inside_bg_color":"#ffffff","cookieadmin_consent_inside_border_color":"#abb8c3","cookieadmin_preference_title_color":"#000000","cookieadmin_details_wrapper_color":"#000000","cookieadmin_cookie_modal_bg_color":"#ffffff","cookieadmin_cookie_modal_border_color":"#000000","cookieadmin_customize_btn":"Customize","cookieadmin_customize_btn_color":"#000000","cookieadmin_customize_btn_bg_color":"#ffffff","cookieadmin_reject_btn":"Reject All","cookieadmin_reject_btn_color":"#000000","cookieadmin_reject_btn_bg_color":"#ffffff","cookieadmin_accept_btn":"Accept All","cookieadmin_accept_btn_color":"#ffffff","cookieadmin_accept_btn_bg_color":"#1863dc","cookieadmin_save_btn":"Save Preferences","cookieadmin_save_btn_color":"#ffffff","cookieadmin_save_btn_bg_color":"#1863dc","cookieadmin_slider_off_bg_color":"#808080","cookieadmin_slider_on_bg_color":"#3582C4","cookieadmin_links_color":"#1863dc","ajax_url":"{% static 'landing/wp-admin/admin-ajax.php' %}","nonce":"c438b4895c","http_cookies":[],"home_url":"/","plugin_url":"{% static 'landing/wp-content/plugins/cookieadmin' %}","is_pro":"0","ssl":"1","base_path":"/","lang":{"show_more":"show more","show_less":"show less","duration":"Duration","session":"Session"},"categorized_cookies":[]};
+			// @ts-nocheck
+			var cookieadmin_policy = {"cookieadmin_layout":"box","cookieadmin_modal":"center","cookieadmin_position":"bottom_left","cookieadmin_days":"365","cookieadmin_notice_title":"We respect your privacy","cookieadmin_notice":"Cookies help us improve your experience, deliver personalized content, and analyze traffic. You can choose which cookies to allow by clicking \u003Cb\u003ECustomize\u003C/b\u003E. Click \u003Cb\u003EAccept All\u003C/b\u003E to consent or \u003Cb\u003EReject All\u003C/b\u003E to decline non-essential cookies.","cookieadmin_preference_title":"Personalize Your Cookie Preferences","cookieadmin_preference":"We use cookies to ensure smooth navigation and enable essential site functions. You can view detailed information about each cookie category below. \u003Cbr /\u003ECookies marked as \u003Cb\u003ENecessary\u003C/b\u003E are stored in your browser because they are essential for basic site functionality. \u003Cb\u003EThese cookies do not require your consent under GDPR.\u003C/b\u003E \u003Cbr /\u003EWe also use third-party cookies to analyze site usage, remember your preferences, and deliver relevant content and ads. These will only be activated with your consent. You can choose to enable or disable these cookies, but please note that turning off some types may affect your browsing experience.","reConsent_title":"Modify Cookie Preferences","cookieadmin_notice_title_color":"#000000","cookieadmin_notice_color":"#000000","cookieadmin_consent_inside_bg_color":"#ffffff","cookieadmin_consent_inside_border_color":"#abb8c3","cookieadmin_preference_title_color":"#000000","cookieadmin_details_wrapper_color":"#000000","cookieadmin_cookie_modal_bg_color":"#ffffff","cookieadmin_cookie_modal_border_color":"#000000","cookieadmin_customize_btn":"Customize","cookieadmin_customize_btn_color":"#000000","cookieadmin_customize_btn_bg_color":"#ffffff","cookieadmin_reject_btn":"Reject All","cookieadmin_reject_btn_color":"#000000","cookieadmin_reject_btn_bg_color":"#ffffff","cookieadmin_accept_btn":"Accept All","cookieadmin_accept_btn_color":"#ffffff","cookieadmin_accept_btn_bg_color":"#1863dc","cookieadmin_save_btn":"Save Preferences","cookieadmin_save_btn_color":"#ffffff","cookieadmin_save_btn_bg_color":"#1863dc","cookieadmin_slider_off_bg_color":"#808080","cookieadmin_slider_on_bg_color":"#3582C4","cookieadmin_links_color":"#1863dc","ajax_url":"{% static 'landing/wp-admin/admin-ajax.php' %}","nonce":"c438b4895c","http_cookies":[],"home_url":"/","plugin_url":"{% static 'landing/wp-content/plugins/cookieadmin' %}","is_pro":"0","ssl":"1","base_path":"/","lang":{"show_more":"show more","show_less":"show less","duration":"Duration","session":"Session"},"categorized_cookies":[]};
 //# sourceURL=cookieadmin_js-js-extra
 </script>
 <script src="{% static 'landing/wp-content/plugins/cookieadmin/assets/js/consent.js' %}" id="cookieadmin_js-js"></script>
 <script id="ct-scripts-js-extra">
+// @ts-nocheck
 var ct_localizations = {"ajax_url":"{% static 'landing/wp-admin/admin-ajax.php' %}","public_url":"{% static 'landing/wp-content/themes/blocksy/static/bundle/' %}","rest_url":"{% static 'landing/wp-json/' %}","search_url":"{% static 'landing/search/QUERY_STRING/' %}","show_more_text":"Show more","more_text":"More","search_live_results":"Search results","search_live_no_results":"No results","search_live_no_result":"No results","search_live_one_result":"You got %s result. Please press Tab to select it.","search_live_many_results":"You got %s results. Please press Tab to select one.","clipboard_copied":"Copied!","clipboard_failed":"Failed to Copy","expand_submenu":"Expand dropdown menu","collapse_submenu":"Collapse dropdown menu","dynamic_js_chunks":[{"id":"blocksy_sticky_header","selector":"header [data-sticky]","url":"{% static 'landing/wp-content/plugins/blocksy-companion/static/bundle/sticky.js' %}"}],"dynamic_styles":{"lazy_load":"{% static 'landing/wp-content/themes/blocksy/static/bundle/non-critical-styles.min.css' %}","search_lazy":"{% static 'landing/wp-content/themes/blocksy/static/bundle/non-critical-search-styles.min.css' %}","back_to_top":"{% static 'landing/wp-content/themes/blocksy/static/bundle/back-to-top.min.css' %}"},"dynamic_styles_selectors":[{"selector":".ct-header-cart, #woo-cart-panel","url":"{% static 'landing/wp-content/themes/blocksy/static/bundle/cart-header-element-lazy.min.css' %}"},{"selector":".flexy","url":"{% static 'landing/wp-content/themes/blocksy/static/bundle/flexy.min.css' %}"},{"selector":"#account-modal","url":"{% static 'landing/wp-content/plugins/blocksy-companion/static/bundle/header-account-modal-lazy.min.css' %}"},{"selector":".ct-header-account","url":"{% static 'landing/wp-content/plugins/blocksy-companion/static/bundle/header-account-dropdown-lazy.min.css' %}"}]};
 //# sourceURL=ct-scripts-js-extra
 </script>
 <script src="{% static 'landing/wp-content/themes/blocksy/static/bundle/main.js' %}" id="ct-scripts-js"></script>
 <script src="{% static 'landing/wp-content/plugins/elementskit-lite/libs/framework/assets/js/frontend-script.js' %}" id="elementskit-framework-js-frontend-js"></script>
 <script id="elementskit-framework-js-frontend-js-after">
+// @ts-nocheck
 		var elementskit = {
-			resturl: '{% static 'landing/wp-json/elementskit/v1/' %}',
-		}
+			resturl: "{% static 'landing/wp-json/elementskit/v1/' %}",
+		};
 
-		
 //# sourceURL=elementskit-framework-js-frontend-js-after
 </script>
 <script src="{% static 'landing/wp-content/plugins/elementskit-lite/widgets/init/assets/js/widget-scripts.js' %}" id="ekit-widget-scripts-js"></script>
@@ -918,7 +922,8 @@ var ElementorProFrontendConfig = {"ajaxurl":"https:\/\//\/wp-admin\/admin-ajax.p
 <script src="{% static 'landing/wp-content/plugins/elementor-pro/assets/js/elements-handlers.min.js' %}" id="pro-elements-handlers-js"></script>
 <script src="{% static 'landing/wp-content/plugins/elementskit-lite/widgets/init/assets/js/animate-circle.min.js' %}" id="animate-circle-js"></script>
 <script id="elementskit-elementor-js-extra">
-var ekit_config = {"ajaxurl":{% static 'landing/wp-admin/admin-ajax.php' %},"nonce":"14df4b934e"};
+// @ts-nocheck
+var ekit_config = {"ajaxurl":"{% static 'landing/wp-admin/admin-ajax.php' %}","nonce":"14df4b934e"};
 //# sourceURL=elementskit-elementor-js-extra
 </script>
 <script src="{% static 'landing/wp-content/plugins/elementskit/widgets/init/assets/js/elementor.js' %}" id="elementskit-elementor-js"></script>

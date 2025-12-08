@@ -25,6 +25,8 @@ from accounts import views as accounts_views
 urlpatterns = [
     path('admin/', admin.site.urls),
      path('', TemplateView.as_view(template_name='landing.html'), name='home'),
+     # Simple route to render the main `base.html` layout for post-login landing
+     path('base/', TemplateView.as_view(template_name='base.html'), name='base'),
 
     # Authentication URLs
     path('register/', accounts_views.register, name='register'),

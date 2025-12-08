@@ -4,6 +4,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
+from django.urls import reverse
 from .forms import UserRegistrationForm, ProfileEditForm
 from .models import UserProfile, Staff, Role, Category
 from django.db.models import Count
@@ -132,21 +133,8 @@ class CustomLoginView(LoginView):
         """
         Redirect to the appropriate dashboard based on user type.
         """
-        user = self.request.user
-
-        # Check if user is superuser
-        if user.is_superuser:
-            return '/admin/'
-
-        # Check if user is staff
-        if hasattr(user, 'staff') and user.staff.is_active:
-            return '/staff/dashboard/'
-
-        # Regular user - redirect based on category
-        if hasattr(user, 'profile') and user.profile.category:
-            return f'/dashboard/{user.profile.category.slug}/'
-
-        return '/'
+        # After successful login, redirect to the site base page
+        return reverse('base')
 
 
 @login_required
