@@ -1,0 +1,102 @@
+C:\Users\Fadhiri\Desktop\Work\Biashara_Bridges\dev>heroku logs --tail -a codadev
+2025-12-07T16:31:31.140882+00:00 heroku[router]: at=info method=GET path="/static/main/img/home/image1.png" host=codadev.herokuapp.com request_id=546e9951-9e2e-0cf8-7c94-11efb6b67b5b fwd="102.22.174.48" dyno=web.1 connect=0ms service=3ms status=200 bytes=1170406 protocol=http1.1 tls=true tls_version=unknown
+2025-12-07T16:31:31.154747+00:00 app[web.1]: 10.1.17.171 - - [07/Dec/2025:16:31:31 +0000] "GET /static/main/img/background/swiper2.jpg HTTP/1.1" 200 0 "https://codadev.herokuapp.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-12-07T16:31:31.157243+00:00 heroku[router]: at=info method=GET path="/static/main/img/background/swiper2.jpg" host=codadev.herokuapp.com request_id=87a39cc0-be5f-2c50-f4c5-cf29651c988f fwd="102.22.174.48" dyno=web.1 connect=0ms service=5ms status=200 bytes=2406729 protocol=http1.1 tls=true tls_version=unknown
+2025-12-07T16:31:31.158435+00:00 app[web.1]: 10.1.17.171 - - [07/Dec/2025:16:31:31 +0000] "GET /static/main/img/home/image4.png HTTP/1.1" 200 0 "https://codadev.herokuapp.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-12-07T16:31:31.159912+00:00 heroku[router]: at=info method=GET path="/static/main/img/home/image4.png" host=codadev.herokuapp.com request_id=276eb3cb-7f02-6773-171d-e0234754e79f fwd="102.22.174.48" dyno=web.1 connect=0ms service=4ms status=200 bytes=646148 protocol=http1.1 tls=true tls_version=unknown
+2025-12-07T16:31:31.162334+00:00 app[web.1]: 10.1.82.110 - - [07/Dec/2025:16:31:31 +0000] "GET /static/main/img/home/image2.png HTTP/1.1" 304 0 "https://codadev.herokuapp.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-12-07T16:31:31.162378+00:00 heroku[router]: at=info method=GET path="/static/main/img/home/image2.png" host=codadev.herokuapp.com request_id=2b6f112c-79b9-236e-9351-27d1f96e6746 fwd="102.22.174.48" dyno=web.1 connect=0ms service=1ms status=304 bytes=0 protocol=http1.1 tls=true tls_version=unknown
+2025-12-07T16:31:31.311329+00:00 app[web.1]: 10.1.45.2 - - [07/Dec/2025:16:31:31 +0000] "GET /static/main/img/home/image5.png HTTP/1.1" 200 0 "https://codadev.herokuapp.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-12-07T16:31:31.312676+00:00 heroku[router]: at=info method=GET path="/static/main/img/home/image5.png" host=codadev.herokuapp.com request_id=13cc97f7-ef3c-7057-0e28-fc8639c39859 fwd="102.22.174.48" dyno=web.1 connect=0ms service=3ms status=200 bytes=963553 protocol=http1.1 tls=true tls_version=unknown
+2025-12-07T16:31:31.359496+00:00 app[web.1]: 10.1.82.43 - - [07/Dec/2025:16:31:31 +0000] "GET /static/main/img/home/Kavyu2.png HTTP/1.1" 304 0 "https://codadev.herokuapp.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-12-07T16:31:31.359511+00:00 heroku[router]: at=info method=GET path="/static/main/img/home/Kavyu2.png" host=codadev.herokuapp.com request_id=11107294-92f2-050a-1634-a898d7c67487 fwd="102.22.174.48" dyno=web.1 connect=0ms service=1ms status=304 bytes=0 protocol=http1.1 tls=true tls_version=unknown
+2025-12-07T16:31:55.000000+00:00 app[api]: Build started by user ndegeyafadhiri@gmail.com
+2025-12-07T16:32:51.066512+00:00 app[api]: Deploy 396ba2ba by user ndegeyafadhiri@gmail.com
+2025-12-07T16:32:51.066512+00:00 app[api]: Running release v1112 commands by user ndegeyafadhiri@gmail.com
+2025-12-07T16:32:51.894410+00:00 app[api]: Starting process with command `/bin/sh -c 'if curl $HEROKU_RELEASE_LOG_STREAM --silent --connect-timeout 10 --retry 3 --retry-delay 1 >/tmp/log-stream; then
+2025-12-07T16:32:51.894410+00:00 app[api]: chmod u+x /tmp/log-stream
+2025-12-07T16:32:51.894410+00:00 app[api]: /tmp/log-stream /bin/sh -c '"'"'python manage.py migrate --noinput && python manage.py collectstatic --noinput'"'"'
+2025-12-07T16:32:51.894410+00:00 app[api]: else
+2025-12-07T16:32:51.894410+00:00 app[api]: python manage.py migrate --noinput && python manage.py collectstatic --noinput
+2025-12-07T16:32:51.894410+00:00 app[api]: fi'` by user ndegeyafadhiri@gmail.com
+2025-12-07T16:33:01.000000+00:00 app[api]: Build succeeded
+2025-12-07T16:33:03.195142+00:00 heroku[release.9279]: Starting process with command `/bin/sh -c 'if curl https://heroku-release-output.s3.amazonaws.com/log-stream?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAZSXS6CXKUD5IMVTI%2F20251207%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251207T163251Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=2c7b97f9e23107ee05190e50e778f5d733a70d01d62108d0a08329e43d066c3e --silent --connect-timeout 10 --retry 3 --retry-delay 1 >/tmp/log-stream; then
+2025-12-07T16:33:03.763711+00:00 heroku[release.9279]: State changed from starting to up
+2025-12-07T16:33:04.421626+00:00 app[release.9279]: Operations to perform:
+2025-12-07T16:33:04.421643+00:00 app[release.9279]: Apply all migrations: accounts, admin, auth, contenttypes, marketplace, payments, sessions
+2025-12-07T16:33:04.426677+00:00 app[release.9279]: Running migrations:
+2025-12-07T16:33:04.479643+00:00 app[release.9279]: Applying accounts.0002_category_role_alter_userprofile_category_staff...Traceback (most recent call last):
+2025-12-07T16:33:04.479644+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/utils.py", line 103, in _execute
+2025-12-07T16:33:04.479730+00:00 app[release.9279]: return self.cursor.execute(sql)
+2025-12-07T16:33:04.479802+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.479802+00:00 app[release.9279]: psycopg2.errors.UndefinedTable: relation "accounts_userprofile" does not exist
+2025-12-07T16:33:04.479826+00:00 app[release.9279]:
+2025-12-07T16:33:04.479826+00:00 app[release.9279]:
+2025-12-07T16:33:04.479826+00:00 app[release.9279]: The above exception was the direct cause of the following exception:
+2025-12-07T16:33:04.479827+00:00 app[release.9279]:
+2025-12-07T16:33:04.479827+00:00 app[release.9279]: Traceback (most recent call last):
+2025-12-07T16:33:04.479827+00:00 app[release.9279]: File "/app/manage.py", line 22, in <module>
+2025-12-07T16:33:04.479885+00:00 app[release.9279]: main()
+2025-12-07T16:33:04.479896+00:00 app[release.9279]: File "/app/manage.py", line 18, in main
+2025-12-07T16:33:04.479945+00:00 app[release.9279]: execute_from_command_line(sys.argv)
+2025-12-07T16:33:04.479964+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+2025-12-07T16:33:04.480074+00:00 app[release.9279]: utility.execute()
+2025-12-07T16:33:04.480086+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/core/management/__init__.py", line 436, in execute
+2025-12-07T16:33:04.480186+00:00 app[release.9279]: self.fetch_command(subcommand).run_from_argv(self.argv)
+2025-12-07T16:33:04.480188+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/core/management/base.py", line 416, in run_from_argv
+2025-12-07T16:33:04.480338+00:00 app[release.9279]: self.execute(*args, **cmd_options)
+2025-12-07T16:33:04.480352+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/core/management/base.py", line 460, in execute
+2025-12-07T16:33:04.480473+00:00 app[release.9279]: output = self.handle(*args, **options)
+2025-12-07T16:33:04.480536+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.480537+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/core/management/base.py", line 107, in wrapper
+2025-12-07T16:33:04.480696+00:00 app[release.9279]: res = handle_func(*args, **kwargs)
+2025-12-07T16:33:04.480697+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.480697+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/core/management/commands/migrate.py", line 353, in handle
+2025-12-07T16:33:04.480800+00:00 app[release.9279]: post_migrate_state = executor.migrate(
+2025-12-07T16:33:04.480905+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.480905+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/migrations/executor.py", line 135, in migrate
+2025-12-07T16:33:04.480906+00:00 app[release.9279]: state = self._migrate_all_forwards(
+2025-12-07T16:33:04.480978+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.481001+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/migrations/executor.py", line 167, in _migrate_all_forwards
+2025-12-07T16:33:04.481067+00:00 app[release.9279]: state = self.apply_migration(
+2025-12-07T16:33:04.481224+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.481225+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/migrations/executor.py", line 255, in apply_migration
+2025-12-07T16:33:04.481225+00:00 app[release.9279]: state = migration.apply(state, schema_editor)
+2025-12-07T16:33:04.481293+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.481293+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/migrations/migration.py", line 132, in apply
+2025-12-07T16:33:04.481355+00:00 app[release.9279]: operation.database_forwards(
+2025-12-07T16:33:04.481355+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/migrations/operations/fields.py", line 241, in database_forwards
+2025-12-07T16:33:04.481421+00:00 app[release.9279]: schema_editor.alter_field(from_model, from_field, to_field)
+2025-12-07T16:33:04.481452+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/base/schema.py", line 912, in alter_field
+2025-12-07T16:33:04.481623+00:00 app[release.9279]: self._alter_field(
+2025-12-07T16:33:04.481623+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/postgresql/schema.py", line 274, in _alter_field
+2025-12-07T16:33:04.481727+00:00 app[release.9279]: super()._alter_field(
+2025-12-07T16:33:04.481727+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/base/schema.py", line 1077, in _alter_field
+2025-12-07T16:33:04.481909+00:00 app[release.9279]: self.execute(
+2025-12-07T16:33:04.481910+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/postgresql/schema.py", line 48, in execute
+2025-12-07T16:33:04.481958+00:00 app[release.9279]: return super().execute(sql, None)
+2025-12-07T16:33:04.482030+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.482030+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/base/schema.py", line 204, in execute
+2025-12-07T16:33:04.482134+00:00 app[release.9279]: cursor.execute(sql, params)
+2025-12-07T16:33:04.482153+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/utils.py", line 122, in execute
+2025-12-07T16:33:04.482229+00:00 app[release.9279]: return super().execute(sql, params)
+2025-12-07T16:33:04.482321+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.482321+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/utils.py", line 79, in execute
+2025-12-07T16:33:04.482434+00:00 app[release.9279]: return self._execute_with_wrappers(
+2025-12-07T16:33:04.482475+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.482475+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+2025-12-07T16:33:04.482556+00:00 app[release.9279]: return executor(sql, params, many, context)
+2025-12-07T16:33:04.482624+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.482624+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/utils.py", line 100, in _execute
+2025-12-07T16:33:04.482697+00:00 app[release.9279]: with self.db.wrap_database_errors:
+2025-12-07T16:33:04.482697+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/utils.py", line 91, in __exit__
+2025-12-07T16:33:04.482764+00:00 app[release.9279]: raise dj_exc_value.with_traceback(traceback) from exc_value
+2025-12-07T16:33:04.482787+00:00 app[release.9279]: File "/app/.heroku/python/lib/python3.11/site-packages/django/db/backends/utils.py", line 103, in _execute
+2025-12-07T16:33:04.482826+00:00 app[release.9279]: return self.cursor.execute(sql)
+2025-12-07T16:33:04.482876+00:00 app[release.9279]: ^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-07T16:33:04.482876+00:00 app[release.9279]: django.db.utils.ProgrammingError: relation "accounts_userprofile" does not exist
+2025-12-07T16:33:04.482876+00:00 app[release.9279]:
+2025-12-07T16:33:04.601772+00:00 heroku[release.9279]: Process exited with status 1
+2025-12-07T16:33:04.622848+00:00 heroku[release.9279]: State changed from up to complete
+2025-12-07T16:33:05.373552+00:00 app[api]: Release v1112 command failed by user ndegeyafadhiri@gmail.com
+2025-12-07T16:34:08.734683+00:00 app[api]: Log session created by user ndegeyafadhiri@gmail.com
