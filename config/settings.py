@@ -90,6 +90,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
+                'payments.context_processors.payment_settings',
             ],
         },
     },
@@ -238,6 +239,17 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
 STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
+
+# Fallback to test keys if explicit keys are not provided in env
+if not STRIPE_SECRET_KEY:
+    STRIPE_SECRET_KEY = config('STRIPE_TEST_SECRET_KEY', default='')
+
+if not STRIPE_PUBLIC_KEY:
+    # Some projects use STRIPE_TEST_PUBLISHABLE_KEY naming
+    STRIPE_PUBLIC_KEY = config('STRIPE_PUBLISHABLE_KEY', default=config('STRIPE_TEST_PUBLISHABLE_KEY', default=''))
+
+if not STRIPE_WEBHOOK_SECRET:
+    STRIPE_WEBHOOK_SECRET = config('STRIPE_TEST_WEBHOOK_SECRET', default=config('STRIPE_LIVE_WEBHOOK_SECRET', default=''))
 
 # PayPal Configuration
 PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID', default='')
