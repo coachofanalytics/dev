@@ -24,6 +24,18 @@ Important files & code changes (what I added)
 - `config/settings.py` — reads test keys and picks fallbacks for `STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`.
 - Management command: `python manage.py seed_payment_gateways` (already added) — seeds `PaymentGatewayConfig` DB rows from `.env`.
 
+Latest automated smoke-run (2025-12-09) — quick results
+- Stripe (server-side): Created a test PaymentIntent successfully.
+  - PaymentIntent ID: `pi_3ScSD6KUqxKl3Yd11dcbbr7T`
+  - Status reported: `requires_payment_method` (creation succeeded)
+  - Note: `stripe` CLI was not detected on the runner; use `stripe listen` locally to forward webhooks.
+- PayPal: Sandbox credentials detected in `.env` and verified by the script (client id + secret present).
+- PaymentGatewayConfig (DB): Seeded rows present and active for Stripe and PayPal (test mode). Keys/configuration exist in DB but are NOT shown here for security — they are used by the app.
+  - stripe: active=test mode
+  - paypal: active=test mode
+- DB verifier: No user email was provided to `verify_db.py`, so user-level checks were skipped. Use `--user email@example.com` to inspect a specific user's wallet and recent transactions.
+
+
 High-level smoke-test strategy
 - Verify server-side capabilities against the secret keys (create PaymentIntent, check webhook handler).
 - Verify client-side flows if publishable key present (Stripe Elements / confirm flow, PayPal redirect).
@@ -50,7 +62,7 @@ python manage.py seed_payment_gateways
 ```powershell
 python manage.py shell
 >>> from payments.models import PaymentGatewayConfig
->>> list(PaymentGatewayConfig.objects.values('name','active'))
+>>> list(PaymentGatewayConfig.objects.values('gateway_name','is_active','is_test_mode'))
 ```
 
 Smoke tests — order and commands
@@ -173,7 +185,7 @@ Wallet.objects.get(user=the_user).balance
 ```
 - PaymentGatewayConfig entries:
 ```python
-PaymentGatewayConfig.objects.all().values('name','active','config')
+PaymentGatewayConfig.objects.all().values('gateway_name','is_active','config_data')
 ```
 
 Automated helper examples (optional)
