@@ -1,0 +1,11 @@
+{
+  "name": "biasharabridges-playwright-tests",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "scripts": {
+    "test:e2e": "npx playwright test --config=playwright/playwright.config.ts"
+  }
+}

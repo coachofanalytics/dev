@@ -1,0 +1,20 @@
+name: Playwright Tests
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Playwright and browsers
+        run: |
+          npm ci || npm install
+          npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test --config=playwright/playwright.config.ts
