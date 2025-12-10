@@ -98,3 +98,23 @@ class LoginHistory(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.login_time} to {self.logout_time}"
+
+class Tracker(models.Model):
+    category = models.CharField(max_length=25, null=False)
+    sub_category = models.CharField(max_length=25, null=False)
+    task = models.CharField(max_length=25, null=False)
+    plan = models.CharField(max_length=255, null=False)
+    
+    # Removed empname and updated to employee
+    employee = models.CharField(max_length=255, null=True) 
+    login_date = models.DateTimeField(null=False)
+    start_time = models.TimeField(null=False)
+    duration = models.IntegerField(null=False)
+    time = models.PositiveIntegerField(null=False)
+
+    def __str__(self):
+        return f"Tracker for {self.employee} on {self.login_date}"
+
+    class Meta:
+        verbose_name = "Tracker"
+        verbose_name_plural = "Trackers"

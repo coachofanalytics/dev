@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomerUser, LoginHistory#tree
+from .models import CustomerUser, LoginHistory,Tracker
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -84,3 +84,4 @@ class LoginHistoryAdmin(admin.ModelAdmin):
 
 admin.site.register(CustomerUser, CustomerAdmin)
 admin.site.register(LoginHistory, LoginHistoryAdmin)
+admin.site.register(Tracker)
