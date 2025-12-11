@@ -1,7 +1,7 @@
 # Comprehensive Test Suite — Payments
 
 Version: 2025-12-10
-Author: Test Automation & QA (repo tooling)
+Author: Ndegeya Fadhiri
 Target audience: Senior Engineer, QA Lead, CTO, Auditor (ISO/SOC2/PCI-DSS)
 
 Purpose: This document is the authoritative, auditor-ready test report for the `payments` test suite in the Biashara Bridges codebase. It summarizes the testing architecture, environment, execution, detailed results, risk assessment, and remediation recommendations.
