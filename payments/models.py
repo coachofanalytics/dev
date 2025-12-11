@@ -234,3 +234,31 @@ class PaymentGatewayConfig(models.Model):
         mode = "TEST" if self.is_test_mode else "LIVE"
         status = "Active" if self.is_active else "Inactive"
         return f"{self.get_gateway_name_display()} ({mode}) - {status}"
+
+
+class IdempotencyKey(models.Model):
+    STATUS_CHOICES = [('pending', 'Pending'), ('used', 'Used'), ('cancelled', 'Cancelled')]
+
+    key = models.CharField(max_length=255, unique=True, db_index=True)
+    created_by = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    response = models.JSONField(null=True, blank=True, help_text='Stored gateway response for idempotent replay')
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Idempotency Key'
+        verbose_name_plural = 'Idempotency Keys'
+
+    def mark_used(self, response_data: dict):
+        self.status = 'used'
+        self.response = response_data
+        self.save()
+
+    def mark_cancelled(self):
+        self.status = 'cancelled'
+        self.save()
+
+    def is_active(self):
+        return self.status == 'pending'

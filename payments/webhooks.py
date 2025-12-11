@@ -15,6 +15,8 @@ import requests
 from django.utils import timezone
 
 from .models import Transaction, Wallet
+from .models import IdempotencyKey
+from .utils.idempotency import reserve_idempotency_key, get_idempotency_response, mark_idempotency_used
 
 
 # ============================================================================
@@ -53,6 +55,14 @@ def stripe_webhook(request):
         # Handle different event types
         event_type = event['type']
         data = event['data']['object']
+        # Deduplicate by event id
+        event_id = event.get('id')
+        if event_id:
+            dedupe_key = f"stripe_event:{event_id}"
+            prev = get_idempotency_response(dedupe_key)
+            if prev:
+                return JsonResponse({'status': 'duplicate'}, status=200)
+            reserve_idempotency_key(dedupe_key)
 
         if event_type == 'payment_intent.succeeded':
             handle_stripe_payment_success(data)
@@ -61,6 +71,9 @@ def stripe_webhook(request):
         elif event_type == 'charge.refunded':
             handle_stripe_refund(data)
 
+        # mark idempotency used
+        if event_id:
+            mark_idempotency_used(dedupe_key, {'event': event_type})
         return JsonResponse({'status': 'received'}, status=200)
 
     except Exception as e:
@@ -228,6 +241,15 @@ def paypal_webhook(request):
         if not verify_paypal_ipn(ipn_data):
             return JsonResponse({'error': 'IPN verification failed'}, status=400)
 
+        # Deduplicate by txn_id
+        txn_id = ipn_data.get('txn_id')
+        if txn_id:
+            dedupe_key = f"paypal_ipn:{txn_id}"
+            prev = get_idempotency_response(dedupe_key)
+            if prev:
+                return JsonResponse({'status': 'duplicate'}, status=200)
+            reserve_idempotency_key(dedupe_key)
+
         # Get payment status
         payment_status = ipn_data.get('payment_status')
 
@@ -237,6 +259,9 @@ def paypal_webhook(request):
             handle_paypal_refund(ipn_data)
         elif payment_status == 'Failed':
             handle_paypal_payment_failed(ipn_data)
+
+        if txn_id:
+            mark_idempotency_used(dedupe_key, {'status': payment_status})
 
         return JsonResponse({'status': 'received'}, status=200)
 
@@ -394,6 +419,15 @@ def mpesa_webhook(request):
     try:
         # Parse JSON callback data
         callback_data = json.loads(request.body)
+        # Optional HMAC verification if secret configured
+        mpesa_secret = getattr(settings, 'MPESA_WEBHOOK_SECRET', None)
+        if mpesa_secret:
+            signature = request.META.get('HTTP_X_MPESA_SIGNATURE') or request.META.get('HTTP_SIGNATURE')
+            if not signature:
+                return JsonResponse({'error': 'Missing signature'}, status=400)
+            computed = hmac.new(mpesa_secret.encode('utf-8'), request.body, hashlib.sha256).hexdigest()
+            if not hmac.compare_digest(computed, signature):
+                return JsonResponse({'error': 'Invalid signature'}, status=400)
         body = callback_data.get('Body', {})
         stk_callback = body.get('stkCallback', {})
 
@@ -402,6 +436,14 @@ def mpesa_webhook(request):
         result_desc = stk_callback.get('ResultDesc')
         merchant_request_id = stk_callback.get('MerchantRequestID')
         checkout_request_id = stk_callback.get('CheckoutRequestID')
+
+        # Deduplicate by checkout_request_id
+        if checkout_request_id:
+            dedupe_key = f"mpesa:{checkout_request_id}"
+            prev = get_idempotency_response(dedupe_key)
+            if prev:
+                return JsonResponse({'status': 'duplicate'}, status=200)
+            reserve_idempotency_key(dedupe_key)
 
         # Handle result
         if result_code == 0:
@@ -431,6 +473,8 @@ def mpesa_webhook(request):
                 mpesa_receipt_number,
                 phone_number
             )
+            if checkout_request_id:
+                mark_idempotency_used(dedupe_key, {'mpesa_receipt_number': mpesa_receipt_number})
         else:
             # Failed or cancelled
             handle_mpesa_payment_failed(
@@ -438,6 +482,8 @@ def mpesa_webhook(request):
                 result_code,
                 result_desc
             )
+            if checkout_request_id:
+                mark_idempotency_used(dedupe_key, {'result_code': result_code, 'result_desc': result_desc})
 
         return JsonResponse({'ResultCode': 0}, status=200)
 
