@@ -1,0 +1,136 @@
+name: Payments Test Matrix
+
+on:
+  pull_request:
+    paths:
+      - 'payments/**'
+      - 'tests/payment/**'
+      - 'playwright/**'
+  push:
+    branches: [ master ]
+  schedule:
+    - cron: '0 2 * * *' # nightly
+
+env:
+  PYTHON_VERSION: '3.11'
+  COVERAGE_THRESHOLD: '75'
+
+jobs:
+  unit-tests:
+    name: Unit Tests (fast)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install coverage pytest
+      - name: Run unit tests with coverage
+        run: |
+          coverage run -m pytest tests/payment/unit -q
+          coverage report -m --fail-under=${{ env.COVERAGE_THRESHOLD }}
+      - name: Run contract (VCR) tests
+        run: |
+          pip install vcrpy requests
+          pytest tests/payment/contract -q
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-tests-coverage
+          path: coverage.xml || coverage-report.txt
+
+  integration-sandbox:
+    name: Integration Sandbox Tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.event_name == 'schedule'
+    needs: unit-tests
+    env:
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+      PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+      PAYPAL_SECRET: ${{ secrets.PAYPAL_SECRET }}
+      MPESA_API_KEY: ${{ secrets.MPESA_API_KEY }}
+      ALLOW_SANDBOX_RUN: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies and run migrations
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python manage.py makemigrations --noinput
+          python manage.py migrate --noinput
+          python manage.py makemigrations --check || true
+      - name: Run integration and full payment tests
+        env:
+          STRIPE_API_KEY: ${{ env.STRIPE_API_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ env.STRIPE_WEBHOOK_SECRET }}
+          PAYPAL_CLIENT_ID: ${{ env.PAYPAL_CLIENT_ID }}
+          PAYPAL_SECRET: ${{ env.PAYPAL_SECRET }}
+          MPESA_API_KEY: ${{ env.MPESA_API_KEY }}
+          ALLOW_SANDBOX_RUN: ${{ env.ALLOW_SANDBOX_RUN }}
+        run: |
+          if [ -z "${STRIPE_API_KEY}" ] || [ -z "${PAYPAL_CLIENT_ID}" ]; then
+            echo "Required sandbox secrets not set. Failing job."; exit 1
+          fi
+          export ALLOW_SANDBOX_RUN=1
+          python scripts/run_payment_tests_with_env.py --all
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: payments-integration-logs
+          path: test-logs || .
+
+  e2e-browser:
+    name: E2E Browser (Playwright)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Python deps and run migrations
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements.txt
+          python manage.py makemigrations --noinput
+          python manage.py migrate --noinput
+          python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model();
+if not User.objects.filter(username='e2e_user').exists(): User.objects.create_user('e2e_user', 'e2e@example.com', 'password')"
+      - name: Start Django server in background
+        run: |
+          nohup python manage.py runserver 0.0.0.0:8000 &
+          sleep 3
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Playwright and browsers
+        run: |
+          cd playwright
+          npm ci
+          npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: |
+          cd playwright
+          npx playwright test --reporter=list --config=playwright.config.ts
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright/test-results || playwright/test-results/playwright-report
