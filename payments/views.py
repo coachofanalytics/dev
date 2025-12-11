@@ -11,6 +11,10 @@ from decimal import Decimal
 from .models import Wallet, Transaction, SubscriptionPlan, UserSubscription, Invoice
 from .forms import DepositForm, MPesaDepositForm, StripePaymentMethodForm
 from .services import PaymentGatewayFactory
+from django.views.decorators.csrf import csrf_exempt
+import os
+import json
+
 
 
 @login_required
@@ -812,6 +816,48 @@ def my_subscriptions(request):
     }
     
     return render(request, 'payments/my_subscriptions.html', context)
+
+
+@csrf_exempt
+def test_last_transaction(request):
+    """Test-only API to return latest transaction for current user.
+
+    Access rules:
+    - Only available if `DEBUG` is True OR request header `X-TEST-AUTH` equals env var `TEST_SECRET`.
+    - Used by Playwright tests to assert server-side effects.
+    """
+    allowed = settings.DEBUG
+    secret = os.environ.get('TEST_SECRET', 'test-only')
+    header = request.META.get('HTTP_X_TEST_AUTH')
+    if not allowed and header != secret:
+        return JsonResponse({'error': 'Not allowed'}, status=403)
+
+    try:
+        if request.user.is_authenticated:
+            tx = Transaction.objects.filter(user=request.user).order_by('-created_at').first()
+        else:
+            # allow query by username param for unauthenticated requests if secret provided
+            username = request.GET.get('username')
+            if username:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                user = User.objects.filter(username=username).first()
+                tx = Transaction.objects.filter(user=user).order_by('-created_at').first() if user else None
+            else:
+                tx = None
+
+        if not tx:
+            return JsonResponse({'error': 'no-transaction'}, status=404)
+
+        return JsonResponse({
+            'transaction_id': tx.transaction_id,
+            'amount': str(tx.amount),
+            'payment_gateway': tx.payment_gateway,
+            'status': tx.status,
+            'metadata': tx.metadata,
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @login_required

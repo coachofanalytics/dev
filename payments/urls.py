@@ -34,5 +34,7 @@ urlpatterns = [
     path('webhooks/stripe/', webhooks.stripe_webhook, name='stripe_webhook'),
     path('webhooks/paypal/', webhooks.paypal_webhook, name='paypal_webhook'),
     path('webhooks/mpesa/', webhooks.mpesa_webhook, name='mpesa_webhook'),
+    # Test-only endpoints (DEBUG or test header required)
+    path('test/last-transaction/', views.test_last_transaction, name='test_last_transaction'),
     
 ]
