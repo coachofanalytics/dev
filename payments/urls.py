@@ -19,6 +19,8 @@ urlpatterns = [
     path('deposit/mpesa/', views.deposit_mpesa, name='deposit_mpesa'),
     path('deposit/mpesa/status/<str:transaction_id>/', views.deposit_mpesa_status, name='deposit_mpesa_status'),
     path('api/mpesa/status/<str:transaction_id>/', views.check_mpesa_status, name='check_mpesa_status'),
+    path('deposit/cashapp/', views.deposit_cashapp, name='deposit_cashapp'),
+    path('deposit/venmo/', views.deposit_venmo, name='deposit_venmo'),
     
     # Subscriptions
     path('subscriptions/', views.subscription_plans, name='subscription_plans'),
@@ -34,5 +36,7 @@ urlpatterns = [
     path('webhooks/stripe/', webhooks.stripe_webhook, name='stripe_webhook'),
     path('webhooks/paypal/', webhooks.paypal_webhook, name='paypal_webhook'),
     path('webhooks/mpesa/', webhooks.mpesa_webhook, name='mpesa_webhook'),
+    path('webhooks/cashapp/', webhooks.cashapp_webhook, name='cashapp_webhook'),
+    path('webhooks/venmo/', webhooks.venmo_webhook, name='venmo_webhook'),
     
 ]

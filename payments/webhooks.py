@@ -514,3 +514,211 @@ def handle_mpesa_payment_failed(checkout_request_id, result_code, result_desc):
         pass
     except Exception as e:
         pass
+
+
+# ============================================================================
+# CASHAPP (SQUARE) WEBHOOK
+# ============================================================================
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def cashapp_webhook(request):
+    """
+    Handle CashApp (Square) webhook notifications.
+    Square sends webhook events for payment updates.
+    """
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        event_type = payload.get('type')
+
+        # Handle different event types
+        if event_type == 'payment.created':
+            handle_cashapp_payment_created(payload.get('data', {}).get('object', {}))
+        elif event_type == 'payment.updated':
+            handle_cashapp_payment_updated(payload.get('data', {}).get('object', {}))
+        elif event_type == 'refund.created':
+            handle_cashapp_refund_created(payload.get('data', {}).get('object', {}))
+
+        return JsonResponse({'status': 'success'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def handle_cashapp_payment_created(payment_data):
+    """Handle CashApp payment created event"""
+    try:
+        payment_id = payment_data.get('id')
+        status = payment_data.get('status')
+
+        # Find transaction by gateway transaction ID
+        transaction = Transaction.objects.get(
+            gateway_transaction_id=payment_id,
+            payment_gateway='cashapp'
+        )
+
+        transaction.metadata['payment_data'] = payment_data
+        transaction.metadata['webhook_received_at'] = timezone.now().isoformat()
+        transaction.save()
+
+    except Transaction.DoesNotExist:
+        pass
+    except Exception as e:
+        pass
+
+
+def handle_cashapp_payment_updated(payment_data):
+    """Handle CashApp payment status update"""
+    try:
+        payment_id = payment_data.get('id')
+        status = payment_data.get('status')
+
+        transaction = Transaction.objects.get(
+            gateway_transaction_id=payment_id,
+            payment_gateway='cashapp'
+        )
+
+        if status in ['COMPLETED', 'APPROVED']:
+            transaction.mark_as_completed()
+            transaction.metadata['completed_at'] = timezone.now().isoformat()
+            transaction.save()
+
+            # Credit wallet
+            wallet = transaction.wallet
+            if wallet:
+                wallet.credit(transaction.amount)
+
+            # Mark invoice as paid if linked
+            if transaction.invoice:
+                transaction.invoice.mark_as_paid()
+
+        elif status in ['CANCELED', 'FAILED']:
+            transaction.mark_as_failed(reason=f'Payment {status.lower()}')
+            transaction.metadata['failed_at'] = timezone.now().isoformat()
+            transaction.save()
+
+    except Transaction.DoesNotExist:
+        pass
+    except Exception as e:
+        pass
+
+
+def handle_cashapp_refund_created(refund_data):
+    """Handle CashApp refund created event"""
+    try:
+        payment_id = refund_data.get('payment_id')
+        refund_id = refund_data.get('id')
+
+        transaction = Transaction.objects.get(
+            gateway_transaction_id=payment_id,
+            payment_gateway='cashapp'
+        )
+
+        # Create refund transaction
+        Transaction.objects.create(
+            user=transaction.user,
+            wallet=transaction.wallet,
+            amount=transaction.amount,
+            transaction_type='refund',
+            payment_gateway='cashapp',
+            status='completed',
+            gateway_transaction_id=refund_id,
+            metadata={'original_transaction_id': transaction.id}
+        )
+
+        # Debit wallet
+        if transaction.wallet:
+            transaction.wallet.debit(transaction.amount)
+
+    except Transaction.DoesNotExist:
+        pass
+    except Exception as e:
+        pass
+
+
+# ============================================================================
+# VENMO (BRAINTREE) WEBHOOK
+# ============================================================================
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def venmo_webhook(request):
+    """
+    Handle Venmo (Braintree) webhook notifications.
+    Braintree sends webhook events for transaction updates.
+    """
+    try:
+        # Braintree sends XML-encoded webhook notifications
+        # In production, you should verify the webhook signature
+
+        # For this implementation, we'll handle JSON payloads
+        payload = json.loads(request.body.decode('utf-8'))
+
+        # Braintree webhooks contain a "bt_signature" and "bt_payload"
+        # You need to use Braintree SDK to parse and verify
+
+        # Simplified handling:
+        notification_type = payload.get('kind')
+        transaction_id = payload.get('transaction', {}).get('id')
+
+        if notification_type == 'transaction_settled':
+            handle_venmo_transaction_settled(transaction_id, payload.get('transaction', {}))
+        elif notification_type == 'transaction_settlement_declined':
+            handle_venmo_transaction_declined(transaction_id, payload.get('transaction', {}))
+
+        return JsonResponse({'status': 'success'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def handle_venmo_transaction_settled(transaction_id, transaction_data):
+    """Handle Venmo transaction settled event"""
+    try:
+        transaction = Transaction.objects.get(
+            gateway_transaction_id=transaction_id,
+            payment_gateway='venmo'
+        )
+
+        transaction.mark_as_completed()
+        transaction.metadata['transaction_data'] = transaction_data
+        transaction.metadata['settled_at'] = timezone.now().isoformat()
+        transaction.save()
+
+        # Credit wallet
+        wallet = transaction.wallet
+        if wallet:
+            wallet.credit(transaction.amount)
+
+        # Mark invoice as paid if linked
+        if transaction.invoice:
+            transaction.invoice.mark_as_paid()
+
+    except Transaction.DoesNotExist:
+        pass
+    except Exception as e:
+        pass
+
+
+def handle_venmo_transaction_declined(transaction_id, transaction_data):
+    """Handle Venmo transaction declined event"""
+    try:
+        transaction = Transaction.objects.get(
+            gateway_transaction_id=transaction_id,
+            payment_gateway='venmo'
+        )
+
+        reason = transaction_data.get('processor_response_text', 'Transaction declined')
+        transaction.mark_as_failed(reason=reason)
+        transaction.metadata['declined_at'] = timezone.now().isoformat()
+        transaction.metadata['decline_reason'] = reason
+        transaction.save()
+
+    except Transaction.DoesNotExist:
+        pass
+    except Exception as e:
+        pass

@@ -3,6 +3,8 @@ from ..models import PaymentGatewayConfig
 from .stripe_service import StripePaymentGateway
 from .paypal_service import PayPalPaymentGateway
 from .mpesa_service import MPesaPaymentGateway
+from .cashapp_service import CashAppPaymentGateway
+from .venmo_service import VenmoPaymentGateway
 from .base import PaymentGateway
 
 
@@ -13,6 +15,8 @@ class PaymentGatewayFactory:
         'stripe': StripePaymentGateway,
         'paypal': PayPalPaymentGateway,
         'mpesa': MPesaPaymentGateway,
+        'cashapp': CashAppPaymentGateway,
+        'venmo': VenmoPaymentGateway,
     }
 
     @classmethod
@@ -21,7 +25,7 @@ class PaymentGatewayFactory:
         Create a payment gateway instance from database configuration.
 
         Args:
-            gateway_name: Name of the gateway ('stripe', 'paypal', 'mpesa')
+            gateway_name: Name of the gateway ('stripe', 'paypal', 'mpesa', 'cashapp', 'venmo')
 
         Returns:
             PaymentGateway instance or None if not configured

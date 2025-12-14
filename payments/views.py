@@ -1015,3 +1015,202 @@ def subscription_payment_complete(request):
     except (SubscriptionPlan.DoesNotExist, UserSubscription.DoesNotExist):
         messages.error(request, 'Subscription not found.')
         return redirect('payments:subscription_plans')
+# ============================================================================
+# CASHAPP DEPOSIT VIEWS
+# ============================================================================
+
+@login_required
+@ratelimit(key='user', rate='20/h', method='POST')
+def deposit_cashapp(request):
+    """Handle CashApp (Square) deposit"""
+    try:
+        wallet = Wallet.objects.get(user=request.user)
+    except Wallet.DoesNotExist:
+        wallet = Wallet.objects.create(user=request.user, balance=Decimal('0.00'))
+
+    deposit_amount = request.session.get('deposit_amount')
+
+    if not deposit_amount:
+        messages.error(request, 'Deposit amount not found in session.')
+        return redirect('payments:deposit_initiate')
+
+    if request.method == 'POST':
+        source_id = request.POST.get('source_id')  # From Square Web Payment SDK
+
+        if not source_id:
+            messages.error(request, 'Payment information is required.')
+            return redirect('payments:deposit_cashapp')
+
+        try:
+            deposit_amount_decimal = Decimal(deposit_amount)
+            payment_gateway = PaymentGatewayFactory.create_gateway('cashapp')
+
+            if not payment_gateway:
+                messages.error(request, 'CashApp payment is currently unavailable.')
+                return redirect('payments:deposit_initiate')
+
+            # Create transaction record
+            transaction = Transaction.objects.create(
+                user=request.user,
+                wallet=wallet,
+                amount=deposit_amount_decimal,
+                transaction_type='deposit',
+                payment_gateway='cashapp',
+                status='pending',
+                gateway_transaction_id=None,
+            )
+
+            # Process payment
+            payment_result = payment_gateway.process_payment(
+                amount=deposit_amount_decimal,
+                currency=settings.DEFAULT_CURRENCY,
+                metadata={
+                    'user_id': request.user.id,
+                    'transaction_id': transaction.id,
+                    'wallet_id': wallet.id,
+                    'source_id': source_id,
+                    'reference_id': f'DEPOSIT-{transaction.transaction_id}',
+                    'description': f'Wallet deposit - User {request.user.id}',
+                }
+            )
+
+            if payment_result['success']:
+                transaction.status = 'completed'
+                transaction.gateway_transaction_id = payment_result.get('transaction_id')
+                transaction.metadata = payment_result.get('data', {})
+                transaction.save()
+
+                wallet.balance += deposit_amount_decimal
+                wallet.save()
+
+                if 'deposit_amount' in request.session:
+                    del request.session['deposit_amount']
+                if 'deposit_gateway' in request.session:
+                    del request.session['deposit_gateway']
+
+                messages.success(request, f'Deposit of {settings.DEFAULT_CURRENCY} {deposit_amount_decimal} successful via CashApp!')
+                return redirect('payments:wallet_dashboard')
+            else:
+                transaction.status = 'failed'
+                transaction.metadata = {'error': payment_result.get('message')}
+                transaction.save()
+                messages.error(request, payment_result.get('message', 'Payment processing failed. Please try again.'))
+                return redirect('payments:deposit_cashapp')
+
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('payments:deposit_cashapp')
+
+    context = {
+        'amount': deposit_amount,
+        'wallet': wallet,
+        'cashapp_app_id': settings.CASHAPP_APP_ID,
+        'cashapp_location_id': settings.CASHAPP_LOCATION_ID,
+    }
+
+    return render(request, 'payments/deposit_cashapp.html', context)
+
+
+# ============================================================================
+# VENMO DEPOSIT VIEWS
+# ============================================================================
+
+@login_required
+@ratelimit(key='user', rate='20/h', method='POST')
+def deposit_venmo(request):
+    """Handle Venmo (Braintree) deposit"""
+    try:
+        wallet = Wallet.objects.get(user=request.user)
+    except Wallet.DoesNotExist:
+        wallet = Wallet.objects.create(user=request.user, balance=Decimal('0.00'))
+
+    deposit_amount = request.session.get('deposit_amount')
+
+    if not deposit_amount:
+        messages.error(request, 'Deposit amount not found in session.')
+        return redirect('payments:deposit_initiate')
+
+    # Get Braintree client token for frontend
+    payment_gateway = PaymentGatewayFactory.create_gateway('venmo')
+    client_token = None
+
+    if payment_gateway:
+        token_result = payment_gateway.generate_client_token()
+        if token_result['success']:
+            client_token = token_result['client_token']
+
+    if request.method == 'POST':
+        payment_method_nonce = request.POST.get('payment_method_nonce')  # From Braintree Drop-in
+
+        if not payment_method_nonce:
+            messages.error(request, 'Payment information is required.')
+            return redirect('payments:deposit_venmo')
+
+        try:
+            deposit_amount_decimal = Decimal(deposit_amount)
+
+            if not payment_gateway:
+                messages.error(request, 'Venmo payment is currently unavailable.')
+                return redirect('payments:deposit_initiate')
+
+            # Create transaction record
+            transaction = Transaction.objects.create(
+                user=request.user,
+                wallet=wallet,
+                amount=deposit_amount_decimal,
+                transaction_type='deposit',
+                payment_gateway='venmo',
+                status='pending',
+                gateway_transaction_id=None,
+            )
+
+            # Process payment
+            payment_result = payment_gateway.process_payment(
+                amount=deposit_amount_decimal,
+                currency=settings.DEFAULT_CURRENCY,
+                metadata={
+                    'user_id': request.user.id,
+                    'transaction_id': transaction.id,
+                    'wallet_id': wallet.id,
+                    'payment_method_nonce': payment_method_nonce,
+                    'order_id': f'DEPOSIT-{transaction.transaction_id}',
+                    'email': request.user.email,
+                    'first_name': request.user.first_name,
+                    'last_name': request.user.last_name,
+                }
+            )
+
+            if payment_result['success']:
+                transaction.status = 'completed'
+                transaction.gateway_transaction_id = payment_result.get('transaction_id')
+                transaction.metadata = payment_result.get('data', {})
+                transaction.save()
+
+                wallet.balance += deposit_amount_decimal
+                wallet.save()
+
+                if 'deposit_amount' in request.session:
+                    del request.session['deposit_amount']
+                if 'deposit_gateway' in request.session:
+                    del request.session['deposit_gateway']
+
+                messages.success(request, f'Deposit of {settings.DEFAULT_CURRENCY} {deposit_amount_decimal} successful via Venmo!')
+                return redirect('payments:wallet_dashboard')
+            else:
+                transaction.status = 'failed'
+                transaction.metadata = {'error': payment_result.get('message')}
+                transaction.save()
+                messages.error(request, payment_result.get('message', 'Payment processing failed. Please try again.'))
+                return redirect('payments:deposit_venmo')
+
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('payments:deposit_venmo')
+
+    context = {
+        'amount': deposit_amount,
+        'wallet': wallet,
+        'client_token': client_token,
+    }
+
+    return render(request, 'payments/deposit_venmo.html', context)

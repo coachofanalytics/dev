@@ -10,6 +10,14 @@ python-dotenv
 whitenoise
 dj-database-url
 django-ratelimit
+
+# Social Authentication
+social-auth-app-django==5.4.0
+social-auth-core==4.5.0
+
+# Email verification
+django-allauth==0.57.0
+
 # Payment Gateway Dependencies
 stripe==13.1.2
 paypalrestsdk==1.13.3

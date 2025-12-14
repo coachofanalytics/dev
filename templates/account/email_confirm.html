@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Email - Biashara Bridges</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/auth-pages.css' %}">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-slideshow">
+                <div class="auth-slide active" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-48-1.jpg');"></div>
+            </div>
+            <div class="auth-left-content">
+                <h1>Welcome to<br>Biashara Bridges</h1>
+                <p>Complete your email verification</p>
+            </div>
+        </div>
+        <div class="auth-right">
+            <div class="auth-form-container">
+                <div class="auth-form-header">
+                    <div class="logo-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                        <i class="bi bi-patch-check" style="font-size: 40px;"></i>
+                    </div>
+                    <h2>Confirm Your Email</h2>
+                    <p>Please confirm that <strong>{{ email }}</strong> is your email address</p>
+                </div>
+
+                {% if confirmation %}
+                    <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+                        {% csrf_token %}
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i>
+                            By confirming your email, you'll be able to login and access all features of Biashara Bridges.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirm Email Address
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Invalid Verification Link</strong><br>
+                        This email verification link is invalid or has expired.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'account_email' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-envelope"></i> Request New Verification Email
+                        </a>
+                    </div>
+                {% endif %}
+
+                <div class="auth-form-footer">
+                    <p class="mb-0"><a href="{% url 'login' %}"><i class="bi bi-arrow-left"></i> Back to Login</a></p>
+                    <p class="mt-3 mb-0"><a href="{% url 'home' %}"><i class="bi bi-house"></i> Back to Home</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

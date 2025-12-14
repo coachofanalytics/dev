@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your Email - Biashara Bridges</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #fff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌉 Biashara Bridges</h1>
+        <p>Welcome to Our Community!</p>
+    </div>
+
+    <div class="content">
+        <h2>Hello {{ user.get_full_name|default:user.username }}!</h2>
+
+        <p>Thank you for registering with <strong>Biashara Bridges</strong>! We're excited to have you join our community of businesses, investors, and opportunities.</p>
+
+        <p>To complete your registration and activate your account, please verify your email address by clicking the button below:</p>
+
+        <div style="text-align: center;">
+            <a href="{{ activate_url }}" class="button">Verify Email Address</a>
+        </div>
+
+        <div class="info-box">
+            <p><strong>⏰ Important:</strong> This verification link will expire in <strong>3 days</strong>.</p>
+        </div>
+
+        <p>If the button above doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #667eea;">{{ activate_url }}</p>
+
+        <p>If you did not create this account, please ignore this email and the account will not be activated.</p>
+
+        <p>Best regards,<br>
+        <strong>The Biashara Bridges Team</strong></p>
+    </div>
+
+    <div class="footer">
+        <p>Connecting businesses, investors, and opportunities across Africa and beyond</p>
+        <p>{{ current_site.domain }}</p>
+        <p style="font-size: 12px; color: #999;">
+            This is an automated email. Please do not reply to this message.
+        </p>
+    </div>
+</body>
+</html>

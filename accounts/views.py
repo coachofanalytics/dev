@@ -18,7 +18,18 @@ def register(request):
     Rate limited to 5 registration attempts per hour per IP.
     """
     if request.user.is_authenticated:
-        return redirect('home')
+        messages.info(request, 'You are already logged in. Please logout first if you want to create a new account.')
+        # Redirect to appropriate dashboard based on user profile
+        try:
+            profile = request.user.userprofile
+            if profile.category.slug == 'investor':
+                return redirect('investor_dashboard')
+            elif profile.category.slug == 'business':
+                return redirect('business_dashboard')
+            else:
+                return redirect('individual_dashboard')
+        except:
+            return redirect('profile')
 
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST, request.FILES)

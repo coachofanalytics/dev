@@ -45,6 +45,12 @@ urlpatterns = [
     path('staff/users/', accounts_views.staff_users_list, name='staff_users_list'),
     path('staff/categories/', accounts_views.staff_categories_list, name='staff_categories_list'),
 
+    # Social Authentication URLs
+    path('oauth/', include('social_django.urls', namespace='social')),
+
+    # Email verification URLs (django-allauth)
+    path('accounts/', include('allauth.urls')),
+
     # Payment and Wallet URLs
     path('payments/', include('payments.urls')),
     # Marketplace URLs

@@ -385,3 +385,96 @@
 .auth-form-scrollable::-webkit-scrollbar-thumb:hover {
     background: #764ba2;
 }
+
+/* Social Login Buttons - Premium Style */
+.social-login-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.social-login-buttons .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    font-weight: 500;
+    font-size: 15px;
+    border-radius: 6px;
+    border: 1px solid #dadce0;
+    background: #ffffff;
+    color: #3c4043;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.social-login-buttons .btn:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+    border-color: #d2d3d4;
+    transform: translateY(-1px);
+}
+
+.social-login-buttons .btn:active {
+    background-color: #f1f3f4;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    transform: translateY(0);
+}
+
+/* Google Button Specific */
+.btn-google {
+    border-color: #dadce0;
+}
+
+.btn-google svg {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* Facebook Button Specific */
+.btn-facebook {
+    border-color: #dadce0;
+}
+
+.btn-facebook .bi-facebook {
+    font-size: 20px;
+    margin-right: 12px;
+    color: #1877f2;
+}
+
+/* Button text */
+.social-login-buttons .btn span {
+    flex: 1;
+    text-align: center;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+/* Divider with text */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.divider span {
+    padding: 0 1rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+

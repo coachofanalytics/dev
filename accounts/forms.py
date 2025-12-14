@@ -547,3 +547,67 @@ class ProfileEditForm(forms.ModelForm):
         if commit:
             profile.save()
         return profile
+
+
+# ============================================================================
+# ALLAUTH CUSTOM SIGNUP FORM
+# ============================================================================
+
+from allauth.account.forms import SignupForm
+
+class CustomSignupForm(SignupForm):
+    """
+    Custom signup form for django-allauth integration.
+    Extends the default allauth signup form to work with existing registration system.
+    """
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter first name'
+        }),
+        label='First Name'
+    )
+
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter last name'
+        }),
+        label='Last Name'
+    )
+
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.filter(is_active=True),
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        }),
+        label='Registration Type',
+        help_text='Select your user type'
+    )
+
+    def save(self, request):
+        # Call the parent save method to create the user
+        user = super().save(request)
+
+        # Add first and last name
+        user.first_name = self.cleaned_data.get('first_name', '')
+        user.last_name = self.cleaned_data.get('last_name', '')
+        user.save()
+
+        # Create or update UserProfile
+        category = self.cleaned_data.get('category')
+        if hasattr(user, 'userprofile'):
+            user.userprofile.category = category
+            user.userprofile.save()
+        else:
+            UserProfile.objects.create(
+                user=user,
+                category=category
+            )
+
+        return user

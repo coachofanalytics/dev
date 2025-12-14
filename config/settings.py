@@ -44,12 +44,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',  # Required for allauth
+
+    # Third-party apps
+    'social_django',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 
     # Local apps
     'accounts',
     'payments',
     'marketplace',
 ]
+
+# Site ID for django.contrib.sites
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -60,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Required for django-allauth
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -76,6 +87,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -131,8 +144,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Authentication backends
 # Use custom backend for case-insensitive username/email authentication
 AUTHENTICATION_BACKENDS = [
-    'accounts.backends.CaseInsensitiveAuthBackend',  # Custom case-insensitive backend
-    'django.contrib.auth.backends.ModelBackend',     # Fallback to default backend
+    'social_core.backends.google.GoogleOAuth2',       # Google OAuth2
+    'social_core.backends.facebook.FacebookOAuth2',   # Facebook OAuth2
+    'accounts.backends.CaseInsensitiveAuthBackend',   # Custom case-insensitive backend
+    'django.contrib.auth.backends.ModelBackend',      # Fallback to default backend
 ]
 
 
@@ -169,18 +184,66 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Email settings (for password reset)
-# For development, use console backend
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# ============================================================================
+# EMAIL SETTINGS
+# ============================================================================
 
-# For production, use SMTP (uncomment and configure)
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-# EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-# EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@biasharabridges.com')
+# Email Backend Configuration
+# For development, use console backend (prints emails to console)
+# For production, use SMTP backend
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+
+# SMTP Configuration (for production)
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@biasharabridges.com')
+SERVER_EMAIL = config('SERVER_EMAIL', default='server@biasharabridges.com')
+
+# Email verification settings
+EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Link expires after 3 days
+EMAIL_SUBJECT_PREFIX = '[Biashara Bridges] '
+
+# ============================================================================
+# DJANGO-ALLAUTH CONFIGURATION
+# ============================================================================
+
+# Authentication settings
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # Allow login with username or email
+ACCOUNT_EMAIL_REQUIRED = True  # Email is required for registration
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Email verification is mandatory
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True  # Confirm email on GET request
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False  # Don't auto-login after email confirmation
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Confirmation link expires after 3 days
+ACCOUNT_UNIQUE_EMAIL = True  # Email must be unique
+
+# Login/Logout settings
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = False  # Don't auto-login after password reset
+ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False  # Don't auto-logout after password change
+ACCOUNT_LOGOUT_REDIRECT_URL = 'login'
+
+# Registration settings
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_USERNAME_MIN_LENGTH = 3
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True  # User must enter password twice
+
+# Email settings for allauth
+ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https' if not DEBUG else 'http'
+
+# Session settings
+ACCOUNT_SESSION_REMEMBER = True  # Remember me by default
+
+# Custom adapter
+ACCOUNT_ADAPTER = 'accounts.adapters.CustomAccountAdapter'
+
+# Allauth forms
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm',
+}
 
 # ============================================================================
 # PAYMENT GATEWAY SETTINGS
@@ -206,6 +269,18 @@ MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL', default='')
 MPESA_INITIATOR_NAME = config('MPESA_INITIATOR_NAME', default='')
 MPESA_SECURITY_CREDENTIAL = config('MPESA_SECURITY_CREDENTIAL', default='')
 
+# CashApp Configuration (Square)
+CASHAPP_APP_ID = config('CASHAPP_APP_ID', default='')
+CASHAPP_CLIENT_ID = config('CASHAPP_CLIENT_ID', default='')
+CASHAPP_CLIENT_SECRET = config('CASHAPP_CLIENT_SECRET', default='')
+CASHAPP_ACCESS_TOKEN = config('CASHAPP_ACCESS_TOKEN', default='')
+CASHAPP_LOCATION_ID = config('CASHAPP_LOCATION_ID', default='')
+
+# Venmo Configuration (Braintree)
+VENMO_MERCHANT_ID = config('VENMO_MERCHANT_ID', default='')
+VENMO_PUBLIC_KEY = config('VENMO_PUBLIC_KEY', default='')
+VENMO_PRIVATE_KEY = config('VENMO_PRIVATE_KEY', default='')
+
 # Payment Settings
 PAYMENT_CURRENCY = 'USD'
 # Payment Currency
@@ -219,11 +294,15 @@ MINIMUM_WALLET_BALANCE = 0.00  # Minimum wallet balance allowed
 STRIPE_WEBHOOK_URL = config('STRIPE_WEBHOOK_URL', default='/webhooks/stripe/')
 PAYPAL_WEBHOOK_URL = config('PAYPAL_WEBHOOK_URL', default='/webhooks/paypal/')
 MPESA_WEBHOOK_URL = config('MPESA_WEBHOOK_URL', default='/webhooks/mpesa/')
+CASHAPP_WEBHOOK_URL = config('CASHAPP_WEBHOOK_URL', default='/webhooks/cashapp/')
+VENMO_WEBHOOK_URL = config('VENMO_WEBHOOK_URL', default='/webhooks/venmo/')
 
 # Payment Gateway Feature Flags
 ENABLE_STRIPE = config('ENABLE_STRIPE', default=True, cast=bool)
 ENABLE_PAYPAL = config('ENABLE_PAYPAL', default=True, cast=bool)
 ENABLE_MPESA = config('ENABLE_MPESA', default=True, cast=bool)
+ENABLE_CASHAPP = config('ENABLE_CASHAPP', default=True, cast=bool)
+ENABLE_VENMO = config('ENABLE_VENMO', default=True, cast=bool)
 ENABLE_WALLET_PAYMENTS = config('ENABLE_WALLET_PAYMENTS', default=True, cast=bool)
 
 # Transaction Settings
@@ -245,6 +324,54 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
+# ============================================================================
+# SOCIAL AUTHENTICATION SETTINGS
+# ============================================================================
+
+# Google OAuth2 Configuration
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_OAUTH2_CLIENT_ID', default='')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('GOOGLE_OAUTH2_CLIENT_SECRET', default='')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+]
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name', 'picture']
+
+# Facebook OAuth2 Configuration
+SOCIAL_AUTH_FACEBOOK_KEY = config('FACEBOOK_APP_ID', default='')
+SOCIAL_AUTH_FACEBOOK_SECRET = config('FACEBOOK_APP_SECRET', default='')
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'public_profile']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id,name,email,picture.type(large),first_name,last_name'
+}
+SOCIAL_AUTH_FACEBOOK_EXTRA_DATA = [
+    ('first_name', 'first_name'),
+    ('last_name', 'last_name'),
+    ('email', 'email'),
+    ('picture', 'picture'),
+]
+
+# Social Auth General Settings
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/edit-profile/'
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
+SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+
+# Pipeline for social authentication
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'accounts.pipeline.create_user_profile',  # Custom pipeline to create UserProfile
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
 
 # Production Security Settings
 # Only enforce in production (when DEBUG is False)
