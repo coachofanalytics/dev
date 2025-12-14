@@ -177,3 +177,157 @@ class TrackerCreateViewTest(TestCase):
         self.assertEqual(str(messages[0]), 'Record created successfully!')
 
     # ... (Keep the rest of the tests as is) ...
+
+
+
+# accounts/tests/unit/test_unit_views.py (Add this class)
+
+# ... (Keep the TrackerListViewTest and TrackerCreateViewTest classes above) ...
+
+# ---------------------------------------------------------------------------------
+# TrackerUpdateViewTest 
+# ---------------------------------------------------------------------------------
+
+@override_settings(LOGIN_URL='/accounts/login/') 
+class TrackerUpdateViewTest(TestCase):
+    """
+    Unit tests for the Tracker_update view function.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create users
+        cls.staff_user = User.objects.create_user(
+            username='staff_update', 
+            email='staff_update@example.com',
+            password='testpassword123',
+            is_staff=True
+        )
+        
+        # Create an existing Tracker object to update
+        # Assuming required fields are simple strings/integers for creation simplicity
+        cls.tracker_to_update = Tracker.objects.create(
+            employee='Old Employee', 
+            category='Old Cat', 
+            sub_category='Old Sub',
+            task='Old Task',
+            plan='Old Plan',
+            login_date=timezone.now(),
+            start_time=time(8, 0, 0),
+            duration=60,
+            time=1
+        )
+        
+        # Define URLs
+        cls.update_url = reverse('accounts:account-Tracker_update', args=[cls.tracker_to_update.pk])
+        cls.list_url = reverse('accounts:account-Tracker_list')
+        cls.admin_login_url = reverse('admin:login') + f'?next={cls.update_url}'
+
+    def setUp(self):
+        # Log in the staff user for all tests
+        self.client.login(username='staff_update', password='testpassword123')
+
+    # --- Sample Valid Data ---
+    def get_valid_update_data(self):
+        # Data that is guaranteed to be valid and different from the initial data
+        return {
+            'employee': 'New Employee',  # Changed
+            'category': 'New Category',
+            'sub_category': 'New SubCategory',
+            'task': 'New Task',
+            'plan': 'New Plan',
+            
+            # Using current date/time in the expected string format
+            'login_date': timezone.now().strftime('%Y-%m-%d'), 
+            'start_time': '10:00:00',
+            'duration': '120',
+            'time': '2',
+        }
+
+    # ====================================================================
+    # 1. GET Request Test (Initial Data Loading)
+    # ====================================================================
+
+    def test_get_tracker_update_renders_correct_template_and_initial_data(self):
+        response = self.client.get(self.update_url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/admin/tracker_update.html")
+        
+        # Check if the initial data is loaded into the form
+        self.assertContains(response, self.tracker_to_update.task)
+        self.assertContains(response, self.tracker_to_update.employee)
+
+    def test_get_non_existent_tracker_returns_404(self):
+        # Try to access an update view for a primary key that doesn't exist (e.g., 999)
+        non_existent_url = reverse('accounts:account-Tracker_update', args=[999])
+        response = self.client.get(non_existent_url)
+        
+        # Verify get_object_or_404 correctly raises a 404
+        self.assertEqual(response.status_code, 404)
+
+    # ====================================================================
+    # 2. POST Request Test (Valid Data)
+    # ====================================================================
+
+    def test_post_valid_data_updates_record_and_redirects(self):
+        """Test POST request with valid data updates the object and redirects."""
+        data = self.get_valid_update_data()
+        
+        # Get the initial count and PK (should not change)
+        initial_tracker_count = Tracker.objects.count()
+        pk_before_update = self.tracker_to_update.pk
+
+        response = self.client.post(self.update_url, data, follow=True)
+        
+        # Check 1: Database count must remain the same (no new record created)
+        self.assertEqual(Tracker.objects.count(), initial_tracker_count)
+        
+        # Check 2: Redirect to the list view
+        self.assertRedirects(response, self.list_url)
+
+        # Check 3: Data in the database is actually updated
+        updated_tracker = Tracker.objects.get(pk=pk_before_update)
+        self.assertEqual(updated_tracker.employee, 'New Employee')
+        self.assertEqual(updated_tracker.task, 'New Task')
+        
+        # Check 4: Success message is shown
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Record update successfully!')
+
+    # ====================================================================
+    # 3. POST Request Test (Invalid Data)
+    # ====================================================================
+    
+    def test_post_invalid_data_does_not_save_and_re_renders_form(self):
+        """Test that invalid data does not update the record."""
+        # Invalid data: setting a required field (task) to be too long (26 chars)
+        invalid_data = self.get_valid_update_data()
+        invalid_data['task'] = 'This task is intentionally too long now!' 
+
+        # Get the initial employee name before the failed POST attempt
+        old_employee_name = self.tracker_to_update.employee
+        initial_tracker_count = Tracker.objects.count()
+
+        response = self.client.post(self.update_url, invalid_data)
+        
+        # Check 1: Still 200 OK (re-rendering the form with errors)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/admin/tracker_update.html")
+
+        # Check 2: Database count remains the same
+        self.assertEqual(Tracker.objects.count(), initial_tracker_count)
+
+        # Check 3: The data in the database is NOT updated
+        tracker_after_failure = Tracker.objects.get(pk=self.tracker_to_update.pk)
+        self.assertEqual(tracker_after_failure.employee, old_employee_name)
+        
+        # Check 4: Form displays the validation error
+        self.assertFormError(
+            response, 
+            'form', 
+            'task', 
+            # This error message assumes max_length=25 from previous debugging
+            'Ensure this value has at most 25 characters (it has 40).' 
+        )    

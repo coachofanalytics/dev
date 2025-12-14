@@ -139,3 +139,103 @@ class TrackerRegressionTest(TestCase):
             'task', 
             'Ensure this value has at most 25 characters (it has 26).'
         )
+
+
+
+
+# accounts/tests/regression/test_regression_views.py (Add this class)
+
+# ... (Keep the existing imports and TrackerRegressionTest class) ...
+
+# ----------------------------------------------------------------------
+# New Regression Test Class for Update View
+# ----------------------------------------------------------------------
+
+@override_settings(LOGIN_URL='/accounts/login/')
+class TrackerUpdateRegressionTest(TestCase):
+    """
+    Tests to prevent specific, known bugs from reappearing in the Tracker_update view.
+    Focuses on form validation when updating an existing record.
+    """
+    
+    @classmethod
+    def setUpTestData(cls):
+        """Setup users, URLs, and a record to be updated."""
+        cls.staff_user = User.objects.create_user(
+            username='staff_update_reg', 
+            email='staff_upreg@example.com',
+            password='testpassword123',
+            is_staff=True
+        )
+        
+        # Create the Tracker object that will be targeted for update
+        cls.tracker_to_update = Tracker.objects.create(
+            employee='John Doe', 
+            category='Initial', 
+            sub_category='Setup',
+            task='Short initial task', # < 25 chars
+            plan='Initial plan',
+            login_date=timezone.now(),
+            start_time=time(10, 0, 0),
+            duration=60,
+            time=1
+        )
+        
+        # Define URLs
+        cls.update_url = reverse('accounts:account-Tracker_update', args=[cls.tracker_to_update.pk])
+        cls.list_url = reverse('accounts:account-Tracker_list')
+
+    def setUp(self):
+        # Log in the staff user before each test
+        self.client.login(username='staff_update_reg', password='testpassword123')
+
+
+    # ----------------------------------------------------------------------
+    # Regression Test 1: Task Max Length Validation (Bug fixed in Create/Update)
+    # ----------------------------------------------------------------------
+
+    def get_invalid_update_data(self):
+        """Data that violates the max_length constraint on the 'task' field."""
+        # Start with the existing, valid data from the object being updated
+        # and only change the 'task' field to be invalid.
+        return {
+            'employee': self.tracker_to_update.employee, 
+            'category': self.tracker_to_update.category,
+            'sub_category': self.tracker_to_update.sub_category,
+            
+            # 🚨 Regression Test Case: Task is 26 characters (should fail validation)
+            'task': 'This task is too long now!', 
+            
+            'plan': self.tracker_to_update.plan,
+            'login_date': self.tracker_to_update.login_date.strftime('%Y-%m-%d'), 
+            'start_time': self.tracker_to_update.start_time.strftime('%H:%M:%S'),
+            'duration': str(self.tracker_to_update.duration),
+            'time': str(self.tracker_to_update.time),
+        }
+
+    def test_update_task_max_length_validation_rejects_long_data(self):
+        """
+        Regression test: Ensures POSTing data exceeding 25 characters for 'task'
+        to the update view is correctly rejected by form validation.
+        """
+        initial_task = self.tracker_to_update.task
+        invalid_data = self.get_invalid_update_data()
+        
+        # 1. POST the invalid data to the update URL
+        response = self.client.post(self.update_url, invalid_data)
+
+        # 2. Check: The POST should fail, re-rendering the form (status 200)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/admin/tracker_update.html")
+
+        # 3. Check: The object in the database must NOT have been updated
+        self.tracker_to_update.refresh_from_db()
+        self.assertEqual(self.tracker_to_update.task, initial_task) # Task must still be 'Short initial task'
+
+        # 4. Check: The form errors must contain the specific error message
+        self.assertFormError(
+            response, 
+            'form', 
+            'task', 
+            'Ensure this value has at most 25 characters (it has 26).'
+        )        

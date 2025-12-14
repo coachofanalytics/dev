@@ -153,3 +153,6 @@ class Trackerform(forms.ModelForm):
         model = Tracker       
         fields = ['category', 'sub_category','task','plan','employee','login_date','start_time','duration','time'] 
         
+
+
+        

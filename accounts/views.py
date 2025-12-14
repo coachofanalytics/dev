@@ -296,3 +296,20 @@ def Tracker_create(request):
         form = Trackerform()
     
     return render(request, "accounts/admin/tracker_create.html", {"form": form})
+
+
+
+@staff_member_required
+def Tracker_update(request,pk):
+    Trackers=get_object_or_404(Tracker,pk=pk)
+    if request.method =='POST':
+        form=Trackerform(request.POST,instance=Trackers)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Record update successfully!')
+            return redirect('accounts:account-Tracker_list')
+    else:
+        form= Trackerform(instance=Trackers) 
+    return render(request, "accounts/admin/tracker_update.html", {"form": form})        
+
+
