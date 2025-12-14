@@ -13,6 +13,8 @@ from application.models import UserProfile,Assets
 from .utils import generate_random_password
 from django.contrib.admin.views.decorators import staff_member_required 
 
+from.forms import Trackerform
+
 from django.urls import reverse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.core.exceptions import ImmediateHttpResponse
@@ -272,4 +274,25 @@ def custom_social_login(request):
 def Tracker_list(request):    
     Trackers = Tracker.objects.all()
     return render(request, "accounts/admin/tracker_list.html", {"Trackers": Trackers})
+# accounts/views.py
 
+
+@staff_member_required
+def Tracker_create(request):
+    if request.method == 'POST':
+        form = Trackerform(request.POST)
+        if form.is_valid():
+            new_tracker = form.save(commit=False)
+            
+            # This logic is essential for the test to pass:
+            if not new_tracker.employee:
+                new_tracker.employee = request.user.username
+            
+            new_tracker.save()
+            
+            messages.success(request, 'Record created successfully!')
+            return redirect('accounts:account-Tracker_list')
+    else:
+        form = Trackerform()
+    
+    return render(request, "accounts/admin/tracker_create.html", {"form": form})
