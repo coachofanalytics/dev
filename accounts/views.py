@@ -326,3 +326,10 @@ def Tracker_delete(request,pk):
         return redirect('accounts:account-Tracker_list')
     return render(request, "accounts/admin/tracker_delete.html", {"Trackers": Trackers})        
 
+
+
+
+@staff_member_required
+def Tracker_detail(request, pk):   
+    tracker = get_object_or_404(Tracker, pk=pk)    
+    return render(request, "accounts/admin/tracker_detail.html", {"tracker": tracker})

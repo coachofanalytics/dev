@@ -12,4 +12,5 @@ urlpatterns = [
     path('add/', views.Tracker_create, name='account-Tracker_create'),
     path('tracker/update/<int:pk>/', views.Tracker_update,name='account-Tracker_update'),
     path('tracker/delete/<int:pk>/', views.Tracker_delete,name='account-Tracker_delete'),
+    path('tracker/detail/<int:pk>/', views.Tracker_detail,name='account-Tracker_detail'),
 ]

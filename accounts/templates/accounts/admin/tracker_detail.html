@@ -1,0 +1,54 @@
+{% include 'main/navbar_templates/home_navbar.html' %} 
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center mb-4">Tracker Record Details</h2>
+            
+            <div class="card shadow-lg">
+                <div class="card-header bg-info text-white">
+                    Record ID: {{ tracker.pk }}
+                </div>
+                <div class="card-body">
+                    
+                    <dl class="row">
+                        <dt class="col-sm-4">Category:</dt>
+                        <dd class="col-sm-8">{{ tracker.category }}</dd>
+
+                        <dt class="col-sm-4">Sub-Category:</dt>
+                        <dd class="col-sm-8">{{ tracker.sub_category }}</dd>
+
+                        <dt class="col-sm-4">Task:</dt>
+                        <dd class="col-sm-8">{{ tracker.task }}</dd>
+                        
+                        <dt class="col-sm-4">Employee:</dt>
+                        <dd class="col-sm-8">{{ tracker.employee }}</dd>
+
+                        <dt class="col-sm-4">Login Date:</dt>
+                        <dd class="col-sm-8">{{ tracker.login_date|date:"F d, Y" }}</dd>
+                        
+                        <dt class="col-sm-4">Start Time:</dt>
+                        <dd class="col-sm-8">{{ tracker.start_time|date:"H:i A" }}</dd>
+                        
+                        <dt class="col-sm-4">Duration:</dt>
+                        <dd class="col-sm-8">{{ tracker.duration }}</dd>
+                        
+                        <dt class="col-sm-4">Time:</dt>
+                        <dd class="col-sm-8">{{ tracker.time }}</dd>
+                    </dl>
+                    
+                </div>
+                <div class="card-footer text-right">
+                    <a href="{% url 'accounts:account-Tracker_update' pk=tracker.pk %}" class="btn btn-warning mr-2">
+                        <i class="fas fa-edit"></i> Edit Record
+                    </a>
+                    <a href="{% url 'accounts:account-Tracker_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> Back to List
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock content %}

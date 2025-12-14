@@ -427,4 +427,93 @@ class TrackerDeleteViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Record Delete successfully!')
-                
+
+
+
+
+# accounts/tests/unit/test_unit_views.py (Add this new class)
+
+# ... (Keep the previous classes: TrackerListViewTest, TrackerCreateViewTest, etc.) ...
+
+from django.test import TestCase, override_settings 
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from datetime import time
+
+from accounts.models import Tracker
+
+User = get_user_model()
+
+
+# ---------------------------------------------------------------------------------
+# TrackerDetailViewTest 
+# ---------------------------------------------------------------------------------
+
+@override_settings(LOGIN_URL='/accounts/login/') 
+class TrackerDetailViewTest(TestCase):
+    """
+    Unit tests for the Tracker_detail view function.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create staff user (required by @staff_member_required decorator)
+        cls.staff_user = User.objects.create_user(
+            username='staff_detail', 
+            email='staff_detail@example.com',
+            password='testpassword123',
+            is_staff=True
+        )
+        
+        # Create an existing Tracker object for detail view testing
+        cls.test_tracker = Tracker.objects.create(
+            employee='Detail Tester', 
+            category='Testing', 
+            sub_category='Unit',
+            task='Verify detail view data',
+            plan='Ensure all fields render',
+            login_date=timezone.now(),
+            start_time=time(9, 30, 0),
+            duration=120,
+            time=2.0
+        )
+        
+        # Define URL
+        cls.detail_url = reverse('accounts:account-Tracker_detail', args=[cls.test_tracker.pk])
+
+    def setUp(self):
+        # Log in the staff user for all tests
+        self.client.login(username='staff_detail', password='testpassword123')
+
+    # ====================================================================
+    # 1. GET Request Test (Successful Data Rendering)
+    # ====================================================================
+
+    def test_get_tracker_detail_renders_correct_template_and_data(self):
+        """Test GET request renders the detail template and displays object data."""
+        response = self.client.get(self.detail_url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/admin/tracker_detail.html")
+        
+        # Check if the context contains the Tracker object
+        self.assertIn('tracker', response.context)
+        self.assertEqual(response.context['tracker'], self.test_tracker)
+        
+        # Check if the template contains content specific to the test object's data
+        self.assertContains(response, "Detail Tester")
+        self.assertContains(response, "Verify detail view data")
+        self.assertContains(response, "Testing") # category
+
+    # ====================================================================
+    # 2. Error Handling Test (Non-Existent PK)
+    # ====================================================================
+
+    def test_get_non_existent_tracker_returns_404(self):
+        """Test accessing a non-existent PK returns 404."""
+        non_existent_url = reverse('accounts:account-Tracker_detail', args=[999])
+        response = self.client.get(non_existent_url)
+        
+        self.assertEqual(response.status_code, 404)        

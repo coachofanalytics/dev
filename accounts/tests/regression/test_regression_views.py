@@ -363,3 +363,135 @@ def test_tracker_delete_post_succeeds_for_staff_user(self):
     
     # Check 3: Record is truly gone 
     self.assertFalse(Tracker.objects.filter(pk=tracker_to_delete_test.pk).exists())
+
+
+
+# accounts/tests/integration/test_integration_views.py (Add the following methods)
+
+# ... (Assuming your setUpTestData now includes self.test_tracker and self.detail_url is defined) ...
+
+# ----------------------------------------------
+# New Access Denied: Anonymous User (Detail View)
+# ----------------------------------------------
+
+def test_tracker_detail_get_redirects_if_not_logged_in(self):
+    """
+    Test that an unauthenticated user is redirected to the login page 
+    when trying to access the detail view.
+    """
+    # URL for detail view is self.detail_url
+    response = self.client.get(self.detail_url)
+    
+    self.assertEqual(response.status_code, 302)
+    
+    # Check if the response redirects to the login page
+    expected_redirect = reverse('accounts:account-login') + f'?next={self.detail_url}'
+    self.assertRedirects(response, expected_redirect, target_status_code=200)
+
+
+# ----------------------------------------------
+# New Access Denied: Normal (Non-Staff) User (Detail View)
+# ----------------------------------------------
+
+def test_tracker_detail_denied_for_normal_user(self):
+    """
+    Test that a logged-in non-staff user is denied access to the detail view.
+    """
+    self.client.login(username='user_normal', password='testpassword123')
+    response = self.client.get(self.detail_url)
+    
+    # Non-staff users should be redirected by @staff_member_required.
+    self.assertEqual(response.status_code, 302) 
+    
+    # Check the redirect target
+    expected_redirect = reverse('accounts:account-login') + f'?next={self.detail_url}'
+    self.assertRedirects(response, expected_redirect, target_status_code=200)
+
+
+# ----------------------------------------------
+# New Access Granted: Staff User (Detail View)
+# ----------------------------------------------
+
+def test_tracker_detail_accessible_by_staff_user(self):
+    """
+    Test that a logged-in staff user is granted access (200 OK) to the detail view.
+    """
+    # Log in the staff user
+    self.client.login(username='user_staff', password='testpassword123')
+    
+    # Access the view
+    response = self.client.get(self.detail_url)
+    
+    # The staff user should receive a successful status code and see the content
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.test_tracker.employee)
+
+
+
+
+# accounts/tests/regression/test_regression_views.py (Add this class)
+
+# ... (Keep the existing imports and other RegressionTest classes) ...
+
+# ----------------------------------------------------------------------
+# New Regression Test Class for Detail View
+# ----------------------------------------------------------------------
+
+@override_settings(LOGIN_URL='/accounts/login/')
+class TrackerDetailRegressionTest(TestCase):
+    """
+    Tests to ensure the Tracker_detail view remains functional and renders
+    key data correctly over time.
+    """
+    
+    @classmethod
+    def setUpTestData(cls):
+        """Setup user, URLs, and a specific record to be viewed."""
+        cls.staff_user = User.objects.create_user(
+            username='staff_detail_reg', 
+            email='staff_dreg@example.com',
+            password='testpassword123',
+            is_staff=True
+        )
+        
+        # Create a Tracker object with specific, identifiable data
+        cls.test_task_content = "This is a unique task for detail regression"
+        cls.tracker_to_detail = Tracker.objects.create(
+            employee='Regression Detail Check', 
+            category='Check', 
+            sub_category='Detail',
+            task=cls.test_task_content, 
+            plan='Regression view test',
+            login_date=timezone.now(),
+            start_time=time(14, 30, 0),
+            duration=30,
+            time=0.5
+        )
+        
+        # Define URL
+        cls.detail_url = reverse('accounts:account-Tracker_detail', args=[cls.tracker_to_detail.pk])
+
+    def setUp(self):
+        # Log in the staff user before each test
+        self.client.login(username='staff_detail_reg', password='testpassword123')
+
+
+    # ----------------------------------------------------------------------
+    # Regression Test 1: Ensure Key Content Renders and View is Accessible
+    # ----------------------------------------------------------------------
+
+    def test_detail_view_renders_key_content(self):
+        """
+        Ensures the detail view returns 200 OK and correctly displays a
+        specific, critical field (the task content).
+        """
+        response = self.client.get(self.detail_url)
+
+        # 1. Check: View must be accessible (200 OK)
+        self.assertEqual(response.status_code, 200)
+
+        # 2. Check: The template must contain the unique task content
+        self.assertContains(response, self.test_task_content)
+
+        # 3. Check: The template must contain the employee name
+        self.assertContains(response, self.tracker_to_detail.employee)
