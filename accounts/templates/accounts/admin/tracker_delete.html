@@ -1,0 +1,42 @@
+{% include 'main/navbar_templates/home_navbar.html' %} 
+
+{% block content %}
+<div class="container mt-5">
+    
+    <h2 class="text-center mb-4 text-danger">Confirm Deletion</h2>
+    
+    <div class="alert alert-warning text-center shadow-sm p-4">
+        <p class="lead">Are you sure you want to delete the following Tracker Record?</p>
+        
+        <h3>Record Details:</h3>
+        <table class="table table-bordered table-sm my-4">
+            <tr>
+                <th class="w-25">Employee:</th>
+                <td><strong>{{ Trackers.employee }}</strong></td> 
+            </tr>
+            <tr>
+                <th>Task:</th>
+                <td>{{ Trackers.task }}</td>
+            </tr>
+            <tr>
+                <th>Date:</th>
+                <td>{{ Trackers.login_date|date:"F d, Y" }}</td>
+            </tr>
+        </table>
+        
+        <p class="text-muted">This action cannot be undone.</p>
+    </div>
+
+    <form method="POST" action="{% url 'accounts:account-Tracker_delete' pk=Trackers.pk %}" class="text-center mt-4">
+        {% csrf_token %}
+        
+        <button type="submit" class="btn btn-danger btn-lg px-5">
+            Yes, Delete This Record
+        </button>
+        
+        <a href="{% url 'accounts:account-Tracker_list' %}" class="btn btn-secondary btn-lg ml-3 px-5">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

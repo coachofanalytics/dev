@@ -1,6 +1,7 @@
 import math
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
 from .forms import UserForm, LoginForm
@@ -312,4 +313,16 @@ def Tracker_update(request,pk):
         form= Trackerform(instance=Trackers) 
     return render(request, "accounts/admin/tracker_update.html", {"form": form})        
 
+
+
+
+@staff_member_required
+
+def Tracker_delete(request,pk):
+    Trackers=get_object_or_404(Tracker,pk=pk)
+    if request.method =='POST':
+        Trackers.delete()
+        messages.success(request, 'Record Delete successfully!')
+        return redirect('accounts:account-Tracker_list')
+    return render(request, "accounts/admin/tracker_delete.html", {"Trackers": Trackers})        
 

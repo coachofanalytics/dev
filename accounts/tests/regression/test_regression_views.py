@@ -239,3 +239,127 @@ class TrackerUpdateRegressionTest(TestCase):
             'task', 
             'Ensure this value has at most 25 characters (it has 26).'
         )        
+
+
+
+
+# accounts/tests/integration/test_integration_views.py (Add the following methods to your existing integration class)
+
+# ... (Assume you have the setUpTestData that defines user_staff, user_normal, and test_tracker) ...
+
+# ----------------------------------------------
+# New Access Denied: Anonymous User (Delete View)
+# ----------------------------------------------
+
+def test_tracker_delete_get_redirects_if_not_logged_in(self):
+    """
+    Test that an unauthenticated user is redirected to the login page 
+    when trying to access the delete confirmation page (GET request).
+    """
+    response = self.client.get(self.delete_url)
+    
+    self.assertEqual(response.status_code, 302)
+    # Check if the response redirects to EITHER the custom login OR admin login
+    expected_redirect = reverse('accounts:account-login') + f'?next={self.delete_url}'
+    self.assertRedirects(response, expected_redirect, target_status_code=200)
+
+def test_tracker_delete_post_redirects_if_not_logged_in(self):
+    """
+    Test that an unauthenticated user is redirected to the login page 
+    when trying to POST (execute deletion). The record must not be deleted.
+    """
+    initial_count = Tracker.objects.count()
+    response = self.client.post(self.delete_url)
+    
+    self.assertEqual(response.status_code, 302)
+    
+    # Crucial check: Deletion must not happen
+    self.assertEqual(Tracker.objects.count(), initial_count) 
+
+
+# ----------------------------------------------
+# New Access Denied: Normal (Non-Staff) User (Delete View)
+# ----------------------------------------------
+
+def test_tracker_delete_denied_for_normal_user_get(self):
+    """
+    Test that a logged-in non-staff user is denied access to the delete confirmation page (GET).
+    """
+    self.client.login(username='user_normal', password='testpassword123')
+    response = self.client.get(self.delete_url)
+    
+    # If using @staff_member_required, non-staff users are treated like anonymous and redirected.
+    self.assertEqual(response.status_code, 302) 
+    
+    # Check the redirect target (usually to login or an error page)
+    expected_redirect = reverse('accounts:account-login') + f'?next={self.delete_url}'
+    self.assertRedirects(response, expected_redirect, target_status_code=200)
+
+def test_tracker_delete_denied_for_normal_user_post(self):
+    """
+    Test that a logged-in non-staff user is denied access to POST the deletion. 
+    The record must not be deleted.
+    """
+    self.client.login(username='user_normal', password='testpassword123')
+    initial_count = Tracker.objects.count()
+
+    response = self.client.post(self.delete_url)
+    
+    self.assertEqual(response.status_code, 302)
+    
+    # Crucial check: Deletion must not happen
+    self.assertEqual(Tracker.objects.count(), initial_count) 
+
+
+# ----------------------------------------------
+# New Access Granted: Staff User (Delete View)
+# ----------------------------------------------
+
+def test_tracker_delete_accessible_by_staff_user(self):
+    """
+    Test that a logged-in staff user is granted access to the delete view (GET request).
+    """
+    # Log in the staff user
+    self.client.login(username='user_staff', password='testpassword123')
+    
+    # Access the view (GET)
+    response = self.client.get(self.delete_url)
+    
+    # The staff user should receive a successful status code
+    self.assertEqual(response.status_code, 200)
+    # Check for the key confirmation text
+    self.assertContains(response, self.test_tracker.employee)
+
+def test_tracker_delete_post_succeeds_for_staff_user(self):
+    """
+    Test that a logged-in staff user can successfully POST to delete a record.
+    """
+    # Log in the staff user
+    self.client.login(username='user_staff', password='testpassword123')
+    
+    # Create a fresh record to ensure this test doesn't interfere with others
+    tracker_to_delete_test = Tracker.objects.create(
+        employee='Staff Delete Test', 
+        category='Test', 
+        sub_category='Delete',
+        task='Temp record',
+        plan='Temp plan',
+        login_date=timezone.now(),
+        start_time=time(12, 0, 0),
+        duration=30,
+        time=0.5
+    )
+    delete_url_test = reverse('accounts:account-Tracker_delete', args=[tracker_to_delete_test.pk])
+    initial_count = Tracker.objects.count()
+
+    # Access the view (POST)
+    response = self.client.post(delete_url_test, follow=True)
+    
+    # Check 1: Successful deletion leads to a redirect
+    self.assertRedirects(response, self.list_url)
+    
+    # Check 2: Database count decreased
+    self.assertEqual(Tracker.objects.count(), initial_count - 1) 
+    
+    # Check 3: Record is truly gone 
+    self.assertFalse(Tracker.objects.filter(pk=tracker_to_delete_test.pk).exists())

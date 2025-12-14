@@ -331,3 +331,100 @@ class TrackerUpdateViewTest(TestCase):
             # This error message assumes max_length=25 from previous debugging
             'Ensure this value has at most 25 characters (it has 40).' 
         )    
+
+
+
+# accounts/tests/unit/test_unit_views.py (Add this new class)
+
+# ... (Keep the previous classes: TrackerListViewTest, TrackerCreateViewTest, TrackerUpdateViewTest) ...
+
+# ---------------------------------------------------------------------------------
+# TrackerDeleteViewTest 
+# ---------------------------------------------------------------------------------
+
+@override_settings(LOGIN_URL='/accounts/login/') 
+class TrackerDeleteViewTest(TestCase):
+    """
+    Unit tests for the Tracker_delete view function.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create users
+        cls.staff_user = User.objects.create_user(
+            username='staff_delete', 
+            email='staff_delete@example.com',
+            password='testpassword123',
+            is_staff=True
+        )
+        
+        # Create an existing Tracker object for deletion tests
+        cls.tracker_to_delete = Tracker.objects.create(
+            employee='To Be Deleted', 
+            category='Cleanup', 
+            sub_category='Unit Test',
+            task='Verification of delete logic',
+            plan='Ensure record count decreases',
+            login_date=timezone.now(),
+            start_time=time(8, 0, 0),
+            duration=60,
+            time=1
+        )
+        
+        # Define URLs
+        cls.delete_url = reverse('accounts:account-Tracker_delete', args=[cls.tracker_to_delete.pk])
+        cls.list_url = reverse('accounts:account-Tracker_list')
+
+    def setUp(self):
+        # Log in the staff user for all tests
+        self.client.login(username='staff_delete', password='testpassword123')
+
+    # ====================================================================
+    # 1. GET Request Test (Confirmation Page Rendering)
+    # ====================================================================
+
+    def test_get_tracker_delete_renders_correct_template_and_data(self):
+        """Test GET request renders the confirmation template."""
+        response = self.client.get(self.delete_url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/admin/tracker_delete.html")
+        
+        # Check if the context contains the Tracker object and its data is visible
+        self.assertIn('Trackers', response.context)
+        self.assertEqual(response.context['Trackers'], self.tracker_to_delete)
+        self.assertContains(response, "To Be Deleted")
+
+    def test_get_non_existent_tracker_returns_404(self):
+        """Test accessing a non-existent PK returns 404."""
+        non_existent_url = reverse('accounts:account-Tracker_delete', args=[999])
+        response = self.client.get(non_existent_url)
+        
+        self.assertEqual(response.status_code, 404)
+
+    # ====================================================================
+    # 2. POST Request Test (Successful Deletion)
+    # ====================================================================
+
+    def test_post_tracker_delete_successfully_deletes_record(self):
+        """Test POST request successfully deletes the object and redirects."""
+        # Ensure the record exists before POST
+        self.assertTrue(Tracker.objects.filter(pk=self.tracker_to_delete.pk).exists())
+        initial_count = Tracker.objects.count()
+
+        response = self.client.post(self.delete_url, follow=True)
+        
+        # Check 1: Redirect to the list view
+        self.assertRedirects(response, self.list_url)
+
+        # Check 2: Database count must decrease by 1
+        self.assertEqual(Tracker.objects.count(), initial_count - 1)
+        
+        # Check 3: The record must no longer exist in the database
+        self.assertFalse(Tracker.objects.filter(pk=self.tracker_to_delete.pk).exists())
+        
+        # Check 4: Success message is shown
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Record Delete successfully!')
+                
