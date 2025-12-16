@@ -48,7 +48,7 @@
                 <div class="p-8 md:p-12 lg:p-16">
                     <h1 class="text-5xl main-heading mb-4">EDUCATION & TRAINING</h1>
                     <h2 class="text-xl font-medium text-gray-200 mb-8">Empower your future with access to scholarships, professional development, and skills training tailored for global success.</h2>
-                    <a href="#" onclick="setView('scholarship'); return false;" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300">FIND YOUR SCHOLARSHIP</a>
+                    <a href="{% url 'main:scholarship_search' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300">FIND YOUR SCHOLARSHIP</a>
                 </div>
                 <div class="w-full h-full hero-image-container">
                     <img id="image-hero" src="{% static 'main/img/education/education-hero.jpg' %}" alt="Education Hero" class="w-full h-full object-cover loading-placeholder" style="max-height:400px; min-height:400px;">
@@ -76,7 +76,7 @@
                         <li>Assistance with foreign credential recognition and equivalency</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="#" onclick="setView('scholarship'); return false;" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">View Scholarship Database</a>
+                        <a href="{% url 'main:scholarship_search' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">View Scholarship Database</a>
                     </div>
                 </div>
             </div>
