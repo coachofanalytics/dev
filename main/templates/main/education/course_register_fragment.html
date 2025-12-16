@@ -1,0 +1,154 @@
+<div class="max-w-6xl mx-auto py-12 px-4" id="course-register-fragment">
+  <header class="mb-8">
+    <h1 class="text-4xl font-extrabold text-gray-900">Course Registration & Payments (Demo)</h1>
+    <p class="mt-2 text-gray-600">Browse available courses, add new course types (client-side), and try the demo PayPal button. Payments are not functional in this demo.</p>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2">
+      <div id="courses-list" class="space-y-4">
+        {% for c in courses %}
+        <div class="bg-white shadow rounded-lg p-4 flex items-start justify-between">
+          <div>
+            <h3 class="text-lg font-semibold">{{ c.title }}</h3>
+            <p class="text-sm text-gray-500">{{ c.category }} · {{ c.format }} · {{ c.duration }}</p>
+            <p class="mt-2 font-bold text-brand-green">Price: ${{ c.price }}</p>
+          </div>
+          <div class="flex flex-col items-end">
+            <!-- Demo PayPal button -->
+            <button class="paypal-mock inline-flex items-center bg-yellow-300 hover:bg-yellow-400 text-gray-800 font-semibold px-3 py-2 rounded-md shadow" data-title="{{ c.title }}" data-price="{{ c.price }}">
+              <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 6h6l-1 6h-6z" fill="#003087"/></svg>
+              Pay with PayPal
+            </button>
+            <small class="text-xs text-gray-500 mt-2">Demo only — no transaction will occur</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <aside class="bg-white rounded-lg shadow p-4">
+      <h4 class="font-semibold mb-3">Add a Course (client-side)</h4>
+      <form id="add-course-form" class="space-y-3">
+        <div>
+          <label class="text-sm text-gray-700">Title</label>
+          <input id="course-title" type="text" class="w-full border rounded px-3 py-2" placeholder="Course title" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Category</label>
+          <input id="course-category" type="text" class="w-full border rounded px-3 py-2" placeholder="Category" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-sm text-gray-700">Duration</label>
+            <input id="course-duration" type="text" class="w-full border rounded px-3 py-2" placeholder="e.g. 6 Weeks" />
+          </div>
+          <div>
+            <label class="text-sm text-gray-700">Format</label>
+            <input id="course-format" type="text" class="w-full border rounded px-3 py-2" placeholder="Online / Blended" />
+          </div>
+        </div>
+        <div>
+          <label class="text-sm text-gray-700">Price (USD)</label>
+          <input id="course-price" type="number" step="0.01" class="w-full border rounded px-3 py-2" placeholder="e.g. 49.99" />
+        </div>
+        <div class="text-right">
+          <button id="add-course-btn" type="button" class="bg-brand-blue text-white px-4 py-2 rounded-md">Add Course</button>
+        </div>
+      </form>
+
+      <hr class="my-4" />
+
+      <h4 class="font-semibold mb-2">How to Register</h4>
+      <ol class="list-decimal list-inside text-sm text-gray-700">
+        <li>Choose a course from the list on the left.</li>
+        <li>Click "Pay with PayPal" to start a demo payment flow (this is a mock in the UI).</li>
+        <li>Provide your contact details in the checkout form (if enabled later).</li>
+        <li>After payment completes, you'll receive a confirmation (in a real integration).</li>
+      </ol>
+    </aside>
+  </div>
+
+  <!-- Simple modal for demo PayPal confirmation -->
+  <div id="paypal-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="display:none;">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+      <h3 class="text-xl font-semibold mb-2">PayPal Demo</h3>
+      <p id="paypal-modal-text" class="text-sm text-gray-700 mb-4">You clicked pay for <strong></strong></p>
+      <div class="text-right">
+        <button id="paypal-close" class="bg-gray-200 px-3 py-2 rounded mr-2">Close</button>
+        <button id="paypal-confirm" class="bg-brand-green text-white px-4 py-2 rounded">Simulate Payment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const list = document.getElementById('courses-list');
+    const addBtn = document.getElementById('add-course-btn');
+    const modal = document.getElementById('paypal-modal');
+    const modalText = document.getElementById('paypal-modal-text');
+    let nextId = 1000 + Math.floor(Math.random()*1000);
+
+    function createCourseCard(course){
+      const wrap = document.createElement('div');
+      wrap.className = 'bg-white shadow rounded-lg p-4 flex items-start justify-between';
+      wrap.innerHTML = `
+        <div>
+          <h3 class="text-lg font-semibold">${course.title}</h3>
+          <p class="text-sm text-gray-500">${course.category} · ${course.format} · ${course.duration}</p>
+          <p class="mt-2 font-bold text-brand-green">Price: $${Number(course.price).toFixed(2)}</p>
+        </div>
+        <div class="flex flex-col items-end">
+          <button class="paypal-mock inline-flex items-center bg-yellow-300 hover:bg-yellow-400 text-gray-800 font-semibold px-3 py-2 rounded-md shadow" data-title="${course.title}" data-price="${Number(course.price).toFixed(2)}">
+            <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 6h6l-1 6h-6z" fill="#003087"/></svg>
+            Pay with PayPal
+          </button>
+          <small class="text-xs text-gray-500 mt-2">Demo only — no transaction will occur</small>
+        </div>
+      `;
+      return wrap;
+    }
+
+    // Attach click handler to existing buttons
+    function bindPayButtons(root){
+      const btns = root.querySelectorAll('.paypal-mock');
+      btns.forEach(b => {
+        b.addEventListener('click', function(){
+          const title = b.getAttribute('data-title');
+          const price = b.getAttribute('data-price');
+          modalText.innerHTML = `You clicked pay for <strong>${title}</strong> — <span class="font-semibold">$${price}</span>`;
+          modal.style.display = 'flex';
+        });
+      });
+    }
+
+    // Initial binding for server-rendered items
+    bindPayButtons(list);
+
+    addBtn.addEventListener('click', function(){
+      const title = document.getElementById('course-title').value.trim();
+      const category = document.getElementById('course-category').value.trim() || 'General';
+      const duration = document.getElementById('course-duration').value.trim() || 'TBD';
+      const format = document.getElementById('course-format').value.trim() || 'Online';
+      const price = parseFloat(document.getElementById('course-price').value) || 0;
+      if(!title){
+        alert('Please enter a course title');
+        return;
+      }
+      const course = { id: nextId++, title, category, duration, format, price };
+      const card = createCourseCard(course);
+      list.appendChild(card);
+      bindPayButtons(card);
+      // clear form
+      document.getElementById('add-course-form').reset();
+    });
+
+    document.getElementById('paypal-close').addEventListener('click', function(){ modal.style.display='none'; });
+    document.getElementById('paypal-confirm').addEventListener('click', function(){
+      alert('This simulates a payment. In a real integration we would redirect to PayPal or use their JS SDK.');
+      modal.style.display='none';
+    });
+
+  })();
+</script>
