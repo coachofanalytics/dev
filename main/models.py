@@ -197,16 +197,21 @@ class SafetyAlertSubscription(models.Model):
 
 # Emergency help line configuration
 class EmergencyHotlines(models.Model):
-    name = models.CharField(max_length=100, help_text="Display label, e.g., Global Hotline")
-    number = models.CharField(max_length=32, help_text="E.164 like +15551234567 or local format")
-    is_active = models.BooleanField(default=True)
-    sort_order = models.PositiveIntegerField(default=0)
+    # Updated per request: use `name`, `phone`, `active`, `sort_order`.
+    # - `name`: label of the hotline, up to 255 chars.
+    # - `phone`: contact number, up to 20 chars.
+    # - `active`: boolean flag to mark active/inactive (defaults to True).
+    # - `sort_order`: integer used for ordering (defaults to 0).
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    active = models.BooleanField(default=True)
+    sort_order = models.IntegerField(default=0)
 
     class Meta:
         ordering = ["sort_order", "id"]
 
     def __str__(self):
-        return f"{self.name} ({self.number})"
+        return f"{self.name} ({self.phone})"
 
 
 class StaffContact(models.Model):
