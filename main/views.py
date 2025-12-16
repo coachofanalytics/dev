@@ -219,8 +219,9 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
         return reverse('main:images') 
     
 def crisis_page(request):
-    hotlines = EmergencyHotlines.objects.filter(is_active=True).order_by("sort_order", "id")
+    hotlines = EmergencyHotlines.objects.filter(active=True).order_by("sort_order", "id")
     return render(request, "main/crisis.html", {"hotlines": hotlines})
+
 
 
 

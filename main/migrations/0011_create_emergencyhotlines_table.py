@@ -78,9 +78,10 @@ def drop_table_if_exists(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("main", "0010_auto_20251126_1849"),
+        ("main", "0003_rename_emergencyhotline_emergencyhotlines"),
     ]
 
     operations = [
         migrations.RunPython(create_table_if_missing, reverse_code=drop_table_if_exists),
     ]
+
