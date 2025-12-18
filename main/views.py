@@ -640,5 +640,5 @@ def scholarship_search(request):
 #>>>>>>> 25.10_DC48_UAT_ND
 
 def testimonial_list(request):
-    testimonial = Testimonial.objects.all()
+    testimonial = Testimonial.objects.all() 123
     return render(request, "main/snippets_templates/table/testimonial_list.html",{"testimonial":testimonial})
