@@ -14,7 +14,8 @@ from django.db.models import Q, Count, Sum, Avg, F
 
 from management.models import TaskHistory, Task
 from shared_core.users import CustomerUser
-from management.services.simple_ai_service import SimpleAIService
+from shared_core.interfaces.ai_service import AIServiceInterface
+from shared_core.services.adapters.noop_ai_adapter import NoOpAIServiceAdapter
 
 
 class IntelligentAssignmentService:
@@ -22,7 +23,7 @@ class IntelligentAssignmentService:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.ai_service = SimpleAIService()
+        self.ai_service = self._get_ai_service()
         
         # Assignment strategy weights
         self.strategy_weights = {
@@ -32,6 +33,21 @@ class IntelligentAssignmentService:
             'availability': 0.1,     # 10% - Availability and schedule
             'team_dynamics': 0.05    # 5% - Team collaboration factors
         }
+    
+    def _get_ai_service(self) -> AIServiceInterface:
+        """
+        Resolve AI service implementation.
+        
+        Tries to use AIServiceAdapter from ai_services app if available,
+        otherwise falls back to NoOpAIServiceAdapter for graceful degradation.
+        """
+        try:
+            from ai_services.adapters.ai_service_adapter import AIServiceAdapter
+            self.logger.info("Using AIServiceAdapter from ai_services")
+            return AIServiceAdapter()
+        except (ImportError, AttributeError, Exception):
+            self.logger.info("ai_services not available, using NoOpAIServiceAdapter")
+            return NoOpAIServiceAdapter()
     
     def assign_task_optimally(self, task_data: Dict[str, Any], available_employees: List[int] = None) -> Dict[str, Any]:
         """Assign a task optimally to the best available employee."""

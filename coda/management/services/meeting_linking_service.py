@@ -17,7 +17,8 @@ from django.contrib.auth import get_user_model
 
 from management.models import Task, TaskHistory, TaskLinks, TaskCategory
 from shared_core.users import CustomerUser
-from ai_services.models import GotoMeetings, MeetingActivityMapping
+from shared_core.interfaces.meeting_service import MeetingServiceInterface
+from shared_core.services.adapters.noop_meeting_adapter import NoOpMeetingServiceAdapter
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -39,10 +40,26 @@ class MeetingLinkingService:
         self.logger = logger
         self.min_confidence_threshold = 0.6  # 60% confidence minimum for auto-link
         self.auto_link_threshold = 0.8  # 80% confidence for automatic linking
+        self.meeting_service = self._get_meeting_service()
+    
+    def _get_meeting_service(self) -> MeetingServiceInterface:
+        """
+        Resolve meeting service implementation.
+        
+        Tries to use MeetingServiceAdapter from ai_services app if available,
+        otherwise falls back to NoOpMeetingServiceAdapter for graceful degradation.
+        """
+        try:
+            from ai_services.adapters.meeting_service_adapter import MeetingServiceAdapter
+            self.logger.info("Using MeetingServiceAdapter from ai_services")
+            return MeetingServiceAdapter()
+        except ImportError:
+            self.logger.info("ai_services not available, using NoOpMeetingServiceAdapter")
+            return NoOpMeetingServiceAdapter()
         
     def link_meeting_to_tasks(
         self,
-        meeting: GotoMeetings,
+        meeting_id: str,
         attendee: CustomerUser,
         attendee_duration: int
     ) -> Dict[str, Any]:
@@ -50,7 +67,7 @@ class MeetingLinkingService:
         Intelligently link a meeting to tasks for a specific attendee.
         
         Args:
-            meeting: GotoMeetings instance
+            meeting_id: Meeting ID (string) - can be used to get meeting via interface
             attendee: CustomerUser who attended
             attendee_duration: Duration in minutes
             
@@ -58,10 +75,20 @@ class MeetingLinkingService:
             Dict with linking results and confidence scores
         """
         try:
-            self.logger.info(f"Linking meeting {meeting.meeting_id} for {attendee.username}")
+            self.logger.info(f"Linking meeting {meeting_id} for {attendee.username}")
+            
+            # Get meeting via interface
+            meeting_dict = self.meeting_service.get_meeting_by_id(meeting_id)
+            if not meeting_dict:
+                return {
+                    'success': False,
+                    'message': f'Meeting {meeting_id} not found',
+                    'matches': [],
+                    'auto_linked': False
+                }
             
             # Get all potential task matches with confidence scores
-            matches = self._find_task_matches(meeting, attendee, attendee_duration)
+            matches = self._find_task_matches(meeting_dict, attendee, attendee_duration)
             
             if not matches:
                 return {
@@ -80,8 +107,8 @@ class MeetingLinkingService:
             
             result = {
                 'success': True,
-                'meeting_id': meeting.meeting_id,
-                'meeting_topic': meeting.meeting_topic,
+                'meeting_id': meeting_dict.get('meeting_id', meeting_id),
+                'meeting_topic': meeting_dict.get('meeting_topic', 'Unknown Meeting'),
                 'attendee_id': attendee.id,
                 'attendee_name': attendee.username,
                 'attendee_duration': attendee_duration,
@@ -94,7 +121,7 @@ class MeetingLinkingService:
             
             # Auto-link if confidence is high enough
             if auto_link:
-                link_result = self._create_task_link(meeting, attendee, best_match['task'])
+                link_result = self._create_task_link(meeting_dict, attendee, best_match['task'])
                 result['link_created'] = link_result.get('success', False)
                 result['task_link_id'] = link_result.get('task_link_id')
                 
@@ -115,15 +142,18 @@ class MeetingLinkingService:
     
     def _find_task_matches(
         self,
-        meeting: GotoMeetings,
+        meeting_dict: Dict[str, Any],
         attendee: CustomerUser,
         attendee_duration: int
     ) -> List[Dict[str, Any]]:
         """Find all potential task matches with confidence scores."""
         matches = []
         
+        meeting_id = meeting_dict.get('meeting_id', '')
+        meeting_topic = meeting_dict.get('meeting_topic', '')
+        
         # Strategy 1: Exact mapping (highest confidence)
-        exact_match = self._check_exact_mapping(meeting)
+        exact_match = self._check_exact_mapping(meeting_id)
         if exact_match:
             task = self._get_task_by_activity(exact_match['activity_name'], attendee)
             if task:
@@ -135,15 +165,15 @@ class MeetingLinkingService:
                 })
         
         # Strategy 2: Keyword matching
-        keyword_matches = self._keyword_match(meeting.meeting_topic, attendee)
+        keyword_matches = self._keyword_match(meeting_topic, attendee)
         matches.extend(keyword_matches)
         
         # Strategy 3: Historical patterns
-        historical_matches = self._historical_pattern_match(meeting, attendee)
+        historical_matches = self._historical_pattern_match(meeting_dict, attendee)
         matches.extend(historical_matches)
         
         # Strategy 4: Category-based matching
-        category_matches = self._category_match(meeting, attendee)
+        category_matches = self._category_match(meeting_dict, attendee)
         matches.extend(category_matches)
         
         # Remove duplicates and combine confidence scores
@@ -151,31 +181,18 @@ class MeetingLinkingService:
         
         return unique_matches
     
-    def _check_exact_mapping(self, meeting: GotoMeetings) -> Optional[Dict[str, Any]]:
+    def _check_exact_mapping(self, meeting_id: str) -> Optional[Dict[str, Any]]:
         """Check if meeting has exact mapping in MeetingActivityMapping."""
         try:
-            # Try exact meeting ID match
-            mapping = MeetingActivityMapping.objects.filter(
-                meeting_id_pattern=meeting.meeting_id,
-                is_active=True
-            ).first()
+            # Use meeting service interface to find mapping
+            mapping_dict = self.meeting_service.find_exact_mapping(meeting_id)
             
-            if mapping:
+            if mapping_dict:
                 return {
-                    'activity_name': mapping.activity_name,
-                    'min_duration': mapping.min_duration_minutes,
-                    'points': mapping.task_points
+                    'activity_name': mapping_dict['activity_name'],
+                    'min_duration': mapping_dict.get('min_duration_minutes', 0),
+                    'points': mapping_dict.get('task_points', 0)
                 }
-            
-            # Try pattern matching (if pattern contains wildcards)
-            mappings = MeetingActivityMapping.objects.filter(is_active=True)
-            for mapping in mappings:
-                if self._pattern_match(meeting.meeting_id, mapping.meeting_id_pattern):
-                    return {
-                        'activity_name': mapping.activity_name,
-                        'min_duration': mapping.min_duration_minutes,
-                        'points': mapping.task_points
-                    }
             
             return None
             
@@ -232,7 +249,7 @@ class MeetingLinkingService:
     
     def _historical_pattern_match(
         self,
-        meeting: GotoMeetings,
+        meeting_dict: Dict[str, Any],
         attendee: CustomerUser
     ) -> List[Dict[str, Any]]:
         """Match based on historical meeting-task links."""
@@ -249,7 +266,7 @@ class MeetingLinkingService:
                 return matches
             
             # Find patterns: meetings with similar topics linked to same tasks
-            topic_lower = meeting.meeting_topic.lower()
+            topic_lower = meeting_dict.get('meeting_topic', '').lower()
             
             # Group by task
             task_link_counts = {}
@@ -288,7 +305,7 @@ class MeetingLinkingService:
     
     def _category_match(
         self,
-        meeting: GotoMeetings,
+        meeting_dict: Dict[str, Any],
         attendee: CustomerUser
     ) -> List[Dict[str, Any]]:
         """Match based on meeting category/type."""
@@ -307,7 +324,7 @@ class MeetingLinkingService:
             'review': 'Review'
         }
         
-        topic_lower = (meeting.meeting_topic or '').lower()
+        topic_lower = (meeting_dict.get('meeting_topic') or '').lower()
         
         for pattern, activity_name in meeting_type_patterns.items():
             if pattern in topic_lower:
@@ -400,7 +417,7 @@ class MeetingLinkingService:
     
     def _create_task_link(
         self,
-        meeting: GotoMeetings,
+        meeting_dict: Dict[str, Any],
         attendee: CustomerUser,
         task: Task
     ) -> Dict[str, Any]:
@@ -408,13 +425,17 @@ class MeetingLinkingService:
         try:
             from django.utils.text import slugify
             
+            meeting_topic = meeting_dict.get('meeting_topic', 'Unknown Meeting')
+            meeting_id = meeting_dict.get('meeting_id', '')
+            recording_url = meeting_dict.get('recording_url', '')
+            
             task_link, created = TaskLinks.objects.get_or_create(
                 task=task,
                 added_by=attendee,
-                link_name=slugify(f"{meeting.meeting_topic}_{attendee.username}"),
+                link_name=slugify(f"{meeting_topic}_{attendee.username}"),
                 defaults={
-                    'description': f"Attended meeting '{meeting.meeting_topic}' (ID: {meeting.meeting_id})",
-                    'link': meeting.recording or '',
+                    'description': f"Attended meeting '{meeting_topic}' (ID: {meeting_id})",
+                    'link': recording_url,
                     'linkpassword': 'No Password Needed',
                     'is_active': True,
                     'is_featured': True,
@@ -453,9 +474,11 @@ class MeetingLinkingService:
         try:
             cutoff_date = timezone.now() - timedelta(days=days)
             
-            # Get all meetings in period
-            meetings = GotoMeetings.objects.filter(created_at__gte=cutoff_date)
-            total_meetings = meetings.count()
+            # Get all meetings in period via interface
+            start_date = cutoff_date.date()
+            end_date = timezone.now().date()
+            meetings = self.meeting_service.get_meetings_in_date_range(start_date, end_date)
+            total_meetings = len(meetings)
             
             # Get linked meetings
             linked_meetings = TaskLinks.objects.filter(

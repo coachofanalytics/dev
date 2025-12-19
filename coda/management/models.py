@@ -278,6 +278,225 @@ class TaskCategory(models.Model):
         return self.title
 
 
+class TaskSubcategory(models.Model):
+    category = models.ForeignKey(
+        TaskCategory,
+        on_delete=models.CASCADE,
+        related_name="subcategories",
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = [("category", "name")]
+        verbose_name = "Task Subcategory"
+        verbose_name_plural = "Task Subcategories"
+
+    def __str__(self):
+        return f"{self.category.title} / {self.name}"
+
+
+class ActivityType(TimeStampedModel):
+    """
+    Canonical definition of an activity that Tasks can reference.
+
+    This is the master data for:
+    - Name / slug
+    - Department and high-level category
+    - Optional subcategory
+    - Units (session, hour, requirement, etc.)
+    - Unit rate, monthly target, points per unit
+    - Billable vs internal flag
+    """
+
+    class UnitType(models.TextChoices):
+        SESSION = "session", "Session"
+        HOUR = "hour", "Hour"
+        MEETING = "meeting", "Meeting"
+        WORK_BLOCK = "work_block", "Work Block"
+        ITEM = "item", "Item"
+        APPROVED_VIDEO = "approved_video", "Approved Video"
+        CANDIDATE_CYCLE = "candidate_cycle", "Candidate Cycle"
+        MONTH = "month", "Month"
+        REQUIREMENT = "requirement", "Requirement"
+        OTHER = "other", "Other"
+
+    name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+
+    description = models.TextField(blank=True)
+
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="activity_types",
+    )
+    category = models.ForeignKey(
+        TaskCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="activity_types",
+    )
+    subcategory = models.ForeignKey(
+        TaskSubcategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="activity_types",
+    )
+
+    unit_type = models.CharField(
+        max_length=32,
+        choices=UnitType.choices,
+        default=UnitType.SESSION,
+    )
+    unit_rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text=_("Default earning per unit (e.g. per session/hour)."),
+    )
+    monthly_target_units = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Target number of units per month for this activity."),
+    )
+    points_per_unit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text=_("Default points earned per unit."),
+    )
+
+    is_billable = models.BooleanField(
+        default=False,
+        help_text=_("Whether this activity is billable client work."),
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Activity Type"
+        verbose_name_plural = "Activity Types"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = unique_slug_generator(self)
+        super().save(*args, **kwargs)
+
+    @property
+    def max_points_per_month(self) -> Decimal:
+        """
+        Compute maximum points per month based on monthly_target_units and points_per_unit.
+        
+        Returns:
+            Decimal: Monthly target units * points per unit, or 0 if either is None/0
+        """
+        if self.monthly_target_units is None or self.points_per_unit is None:
+            return Decimal('0')
+        if self.monthly_target_units == 0 or self.points_per_unit == 0:
+            return Decimal('0')
+        return Decimal(str(self.monthly_target_units)) * Decimal(str(self.points_per_unit))
+
+    @property
+    def max_earning_per_month(self) -> Decimal:
+        """
+        Compute maximum earning per month based on monthly_target_units and unit_rate.
+        
+        Returns:
+            Decimal: Monthly target units * unit rate, or 0 if either is None/0
+        """
+        if self.monthly_target_units is None or self.unit_rate is None:
+            return Decimal('0')
+        if self.monthly_target_units == 0 or self.unit_rate == 0:
+            return Decimal('0')
+        return Decimal(str(self.monthly_target_units)) * Decimal(str(self.unit_rate))
+
+
+# ==================== AI ACTIVITY METADATA ====================
+class ActivityDefinition(TimeStampedModel):
+    """
+    AI metadata and context for ActivityType definitions.
+    
+    This model provides AI-specific information for each activity type:
+    - AI context descriptions for prompts
+    - Prompt template names
+    - Quality criteria and thresholds
+    - Coaching templates
+    - Skill requirements for intelligent assignment
+    - Evidence requirements
+    
+    One-to-one relationship with ActivityType - each ActivityType can have
+    one ActivityDefinition (optional).
+    """
+    
+    activity_type = models.OneToOneField(
+        ActivityType,
+        on_delete=models.CASCADE,
+        related_name='ai_definition',
+        help_text=_("The ActivityType this definition extends")
+    )
+    
+    ai_context = models.TextField(
+        blank=True,
+        help_text=_("High-level description of what this activity means in CODA, for AI prompts. "
+                   "This helps AI understand the activity's purpose and context.")
+    )
+    
+    prompt_template_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=_("Default prompt template name for this activity (e.g., 'activity.bi_session.assignment_prompt')")
+    )
+    
+    quality_criteria = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_("JSON dict defining what constitutes 'good' evidence for this activity. "
+                   "Example: {'requires_photos': True, 'min_evidence_items': 3}")
+    )
+    
+    coaching_template_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=_("Default coaching template name for this activity (e.g., 'activity.bi_session.coaching_prompt')")
+    )
+    
+    skill_requirements = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_("List of skills required for this activity (for intelligent assignment). "
+                   "Example: ['data_analysis', 'sql', 'reporting']")
+    )
+    
+    evidence_requirements = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_("List of required evidence types for this activity. "
+                   "Example: ['before_photos', 'after_photos', 'summary_notes']")
+    )
+    
+    quality_thresholds = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_("JSON dict defining quality score thresholds for this activity. "
+                   "Example: {'promotion_weight': 'high', 'min_quality_for_promotion': 0.8}")
+    )
+    
+    class Meta:
+        verbose_name = "Activity Definition"
+        verbose_name_plural = "Activity Definitions"
+        ordering = ['activity_type__name']
+    
+    def __str__(self):
+        return f"AI Definition for {self.activity_type.name if self.activity_type else 'Unknown Activity'}"
+
+
 class TaskQuerySet(models.query.QuerySet):
     def active(self):
         return self.filter(is_active=True)
@@ -354,6 +573,26 @@ class Task(models.Model):
         # limit_choices_to=Q(is_staff=True) | Q(is_admin=True) | Q(is_superuser=True)
         # and Q(is_active=True),
         default=999,
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks",
+        help_text=_("Department this task belongs to (snapshot)."),
+    )
+    activity_type = models.ForeignKey(
+        ActivityType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks",
+        help_text=_("Canonical activity type for this task (optional)."),
+    )
+    is_client_project = models.BooleanField(
+        default=False,
+        help_text=_("True if this task is part of a client project / billable work."),
     )
     activity_name = models.CharField(
         verbose_name=_("Activity Name"),
@@ -464,13 +703,67 @@ class Task(models.Model):
 
     @property
     def get_pay(self):
+        """
+        Calculate payment for this task.
+        
+        If activity_type is set, uses ActivityType-based calculation:
+        - pay = (unit_rate * monthly_target_units) * (task.point / expected_points_for_full_target)
+        - expected_points_for_full_target = monthly_target_units * points_per_unit
+        
+        Otherwise, uses legacy calculation based on mxpoint and mxearning.
+        """
+        # Prefer ActivityType-based calculation if available
+        if self.activity_type and self.activity_type.is_active:
+            return self._get_pay_from_activity_type()
+        
+        # Fall back to legacy calculation
+        return self._get_pay_legacy()
+    
+    def _get_pay_from_activity_type(self):
+        """Calculate pay using ActivityType configuration."""
+        activity_type = self.activity_type
+        
+        # Calculate expected points for full target
+        expected_points_for_full_target = (
+            Decimal(str(activity_type.monthly_target_units)) * 
+            Decimal(str(activity_type.points_per_unit))
+        )
+        
+        # If no expected points, return 0
+        if expected_points_for_full_target <= 0:
+            return Decimal('0')
+        
+        # Calculate max earning for full target
+        max_earning_for_type = activity_type.max_earning_per_month
+        
+        # Calculate proportional pay based on task.point vs expected_points
+        try:
+            # If task.point exceeds expected_points, cap at max_earning
+            if Decimal(str(self.point)) >= expected_points_for_full_target:
+                earning = max_earning_for_type
+            else:
+                # Proportional pay: max_earning * (points_earned / points_for_full_target)
+                earning = max_earning_for_type * (
+                    Decimal(str(self.point)) / expected_points_for_full_target
+                )
+        except (ZeroDivisionError, TypeError, ValueError):
+            earning = Decimal('0')
+        
+        # Apply late penalty (same as legacy logic)
+        compute_pay = earning * Decimal(self.late_penalty)
+        pay = round(compute_pay, 2)
+        
+        return pay
+    
+    def _get_pay_legacy(self):
+        """Legacy pay calculation using mxpoint and mxearning."""
         if self.point > self.mxpoint:
-            return 0
+            return Decimal('0')
         else:
             try:
                 Earning = round(Decimal(self.point / self.mxpoint) * self.mxearning, 2)
             except Exception as ZeroDivisionError:
-                Earning = 0
+                Earning = Decimal('0')
             compute_pay = Earning * Decimal(self.late_penalty)
             pay = round(compute_pay, 2)
             return pay
@@ -526,11 +819,14 @@ class Task(models.Model):
             models.Index(fields=['employee']),
             models.Index(fields=['category']),
             models.Index(fields=['groupname']),
+            models.Index(fields=['department']),
             # Composite indexes for common query patterns
             models.Index(fields=['is_active', 'featured']),
             models.Index(fields=['employee', 'is_active']),
             models.Index(fields=['category', 'is_active']),
             models.Index(fields=['submission', 'is_active']),
+            models.Index(fields=['department', 'is_active']),
+            models.Index(fields=['employee', 'department']),
         ]
 
     def clean(self):
@@ -635,6 +931,14 @@ class TaskHistory(models.Model):
         on_delete=models.RESTRICT,
         related_name="history_user_assiged",
         default=999,
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="task_histories",
+        help_text=_("Department snapshot at the time this history was created."),
     )
     activity_name = models.CharField(
         verbose_name=_("Activity Name"),
@@ -756,6 +1060,21 @@ class TaskHistory(models.Model):
     class Meta:
         verbose_name_plural = "TaskHistory"
         ordering = ["-submission"]
+        indexes = [
+            models.Index(fields=['submission']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['employee']),
+            models.Index(fields=['category']),
+            models.Index(fields=['department']),
+            models.Index(fields=['daf_date']),
+            # Composite indexes for common query patterns
+            models.Index(fields=['employee', 'is_active']),
+            models.Index(fields=['category', 'is_active']),
+            models.Index(fields=['submission', 'is_active']),
+            models.Index(fields=['department', 'is_active']),
+            models.Index(fields=['employee', 'department']),
+            models.Index(fields=['daf_date', 'employee']),
+        ]
 
     @property
     def submitted(self):
@@ -1146,3 +1465,86 @@ class Assignment(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.assignment_type}"
+
+
+class EmployeeCareerState(models.Model):
+    """
+    Tracks employee career progression state.
+    
+    Phase P5: Foundation for Group B career ladder system.
+    This model stores the current career level, group, and tenure information
+    for each employee to support promotion logic and DAF visualization.
+    
+    Note: This is shadow mode - does not affect pay calculations yet.
+    """
+    
+    class EmployeeGroup(models.TextChoices):
+        """Employee group classification"""
+        A = "A", "Group A (Grads/Skilled/Remote)"
+        B = "B", "Group B (Core Staff)"
+        C = "C", "Group C (High School Trainees)"
+    
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="career_state",
+        help_text="Employee user account"
+    )
+    
+    group = models.CharField(
+        max_length=1,
+        choices=EmployeeGroup.choices,
+        default=EmployeeGroup.B,
+        help_text="Employee group (A, B, or C)"
+    )
+    
+    current_level_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text="Current career level code (e.g., 'B1', 'B4', 'B18')"
+    )
+    
+    date_at_level = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when employee reached current level"
+    )
+    
+    loyalty_fund_balance = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="Current loyalty fund balance in KES"
+    )
+    
+    is_tenured = models.BooleanField(
+        default=False,
+        help_text="Whether employee is tenured (e.g., ≥12 months at CODA)"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Employee Career State"
+        verbose_name_plural = "Employee Career States"
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["group", "current_level_code"]),
+            models.Index(fields=["is_tenured"]),
+        ]
+    
+    def __str__(self):
+        level_display = self.current_level_code or "Unassigned"
+        return f"{self.user.username} - {self.get_group_display()} - {level_display}"
+    
+    @property
+    def months_at_level(self) -> float:
+        """Calculate months at current level"""
+        if not self.date_at_level:
+            return 0.0
+        
+        from dateutil.relativedelta import relativedelta
+        delta = relativedelta(timezone.now().date(), self.date_at_level)
+        return delta.years * 12 + delta.months + delta.days / 30.0

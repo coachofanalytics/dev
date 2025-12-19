@@ -18,7 +18,6 @@ from django.core.paginator import Paginator
 
 from management.models import TaskLinks, Task
 from shared_core.users import CustomerUser
-from ai_services.models import GotoMeetings
 from management.services.meeting_linking_service import MeetingLinkingService
 
 logger = logging.getLogger(__name__)

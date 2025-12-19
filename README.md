@@ -1,31 +1,45 @@
 # CODA Development Project
 
 **Status:** Active Development  
-**Last Updated:** October 13, 2025
+**Last Updated:** December 2025
 
 ## 📚 Documentation
 
-**Complete documentation is available in:** [`coda/docs/`](coda/docs/)
+**Complete documentation is available in:** [`docs/`](docs/)
 
 ### Quick Links:
-- **[Master Documentation Index](coda/docs/README.md)** - Start here
-- **[Finance App](coda/docs/apps/finance/)** - Budget, Transaction, Loan, Payment systems
-- **[Deployment Guide](coda/docs/05_DEPLOYMENT/)** - Deployment instructions and logs
-- **[Getting Started](coda/docs/01_GETTING_STARTED/)** - Setup guide
+- **[Getting Started Guide](docs/01_GETTING_STARTED/CURSOR_AI_GUIDE.md)** - AI development guidelines and workflow
+- **[Architecture](docs/02_ARCHITECTURE/)** - System architecture and design patterns
+- **[Project Management](docs/03_IMPLEMENTATION/)** - Branch management, workflows, migrations
+- **[Testing](docs/04_TESTING/)** - Testing strategies and results
+- **[Deployment](docs/05_DEPLOYMENT/)** - Deployment guides and procedures
+- **[Integration](docs/06_INTEGRATION/)** - Integration patterns and external services
+- **[Maintenance](docs/07_MAINTENANCE/)** - Operational procedures and maintenance guides
+
+### Application Documentation:
+- **[Finance App](docs/apps/finance/)** - Budget, Transaction, Loan, Payment systems
+- **[Accounts App](docs/apps/accounts/)** - Authentication, Registration, Permissions
+- **[Investing App](docs/apps/investing/)** - Managed Options Trading, AI Position Scoring
+- **[Management App](docs/apps/management/)** - Employee Task System
+- **[AI Services](docs/apps/ai_services/)** - GoToMeeting integration
 
 ## 🎯 Current Status
 
-### ✅ COMPLETED (Oct 2025)
-- **Phase 1:** Data cleanup (95.6% categorized, $1.49M dataset)
-- **Phase 2:** Smart forms with AI predictions, cascading dropdowns
-- **Budget System:** Phase 1 approval workflow complete
-- **Documentation:** Restructured into feature-based organization (4 docs per feature)
-- **Critical Fixes:** Dashboard aggregation, schema alignment, approval workflow
+### ✅ Documentation Structure (Dec 2025)
+- **7-Doc Framework:** All app features follow standardized 7-doc structure
+- **Organization:** Complete reorganization into feature-based documentation
+- **Branch Management:** Lightweight branches and focused development workflows established
 
-### 🔄 IN PROGRESS
-- **Budget System Phase 2:** Data-driven tier-based approval system
-- **Transaction Analytics:** Enhanced reporting and insights
-- **Code Quality:** Continued refactoring and optimization
+### ✅ Completed Features
+- **Finance System:** Budget, Transaction, Loan, Payment systems operational
+- **Investing System:** Managed Options Trading, AI Position Scoring deployed
+- **Management System:** Employee Task System with analytics and forecasting
+- **Accounts System:** Complete authentication, permissions, and user management
+
+### 🔄 Active Development
+- Feature enhancements across all apps
+- Code quality improvements and refactoring
+- Performance optimization
 
 ## ⚙️ Configuration Files
 
@@ -115,13 +129,17 @@ CODA/
 
 ### Documentation Structure
 
-All documentation follows a **4-doc standard per feature**:
-1. **README.md** - Overview and current status
-2. **REQUIREMENTS.md** - Business requirements (historical + current + future)
-3. **IMPLEMENTATION.md** - Technical details and code locations
-4. **TESTING.md** - Test scenarios and validation
+All application features follow a **7-doc standard**:
+1. **01_ANALYSIS.md** - Problem statement, goals, ROI
+2. **02_REQUIREMENTS.md** - Functional and non-functional requirements
+3. **03_ARCHITECTURE.md** - System design and architecture
+4. **04_IMPLEMENTATION.md** - Code locations and implementation details
+5. **05_TESTING.md** - Test strategy and scenarios
+6. **06_MAINTENANCE.md** - Known issues, fixes, operational procedures
+7. **07_DEPLOYMENT.md** - Deployment procedures and history
+8. **README.md** - Quick overview and navigation
 
-See [`coda/docs/README.md`](coda/docs/README.md) for complete navigation guide.
+See [`docs/01_GETTING_STARTED/CURSOR_AI_GUIDE.md`](docs/01_GETTING_STARTED/CURSOR_AI_GUIDE.md) for complete development guidelines.
 
 ## 📞 Support
-For detailed information, see the [comprehensive documentation](coda/docs/) or check deployment logs in [`coda/docs/05_DEPLOYMENT/`](coda/docs/05_DEPLOYMENT/).
+For detailed information, see the [comprehensive documentation](docs/) or check deployment logs in [`docs/05_DEPLOYMENT/`](docs/05_DEPLOYMENT/).

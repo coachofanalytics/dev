@@ -20,7 +20,8 @@ import os
 
 from management.models import TaskHistory
 from shared_core.users import CustomerUser
-from ai_services.ai_integration_service import RealAIService
+from shared_core.interfaces.ai_service import AIServiceInterface
+from shared_core.services.adapters.noop_ai_adapter import NoOpAIServiceAdapter
 
 
 class AIPredictionService:
@@ -28,7 +29,15 @@ class AIPredictionService:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.ai_service = RealAIService()
+        self.ai_service = self._get_ai_service()
+    
+    def _get_ai_service(self) -> AIServiceInterface:
+        """Get AI service via interface."""
+        try:
+            from ai_services.adapters.ai_service_adapter import AIServiceAdapter
+            return AIServiceAdapter()
+        except ImportError:
+            return NoOpAIServiceAdapter()
         self.model_cache = {}
         self.scaler_cache = {}
         

@@ -17,14 +17,16 @@ User = get_user_model()
 
 # Import models from other apps
 try:
-    from shared_core.models import Company, TimeStampedModel, StatusMixin
+    from shared_core.models import TimeStampedModel, StatusMixin
 except ImportError:
-    Company = TimeStampedModel = StatusMixin = None
+    TimeStampedModel = StatusMixin = None
 
 try:
     from shared_core.users import Department
 except ImportError:
     Department = None
+
+# Note: Company is referenced as string 'main.Company' to avoid import issues during migrations
 
 
 # =============================================================================
@@ -231,7 +233,7 @@ class Budget(models.Model):
     """Main budget model"""
     
     company = models.ForeignKey(
-        Company, 
+        'main.Company', 
         on_delete=models.CASCADE, 
         related_name="company_type",
         default=1

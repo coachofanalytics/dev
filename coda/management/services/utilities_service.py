@@ -32,14 +32,24 @@ except ImportError:
     LoanUtils = None
     LEGACY_UTILS_AVAILABLE = False
 
-# Import AI services for enhancement
-try:
-    from ai_services.ai_integration_service import RealAIService
-    AI_SERVICE_AVAILABLE = True
-except ImportError:
-    AI_SERVICE_AVAILABLE = False
-    RealAIService = None
+# Import AI services for enhancement via interfaces
+from shared_core.interfaces.ai_service import AIServiceInterface
+from shared_core.services.adapters.noop_ai_adapter import NoOpAIServiceAdapter
 
+def _get_ai_service() -> AIServiceInterface:
+    """Get AI service via interface."""
+    try:
+        from ai_services.adapters.ai_service_adapter import AIServiceAdapter
+        return AIServiceAdapter()
+    except ImportError:
+        return NoOpAIServiceAdapter()
+
+# For backward compatibility, keep AI_SERVICE_AVAILABLE flag
+AI_SERVICE_AVAILABLE = True  # Interface always available (NoOp if adapter missing)
+RealAIService = None  # Deprecated - use _get_ai_service() instead
+
+# Note: AIBudgetSuggestionService is not part of FinanceTaskServiceInterface
+# If needed, it should be added to the interface or accessed differently
 try:
     from finance.services.ai_budget_suggestion_service import AIBudgetSuggestionService
     BUDGET_SERVICE_AVAILABLE = True

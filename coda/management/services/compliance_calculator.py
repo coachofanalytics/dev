@@ -337,3 +337,19 @@ class ComplianceCalculator:
         current_date = date.today()
         return current_date.day > 15
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

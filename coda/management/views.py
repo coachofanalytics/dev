@@ -83,8 +83,8 @@ from management.models import (
     Link,Grievance,Conflict_Resolution
 )
 from professional_services.models import DSU,ClientAssessment,BackgroundCheck
-from finance.models import LoanApplication,PayslipConfig
 from shared_core.users import CustomerUser, Department
+from management.services.finance_service_helper import get_finance_task_service
 from accounts.models import Tracker, TaskGroups
 from main.filters import RequirementFilter,TaskHistoryFilter
 from django.conf import settings
@@ -336,19 +336,47 @@ def confirm_employee_contract(request):
     #     return redirect("management:employee_contract")
 
 
-def create_task(group, groupname, cat, user, activity, description, duration, point, mxpoint, mxearning):
+def create_task(group, groupname, cat, user, activity, description, duration, point, mxpoint, mxearning, activity_type=None):
+    """
+    Create a Task instance with optional ActivityType integration.
+    
+    This function maintains backward compatibility while supporting ActivityType defaults.
+    If activity_type is not provided, it will attempt to lookup by activity name.
+    """
+    from management.services.activity_type_service import ActivityTypeApplicationService
+    
+    service = ActivityTypeApplicationService()
+    
+    # If activity_type not provided, try to find it by activity name
+    if not activity_type and activity:
+        activity_type = service.find_activity_type_by_name(activity)
+    
+    # Create task with basic fields
     x = Task()
     x.group = group
     x.groupname = groupname
     x.category = cat
     x.employee = user
-    x.activity_name = activity
+    x.activity_name = activity  # Legacy field - may be updated by service
     x.description = description
-    x.duration = duration
+    # Convert duration to int if it's a string (duration is PositiveIntegerField)
+    try:
+        x.duration = int(float(duration)) if duration else 0
+    except (ValueError, TypeError):
+        x.duration = 0
     x.point = point
-    x.mxpoint = mxpoint
-    x.mxearning = mxearning
+    x.mxpoint = mxpoint  # May be overridden by ActivityType
+    x.mxearning = mxearning  # May be overridden by ActivityType
+    
+    # Apply ActivityType defaults (if found)
+    if activity_type:
+        service.apply_to_task(x, activity_type, preserve_existing=False)
+    elif not x.mxpoint:
+        # If no ActivityType and mxpoint is 0/None, keep provided mxpoint
+        x.mxpoint = mxpoint
+    
     x.save()
+    return x
 
 # ==============================PLACE HOLDER MODELS=======================================
 
@@ -897,8 +925,43 @@ def filterbycategory(request):
 
 def get_user_data(employee):
     """Retrieve user-related data."""
+    from accounts.models import UserProfile
+    from finance.models import PayslipConfig
+    
     userprofile = UserProfile.objects.get(user_id=employee)
-    user_data = LoanApplication.objects.filter(borrower=employee, status='active')
+    
+    # Use finance service interface for loan data
+    finance_service = get_finance_task_service()
+    loan_summary = finance_service.get_user_loan_summary(employee.id)
+    
+    # Create a mock queryset-like object for backward compatibility
+    # This allows existing code that uses .exists() and .order_by() to work
+    class LoanDataWrapper:
+        """Wrapper to maintain backward compatibility with queryset usage."""
+        def __init__(self, loan_summary):
+            self.loan_summary = loan_summary
+            self._has_loan = loan_summary is not None
+        
+        def exists(self):
+            return self._has_loan
+        
+        def order_by(self, field):
+            # Return self to allow chaining like .order_by('-id')[0]
+            return self
+        
+        def __getitem__(self, index):
+            # Return loan_summary dict wrapped in a mock object
+            if index == 0 and self._has_loan:
+                class LoanObject:
+                    def __init__(self, summary):
+                        self.id = summary.get('loan_id')
+                        self.status = summary.get('status')
+                        self.amount = summary.get('amount')
+                        # Add other attributes as needed
+                return LoanObject(self.loan_summary)
+            return None
+    
+    user_data = LoanDataWrapper(loan_summary)
     payslip_config = paymentconfigurations(PayslipConfig, employee)
     return userprofile, user_data, payslip_config
 
@@ -949,7 +1012,11 @@ def bulk_update_daf_date():
 def payslip(request, *args, **kwargs):
     """
     Retrieve pay_type and user dynamically from kwargs and handle dynamic redirection.
+    
+    Refactored to use PayCalculationService as the single source of truth for payslip computation.
     """
+    from management.services.pay_calculation_service import PayCalculationService
+    
     pay_type = request.GET.get('pay_type', None)
     username = request.GET.get('username', None)
     employee = None
@@ -968,54 +1035,32 @@ def payslip(request, *args, **kwargs):
 
     # ===================Selected Month and Year===========================
     selected_month, selected_year, form = get_selected_month_year(request, pay_type)
-    # Retrieve user-related data
-    userprofile, user_data, payslip_config = get_user_data(employee) if employee else (None, None, None)
     
-    # Calculate login bonus and invalid entries
-    total_login_hours, login_bonus, invalid_entries = calculate_login_bonus(
-        user=employee,
-        selected_month=selected_month,
-        selected_year=selected_year
-    ) if employee else (0, 0, 0)
-
-    # Determine Pay Based on parameter
-    tasks, total_pay, message = get_tasks(employee, selected_month, selected_year, pay_type) #if employee else ([], 0, None)
-
-    # Incorporating a filter
-    myfilter=TaskHistoryFilter(request.GET,queryset=tasks)
-
-    # Calculate points and earnings
-    (num_tasks, points, mxpoints, pay, GoalAmount, pointsbalance, point_percentage) = payinitial(tasks)
-
-    # Calculate remaining time
+    # Use PayCalculationService as single source of truth
+    service = PayCalculationService()
+    payslip_data = service.calculate_payslip(
+        employee=employee,
+        target_month=selected_month,
+        target_year=selected_year,
+        pay_type=pay_type,
+        enforce_evidence=False,  # Phase P1: not enforcing evidence yet
+    )
+    
+    # Extract data from service response
+    tasks = payslip_data.get('tasks')
+    base_pay = payslip_data.get('base_pay', {})
+    bonuses = payslip_data.get('bonuses', {})
+    deductions = payslip_data.get('deductions', {})
+    summary = payslip_data.get('summary', {})
+    metadata = payslip_data.get('metadata', {})
+    
+    # Incorporating a filter (still needed for template)
+    myfilter = TaskHistoryFilter(request.GET, queryset=tasks) if tasks else None
+    
+    # Calculate remaining time (UI helper, not part of pay calculation)
     remaining_days, remaining_seconds, remaining_minutes, remaining_hours = countdown_in_month()
 
-    # Deductions and other calculations
-    loan_amount, loan_payment, balance_amount = loan_computation(total_pay, user_data, payslip_config) if employee else (0, 0, 0)
-    food_accomodation, computer_maintenance, health, kra, lap_saving, total_laptop_savings, loan_payment, total_deductions = deductions(
-        employee, user_data, payslip_config, total_pay) if employee else (0, 0, 0, 0, 0, 0, 0, 0)
-    laptop_bonus, laptop_saving, total_laptop_savings = lap_save_bonus(payslip_config) if employee else (0, 0, 0)
-
-    # Calculate bonus and summary values
-    bonus_points_ammount, latenight_Bonus, yearly, offpay, EOM, EOQ, EOY, sub_bonus, total_deduction, total_bonus = get_bonus_and_summary(
-        employee, tasks, total_pay, user_data, payslip_config) if employee else (0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    
-    Logged_In_Bonus = Decimal(bonus_points_ammount) + Decimal(login_bonus) if employee else 0
-
-    try:
-        paybalance = Decimal(GoalAmount) - Decimal(total_pay)
-    except (TypeError, AttributeError):
-        paybalance = 0
-
-    average_earnings = GoalAmount
-    Gross_pay = total_pay + total_bonus + Decimal(login_bonus)
-
-    try:
-        net_pay = Gross_pay - total_deduction
-    except (TypeError, AttributeError):
-        net_pay = 0.00
-
-    # Prepare Context
+    # Build context from service data (mapping to existing template field names)
     context = {
         'form': form,
         'selected_month': selected_month,
@@ -1023,44 +1068,46 @@ def payslip(request, *args, **kwargs):
         'employee': employee,
         'pay_type': pay_type,
         "payday": deadline_date,
-        "num_tasks": num_tasks,
+        "num_tasks": base_pay.get('num_tasks', 0),
         "tasks": tasks,
-        "TaskHistoryFilter":myfilter,
-        "Points": points,
-        "MaxPoints": mxpoints,
-        "point_percentage": point_percentage,
-        "pay": pay,
-        "GoalAmount": GoalAmount,
-        "paybalance": paybalance,
-        "pointsbalance": pointsbalance,
-        "total_pay": total_pay,
-        "loan": loan_payment,
-        "net": net_pay,
-        "average_earnings": average_earnings,
+        "TaskHistoryFilter": myfilter,
+        "Points": base_pay.get('points', 0),
+        "MaxPoints": base_pay.get('max_points', 0),
+        "point_percentage": base_pay.get('point_percentage', Decimal('0')),
+        "pay": base_pay.get('goal_amount', Decimal('0')),  # 'pay' in old context was GoalAmount
+        "GoalAmount": base_pay.get('goal_amount', Decimal('0')),
+        "paybalance": base_pay.get('pay_balance', Decimal('0')),
+        "pointsbalance": base_pay.get('points_balance', Decimal('0')),
+        "total_pay": base_pay.get('total', Decimal('0')),
+        "loan": deductions.get('loan_payment', Decimal('0')),
+        "net": summary.get('net_pay', Decimal('0')),
+        "average_earnings": base_pay.get('goal_amount', Decimal('0')),  # average_earnings was GoalAmount
         "remaining_days": remaining_days,
         "remaining_seconds": remaining_seconds,
         "remaining_minutes": remaining_minutes,
         "remaining_hours": remaining_hours,
-        "total_login_hours": total_login_hours,
-        "Logged_In_Bonus": Logged_In_Bonus,
-        "EOM": EOM,
-        "EOQ": EOQ,
-        "EOY": EOY,
-        "laptop_bonus": laptop_bonus,
-        "holidaypay": offpay,
-        "Night_Bonus": latenight_Bonus,
-        "yearly": yearly,
-        "food_accomodation": food_accomodation,
-        "computer_maintenance": computer_maintenance,
-        "health": health,
-        "laptop_saving": lap_saving,
-        "total_laptop_saving": total_laptop_savings,
-        "kra": kra,
-        "total_value": Gross_pay,
-        "total_deduction": total_deduction,
-        "balance_amount": balance_amount,
+        "total_login_hours": bonuses.get('login_hours', 0),
+        "Logged_In_Bonus": bonuses.get('points_bonus', Decimal('0')) + bonuses.get('login_bonus', Decimal('0')),
+        "EOM": bonuses.get('eom_bonus', Decimal('0')),
+        "EOQ": bonuses.get('eoq_bonus', Decimal('0')),
+        "EOY": bonuses.get('eoy_bonus', Decimal('0')),
+        "laptop_bonus": bonuses.get('laptop_bonus', Decimal('0')),
+        "holidaypay": bonuses.get('holiday_pay', Decimal('0')),
+        "Night_Bonus": bonuses.get('late_night_bonus', Decimal('0')),
+        "yearly": bonuses.get('yearly', Decimal('12000')),
+        "food_accomodation": deductions.get('food_accommodation', Decimal('0')),
+        "computer_maintenance": deductions.get('computer_maintenance', Decimal('0')),
+        "health": deductions.get('health', Decimal('0')),
+        "laptop_saving": deductions.get('laptop_saving', Decimal('0')),
+        "total_laptop_saving": deductions.get('total_laptop_savings', Decimal('0')),
+        "kra": deductions.get('tax_kra', Decimal('0')),
+        "total_value": summary.get('gross_pay', Decimal('0')),
+        "total_deduction": summary.get('total_deductions', Decimal('0')),
+        "balance_amount": deductions.get('loan_balance', Decimal('0')),
         "deadline_date": deadline_date,
         "today": today,
+        # Include full payslip_data for future use
+        "payslip_data": payslip_data,
     }
 
     # Dynamic Redirection Logic

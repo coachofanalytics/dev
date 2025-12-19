@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from shared_core.users import CustomerUser
 from accounts.models import TaskGroups
 from management.models import *
+from management.services.activity_type_service import ActivityTypeApplicationService
 from django.contrib import messages
 
 # Register your models here.
@@ -39,28 +40,82 @@ class TaskHistoryAdmin(admin.ModelAdmin):
             messages.error(request, 'User is not an Employee')
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('id', 'activity_name', )
+    list_display = ('id', 'activity_name', 'activity_type', )
 
     def save_model(self, request, obj, form, change):
         if obj.employee.is_staff:
+            # Apply ActivityType defaults if ActivityType is set
+            service = ActivityTypeApplicationService()
+            
+            # If activity_type FK is set, apply defaults
+            if obj.activity_type:
+                service.apply_to_task(obj, obj.activity_type, preserve_existing=change)
+            # Otherwise, try to find ActivityType by activity_name for backward compatibility
+            elif obj.activity_name:
+                activity_type = service.find_activity_type_by_name(obj.activity_name)
+                if activity_type:
+                    service.apply_to_task(obj, activity_type, preserve_existing=True)
+            
             super().save_model(request, obj, form, change)
         else:
             messages.set_level(request, messages.ERROR)
             messages.error(request, 'User is not an Employee')
 
-def create_task(group, groupname, cat, user, activity, description, duration, point, mxpoint, mxearning):
+def create_task(group, groupname, cat, user, activity, description, duration, point, mxpoint, mxearning, activity_type=None):
+    """
+    Create a Task instance with optional ActivityType integration.
+    
+    If activity_type is provided (or can be found via activity name lookup),
+    ActivityType defaults will be applied (mxpoint, mxearning, department, etc.).
+    
+    Args:
+        group: Task group string
+        groupname: TaskGroups instance
+        cat: TaskCategory instance
+        user: User instance
+        activity: Activity name (legacy field, will be used for ActivityType lookup)
+        description: Task description
+        duration: Task duration
+        point: Current points
+        mxpoint: Maximum points (may be overridden by ActivityType)
+        mxearning: Maximum earning (may be overridden by ActivityType)
+        activity_type: Optional ActivityType instance (if None, will try to lookup by activity name)
+    
+    Returns:
+        Created Task instance
+    """
+    service = ActivityTypeApplicationService()
+    
+    # If activity_type not provided, try to find it by activity name
+    if not activity_type and activity:
+        activity_type = service.find_activity_type_by_name(activity)
+    
+    # Create task with basic fields
     x = Task()
     x.group = group
     x.groupname = groupname
     x.category = cat
     x.employee = user
-    x.activity_name = activity
+    x.activity_name = activity  # Legacy field - may be updated by service
     x.description = description
-    x.duration = duration
+    # Convert duration to int if it's a string (duration is PositiveIntegerField)
+    try:
+        x.duration = int(float(duration)) if duration else 0
+    except (ValueError, TypeError):
+        x.duration = 0
     x.point = point
-    x.mxpoint = mxpoint
-    x.mxearning = mxearning
+    x.mxpoint = mxpoint  # May be overridden by ActivityType
+    x.mxearning = mxearning  # May be overridden by ActivityType
+    
+    # Apply ActivityType defaults (if found)
+    # This will update activity_name, department, mxpoint, mxearning from ActivityType
+    if activity_type:
+        service.apply_to_task(x, activity_type, preserve_existing=False)
+    elif not x.mxpoint:  # If no ActivityType and mxpoint is 0, keep it
+        x.mxpoint = mxpoint
+    
     x.save()
+    return x
 class TrainingAdmin(admin.ModelAdmin):
     list_display = ('id', 'presenter')
 
@@ -80,20 +135,26 @@ class TrainingAdmin(admin.ModelAdmin):
                 try:
                     group = TaskGroups.objects.all().first()
                     cat = TaskCategory.objects.all().first()
+                    
+                    # Legacy: Try to get max_point for backward compatibility
+                    # If ActivityType is found, it will override this with proper mxpoint/mxearning
                     try:
                         max_point = Task.objects.filter(groupname=group, category=cat).first()
-                        max_point = max_point.mxpoint
+                        max_point = max_point.mxpoint if max_point else 0
                     except:
                         max_point = 0
 
+                    # Create tasks with ActivityType integration
+                    # ActivityTypeApplicationService will lookup ActivityType by name
+                    # and apply proper mxpoint, mxearning, department defaults
                     create_task('Group A', group, cat, user, 'General Meeting', 'General Meeting description, auto added', '0', '0', max_point, '0')
                     create_task('Group A', group, cat, user, 'BI Session', 'BI Session description, auto added', '0', '0', max_point, '0')
                     create_task('Group A', group, cat, user, 'One on One', 'One on One description, auto added', '0', '0', max_point, '0')
                     create_task('Group A', group, cat, user, 'Video Editing', 'Video Editing description, auto added', '0', '0', max_point, '0')
                     create_task('Group A', group, cat, user, 'Dev Recruitment', 'Dev Recruitment description, auto added', '0', '0', max_point, '0')
                     create_task('Group A', group, cat, user, 'Sprint', 'Sprint description, auto added', '0', '0', max_point, '0')
-                except:
-                    print("Something wrong in task creation")
+                except Exception as e:
+                    print(f"Something wrong in task creation: {e}")
                 if user == request.user:
                     return redirect("management:employee_contract")
         except:

@@ -83,6 +83,9 @@ from .analytics_dashboard_views import (
     compliance_dashboard,
     anomaly_detection_dashboard
 )
+# Import Activity Catalog and Coverage views
+from .activity_catalog_views import activity_catalog_view
+from .activity_coverage_views import activity_coverage_view
 
 # Add Phase 1, Phase 2, and Phase 3 views to exports
 __all__ = [
@@ -112,5 +115,8 @@ __all__ = [
     'trend_analysis_dashboard',
     'compliance_dashboard',
     'anomaly_detection_dashboard',
+    # Activity Catalog and Coverage Views
+    'activity_catalog_view',
+    'activity_coverage_view',
 ]
 

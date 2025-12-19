@@ -26,7 +26,9 @@ from management.views import (
     approve_meeting_link,
     override_meeting_link,
     reject_meeting_link,
-    get_meeting_link_suggestions
+    get_meeting_link_suggestions,
+    activity_catalog_view,
+    activity_coverage_view,
 )
 
 # Phase 2: Budget Integration API endpoints
@@ -236,6 +238,10 @@ urlpatterns = [
     path('analytics/trends/', trend_analysis_dashboard, name='trend-analysis-dashboard'),
     path('analytics/compliance/', compliance_dashboard, name='compliance-dashboard'),
     path('analytics/anomalies/', anomaly_detection_dashboard, name='anomaly-detection-dashboard'),
+    
+    # Activity Catalog and Coverage Views
+    path('activity/catalog/', activity_catalog_view, name='activity_catalog'),
+    path('activity/coverage/', activity_coverage_view, name='activity_coverage'),
     
     # Enhanced Dashboard URLs
     path('enhanced-dashboard/', enhanced_task_dashboard, name='enhanced-dashboard'),

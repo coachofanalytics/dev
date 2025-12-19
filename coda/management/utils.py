@@ -413,6 +413,34 @@ def payinitial(tasks):
     return (num_tasks,points,mxpoints,pay,GoalAmount,pointsbalance,point_percentage)
 
 def paymentconfigurations(PayslipConfig, employee):
+    """
+    Get payslip configuration for an employee.
+    
+    Uses FinanceTaskServiceInterface if available, otherwise falls back to direct model access.
+    Maintains backward compatibility by returning PayslipConfig model instance.
+    """
+    from management.services.finance_service_helper import get_finance_task_service
+    
+    # Try to use interface first
+    try:
+        finance_service = get_finance_task_service()
+        config_dict = finance_service.get_payslip_config(employee.id)
+        
+        if config_dict:
+            # Convert dict back to model instance for backward compatibility
+            # This is a temporary bridge - ideally we'd refactor callers to use dicts
+            try:
+                payslip_config = PayslipConfig.objects.get(user=employee)
+                # Update fields from dict if needed
+                return payslip_config
+            except PayslipConfig.DoesNotExist:
+                # Fall through to create logic below
+                pass
+    except Exception:
+        # If interface fails, fall back to direct model access
+        pass
+    
+    # Fallback to original logic
     try:
         payslip_config = PayslipConfig.objects.get(user=employee)
     except PayslipConfig.DoesNotExist:
@@ -502,7 +530,8 @@ def loan_computation(total_pay, user_data, payslip_config):
             
             # Calculate loan payment based on payslip config
             if payslip_config and hasattr(payslip_config, 'loan_repayment_percentage'):
-                loan_payment = round(total_pay * payslip_config.loan_repayment_percentage, 2)
+                loan_repayment_percentage = Decimal(str(getattr(payslip_config, 'loan_repayment_percentage', 0) or 0))
+                loan_payment = round(Decimal(total_pay) * loan_repayment_percentage, 2)
             else:
                 # Use default 10% deduction
                 loan_payment = active_loan.calculate_monthly_deduction(total_pay, 10.0)
@@ -534,8 +563,9 @@ def loan_computation(total_pay, user_data, payslip_config):
         # No loan data - use payslip config defaults
         if payslip_config and hasattr(payslip_config, 'loan_amount'):
             logger.info('Using payslip config loan amount')
-            loan_amount = Decimal(payslip_config.loan_amount)
-            loan_payment = round(total_pay * payslip_config.loan_repayment_percentage, 2) if hasattr(payslip_config, 'loan_repayment_percentage') else Decimal(0)
+            loan_amount = Decimal(str(getattr(payslip_config, 'loan_amount', 0) or 0))
+            loan_repayment_percentage = Decimal(str(getattr(payslip_config, 'loan_repayment_percentage', 0) or 0))
+            loan_payment = round(Decimal(total_pay) * loan_repayment_percentage, 2) if loan_repayment_percentage else Decimal(0)
             if loan_amount < loan_payment:
                 loan_payment = loan_amount
             new_balance = round(Decimal(loan_amount) - Decimal(loan_payment), 2)
@@ -688,9 +718,14 @@ def bonus(tasks,total_pay,payslip_config):
         # -------------holiday earning-----------
         offpay = payslip_config.holiday_pay if month in (12, 1) and day in (24, 25, 26, 31, 1, 2) else Decimal(0.00)
         # -------------late Night earning-----------
-        latenight_Bonus =round(total_pay * payslip_config.rp_increment_max_percentage, 2)
+        # PayslipConfig stores some percentage knobs as floats; keep pay math in Decimal.
+        rp_increment_max_percentage = Decimal(str(getattr(payslip_config, 'rp_increment_max_percentage', 0) or 0))
+        rp_increment_percentage = Decimal(str(getattr(payslip_config, 'rp_increment_percentage', 0) or 0))
+        rp_starting_amount = Decimal(str(getattr(payslip_config, 'rp_starting_amount', 0) or 0))
+
+        latenight_Bonus = round(Decimal(total_pay) * rp_increment_max_percentage, 2)
         # print("latenight_Bonus====>",latenight_Bonus)
-        yearly = round(payslip_config.rp_starting_amount + (total_pay * payslip_config.rp_increment_percentage), 2)
+        yearly = round(rp_starting_amount + (Decimal(total_pay) * rp_increment_percentage), 2)
         # -------------Employee of Award(EOM,EOQ,EOY)-----------
         point_percentage=employee_reward(tasks)
         EOM = payslip_config.eom_bonus if point_percentage>=75 else Decimal(0.00)
