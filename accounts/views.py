@@ -26,7 +26,7 @@ from accounts.choices import CategoryChoices
 
 # @allowed_users(allowed_roles=['admin'])
 def home(request):
-    return render(request, "main/home_templates/newlayout.html")
+    return render(request, "main/home_templates/account_home.html")
 
 
 # @allowed_users(allowed_roles=['admin'])

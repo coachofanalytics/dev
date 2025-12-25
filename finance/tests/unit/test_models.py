@@ -94,3 +94,56 @@ class OverBoughtSoldModelTest(TestCase):
         self.assertEqual(
             stocks[1], self.stock
         )  # The first stock should be GOOG and second should be AAPL
+
+
+
+
+
+from django.test import TestCase
+from django.utils import timezone
+from accounts.models import CustomerUser
+from finance.models import PaymentInformation
+from decimal import Decimal
+from datetime import timedelta
+from django.utils import timezone
+from datetime import timedelta
+
+class PaymentInformationTestCase(TestCase):
+    def setUp(self):
+        # Create a test customer user
+        self.customer = CustomerUser.objects.create(
+            username="brenda",
+            email="brenda@example.com"
+        )
+        
+    def test_payment_information_ordering(self):
+        # Create two PaymentInformation instances with different timestamps
+        payment_info1 = PaymentInformation.objects.create(
+            customer=self.customer,
+            total_fees=Decimal('6000.00'),
+            down_payment=Decimal('0.00'),
+            student_bonus=Decimal('0.00'),
+            payment_method="Cash",
+            contract_submitted_date=timezone.now() - timedelta(days=1),  # 1 day earlier
+            is_active=True,
+            is_tested=False,
+            is_reviewed=False
+        )
+        
+        # Slightly delay the second record
+        payment_info2 = PaymentInformation.objects.create(
+            customer=self.customer,
+            total_fees=Decimal('5000.00'),
+            down_payment=Decimal('500.00'),
+            student_bonus=Decimal('0.00'),
+            payment_method="Cash",
+            contract_submitted_date=timezone.now(),  # Current time
+            is_active=True,
+            is_tested=False,
+            is_reviewed=False
+        )
+
+        # Test that the ordering works correctly (newer records should appear first)
+        payment_infos = PaymentInformation.objects.all()
+        self.assertEqual(payment_infos[0], payment_info2)  # payment_info2 should be first
+        self.assertEqual(payment_infos[1], payment_info1)  # payment_info1 should be second

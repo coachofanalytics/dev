@@ -1,4 +1,4 @@
-{%extends "main/base_templates/new_base.html"%} 
+{% extends "main/base_templates/new_base.html"%} 
 {% block title %}Home{% endblock %}
 {% load static %}
 {% block content %}
@@ -28,27 +28,33 @@
         <div class="col-md-6 pe-lg-5">
           <h2 class="mt-4 mt-md-0" style="text-align: left;">{{ service.title }}</h2>
           <div class="text-content" id="description{{ forloop.counter }}">
+            
             <p class="me-lg-5 truncated-text" id="truncatedText{{ forloop.counter }}">
               {{ service.description|safe|truncatechars:400 }}
             </p>
+            
             <p class="me-lg-5 remaining-text" id="remainingText{{ forloop.counter }}" style="display: none;">
               {{ service.description|safe }}
             </p>
-            <button class="">
+            
+            <button class="read-more-toggle btn btn-link p-0 text-decoration-none">
               Read more
             </button>
             
           </div>
+          
           {% if service.title == "Investments" %}
             <a class="btn btn-primary read-more-button" href="#">Proceed</a>
           {% else %}
             <a class="btn btn-primary read-more-button" href="{% url 'main:display_service' slug=service.slug %}">Proceed</a>
           {% endif %}
-          {% if request.user.is_superuser or  request.user.is_staff %}
-            <a class="btn btn-primary read-more-button" onclick="toggleContent('more-content', '{{service.description}}','{{forloop.counter}}') " tabindex="0">Long</a>
-            <a class="btn btn-primary read-more-button" onclick="toggleContent('less-content', '{{service.description}}', '{{forloop.counter}}')" tabindex="0">Short</a>
+          
+          {% if request.user.is_superuser or request.user.is_staff %}
+            <a class="btn btn-primary read-more-button" onclick="toggleContent('more', '{{forloop.counter}}')">Long</a>
+            <a class="btn btn-primary read-more-button" onclick="toggleContent('less', '{{forloop.counter}}')">Short</a>
           {% endif %}
         </div>
+        
         <div class="col-md-6">
           <img id="service_{{ service.id }}" class="img-fluid ps-lg-5"
             {% for image in images %}
@@ -57,13 +63,11 @@
                 alt="Services Image"
                 onerror="handleImageError(this, '{{service.slug}}')"
               {% else %}
-              src="{% static 'main/img/home/' %}{{service.slug}}.jpeg"
-              alt="Services Image"
-              onerror="handleImageError(this, '{{service.slug}}'); this.onerror='null';"
-
+                src="{% static 'main/img/home/' %}{{service.slug}}.jpeg"
+                alt="Services Image"
+                onerror="handleImageError(this, '{{service.slug}}'); this.onerror='null';"
               {% endif %}
             {% endfor %}
-  
             >
         </div>
       </div>
@@ -71,22 +75,59 @@
   </div>
 </div>
 
- <div class="row text-center">
-
+<div class="row text-center">
   <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
     <a href="#">Share Your Experiences</a>
   </div>
   <div class="col-md-6 back-to-top-btn d-flex justify-content-center">
     <a href="">back to top</a>
   </div>
-  </div> 
+</div> 
 
-  <script>
-  
-  </script>
-  
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Standard Read More Toggle for all users
+    const readMoreButtons = document.querySelectorAll('.text-content .read-more-toggle');
+
+    readMoreButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const textContentDiv = this.closest('.text-content');
+            const truncatedText = textContentDiv.querySelector('.truncated-text');
+            const remainingText = textContentDiv.querySelector('.remaining-text');
+            
+            // Check if the remaining text is currently hidden
+            const isHidden = remainingText.style.display === 'none' || remainingText.style.display === '';
+
+            if (isHidden) {
+                remainingText.style.display = 'block';
+                truncatedText.style.display = 'none';
+                this.textContent = 'Read less';
+            } else {
+                remainingText.style.display = 'none';
+                truncatedText.style.display = 'block';
+                this.textContent = 'Read more';
+            }
+        });
+    });
+
+    // 2. Placeholder for your handleImageError function (Ensure this is defined)
+    // function handleImageError(element, slug) { ... }
+    
+});
+
+// 3. Custom Toggle for Superusers/Staff (using the 'onclick' attributes)
+function toggleContent(action, counter) {
+    const truncatedText = document.getElementById('truncatedText' + counter);
+    const remainingText = document.getElementById('remainingText' + counter);
+    
+    if (action === 'more') {
+        remainingText.style.display = 'block';
+        truncatedText.style.display = 'none';
+    } else if (action === 'less') {
+        remainingText.style.display = 'none';
+        truncatedText.style.display = 'block';
+    }
+}
+</script>
  
-
-  </div> 
-  
 {% endblock %}

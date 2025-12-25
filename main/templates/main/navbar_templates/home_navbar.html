@@ -1,148 +1,96 @@
-{% comment %} <nav class="navbar navbar-expand-sm bg-light navbar-light sticky-top">
-    <div class="container-fluid">
-        <a class="navbar-brand logo-text" href="{% url 'main:layout'%}">CODA</a>
-        <button class="navbar-toggler nav-btn" type="button" data-bs-toggle="coll apse"
-            data-bs-target="#collapsibleNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="collapsibleNavbar">
-      <ul class="navbar-nav mr-auto w-100 justify-content-end">
+{% load static %}
+<nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+  <div class="container">
+    <a class="navbar-brand mr-4" href="{% url 'main:layout' %}">CODA</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarToggle"
+      aria-controls="navbarToggle"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarToggle">
+      <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="{% url 'main:layout' %}"
-            >Home <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{% url 'main:layout' %}">Home <span class="sr-only">(current)</span></a>
         </li>
+        
         <li class="nav-item dropdown">
-          <a
-            class="nav-link dropdown-toggle"
-            href="#"
-            id="navbarDropdown"
-            role="button"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-          >
+          <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             About
           </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-            <a class="dropdown-item" href="#"
-              >Leadership</a
-            >
-            <a class="dropdown-item" href="#"
-            >Our Team</a
-            >
-            <a class="dropdown-item" href="#"
-            >Future Talent</a
-            >
-            <a class="dropdown-item" href="#"
-            >Looking For Talent?</a
-            >
-            <a class="dropdown-item" href="#"
-            >Career</a 
-          >
-        </div>
-      </li>
+          <div class="dropdown-menu" aria-labelledby="aboutDropdown">
+            <a class="dropdown-item" href="{% url 'main:team' %}">Our Team</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'main:about' %}">Mission & Vision</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'main:contact' %}">Contact</a>
+          </div>
+        </li>
 
         <li class="nav-item dropdown">
-          <a
-            class="nav-link dropdown-toggle"
-            href="#"
-            id="navbarDropdown"
-            role="button"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-          >
+          <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Services
           </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-
-            {% for service in main_services %}
-              {% if service.slug == "investing" %}
-              <a class="dropdown-item" href="#">{{service.title}}</a>
-              <div class="dropdown-divider"></div>
-              {% else %}
-                <a class="dropdown-item"  href="#">{{service.title}}</a>
-                <div class="dropdown-divider"></div>
-              {% endif %}
-            {% endfor %}
+          <div class="dropdown-menu" aria-labelledby="servicesDropdown">
+            <a class="dropdown-item" href="{% url 'data:project' %}">Project Management</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'data:project' %}">Software Solutions</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'data:project' %}">Consultancy</a>
           </div>
-         
         </li>
-        {% if user.is_authenticated %}
-        {% if user.is_admin or  user.is_staff or  user.is_superuser%}
+
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#"  id="navbarDropDown" role="button" data-toggle="dropdown"
-            >Reports</a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-                  <!-- <a class="dropdown-item" href="https://drive.google.com/file/d/1UsSmmJv5_83ZRegObGhgGE3C5eIJ-4E1/view"
-                       target="" >Company Agenda</a >
-                        <div class="dropdown-divider"></div> -->
-                  <a class="dropdown-item" href="#" 
-                       target="" >Finance Department</a>
-                        <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="https://public.tableau.com/app/profile/coda2331/viz/EmployeeProductivityVersion08/LandingPageReport?publish=yes"
-                      target="_blank" >Human Resource Report</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="#"
-                      target="" >Weekly Assessment </a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'main:it' %}"
-                          target="" >IT Department</a>
-              </div>
+          <a class="nav-link dropdown-toggle" href="#" id="careerDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Your Career</a>
+          <div class="dropdown-menu" aria-labelledby="careerDropdown">
+            <a class="dropdown-item" href="{% url 'data:training' %}">Business & Data Analysis</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'data:training' %}">Building a Network</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'data:training' %}">Deliverable(Projects)</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'application:career' %}">Find Your Job</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'main:success' %}">Success Stories</a>
+          </div>
         </li>
-        {% endif %}
-        {% endif %}
       </ul>
 
-      <div class="navbar-nav">
+      <ul class="navbar-nav ml-auto">
+        {% if user.is_authenticated %}
+        
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#"  id="navbarDropDown" role="button" data-toggle="dropdown"
-          {% if user.is_authenticated %}
-            >Account</a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-                    {% if user.is_admin or user.is_superuser %}
-                          <a class="dropdown-item" href="#" target="" >My Account</a >
-                            <div class="dropdown-divider"></div>
-                          <a class="dropdown-item" href="#" target="" >Users</a>
-                            <div class="dropdown-divider"></div>
-                          <a class="dropdown-item" href="{% url 'account-logout' %}" target="" >Logout</a>
-                    {% elif user.category == 6 %}
-                        <a class="dropdown-item" href="#" target="" >My Account</a >
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'account-logout'%}" target="" >Logout</a>
-                        <div class="dropdown-divider"></div>
-                    {% else %}
-                      <a class="dropdown-item" href="#" target="" >My Account</a >
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'account-logout'%}" target="" >Logout</a>
-                        <div class="dropdown-divider"></div>
-                    {% endif %}
-              </div>
+            <a class="nav-link dropdown-toggle" href="#" id="accountMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Account
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountMenu">
+                <a class="dropdown-item" href="#">Profile ({{ user.username }})</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url 'account-logout' %}">Logout</a>
+            </div>
         </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#"  id="navbarDropDown" role="button" data-toggle="dropdown"
-            >Support</a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-                          <a class="dropdown-item"href="#" target="" >Help?</a >
-                            <div class="dropdown-divider"></div>
-                              <div class="dropdown-divider"></div>
-                              <a class="dropdown-item" href="#" target="" >Data/Assets</a>
-                              <div class="dropdown-divider"></div>
-                              <a class="dropdown-item" href="#" target="" >Big Data</a>
-                              <div class="dropdown-divider"></div>
-                              <a class="dropdown-item" href="#" target="" >Logs</a>
-              </div>
+        
+        <li class="nav-item">
+            <a class="nav-item nav-link" href="{% url 'finance:pay' %}">Make a Payment</a>
         </li>
+        
         {% else %}
-        <a class="nav-item nav-link" href="{% url 'accounts:account-login' %}"
-          >Login</a
-        >
-        <a class="nav-item nav-link" href="{% url 'accounts:join' %}"
-          >Register</a
-        >
+        <li class="nav-item">
+            <a class="nav-item nav-link" href="{% url 'accounts:account-login' %}">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-item nav-link" href="{% url 'account-register' %}">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-item nav-link" href="{% url 'finance:pay' %}">Make a Payment</a>
+        </li>
         {% endif %}
-      </div>
-        </div>
+      </ul>
     </div>
-</nav> {% endcomment %}
+  </div>
+</nav>
