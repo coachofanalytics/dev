@@ -1,65 +1,86 @@
-# tests.py
-
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
-from finance.models import OverBoughtSold
+from django.contrib.auth import get_user_model
+from finance.models import PaymentInformation 
 
+User = get_user_model()
 
-class OverBoughtSoldListViewTest(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        # Create sample data for OverBoughtSold model
-        OverBoughtSold.objects.create(
-            symbol="AAPL",
-            description="Apple Inc.",
-            last=145.30,
-            volume=1000000,
-            RSI=72.5,
-            EPS=3.45,
-            PE=35.2,
-            profit_margins=25.5,
+class PaymentListViewTests(TestCase):
+    def setUp(self):
+        # 1. Create a test user
+        self.user = User.objects.create_user(
+            username="testuser", 
+            password="password123", 
+            email="test@example.com"
         )
-        OverBoughtSold.objects.create(
-            symbol="GOOGL",
-            description="Google Inc.",
-            last=2735.93,
-            volume=500000,
-            RSI=28.0,
-            EPS=7.50,
-            PE=36.5,
-            profit_margins=30.0,
-        )
+        self.client = Client()
+        
+        # FIX: Added 'finance:' namespace to the URL name
+        self.url = reverse("finance:payment_list")
 
-    def test_view_url_exists_at_desired_location(self):
-        # Use reverse() to get the correct URL based on its name
-        url = reverse(
-            "finance:overboughtsold_list"
-        )  # Use the app name to reverse the URL
-        response = self.client.get(url)
+        # 2. Create 15 payment records (to test pagination and search)
+        for i in range(15):
+            PaymentInformation.objects.create(
+                customer=self.user,
+                payment_method=f"Method {i}",
+                total_fees=1000,
+                down_payment=500,
+                remaining_balance=500
+            )
+
+    def test_redirect_if_not_logged_in(self):
+        """Verify that unauthenticated users are redirected to login."""
+        response = self.client.get(self.url)
+        # We check status 302 (Redirect) instead of a hardcoded path 
+        # to avoid failures if your LOGIN_URL differs from the default.
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login/", response.url)
+
+    def test_view_accessible_logged_in(self):
+        """Verify the page loads successfully for logged-in users."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "finance/payment_list.html")
 
-    def test_view_uses_correct_template(self):
-        url = reverse(
-            "finance:overboughtsold_list"
-        )  # Use the app name to reverse the URL
-        response = self.client.get(url)
-        self.assertTemplateUsed(response, "finance/overboughtsold_list.html")
+    def test_search_by_username(self):
+        """Test search filter for usernames."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(self.url, {"q": "testuser"})
+        # Should show 10 items (Page 1 limit)
+        self.assertEqual(len(response.context["page_obj"]), 10)
+        # Should find 15 total items in the paginator
+        self.assertEqual(response.context["page_obj"].paginator.count, 15)
 
-    def test_pagination_is_correct(self):
-        url = reverse(
-            "finance:overboughtsold_list"
-        )  # Use the app name to reverse the URL
-        response = self.client.get(f"{url}?page=1")
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "AAPL")
-        self.assertContains(response, "GOOGL")
+    def test_search_by_payment_method(self):
+        """Test search filter for payment method."""
+        self.client.login(username="testuser", password="password123")
+        # Search for 'Method 1' which matches 'Method 1', 'Method 10', 'Method 11', etc.
+        response = self.client.get(self.url, {"q": "Method 1"})
+        self.assertGreaterEqual(response.context["page_obj"].paginator.count, 6)
 
-    def test_no_stocks(self):
-        # Delete all stocks to test the "no stocks available" message
-        OverBoughtSold.objects.all().delete()
-        url = reverse(
-            "finance:overboughtsold_list"
-        )  # Use the app name to reverse the URL
-        response = self.client.get(url)
-        self.assertContains(response, "No stocks available")
+    def test_pagination_limit(self):
+        """Verify 10 items per page limit."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(self.url)
+        self.assertEqual(len(response.context["page_obj"]), 10)
+
+    def test_pagination_invalid_page(self):
+        """Verify invalid page returns page 1."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(self.url, {"page": "abc"})
+        self.assertEqual(response.context["page_obj"].number, 1)
+
+    def test_pagination_out_of_range(self):
+        """Verify out of range page returns the last page."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(self.url, {"page": "999"})
+        last_page = response.context["page_obj"].paginator.num_pages
+        self.assertEqual(response.context["page_obj"].number, last_page)
+
+    def test_empty_search_results(self):
+        """Verify display when no matches found."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(self.url, {"q": "nonexistent_query_xyz"})
+        self.assertEqual(len(response.context["page_obj"]), 0)
+        self.assertContains(response, "No payment records found.")

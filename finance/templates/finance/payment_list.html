@@ -1,0 +1,69 @@
+{% extends "finance/finance_base.html" %}
+{% load static %}
+
+{% block title %}Payment Information{% endblock %}
+
+{% block content %}
+<div>
+    <h2>Payment Information</h2>
+
+    <!-- Search Form -->
+    <form method="get" class="mb-4">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search by username, email, or payment method" />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <!-- Payment Records Table -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Payment Method</th>
+                <th>Total Fees</th>
+                <th>Down Payment</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in page_obj %}
+            <tr>
+                <td>{{ payment.customer.username }}</td>
+                <td>{{ payment.customer.email }}</td>
+                <td>{{ payment.payment_method }}</td>
+                <td>{{ payment.total_fees }}</td>
+                <td>{{ payment.down_payment }}</td>
+                <td>
+                    {% if payment.remaining_balance > 0 %}
+                        <span class="badge bg-warning">Pending</span>
+                    {% else %}
+                        <span class="badge bg-success">Paid</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No payment records found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?q={{ q }}&page=1">&laquo; First</a></li>
+                <li class="page-item"><a class="page-link" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+
+            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?q={{ q }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

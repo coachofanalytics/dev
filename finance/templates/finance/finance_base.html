@@ -1,12 +1,25 @@
-<!-- finance_base.html -->
-<nav class="navbar navbar-default">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">Finance Dashboard</a>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Finance Dashboard{% endblock %}</title>
+    <!-- Include any necessary CSS/JS files -->
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Finance Dashboard</a>
+            </div>
+            <ul class="nav navbar-nav">
+               
+            </ul>
         </div>
-        <ul class="nav navbar-nav">
-            <li><a href="#">OverBoughtSold_list/Sold List</a></li> <!-- Link to overboughtsold_list -->
-            <li><a href="#">Reports</a></li>
-        </ul>
+    </nav>
+
+    <!-- Content Block to be overridden by child templates -->
+    <div class="container">
+        {% block content %}
+        {% endblock %}
     </div>
-</nav>
+</body>
+</html>
