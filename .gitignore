@@ -17,6 +17,8 @@ db.sqlite3-journal
 /gapi/creds/credentials.json
 # /gapi/stored_mails/*
 
+ 
+
 ### Apps ###
 #testing
 
@@ -130,9 +132,11 @@ celerybeat.pid
 .venv
 env/
 venv/
+dc48_venv/
 ENV/
 env.bak/
 venv.bak/
+node_modules/
 
 # Spyder project settings
 .spyderproject
@@ -158,10 +162,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-.DS_Store
 # End of https://www.toptal.com/developers/gitignore/api/django
-
-#Migrations
-accounts/migrations/
-finance/migrations/
-main/migrations/

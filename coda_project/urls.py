@@ -25,6 +25,7 @@ from django.contrib.auth import views as auth_views
 from accounts import views as account_views
 from coda_project import settings
 
+from . import views
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -37,22 +38,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
-    # path(
-    #     "logout/",
-    #     auth_views.LogoutView.as_view(
-    #         #template_name="accounts/registration/DC48K/logins.html"
-    #         template_name="accounts/registration/logout.html"
-    #     ),
-    #     name="account-logout",
-    # ),
     path(
-        "otp-reset/",
-        auth_views.PasswordResetView.as_view(
-            template_name="accounts/registration/otp_reset.html"
+        "logout/",
+        auth_views.LogoutView.as_view(
+            template_name="accounts/registration/DC48K/logins.html"
         ),
-        name="otp_reset",
+        name="account-logout",
     ),
-
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(
@@ -60,19 +52,6 @@ urlpatterns = [
         ),
         name="password_reset",
     ),
-
-    path("password-reset-email/", account_views.password_reset_request, name="password_reset_email"),
-
-
-    path(
-        "password-reset-confirm/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name="accounts/registration/password_reset_confirm.html"
-        ),
-        name="password_reset_confirm",
-    ),
-
-
     path(
         "password-reset/done",
         auth_views.PasswordResetDoneView.as_view(
@@ -80,19 +59,16 @@ urlpatterns = [
         ),
         name="password_reset_done",
     ),
-
-    # Ensure that this pattern exists for 'password_reset_complete'
     path(
-        'reset/done/', 
-        auth_views.PasswordResetCompleteView.as_view(
-            template_name="accounts/registration/password_reset_complete.html"
-        ), 
-         name='password_reset_complete'
+        "password-reset-confirm/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="accounts/registration/password_reset_confirm.html"
+        ),
+        name="password_reset_confirm",
     ),
-
- 
   
     path("", include("main.urls", namespace="main")),
+    path('member/', include('memberjoin.urls')),
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls"), name="finance"),
 
@@ -101,6 +77,7 @@ urlpatterns = [
     path('social_accounts/login/', account_views.login_view),
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
+   path('communities/', include('communities.urls')),
 ]
 
 if settings.DEBUG:

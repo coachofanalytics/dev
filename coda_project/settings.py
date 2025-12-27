@@ -14,23 +14,21 @@ import os
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
+# print(BASE_DIR)
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
+# SECRET_KEY = os.environ.get('SECRET_KEY')
 
-
-#DEBUG Configurations
-if os.environ.get('ENVIRONMENT') == 'production':
-    DEBUG = False
-else:
-    DEBUG = True
-
+DEBUG = True
+# DEBUG = os.environ.get("DEBUG_VALUE") == "True"
 
 SECURE_SSL_REDIRECT = False
 
-
 ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ['127.0.0.1','localhost','codatrainingapp.herokuapp.com','www.codanalytics.net','codanalytics.net']
+# ALLOWED_HOSTS = []
 
-
+# AUTH_USER_MODEL = "accounts.User"
 AUTH_USER_MODEL = "accounts.CustomerUser"
 
 AUTHENTICATION_BACKENDS = (
@@ -44,7 +42,6 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "finance.apps.FinanceConfig",
     "crispy_forms",
-    'crispy_bootstrap4',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -57,14 +54,17 @@ INSTALLED_APPS = [
     "mathfilters",
     "mptt",
     "django_filters",
-    # "django_celery_beat",
-    # "django_celery_results",
+    "django_celery_beat",
+    "django_celery_results",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
-    # "django_crontab",
+    "django_crontab",
+    'memberjoin',
+    'communities'
+
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -80,7 +80,6 @@ CRONJOBS = [
 ]
 
 MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -88,6 +87,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
 
@@ -101,7 +101,8 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR , 'templates')
+            # os.path.join(BASE_DIR, 'templates')
+            "templates"
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -112,6 +113,8 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "main.context_processors.images",
                 "main.context_processors.googledriveurl",
+                "main.context_processors.services",
+                "main.context_processors.healthcare_images",
             ],
             # 'libraries': {
             #     'customfilters': 'application.templatetags.customfilters',
@@ -127,33 +130,21 @@ def dba_values():
         dbname = os.environ.get('HEROKU_DYCPROD_NAME')
         user = os.environ.get('HEROKU_DYCPROD_USER')
         password = os.environ.get('HEROKU_DYCPROD_PASS')
-
     elif os.environ.get('ENVIRONMENT') == 'staging':
         # In Heroku/Postgres it is Heroku_UAT
-        host = os.environ.get('DB_NAME')
-        dbname = os.environ.get('DB_NAME')
-        user = os.environ.get('DB_USER')
-        password = os.environ.get('DB_PASSWORD')
-
+        host = os.environ.get('HEROKU_DYCDEV_HOST')
+        dbname = os.environ.get('HEROKU_DYCDEV_NAME')
+        user = os.environ.get('HEROKU_DYCDEV_USER')
+        password = os.environ.get('HEROKU_DYCDEV_PASS')
     else:
-        # Test in staging database before staging deployment
-        # host = os.environ.get('STG_DB_HOST')
-        # dbname = os.environ.get('STG_DB_NAME') 
-        # user = os.environ.get('STG_DB_USER')
-        # password = os.environ.get('STG_DB_PASSWORD')
-
-        # Test locally 
-        host = os.environ.get('LOCAL_DB_HOST')
-        # dbname = "DC48K" #os.environ.get('LOCAL_DB_NAME') 
-        dbname = os.environ.get('LOCAL_DB_NAME') 
-        user = os.environ.get('LOCAL_DB_USER')
-        password = os.environ.get('LOCAL_DB_PASSWORD') 
-
-
-
-
-        
-
+        host = os.environ.get('HEROKU_DEV_HOST')
+        dbname = os.environ.get('HEROKU_DEV_NAME')
+        user = os.environ.get('HEROKU_DEV_USER')
+        password = os.environ.get('HEROKU_DEV_PASS')
+        # host = os.environ.get('POSTGRES_DB_NAME')
+        # dbname = "CODA_PRACTICE" #os.environ.get('POSTGRES_DB_NAME') 
+        # user = os.environ.get('POSTGRESDB_USER')
+        # password = os.environ.get('POSTGRESSPASS') 
     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
@@ -163,22 +154,39 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": dbname,
-        "USER":user,
-        "PASSWORD":password,
-        "HOST": host
-    }
-}
-
 # DATABASES = {
 #     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": dbname,
+#         "USER":user,
+#         "PASSWORD":password,
+#         "HOST": host
 #     }
 # }
+
+# Local DB
+# DATABASES = {
+#     'default': {
+#         "ENGINE": 'django.db.backends.postgresql',
+#         "NAME": 'd2l066ajig78uh',
+#         "USER": 'uf4o5nponalopo',
+#         "PASSWORD": 'p2f315d6b9430b965799ae1813941756fa47e03c99328df5d063d7049455884a1',
+#         "HOST": 'ce0lkuo944ch99.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  
+#     }
+# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR,"db.sqlite3"),
+    
+    }
+}
+import sys
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'coda_dev'
+    }
 
 
 db_from_env = dj_database_url.config(conn_max_age=600)
@@ -226,7 +234,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-# MEDIA_URL = "/media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 STATIC_ROOT = os.path.join(BASE_DIR,  "staticfiles")
@@ -235,26 +243,50 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # If you have a project-level static directory
     # Add other directories if necessary
 ]
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
 CRISPY_TEMPLATE_PACK = "bootstrap4"
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
+# EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+# EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
-#DC48K email configuration
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_INFO_USE_SSL = False
-EMAIL_INFO_USE_TLS = True
-EMAIL_INFO_PORT = 587
-EMAIL_INFO_HOST = "smtp.privateemail.com"
-EMAIL_INFO_USER = os.environ.get("DC48K_EMAIL_INFO_USER")
-EMAIL_INFO_PASS = os.environ.get("DC48K_EMAIL_INFO_PASS")
+# Gmail Email Backend Account
+# EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_HOST_USER = "hunjin015@gmail.com"
+
+# private email
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_USE_SSL = False
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
+# EMAIL_HOST = "smtp.privateemail.com"
+# EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
+# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS")
+# EMAIL_FILE_PATH = BASE_DIR + "/emails"
+
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-DEFAULT_FROM_EMAIL = EMAIL_INFO_USER
-
-
+EMAIL_INFO = {
+    'USER': os.environ.get('EMAIL_INFO_USER'),
+    'PASS': os.environ.get('EMAIL_INFO_PASS'),
+    'HOST': os.environ.get('EMAIL_HOST'),
+    'PORT': os.environ.get('EMAIL_PORT'),
+    'USE_TLS': os.environ.get('EMAIL_USE_TLS'),
+    'USE_SSL': os.environ.get('EMAIL_USE_SSL'),
+}
+EMAIL_HR = {
+    'USER': os.environ.get('EMAIL_HR_USER'),
+    'PASS': os.environ.get('EMAIL_HR_PASS'),
+    'HOST': os.environ.get('EMAIL_HR_HOST'),
+    'PORT': os.environ.get('EMAIL_HR_PORT'),
+    'USE_TLS': os.environ.get('EMAIL_HR_USE_TLS'),
+    'USE_SSL': os.environ.get('EMAIL_HR_USE_SSL'),
+}
 
 AWS_S3_REGION_NAME = "us-east-2"  # change to your region
 AWS_S3_SIGNATURE_VERSION = "s3v4"
@@ -265,28 +297,28 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
 
-# from celery.schedules import crontab
+from celery.schedules import crontab
 
-# CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-# CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
-# CELERY_ACCEPT_CONTENT = ["application/json"]
-# CELERY_TASK_SERIALIZER = "json"
-# CELERY_RESULT_SERIALIZER = "json"
-# CELERY_IMPORTS = "coda_project.task"
+CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_IMPORTS = "coda_project.task"
 
-# CELERYBEAT_SCHEDULE = {
-#     "run_on_every_1st": {
-#         "task": "task_history",
-#         "schedule": crontab(0, 0, day_of_month="1"),
-#         #'schedule': crontab(),
-#     },
+CELERYBEAT_SCHEDULE = {
+    "run_on_every_1st": {
+        "task": "task_history",
+        "schedule": crontab(0, 0, day_of_month="1"),
+        #'schedule': crontab(),
+    },
 
-#     "run_on_every_1st": {
-#         "task": "advertisement",
-#         "schedule": crontab(0, 0, day_of_month="1"),
-#         #'schedule': crontab(),
-#     },
-# }
+    "run_on_every_1st": {
+        "task": "advertisement",
+        "schedule": crontab(0, 0, day_of_month="1"),
+        #'schedule': crontab(),
+    },
+}
 
 #==================PAYMENT SETTINGS=================
 # Testing Payment methods
@@ -333,30 +365,3 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
-
-
-# Azure configuration --> To host images used especially for the governance structure
-
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-
-AZURE_ACCOUNT_NAME = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
-AZURE_ACCOUNT_KEY = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
-AZURE_CONTAINER = 'web-dev-media'
-AZURE_URL_EXPIRATION_SECS = None
-
-
-# Optional: Configure the URL
-MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
-
-SECURE_SSL_REDIRECT = False
-
-
-
-
-# Stripe checkout & webhook configuration keys.
-if os.environ.get('ENVIRONMENT') == 'production':
-    STRIPE_SECRET_KEY = os.environ.get('STRIPE_LIVE_SECRET_KEY')
-    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_LIVE_WEBHOOK_SECRET')
-else:
-    STRIPE_SECRET_KEY = os.environ.get('STRIPE_TEST_SECRET_KEY')
-    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_TEST_WEBHOOK_SECRET')

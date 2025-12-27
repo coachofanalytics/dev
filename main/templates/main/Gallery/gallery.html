@@ -24,12 +24,12 @@
     <h1 class="my-4">Gallery</h1>
     <div class="gallery">
         {% for image in images %}
-            <div class="gallery-item">
-                <img src="{{ image.image.url }}" alt="{{ image.title }}" class="img-fluid">
-                <h5>{{ image.title }}</h5>
-                <p>{{ image.description }}</p>
-            </div>
-        {% endfor %}
+        <div class="gallery-item">
+            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="img-fluid">
+            <h5>{{ image.title }}</h5>
+            <p>{{ image.description }}</p>
+        </div>
+    {% endfor %}   
     </div>
 </div>
 

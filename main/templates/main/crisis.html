@@ -1,0 +1,611 @@
+{% extends "main/base_templates/base.html"%}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crisis Management | Diaspora County 48</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+        .text-brand-blue { color: #1e40af; } 
+        .bg-brand-blue { background-color: #1e40af; } 
+        .text-brand-green { color: #0a926d; } 
+        .bg-brand-green { background-color: #0a926d; }
+        .text-brand-red { color: #cc0000; }
+        .bg-brand-red { background-color: #cc0000; } 
+        .main-heading { font-weight: 900; } 
+         
+        .service-block {
+            margin-bottom: 4rem;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        } 
+        .service-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .service-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: #cc0000;  
+            border-radius: 50%;
+        }
+ 
+        .loading-placeholder {
+            min-height: 280px; 
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-custom {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+ 
+        .hero-image-container {
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0a926d;
+            border-radius: 50%; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 50;
+            transition: transform 0.3s ease-in-out;
+        }
+        #chat-button:hover {
+            transform: scale(1.1);
+        }
+        #chat-container {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            max-width: 90vw;
+            background-color: white; 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: none; 
+            flex-direction: column;
+            z-index: 50;
+            overflow: hidden;
+        }
+         #chat-container.open {
+            display: flex;
+        }
+ 
+        #chat-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+ 
+        #chat-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f7f9fc;  
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+         
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+        .bot-message {
+            background-color: #e6f7f4;  
+            color: #0a926d;  
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+        .user-message {
+            background-color: #1e40af;  
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+        }
+ 
+        #chat-input-area {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        #chat-input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #chat-input:focus {
+            border-color: #1e40af;
+        }
+ 
+        #send-button {
+            margin-left: 0.75rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+    </style>
+</head>
+<body>
+    <script>
+        
+ function toggleChat() {
+            const chatContainer = document.getElementById('chat-container');
+            const chatButton = document.getElementById('chat-button');
+            const isOpen = chatContainer.classList.toggle('open');
+             
+            chatButton.innerHTML = isOpen ? `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>` : `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+            if (isOpen) { 
+                const messages = document.getElementById('chat-messages');
+                if (messages.children.length === 0) { 
+                    appendMessage("Welcome! I'm the **Crisis AI Assistant** for Diaspora County 48. Feel free to ask me for information on **Emergency** support, safety **Advisories**, **Welfare** checks, or general **Contact** details.", 'bot');
+                }
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+             
+            let content = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            messageElement.classList.add('message-bubble', sender === 'user' ? 'user-message' : 'bot-message');
+            messageElement.innerHTML = content;
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;  
+        }
+
+        function handleUserInput() {
+            const inputElement = document.getElementById('chat-input');
+            const message = inputElement.value.trim();
+
+            if (message) { 
+                appendMessage(message, 'user');
+ 
+                setTimeout(() => {
+                    const response = simulateAIResponse(message);
+                    appendMessage(response, 'bot');
+                }, 800);  
+                inputElement.value = '';
+            }
+        }
+
+        function simulateAIResponse(userMessage) {
+            const lowerCaseMessage = userMessage.toLowerCase();
+
+            if (lowerCaseMessage.includes('emergency')) {
+                return "🚨 **EMERGENCY INFO:** If you are in immediate danger, **dial your local emergency number first**. Our 24/7 hotline provides consular, legal, and welfare assistance after you are safe. Key contacts are listed under the 'Emergency Response' section above.";
+            } else if (lowerCaseMessage.includes('advisory')) {
+                return "📢 **ADVISORY INFO:** We monitor real-time security, weather, and public health threats. To subscribe to alerts for your region, please click the 'Subscribe to Safety Alerts' link in the Advisories section.";
+            } else if (lowerCaseMessage.includes('welfare') || lowerCaseMessage.includes('check')) {
+                return "❤️ **WELFARE CHECK:** We can conduct urgent welfare checks for registered members. Please state the full name and last known location of the individual you are concerned about for immediate processing.";
+            } else if (lowerCaseMessage.includes('contact')) {
+                return "📞 **CONTACT:** The Diaspora County 48 Crisis Line is available 24/7. You can find the contact number by clicking the 'Contact DC48K Crisis Line' button in the red section at the bottom of the page.";
+            } else { 
+                return "That's a good question! I specialize in crisis services. To get the most relevant response, try focusing your question on one of these areas: **Emergency** support, safety **Advisories**, **Welfare** checks, or general **Contact** information.";
+            }
+        }
+
+        window.onload = function() { 
+            
+            document.getElementById('chat-button').addEventListener('click', toggleChat);
+            document.getElementById('send-button').addEventListener('click', handleUserInput);
+            document.getElementById('chat-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    handleUserInput();
+                }
+            });
+
+            // Subscription UI wiring
+            const openBtn = document.getElementById('open-subscribe');
+            const box = document.getElementById('subscribe-box');
+            const form = document.getElementById('alerts-form');
+            const feedback = document.getElementById('alerts-feedback');
+
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+
+            if (openBtn && box) {
+                openBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    box.classList.toggle('hidden');
+                    if (!box.classList.contains('hidden')) {
+                        const emailInput = document.getElementById('alerts-email');
+                        if (emailInput) emailInput.focus();
+                    }
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', async function(e){
+                    e.preventDefault();
+                    const emailInput = document.getElementById('alerts-email');
+                    const email = emailInput ? emailInput.value : '';
+                    if (feedback) {
+                        feedback.textContent = 'Subscribing...';
+                        feedback.className = 'text-gray-600 text-sm mt-2';
+                    }
+                    const csrfToken = (document.querySelector('#alerts-form input[name=csrfmiddlewaretoken]')?.value) || getCookie('csrftoken');
+
+                    try {
+                        const resp = await fetch("{% url 'main:subscribe_alerts' %}", {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-CSRFToken': csrfToken,
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: new URLSearchParams({ email })
+                        });
+                        if (!resp.ok) {
+                            const text = await resp.text();
+                            throw new Error('HTTP ' + resp.status + ' ' + text);
+                        }
+                        const data = await resp.json();
+                        if (feedback) {
+                            feedback.textContent = data.message || (data.success ? 'Subscribed.' : 'Something went wrong.');
+                            feedback.className = (data.success ? 'text-green-600' : 'text-red-600') + ' text-sm mt-2';
+                        }
+                        if (data.success && form) {
+                            form.reset();
+                        }
+                    } catch (err) {
+                        if (feedback) {
+                            feedback.textContent = 'Request failed. ' + (err && err.message ? err.message : 'Please try again.');
+                            feedback.className = 'text-red-600 text-sm mt-2';
+                        }
+                    }
+                });
+            }
+
+            // Helpline modal wiring
+            const openHelpline = document.getElementById('open-helpline');
+            const helplineModal = document.getElementById('helpline-modal');
+            const helplineClose = document.getElementById('helpline-close');
+            const helplineForm = document.getElementById('helpline-form');
+            const helplineMsg = document.getElementById('helpline-msg');
+
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+
+            if (openHelpline && helplineModal) {
+                openHelpline.addEventListener('click', function(e){
+                    e.preventDefault();
+                    helplineModal.classList.remove('hidden');
+                });
+            }
+            if (helplineClose && helplineModal) {
+                helplineClose.addEventListener('click', function(){
+                    helplineModal.classList.add('hidden');
+                });
+            }
+            if (helplineForm) {
+                helplineForm.addEventListener('submit', async function(e){
+                    e.preventDefault();
+                    if (helplineMsg) {
+                        helplineMsg.textContent = 'Submitting...';
+                        helplineMsg.className = 'text-gray-600 text-sm mt-2';
+                    }
+                    const csrfToken = (document.querySelector('#helpline-form input[name=csrfmiddlewaretoken]')?.value) || getCookie('csrftoken');
+                    const payload = new URLSearchParams({
+                        name: document.getElementById('hl-name')?.value || '',
+                        phone: document.getElementById('hl-phone')?.value || '',
+                        location: document.getElementById('hl-location')?.value || '',
+                        notes: document.getElementById('hl-notes')?.value || ''
+                    });
+                    try {
+                        const resp = await fetch("{% url 'main:activate_helpline' %}", {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-CSRFToken': csrfToken,
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: payload
+                        });
+                        if (!resp.ok) {
+                            const text = await resp.text();
+                            throw new Error('HTTP ' + resp.status + ' ' + text);
+                        }
+                        const data = await resp.json();
+                        if (helplineMsg) {
+                            helplineMsg.textContent = data.message || (data.success ? 'Request received.' : 'Something went wrong.');
+                            helplineMsg.className = (data.success ? 'text-green-600' : 'text-red-600') + ' text-sm mt-2';
+                        }
+                        if (data.success) {
+                            helplineForm.reset();
+                        }
+                    } catch (err) {
+                        if (helplineMsg) {
+                            helplineMsg.textContent = 'Request failed. ' + (err && err.message ? err.message : 'Please try again.');
+                            helplineMsg.className = 'text-red-600 text-sm mt-2';
+                        }
+                    }
+                });
+            }
+
+            // Emergency Contacts modal wiring (read-only list)
+            const openContacts = document.getElementById('open-contacts');
+            const contactsModal = document.getElementById('contacts-modal');
+            const contactsClose = document.getElementById('contacts-close');
+
+            if (openContacts && contactsModal) {
+                openContacts.addEventListener('click', function(e){
+                    e.preventDefault();
+                    contactsModal.classList.remove('hidden');
+                });
+            }
+            if (contactsClose && contactsModal) {
+                contactsClose.addEventListener('click', function(){
+                    contactsModal.classList.add('hidden');
+                });
+            }
+        };
+
+    </script>
+     <!-- HERO SECTION -->
+        <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
+                <!-- Text Content Column -->
+                <div class="p-8 md:p-12 lg:p-16">
+                    <h1 class="text-5xl main-heading mb-4">CRISIS MANAGEMENT</h1>
+                    <h2 class="text-xl font-medium text-gray-200 mb-8">
+                        Immediate, reliable support and rapid response during personal or civil emergencies abroad.
+                    </h2>
+                    <a href="#" id="open-helpline" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg text-lg">
+                        ACTIVATE EMERGENCY HELP LINE (24/7)
+                    </a>
+                </div>
+                <!-- Image Column -->
+                <div class="w-full h-full hero-image-container">
+                    <img id="image-hero"  
+                         src="{% static 'main/img/lady.png' %}" 
+                         class="w-full h-full object-cover loading-placeholder"
+                         style="max-height: 400px; min-height: 400px;">
+                </div>
+            </div>
+        </header>
+        <!-- Mission/Introduction Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
+            <h3 class="text-4xl main-heading text-gray-800 mb-4">Preparedness and Rapid Response</h3>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto">
+                In times of uncertainty, quick access to information and direct assistance is paramount.
+                 Our Crisis Management services ensure your safety and provide coordinated support wherever you are.
+            </p>
+        </section>
+        <!-- SERVICES DETAILED BLOCKS (Alternating Layout) -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- 1. Emergency Response (Image Left) -->
+            <div id="emergency-response" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Image -->
+                <div class="lg:order-1">
+                    <img id="image-response" src="{% static 'main/img/world.png' %}" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
+                <!-- Content -->
+                <div class="lg:order-2">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Emergency Response</h3>
+                    <p class="text-gray-700 mb-6">
+                        We provide immediate, confidential assistance for critical situations, acting as a liaison between local authorities, the Consulate, and your family.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>24/7 Crisis Hotline for immediate physical and legal emergencies</li>
+                        <li>Coordinated assistance in cases of detention, hospitalization, or disappearance</li>
+                        <li>Urgent welfare checks and family notification services</li>
+                        <li>Referrals to emergency legal counsel and repatriation assistance</li>
+                    </ul>
+                    <div class="mt-6">
+                        <a href="#" id="open-contacts" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md 
+                        uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
+                            View Emergency Contact List
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- 2. Advisories (Image Right) -->
+            <div id="advisories" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                 <!-- Content -->
+                <div class="lg:order-1">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Advisories</h3>
+                    <p class="text-gray-700 mb-6">
+                        Stay informed about political unrest, natural disasters, and health crises in your region. We deliver official, real-time safety updates and preparedness information.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>Real-time security and political stability alerts by region</li>
+                        <li>Guidance on severe weather and natural disaster preparedness</li>
+                        <li>Mandatory evacuation and sheltering-in-place instructions</li>
+                        <li>Public health alerts and travel restriction updates</li>
+                    </ul>
+                     <div class="mt-6">
+                        <a href="#" id="open-subscribe" class="inline-block bg-brand-green text-white font-bold py-3
+                         px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                            Subscribe to Safety Alerts
+                        </a>
+                     </div>
+                    <div id="subscribe-box" class="mt-4 hidden">
+                      <form id="alerts-form" method="post">
+                        {% csrf_token %}
+                        <input type="email" name="email" id="alerts-email" placeholder="Enter your email"
+                               class="border rounded px-3 py-2 w-full md:w-64" required />
+                        <button type="submit"
+                                class="inline-block bg-brand-green text-white font-bold py-2 px-4 rounded-md mt-2">
+                          Subscribe
+                        </button>
+                        <p id="alerts-feedback" class="text-sm mt-2"></p>
+                      </form>
+                    </div>
+                </div>
+                <!-- Image -->
+                <div class="lg:order-2">
+                    <img id="image-advisories" src="{% static 'main/img/family.png' %}" 
+                    class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
+            </div>
+            <!-- ChatboxAssistance section -->
+           
+<div id="chat-button" class="bg-brand-green text-white">
+  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+       xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+  </svg>
+</div>
+ 
+<div id="chat-container">
+  <div id="chat-header" class="bg-brand-blue text-white flex justify-between items-center">
+    <h4 class="text-lg font-bold">Crisis AI Assistant</h4>
+    <button onclick="toggleChat()" class="text-white hover:text-gray-200 p-1 rounded-full">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+ 
+  <div id="chat-messages"></div>
+
+  <div id="chat-input-area">
+    <input type="text" id="chat-input"
+           placeholder="Ask about crisis management..."
+           class="text-gray-700 flex-grow border rounded-full px-3 py-2 focus:outline-none focus:ring focus:ring-brand-blue">
+    <button id="send-button" class="ml-2 bg-brand-green text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-[#086a4f] transition duration-300">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Helpline Modal -->
+<div id="helpline-modal" class="fixed inset-0 bg-black/50 hidden z-50">
+  <div class="bg-white max-w-lg mx-auto mt-24 rounded-lg shadow-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-xl font-bold text-brand-red">Emergency Help Line</h4>
+      <button id="helpline-close" class="text-gray-500 hover:text-gray-700">✕</button>
+    </div>
+
+    <div class="mb-6">
+      <h5 class="font-semibold mb-2">Call a hotline now</h5>
+      <div class="space-y-2">
+        {% if hotlines %}
+          {% for h in hotlines %}
+            <a href="tel:{{ h.number }}" class="block w-full text-center bg-brand-red text-white font-semibold py-2 rounded hover:bg-red-700">
+              {{ h.name }} — {{ h.number }}
+            </a>
+          {% endfor %}
+        {% else %}
+          <p class="text-gray-600 text-sm">No hotlines configured yet. Ask an admin to add some in the dashboard.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      <h5 class="font-semibold mb-2">Request a callback</h5>
+      <form id="helpline-form" method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 gap-3">
+          <input id="hl-name" name="name" type="text" placeholder="Your name (optional)" class="border rounded px-3 py-2 w-full">
+          <input id="hl-phone" name="phone" type="tel" placeholder="Your phone (required)" class="border rounded px-3 py-2 w-full" required>
+          <input id="hl-location" name="location" type="text" placeholder="Location (optional)" class="border rounded px-3 py-2 w-full">
+          <textarea id="hl-notes" name="notes" placeholder="Brief description (optional)" class="border rounded px-3 py-2 w-full"></textarea>
+        </div>
+        <button type="submit" class="mt-3 bg-brand-green text-white font-semibold py-2 px-4 rounded hover:bg-[#086a4f]">Request Callback</button>
+        <p id="helpline-msg" class="text-sm mt-2"></p>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Emergency Contacts Modal (read-only list) -->
+<div id="contacts-modal" class="fixed inset-0 bg-black/50 hidden z-50">
+  <div class="bg-white max-w-lg mx-auto mt-24 rounded-lg shadow-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-xl font-bold text-brand-red">Emergency Contact List</h4>
+      <button id="contacts-close" class="text-gray-500 hover:text-gray-700">✕</button>
+    </div>
+
+    <div>
+      {% if hotlines %}
+        <ul class="divide-y divide-gray-200">
+          {% for h in hotlines %}
+            <li class="py-3 flex items-center justify-between">
+              <div>
+                <p class="font-semibold">{{ h.name }}</p>
+                <p class="text-sm text-gray-600">{{ h.number }}</p>
+              </div>
+              <a href="tel:{{ h.number }}" class="ml-4 bg-brand-red text-white text-sm font-semibold py-2 px-3 rounded hover:bg-red-700">Call</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-gray-600 text-sm">No emergency contacts configured yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,160 @@
+
+{% load crispy_forms_tags %}
+{% block content %}
+<style>
+    /* main/static/main/css/custom.css */
+body {
+    background-color: #f0f2f5;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    margin: 20px;
+}
+
+.card-header {
+    text-align: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.card-header h2 {
+    margin: 0;
+    color: #007bff;
+}
+
+.card-body {
+    padding: 20px 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form .form-group {
+    margin-bottom: 15px;
+}
+
+form .form-group label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+form .form-group input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 100%;
+    transition: border-color 0.3s;
+}
+
+form .form-group input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+form .form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+form .form-check input {
+    margin-right: 10px;
+}
+
+form .form-check label {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+form .form-check a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+form .form-check a:hover {
+    text-decoration: underline;
+}
+
+form .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    transition: background-color 0.3s;
+}
+
+form .btn:hover {
+    background-color: #0056b3;
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.form-footer p {
+    margin: 0;
+    color: #666;
+}
+
+.form-footer a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.form-footer a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+</style>
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2>Register</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="form-check">
+                    <input type="checkbox" id="agree" name="agree" required>
+                    <label for="agree">
+                        I agree to the <a href="#">privacy policy</a>
+                    </label>
+                </div>
+                <button type="submit" class="btn">Register</button>
+            </form>
+        </div>
+        <div class="form-footer">
+            <p>Already have an account? <a href="#">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

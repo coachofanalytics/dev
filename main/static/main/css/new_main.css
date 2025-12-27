@@ -108,7 +108,6 @@ body {
 }
 
 .top-left-coloumn {
-  background-image: url(/static/data/img/banner1.png);
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -130,11 +129,7 @@ body {
   font-weight: bold;
 }
 
-/* .bottom-left-coloumn{
-  background-image: url('/static/data/img/coda_CEO.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-} */
+
 @media screen and (max-width:768px) {
   .top-coloumn {
       padding: 3rem 1rem 3rem 2rem;
@@ -143,7 +138,6 @@ body {
 /* ========================endoftraining=========================== */
 
 .banner-div {
-  background-image: url("../image/banner.jpg");
   min-height: 100vh;
   background-repeat: no-repeat;
   background-position: center;

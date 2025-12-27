@@ -1,0 +1,85 @@
+{%extends "main/base_templates/base.html"%}
+{%load crispy_forms_tags%}{% block content %}
+
+<div class="sign-up-div">
+  <form method="POST" enctype="multipart/form-data" autocomplete="off">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      <div class="row">
+          <!-- Dont touch below this -->
+          <div class="col-lg-12 form-div">
+            <div class="row">
+              <div class="col-md-2 align-self-center">
+                <p class="mb-0">First Name</p>
+              </div>
+              <div class="col-md-10">
+                {{form.first_name|as_crispy_field}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2 align-self-center">
+                <p class="mb-0">Last Name</p>
+              </div>
+              <div class="col-md-10">
+                {{form.last_name|as_crispy_field }}
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-2 align-self-center">
+                <p class="mb-0">Password</p>
+              </div>
+              <div class="col-md-10">
+                {{form.password1|as_crispy_field }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2 align-self-center">
+                <p class="mb-0">Confirm Password</p>
+              </div>
+              <div class="col-md-10">
+                {{form.password2|as_crispy_field }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2 align-self-center">
+                <p class="mb-0">Email</p>
+              </div>
+              <div class="col-md-10">
+                {{form.email|as_crispy_field }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2 align-self-center">
+                <p class="mb-0">Gender</p>
+              </div>
+              <div class="col-md-10">
+                {{form.gender|as_crispy_field }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2 align-self-center">
+                <p class="mb-0">Phone</p>
+              </div>
+              <div class="col-md-10">
+                {{form.phone|as_crispy_field }}
+              </div>
+            </div>
+          <div class="form-group row">
+            <div class="col-md-6">
+              <button class="btn btn-outline-info" type="submit">Sign Up</button>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted text-center">
+                Already Have An Account?
+                <a class="ml-2" href="{% url 'accounts:account-login' %}">Sign In</a>
+              </small>
+            </div>
+          </div>
+          </div>
+      </div>
+    </fieldset>
+  </form>
+ </div>
+
+{% endblock content%}

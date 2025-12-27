@@ -1,0 +1,36 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto mt-4 p-6 bg-white rounded-lg shadow-lg">
+    <h2 class="text-3xl font-bold mb-6">Join the Community</h2>
+
+    <div id="form-messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 px-4 py-2 rounded {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <form method="POST" action="{% url 'join' %}" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- This renders your form fields -->
+        
+        <div class="flex justify-between">
+            <!-- Submit Button -->
+            <button type="submit" class="bg-brand-green text-white font-bold py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
+                Submit
+            </button>
+            
+            <!-- Cancel Button - Redirects to the community page or any other page -->
+            <a href="{% url 'home' %}" class="bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+                Cancel
+            </a>
+        </div>
+    </form>
+</section>
+{% endblock %}
+

@@ -3,10 +3,7 @@
 {% load static %}
 {% block content %}
 <div class="email-verification-container">
-    <div class="email-verification-icon">
-        <img src="{% static 'accounts/img/email.jpeg' %}" alt="Email Icon">
-    </div>
-   
+  
      <!-- Display success message -->
     {% if verification_status == "success" %}
     <h3>You are welcomed in DC48K</h3>

@@ -1,5 +1,4 @@
-import os
-from openai import OpenAI
+import os,openai
 import requests
 from coda_project.settings import SITEURL
 from .models import Assets
@@ -52,8 +51,7 @@ def generate_chatbot_response(user_message, user_message_dict=None):
         ]
     else:
         messages = user_message_dict
-    # client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+    client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
 
     response = client.chat.completions.create(
     # response = openai.completions.create(
@@ -79,7 +77,7 @@ def generate_chatbot_response(user_message, user_message_dict=None):
 def path_values(request):
     try:
         previous_path = request.META.get('HTTP_REFERER', '')
-    except Exception:
+    except Exception as e:
         previous_path = f"{SITEURL}/management/companyagenda/"
 
     pre_value = previous_path.split("/")

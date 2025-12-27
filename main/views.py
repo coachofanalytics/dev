@@ -1,26 +1,55 @@
 from django.shortcuts import redirect, render
+from datetime import datetime,date,timedelta
+from dateutil.relativedelta import relativedelta
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from .models import * #Assets,Description, News, Page, Service, SubService,Team
+#<<<<<<< 25.10_DC48_UAT_UO
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
+#=======
+from django.db.models import Q
+#<<<<<<< HEAD
+#<<<<<<< HEAD
+from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
+#>>>>>>> 25.10_DC48_UAT_ND
+#=======
+from .models import (
+    Assets, Description, News, Page, Service, Scholarship, SubService, Team,
+    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry
+)
+#>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
-from .utils import generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm, GovernanceForm
+from .utils import image_view, path_values
+from django.views.decorators.csrf import csrf_exempt
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
 from django.contrib.auth import get_user_model
+#<<<<<<< 25.10_DC48_UAT_UO
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
+#=======
 
-from mail.custom_email import send_email
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from coda_project import settings
-from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
+# Details Donation View
+class DonationDetailView(DetailView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_detail.html'
+# Create Donation View
+class DonationCreateView(CreateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_create.html'
+    success_url = reverse_lazy('main:donation')
 
-#new code cece's assignment
-from .models import History, ContactUs
-
-
+#>>>>>>> 25.10_DC48_UAT_ND
 User=get_user_model()
 
 
@@ -59,6 +88,19 @@ def template_errors(request):
     return render(request, 'main/errors/template_error.html', context)
 
 
+
+@csrf_exempt
+def medical_resource_form(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        # Redirect using the named URL so it works regardless of include path
+        return redirect('main:healthcare_info')
+    return render(request, 'main/data/medical_resource_form.html')
+
+
 def general_errors(request):
     # return render(request, "main/errors/noresult.html")
     context={'message':'message'}
@@ -89,20 +131,29 @@ def checkout(request):
 from django.shortcuts import get_object_or_404
 
 
-
 def layout(request):
-    print("In layout")
-    print("news table")
-    page_instance = Page.objects.get(page_name='Home')
+#<<<<<<< 25.10_DC48_UAT_UO
+    page_instance, _ = Page.objects.get_or_create(page_name='Home')
+    description = Description.objects.filter(page=page_instance)
+#=======
+#<<<<<<< HEAD
+    # Define page_instance for the home page or desired page
+    page_instance = Page.objects.filter(page_name='Home').first()
+    description = Description.objects.filter(page=page_instance)
+#=======
+    # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
+    page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page = page_instance)
+#>>>>>>> origin/25.10_DC48K_UAT_FN
+#>>>>>>> 25.10_DC48_UAT_ND
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
-  
+    print(news)
    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
-        message='Thank You, we will get back to you within 48 hours.'
+        message=f'Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -129,48 +180,9 @@ def layout(request):
         }
     return render(request, "main/home_templates/home.html",context)
 
-
-
-
-# def layout(request):
-#     page_instance = Page.objects.get(page_name='Home')
-#     description = Description.objects.filter(page = page_instance)
-#     service = Service.objects.all()
-#     subservice = SubService.objects.all()
-#     news = News.objects.all().order_by('-published_date')[:3] 
-#     print(news)
-   
-#     if request.method == "POST":
-#         form = ContactForm(request.POST, request.FILES)
-#         message=f'Thank You, we will get back to you within 48 hours.'
-#         context={
-#             "message":message,
-#             # "link":SITEURL+'/management/companyagenda'
-#         }
-#         if form.is_valid():
-#             # form.save()
-#             instance=form.save(commit=False)
-#             # instance.client_name='admin',
-#             instance.task='NA',
-#             instance.plan='NA',
-#             instance.trained_by=request.user
-#             instance.save()
-#             # return redirect("management:assessment")
-#             return render(request, "main/errors/generalerrors.html",context)
-#     else:
-#         form = ContactForm()
-#     context={
-#             # "posts":posts,
-#             "form": form,
-#             'description': description,
-#             'service': service,
-#             'news':news,
-#             'subservice':subservice
-#         }
-#     return render(request, "main/home_templates/home.html",context)
-
-def history(request):
-    page_instance = Page.objects.get(page_name='About')
+def History(request):
+    # Ensure About page exists to avoid crashes when the DB is empty
+    page_instance, _ = Page.objects.get_or_create(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
             
@@ -206,6 +218,9 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
     def get_success_url(self):
         return reverse('main:images') 
     
+def crisis_page(request):
+    hotlines = EmergencyHotlines.objects.filter(active=True).order_by("sort_order", "id")
+    return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
 
@@ -217,22 +232,129 @@ def team_list(request):
     return render(request, 'main/snippets_templates/table/team.html', {'info': teams})
 
 
+@require_POST
+@csrf_protect
+def subscribe_alerts(request):
+    email = request.POST.get('email', '').strip().lower()
+    if not email:
+        return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
+
+    subject = "DC48K Safety Alerts Subscription"
+    html_message = """
+      <p>Thank you for subscribing to DC48K Safety Alerts.</p>
+      <p>You will receive updates about advisories and safety information.</p>
+    """
+    plain_message = strip_tags(html_message)
+    # Check if already subscribed
+    existing = SafetyAlertSubscription.objects.filter(email=email).first()
+    if existing and existing.is_active:
+        return JsonResponse({'success': True, 'message': 'You are already subscribed to Safety Alerts.'})
+
+    if existing and not existing.is_active:
+        existing.is_active = True
+        existing.save()
+    else:
+        SafetyAlertSubscription.objects.create(
+            email=email,
+            user=request.user if request.user.is_authenticated else None,
+            is_active=True,
+        )
+
+    # Attempt to send confirmation email
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            None,  # uses DEFAULT_FROM_EMAIL
+            [email],
+            html_message=html_message,
+        )
+        return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
+    except Exception:
+        # Gracefully succeed even if email backend is unavailable
+        return JsonResponse({'success': True, 'message': 'Subscribed! (Email could not be sent right now.)'})
 
 
 
 
     
 
-from .models import Service,Gallery,ContactUs
+from django.shortcuts import render
+from .models import Service,ContactUs
+from django.db.models import Q
+from .models import Scholarship
+from .forms import ScholarshipSearchForm
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
     return render(request, 'main/services.html', {'services': services})
 
 
-def gallery_list(request):
-    images = Gallery.objects.all()
-    return render(request, 'main/Gallery/gallery.html', {'images': images})
+def healthcare_info(request):
+    """
+    Render the Healthcare Information page (per spec this page presents financial services content).
+    """
+    hero = {
+        'title': 'FINANCIAL SERVICES',
+        'subtitle': 'Secure your wealth, invest smart, and manage your cross-border finances with confidence.',
+        'cta_text': 'BOOK A FINANCIAL CONSULTATION',
+        'hero_image': 'main/img/healthcare/doctor.svg',
+    }
+
+    mission = {
+        'heading': 'Empowering Your Global Financial Future',
+        'paragraph': 'International finance, investments, and repatriating funds can be complex. Our platform provides trusted tools and expert guidance to help you manage wealth across borders with confidence and compliance.'
+    }
+
+    sections = [
+        {
+            'number': '1',
+            'title': 'Banking and Investment',
+            'description': 'Access strategic advice on managing assets both locally and in Kenya. Connect with trusted partners for banking, real estate, and portfolio growth opportunities.',
+            'bullets': [
+                'Diaspora-focused mortgage and loan referrals',
+                'Investment advisory for Kenyan stocks, bonds, and real estate',
+                'Guidance on setting up international and Kenyan bank accounts',
+                'Tax consultation and dual residency compliance',
+            ],
+            'cta_text': 'Explore Investment Portfolios',
+            'image': 'main/img/healthcare/patient.svg',
+            'align': 'left',
+        },
+        {
+            'number': '2',
+            'title': 'Remittances and Currency Exchange',
+            'description': 'Ensure your money gets home quickly, safely, and cost-effectively. We compare and vet providers for the best rates and lowest fees.',
+            'bullets': [
+                'Real-time currency exchange comparisons',
+                'Verified low-fee remittance partners',
+                'Guidance on large fund transfers and declarations',
+                'Alerts on economic and regulatory changes affecting transfers',
+            ],
+            'cta_text': 'View Remittance Calculator',
+            'image': 'main/img/healthcare/doctor.svg',
+            'align': 'right',
+        }
+    ]
+
+    contact_cta = {
+        'heading': 'URGENT MEDICAL ADVISORY',
+        'description': "For life-threatening emergencies, always dial your host country's local emergency number first.",
+        'cta_text': 'View Emergency Contacts by Country',
+    }
+
+    context = {
+        'hero': hero,
+        'mission': mission,
+        'sections': sections,
+        'contact_cta': contact_cta,
+    }
+
+    return render(request, 'main/data/healthcare_info.html', context)
+
+
+
+
 
 
 
@@ -259,325 +381,283 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+#<<<<<<< 25.10_DC48_UAT_UO
+@require_POST
+@csrf_protect
+def activate_helpline(request):
+    name = request.POST.get('name', '').strip() or None
+    phone = request.POST.get('phone', '').strip() or None
+    location = request.POST.get('location', '').strip() or None
+    notes = request.POST.get('notes', '').strip() or None
 
+    # Basic validation
+    if not phone:
+        return JsonResponse({'success': False, 'message': 'Phone number is required.'}, status=400)
 
+    # Client IP
+    ip = request.META.get('HTTP_X_FORWARDED_FOR')
+    if ip:
+        ip = ip.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
 
-# Send a welcome email to a new user
-
-def send_notification(request):
-    url = 'email/welcome.html'
-    new_user = CustomerUser.objects.all().order_by('-id').first()
-    print(new_user)
-    
-    print(new_user)
-    print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
-
-
-    user_category = "Ordinary"
-    first_name = new_user.first_name
-    last_name = new_user.last_name
-    user_id = new_user.member_number
-    user_email = new_user.email
-    subject = "Welcome To DC48K"
-
-    print(new_user.id)
-
-    context = {
-        'user_category': user_category,
-        'first_name': first_name,
-        'last_name': last_name,
-        'user_id': user_id,
-        'subject': subject
-    }
-    try:
-        send_email(
-            category=user_category,
-            to_email=[user_email],
-            subject=subject,
-            html_template=url,
-            context=context
-        )
-
-        print("EMAIL SENT")
-        # return render(request,url, context)
-        # return render(request, 'main/messages/message.html', context)
-    except Exception as e:
-        error_message = (
-            f'Hi {request.user.first_name}, Your message to '
-            f'{request.user.email} was unsuccessful. '
-            f'Please try again or contact info@diasporacounty48.org. Thank You. '
-            f'Error: {e}'
-        )
-        return render(request, 'main/messages/message.html', {"message": error_message})
-
-    # return render(request, url, context)
-
-
-
-
-def send_welcome_email(user_id=None): 
-    url = 'email/welcome.html'
-    user_information = CustomerUser.objects.get(id=user_id)
-    user_category = user_information.category
-    first_name = user_information.first_name
-    last_name = user_information.last_name
-    user_id = user_information.id
-    user_email = user_information.email
-    subject = "Welcome To DC48K"
-
-   
-    context = {
-        'user_category': user_category,
-        'first_name': first_name,
-        'last_name': last_name,
-        'user_id': user_id
-    }
-    html_message = render_to_string(url, context)
-
-    email = EmailMessage(
-        subject=subject,
-        body = html_message,
-        from_email = settings.EMAIL_HOST_USER,
-        to = [user_email]
+    # Log activation
+    EmergencyHelpActivations.objects.create(
+        event_type="callback_requested",
+        name=name,
+        phone=phone,
+        location=location,
+        notes=notes,
+        ip_address=ip,
     )
-    email.content_subtype = 'html'
-    email.send()
-    print('Email Sent Successfully')
 
+    # Notify active staff via email
+    recipients = list(
+        StaffContact.objects.filter(is_active=True, notify_via_email=True)
+        .exclude(email__isnull=True)
+        .exclude(email__exact='')
+        .values_list('email', flat=True)
+    )
 
-
-def gethelp_list(request):
-    helps = GetHelp.objects.all()
-    context = {
-        'helps': helps
-    }
-
-    return render(request, 'main/gethelp_list.html', context)
-
-
-
-def gethelp_update(request, pk):
-
-    gethelp = get_object_or_404(GetHelp, pk=pk)
-
-   
-    if request.method == 'POST':
-        form = GetHelpForm(request.POST, instance=gethelp)
-        if form.is_valid():
-            form.save() 
-            return redirect('main:gethelp')  
-
-    else:
-        form = GetHelpForm(instance=gethelp)
-
-    return render(request, 'main/gethelp_update.html', {'form':form})
-
-
-
-
-def gethelp_create(request):
-    if request.method == 'POST':
-        form = GetHelpForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('main:gethelp')
-
-    else:
-        form = GetHelpForm() 
-
-    return render(request, 'main/gethelp_create.html',{'form':form})
-
-
-
-def gethelp_delete(request, pk):
-
-    gethelp = get_object_or_404(GetHelp, pk=pk)
-
-    if request.method == 'POST':
-
-        gethelp.delete()
-        return redirect('main:gethelp')
-
-    return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
-
-
-
-def governance_list(request):
-    category = request.GET.get('category', 'Global Executive Committee')
-
-    # Always get the Governor regardless of selected category
-    governor = Governance.objects.filter(title__iexact="Governor").first()
-    # deputy_governor = Governance.objects.filter(title__iexact="Deputy Governor").first()
-
-    # Get all members for the selected category except the Governor
-    govern = Governance.objects.filter(governance_category=category).exclude(title__iexact="Governor")
-
-    govern_order = sorted(govern, key=lambda member:member.ui_order)
-
-    categories = [
-        'Global Executive Committee',
-        'Regional Administration',
-        'County Assembly Administration'
+    subject = "Emergency Callback Requested"
+    lines = [
+        "An emergency callback has been requested.",
+        f"Name: {name or '-'}",
+        f"Phone: {phone or '-'}",
+        f"Location: {location or '-'}",
+        f"Notes: {notes or '-'}",
+        f"IP: {ip or '-'}",
     ]
+    message = "\n".join(lines)
+
+    try:
+        if recipients:
+            send_mail(subject, message, None, recipients)
+    except Exception:
+        # Fail silently for the user; we still return success
+        pass
+
+    return JsonResponse({'success': True, 'message': 'Request received. Our team will call you shortly.'})
 
 
-    return render(request, 'main/governance_list.html', {
-        # 'govern': govern,
-        "govern_order": govern_order,
-        'governor': governor,
-        # 'deputy_governor': deputy_governor,
-        'selected_category': category,
-        'categories': categories
-    })
-
-    
-
-
-def governance_update(request, pk):
-
-    govern = get_object_or_404(Governance, pk=pk)
-
-   
-    if request.method == 'POST':
-        form = GovernanceForm(request.POST, instance=govern)
-        if form.is_valid():
-            form.save() 
-            return redirect('main:governance_list')  
-
-    else:
-        form = GovernanceForm(instance=govern)
-
-    return render(request, 'main/governance_update.html',{'form':form})
-
-def governance_create(request):
-    if request.method == 'POST':
-        form = GovernanceForm(request.POST)
-        if form.is_valid():
-            #impliment API call to populate description field automantically
-            # API_description = generate_chatbot_response()
-            # form.description = API_description
-            form.save()
-            return redirect('main:governance_list')
-
-    else:
-        form = GovernanceForm() 
-
-    return render(request, 'main/governance_create.html',{'form':form})
-
-
-
-def governance_create(request):
-    print("Entered governance_create view")
-
-    if request.method == 'POST':
-        print("Request method is POST")
-        form = GovernanceForm(request.POST)
-        print("Form data received:")
-        for field_name, field_value in request.POST.items():
-            print(f"{field_name}: {field_value}")
-
-        if form.is_valid():
-            print("Form is valid")
-            try:
-                title = form.cleaned_data.get('title')
-                if not title:
-                    print("Title is missing in cleaned_data")
-                    raise ValueError("Title is missing for generating the description.")
-                
-                message = f"Provide a brief description of around 50 words for the DC48K {title}"
-                print(f"Generated message for AI: {message}")
-
-                try:
-                    api_description = generate_chatbot_response(message)
-                    print(f"API description generated: {api_description}")
-                except Exception as api_exception:
-                    print(f"Error while calling generate_chatbot_response: {api_exception}")
-                    # api_description = "Please provide a manual description."
-                    api_description = f"This is the {form.instance.title} under the {form.instance.governance_category}"
-                    
-
-                # Set description and save form instance
-                instance = form.save(commit=False)
-                instance.description = api_description
-                instance.save()
-                print("Form instance saved successfully")
-
-                return redirect('main:governance_list')
-
-            except Exception as e:
-                print(f"Error while processing form submission: {e}")
-        else:
-            print("Form is invalid")
-            print(f"Form errors: {form.errors}")
-
-    else:
-        print("Request method is not POST, initializing empty form")
-        form = GovernanceForm()
-
-    # Optional: for debugging GET requests or invalid POSTs
-    return render(request, 'main/governance_create.html',{'form':form})
-
-########################################################################################################################
-# def governance_create(request):
-#     if request.method == 'POST':
-#         form = GovernanceForm(request.POST)
-#         message = f"Provide a brief description of around 50 words for the DC48K {form.title}"
-#         if form.is_valid():
-#             # message = f"Provide a brief description of around 50 words for the DC48K{form.title}"
-#             try:
-#                 api_description = generate_chatbot_response(message)
-#             except Exception as e:
-#                 api_description = "Please provide a manual description."
-#             form.description = api_description
-#             form.save()
-#             return redirect('main:governance_list')
-
-#     else:
-#         form = GovernanceForm() 
-
-#     return render(request, 'main/governance_create.html',{'form':form})
-
-
-
-def governance_delete(request, pk):
-   
-    govern = get_object_or_404(Governance, pk=pk)
-
-    if request.method == 'POST':
-
-        govern.delete()
-        return redirect('main:governance_list')
-
-    return render(request, 'main/governance_confirm_delete.html', {'govern':govern})
-
-
-def organization_list_view(request):
-    organizations = DonationOrganization.objects.all()
-    return render(request, 'main/snippets_templates/table/donation_list.html', {'organizations':organizations})
-
-
-def ourhistory(request):
-    history_years = History.objects.all()
-    context = {
-        "history_years": history_years
-    }
-    return render(request, "main/ourhistory.html", context)
-
-
-def contact_us(request):
+#=======
+#<<<<<<< HEAD
+def donor_list(request):
+    donations = Donation_organisation.objects.all()  # Remove is_donor filter
+    return render(request, 'main/donor.html', {'donations': donations})
+def donor_details(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    return render(request, 'main/donor_details.html', {'donation': donation})
+def add_donor(request):
     if request.method == "POST":
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
-        print (name,email,message)
-        contact_message = ContactUs.objects.create(
-            name = name,
-            email = email,
-            message = message
-        )
-        contact_message.save
+        form = DonorForm(request.POST, request.FILES)
+        message=f'Thank You for your donation, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = DonorForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_donor.html",context)
+def edit_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        form = DonorForm(request.POST, instance=donation)
+        if form.is_valid():
+            form.save()
+            return redirect('main:donor_list')
+    else:
+        form = DonorForm(instance=donation)
+    return render(request, 'main/edit_donor.html', {'form': form, 'donation': donation})
+def delete_donor(request, pk):
+    donation = get_object_or_404(Donation_organisation, pk=pk)
+    if request.method == "POST":
+        donation.delete()
+        return redirect('main:donor_list')
+    return render(request, 'main/delete_donor.html', {'donation': donation})
 
-        messages.success(request, "Thank You For Contacting Us We Will Get To You As Soon As Possible.")
-        return redirect('main:layout')
+# contact message list view
+def message_list(request):
+    messages = ContactMessage.objects.all()  # Fetch all contact messages
+    return render(request, 'main/snippets_templates/table/contact_message_list.html', {'messages': messages})
+# contact message detail view
+def message_details(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    return render(request, 'main/message_details.html', {'message': message})
+# contact message edit view
+def edit_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        form = MessageForm(request.POST, instance=message)
+        if form.is_valid():
+            form.save()
+            return redirect('main:message_list')
+    else:
+        form = MessageForm(instance=message)
+    return render(request, 'main/edit_message.html', {'form': form, 'message': message})
+# contact message delete view
+def delete_message(request, pk):
+    message = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == "POST":
+        message.delete()
+        return redirect('main:message_list')
+    return render(request, 'main/delete_message.html', {'message': message})
 
-    return render(reqest, "main/home_templates/home.html")
+# add contact message view (if needed)
+def add_message(request):
+    if request.method == "POST":
+        form = MessageForm(request.POST, request.FILES)
+        message=f'Thank You, we will get back to you within 48 hours.'
+        context={
+            "message":message,
+            # "link":SITEURL+'/management/companyagenda'
+        }
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.save()
+            return render(request, "main/errors/generalerrors.html",context)
+    else:
+        form = MessageForm()
+    context={
+            "form": form,
+        }
+    return render(request, "main/add_message.html",context)
+#=======
+def education_landing(request):
+
+    initial_view = request.GET.get('view','landing')
+    # Flag to indicate a successful mentorship request submission
+    mentorship_success = request.GET.get('mentorship') == 'success'
+    context = {
+        'initial_view': initial_view,
+        'mentorship_success': mentorship_success,
+    }
+    return render(request, 'main/education/education.html', context)
+
+
+def request_mentorship(request):
+    """Render and handle the mentorship request form. Uses the same ContactForm/Feedback
+    model used elsewhere so styling and behavior are consistent across the site.
+    """
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            # If user is authenticated, attach them; otherwise leave blank
+            if request.user.is_authenticated:
+                instance.user = request.user
+            # Ensure topic denotes mentorship request if left blank
+            if not instance.topic:
+                instance.topic = 'Mentorship Request'
+            instance.save()
+            # redirect back to education landing with a success flag
+            return redirect(reverse('main:education_landing') + '?view=landing&mentorship=success')
+    else:
+        # Prefill the form topic to guide the user
+        initial = {'topic': 'Mentorship Request'}
+        form = ContactForm(initial=initial)
+
+    return render(request, 'main/education/mentorship_form.html', {'form': form})
+
+
+def course_register(request):
+    """Render a mock course registration page where users can view course types,
+    see prices, and interact with a demo PayPal-style button. The page also
+    includes a client-side form to add course types dynamically (no server save).
+    """
+    courses = [
+        {
+            'id': 101,
+            'title': 'Modern Web Development (React & Node)',
+            'category': 'Digital Skills',
+            'duration': '12 Weeks',
+            'format': 'Online Live',
+            'price': 150.00,
+        },
+        {
+            'id': 102,
+            'title': 'Financial Literacy for Diaspora Investors',
+            'category': 'Finance & Business',
+            'duration': '4 Weeks',
+            'format': 'Online Self-Paced',
+            'price': 40.00,
+        },
+        {
+            'id': 103,
+            'title': 'Entrepreneurship & Small Business Management',
+            'category': 'Business',
+            'duration': '8 Weeks',
+            'format': 'Blended',
+            'price': 95.00,
+        },
+    ]
+    # If requested as a partial (AJAX in-page load), return only the fragment
+    if request.GET.get('partial') == '1':
+        return render(request, 'main/education/course_register_fragment.html', {'courses': courses})
+    return render(request, 'main/education/course_register.html', {'courses': courses})
+
+
+def donation_list(request):
+    donations = Donation_organization.objects.all().order_by('-created_at')
+    return render(request,'main/snippets_templates/table/donation_list.html',{'donations': donations})
+
+
+# Edit Donation View
+class DonationEditView(UpdateView):
+    model = Donation_organization
+    fields = ['donor_name', 'email', 'amount', 'message']
+    template_name = 'main/snippets_templates/table/donation_edit.html'
+    success_url = reverse_lazy('main:donation')
+
+# Delete Donation View
+class DonationDeleteView(DeleteView):
+    model = Donation_organization
+    template_name = 'main/snippets_templates/table/donation_confirm_delete.html'
+    success_url = reverse_lazy('main:donation')
+
+
+# Scholarship search view — renders the scholarship search template and handles basic filters
+def scholarship_search(request):
+    scholarships = Scholarship.objects.all()
+    form = ScholarshipSearchForm(request.GET or None)
+    if form.is_valid():
+        data = form.cleaned_data
+        # keyword search
+        kw = data.get('search_keyword')
+        if kw:
+            scholarships = scholarships.filter(
+                Q(title__icontains=kw) | Q(provider__icontains=kw)
+            )
+        # level filter
+        level = data.get('filter_level')
+        if level:
+            scholarships = scholarships.filter(level=level)
+        # field filter
+        field = data.get('filter_field')
+        if field:
+            scholarships = scholarships.filter(field=field)
+        # location filter
+        location = data.get('filter_location')
+        if location:
+            scholarships = scholarships.filter(location=location)
+        # status
+        if data.get('filter_status'):
+            scholarships = scholarships.filter(status__icontains='Closing')
+    context = {
+        'scholarships': scholarships,
+        'form': form,
+        'result_count': scholarships.count(),
+    }
+#<<<<<<< HEAD
+    return render(request, 'scholarship_app/scholarship_search.html',context)
+#>>>>>>> 25.10_DC48_UAT_ND
+#=======
+    return render(request, 'scholarship_app/scholarship_search.html', context)
+#>>>>>>> origin/25.11_DC48K_UAT_FN
