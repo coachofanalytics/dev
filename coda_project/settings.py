@@ -1,15 +1,24 @@
+"""
+Django settings for coda_project project.
+"""
 import os
 import sys
 import dj_database_url
+from celery.schedules import crontab
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ["*"]
 
-# ==================== APPS & AUTH ====================
+AUTH_USER_MODEL = "accounts.CustomerUser"
+
+AUTHENTICATION_BACKENDS = (
+    "accounts.custom_backend.EmailOrUsernameModelBackend",
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+
+# Application definition
 INSTALLED_APPS = [
     "main.apps.MainConfig",
     "departments",
@@ -34,23 +43,18 @@ INSTALLED_APPS = [
     "django_crontab",
     "django.contrib.sites",
     "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.facebook",
 ]
 
-AUTH_USER_MODEL = "accounts.CustomerUser"
-AUTHENTICATION_BACKENDS = (
-    "accounts.custom_backend.EmailOrUsernameModelBackend",
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
-)
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-# ==================== MIDDLEWARE ====================
+CRONJOBS = [
+    ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
+    ("*/5 * * * *", "management.cron.advertisement"),
+]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Must be after SecurityMiddleware
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Corrected Position
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -61,6 +65,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
+CSRF_COOKIE_SECURE = False
 ROOT_URLCONF = "coda_project.urls"
 
 TEMPLATES = [
@@ -79,12 +84,21 @@ TEMPLATES = [
     },
 ]
 
+# ==============DBFUNCTIONS=====================================
+def dba_values():
+    env = os.environ.get('ENVIRONMENT')
+    if env == 'production':
+        return os.environ.get('HEROKU_PROD_HOST'), os.environ.get('HEROKU_PROD_NAME'), os.environ.get('HEROKU_PROD_USER'), os.environ.get('HEROKU_PROD_PASS')
+    elif env == 'testing':
+        return os.environ.get('STG_DB_HOST'), os.environ.get('STG_DB_NAME'), os.environ.get('STG_DB_USER'), os.environ.get('STG_DB_PASSWORD')
+    else:
+        return os.environ.get('STG_DB_HOST'), os.environ.get('STG_DB_NAME'), os.environ.get('STG_DB_USER'), os.environ.get('STG_DB_PASSWORD')
+
 WSGI_APPLICATION = "coda_project.wsgi.application"
 
-# ==================== DATABASE ====================
-# Default PK type to BigAutoField (Fixes models.W042 warnings)
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+host, dbname, user, password = dba_values()
 
+# Database Configuration
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -92,26 +106,93 @@ DATABASES = {
     }
 }
 
-# Apply Heroku database configuration
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'coda_dev'
+    }
+
+# Heroku DB override
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES["default"].update(db_from_env)
 
-# ==================== STATIC & MEDIA ====================
+# Password Validators
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+# Internationalization
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+# ==================== STATIC FILES CONFIGURATION ====================
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# FIXED: Plural STATICFILES_DIRS is required for Django to find your static folder
+# FIXED: Plural and list format
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-# FIXED: Prevents "MissingFileError" from crashing the Heroku build
+# Safety flag for missing CSS assets during build
 WHITENOISE_MANIFEST_STRICT = False
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# ====================================================================
 
-# ==================== ENVIRONMENT LOGIC ====================
+CRISPY_TEMPLATE_PACK = "bootstrap4"
+LOGIN_REDIRECT_URL = "main:layout"
+LOGIN_URL = "accounts:account-login"
+
+# Email Settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST = "smtp.privateemail.com"
+EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS")
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, "emails")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# AWS S3 Settings
+AWS_S3_REGION_NAME = "us-east-2"
+AWS_S3_SIGNATURE_VERSION = "s3v4"
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+
+# Celery Settings
+CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_IMPORTS = "coda_project.task"
+
+CELERYBEAT_SCHEDULE = {
+    "task_history_1st": {
+        "task": "task_history",
+        "schedule": crontab(0, 0, day_of_month="1"),
+    },
+    "advertisement_1st": {
+        "task": "advertisement",
+        "schedule": crontab(0, 0, day_of_month="1"),
+    },
+}
+
+# ================== ENVIRONMENT & STORAGE LOGIC ==================
 ENV = os.environ.get('ENVIRONMENT')
 
 if ENV == 'production':
@@ -125,17 +206,24 @@ elif ENV == 'testing':
     DEBUG = True
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 else:
-    # Local Development
     SITEURL = "http://127.0.0.1:8000"
     DEBUG = True
     STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# =================================================================
 
-# ==================== REMAINING CONFIG ====================
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
-USE_I18N = True
-USE_L10N = True
-USE_TZ = True
+# Social Auth Settings
 SITE_ID = 1
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = 'accounts.views.CustomSocialAccountAdapter'
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {"SCOPE": ["profile", "email"], "AUTH_PARAMS": {"access_type": "online"}},
+    "facebook": {"SCOPE": ["public_profile", "email"], "AUTH_PARAMS": {"access_type": "online"}},
+}
 
-# Email, Celery, and other settings follow as per your requirements...
+# Mpesa Settings
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY')
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET')
+MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE')
+MPESA_PASSWORD = os.environ.get('MPESA_PASSWORD')
+MPESA_TIMESTAMP = os.environ.get('MPESA_TIMESTAMP')
+MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL')
