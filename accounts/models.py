@@ -1,9 +1,11 @@
-from datetime import datetime,timedelta
+from datetime import timedelta
 from decimal import *
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+
+from django.conf import settings
+from django.core.validators import MinValueValidator
 
 from django_countries.fields import CountryField
 from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
@@ -65,4 +67,67 @@ class CustomerUser(AbstractUser):
     @property
     def days_since_joined(self):
         return (timezone.now().date() - self.date_joined.date()).days
+    
+
+   # accounts/models.py
+
+
+class Payment_History(models.Model):
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Or replace with your custom user model like 'accounts.CustomerUser'
+        on_delete=models.CASCADE,
+        related_name="payment_history"
+    )
+    
+    payment_fees = models.IntegerField(validators=[MinValueValidator(0)])
+    down_payment = models.IntegerField(default=500, validators=[MinValueValidator(0)])
+    student_bonus = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
+    fee_balance = models.IntegerField(null=True, blank=True)
+    
+    plan = models.IntegerField(validators=[MinValueValidator(0)])
+    subplan = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
+    
+    payment_method = models.CharField(max_length=100)
+    
+    contract_submitted_date = models.DateTimeField(default=timezone.now)
+    
+    client_signature = models.CharField(max_length=1000)
+    company_rep = models.CharField(max_length=1000)
+    
+    client_date = models.CharField(max_length=100, null=True, blank=True)
+    rep_date = models.CharField(max_length=100, null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        # Logic to calculate fee balance
+        bonus = self.student_bonus or 0
+        self.fee_balance = max(0, (self.payment_fees or 0) - (self.down_payment or 0) - bonus)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Payment History (Customer: {self.customer_id}, Balance: {self.fee_balance})"
+    
+    class Meta:
+        verbose_name = "Payment History"
+        verbose_name_plural = "Payment Histories"
+        ordering = ['-contract_submitted_date']
+
+
+class LoginHistory(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="login_history"
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    login_time = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user} logged in at {self.login_time}"
+
+    class Meta:
+        ordering = ["-login_time"]
+        verbose_name = "Login History"
+        verbose_name_plural = "Login Histories"
+
     

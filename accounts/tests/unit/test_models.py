@@ -1,10 +1,12 @@
 from django.test import TestCase
 from accounts.models import Payment_History
-from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from accounts.models import Payment_History
+from accounts.models import LoginHistory
 
+
+
+User = get_user_model()
 User = get_user_model()
 
 # class TestDepartmentModel(TestCase):
@@ -169,3 +171,49 @@ class PaymentHistoryModelTest(TestCase):
         )
 
         self.assertIn("Payment History", str(payment))
+
+
+
+
+
+class LoginHistoryModelTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="angel",
+            email="angel@example.com",
+            password="testpass123"
+        )
+
+    def test_login_history_creation(self):
+        """LoginHistory object is created correctly"""
+        history = LoginHistory.objects.create(
+            user=self.user,
+            ip_address="127.0.0.1",
+            user_agent="Mozilla/5.0",
+            login_time=timezone.now()
+        )
+
+        self.assertEqual(history.user, self.user)
+        self.assertEqual(history.ip_address, "127.0.0.1")
+        self.assertIsNotNone(history.login_time)
+
+    def test_string_representation(self):
+        """__str__ returns meaningful text"""
+        history = LoginHistory.objects.create(
+            user=self.user,
+            ip_address="192.168.1.10",
+            user_agent="Chrome"
+        )
+
+        self.assertIn(self.user.username, str(history))
+
+    def test_default_login_time_is_set(self):
+        """login_time is auto-set if not provided"""
+        history = LoginHistory.objects.create(
+            user=self.user,
+            ip_address="10.0.0.1",
+            user_agent="TestAgent"
+        )
+
+        self.assertIsNotNone(history.login_time)
