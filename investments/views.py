@@ -60,7 +60,7 @@ def investment_update(request, pk):
     if request.method =="POST":
         invest.delete()
         return redirect("investments:investment_list")
-    return render(request,"",{"invest": invest})
+    return render(request,"",{"invest": invest}),
     
 
 
