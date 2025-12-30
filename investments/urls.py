@@ -7,4 +7,6 @@ urlpatterns = [
     path("investments/", views.investments_dashboard, name="investments_dashboard"),
     path("invest_list/", views.investment_list, name="investment_list"),
     path("investments_creat/", views.investment_create, name="investment_create"),
+    path("investments_creat/", views.investment_create, name="investment_create"),
+   path("investment/update/<int:pk>/",views.investment_update,name="investment_update"),
 ]

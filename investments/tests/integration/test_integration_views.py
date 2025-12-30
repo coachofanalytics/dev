@@ -121,3 +121,60 @@ class InvestmentCreateIntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(investment_content.objects.count(), 0)
         self.assertContains(response, "<form")
+
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from investments.models import investment_content
+
+
+class InvestmentUpdateIntegrationTests(TestCase):
+
+    def setUp(self):
+        self.investment = investment_content.objects.create(
+            title="Old Title",
+            slug="old-title",
+            description="Old description",
+        )
+
+    def test_update_investment_success(self):
+        url = reverse(
+            "investments:investment_update",
+            args=[self.investment.pk]
+        )
+
+        # GET loads form
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Old Title")
+
+        # POST updated data
+        response = self.client.post(
+            url,
+            data={
+                "title": "Updated Title",
+                "slug": "updated-title",
+                "description": "Updated description",
+            },
+            follow=True
+        )
+
+        self.investment.refresh_from_db()
+
+        # DB updated
+        self.assertEqual(self.investment.title, "Updated Title")
+        self.assertEqual(self.investment.slug, "updated-title")
+
+        # Redirect success
+        self.assertRedirects(
+            response,
+            reverse("investments:investment_list")
+        )
+
+
+
+
+

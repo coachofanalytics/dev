@@ -34,3 +34,21 @@ def investment_create(request):
     else:
         form=  InvestmentContentForm ()
     return render(request,"investments/invest_create.html",{"form":form})  
+
+
+
+
+
+
+def investment_update(request, pk):
+    invest = get_object_or_404(investment_content, pk=pk)
+
+    if request.method == "POST":
+        form = InvestmentContentForm(request.POST, instance=invest)
+        if form.is_valid():
+            form.save()
+            return redirect("investments:investment_list")
+    else:
+        form = InvestmentContentForm(instance=invest)
+
+    return render(request,"investments/investment_update.html",{"form": form})

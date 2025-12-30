@@ -126,3 +126,47 @@ class InvestmentCreateViewTests(TestCase):
             response,
             "investments/invest_create.html"
         )
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from investments.models import investment_content
+
+
+class InvestmentUpdateViewUnitTests(TestCase):
+
+    def setUp(self):
+        self.investment = investment_content.objects.create(
+            title="Initial",
+            slug="initial",
+            description="Initial description",
+        )
+
+    def test_update_view_returns_200(self):
+        url = reverse(
+            "investments:investment_update",
+            args=[self.investment.pk]
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_view_updates_object(self):
+        url = reverse(
+            "investments:investment_update",
+            args=[self.investment.pk]
+        )
+
+        response = self.client.post(
+            url,
+            {
+                "title": "Changed",
+                "slug": "changed",
+                "description": "Changed description",
+            }
+        )
+
+        self.investment.refresh_from_db()
+        self.assertEqual(self.investment.title, "Changed")
+     

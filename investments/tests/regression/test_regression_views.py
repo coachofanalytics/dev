@@ -118,3 +118,82 @@ class InvestmentCreateRegressionViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from investments.models import investment_content
+
+
+class InvestmentUpdateRegressionTests(TestCase):
+    """
+    Regression tests to ensure the investment update view
+    continues to work as expected after changes.
+    """
+
+    def setUp(self):
+        self.investment = investment_content.objects.create(
+            title="Original Title",
+            slug="original-title",
+            description="Original description"
+        )
+
+    def test_update_page_loads(self):
+        """
+        Update page should load successfully
+        """
+        response = self.client.get(
+            reverse(
+                "investments:investment_update",
+                args=[self.investment.pk]
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response,
+            "investments/investment_update.html"
+        )
+
+    def test_update_does_not_break_existing_record(self):
+        """
+        Submitting valid update data should update the record
+        without breaking existing behavior.
+        """
+        response = self.client.post(
+            reverse(
+                "investments:investment_update",
+                args=[self.investment.pk]
+            ),
+            data={
+                "title": "Updated Title",
+                "slug": "updated-title",
+                "description": "Updated description",
+            }
+        )
+
+        # Redirect after successful update
+        self.assertEqual(response.status_code, 302)
+
+        # Fetch updated record
+        self.investment.refresh_from_db()
+
+        self.assertEqual(self.investment.title, "Updated Title")
+        self.assertEqual(self.investment.slug, "updated-title")
+        self.assertEqual(self.investment.description, "Updated description")

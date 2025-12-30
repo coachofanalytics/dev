@@ -1,0 +1,32 @@
+{% extends "investments/base.html" %}
+
+{% block title %}Add Stock Entry{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">creat investment</h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Render the form fields -->
+        
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary">Save</button>
+           <a href="#" class="btn btn-success px-4 py-2 shadow-sm">+ Add New Record</a>
+
+        </div>
+    </form>
+</div>
+{% endblock %}
