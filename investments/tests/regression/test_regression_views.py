@@ -39,3 +39,82 @@ class InvestmentViewsRegressionTest(TestCase):
         self.assertContains(response, "Test Investment")
         self.assertContains(response, "test-investment")
         self.assertContains(response, "Regression test investment record")
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from investments.models import investment_content
+
+
+class InvestmentCreateRegressionViewTests(TestCase):
+
+    def test_create_page_loads(self):
+        """
+        CREATE page should continue to load successfully
+        """
+        response = self.client.get(
+            reverse("investments:investment_create")
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response,
+            "investments/invest_create.html"
+        )
+
+    def test_create_post_still_creates_object(self):
+        """
+        CREATE POST should still save investment_content
+        """
+        data = {
+            "title": "Regression Create",
+            "slug": "regression-create",
+            "description": "Regression create description",
+        }
+
+        response = self.client.post(
+            reverse("investments:investment_create"),
+            data=data,
+            follow=True
+        )
+
+        # Object created
+        self.assertEqual(
+            investment_content.objects.count(),
+            1
+        )
+
+        self.assertEqual(
+            investment_content.objects.first().title,
+            "Regression Create"
+        )
+
+        # Redirect still works
+        self.assertRedirects(
+            response,
+            reverse("investments:investment_list")
+        )
+
+    def test_create_invalid_data_does_not_save(self):
+        """
+        Invalid data must not create records
+        """
+        data = {
+            "title": "",
+            "slug": "",
+            "description": "Invalid data",
+        }
+
+        response = self.client.post(
+            reverse("investments:investment_create"),
+            data=data
+        )
+
+        self.assertEqual(
+            investment_content.objects.count(),
+            0
+        )
+
+        self.assertEqual(response.status_code, 200)

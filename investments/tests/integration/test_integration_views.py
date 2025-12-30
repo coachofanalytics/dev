@@ -55,3 +55,69 @@ class InvestmentIntegrationViewTests(TestCase):
             response,
             "investments/home.html"
         )
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from investments.models import investment_content
+
+
+class InvestmentCreateIntegrationTests(TestCase):
+
+    def test_full_create_flow(self):
+        """
+        Integration test:
+        URL → View → Form → DB → Redirect
+        """
+        create_url = reverse("investments:investment_create")
+
+        # 1️⃣ GET request loads form
+        response = self.client.get(create_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<form")
+
+        # 2️⃣ POST valid data
+        data = {
+            "title": "Integration Investment",
+            "slug": "integration-investment",
+            "description": "Integration test description",
+        }
+
+        response = self.client.post(
+            create_url,
+            data=data,
+            follow=True
+        )
+
+        # 3️⃣ Database updated
+        self.assertEqual(investment_content.objects.count(), 1)
+
+        investment = investment_content.objects.first()
+        self.assertEqual(investment.title, "Integration Investment")
+        self.assertEqual(investment.slug, "integration-investment")
+
+        # 4️⃣ Redirect happens correctly
+        self.assertRedirects(
+            response,
+            reverse("investments:investment_list")
+        )
+
+    def test_create_flow_invalid_data(self):
+        """
+        Integration test:
+        Invalid data should not save and should re-render form
+        """
+        create_url = reverse("investments:investment_create")
+
+        data = {
+            "title": "",
+            "slug": "",
+            "description": "Invalid integration test",
+        }
+
+        response = self.client.post(create_url, data=data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(investment_content.objects.count(), 0)
+        self.assertContains(response, "<form")

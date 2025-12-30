@@ -40,3 +40,89 @@ class InvestmentListViewUnitTest(TestCase):
             response.context["invest"][0].title,
             "Test Investment"
         )
+
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from investments.models import investment_content
+
+
+class InvestmentCreateViewTests(TestCase):
+
+    def test_create_page_loads(self):
+        """
+        GET request should load the investment create page
+        """
+        response = self.client.get(
+            reverse("investments:investment_create")
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response,
+            "investments/invest_create.html"
+        )
+        self.assertIn("form", response.context)
+
+    def test_create_investment_successfully(self):
+        """
+        POST request should create a new investment and redirect
+        """
+        data = {
+            "title": "Test Investment",
+            "slug": "test-investment",
+            "description": "Test investment description",
+        }
+
+        response = self.client.post(
+            reverse("investments:investment_create"),
+            data
+        )
+
+        # Object created
+        self.assertEqual(
+            investment_content.objects.count(),
+            1
+        )
+
+        # Redirect after success
+        self.assertRedirects(
+            response,
+            reverse("investments:investment_list")
+        )
+
+        # Data saved correctly
+        investment = investment_content.objects.first()
+        self.assertEqual(investment.title, "Test Investment")
+        self.assertEqual(investment.slug, "test-investment")
+
+    def test_create_invalid_form_does_not_save(self):
+        """
+        Invalid POST should not create record
+        """
+        data = {
+            "title": "",  # invalid
+            "slug": "",
+            "description": "",
+        }
+
+        response = self.client.post(
+            reverse("investments:investment_create"),
+            data
+        )
+
+        # No object created
+        self.assertEqual(
+            investment_content.objects.count(),
+            0
+        )
+
+        # Page re-renders form
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response,
+            "investments/invest_create.html"
+        )
