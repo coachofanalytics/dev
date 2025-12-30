@@ -163,3 +163,10 @@ dmypy.json
 cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/django
+
+# SECURITY: Authentication files
+token.json
+*.token
+*.secret
+.env
+credentials*.json
