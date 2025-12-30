@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "departments",
     "accounts.apps.AccountsConfig",
     "finance",  # ✅ Added comma
+    "investments",
     "application.apps.ApplicationConfig",
     "crispy_forms",
     "django.contrib.admin",

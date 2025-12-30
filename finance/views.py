@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import OverBoughtSold, PaymentInformation
-from .forms import OverBoughtSoldForm
+from .forms import OverBoughtSoldForm,PaymentInformationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils import timezone
 from pytz import timezone
 from django.db.models import Q
@@ -82,3 +83,21 @@ def payment_list(request):
     context = {"page_obj": page_obj, "q": q}
     
     return render(request, "finance/payment_list.html", context)
+
+
+
+@login_required
+
+
+def payment_create(request):
+    if request .method =="POST":
+        form= PaymentInformationForm(request.POST)
+        if form .is_valid():
+            form.save()
+            messages.success(request, "Payment record created successfully!")
+            return redirect("finance:payment_list")
+        messages.error(request, "please correct the error below.")
+    else:
+        form =PaymentInformationForm  ()
+    
+    return render(request, "finance/payment_create.html", {"form":form,"mode":"create"})      

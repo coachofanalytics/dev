@@ -63,6 +63,7 @@ urlpatterns = [
     path("", include(("main.urls", "main"), namespace="main")),
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls")),
+    path("investments/", include("investments.urls")),
 
     # Social Login
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),

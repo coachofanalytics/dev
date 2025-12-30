@@ -1,0 +1,88 @@
+{% extends "finance/finance_base.html" %}
+{% load static %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+      {% if mode == "create" %}Add Payment{% else %}Edit Payment{% endif %}
+    </h4>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'finance:payment_list' %}">Back</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Customer</label>
+            {{ form.customer }}
+            {% for e in form.customer.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Payment Method</label>
+            {{ form.payment_method }}
+            {% for e in form.payment_method.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Total Fees</label>
+            {{ form.total_fees }}
+            {% for e in form.total_fees.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Down Payment</label>
+            {{ form.down_payment }}
+            {% for e in form.down_payment.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Student Bonus</label>
+            {{ form.student_bonus }}
+            {% for e in form.student_bonus.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Contract Submitted Date</label>
+            {{ form.contract_submitted_date }}
+            {% for e in form.contract_submitted_date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Company Rep</label>
+            {{ form.company_rep }}
+          </div>
+
+          <div class="col-md-12">
+            <label class="form-label">Client Signature</label>
+            {{ form.client_signature }}
+          </div>
+
+          <div class="col-md-4 form-check ms-2">
+            {{ form.is_active }} <label class="form-check-label">Is Active</label>
+          </div>
+          <div class="col-md-4 form-check ms-2">
+            {{ form.is_tested }} <label class="form-check-label">Is Tested</label>
+          </div>
+          <div class="col-md-4 form-check ms-2">
+            {{ form.is_reviewed }} <label class="form-check-label">Is Reviewed</label>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <button class="btn btn-primary">
+            {% if mode == "create" %}Create{% else %}Save Changes{% endif %}
+          </button>
+          <a class="btn btn-outline-secondary" href="{% url 'finance:payment_list' %}">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

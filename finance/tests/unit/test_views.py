@@ -84,3 +84,50 @@ class PaymentListViewTests(TestCase):
         response = self.client.get(self.url, {"q": "nonexistent_query_xyz"})
         self.assertEqual(len(response.context["page_obj"]), 0)
         self.assertContains(response, "No payment records found.")
+from django.test import TestCase, Client
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from finance.models import PaymentInformation
+from finance.forms import PaymentInformationForm 
+
+User = get_user_model()
+
+class PaymentCreateViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="staff", password="password123")
+        self.client = Client()
+        self.client.login(username="staff", password="password123")
+        self.url = reverse("finance:payment_create")
+
+    def test_post_payment_create_success(self):
+        """Test that submitting valid data creates a record and redirects."""
+        # We must satisfy EVERY required field in your model/form
+        data = {
+            'customer': self.user.id,
+            'payment_method': 'Credit Card',
+            'total_fees': 5000,
+            'down_payment': 1000,
+            'student_bonus': 0,
+            'contract_submitted_date': '2023-10-27',
+            'company_rep': 'Staff Rep',
+            'client_signature': 'Digital Signature',
+            'is_active': True
+        }
+        response = self.client.post(self.url, data)
+        
+        # DEBUGGING: If it still fails, this line will show you the errors in cmd
+        if response.status_code == 200 and 'form' in response.context:
+            print(f"\nFORM ERRORS: {response.context['form'].errors.as_json()}")
+
+        self.assertRedirects(response, reverse("finance:payment_list"))
+        self.assertEqual(PaymentInformation.objects.count(), 1)
+
+    def test_post_payment_create_fail(self):
+        """Test that submitting invalid data returns the form with errors."""
+        # Send empty data to force validation failure
+        response = self.client.post(self.url, {})
+        
+        self.assertEqual(response.status_code, 200)
+        # Check for your error class in the HTML instead of the exact string
+        # as a fallback, since strings are case-sensitive and fragile.
+        self.assertContains(response, "text-danger")
