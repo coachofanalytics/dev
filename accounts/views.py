@@ -1,23 +1,26 @@
-import math
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-from django.utils.decorators import method_decorator
-from .forms import UserForm, LoginForm
+# from .forms import UserForm, LoginForm
 from coda_project import settings
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from .models import CustomerUser
 from .utils import agreement_data
 from application.models import UserProfile,Assets
-from .utils import generate_random_password
+from .forms import UserForm, LoginForm
 
-from django.urls import reverse
+from accounts.models import LoginHistory
+
+
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
-from django.utils import timezone
 from accounts.choices import CategoryChoices
+#  from django.contrib.auth.decorators import login_required
+
+from accounts.models import Payment_History
+# from .forms import PaymentHistoryForm
 # Create your views here..
 
 # @allowed_users(allowed_roles=['admin'])
@@ -37,7 +40,7 @@ def join(request):
     if request.method == "POST":
         previous_user = CustomerUser.objects.filter(email=request.POST.get("email"))
         if len(previous_user) > 0:
-            messages.success(request, f'User already exists with this email')
+            messages.success(request, 'User already exists with this email')
             return redirect("/password-reset")
         else:
             contract_data, contract_date = agreement_data(request)
@@ -137,7 +140,7 @@ def login_view(request):
                 return redirect('main:layout')
             else:
                 # messages.success(request, f"Invalid credentials.Kindly Try again!!")
-                msg=f"Invalid credentials.Kindly Try again!!"
+                msg="Invalid credentials.Kindly Try again!!"
                 return render(
                         request, "accounts/registration/login_page.html", {"form": form, "msg": msg}
                     )
@@ -257,3 +260,31 @@ def custom_social_login(request):
     except:
     
         return render(request, "accounts/registration/coda/join.html", {"form": UserForm()})
+
+
+def payment_history_list(request):
+    payments = Payment_History.objects.select_related('customer').all()
+
+    context = {
+        'payments': payments
+    }
+
+    return render(request, 'accounts/payment_history_list.html', context)
+
+
+def is_staff_user(user):
+    return user.is_staff
+
+
+def login_history_list_view(request):
+    login_histories = LoginHistory.objects.select_related("user").all()
+
+    context = {
+        "login_histories": login_histories,
+    }
+
+    return render(
+        request,
+        "accounts/LoginHistory_list.html",
+        context
+    )

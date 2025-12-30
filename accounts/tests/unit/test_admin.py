@@ -4,7 +4,6 @@ from django.urls import reverse
 from django.contrib.admin.sites import site
 
 from accounts.models import LoginHistory
-from accounts import admin as accounts_admin
 
 User = get_user_model()
 

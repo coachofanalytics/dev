@@ -132,3 +132,10 @@ class TestClientView(TestCase):
         self.assertEqual(CustomerUser.objects.all().count(), 1)
         self.user.delete()
         self.assertEqual(CustomerUser.objects.all().count(), 0)
+
+
+@login_required
+def test_payment_template(request):
+    Simple test view to confirm routing, auth, and template rendering.
+    return HttpResponse("✅ Payment History Test View is working")
+
