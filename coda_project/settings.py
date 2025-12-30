@@ -6,7 +6,10 @@ import sys
 import dj_database_url
 from celery.schedules import crontab
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# FIXED: BASE_DIR now points to the project root (where manage.py is)
+# This prevents the FileNotFoundError on Heroku
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALLOWED_HOSTS = ["*"]
 
@@ -54,7 +57,7 @@ CRONJOBS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Corrected Position
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Corrected Position for Heroku
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -84,15 +87,12 @@ TEMPLATES = [
     },
 ]
 
-# ==============DBFUNCTIONS=====================================
+# ============== DB FUNCTIONS =====================================
 def dba_values():
     env = os.environ.get('ENVIRONMENT')
     if env == 'production':
         return os.environ.get('HEROKU_PROD_HOST'), os.environ.get('HEROKU_PROD_NAME'), os.environ.get('HEROKU_PROD_USER'), os.environ.get('HEROKU_PROD_PASS')
-    elif env == 'testing':
-        return os.environ.get('STG_DB_HOST'), os.environ.get('STG_DB_NAME'), os.environ.get('STG_DB_USER'), os.environ.get('STG_DB_PASSWORD')
-    else:
-        return os.environ.get('STG_DB_HOST'), os.environ.get('STG_DB_NAME'), os.environ.get('STG_DB_USER'), os.environ.get('STG_DB_PASSWORD')
+    return os.environ.get('STG_DB_HOST'), os.environ.get('STG_DB_NAME'), os.environ.get('STG_DB_USER'), os.environ.get('STG_DB_PASSWORD')
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
 
@@ -135,14 +135,16 @@ USE_TZ = True
 
 # ==================== STATIC FILES CONFIGURATION ====================
 STATIC_URL = "/static/"
+
+# Points to the folder Heroku will create during 'collectstatic'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# FIXED: Plural and list format
+# FIXED: Points to your source 'static' folder in the root directory
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-# Safety flag for missing CSS assets during build
+# Prevents build failure if CSS references missing images/files
 WHITENOISE_MANIFEST_STRICT = False
 
 MEDIA_URL = "/media/"
@@ -208,8 +210,8 @@ elif ENV == 'testing':
 else:
     SITEURL = "http://127.0.0.1:8000"
     DEBUG = True
+    # Standard storage for local development
     STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-# =================================================================
 
 # Social Auth Settings
 SITE_ID = 1
