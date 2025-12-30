@@ -52,3 +52,16 @@ def investment_update(request, pk):
         form = InvestmentContentForm(instance=invest)
 
     return render(request,"investments/investment_update.html",{"form": form})
+
+
+
+def investment_update(request, pk):
+    invest = get_object_or_404(investment_content, pk=pk)
+    if request.method =="POST":
+        invest.delete()
+        return redirect("investments:investment_list")
+    return render(request,"",{"invest": invest})
+    
+
+
+
