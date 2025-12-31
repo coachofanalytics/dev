@@ -4,6 +4,9 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from accounts.models import LoginHistory
 
+from django.test import TestCase
+from django.utils import timezone
+from accounts.models import Tracker
 
 
 User = get_user_model()
@@ -217,3 +220,58 @@ class LoginHistoryModelTest(TestCase):
         )
 
         self.assertIsNotNone(history.login_time)
+
+
+
+
+class TrackerModelTest(TestCase):
+
+    def setUp(self):
+        """Create a sample Tracker instance for testing"""
+        self.tracker = Tracker.objects.create(
+            category="Training",
+            sub_category="Data Analysis",
+            plan="Monthly Plan",
+            empname=101,
+            author=1,
+            employee="John Mwangi",
+            login_date=timezone.now(),
+            start_time=timezone.now().time(),
+            duration=120,
+            time=120,
+        )
+
+    def test_tracker_instance_created(self):
+        """Tracker object should be created successfully"""
+        self.assertEqual(Tracker.objects.count(), 1)
+
+    def test_tracker_field_values(self):
+        """Tracker fields should store correct values"""
+        tracker = self.tracker
+
+        self.assertEqual(tracker.category, "Training")
+        self.assertEqual(tracker.sub_category, "Data Analysis")
+        self.assertEqual(tracker.plan, "Monthly Plan")
+        self.assertEqual(tracker.empname, 101)
+        self.assertEqual(tracker.author, 1)
+        self.assertEqual(tracker.employee, "John Mwangi")
+        self.assertEqual(tracker.duration, 120)
+        self.assertEqual(tracker.time, 120)
+
+    def test_tracker_login_date_is_datetime(self):
+        """login_date should be a datetime value"""
+        self.assertIsNotNone(self.tracker.login_date)
+
+    def test_duration_is_positive(self):
+        """Duration should always be positive"""
+        self.assertGreater(self.tracker.duration, 0)
+
+    def test_time_matches_duration(self):
+        """Time should match duration for single entry"""
+        self.assertEqual(self.tracker.time, self.tracker.duration)
+
+    def test_string_representation(self):
+        """__str__ method should return a readable value"""
+        tracker_str = str(self.tracker)
+        self.assertIn("John Mwangi", tracker_str)
+        self.assertIn("Training", tracker_str)

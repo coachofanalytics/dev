@@ -8,6 +8,7 @@ from accounts.models import LoginHistory
 User = get_user_model()
 
 
+from django.contrib import admin
 class LoginHistoryAdminIntegrationTest(TestCase):
     """
     Integration tests for LoginHistory admin configuration.
@@ -78,3 +79,64 @@ class LoginHistoryAdminIntegrationTest(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 302)  # Redirect to login
+
+
+from django.contrib import admin
+
+
+
+class TrackerAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "employee",
+        "category",
+        "sub_category",
+        "plan",
+        "login_date",
+        "start_time",
+        "duration",
+        "time",
+    )
+
+    list_filter = (
+        "category",
+        "sub_category",
+        "plan",
+        "login_date",
+    )
+
+    search_fields = (
+        "employee",
+        "category",
+        "sub_category",
+        "plan",
+    )
+
+    ordering = ("-login_date",)
+
+    readonly_fields = ("login_date",)
+
+    fieldsets = (
+        ("Task Information", {
+            "fields": (
+                "category",
+                "sub_category",
+                "plan",
+            )
+        }),
+        ("Employee Information", {
+            "fields": (
+                "employee",
+                "empname",
+                "author",
+            )
+        }),
+        ("Time Tracking", {
+            "fields": (
+                "login_date",
+                "start_time",
+                "duration",
+                "time",
+            )
+        }),
+    )

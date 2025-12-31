@@ -130,4 +130,68 @@ class LoginHistory(models.Model):
         verbose_name = "Login History"
         verbose_name_plural = "Login Histories"
 
-    
+    from django.db import models
+
+
+class Tracker(models.Model):
+    category = models.CharField(
+        max_length=25,
+        null=False,
+        blank=False
+    )
+
+    sub_category = models.CharField(
+        max_length=25,
+        null=False,
+        blank=False
+    )
+
+    plan = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False
+    )
+
+    empname = models.IntegerField(
+        null=False,
+        blank=False
+    )
+
+    author = models.IntegerField(
+        null=False,
+        blank=False
+    )
+
+    employee = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False
+    )
+
+    login_date = models.DateTimeField(
+        null=False,
+        blank=False
+    )
+
+    start_time = models.TimeField(
+        null=True,
+        blank=True
+    )
+
+    duration = models.IntegerField(
+        null=True,
+        blank=True
+    )
+
+    time = models.PositiveIntegerField(
+        null=False,
+        blank=False
+    )
+
+    class Meta:
+        db_table = "accounts_tracker"
+        verbose_name = "Tracker"
+        verbose_name_plural = "Trackers"
+
+    def __str__(self):
+        return f"{self.employee} | {self.category} | {self.login_date}"
