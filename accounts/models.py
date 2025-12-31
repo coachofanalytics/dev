@@ -130,7 +130,7 @@ class LoginHistory(models.Model):
         verbose_name = "Login History"
         verbose_name_plural = "Login Histories"
 
-    from django.db import models
+    
 
 
 class Tracker(models.Model):

@@ -12,7 +12,21 @@ from .forms import UserForm, LoginForm
 
 from accounts.models import LoginHistory
 
+from django.shortcuts import render
+from .models import Tracker
 
+from django.shortcuts import render, get_object_or_404
+
+from .forms import TrackerForm
+
+from django.shortcuts import get_object_or_404, render
+from .models import LoginHistory
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+from accounts.models import LoginHistory
+from accounts.forms import LoginHistoryForm
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect
@@ -287,4 +301,161 @@ def login_history_list_view(request):
         request,
         "accounts/LoginHistory_list.html",
         context
+    )
+
+
+
+def is_staff_user(user):
+    return user.is_staff or user.is_superuser
+
+def login_history_create_view(request):
+    """
+    Create a LoginHistory record manually.
+    Staff/Admin only.
+    """
+
+    if request.method == "POST":
+        form = LoginHistoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Login history record created successfully.")
+            return redirect("accounts:accounts-login_history_list")
+    else:
+        form = LoginHistoryForm()
+
+    return render(
+        request,
+        "accounts/LoginHistory_create.html",
+        {"form": form},
+    )
+
+
+def login_history_detail_view(request, pk):
+    login_history = get_object_or_404(LoginHistory, pk=pk)
+
+    return render(
+        request,
+        "accounts/LoginHistory_detail.html",
+        {"login_history": login_history},
+    )
+
+def login_history_update_view(request, pk):
+    login_history = get_object_or_404(LoginHistory, pk=pk)
+
+    if request.method == "POST":
+        form = LoginHistoryForm(request.POST, instance=login_history)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Login history updated successfully.")
+            return redirect("accounts:login_history_detail", pk=pk)
+    else:
+        form = LoginHistoryForm(instance=login_history)
+
+    return render(
+        request,
+        "accounts/LoginHistory_update.html",
+        {"form": form, "login_history": login_history},
+    )
+
+
+def login_history_delete_view(request, pk):
+    login_history = get_object_or_404(LoginHistory, pk=pk)
+
+    if request.method == "POST":
+        login_history.delete()
+        messages.success(request, "Login history deleted successfully.")
+        return redirect("accounts:login_history_list")
+
+    return render(
+        request,
+        "accounts/LoginHistory_delete.html",
+        {"login_history": login_history},
+    )
+
+
+
+def tracker_list_view(request):
+    trackers = (
+        Tracker.objects
+        .all()
+        .order_by("-login_date")
+    )
+
+    context = {
+        "trackers": trackers,
+    }
+
+    return render(
+        request,
+        "accounts/Tracker_list.html",
+        context,
+    )
+
+
+def tracker_create_view(request):
+    if request.method == "POST":
+        form = TrackerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Tracker record created successfully.")
+            return redirect("accounts-tracker_list")
+    else:
+        form = TrackerForm()
+
+    return render(
+        request,
+        "accounts/Tracker_create.html",
+        {"form": form},
+    )
+
+
+
+def tracker_detail_view(request, pk):
+    tracker = get_object_or_404(Tracker, pk=pk)
+
+    return render(
+        request,
+        "accounts/Tracker_detail.html",
+        {"tracker": tracker},
+    )
+
+def tracker_update_view(request, pk):
+    tracker = get_object_or_404(Tracker, pk=pk)
+
+    if request.method == "POST":
+        form = TrackerForm(request.POST, instance=tracker)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Tracker updated successfully.")
+            return redirect("accounts:tracker_detail", pk=pk)
+    else:
+        form = TrackerForm(instance=tracker)
+
+    return render(
+        request,
+        "accounts/Tracker_update.html",
+        {"form": form, "tracker": tracker},
+    )
+
+
+
+
+
+
+
+
+
+
+def tracker_delete_view(request, pk):
+    tracker = get_object_or_404(Tracker, pk=pk)
+
+    if request.method == "POST":
+        tracker.delete()
+        messages.success(request, "Tracker deleted successfully.")
+        return redirect("accounts:tracker_list")
+
+    return render(
+        request,
+        "accounts/tracker_confirm_delete.html",
+        {"tracker": tracker},
     )
