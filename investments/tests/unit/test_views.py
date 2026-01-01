@@ -102,3 +102,33 @@ class InvestmentStrategyCreateViewTest(TestCase):
         response = self.client.post(self.create_url, data)
         self.assertRedirects(response, self.list_url)
         self.assertEqual(InvestmentStrategy.objects.filter(symbol='TSLA').count(), 1)
+
+
+
+
+
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from datetime import date
+from investments.models import InvestmentStrategy
+
+class InvestmentStrategyUpdateViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        # Create a record to update
+        self.strategy = InvestmentStrategy.objects.create(
+            symbol="AAPL", action="BUY", expiry=date(2026,1,1), day_to_expiry=30,
+            earnings_date=date(2026,1,1), on_date=date.today(), strike_price=150,
+            mid_price=2.0, ask_price=2.1, iv_rank=40, stock_price=155,
+            raw_return=0.05, annualized_return=0.5, opening=1.9
+        )
+        self.url = reverse('investments:InvestmentStrategy_update', kwargs={'pk': self.strategy.pk})
+
+    def test_update_view_status_and_template(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "investments/investment_update.html")
+        # Ensure the form is pre-filled with the correct instance
+        self.assertEqual(response.context['form'].instance.pk, self.strategy.pk)        

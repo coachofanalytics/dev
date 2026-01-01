@@ -112,3 +112,53 @@ class CreateIntegrationTests(TestCase):
         response = self.client.get(self.list_url)
         self.assertEqual(len(response.context['investments']), 1)
         self.assertContains(response, "MSFT")
+
+def test_full_update_flow_integration(self):
+        """Integration: Update a record and verify changes in the List view."""
+        # FIX: Include ALL required fields (on_date, earnings_date, etc.)
+        item = InvestmentStrategy.objects.create(
+            symbol="OLD", 
+            action="BUY", 
+            strike_price=100, 
+            iv_rank=10, 
+            day_to_expiry=1, 
+            expiry=date(2026, 1, 1),
+            earnings_date=date(2026, 1, 1), # Added
+            on_date=date.today(),           # Added (The one that caused the error)
+            mid_price=1.0,                  # Added to be safe
+            ask_price=1.1,
+            stock_price=105.0,
+            raw_return=0.01,
+            annualized_return=0.1,
+            opening=0.9
+        )
+        
+        update_url = reverse('investments:InvestmentStrategy_update', kwargs={'pk': item.pk})
+        list_url = reverse('investments:InvestmentStrategy_list')
+
+        updated_data = {
+            'symbol': 'NEW_TICKER',
+            'action': 'SELL',
+            'strike_price': 200,
+            'iv_rank': 55,
+            'day_to_expiry': 45,
+            'expiry': '2026-06-01',
+            'earnings_date': '2026-02-01',
+            'on_date': str(date.today()),
+            'mid_price': 5, 
+            'ask_price': 6, 
+            'stock_price': 205,
+            'raw_return': 0.1, 
+            'annualized_return': 1.2, 
+            'opening': 4.5
+        }
+
+        # Submit update and follow redirect
+        response = self.client.post(update_url, updated_data, follow=True)
+        
+        # Verify redirect to list and updated content
+        self.assertRedirects(response, list_url)
+        self.assertContains(response, "NEW_TICKER")
+        
+        # Confirm total count is still 1 (Ensures we updated, not created new)
+        self.assertEqual(InvestmentStrategy.objects.count(), 1)

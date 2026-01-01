@@ -113,3 +113,35 @@ class CreateViewRegressionTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.context['form'].initial, dict)        
+
+
+
+
+def test_update_with_invalid_data_regression(self):
+        """Regression: Ensure partial/bad data doesn't update the DB."""
+        # FIX: Include earnings_date and on_date to avoid IntegrityError
+        strategy = InvestmentStrategy.objects.create(
+            symbol="TEST", 
+            strike_price=100, 
+            iv_rank=10, 
+            day_to_expiry=1, 
+            expiry=date.today(),
+            earnings_date=date.today(),  # Added this
+            on_date=date.today()         # Added this just in case
+        )
+        url = reverse('investments:InvestmentStrategy_update', kwargs={'pk': strategy.pk})
+        
+        # Post data with an empty symbol (which is invalid)
+        response = self.client.post(url, {
+            'symbol': '', 
+            'strike_price': 100,
+            'earnings_date': str(date.today()),
+            'expiry': str(date.today())
+        })
+        
+        # Should return 200 (re-render form with error), not 302 (redirect)
+        self.assertEqual(response.status_code, 200) 
+        
+        # Refresh from database and check that the symbol is STILL "TEST"
+        strategy.refresh_from_db()
+        self.assertEqual(strategy.symbol, "TEST")

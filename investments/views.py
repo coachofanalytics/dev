@@ -26,16 +26,30 @@ def InvestmentStrategy_list(request):
     investments = InvestmentStrategy.objects.all()
     return render(request, "investments/investments_list.html", {"investments": investments})
 
-
 def InvestmentStrategy_create(request):
     if request.method == "POST":
-        form=InvestmentStrategyForm(request.POST)
+        form = InvestmentStrategyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("investments:InvestmentStrategy_list")
+    
+    else:
+        form = InvestmentStrategyForm()
+    
+    return render(request, "investments/investments_create.html", {"form": form})
+
+def InvestmentStrategy_update(request, pk):
+ 
+    investment = get_object_or_404(InvestmentStrategy, pk=pk)
+    
+    if request.method == "POST":
+    
+        form = InvestmentStrategyForm(request.POST, instance=investment)
         if form.is_valid():
             form.save()
             return redirect("investments:InvestmentStrategy_list")
     else:
-        form=  InvestmentStrategyForm()
-    return render(request, "investments/investments_create.html", {"form": form})
-
-
+  
+        form = InvestmentStrategyForm(instance=investment) 
         
+    return render(request, "investments/investment_update.html", {"form": form})

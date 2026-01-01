@@ -2,60 +2,83 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Investment Strategy Dashboard</h2>
-    <hr>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary"><i class="bi bi-graph-up-arrow"></i> Investment Strategy Dashboard</h2>
+        <a href="{% url 'investments:InvestmentStrategy_create' %}" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-circle"></i> Add New Strategy
+        </a>
+    </div>
     
-    <table class="table table-hover table-bordered">
-        <thead class="thead-dark">
-            <tr>
-                <th>Symbol/Action</th>
-                <th>Strategy Details (What/Why/How)</th>
-                <th>Timeline (Dur/Delivery)</th>
-                <th>Status & QA</th>
-                <th>Resources</th>
-                <th>Comments</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for investments in investments %}
-            <tr>
-                <td>
-                    <strong>{{ investments.symbol }}</strong><br>
-                    <span class="badge badge-info">{{ investments.action }}</span>
-                </td>
+    <div class="table-responsive shadow-sm">
+        <table class="table table-hover align-middle bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th>Symbol/Action</th>
+                    <th>Strategy Details (What/Why/How)</th>
+                    <th>Timeline</th>
+                    <th>Status & QA</th>
+                    <th>Resources</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for investment in investments %}
+                <tr>
+                    <td>
+                        <div class="fw-bold text-dark">{{ investment.symbol }}</div>
+                        <span class="badge rounded-pill bg-info text-dark">{{ investment.action }}</span>
+                    </td>
 
-                <td>
-                    <strong>What:</strong> {{ investments.symbol }} {{ investments.strike_price }} {{ investments.action }}<br>
-                    <strong>Why:</strong> IV Rank: {{ investments.iv_rank }}%<br>
-                    <strong>How:</strong> Entry @ {{ investments.opening }}
-                </td>
+                    <td>
+                        <div class="small">
+                            <span class="text-muted">What:</span> {{ investment.symbol }} @ ${{ investment.strike_price }}<br>
+                            <span class="text-muted">Why:</span> IV Rank: <span class="fw-bold text-danger">{{ investment.iv_rank }}%</span><br>
+                            <span class="text-muted">How:</span> Entry @ <strong>${{ investment.opening }}</strong>
+                        </div>
+                    </td>
 
-                <td>
-                    <strong>Dur:</strong> {{ investments.day_to_expiry }} Days<br>
-                    <strong>Delivery:</strong> {{ investments.expiry|date:"Y-m-d" }}
-                </td>
+                    <td>
+                        <div class="small">
+                            <i class="bi bi-clock"></i> {{ investment.day_to_expiry }} Days left<br>
+                            <i class="bi bi-calendar-event"></i> {{ investment.expiry|date:"M d, Y" }}
+                        </div>
+                    </td>
 
-                <td>
-                    <div>Active: {% if Investments.is_active %}✅{% else %}❌{% endif %}</div>
-                    <div>Tested: <span class="text-success">Yes</span></div> <div>Reviewed: <span class="text-primary">Pending</span></div>
-                </td>
+                    <td>
+                        <div class="mb-1">
+                            Active: {% if investment.is_active %}<span class="text-success">●</span>{% else %}<span class="text-danger">○</span>{% endif %}
+                        </div>
+                        <div style="font-size: 0.75rem;">
+                            <span class="badge bg-light text-success border">Tested</span>
+                            <span class="badge bg-light text-primary border">Review</span>
+                        </div>
+                    </td>
 
-                <td>
-                    <a href="#" title="Documentation">📄 Doc</a><br>
-                    <a href="#" title="Presentation">📊 PPT</a><br>
-                    <a href="#" title="Video Analysis">🎥 Video</a>
-                </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="#" class="btn btn-outline-secondary" title="Doc">📄</a>
+                            <a href="#" class="btn btn-outline-secondary" title="PPT">📊</a>
+                            <a href="#" class="btn btn-outline-secondary" title="Video">🎥</a>
+                        </div>
+                    </td>
 
-                <td>
-                    <small>{{ Investments.comment|truncatewords:10 }}</small>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="text-center">No investment strategies found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    <td class="text-center">
+                        <a href="{% url 'investments:InvestmentStrategy_update' investment.pk %}" 
+                           class="btn btn-sm btn-warning shadow-sm">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox-fill d-block mb-2" style="font-size: 2rem;"></i>
+                        No investment strategies found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
