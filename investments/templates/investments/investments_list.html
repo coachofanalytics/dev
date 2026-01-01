@@ -63,10 +63,20 @@
                     </td>
 
                     <td class="text-center">
-                        <a href="{% url 'investments:InvestmentStrategy_update' investment.pk %}" 
-                           class="btn btn-sm btn-warning shadow-sm">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </a>
+                        <div class="btn-group shadow-sm" role="group">
+                            <a href="{% url 'investments:InvestmentStrategy_detail' investment.pk %}" 
+                               class="btn btn-sm btn-info text-white" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'investments:InvestmentStrategy_update' investment.pk %}" 
+                               class="btn btn-sm btn-warning" title="Edit">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="{% url 'investments:InvestmentStrategy_delete' investment.pk %}" 
+                               class="btn btn-sm btn-danger" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

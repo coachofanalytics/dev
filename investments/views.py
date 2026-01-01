@@ -71,6 +71,15 @@ def InvestmentStrategy_delete(request, pk):
 
 
 
+def InvestmentStrategy_detail(request, pk):
+  
+    investment = get_object_or_404(InvestmentStrategy, pk=pk)
+    return render(request, "investments/investment_dfetail.html", {"investment": investment})    
+
+
+
+
+
 
 
 

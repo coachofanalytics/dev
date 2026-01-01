@@ -10,4 +10,5 @@ urlpatterns = [
     path('investments_create', views.InvestmentStrategy_create, name='InvestmentStrategy_create'),
     path("investment/update/<int:pk>/",views.InvestmentStrategy_update,name="InvestmentStrategy_update"),
     path("investment/delete/<int:pk>/",views.InvestmentStrategy_delete,name="InvestmentStrategy_delete"),
+    path("investment/detail/<int:pk>/",views.InvestmentStrategy_detail,name="InvestmentStrategy_detail"),
 ]
