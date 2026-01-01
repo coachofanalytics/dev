@@ -145,3 +145,19 @@ def test_update_with_invalid_data_regression(self):
         # Refresh from database and check that the symbol is STILL "TEST"
         strategy.refresh_from_db()
         self.assertEqual(strategy.symbol, "TEST")
+
+
+
+
+
+
+
+class DeleteRegressionTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_delete_nonexistent_id_regression(self):
+        """Regression: Ensure deleting a fake ID returns 404, not a 500 crash."""
+        url = reverse('investments:InvestmentStrategy_delete', kwargs={'pk': 99999})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)        

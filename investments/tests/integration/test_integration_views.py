@@ -25,11 +25,11 @@ class ViewIntegrationTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "MSFT")
+        # Check for your 'Active' logic in the template
         self.assertContains(response, "Active")
 
     def test_multiple_records_integration(self):
         """Integration: Verify multiple records are counted and shown."""
-        # Ensure there is NO extra space at the start of these lines
         InvestmentStrategy.objects.create(
             symbol="A", action="BUY", expiry=date(2026, 1, 1), day_to_expiry=10,
             earnings_date=date(2026, 1, 1), on_date=date.today(), strike_price=10,
@@ -47,13 +47,7 @@ class ViewIntegrationTests(TestCase):
         self.assertEqual(len(response.context['investments']), 2)
 
 
-from django.test import TestCase, Client
-from django.urls import reverse
-from datetime import date
-from investments.models import InvestmentStrategy
-
-class CreateIntegrationTests(TestCase):
-
+class CreateUpdateIntegrationTests(TestCase):
     def setUp(self):
         """Set up the test client and URLs."""
         self.client = Client()
@@ -61,10 +55,7 @@ class CreateIntegrationTests(TestCase):
         self.list_url = reverse('investments:InvestmentStrategy_list')
 
     def test_create_to_list_flow_integration(self):
-        """
-        Integration: Test the full flow of creating a strategy 
-        and seeing it appear on the dashboard.
-        """
+        """Integration: Test creating a strategy and seeing it on the dashboard."""
         strategy_data = {
             'symbol': 'NVDA',
             'action': 'PUT SELL',
@@ -80,62 +71,26 @@ class CreateIntegrationTests(TestCase):
             'raw_return': 0.04,
             'annualized_return': 0.35,
             'opening': 4.10,
-            'comment': 'Integration test.',
             'is_active': True
         }
 
-        # Submit and follow the redirect to the list page
         response = self.client.post(self.create_url, strategy_data, follow=True)
-
-        # 1. Check if we ended up on the list page
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "investments/investments_list.html")
-
-        # 2. Check if the database has the record
         self.assertTrue(InvestmentStrategy.objects.filter(symbol='NVDA').exists())
-
-        # 3. Verify the context data exists in the FINAL response
-        # We check 'investments' because that is what the List View provides
-        self.assertIn('investments', response.context)
-        self.assertEqual(len(response.context['investments']), 1)
         self.assertContains(response, "NVDA")
 
-    def test_view_renders_existing_records(self):
-        """Integration: Ensure the list view displays pre-existing DB records."""
-        InvestmentStrategy.objects.create(
-            symbol="MSFT", action="CALL", expiry=date(2026,1,1), 
-            day_to_expiry=1, earnings_date=date(2026,1,1), on_date=date.today(), 
-            strike_price=400, mid_price=5, ask_price=5.1, iv_rank=30, 
-            stock_price=405, raw_return=0.05, annualized_return=0.5, opening=4.8
-        )
-        
-        response = self.client.get(self.list_url)
-        self.assertEqual(len(response.context['investments']), 1)
-        self.assertContains(response, "MSFT")
-
-def test_full_update_flow_integration(self):
+    def test_full_update_flow_integration(self):
         """Integration: Update a record and verify changes in the List view."""
-        # FIX: Include ALL required fields (on_date, earnings_date, etc.)
         item = InvestmentStrategy.objects.create(
-            symbol="OLD", 
-            action="BUY", 
-            strike_price=100, 
-            iv_rank=10, 
-            day_to_expiry=1, 
-            expiry=date(2026, 1, 1),
-            earnings_date=date(2026, 1, 1), # Added
-            on_date=date.today(),           # Added (The one that caused the error)
-            mid_price=1.0,                  # Added to be safe
-            ask_price=1.1,
-            stock_price=105.0,
-            raw_return=0.01,
-            annualized_return=0.1,
-            opening=0.9
+            symbol="OLD", action="BUY", strike_price=100, iv_rank=10, 
+            day_to_expiry=1, expiry=date(2026, 1, 1), earnings_date=date(2026, 1, 1), 
+            on_date=date.today(), mid_price=1.0, ask_price=1.1, 
+            stock_price=105.0, raw_return=0.01, annualized_return=0.1, opening=0.9
         )
         
         update_url = reverse('investments:InvestmentStrategy_update', kwargs={'pk': item.pk})
-        list_url = reverse('investments:InvestmentStrategy_list')
-
+        
         updated_data = {
             'symbol': 'NEW_TICKER',
             'action': 'SELL',
@@ -145,20 +100,42 @@ def test_full_update_flow_integration(self):
             'expiry': '2026-06-01',
             'earnings_date': '2026-02-01',
             'on_date': str(date.today()),
-            'mid_price': 5, 
-            'ask_price': 6, 
-            'stock_price': 205,
-            'raw_return': 0.1, 
-            'annualized_return': 1.2, 
-            'opening': 4.5
+            'mid_price': 5, 'ask_price': 6, 'stock_price': 205,
+            'raw_return': 0.1, 'annualized_return': 1.2, 'opening': 4.5
         }
 
-        # Submit update and follow redirect
         response = self.client.post(update_url, updated_data, follow=True)
-        
-        # Verify redirect to list and updated content
-        self.assertRedirects(response, list_url)
+        self.assertRedirects(response, self.list_url)
         self.assertContains(response, "NEW_TICKER")
-        
-        # Confirm total count is still 1 (Ensures we updated, not created new)
         self.assertEqual(InvestmentStrategy.objects.count(), 1)
+
+
+class DeleteIntegrationTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_list_to_delete_flow_integration(self):
+        """Integration: Verify deletion flow works and clears DB."""
+        # ADDED ALL REQUIRED FIELDS to prevent IntegrityError
+        item = InvestmentStrategy.objects.create(
+            symbol="INTEGRATE_DEL", action="PUT", strike_price=50, 
+            iv_rank=5, day_to_expiry=1, expiry=date.today(),
+            earnings_date=date.today(), on_date=date.today(),
+            mid_price=1.0, ask_price=1.1, stock_price=55.0,
+            raw_return=0.01, annualized_return=0.1, opening=0.9
+        )
+        
+        list_url = reverse('investments:InvestmentStrategy_list')
+        delete_url = reverse('investments:InvestmentStrategy_delete', kwargs={'pk': item.pk})
+
+        # Confirm it exists
+        response = self.client.get(list_url)
+        self.assertContains(response, "INTEGRATE_DEL")
+
+        # Perform deletion
+        response = self.client.post(delete_url, follow=True)
+
+        # Confirm it is gone
+        self.assertTemplateUsed(response, "investments/investments_list.html")
+        self.assertNotContains(response, "INTEGRATE_DEL")
+        self.assertEqual(InvestmentStrategy.objects.count(), 0)

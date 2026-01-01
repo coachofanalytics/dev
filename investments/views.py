@@ -53,3 +53,24 @@ def InvestmentStrategy_update(request, pk):
         form = InvestmentStrategyForm(instance=investment) 
         
     return render(request, "investments/investment_update.html", {"form": form})
+
+
+
+
+def InvestmentStrategy_delete(request, pk):   
+    investment = get_object_or_404(InvestmentStrategy, pk=pk)    
+    if request.method == "POST":       
+        investment.delete()
+       
+        return redirect("investments:InvestmentStrategy_list")
+        
+ 
+    return render(request, "investments/investment_delete.html", {"investment": investment})
+
+
+
+
+
+
+
+
