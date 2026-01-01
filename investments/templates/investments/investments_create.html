@@ -1,0 +1,66 @@
+{% extends "investments/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Add New Investment Strategy</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="id_symbol" class="form-label">Ticker Symbol</label>
+                        {{ form.symbol }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_action" class="form-label">Action/Strategy</label>
+                        {{ form.action }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_strike_price" class="form-label">Strike Price</label>
+                        {{ form.strike_price }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="id_iv_rank" class="form-label">IV Rank (%)</label>
+                        {{ form.iv_rank }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="id_expiry" class="form-label">Expiry Date</label>
+                        {{ form.expiry }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="id_day_to_expiry" class="form-label">Days to Expiry</label>
+                        {{ form.day_to_expiry }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="id_opening" class="form-label">Opening Price</label>
+                        {{ form.opening }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_comment" class="form-label">Strategy Concept (Why this trade?)</label>
+                    {{ form.comment }}
+                </div>
+
+                <div class="form-check mb-4">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="id_is_active">
+                        Mark as Active Strategy
+                    </label>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'investments:InvestmentStrategy_list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5">Save Strategy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

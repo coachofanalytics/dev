@@ -55,3 +55,50 @@ class InvestmentStrategyViewTest(TestCase):
         """Verify that the symbol appears in the rendered HTML."""
         response = self.client.get(self.url)
         self.assertContains(response, "AAPL")
+
+
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from datetime import date
+from investments.models import InvestmentStrategy
+
+class InvestmentStrategyCreateViewTest(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.create_url = reverse('investments:InvestmentStrategy_create')
+        self.list_url = reverse('investments:InvestmentStrategy_list')
+
+    def test_create_view_get_request(self):
+        """Verify the create page loads with a blank form."""
+        response = self.client.get(self.create_url)
+        self.assertEqual(response.status_code, 200)
+        # Matches your view: render(request, "investments/investments_create.html", ...)
+        self.assertTemplateUsed(response, "investments/investments_create.html")
+        self.assertIn('form', response.context)
+
+    def test_create_view_post_success(self):
+        """Verify that a valid POST request saves a record and redirects."""
+        data = {
+            'symbol': 'TSLA',
+            'action': 'IRON CONDOR',
+            'expiry': '2026-06-01',
+            'day_to_expiry': 45,
+            'earnings_date': '2026-04-15',
+            'on_date': str(date.today()),
+            'strike_price': 180.00,
+            'mid_price': 5.50,
+            'ask_price': 5.60,
+            'iv_rank': 65.0,
+            'stock_price': 175.00,
+            'raw_return': 0.08,
+            'annualized_return': 0.75,
+            'opening': 5.40,
+            'comment': 'High IV rank strategy',
+            'is_active': True
+        }
+        response = self.client.post(self.create_url, data)
+        self.assertRedirects(response, self.list_url)
+        self.assertEqual(InvestmentStrategy.objects.filter(symbol='TSLA').count(), 1)

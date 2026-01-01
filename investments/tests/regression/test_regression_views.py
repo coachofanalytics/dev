@@ -60,3 +60,56 @@ class ViewRegressionTests(TestCase):
         """
         response = self.client.get(self.url + "?page=abc&sort=xyz")
         self.assertEqual(response.status_code, 200)
+
+
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from investments.models import InvestmentStrategy
+
+class CreateViewRegressionTests(TestCase):
+
+    def setUp(self):
+        """Set up the test client and the Create URL."""
+        self.client = Client()
+        self.url = reverse('investments:InvestmentStrategy_create')
+
+    def test_create_view_empty_post_regression(self):
+        """
+        Regression: Ensure that submitting a completely empty POST 
+        request does not result in a 500 Server Error. 
+        It should return 200 (re-rendering the form with errors).
+        """
+        response = self.client.post(self.url, {})
+        
+        # A 500 error means the code crashed. A 200 means it handled the error.
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify that the form is returned with errors
+        self.assertFalse(response.context['form'].is_valid())
+        self.assertEqual(InvestmentStrategy.objects.count(), 0)
+
+    def test_create_view_malformed_data_regression(self):
+        """
+        Regression: Ensure that sending strings to numeric fields 
+        (like strike_price) is caught by validation and doesn't crash the DB.
+        """
+        bad_data = {
+            'symbol': 'AAPL',
+            'strike_price': 'NOT_A_NUMBER',  # This should be a Decimal/Float
+            'iv_rank': 'HIGH',               # This should be a Number
+        }
+        response = self.client.post(self.url, bad_data)
+        
+        self.assertEqual(response.status_code, 200)
+        # Check that the strike_price specifically has a validation error
+        self.assertFormError(response, 'form', 'strike_price', 'Enter a number.')
+
+    def test_create_view_get_request_no_data(self):
+        """
+        Regression: Ensure the page simply loads a blank form 
+        on a GET request without any side effects.
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.context['form'].initial, dict)        

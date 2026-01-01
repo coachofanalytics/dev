@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import InvestmentStrategy
 from django.utils import timezone
+from .forms import  InvestmentStrategyForm
 from pytz import timezone
 
 from django.db.models import Q
@@ -24,3 +25,17 @@ def investments_dashboard(request):
 def InvestmentStrategy_list(request):
     investments = InvestmentStrategy.objects.all()
     return render(request, "investments/investments_list.html", {"investments": investments})
+
+
+def InvestmentStrategy_create(request):
+    if request.method == "POST":
+        form=InvestmentStrategyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("investments:InvestmentStrategy_list")
+    else:
+        form=  InvestmentStrategyForm()
+    return render(request, "investments/investments_create.html", {"form": form})
+
+
+        
