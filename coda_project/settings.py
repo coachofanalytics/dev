@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "application.apps.ApplicationConfig",
     "finance",
+    "investments",
     "crispy_forms",
     "django.contrib.admin",
     "django.contrib.auth",
