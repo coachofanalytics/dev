@@ -71,10 +71,12 @@ MIDDLEWARE = [
 CSRF_COOKIE_SECURE = False
 ROOT_URLCONF = "coda_project.urls"
 
+# ==================== TEMPLATE CONFIGURATION ====================
+# FIXED: DIRS now points to your global templates folder
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,20 +137,15 @@ USE_TZ = True
 
 # ==================== STATIC FILES CONFIGURATION ====================
 STATIC_URL = "/static/"
-
-# Points to the folder Heroku will create during 'collectstatic'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-# FIXED: Points to your source 'static' folder in the root directory
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-# Prevents build failure if CSS references missing images/files
 WHITENOISE_MANIFEST_STRICT = False
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # ====================================================================
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
@@ -210,7 +207,6 @@ elif ENV == 'testing':
 else:
     SITEURL = "http://127.0.0.1:8000"
     DEBUG = True
-    # Standard storage for local development
     STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Social Auth Settings

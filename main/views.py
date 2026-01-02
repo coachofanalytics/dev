@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from .models import Service,Assets,Readme
+from .models import Service,Assets,Readme,Location
 from .utils import *
 from coda_project import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -62,59 +62,59 @@ def data_policy(request):
 
 
 
-def layout(request):
-    # testimonials, selected_class = get_testimonials()
+# def layout(request):
+#     # testimonials, selected_class = get_testimonials()
 
-    services = Service.objects.filter(is_active=True).order_by('serial')
-    context = {
-        "services": services,
-        "posts": {},
-        "title": "layout",
-        "selected_class": None,
-    }
-    return render(request, "main/home_templates/newlayout.html", context)
+#     services = Service.objects.filter(is_active=True).order_by('serial')
+#     context = {
+#         "services": services,
+#         "posts": {},
+#         "title": "layout",
+#         "selected_class": None,
+#     }
+#     return render(request, "main/home_templates/newlayout.html", context)
 
-def fetch_model_table_names(request):
-    app_name = request.GET.get('category', None)  # Replace with the actual app name
-    app_models = apps.get_app_config(app_name).get_models()
-    # Get the actual model table names based on the application
-    # table_names = [model.__name__ for model in app_models]
-    table_names = [{'value': model.__name__, 'display_text': model._meta.verbose_name.replace('_', ' ').capitalize()} for model in app_models]
-    return JsonResponse({'model_table_names': table_names})
+# def fetch_model_table_names(request):
+#     app_name = request.GET.get('category', None)  # Replace with the actual app name
+#     app_models = apps.get_app_config(app_name).get_models()
+#     # Get the actual model table names based on the application
+#     # table_names = [model.__name__ for model in app_models]
+#     table_names = [{'value': model.__name__, 'display_text': model._meta.verbose_name.replace('_', ' ').capitalize()} for model in app_models]
+#     return JsonResponse({'model_table_names': table_names})
 
 
-# =====================SERVICES  VIEWS=======================================
-class ServiceCreateView(LoginRequiredMixin, CreateView):
-    model = Service
-    success_url = "/services/"
-    fields = "__all__"
+# # =====================SERVICES  VIEWS=======================================
+# class ServiceCreateView(LoginRequiredMixin, CreateView):
+#     model = Service
+#     success_url = "/services/"
+#     fields = "__all__"
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
+#     def form_valid(self, form):
+#         form.instance.user = self.request.user
+#         return super().form_valid(form)
 
-def services(request):
-    services = Service.objects.filter(is_active=True).order_by('serial')
-    context = {
-        "SITEURL" :settings.SITEURL,
-        "services": services
-    }
-    return render(request, "main/services/show_service.html", context)
+# def services(request):
+#     services = Service.objects.filter(is_active=True).order_by('serial')
+#     context = {
+#         "SITEURL" :settings.SITEURL,
+#         "services": services
+#     }
+#     return render(request, "main/services/show_service.html", context)
 
-def display_service(request, *args, **kwargs):
-    path_list, sub_title, pre_sub_title = path_values(request)
-    try:
-        service_shown = Service.objects.filter(is_active=True)
-    except Service.DoesNotExist:
-        return redirect('main:display_service')
+# def display_service(request, *args, **kwargs):
+#     path_list, sub_title, pre_sub_title = path_values(request)
+#     try:
+#         service_shown = Service.objects.filter(is_active=True)
+#     except Service.DoesNotExist:
+#         return redirect('main:display_service')
 
-    (service_category_slug, service_category_title, service_description,service_sub_titles, service_id) = service_instances(service_shown, sub_title)
-    service_categories = ServiceCategory.objects.filter(is_active=True,service=service_id)
-    try:
-        asset = Assets.objects.get(name=service_category_title)
-        asset_image_url = asset.service_image.url
-    except Assets.DoesNotExist:
-        asset_image_url = None
+#     (service_category_slug, service_category_title, service_description,service_sub_titles, service_id) = service_instances(service_shown, sub_title)
+#     service_categories = ServiceCategory.objects.filter(is_active=True,service=service_id)
+#     try:
+#         asset = Assets.objects.get(name=service_category_title)
+#         asset_image_url = asset.service_image.url
+#     except Assets.DoesNotExist:
+#         asset_image_url = None
     # investment_content = InvestmentContent.objects.first()
 
     # description = investment_content.description if investment_content else "No description available"
@@ -122,127 +122,132 @@ def display_service(request, *args, **kwargs):
     # testimonials, selected_class = get_testimonials()
 
     # Calculate the number of students and other users
-    students_count = CustomerUser.objects.filter(category=CategoryChoices.Student).count()
-    teachers_count = 8  # Set the desired count
-    teachers = CustomerUser.objects.filter(category=CategoryChoices.Coda_Staff_Member)[:teachers_count].count()
-    # Calculate the total number of courses
-    title1 = "IT-Training"
-    title2 = "Interview"
+#     students_count = CustomerUser.objects.filter(category=CategoryChoices.Student).count()
+#     teachers_count = 8  # Set the desired count
+#     teachers = CustomerUser.objects.filter(category=CategoryChoices.Coda_Staff_Member)[:teachers_count].count()
+#     # Calculate the total number of courses
+#     title1 = "IT-Training"
+#     title2 = "Interview"
 
-    total_courses_count =10
+#     total_courses_count =10
   
-    category_name = 'IT-Project Management'  
-    projects = None
-    #Description for IT Integrated Solutions & Consultancy 
-    # descriptions = InvestmentContent.objects.filter(title='IT Integrated Solutions & Consultancy')
-    context = {
-        'service_categories': service_categories,
-        "title": service_category_title,
-        "service_desc": service_description,
-        # 'content': description,
-        "General":General,
-        "projects": projects,
-        "Automation":Automation,
-        "sub_titles": service_sub_titles,
-        "posts": None,
-        "selected_class": None,
-        "slug": service_category_slug,
-        "asset_image_url": asset_image_url,
-        "students_count": students_count,
-        "teachers_count": teachers,
-        "total_courses_count": total_courses_count,
-    }
-    return render(request, "main/services/show_services.html", context)
+#     category_name = 'IT-Project Management'  
+#     projects = None
+#     #Description for IT Integrated Solutions & Consultancy 
+#     # descriptions = InvestmentContent.objects.filter(title='IT Integrated Solutions & Consultancy')
+#     context = {
+#         'service_categories': service_categories,
+#         "title": service_category_title,
+#         "service_desc": service_description,
+#         # 'content': description,
+#         "General":General,
+#         "projects": projects,
+#         "Automation":Automation,
+#         "sub_titles": service_sub_titles,
+#         "posts": None,
+#         "selected_class": None,
+#         "slug": service_category_slug,
+#         "asset_image_url": asset_image_url,
+#         "students_count": students_count,
+#         "teachers_count": teachers,
+#         "total_courses_count": total_courses_count,
+#     }
+#     return render(request, "main/services/show_services.html", context)
 
 
-def service_plans(request, *args, **kwargs):
-    path_list, sub_title, pre_sub_title = path_values(request)
-    try:
-        if pre_sub_title == 'bigdata':
-            service_shown = ServiceCategory.objects.get(slug=sub_title).service
+# def service_plans(request, *args, **kwargs):
+#     path_list, sub_title, pre_sub_title = path_values(request)
+#     try:
+#         if pre_sub_title == 'bigdata':
+#             service_shown = ServiceCategory.objects.get(slug=sub_title).service
 
-        elif pre_sub_title:
-            try:
-                service_shown = Service.objects.get(slug=pre_sub_title)
-                # print("service_shown====>",service_shown)
-            except Service.DoesNotExist:
-                service_shown = ServiceCategory.objects.get(slug=sub_title).service
+#         elif pre_sub_title:
+#             try:
+#                 service_shown = Service.objects.get(slug=pre_sub_title)
+#                 # print("service_shown====>",service_shown)
+#             except Service.DoesNotExist:
+#     #             service_shown = ServiceCategory.objects.get(slug=sub_title).service
 
-        elif sub_title.lower() in ["job-support","interview","full-course"]:
-            # service_shown = Data Analysis
-            service_shown = Service.objects.get(slug="data_analysis")
-            # print("service_shown====>",service_shown)
-        else:
-            return redirect('main:layout')
+    #     elif sub_title.lower() in ["job-support","interview","full-course"]:
+    #         # service_shown = Data Analysis
+    #         service_shown = Service.objects.get(slug="data_analysis")
+    #         # print("service_shown====>",service_shown)
+    #     else:
+    #         return redirect('main:layout')
         
-    except Service.DoesNotExist:
-        return redirect('main:display_service', slug ='data_analysis')
-    except Exception:
-        return redirect('main:layout')
-    service_categories = ServiceCategory.objects.filter(service=service_shown.id)
-    (category_slug,category_name,category_id)=service_plan_instances(service_categories,sub_title)
-    plans =None
+    # except Service.DoesNotExist:
+    #     return redirect('main:display_service', slug ='data_analysis')
+    # except Exception:
+    #     return redirect('main:layout')
+    # service_categories = ServiceCategory.objects.filter(service=service_shown.id)
+    # (category_slug,category_name,category_id)=service_plan_instances(service_categories,sub_title)
+    # plans =None
 
-    context = {}
-    context = {
-        "SITEURL": settings.SITEURL,
-        "title": category_name,
-        "packages": packages,
-        "category_slug": category_slug,
-        "courses": courses,
-        "services_plans": plans
-    }
-    return render(request, "main/services/service_plan.html", context)
+    # context = {}
+    # context = {
+    #     "SITEURL": settings.SITEURL,
+    #     "title": category_name,
+    #     "packages": packages,
+    #     "category_slug": category_slug,
+    #     "courses": courses,
+    #     "services_plans": plans
+    # }
+    # return render(request, "main/services/service_plan.html", context)
 
 
 # =====================README VIEWS=======================================
-class UseCaseCreateView(LoginRequiredMixin, CreateView):
-    model = Readme
-    success_url = "/usecases/"
-    fields = "__all__"
+# class UseCaseCreateView(LoginRequiredMixin, CreateView):
+#     model = Readme
+#     success_url = "/usecases/"
+#     fields = "__all__"
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
+#     def form_valid(self, form):
+#         form.instance.user = self.request.user
+#         return super().form_valid(form)
 
 
-def display_usecases(request, *args, **kwargs):
-    try:
-        usecases = Readme.objects.all()
-    except Readme.DoesNotExist:
-        return redirect('main:layout')
+# def display_usecases(request, *args, **kwargs):
+#     try:
+#         usecases = Readme.objects.all()
+#     except Readme.DoesNotExist:
+#         return redirect('main:layout')
     
-    context = {
-        "title": "USE CASE",
-        "table_contents": table_contents,
-        "usecases": usecases,
-    }
-    return render(request, "main/snippets_templates/readme_usecases.html", context)
+#     context = {
+#         "title": "USE CASE",
+#         "table_contents": table_contents,
+#         "usecases": usecases,
+#     }
+#     return render(request, "main/snippets_templates/readme_usecases.html", context)
     
-#========================Internal Team & Clients==============================
+# #========================Internal Team & Clients==============================
 
-def it(request):
-    return render(request, "main/departments/it.html", {"title": "IT"})
+# def it(request):
+#     return render(request, "main/departments/it.html", {"title": "IT"})
 
-def finance(request):
-    return render(request, "main/departments/finance_landing_page.html", {"title": "Finance"})
+# def finance(request):
+#     return render(request, "main/departments/finance_landing_page.html", {"title": "Finance"})
 
-def hr(request):
-    return render(request, "management/companyagenda.html", {"title": "HR"})
+# def hr(request):
+#     return render(request, "management/companyagenda.html", {"title": "HR"})
 
-def error400(request):
-    return render(request, "main/errors/400.html", {"title": "400Error"})
+# def error400(request):
+#     return render(request, "main/errors/400.html", {"title": "400Error"})
 
-def error403(request):
-    return render(request, "main/errors/403.html", {"title": "403Error"})
+# def error403(request):
+#     return render(request, "main/errors/403.html", {"title": "403Error"})
 
-def error404(request):
-    return render(request, "main/errors/404.html", {"title": "404Error"})
+# def error404(request):
+#     return render(request, "main/errors/404.html", {"title": "404Error"})
     
-def error500(request):
-    return render(request, "main/errors/500.html", {"title": "500Error"})
+# def error500(request):
+#     return render(request, "main/errors/500.html", {"title": "500Error"})
 
-def general_errors(request):
-    # return render(request, "main/errors/noresult.html")
-    context={'message':'message'}
-    return render(request,'main/errors/generalerrors.html',context)
+# def general_errors(request):
+#     # return render(request, "main/errors/noresult.html")
+#     context={'message':'message'}
+#     return render(request,'main/errors/generalerrors.html',context)
+
+
+def location_list(request):
+    locations = Location.objects.all()
+    return render(request, "main/locations_list.html", {"locations": locations})
