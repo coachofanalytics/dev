@@ -1,0 +1,90 @@
+        .logo-text {
+            color: #243865 !important;
+            font-size: 3rem !important;
+            font-weight: bold;
+        }
+
+        .nav-items>a {
+            color: #ADB4C5 !important;
+        }
+
+        .navbar .navbar-brand {
+            font-size: 30px;
+        }
+
+        .navbar .nav-item {
+            padding: 10px 20px;
+        }
+
+        .navbar .nav-link {
+            font-size: 20px;
+            margin-left: 10px;
+        }
+
+        .fa-bars {
+            color: #007bff;
+            font-size: 30px;
+        }
+
+        .top-coloumn {
+            background-color: #243865;
+            padding: 3rem 8rem 3rem 8rem;
+        }
+
+        .title-sub-head {
+            font-size: 1.5rem;
+        }
+
+        .title-head {
+            font-size: 2rem;
+        }
+
+        .title-sub-head,
+        .title-head {
+            color: #E7AD4A;
+            
+        }
+
+        .title-sub-pay
+         {
+            color: #0954b6;
+            font-size: 19px;
+            font-weight: 500;
+        }
+
+        .title-para {
+            font-size: 12px;
+            color: #ffffff;
+            
+        }
+
+        .bottom-coloumn {
+            background-color: #E6E6E6 !important;
+        }
+
+        .follow-text{
+            color: black;
+            font-size: 1.3rem;
+        }
+        .fb-circle{
+            background-color: #3A5B9F;
+            padding: 2px;
+            width: 19px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-bc{
+            background-color: #E7AD4A;
+            color: #ffffff;
+        }
+        .top-left-coloumn{
+            background-image: url(/static/data/img/banner1.png);
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        @media screen and (max-width:768px) {
+            .top-coloumn {
+                padding: 3rem 1rem 3rem 2rem;
+            }
+        }

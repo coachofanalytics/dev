@@ -1,5 +1,9 @@
-import os,requests,openai,json
-import random,string
+import os
+import requests
+import openai
+import json
+import random
+import string
 from coda_project.settings import SITEURL
 # import tableauserverclient as TSC
 import datetime
@@ -20,7 +24,6 @@ from google.oauth2 import service_account
 from googleapiclient.http import MediaFileUpload 
 from googleapiclient.discovery import build
 import httplib2  # Import the httplib2 library for setting the timeout
-from google.auth import exceptions
 
 """ ========End of Code======== """
 
@@ -301,7 +304,7 @@ def countdown_in_month():
 def path_values(request):
     try:
         previous_path = request.META.get('HTTP_REFERER', '')
-    except Exception as e:
+    except Exception:
         previous_path = f"{SITEURL}/management/companyagenda/"
 
     pre_value = previous_path.split("/")

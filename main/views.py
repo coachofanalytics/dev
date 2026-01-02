@@ -1,39 +1,16 @@
-import os
-import datetime, json
-import random
-from django.db.models import Min,Max
-from django.http import JsonResponse,Http404
-from django.db.models import Q
-from django.shortcuts import redirect, render,get_object_or_404
-from datetime import datetime,date,timedelta
-from dateutil.relativedelta import relativedelta
-import openai
-from django.db.models import Sum
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from .models import Service,Assets,Readme
 from .utils import *
 from coda_project import settings
-from application.models import UserProfile
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
-        CreateView,
-        DeleteView,
-        ListView,
-        DetailView,
-        UpdateView,)
+        CreateView,)
 
 from .forms import *
-from django.http import JsonResponse
 from django.apps import apps
-from langchain_community.llms import OpenAI
-from langchain_community.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage
-from django.db.models import F, FloatField, Case, When, Value, Subquery, OuterRef, Q
 from django.contrib.auth import get_user_model
-from django.db.models.functions import Coalesce
 
-import requests
 from accounts.choices import CategoryChoices
 
 User=get_user_model()
