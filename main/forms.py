@@ -3,10 +3,17 @@ from django.db.models import Q
 from accounts.models import CustomerUser
 # from .models import Expenses
 from .models import *
-# from django.db import transaction
+# from django.db import transactionfrom django import forms
+from main.models import Location
 
 class ClientNameForm(forms.Form):
     client = forms.ModelChoiceField(
         queryset=CustomerUser.objects.filter(Q(is_client=True) | Q(is_staff=True)),
         label='Select a client'
+
     )
+
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = ["country", "state", "city", "zipcode"]

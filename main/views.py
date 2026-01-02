@@ -2,6 +2,9 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from .models import Service,Assets,Readme,Location
 from .utils import *
+from .forms import LocationForm
+from django.shortcuts import render, get_object_or_404, redirect
+
 from coda_project import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
@@ -12,7 +15,6 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 
 from accounts.choices import CategoryChoices
-
 User=get_user_model()
 
 #  ===================================================================================   
@@ -251,3 +253,32 @@ def data_policy(request):
 def location_list(request):
     locations = Location.objects.all()
     return render(request, "main/locations_list.html", {"locations": locations})
+
+
+
+def location_create(request):
+    if request.method == "POST":
+        form = LocationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("main:location_list")
+    else:
+        form = LocationForm()
+
+    return render(request, "main/location_create.html", {"form": form})
+
+
+
+def location_update(request, pk):
+    location = get_object_or_404(Location, pk=pk)
+
+    if request.method == "POST":
+        form = LocationForm(request.POST, instance=location)
+        if form.is_valid():
+            form.save()
+            return redirect("main:location_list")
+    else:
+        form = LocationForm(instance=location)
+
+    return render(request,"main/location_update.html",{"form": form, "location": location}
+    )

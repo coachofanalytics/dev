@@ -1,0 +1,57 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Location{% else %} Edit Location{% endif %} | CODA
+{% endblock title %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="fw-bold mb-0">
+                Update Location
+            </h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Country</label>
+                    {{ form.country }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">State</label>
+                    {{ form.state }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">City</label>
+                    {{ form.city }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Zip Code</label>
+                    {{ form.zipcode }}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-warning">
+                        Update Location
+                    </button>
+
+                    <a href="{% url 'main:location_list' %}"
+                       class="btn btn-secondary ms-2">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

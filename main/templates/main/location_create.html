@@ -1,0 +1,42 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Location{% else %}Add New Location{% endif %} | CODA
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        {% if object %}
+                            <i class="fas fa-edit me-2"></i>Edit Location
+                        {% else %}
+                            <i class="fas fa-plus me-2"></i>Add New Location
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {{ form|crispy }}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'main:location_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
