@@ -282,3 +282,9 @@ def location_update(request, pk):
 
     return render(request,"main/location_update.html",{"form": form, "location": location}
     )
+
+def location_detail(request, pk):
+    location = get_object_or_404(Location, pk=pk)
+    return render(request, "main/location_detail.html", {
+        "location": location
+    })
