@@ -1,13 +1,7 @@
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Q
-from django.utils.text import slugify
 from django.db.models.signals import pre_save
-from .utils import unique_slug_generator,slug_pre_save_receiver
-from django.urls import reverse
-from django.utils import timezone
-from django.conf import settings
+from .utils import unique_slug_generator
 from django.contrib.auth import get_user_model
 
 # from tableauhyperapi import DatabaseName
@@ -92,4 +86,20 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
             instance.slug = unique_slug_generator(instance)
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
+
+class Location(models.Model):
+    zipcode =models.CharField(max_length=20)
+    city =models.CharField(max_length=100)
+    state =models.CharField(max_length=100)
+    country =models.CharField(max_length=100)
+
+    class Meta:
+        unique_together =('zipcode','city','state','country')
+        ordering =['country','state','city']
+
+        def __str__(self):
+            return f"{self.city}, {self.state},{self.country} ({self.zipcode})"
+        
+        
+
 
