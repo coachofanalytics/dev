@@ -288,3 +288,14 @@ def location_detail(request, pk):
     return render(request, "main/location_detail.html", {
         "location": location
     })
+
+
+def location_delete(request, pk):
+    location = get_object_or_404(Location, pk=pk)
+
+    if request.method == "POST":
+        location.delete()
+        return redirect("main:location_list")
+
+    return render(request,"main/location_delete.html",{"location": location}
+    )
