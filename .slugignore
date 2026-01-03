@@ -1,0 +1,44 @@
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Virtual Environment (if accidentally committed)
+dc48k_venv/
+venv/
+env/
+.venv/
+
+# Tests and Coverage
+tests/
+htmlcov/
+.coverage
+.tox/
+.nox/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Static/Media (Generated/User Uploaded)
+# Usually we want to keep staticfiles/ if we are not running collectstatic, but Heroku runs it.
+# If we store media on S3, we don't need media/
+media/
+staticfiles/
+
+# Other
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+npm-debug.log
+yarn-error.log
+*.log

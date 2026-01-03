@@ -133,6 +133,7 @@ celerybeat.pid
 env/
 venv/
 dc48_venv/
+dc48k_venv/
 ENV/
 env.bak/
 venv.bak/
