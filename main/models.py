@@ -181,9 +181,7 @@ class Donation_organization(models.Model):
         return f"{self.donor_name} - {self.amount}"
 
 
-#<<<<<<< 25.10_DC48_UAT_UO
 
-#<<<<<<< 25.10_DC48_UAT_UO
 # Stores email subscriptions for Safety Alerts
 class SafetyAlertSubscription(models.Model):
     email = models.EmailField(unique=True)
@@ -235,11 +233,7 @@ class EmergencyHelpActivations(models.Model):
 
     def __str__(self):
         return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
-#=======
-
 # Medical Resource Inquiry model at top-level
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
 class MedicalResourceInquiry(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -313,8 +307,4 @@ class TrainingCourse(models.Model):
 
     def __str__(self):
         return self.title
-#<<<<<<< 25.10_DC48_UAT_UO
-    
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
+
