@@ -8,20 +8,32 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+#<<<<<<< 25.10_DC48_UAT_UO
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
+#=======
 from django.db.models import Q
 #<<<<<<< HEAD
+#<<<<<<< HEAD
 from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
+#>>>>>>> 25.10_DC48_UAT_ND
+#=======
+from .models import (
+    Assets, Description, News, Page, Service, Scholarship, SubService, Team,
+    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry
+)
+#>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
-from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
-##=======
-from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry
-from accounts.models import CustomerUser
-from .utils import image_view,path_values
+from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
-from main.forms import ContactForm
-#>>>>>>> origin/25.10_DC48K_UAT_FN
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
 from django.contrib.auth import get_user_model
+#<<<<<<< 25.10_DC48_UAT_UO
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
+#=======
 
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -37,6 +49,7 @@ class DonationCreateView(CreateView):
     template_name = 'main/snippets_templates/table/donation_create.html'
     success_url = reverse_lazy('main:donation')
 
+#>>>>>>> 25.10_DC48_UAT_ND
 User=get_user_model()
 
 
@@ -119,6 +132,10 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
+#<<<<<<< 25.10_DC48_UAT_UO
+    page_instance, _ = Page.objects.get_or_create(page_name='Home')
+    description = Description.objects.filter(page=page_instance)
+#=======
 #<<<<<<< HEAD
     # Define page_instance for the home page or desired page
     page_instance = Page.objects.filter(page_name='Home').first()
@@ -128,6 +145,7 @@ def layout(request):
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page = page_instance)
 #>>>>>>> origin/25.10_DC48K_UAT_FN
+#>>>>>>> 25.10_DC48_UAT_ND
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -200,7 +218,9 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
     def get_success_url(self):
         return reverse('main:images') 
     
-
+def crisis_page(request):
+    hotlines = EmergencyHotlines.objects.filter(is_active=True).order_by("sort_order", "id")
+    return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
 
@@ -211,6 +231,47 @@ def team_list(request):
     return render(request, 'main/snippets_templates/table/team.html', {'info': teams})
 
 
+@require_POST
+@csrf_protect
+def subscribe_alerts(request):
+    email = request.POST.get('email', '').strip().lower()
+    if not email:
+        return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
+
+    subject = "DC48K Safety Alerts Subscription"
+    html_message = """
+      <p>Thank you for subscribing to DC48K Safety Alerts.</p>
+      <p>You will receive updates about advisories and safety information.</p>
+    """
+    plain_message = strip_tags(html_message)
+    # Check if already subscribed
+    existing = SafetyAlertSubscription.objects.filter(email=email).first()
+    if existing and existing.is_active:
+        return JsonResponse({'success': True, 'message': 'You are already subscribed to Safety Alerts.'})
+
+    if existing and not existing.is_active:
+        existing.is_active = True
+        existing.save()
+    else:
+        SafetyAlertSubscription.objects.create(
+            email=email,
+            user=request.user if request.user.is_authenticated else None,
+            is_active=True,
+        )
+
+    # Attempt to send confirmation email
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            None,  # uses DEFAULT_FROM_EMAIL
+            [email],
+            html_message=html_message,
+        )
+        return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
+    except Exception:
+        # Gracefully succeed even if email backend is unavailable
+        return JsonResponse({'success': True, 'message': 'Subscribed! (Email could not be sent right now.)'})
 
 
 
@@ -219,6 +280,9 @@ def team_list(request):
 
 from django.shortcuts import render
 from .models import Service,ContactUs
+from django.db.models import Q
+from .models import Scholarship
+from .forms import ScholarshipSearchForm
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
@@ -316,6 +380,66 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
+#<<<<<<< 25.10_DC48_UAT_UO
+@require_POST
+@csrf_protect
+def activate_helpline(request):
+    name = request.POST.get('name', '').strip() or None
+    phone = request.POST.get('phone', '').strip() or None
+    location = request.POST.get('location', '').strip() or None
+    notes = request.POST.get('notes', '').strip() or None
+
+    # Basic validation
+    if not phone:
+        return JsonResponse({'success': False, 'message': 'Phone number is required.'}, status=400)
+
+    # Client IP
+    ip = request.META.get('HTTP_X_FORWARDED_FOR')
+    if ip:
+        ip = ip.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+
+    # Log activation
+    EmergencyHelpActivations.objects.create(
+        event_type="callback_requested",
+        name=name,
+        phone=phone,
+        location=location,
+        notes=notes,
+        ip_address=ip,
+    )
+
+    # Notify active staff via email
+    recipients = list(
+        StaffContact.objects.filter(is_active=True, notify_via_email=True)
+        .exclude(email__isnull=True)
+        .exclude(email__exact='')
+        .values_list('email', flat=True)
+    )
+
+    subject = "Emergency Callback Requested"
+    lines = [
+        "An emergency callback has been requested.",
+        f"Name: {name or '-'}",
+        f"Phone: {phone or '-'}",
+        f"Location: {location or '-'}",
+        f"Notes: {notes or '-'}",
+        f"IP: {ip or '-'}",
+    ]
+    message = "\n".join(lines)
+
+    try:
+        if recipients:
+            send_mail(subject, message, None, recipients)
+    except Exception:
+        # Fail silently for the user; we still return success
+        pass
+
+    return JsonResponse({'success': True, 'message': 'Request received. Our team will call you shortly.'})
+
+
+#=======
 #<<<<<<< HEAD
 def donor_list(request):
     donations = Donation_organisation.objects.all()  # Remove is_donor filter
@@ -408,8 +532,75 @@ def add_message(request):
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
-    context = {'initial_view': initial_view}
+    # Flag to indicate a successful mentorship request submission
+    mentorship_success = request.GET.get('mentorship') == 'success'
+    context = {
+        'initial_view': initial_view,
+        'mentorship_success': mentorship_success,
+    }
     return render(request, 'main/education/education.html', context)
+
+
+def request_mentorship(request):
+    """Render and handle the mentorship request form. Uses the same ContactForm/Feedback
+    model used elsewhere so styling and behavior are consistent across the site.
+    """
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            # If user is authenticated, attach them; otherwise leave blank
+            if request.user.is_authenticated:
+                instance.user = request.user
+            # Ensure topic denotes mentorship request if left blank
+            if not instance.topic:
+                instance.topic = 'Mentorship Request'
+            instance.save()
+            # redirect back to education landing with a success flag
+            return redirect(reverse('main:education_landing') + '?view=landing&mentorship=success')
+    else:
+        # Prefill the form topic to guide the user
+        initial = {'topic': 'Mentorship Request'}
+        form = ContactForm(initial=initial)
+
+    return render(request, 'main/education/mentorship_form.html', {'form': form})
+
+
+def course_register(request):
+    """Render a mock course registration page where users can view course types,
+    see prices, and interact with a demo PayPal-style button. The page also
+    includes a client-side form to add course types dynamically (no server save).
+    """
+    courses = [
+        {
+            'id': 101,
+            'title': 'Modern Web Development (React & Node)',
+            'category': 'Digital Skills',
+            'duration': '12 Weeks',
+            'format': 'Online Live',
+            'price': 150.00,
+        },
+        {
+            'id': 102,
+            'title': 'Financial Literacy for Diaspora Investors',
+            'category': 'Finance & Business',
+            'duration': '4 Weeks',
+            'format': 'Online Self-Paced',
+            'price': 40.00,
+        },
+        {
+            'id': 103,
+            'title': 'Entrepreneurship & Small Business Management',
+            'category': 'Business',
+            'duration': '8 Weeks',
+            'format': 'Blended',
+            'price': 95.00,
+        },
+    ]
+    # If requested as a partial (AJAX in-page load), return only the fragment
+    if request.GET.get('partial') == '1':
+        return render(request, 'main/education/course_register_fragment.html', {'courses': courses})
+    return render(request, 'main/education/course_register.html', {'courses': courses})
 
 
 def donation_list(request):
@@ -431,35 +622,41 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
-#>>>>>>> origin/25.10_DC48K_UAT_FN
-
-# Scholarship views
-
+# Scholarship search view — renders the scholarship search template and handles basic filters
 def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
     if form.is_valid():
         data = form.cleaned_data
-        # apply filter
-        if data['search_keyword']:
+        # keyword search
+        kw = data.get('search_keyword')
+        if kw:
             scholarships = scholarships.filter(
-                Q(title__icontains=data['search_keyword']) |
-                Q(provider__icontains=data['search_keyword']) 
+                Q(title__icontains=kw) | Q(provider__icontains=kw)
             )
-        if data['filter_level'] and data['filter_level'] != 'All':
-            scholarships = scholarships.filter(level=data['filter_level'])
-
-        if data['filter_field'] and data['filter_field'] != 'All':
-            scholarships = scholarships.filter(field=data['filter_field'])
-
-        if data['filter_location'] and data['filter_location'] != 'All':
-            scholarships = scholarships.filter(location=data['filter_location'])
-
-        if data['filter_status']:
-            scholarships = scholarships.filter(status='Closing soon')
+        # level filter
+        level = data.get('filter_level')
+        if level:
+            scholarships = scholarships.filter(level=level)
+        # field filter
+        field = data.get('filter_field')
+        if field:
+            scholarships = scholarships.filter(field=field)
+        # location filter
+        location = data.get('filter_location')
+        if location:
+            scholarships = scholarships.filter(location=location)
+        # status
+        if data.get('filter_status'):
+            scholarships = scholarships.filter(status__icontains='Closing')
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
+#<<<<<<< HEAD
     return render(request, 'scholarship_app/scholarship_search.html',context)
+#>>>>>>> 25.10_DC48_UAT_ND
+#=======
+    return render(request, 'scholarship_app/scholarship_search.html', context)
+#>>>>>>> origin/25.11_DC48K_UAT_FN

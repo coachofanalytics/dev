@@ -1,8 +1,6 @@
 from django.urls import path
 from main.views import AboutView
-
 from . import views
-
 # from .utils import convert_html_to_pdf
 
 app_name = 'main'
@@ -16,6 +14,12 @@ urlpatterns = [
     path('news/', views.news_list, name='news_list'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
+#<<<<<<< 25.10_DC48_UAT_UO
+    path('crisis_page/', views.crisis_page, name='crisis_page'),
+    path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),
+    path('activate_helpline/', views.activate_helpline, name='activate_helpline'),
+    
+#=======
     path('donors/', views.donor_list, name='donor_list'),
     path('add-donor/', views.add_donor, name='add_donor'),
     path('donor/<int:pk>/', views.donor_details, name='donor_details'),
@@ -32,6 +36,7 @@ urlpatterns = [
     path('donation/add/', views.DonationCreateView.as_view(), name='donation_add'),
     path('donation/<int:pk>/edit/', views.DonationEditView.as_view(), name='donation_edit'),
     path('donation/<int:pk>/delete/', views.DonationDeleteView.as_view(), name='donation_delete'),
+#>>>>>>> 25.10_DC48_UAT_ND
     
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
@@ -46,17 +51,15 @@ urlpatterns = [
     path('500/', views.hendler500, name='500-error'),
 
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
-
-#<<<<<<< 25.11_DC48K_UAT_FN
-    # Education and training views
-#=======
-    # Education pages removed — keep navbar buttons but links point to placeholders
-    # scholaship url
+    # Scholarship search (root-level /scholarship)
     path('scholarship', views.scholarship_search, name='scholarship_search'),
-#>>>>>>> 25.10_DC48_UAT_ND
+
+    # Education and training views
 
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
     path('education/training/',views.education_landing, name = 'education_training'),
+    path('education/courses/register/', views.course_register, name='course_register'),
+    path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
 ]    
