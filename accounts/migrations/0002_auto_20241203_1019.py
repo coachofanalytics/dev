@@ -21,9 +21,9 @@ class Migration(migrations.Migration):
                 ('paid_date', models.DateTimeField(blank=True, null=True)),
             ],
         ),
-        migrations.DeleteModel(
-            name='MemberRegistration',
-        ),
+        # migrations.DeleteModel(
+        #     name='MemberRegistration',
+        # ),
         migrations.RemoveField(
             model_name='customeruser',
             name='is_client',
