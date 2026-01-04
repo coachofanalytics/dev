@@ -55,3 +55,58 @@ class ModelRegressionTests(TestCase):
         self.base_data['comment'] = long_text
         strategy = InvestmentStrategy.objects.create(**self.base_data)
         self.assertEqual(len(strategy.comment), 5000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.test import TestCase
+from decimal import Decimal
+from datetime import date
+
+from investments.models import Daily_Trades
+
+
+class DailyTradesRegressionTest(TestCase):
+
+    def setUp(self):
+        self.trade = Daily_Trades.objects.create(
+            symbol="AAPL",
+            transaction="REG-AAPL-001",
+            price=Decimal("180.0000"),
+            strike_price=Decimal("0.0000"),
+            action="BTO",
+            qty=10,
+            date=date.today(),
+            account_type="CASH",
+            credit=Decimal("0.0000"),
+            debit=Decimal("1800.0000"),
+            description="Regression baseline trade"
+        )
+
+    def test_trade_persists_correctly(self):
+        trade = Daily_Trades.objects.get(transaction="REG-AAPL-001")
+        self.assertEqual(trade.symbol, "AAPL")
+        self.assertEqual(trade.qty, 10)
+        self.assertEqual(trade.debit, Decimal("1800.0000"))
+
+    def test_ordering_by_date_desc(self):
+        trades = Daily_Trades.objects.all()
+        self.assertEqual(trades.first().transaction, "REG-AAPL-001")
+
+    def test_decimal_precision_preserved(self):
+        self.assertEqual(self.trade.price, Decimal("180.0000"))

@@ -61,3 +61,75 @@ class ModelIntegrationTests(TestCase):
 
         active_count = InvestmentStrategy.objects.filter(is_active=True).count()
         self.assertEqual(active_count, 1)
+
+
+
+
+
+
+
+
+from django.test import TestCase
+from django.core.exceptions import ValidationError
+from decimal import Decimal
+from datetime import date
+
+from investments.models import Daily_Trades
+
+
+class DailyTradesIntegrationTest(TestCase):
+
+    def test_full_lifecycle_create_read_update_delete(self):
+        trade = Daily_Trades(
+            symbol="NVDA",
+            transaction="INT-NVDA-001",
+            price=Decimal("600.0000"),
+            strike_price=Decimal("600.0000"),
+            action="STO",
+            qty=1,
+            date=date.today(),
+            expiry=date(2025, 3, 15),
+            account_type="MARGIN",
+            credit=Decimal("300.0000"),
+            debit=Decimal("0.0000"),
+        )
+
+        # CREATE
+        trade.full_clean()
+        trade.save()
+        self.assertEqual(Daily_Trades.objects.count(), 1)
+
+        # READ
+        db_trade = Daily_Trades.objects.get(transaction="INT-NVDA-001")
+        self.assertEqual(db_trade.symbol, "NVDA")
+
+        # UPDATE
+        db_trade.credit = Decimal("350.0000")
+        db_trade.full_clean()
+        db_trade.save()
+
+        self.assertEqual(
+            Daily_Trades.objects.get(transaction="INT-NVDA-001").credit,
+            Decimal("350.0000")
+        )
+
+        # DELETE
+        db_trade.delete()
+        self.assertEqual(Daily_Trades.objects.count(), 0)
+
+    def test_option_without_expiry_fails(self):
+        trade = Daily_Trades(
+            symbol="AMD",
+            transaction="INT-AMD-FAIL",
+            price=Decimal("1.2000"),
+            strike_price=Decimal("150.0000"),
+            action="STO",
+            qty=1,
+            date=date.today(),
+            account_type="MARGIN",
+            credit=Decimal("120.0000"),
+            debit=Decimal("0.0000"),
+        )
+
+        with self.assertRaises(ValidationError):
+            trade.full_clean()

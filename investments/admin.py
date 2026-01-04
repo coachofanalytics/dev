@@ -4,3 +4,4 @@ from .models import *
 
 
 admin.site.register(InvestmentStrategy)
+admin.site.register(Daily_Trades)

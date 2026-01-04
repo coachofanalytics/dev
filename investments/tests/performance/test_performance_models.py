@@ -52,3 +52,58 @@ class ModelPerformanceTests(TestCase):
         execution_time = end_time - start_time
         self.assertEqual(count, 500)
         self.assertLess(execution_time, 0.1, f"Filtering took too long: {execution_time}s")
+
+
+
+
+
+
+
+
+
+from django.test import TestCase
+from decimal import Decimal
+from datetime import date
+
+from investments.models import Daily_Trades
+
+
+class DailyTradesPerformanceTest(TestCase):
+
+    def test_bulk_insert_1000_records(self):
+        trades = [
+            Daily_Trades(
+                symbol="SPY",
+                transaction=f"PERF-SPY-{i}",
+                price=Decimal("450.0000"),
+                strike_price=Decimal("0.0000"),
+                action="BTO",
+                qty=1,
+                date=date.today(),
+                account_type="CASH",
+                credit=Decimal("0.0000"),
+                debit=Decimal("450.0000"),
+            )
+            for i in range(1000)
+        ]
+
+        Daily_Trades.objects.bulk_create(trades)
+
+        self.assertEqual(Daily_Trades.objects.count(), 1000)
+
+    def test_filter_by_symbol_performance(self):
+        Daily_Trades.objects.create(
+            symbol="TSLA",
+            transaction="PERF-TSLA-001",
+            price=Decimal("250.0000"),
+            strike_price=Decimal("0.0000"),
+            action="BTO",
+            qty=1,
+            date=date.today(),
+            account_type="CASH",
+            credit=Decimal("0.0000"),
+            debit=Decimal("250.0000"),
+        )
+
+        qs = Daily_Trades.objects.filter(symbol="TSLA")
+        self.assertEqual(qs.count(), 1)
