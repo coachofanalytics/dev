@@ -2,6 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from django.db.models import Sum
+
+from investments.models import Daily_Trades
+
 from django.contrib import messages
 from .models import InvestmentStrategy
 from django.utils import timezone
@@ -81,5 +87,52 @@ def InvestmentStrategy_detail(request, pk):
 
 
 
+def daily_trades_list(request):
+    trades_qs = Daily_Trades.objects.all().order_by("-date")
 
+   
+    symbol = request.GET.get("symbol")
+    action = request.GET.get("action")
+    account_type = request.GET.get("account_type")
+    start = request.GET.get("start")
+    end = request.GET.get("end")
+
+    if symbol:
+        trades_qs = trades_qs.filter(symbol__icontains=symbol)
+
+    if action:
+        trades_qs = trades_qs.filter(action=action)
+
+    if account_type:
+        trades_qs = trades_qs.filter(account_type__icontains=account_type)
+
+    if start:
+        trades_qs = trades_qs.filter(date__gte=start)
+
+    if end:
+        trades_qs = trades_qs.filter(date__lte=end)
+
+    
+    totals = trades_qs.aggregate(
+        total_credit=Sum("credit"),
+        total_debit=Sum("debit"),
+    )
+
+    total_credit = totals["total_credit"] or 0
+    total_debit = totals["total_debit"] or 0
+    total_net = total_credit - total_debit
+
+    
+    paginator = Paginator(trades_qs, 25)
+    page_number = request.GET.get("page")
+    trades = paginator.get_page(page_number)
+
+    context = {
+        "trades": trades,
+        "total_credit": total_credit,
+        "total_debit": total_debit,
+        "total_net": total_net,
+    }
+
+    return render(request, "investments/trade_list.html", context)
 

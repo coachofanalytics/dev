@@ -1,0 +1,101 @@
+{% extends "investments/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4 class="mb-3">Daily Trades Ledger</h4>
+
+    <!-- Filters -->
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-md-2">
+            <input type="text" name="symbol" class="form-control"
+                   placeholder="Symbol" value="{{ request.GET.symbol }}">
+        </div>
+
+        <div class="col-md-2">
+            <select name="action" class="form-select">
+                <option value="">Action</option>
+                <option value="BTO" {% if request.GET.action == "BTO" %}selected{% endif %}>BTO</option>
+                <option value="STO" {% if request.GET.action == "STO" %}selected{% endif %}>STO</option>
+                <option value="BTC" {% if request.GET.action == "BTC" %}selected{% endif %}>BTC</option>
+                <option value="STC" {% if request.GET.action == "STC" %}selected{% endif %}>STC</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <input type="date" name="start" class="form-control"
+                   value="{{ request.GET.start }}">
+        </div>
+
+        <div class="col-md-2">
+            <input type="date" name="end" class="form-control"
+                   value="{{ request.GET.end }}">
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+    <!-- Ledger Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Symbol</th>
+                    <th>Action</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Strike</th>
+                    <th>Credit</th>
+                    <th>Debit</th>
+                    <th>Net</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trade in trades %}
+                <tr>
+                    <td>{{ trade.date }}</td>
+                    <td>{{ trade.symbol }}</td>
+                    <td>{{ trade.action }}</td>
+                    <td>{{ trade.qty }}</td>
+                    <td>{{ trade.price }}</td>
+                    <td>{{ trade.strike_price }}</td>
+                    <td class="text-success">{{ trade.credit }}</td>
+                    <td class="text-danger">{{ trade.debit }}</td>
+                    <td>
+                        {{ trade.credit|floatformat:2|add:"-"|add:trade.debit }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">No trades found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Totals -->
+    <div class="mt-3">
+        <strong>Total Credit:</strong> {{ total_credit }} |
+        <strong>Total Debit:</strong> {{ total_debit }} |
+        <strong>Net:</strong> {{ total_net }}
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-3">
+        {% if trades.has_previous %}
+            <a href="?page={{ trades.previous_page_number }}" class="btn btn-sm btn-outline-secondary">Previous</a>
+        {% endif %}
+
+        <span class="mx-2">
+            Page {{ trades.number }} of {{ trades.paginator.num_pages }}
+        </span>
+
+        {% if trades.has_next %}
+            <a href="?page={{ trades.next_page_number }}" class="btn btn-sm btn-outline-secondary">Next</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

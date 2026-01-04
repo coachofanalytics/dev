@@ -160,4 +160,59 @@ class DeleteRegressionTests(TestCase):
         """Regression: Ensure deleting a fake ID returns 404, not a 500 crash."""
         url = reverse('investments:InvestmentStrategy_delete', kwargs={'pk': 99999})
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 404)        
+        self.assertEqual(response.status_code, 404)    
+
+
+
+
+
+
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from decimal import Decimal
+from datetime import date
+
+from investments.models import Daily_Trades
+
+
+class DailyTradesListRegressionTest(TestCase):
+
+    def setUp(self):
+        Daily_Trades.objects.create(
+            symbol="MSFT",
+            transaction="REG-MSFT-001",
+            price=Decimal("300.0000"),
+            strike_price=Decimal("0.0000"),
+            action="BTO",
+            qty=5,
+            date=date.today(),
+            account_type="CASH",
+            credit=Decimal("0.0000"),
+            debit=Decimal("1500.0000"),
+        )
+
+    def test_list_view_url_still_resolves(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_existing_trade_still_appears(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        self.assertContains(response, "MSFT")
+
+    def test_net_calculation_regression(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+
+        self.assertEqual(
+            response.context["total_net"],
+            Decimal("-1500.0000")
+        )

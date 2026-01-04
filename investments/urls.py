@@ -11,4 +11,8 @@ urlpatterns = [
     path("investment/update/<int:pk>/",views.InvestmentStrategy_update,name="InvestmentStrategy_update"),
     path("investment/delete/<int:pk>/",views.InvestmentStrategy_delete,name="InvestmentStrategy_delete"),
     path("investment/detail/<int:pk>/",views.InvestmentStrategy_detail,name="InvestmentStrategy_detail"),
+
+
+    #Trades_daily
+    path('daily_trades_list', views.daily_trades_list, name='daily_trades_list'),
 ]

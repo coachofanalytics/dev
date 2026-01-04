@@ -139,3 +139,94 @@ class DeleteIntegrationTests(TestCase):
         self.assertTemplateUsed(response, "investments/investments_list.html")
         self.assertNotContains(response, "INTEGRATE_DEL")
         self.assertEqual(InvestmentStrategy.objects.count(), 0)
+
+
+
+
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from decimal import Decimal
+from datetime import date
+
+from investments.models import Daily_Trades
+
+
+class DailyTradesListIntegrationTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        Daily_Trades.objects.create(
+            symbol="AAPL",
+            transaction="INT-AAPL-001",
+            price=Decimal("180.0000"),
+            strike_price=Decimal("0.0000"),
+            action="BTO",
+            qty=10,
+            date=date.today(),
+            account_type="CASH",
+            credit=Decimal("0.0000"),
+            debit=Decimal("1800.0000"),
+        )
+
+        Daily_Trades.objects.create(
+            symbol="TSLA",
+            transaction="INT-TSLA-002",
+            price=Decimal("6.5000"),
+            strike_price=Decimal("250.0000"),
+            action="STO",
+            qty=1,
+            date=date.today(),
+            expiry=date(2025, 2, 21),
+            account_type="MARGIN",
+            credit=Decimal("650.0000"),
+            debit=Decimal("0.0000"),
+        )
+
+    def test_list_view_loads_successfully(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_template_used(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        self.assertTemplateUsed(response, "investments/trade_list.html")
+
+    def test_all_records_visible(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        self.assertContains(response, "AAPL")
+        self.assertContains(response, "TSLA")
+
+    def test_filter_works_end_to_end(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list"),
+            {"symbol": "AAPL"}
+        )
+        self.assertContains(response, "AAPL")
+        self.assertNotContains(response, "TSLA")
+
+    def test_totals_correct_in_context(self):
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+
+        self.assertEqual(
+            response.context["total_credit"],
+            Decimal("650.0000")
+        )
+        self.assertEqual(
+            response.context["total_debit"],
+            Decimal("1800.0000")
+        )
+        self.assertEqual(
+            response.context["total_net"],
+            Decimal("-1150.0000")
+        )

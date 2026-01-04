@@ -105,3 +105,163 @@ class InvestmentStrategyDeleteViewTest(TestCase):
         response = self.client.post(self.url)
         self.assertRedirects(response, reverse('investments:InvestmentStrategy_list'))
         self.assertEqual(InvestmentStrategy.objects.filter(pk=self.strategy.pk).count(), 0)
+
+
+
+
+
+
+
+
+
+
+from investments.models import Daily_Trades
+
+from django.test import TestCase
+from django.urls import reverse
+from decimal import Decimal
+from datetime import date
+
+from investments.models import Daily_Trades
+
+
+class DailyTradesListViewTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Create test data once for all tests
+        """
+        Daily_Trades.objects.create(
+            symbol="AAPL",
+            transaction="VIEW-AAPL-001",
+            price=Decimal("180.0000"),
+            strike_price=Decimal("0.0000"),
+            action="BTO",
+            qty=10,
+            date=date.today(),
+            account_type="CASH",
+            credit=Decimal("0.0000"),
+            debit=Decimal("1800.0000"),
+        )
+
+        Daily_Trades.objects.create(
+            symbol="TSLA",
+            transaction="VIEW-TSLA-002",
+            price=Decimal("6.5000"),
+            strike_price=Decimal("250.0000"),
+            action="STO",
+            qty=1,
+            date=date.today(),
+            expiry=date(2025, 2, 21),
+            account_type="MARGIN",
+            credit=Decimal("650.0000"),
+            debit=Decimal("0.0000"),
+        )
+
+    def test_daily_trades_list_url_exists(self):
+        """
+        URL responds with HTTP 200
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_daily_trades_list_uses_correct_template(self):
+        """
+        Correct template is used
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        self.assertTemplateUsed(response, "investments/trade_list.html")
+
+    def test_all_trades_are_displayed(self):
+        """
+        All trades appear in context
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        trades = response.context["trades"]
+
+        self.assertEqual(trades.paginator.count, 2)
+        self.assertContains(response, "AAPL")
+        self.assertContains(response, "TSLA")
+
+    def test_filter_by_symbol(self):
+        """
+        Symbol filter works
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list"),
+            {"symbol": "AAPL"}
+        )
+
+        trades = response.context["trades"]
+
+        self.assertEqual(trades.paginator.count, 1)
+        self.assertContains(response, "AAPL")
+        self.assertNotContains(response, "TSLA")
+
+    def test_filter_by_action(self):
+        """
+        Action filter works
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list"),
+            {"action": "STO"}
+        )
+
+        trades = response.context["trades"]
+
+        self.assertEqual(trades.paginator.count, 1)
+        self.assertContains(response, "TSLA")
+
+    def test_date_range_filter(self):
+        """
+        Date filters work
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list"),
+            {"start": date.today(), "end": date.today()}
+        )
+
+        self.assertEqual(
+            response.context["trades"].paginator.count,
+            2
+        )
+
+    def test_totals_are_calculated_correctly(self):
+        """
+        Totals are computed on filtered queryset
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+
+        self.assertEqual(
+            response.context["total_credit"],
+            Decimal("650.0000")
+        )
+        self.assertEqual(
+            response.context["total_debit"],
+            Decimal("1800.0000")
+        )
+        self.assertEqual(
+            response.context["total_net"],
+            Decimal("-1150.0000")
+        )
+
+    def test_pagination_is_enabled(self):
+        """
+        Pagination exists and returns Page object
+        """
+        response = self.client.get(
+            reverse("investments:daily_trades_list")
+        )
+        trades = response.context["trades"]
+
+        self.assertTrue(hasattr(trades, "paginator"))
+        self.assertTrue(hasattr(trades, "number"))
