@@ -1,5 +1,5 @@
 from django import forms
-from .models import InvestmentStrategy
+from .models import InvestmentStrategy,Daily_Trades
 
 class InvestmentStrategyForm(forms.ModelForm):
     class Meta:
@@ -13,3 +13,16 @@ class InvestmentStrategyForm(forms.ModelForm):
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
            
         }
+
+
+
+class DailyTradesForm(forms.ModelForm):
+    class Meta:
+        model = Daily_Trades
+        fields = "__all__"
+
+    def clean_symbol(self):
+        symbol = self.cleaned_data.get("symbol")
+        if not symbol:
+            raise forms.ValidationError("Symbol is required")
+        return symbol

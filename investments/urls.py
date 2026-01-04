@@ -15,4 +15,5 @@ urlpatterns = [
 
     #Trades_daily
     path('daily_trades_list', views.daily_trades_list, name='daily_trades_list'),
+    path('daily_trades_create', views.daily_trades_create, name='daily_trades_create'),
 ]

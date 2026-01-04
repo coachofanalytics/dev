@@ -1,75 +1,107 @@
 {% extends "investments/base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <h4 class="mb-3">Daily Trades Ledger</h4>
+<div class="container-fluid mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Daily Trades Ledger</h4>
+            <small class="text-muted">Chronological record of executed trades</small>
+        </div>
+        <a href="{% url 'investments:daily_trades_create' %}" class="btn btn-success">
+            + Add Trade
+        </a>
+    </div>
 
     <!-- Filters -->
-    <form method="get" class="row g-2 mb-4">
-        <div class="col-md-2">
-            <input type="text" name="symbol" class="form-control"
-                   placeholder="Symbol" value="{{ request.GET.symbol }}">
-        </div>
+    <form method="get" class="card card-body mb-3 shadow-sm">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">Symbol</label>
+                <input type="text" name="symbol" class="form-control"
+                       value="{{ request.GET.symbol }}">
+            </div>
 
-        <div class="col-md-2">
-            <select name="action" class="form-select">
-                <option value="">Action</option>
-                <option value="BTO" {% if request.GET.action == "BTO" %}selected{% endif %}>BTO</option>
-                <option value="STO" {% if request.GET.action == "STO" %}selected{% endif %}>STO</option>
-                <option value="BTC" {% if request.GET.action == "BTC" %}selected{% endif %}>BTC</option>
-                <option value="STC" {% if request.GET.action == "STC" %}selected{% endif %}>STC</option>
-            </select>
-        </div>
+            <div class="col-md-2">
+                <label class="form-label">Action</label>
+                <select name="action" class="form-select">
+                    <option value="">All</option>
+                    <option value="BTO" {% if request.GET.action == "BTO" %}selected{% endif %}>BTO</option>
+                    <option value="STO" {% if request.GET.action == "STO" %}selected{% endif %}>STO</option>
+                    <option value="BTC" {% if request.GET.action == "BTC" %}selected{% endif %}>BTC</option>
+                    <option value="STC" {% if request.GET.action == "STC" %}selected{% endif %}>STC</option>
+                </select>
+            </div>
 
-        <div class="col-md-2">
-            <input type="date" name="start" class="form-control"
-                   value="{{ request.GET.start }}">
-        </div>
+            <div class="col-md-2">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start" class="form-control"
+                       value="{{ request.GET.start }}">
+            </div>
 
-        <div class="col-md-2">
-            <input type="date" name="end" class="form-control"
-                   value="{{ request.GET.end }}">
-        </div>
+            <div class="col-md-2">
+                <label class="form-label">End Date</label>
+                <input type="date" name="end" class="form-control"
+                       value="{{ request.GET.end }}">
+            </div>
 
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Filter</button>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Filter</button>
+            </div>
+
+            <div class="col-md-2">
+                <a href="{% url 'investments:daily_trades_list' %}"
+                   class="btn btn-outline-secondary w-100">
+                    Reset
+                </a>
+            </div>
         </div>
     </form>
 
     <!-- Ledger Table -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-sm">
+    <div class="table-responsive shadow-sm">
+        <table class="table table-sm table-bordered align-middle">
             <thead class="table-light">
                 <tr>
                     <th>Date</th>
                     <th>Symbol</th>
                     <th>Action</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Strike</th>
-                    <th>Credit</th>
-                    <th>Debit</th>
-                    <th>Net</th>
+                    <th class="text-end">Qty</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Strike</th>
+                    <th class="text-end text-success">Credit</th>
+                    <th class="text-end text-danger">Debit</th>
+                    <th class="text-end">Net</th>
                 </tr>
             </thead>
             <tbody>
                 {% for trade in trades %}
                 <tr>
                     <td>{{ trade.date }}</td>
-                    <td>{{ trade.symbol }}</td>
-                    <td>{{ trade.action }}</td>
-                    <td>{{ trade.qty }}</td>
-                    <td>{{ trade.price }}</td>
-                    <td>{{ trade.strike_price }}</td>
-                    <td class="text-success">{{ trade.credit }}</td>
-                    <td class="text-danger">{{ trade.debit }}</td>
+                    <td class="fw-semibold">{{ trade.symbol }}</td>
+
                     <td>
-                        {{ trade.credit|floatformat:2|add:"-"|add:trade.debit }}
+                        <span class="badge {% if trade.action in 'BTO BTC' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
+                            {{ trade.get_action_display }}
+                        </span>
+                    </td>
+
+                    <td class="text-end">{{ trade.qty }}</td>
+                    <td class="text-end">{{ trade.price|floatformat:2 }}</td>
+                    <td class="text-end">{{ trade.strike_price|floatformat:2 }}</td>
+                    <td class="text-end text-success">{{ trade.credit|floatformat:2 }}</td>
+                    <td class="text-end text-danger">{{ trade.debit|floatformat:2 }}</td>
+                    <td class="text-end fw-bold">
+                        {{ trade.credit|floatformat:2 }} - {{ trade.debit|floatformat:2 }}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="9" class="text-center">No trades found.</td>
+                    <td colspan="9" class="text-center text-muted py-3">
+                        No trades found.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -77,25 +109,51 @@
     </div>
 
     <!-- Totals -->
-    <div class="mt-3">
-        <strong>Total Credit:</strong> {{ total_credit }} |
-        <strong>Total Debit:</strong> {{ total_debit }} |
-        <strong>Net:</strong> {{ total_net }}
+    <div class="card card-body mt-3 shadow-sm">
+        <div class="row text-end">
+            <div class="col-md-4">
+                <strong>Total Credit:</strong>
+                <span class="text-success">{{ total_credit|floatformat:2 }}</span>
+            </div>
+            <div class="col-md-4">
+                <strong>Total Debit:</strong>
+                <span class="text-danger">{{ total_debit|floatformat:2 }}</span>
+            </div>
+            <div class="col-md-4">
+                <strong>Net:</strong>
+                <span class="{% if total_net >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {{ total_net|floatformat:2 }}
+                </span>
+            </div>
+        </div>
     </div>
 
     <!-- Pagination -->
-    <div class="mt-3">
+    {% if trades.paginator.num_pages > 1 %}
+    <div class="mt-3 d-flex justify-content-between align-items-center">
         {% if trades.has_previous %}
-            <a href="?page={{ trades.previous_page_number }}" class="btn btn-sm btn-outline-secondary">Previous</a>
+            <a class="btn btn-sm btn-outline-secondary"
+               href="?{{ request.GET.urlencode }}&page={{ trades.previous_page_number }}">
+                Previous
+            </a>
+        {% else %}
+            <span></span>
         {% endif %}
 
-        <span class="mx-2">
+        <span class="text-muted">
             Page {{ trades.number }} of {{ trades.paginator.num_pages }}
         </span>
 
         {% if trades.has_next %}
-            <a href="?page={{ trades.next_page_number }}" class="btn btn-sm btn-outline-secondary">Next</a>
+            <a class="btn btn-sm btn-outline-secondary"
+               href="?{{ request.GET.urlencode }}&page={{ trades.next_page_number }}">
+                Next
+            </a>
+        {% else %}
+            <span></span>
         {% endif %}
     </div>
+    {% endif %}
+
 </div>
 {% endblock %}

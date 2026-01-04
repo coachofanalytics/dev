@@ -265,3 +265,172 @@ class DailyTradesListViewTest(TestCase):
 
         self.assertTrue(hasattr(trades, "paginator"))
         self.assertTrue(hasattr(trades, "number"))
+
+
+
+
+
+
+
+
+
+
+from decimal import Decimal
+from datetime import date
+from django.test import TestCase
+from django.urls import reverse
+
+from investments.models import Daily_Trades
+
+
+class DailyTradesCreateViewTest(TestCase):
+
+    def setUp(self):
+        self.url = reverse("investments:daily_trades_create")
+
+        self.valid_payload = {
+            "symbol": "AAPL",
+            "transaction": "CRT-AAPL-001",
+            "price": "180.0000",
+            "strike_price": "0.0000",
+            "action": "BTO",
+            "qty": 10,
+            "date": date.today(),
+            "account_type": "CASH",
+            "credit": "0.0000",
+            "debit": "1800.0000",
+            "description": "Buy Apple shares",
+        }
+
+    def test_create_view_url_exists(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_view_uses_correct_template(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, "investments/trade_create.html")
+
+    def test_valid_trade_is_created(self):
+        response = self.client.post(self.url, data=self.valid_payload)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Daily_Trades.objects.count(), 1)
+
+    def test_trade_fields_saved_correctly(self):
+        self.client.post(self.url, data=self.valid_payload)
+        trade = Daily_Trades.objects.first()
+
+        self.assertEqual(trade.symbol, "AAPL")
+        self.assertEqual(trade.action, "BTO")
+        self.assertEqual(trade.qty, 10)
+        self.assertEqual(trade.debit, Decimal("1800.0000"))
+
+    def test_invalid_form_does_not_create_trade(self):
+        invalid_payload = self.valid_payload.copy()
+        invalid_payload.pop("symbol")
+
+        response = self.client.post(self.url, data=invalid_payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Daily_Trades.objects.count(), 0)
+
+
+
+
+from django.test import TestCase
+from django.urls import reverse
+from decimal import Decimal
+from datetime import date
+from investments.models import Daily_Trades
+
+class DailyTradesCreateViewTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.url = reverse("investments:daily_trades_create")
+        cls.list_url = reverse("investments:daily_trades_list")
+
+        cls.valid_payload = {
+            "symbol": "AAPL",
+            "transaction": "CRT-AAPL-001",
+            "price": "180.0000",
+            "strike_price": "0.0000",
+            "action": "BTO",
+            "qty": 10,
+            "date": date.today(),
+            "expiry": date.today(),
+            "account_type": "CASH",
+            "credit": "0.0000",
+            "debit": "1800.0000",
+            "page_number": "1",
+            "description": "Valid trade",
+        }
+
+    # ----------------------------
+    # UNIT TESTS
+    # ----------------------------
+
+    def test_create_view_url_exists(self):
+        """Create view responds with HTTP 200"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_view_uses_correct_template(self):
+        """Correct template is rendered (Fixed template name to trades_create)"""
+        response = self.client.get(self.url)
+        # Using the actual template found in your logs: trades_create.html
+        self.assertTemplateUsed(response, "investments/trades_create.html")
+
+    def test_valid_form_creates_trade(self):
+        """Valid POST creates a Daily_Trades record and redirects (302)"""
+        initial_count = Daily_Trades.objects.count()
+        response = self.client.post(self.url, data=self.valid_payload)
+        
+        # A successful redirect means the form was valid and data was saved
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Daily_Trades.objects.count(), initial_count + 1)
+
+    def test_valid_form_redirects_to_list(self):
+        """Valid POST redirects to list view"""
+        response = self.client.post(self.url, data=self.valid_payload)
+        self.assertRedirects(response, self.list_url)
+
+    def test_invalid_form_does_not_create_trade(self):
+        """Invalid POST should return 200 (re-render form) and show errors"""
+        invalid_payload = self.valid_payload.copy()
+        invalid_payload.pop("symbol") # Missing required field
+
+        response = self.client.post(self.url, data=invalid_payload)
+
+        # 200 means it stayed on the page to show errors
+        self.assertEqual(response.status_code, 200)
+        # Check that the 'symbol' field specifically has an error
+        self.assertFormError(response, 'form', 'symbol', 'This field is required.')
+
+    # ----------------------------
+    # REGRESSION TEST
+    # ----------------------------
+
+    def test_regression_missing_required_field(self):
+        """Regression: missing numeric field must never save"""
+        payload = self.valid_payload.copy()
+        payload["price"] = "" # Invalid numeric data
+
+        response = self.client.post(self.url, data=payload)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Daily_Trades.objects.count(), 0)
+
+    # ----------------------------
+    # INTEGRATION TEST
+    # ----------------------------
+
+    def test_integration_create_then_list(self):
+        """Integration: create trade then confirm it appears in list view"""
+        # 1. Create the trade
+        self.client.post(self.url, data=self.valid_payload)
+
+        # 2. Check the list view
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "AAPL")
+        self.assertContains(response, "CRT-AAPL-001")

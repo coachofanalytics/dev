@@ -6,6 +6,9 @@ from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.db.models import Sum
 
+from .models import Daily_Trades
+from .forms import DailyTradesForm
+
 from investments.models import Daily_Trades
 
 from django.contrib import messages
@@ -135,4 +138,37 @@ def daily_trades_list(request):
     }
 
     return render(request, "investments/trade_list.html", context)
+
+
+
+
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+def daily_trades_create(request):
+    if request.method == "POST":
+        form = DailyTradesForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Trade created successfully.")
+            return redirect("investments:daily_trades_list")
+
+        # 🔒 IMPORTANT: invalid form → re-render (NO save)
+        messages.error(request, "Please correct the errors below.")
+
+    else:
+        form = DailyTradesForm()
+
+    return render(
+        request,
+        "investments/trades_create.html",  # ✅ singular
+        {"form": form}
+    )
+
+
 

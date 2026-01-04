@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "application.apps.ApplicationConfig",
     "finance",
     "investments",
+    "django.contrib.humanize",
 
     "django.contrib.admin",
     "django.contrib.auth",
