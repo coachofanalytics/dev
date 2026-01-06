@@ -13,46 +13,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
         integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <link href="assets/img/favicon.png" rel="icon">
-        <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-        <link rel="icon" href="{% static 'main/img/favicon.png' %}" type="image/png">
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="assets/img/favicon.png" rel="icon">
+    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+    <link rel="icon" href="{% static 'main/img/favicon.png' %}" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-      
-        <!-- Google Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
-          <!-- Google Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
-       <link
-        rel="stylesheet"
-        type="text/css"
-        href="{% static 'main/css/main.css' %}"
-       />
-      <link
-        rel="stylesheet"
-        type="text/css" 
-        href="{% static 'main/css/finance.css' %}" rel="stylesheet"
-        />
-        <link
-        rel="stylesheet" 
-        type="text/css"
-        href="{% static 'community/css/style.css' %}" 
+<!-- Google Fonts -->
+<link
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+    rel="stylesheet">
+<!-- Google Fonts -->
+<link
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+    rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
-        />
-      <link
-        rel="stylesheet"
-        type="text/css"
-        href="{% static 'main/css/navbar.css' %}"
-      />
-      <link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css"> 
-      <!-- Link Swiper's CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<link rel="stylesheet" type="text/css" href="{% static 'main/css/main.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'main/css/finance.css' %}" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="{% static 'community/css/style.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'main/css/navbar.css' %}" />
+<link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css">
+<!-- Link Swiper's CSS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
 <!-- Include Swiper's JS -->
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
@@ -61,16 +49,16 @@
 </head>
 
 <body>
-        {% include 'main/navbar_templates/navbar.html' %} 
-        <div>
+    {% include 'main/navbar_templates/navbar.html' %}
+    <div>
         {% block content %}
-        
+
         {% endblock %}
-        </div>
+    </div>
 
-    {% include 'main/footer_templates/new_footer.html' %} 
+    {% include 'main/footer_templates/new_footer.html' %}
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
@@ -87,36 +75,144 @@
     <!-- JS for home.html -->
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
-      var swiper = new Swiper('.swiper-container', {
-          slidesPerView: 1,
-          spaceBetween: 30,
-          loop: true,
-          pagination: {
-              el: '.swiper-pagination',
-              clickable: true,
-          },
-          navigation: {
-              nextEl: '.swiper-button-next',
-              prevEl: '.swiper-button-prev',
-          },
-          on: {
-              slideChangeTransitionStart: function () {
-                  const slides = document.querySelectorAll('.swiper-slide img');
-                  slides.forEach(slide => {
-                      slide.style.opacity = '0.9'; // Dim the current slide
-                      slide.style.transform = 'scale(0.8)'; // Slightly shrink the current slide
-                  });
-              },
-              slideChangeTransitionEnd: function () {
-                  const slides = document.querySelectorAll('.swiper-slide img');
-                  slides.forEach(slide => {
-                      slide.style.opacity = '1'; // Restore opacity
-                      slide.style.transform = 'scale(1)'; // Restore size
-                  });
-              }
-          }
-      });
-  </script>
+        var swiper = new Swiper('.swiper-container', {
+            slidesPerView: 1,
+            spaceBetween: 30,
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            on: {
+                slideChangeTransitionStart: function () {
+                    const slides = document.querySelectorAll('.swiper-slide img');
+                    slides.forEach(slide => {
+                        slide.style.opacity = '0.9'; // Dim the current slide
+                        slide.style.transform = 'scale(0.8)'; // Slightly shrink the current slide
+                    });
+                },
+                slideChangeTransitionEnd: function () {
+                    const slides = document.querySelectorAll('.swiper-slide img');
+                    slides.forEach(slide => {
+                        slide.style.opacity = '1'; // Restore opacity
+                        slide.style.transform = 'scale(1)'; // Restore size
+                    });
+                }
+            }
+        });
+    </script>
+
+    <!-- Persistent Emergency Floating Button -->
+    <div id="emergency-floating-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+        <!-- Popup Menu (Hidden by default) -->
+        <div id="emergency-menu"
+            class="hidden mb-4 bg-white rounded-lg shadow-2xl overflow-hidden w-72 border border-gray-200">
+            <div class="bg-[#cc0000] text-white p-4 text-center font-bold text-lg flex items-center justify-center">
+                <i class="fa fa-exclamation-triangle mr-2"></i>Emergency Help
+            </div>
+            <div class="flex flex-col">
+                <a href="tel:+15550199"
+                    class="p-4 hover:bg-gray-50 flex items-center text-gray-800 border-b transition duration-200">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-4 text-[#cc0000]">
+                        <i class="fa fa-phone" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-base">24/7 Hotline</div>
+                        <div class="text-xs text-gray-500">Tap to Call Now</div>
+                    </div>
+                </a>
+                <a href="https://wa.me/15550199" target="_blank"
+                    class="p-4 hover:bg-gray-50 flex items-center text-gray-800 border-b transition duration-200">
+                    <div
+                        class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-4 text-green-600">
+                        <i class="fa fa-whatsapp" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-base">WhatsApp Chat</div>
+                        <div class="text-xs text-gray-500">Instant Support</div>
+                    </div>
+                </a>
+                <a href="{% url 'main:crisis_page' %}"
+                    class="p-4 hover:bg-red-50 flex items-center text-[#cc0000] bg-white transition duration-200">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-4 text-[#cc0000]">
+                        <i class="fa fa-shield" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-base">Crisis Guidance</div>
+                        <div class="text-xs text-gray-500">Safety Information</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Floating Button -->
+        <button id="emergency-fab"
+            class="bg-[#cc0000] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center transform hover:scale-105 transition duration-300 focus:outline-none ring-4 ring-red-200 animate-pulse">
+            <i class="fa fa-ambulance text-2xl" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <!-- Script for Emergency Button -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fab = document.getElementById('emergency-fab');
+            const menu = document.getElementById('emergency-menu');
+
+            if (fab && menu) {
+                fab.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    menu.classList.toggle('hidden');
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (!fab.contains(e.target) && !menu.contains(e.target)) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+    <!-- Smart Assistant Chatbot -->
+    <div id="chatbot-container" class="fixed bottom-6 left-6 z-50 flex flex-col items-start font-sans">
+        <!-- Chat Window (Hidden by default) -->
+        <div id="chatbot-window"
+            class="hidden mb-4 bg-white rounded-lg shadow-2xl overflow-hidden w-80 h-96 border border-gray-200 flex flex-col">
+            <!-- Header -->
+            <div class="bg-brand-blue text-white p-3 flex justify-between items-center shadow-sm">
+                <div class="flex items-center">
+                    <i class="fa fa-robot mr-2"></i>
+                    <span class="font-bold">DC48K Assistant</span>
+                </div>
+                <button id="close-chat-btn" class="text-white hover:text-gray-200 focus:outline-none">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-1 p-4 bg-gray-50 overflow-y-auto flex flex-col space-y-2">
+                <!-- Messages will be injected here by JS -->
+            </div>
+
+            <!-- Options Area -->
+            <div id="chat-options" class="p-3 bg-white border-t border-gray-100">
+                <!-- Buttons will be injected here -->
+            </div>
+        </div>
+
+        <!-- Chatbot Floating Button -->
+        <button id="chatbot-fab"
+            class="bg-brand-blue text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transform hover:scale-105 transition duration-300 focus:outline-none ring-4 ring-blue-100">
+            <i class="fa fa-comments text-xl" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <!-- Include Chatbot JS -->
+    <script src="{% static 'main/js/chatbot.js' %}"></script>
 </body>
 
 </html>

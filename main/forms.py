@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship, DocumentServiceRequest
 
 # Feedback / Contact Form
 class ContactForm(forms.ModelForm):
@@ -94,3 +94,61 @@ class ScholarshipSearchForm(forms.Form):
         )
     )
 
+# Expert Contact Form
+class ExpertContactForm(forms.Form):
+    SERVICE_CHOICES = [
+        ('crisis_management', 'Crisis Management'),
+        ('consular_assistance', 'Consular Assistance'),
+        ('legal_aid', 'Legal Aid'),
+        ('other', 'Other'),
+    ]
+    URGENCY_CHOICES = [
+        ('normal', 'Normal'),
+        ('urgent', 'Urgent'),
+    ]
+
+    service_type = forms.ChoiceField(
+        choices=SERVICE_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue'
+        })
+    )
+    location = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Enter your location',
+            'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue'
+        })
+    )
+    urgency = forms.ChoiceField(
+        choices=URGENCY_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue'
+        })
+    )
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Short message describing your needs...',
+            'rows': 4,
+            'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue'
+        })
+    )
+
+# Document Service Request Form
+class DocumentServiceRequestForm(forms.ModelForm):
+    class Meta:
+        model = DocumentServiceRequest
+        fields = ['service_type', 'document_file', 'message']
+        widgets = {
+            'service_type': forms.Select(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue'
+            }),
+            'document_file': forms.FileInput(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue'
+            }),
+            'message': forms.Textarea(attrs={
+                'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue',
+                'rows': 4,
+                'placeholder': 'Please tell us more about your document needs...'
+            }),
+        }

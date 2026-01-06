@@ -202,8 +202,8 @@
                     global needs.
                 </p>
                 <!-- UPDATED CTA BUTTON TEXT -->
-                <a href="#documents"
-                    class="inline-block px-8 py-4 bg-brand-red text-white font-bold text-xl rounded-lg shadow-2xl transition duration-300 transform hover:scale-[1.05] hover:bg-red-700 uppercase tracking-wider">
+                <a href="#"
+                    class="open-expert-modal inline-block px-8 py-4 bg-brand-red text-white font-bold text-xl rounded-lg shadow-2xl transition duration-300 transform hover:scale-[1.05] hover:bg-red-700 uppercase tracking-wider">
                     GET IN TOUCH
                 </a>
             </div>
@@ -266,7 +266,7 @@
                     </ul>
                     <!-- CTA Button added: Remaining "Contact Our Experts" -->
                     <a href="#"
-                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        class="open-expert-modal mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
                         Contact Our Experts
                     </a>
                 </div>
@@ -291,7 +291,7 @@
                         <li>Birth/Death Certificate Registration Support</li>
                     </ul>
                     <!-- CTA Button added: UPDATED to "Get Assistance" -->
-                    <a href="#"
+                    <a href="{% url 'main:document_services' %}"
                         class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
                         Get Assistance
                     </a>
@@ -458,6 +458,151 @@
         </section>
     </main>
 
+    <!-- Contact Experts Modal -->
+    <div id="expert-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-brand-blue px-6 py-4 flex justify-between items-center">
+                <h3 class="text-white text-xl font-bold">Contact Our Experts</h3>
+                <button id="close-modal-btn" class="text-white hover:text-gray-200 focus:outline-none">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <!-- Contact Info -->
+                <div class="mb-6 text-center border-b pb-4">
+                    <p class="text-gray-600 mb-2"><i class="fas fa-envelope text-brand-green mr-2"></i>experts@dc48k.org
+                    </p>
+                    <p class="text-gray-600"><i class="fas fa-phone text-brand-green mr-2"></i>+1-555-0199</p>
+                </div>
+
+                <!-- Form -->
+                <form id="expert-contact-form">
+                    {% csrf_token %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Service Required</label>
+                            <select name="service_type" required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue">
+                                <option value="consular_assistance">Consular Assistance</option>
+                                <option value="crisis_management">Crisis Management</option>
+                                <option value="legal_aid">Legal Aid</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Your Location</label>
+                            <input type="text" name="location" placeholder="e.g., London, UK" required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Urgency Level</label>
+                            <select name="urgency" required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue">
+                                <option value="normal">Normal</option>
+                                <option value="urgent" class="text-red-600 font-bold">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Short Message</label>
+                            <textarea name="message" rows="3" placeholder="Briefly describe your situation..." required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue"></textarea>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-brand-green text-white font-bold py-3 rounded-lg shadow hover:bg-green-700 transition duration-300">
+                            Send Request <i class="fas fa-paper-plane ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success Message (Hidden by default) -->
+                <div id="success-message" class="hidden text-center py-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                        <i class="fas fa-check text-3xl text-green-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 mb-2">Request Sent!</h4>
+                    <p class="text-gray-600">Our experts will contact you shortly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('expert-modal');
+            const openBtns = document.querySelectorAll('.open-expert-modal'); // Select all buttons with this class
+            const closeBtn = document.getElementById('close-modal-btn');
+            const form = document.getElementById('expert-contact-form');
+            const successMsg = document.getElementById('success-message');
+
+            // Open Modal - Attach event to ALL trigger buttons
+            openBtns.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                });
+            });
+
+            // Close Modal
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                // Reset form state after delay
+                setTimeout(() => {
+                    form.reset();
+                    form.classList.remove('hidden');
+                    successMsg.classList.add('hidden');
+                }, 300);
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+
+            // Close on click outside
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Handle Form Submission
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+
+                fetch("{% url 'main:contact_expert' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            form.classList.add('hidden');
+                            successMsg.classList.remove('hidden');
+                            setTimeout(closeModal, 3000); // Auto close after 3 seconds
+                        } else {
+                            alert('Error submitting request. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An unexpected error occurred.');
+                    });
+            });
+        });
+    </script>
 </body>
 
 </html>

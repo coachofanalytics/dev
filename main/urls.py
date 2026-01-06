@@ -14,6 +14,9 @@ urlpatterns = [
     path('news/', views.news_list, name='news_list'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
+    path('contact-expert/', views.contact_expert, name='contact_expert'),
+    path('services/documents/', views.document_services, name='document_services'),
+    path('services/documents/request/', views.document_request_submit, name='document_request_submit'),
 #<<<<<<< 25.10_DC48_UAT_UO
     path('crisis_page/', views.crisis_page, name='crisis_page'),
     path('our_service/', views.our_service, name='our_service'),

@@ -25,7 +25,7 @@ from .models import (
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, ExpertContactForm, DocumentServiceRequestForm
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
@@ -55,6 +55,52 @@ User=get_user_model()
 
 def error400(request):
     return render(request, "main/errors/400.html", {"title": "400Error"})
+
+
+
+def document_services(request):
+    """
+    Renders the Document Services landing page.
+    """
+    form = DocumentServiceRequestForm()
+    return render(request, 'main/document_services.html', {'form': form, 'title': 'Document Services'})
+
+@csrf_exempt
+def document_request_submit(request):
+    """
+    Handles Document Service Requests via AJAX.
+    """
+    if request.method == 'POST':
+        form = DocumentServiceRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc_request = form.save(commit=False)
+            if request.user.is_authenticated:
+                doc_request.user = request.user
+            doc_request.save()
+            return JsonResponse({'status': 'success', 'message': 'Request submitted successfully!'})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+def contact_expert(request):
+    if request.method == 'POST':
+        form = ExpertContactForm(request.POST)
+        if form.is_valid():
+            # In a real scenario, you would save this or send an email
+            service = form.cleaned_data['service_type']
+            location = form.cleaned_data['location']
+            urgency = form.cleaned_data['urgency']
+            message = form.cleaned_data['message']
+            
+            # Print to console for verification
+            print(f"Expert Request Received: Service={service}, Location={location}, Urgency={urgency}, Msg={message}")
+            
+            return JsonResponse({'status': 'success', 'message': 'Request submitted successfully!'})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 def error403(request):
     return render(request, "main/errors/403.html", {"title": "403Error"})
