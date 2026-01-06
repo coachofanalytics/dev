@@ -223,6 +223,9 @@ def crisis_page(request):
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
+def our_service(request):
+    services = Service.objects.all()
+    return render(request, "main/our_service.html", {"services": services})
 
 
 def team_list(request):

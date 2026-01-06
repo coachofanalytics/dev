@@ -16,6 +16,7 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
 #<<<<<<< 25.10_DC48_UAT_UO
     path('crisis_page/', views.crisis_page, name='crisis_page'),
+    path('our_service/', views.our_service, name='our_service'),
     path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),
     path('activate_helpline/', views.activate_helpline, name='activate_helpline'),
     

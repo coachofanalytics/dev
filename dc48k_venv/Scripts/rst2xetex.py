@@ -1,4 +1,4 @@
-#!C:\Users\NDOLI IT\Documents\DC48K\dev\dc48k_venv\Scripts\python.exe
+#!C:\Users\PC\.gemini\antigravity\scratch\dev\dc48k_venv\Scripts\python.exe
 
 # $Id: rst2xetex.py 7847 2015-03-17 17:30:47Z milde $
 # Author: Guenter Milde

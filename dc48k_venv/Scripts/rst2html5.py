@@ -1,4 +1,4 @@
-#!C:\Users\NDOLI IT\Documents\DC48K\dev\dc48k_venv\Scripts\python.exe
+#!C:\Users\PC\.gemini\antigravity\scratch\dev\dc48k_venv\Scripts\python.exe
 # -*- coding: utf8 -*-
 # :Copyright: © 2015 Günter Milde.
 # :License: Released under the terms of the `2-Clause BSD license`_, in short:

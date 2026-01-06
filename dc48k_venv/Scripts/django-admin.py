@@ -1,4 +1,4 @@
-#!C:\Users\NDOLI IT\Documents\DC48K\dev\dc48k_venv\Scripts\python.exe
+#!C:\Users\PC\.gemini\antigravity\scratch\dev\dc48k_venv\Scripts\python.exe
 # When the django-admin.py deprecation ends, remove this script.
 import warnings
 

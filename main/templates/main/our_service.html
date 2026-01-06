@@ -1,0 +1,464 @@
+{% extends "main/base_templates/base.html"%}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal & Immigration Guidance | Diaspora County 48</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        /* Custom Colors */
+        .text-brand-blue {
+            color: #1e40af;
+        }
+
+        .bg-brand-blue {
+            background-color: #1e40af;
+        }
+
+        .border-brand-blue {
+            border-color: #1e40af;
+        }
+
+        .text-brand-green {
+            color: #0a926d;
+        }
+
+        .bg-brand-green {
+            background-color: #0a926d;
+        }
+
+        .border-brand-green {
+            border-color: #0a926d;
+        }
+
+        /* Red Accent (For Logo/CTA highlights) */
+        .text-brand-red {
+            color: #cc0000;
+        }
+
+        .bg-brand-red {
+            background-color: #cc0000;
+        }
+
+        /* Highlight Cyan color for titles */
+        .text-highlight-cyan {
+            color: #00cccc;
+        }
+
+        .main-heading {
+            font-weight: 900;
+        }
+
+        /* Service Block Styling */
+        .service-block {
+            margin-bottom: 4rem;
+            padding: 2rem;
+            border-radius: 1rem;
+            transition: all 0.3s ease-in-out;
+            border: 1px solid transparent;
+        }
+
+        .service-block:hover {
+            border-color: #0a926d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom List Styling (for service details) */
+        .service-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            /* Bullet point color remains High-Contrast Red (#cc0000) */
+            background-color: #cc0000;
+            border-radius: 50%;
+        }
+
+        /* Custom Loading Indicator Style for images */
+        .loading-placeholder {
+            min-height: 250px;
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse-custom {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Style for anchor target to fix offset from sticky header */
+        .service-block:target {
+            padding-top: 5rem;
+            margin-top: -5rem;
+            /* Adjust for the sticky header height */
+        }
+
+        /* Custom Nav Styling for desktop links */
+        .nav-link {
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            /* text-sm */
+            font-weight: 500;
+            /* font-medium */
+            transition: all 0.15s ease-in-out;
+            white-space: nowrap;
+            /* Prevents wrapping */
+            text-transform: uppercase;
+            /* Match screenshot */
+        }
+
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+
+        .nav-link.current-page {
+            font-weight: 700;
+        }
+
+        /* Hero Styling for background image and overlay */
+        #hero-background {
+            /* Fallback style, will be replaced by generated image background */
+            background-color: #1e40af;
+            background-image: url('{% static "main/img/backgroundimage.png" %}');
+            background-size: cover;
+            background-position: center;
+            /* Applying pulse animation directly in CSS for initial loading visual */
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <script>
+        window.onload = function () {
+            // --- Mobile Menu Toggle Script ---
+            const button = document.getElementById('mobile-menu-button');
+            const menu = document.getElementById('mobile-menu');
+            if (button && menu) {
+                button.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
+            }
+        };
+    </script>
+
+    <main class="mx-auto pb-16">
+
+        <!-- HERO SECTION START: Full-width background image with dark overlay and centered text -->
+        <header id="hero-section"
+            class="relative min-h-[600px] flex items-center justify-center text-center shadow-2xl">
+            <!-- Image/Overlay Container (will hold the generated background image) -->
+            <div id="hero-background" class="absolute inset-0 bg-cover bg-center">
+                <!-- Dark Overlay for Readability -->
+                <div class="absolute inset-0 bg-black opacity-75"></div>
+            </div>
+
+            <!-- Content (Center-aligned, Z-indexed above the overlay) -->
+            <div class="relative z-10 max-w-4xl mx-auto px-4 py-16">
+                <!-- UPDATED MAIN HEADING -->
+                <h1 class="text-5xl sm:text-7xl main-heading text-white mb-4 leading-tight drop-shadow-lg">
+                    OUR SERVICES
+                </h1>
+                <!-- UPDATED SUBTITLE -->
+                <p class="text-xl sm:text-2xl text-gray-200 mb-10 font-medium max-w-2xl mx-auto drop-shadow-md">
+                    Connecting, protecting, and empowering Kenyans worldwide with services tailored to your unique
+                    global needs.
+                </p>
+                <!-- UPDATED CTA BUTTON TEXT -->
+                <a href="#documents"
+                    class="inline-block px-8 py-4 bg-brand-red text-white font-bold text-xl rounded-lg shadow-2xl transition duration-300 transform hover:scale-[1.05] hover:bg-red-700 uppercase tracking-wider">
+                    GET IN TOUCH
+                </a>
+            </div>
+        </header>
+        <!-- HERO SECTION END -->
+
+        <!-- BREADCRUMB NAVIGATION START -->
+        <section id="breadcrumb" class="bg-gray-100 py-4 shadow-sm">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-lg flex items-center">
+                <!-- Previous Page Link -->
+                <a href="#" class="text-brand-blue hover:underline transition duration-150 font-medium">Home</a>
+
+                <!-- Separator -->
+                <span class="text-gray-400 mx-2">/</span>
+
+                <!-- Current Page -->
+                <span class="text-brand-green font-semibold">Our Services</span>
+            </div>
+        </section>
+        <!-- BREADCRUMB NAVIGATION END -->
+
+
+        <!-- Empowering Kenyans Abroad Section - NEW MISSION FOCUS -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-12 text-center">
+            <h2 class="text-4xl main-heading text-gray-800 mb-4">Our Mission: Essential Support for the Global Kenyan
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Diaspora County 48 (DC48K) is dedicated to being the essential link for all Kenyans living abroad. We
+                offer comprehensive support—from **consular and crisis management** to **financial and community
+                services**—ensuring you have the security, resources, and peace of mind to thrive globally while staying
+                connected to home.
+            </p>
+        </section>
+
+        <!-- SERVICES DETAILED BLOCKS (Alternating Layout) - Content remains the same as requested -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- 1. Consular Assistance (Image Left) -->
+            <div id="consular"
+                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+                <!-- Image -->
+                <div class="lg:order-1">
+                    <img id="image-consular" src="{% static 'main/img/consularAssistance.png' %}"
+                        alt="Consular Assistance" class="w-full rounded-xl shadow-lg object-cover">
+                </div>
+                <!-- Content -->
+                <div class="lg:order-2">
+                    <!-- Title color is Brand Green (text-brand-green) -->
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Consular Assistance</h3>
+                    <p class="text-gray-700 mb-6">
+                        After losing her passport in a foreign country, Jane Matiko struggled to find a way home. Jane
+                        received DC48K consular support, helping navigate the bureaucratic maze and expediting her
+                        return.
+                    </p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        <li>Emergency Travel Documents</li>
+                        <li>Legal Aid and Referrals</li>
+                        <li>Notarization Services</li>
+                        <li>Assistance in Case of Arrest or Detention</li>
+                    </ul>
+                    <!-- CTA Button added: Remaining "Contact Our Experts" -->
+                    <a href="#"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        Contact Our Experts
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. Document Services/preparation (Image Right) -->
+            <div id="documents"
+                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+                <!-- Content -->
+                <div class="lg:order-1">
+                    <!-- Title color is Brand Green (text-brand-green) -->
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Document Services/preparation</h3>
+                    <p class="text-gray-700 mb-6">
+                        Otieno was facing hurdles in finalizing his immigration document. Document Services/Preparation
+                        provided invaluable assistance in compiling, reviewing, and completing his application to ensure
+                        accuracy and compliance.
+                    </p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        <li>Application Assistance and Review</li>
+                        <li>Translation Services</li>
+                        <li>Document Review and Authentication</li>
+                        <li>Birth/Death Certificate Registration Support</li>
+                    </ul>
+                    <!-- CTA Button added: UPDATED to "Get Assistance" -->
+                    <a href="#"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        Get Assistance
+                    </a>
+                </div>
+                <!-- Image -->
+                <div class="lg:order-2">
+                    <img id="image-documents" src="{% static 'main/img/documentServicespreparation.png' %}"
+                        alt="Document Services" class="w-full rounded-xl shadow-lg object-cover">
+                </div>
+            </div>
+
+            <!-- 3. Healthcare Information (Image Left) -->
+            <div id="healthcare"
+                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+                <!-- Image -->
+                <div class="lg:order-1">
+                    <img id="image-healthcare" src="{% static 'main/img/healthcareproviders.png' %}"
+                        alt="Healthcare Information" class="w-full rounded-xl shadow-lg object-cover">
+                </div>
+                <!-- Content -->
+                <div class="lg:order-2">
+                    <!-- Title color is Brand Green (text-brand-green) -->
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Healthcare Information</h3>
+                    <p class="text-gray-700 mb-6">
+                        Recovering from an illness abroad, Brian Omondi utilized Healthcare Information services to
+                        understand his options and find a suitable, vetted doctor for his specific treatment needs in a
+                        foreign system.
+                    </p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        <li>Medical Referrals and Vetting</li>
+                        <li>Insurance Guidance and Enrollment Support</li>
+                        <li>Health Seminars and Wellness Programs</li>
+                        <li>Mental Health Resource Access</li>
+                    </ul>
+                    <!-- CTA Button added: UPDATED to "Find Healthcare Providers" -->
+                    <a href="#"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        Find Healthcare Providers
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. Financial Services (Image Right) -->
+            <div id="financial"
+                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+                <!-- Content -->
+                <div class="lg:order-1">
+                    <!-- Title color is Brand Green (text-brand-green) -->
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Financial Services</h3>
+                    <p class="text-gray-700 mb-6">
+                        Peter was advised on safer investment strategies through Financial Services after an initial
+                        venture failed. We help members secure their hard-earned assets and plan for long-term financial
+                        stability.
+                    </p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        <li>Investment Advice and Planning</li>
+                        <li>Currency Exchange Information</li>
+                        <li>Reliable Remittance Assistance</li>
+                        <li>Tax and Compliance Guidance</li>
+                    </ul>
+                    <!-- CTA Button added: UPDATED to "Start Financial Planning" -->
+                    <a href="#"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        Start Financial Planning
+                    </a>
+                </div>
+                <!-- Image -->
+                <div class="lg:order-2">
+                    <img id="image-financial" src="{% static 'main/img/financialserices.png' %}"
+                        alt="Financial Services" class="w-full rounded-xl shadow-lg object-cover">
+                </div>
+            </div>
+
+            <!-- 5. Community Support (Image Left) -->
+            <div id="community"
+                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+                <!-- Image -->
+                <div class="lg:order-1">
+                    <img id="image-community" src="{% static 'main/img/communitysupport.png' %}" alt="Community Support"
+                        class="w-full rounded-xl shadow-lg object-cover">
+                </div>
+                <!-- Content -->
+                <div class="lg:order-2">
+                    <!-- Title color is Brand Green (text-brand-green) -->
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Community Support</h3>
+                    <p class="text-gray-700 mb-6">
+                        Moving to a new city can be isolating. Our Community Support programs ensure you have immediate
+                        connections and access to cultural events that make you feel at home, fostering a strong sense
+                        of belonging.
+                    </p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        <li>Cultural Events and Festivals</li>
+                        <li>Wellness and Counseling Programs</li>
+                        <li>Social Networking Meetups (Local Chapters)</li>
+                        <li>Newcomer Orientation Assistance</li>
+                    </ul>
+                    <!-- CTA Button added: UPDATED to "Join the Community" -->
+                    <a href="#"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        Join the Community
+                    </a>
+                </div>
+            </div>
+
+            <!-- 6. Crisis Management (Image Right) -->
+            <div id="crisis" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+                <!-- Content -->
+                <div class="lg:order-1">
+                    <!-- Title color is Brand Green (text-brand-green) -->
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Crisis Management</h3>
+                    <p class="text-gray-700 mb-6">
+                        During natural disasters or civil unrest, rapid, reliable information is key. Our 24/7 Crisis
+                        Management team provides real-time alerts, necessary evacuation guidance, and emergency
+                        communication channels.
+                    </p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        <li>24/7 Emergency Hotline Access</li>
+                        <li>Real-time Security and Safety Alerts</li>
+                        <li>Emergency Planning and Evacuation Guidance</li>
+                        <li>Disaster Relief Coordination</li>
+                    </ul>
+                    <!-- CTA Button added:  "Leads the user to te crisi management page" -->
+                    <a href="{% url 'main:crisis_page' %}"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        Contact Our Crisis Team
+                    </a>
+                </div>
+                <!-- Image -->
+                <div class="lg:order-2">
+                    <img id="image-crisis" src="{% static 'main/img/crisismanagement.png' %}" alt="Crisis Management"
+                        class="w-full rounded-xl shadow-lg object-cover">
+                </div>
+            </div>
+
+            <!-- 7. Education and Training (Image Left) -->
+            <div id="education"
+                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+                <!-- Image -->
+                <div class="lg:order-1">
+                    <img id="image-education" src="{% static 'main/img/educationandtraining.png' %}"
+                        alt="Education and Training" class="w-full rounded-xl shadow-lg object-cover">
+                </div>
+                <!-- Content -->
+                <div class="lg:order-2">
+                    <!-- Title color is Brand Green (text-brand-green) -->
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Education and Training</h3>
+                    <p class="text-gray-700 mb-6">
+                        Mercy used our Education and Training services to find accredited online courses and career
+                        mentorship tailored for the diaspora market, helping her upskill for a major career promotion.
+                    </p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        <li>Scholarship Guidance and Application Support</li>
+                        <li>Professional Development Workshops</li>
+                        <li>Skills Training and Certification Resources</li>
+                        <li>Career Mentorship Programs</li>
+                    </ul>
+                    <!-- CTA Button added: UPDATED to "Explore Educational Opportunities" -->
+                    <a href="{% url 'main:education_landing' %}"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        Explore Educational Opportunities
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+
+</html>
+{% endblock %}
