@@ -34,7 +34,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from flask import request
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from accounts.choices import CategoryChoices
 from accounts.utils import CATEGORY_FEES, convert_kes_to_usd, get_exchange_rate, send_verification_email
 from coda_project import settings
@@ -347,76 +347,83 @@ def select_category(request):
 
 from django.http import HttpResponseRedirect  
 from django.http import HttpResponseRedirect  
-def custom_social_account_adapter_pre_social_login(request, sociallogin):
-    print('Inside pre_social_login')
-    user = sociallogin.user
-    email = user.email
-    existing_user = CustomerUser.objects.filter(email=email).first()
-    category = request.session.get('category')
-    print(category)
-    if existing_user:
-        print('Existing user found. Connecting social account.')
-        sociallogin.connect(request, existing_user)
-    elif existing_user is None and category is None:
-        print('No existing user and no category in session. Redirecting to category selection.')
-    else:
-        print('Creating a new user via social login.')
-        sociallogin.save(request, connect=False)
-        new_user = sociallogin.user
-        selected_category = request.session.pop('category', None)
-        print(selected_category)
-        if selected_category == CategoryChoices.ORDINARY_MEMBER:
-            new_user.is_ordinary_member = True
-        elif selected_category == CategoryChoices.ACTIVE_MEMBER:
-            new_user.is_active_member = True
-        elif selected_category == CategoryChoices.EXECUTIVE_MEMBER:
-            new_user.is_executive_member = True
-        elif selected_category == CategoryChoices.FBO_ORDINARY:
-            new_user.is_fbo_ordinary = True
-        elif selected_category == CategoryChoices.ACTIVE_ORGANIZATION:
-            new_user.is_active_organization = True
-        elif selected_category == CategoryChoices.ROYAL_ORGANIZATION:
-            new_user.is_royal_organization = True
-        else:
-            messages.error(request, "Invalid category selected.")
-        if not new_user.username:
-            new_user.username = new_user.email
-        new_user.is_active = True
-        new_user.verification_token = None
-        new_user.save()
-        cate = int(selected_category)
-        fee_kes = CATEGORY_FEES.get(cate)
-        print(fee_kes)
-        fee_usd = fee_kes / get_exchange_rate('USD', 'KES')
-        membership = Membership.objects.create(
-            member=new_user,
-            fee=fee_usd,
-            currency="USD",
-            status='NOT_PAID',
-        )
-        print(f"Membership created for user {new_user.username} with fee {fee_usd} USD")
-            # self.send_welcome_email(new_user)
-
-
-        # After obtaining the target_user (existing or new), check Membership status
+class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+    def pre_social_login(self, request, sociallogin):
+        print('Inside pre_social_login')
+        user = sociallogin.user
+        email = user.email
+        existing_user = CustomerUser.objects.filter(email=email).first()
+        category = request.session.get('category')
+        print(category)
         if existing_user:
-            membership = Membership.objects.filter(member=existing_user).first()
-            if membership and membership.status == 'NOT_PAID':
-                print(f"User {existing_user.username} has unpaid membership. Redirecting to payment.")
-                # Redirect to finance:pay with membership ID
-                sociallogin.state['next'] = reverse('finance:pay')
-            else:
-                # Redirect based on user category
-                print('not a member')
+            print('Existing user found. Connecting social account.')
+            sociallogin.connect(request, existing_user)
+        elif existing_user is None and category is None:
+            print('No existing user and no category in session. Redirecting to category selection.')
         else:
-            membership = Membership.objects.filter(member=new_user).first()
-            if membership and membership.status == 'NOT_PAID':
-                print(f"User {new_user.username} has unpaid membership. Redirecting to payment.")
-                # Redirect to finance:pay with membership ID
-                sociallogin.state['next'] = reverse('finance:pay')
+            print('Creating a new user via social login.')
+            sociallogin.save(request, connect=False)
+            new_user = sociallogin.user
+            selected_category = request.session.pop('category', None)
+            print(selected_category)
+            if selected_category == CategoryChoices.ORDINARY_MEMBER:
+                new_user.is_ordinary_member = True
+            elif selected_category == CategoryChoices.ACTIVE_MEMBER:
+                new_user.is_active_member = True
+            elif selected_category == CategoryChoices.EXECUTIVE_MEMBER:
+                new_user.is_executive_member = True
+            elif selected_category == CategoryChoices.FBO_ORDINARY:
+                new_user.is_fbo_ordinary = True
+            elif selected_category == CategoryChoices.ACTIVE_ORGANIZATION:
+                new_user.is_active_organization = True
+            elif selected_category == CategoryChoices.ROYAL_ORGANIZATION:
+                new_user.is_royal_organization = True
             else:
-                # Redirect based on user category
-                print('not a member')
+                messages.error(request, "Invalid category selected.")
+            if not new_user.username:
+                new_user.username = new_user.email
+            new_user.is_active = True
+            new_user.verification_token = None
+            new_user.save()
+            
+            # Safe integer conversion
+            try:
+                cate = int(selected_category)
+                fee_kes = CATEGORY_FEES.get(cate, 0.0)
+            except (ValueError, TypeError):
+                fee_kes = 0.0
+                
+            print(fee_kes)
+            fee_usd = fee_kes / get_exchange_rate('USD', 'KES')
+            membership = Membership.objects.create(
+                member=new_user,
+                fee=fee_usd,
+                currency="USD",
+                status='NOT_PAID',
+            )
+            print(f"Membership created for user {new_user.username} with fee {fee_usd} USD")
+                # self.send_welcome_email(new_user)
+
+
+            # After obtaining the target_user (existing or new), check Membership status
+            if existing_user:
+                membership = Membership.objects.filter(member=existing_user).first()
+                if membership and membership.status == 'NOT_PAID':
+                    print(f"User {existing_user.username} has unpaid membership. Redirecting to payment.")
+                    # Redirect to finance:pay with membership ID
+                    sociallogin.state['next'] = reverse('finance:pay')
+                else:
+                    # Redirect based on user category
+                    print('not a member')
+            else:
+                membership = Membership.objects.filter(member=new_user).first()
+                if membership and membership.status == 'NOT_PAID':
+                    print(f"User {new_user.username} has unpaid membership. Redirecting to payment.")
+                    # Redirect to finance:pay with membership ID
+                    sociallogin.state['next'] = reverse('finance:pay')
+                else:
+                    # Redirect based on user category
+                    print('not a member')
 
 def custom_social_login(request):   
 

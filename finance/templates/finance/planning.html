@@ -1,0 +1,158 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<main class="mx-auto pb-16">
+
+    <!-- HERO SECTION -->
+    <header class="bg-brand-blue text-white shadow-xl overflow-hidden mb-12 mt-3 small">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
+            <div class="p-8 md:p-12 lg:p-16">
+                <h1 class="text-5xl main-heading mb-4">FINANCIAL PLANNING</h1>
+                <h2 class="text-xl font-medium text-gray-200 mb-8">
+                    Secure your future with expert advice, tailored planning, and reliable financial solutions.
+                </h2>
+                <a href="#request-service"
+                    class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
+                    Request A Service
+                </a>
+            </div>
+            <div class="w-full h-full hero-image-container">
+                <img src="{% static 'main/img/financialserices.png' %}" alt="Financial Planning Hero"
+                    class="w-full h-full object-cover" style="max-height: 400px; min-height: 400px;">
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- SERVICES GRID -->
+        <section class="mb-16">
+            <h3 class="text-3xl font-extrabold text-gray-800 mb-8 text-center">Our Financial Services</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div
+                    class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 border-t-4 border-brand-green">
+                    <h4 class="text-xl font-bold text-brand-blue mb-2">Investment Advice</h4>
+                    <p class="text-gray-600 text-sm">Expert guidance on growing your wealth and managing assets
+                        effectively.</p>
+                </div>
+                <div
+                    class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 border-t-4 border-brand-green">
+                    <h4 class="text-xl font-bold text-brand-blue mb-2">Currency Exchange</h4>
+                    <p class="text-gray-600 text-sm">Up-to-date information and competitive rates for your currency
+                        needs.</p>
+                </div>
+                <div
+                    class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 border-t-4 border-brand-green">
+                    <h4 class="text-xl font-bold text-brand-blue mb-2">Remittance Assistance</h4>
+                    <p class="text-gray-600 text-sm">Secure and reliable channels for sending money back home.</p>
+                </div>
+                <div
+                    class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 border-t-4 border-brand-green">
+                    <h4 class="text-xl font-bold text-brand-blue mb-2">Tax Guidance</h4>
+                    <p class="text-gray-600 text-sm">Navigate complex tax regulations with confidence and compliance.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+            <!-- LEFT COLUMN: REQUEST FORM -->
+            <div class="lg:col-span-1" id="request-service">
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100 sticky top-4">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Start a New Plan</h3>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <!-- Manual rendering or crispy checks -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2">Select Service</label>
+                            {{ form.service_type }}
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-bold mb-2">Additional Details</label>
+                            <p class="text-xs text-gray-500 mb-2">Tell us more about what you need assistance with.</p>
+                            {{ form.details }}
+                        </div>
+
+                        {% if form.errors %}
+                        <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                            Please correct the errors below.
+                        </div>
+                        {% endif %}
+
+                        <button type="submit"
+                            class="w-full bg-brand-blue text-white font-bold py-3 px-4 rounded-lg hover:bg-[#16317b] transition duration-300 shadow-md uppercase tracking-wider">
+                            Submit Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: MY REQUESTS LIST -->
+            <div class="lg:col-span-2">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">My Financial Requests</h3>
+
+                {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                    <div
+                        class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if requests %}
+                <div class="space-y-6">
+                    {% for req in requests %}
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-md border-l-4 {% if req.status == 'completed' %}border-green-500{% elif req.status == 'cancelled' %}border-red-500{% else %}border-yellow-500{% endif %} flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h4 class="text-lg font-bold text-gray-800">{{ req.get_service_type_display }}</h4>
+                                <span class="px-2 py-1 text-xs font-bold rounded-full uppercase
+                                        {% if req.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% elif req.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                        {% elif req.status == 'completed' %}bg-green-100 text-green-800
+                                        {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ req.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3">{{ req.details|linebreaksbr }}</p>
+                            <p class="text-xs text-gray-400">Requested on: {{ req.created_at|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <a href="{% url 'finance:planning_update' req.pk %}"
+                                class="text-gray-500 hover:text-brand-blue transition" title="Edit Request">
+                                Edit
+                            </a>
+                            <span class="text-gray-300">|</span>
+                            <a href="{% url 'finance:planning_delete' req.pk %}"
+                                class="text-gray-400 hover:text-red-600 transition" title="Cancel Request">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                        </path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No requests yet</h3>
+                    <p class="mt-1 text-sm text-gray-500">Get started by filling out the form on the left.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</main>
+{% endblock content %}

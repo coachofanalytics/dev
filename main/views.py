@@ -227,6 +227,9 @@ def our_service(request):
     services = Service.objects.all()
     return render(request, "main/our_service.html", {"services": services})
 
+def financial_planning(request):
+    services = Service.objects.all()
+    return render(request, "main/financial_planning.html", {"services": services})
 
 def team_list(request):
     teams = Team.objects.all()
