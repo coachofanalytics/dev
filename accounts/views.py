@@ -34,7 +34,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-# from flask import request
+from flask import request
 from accounts.choices import CategoryChoices
 from accounts.utils import CATEGORY_FEES, convert_kes_to_usd, get_exchange_rate, send_verification_email
 from coda_project import settings

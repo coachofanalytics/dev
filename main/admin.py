@@ -27,24 +27,4 @@ admin.site.register(Donation_organization)
 admin.site.register(Scholarship)
 #>>>>>>> 25.10_DC48_UAT_ND
 
-@admin.register(DocumentRequest)
-class DocumentRequestAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'email', 'phone', 'document_type', 'package_type', 'destination_country', 'status', 'created_at')
-    list_filter = ('status', 'document_type', 'package_type', 'created_at')
-    search_fields = ('full_name', 'email', 'phone', 'destination_country')
-    readonly_fields = ('created_at',)
-    list_per_page = 25
-    ordering = ('-created_at',)
-    
-    fieldsets = (
-        ('Contact Information', {
-            'fields': ('full_name', 'email', 'phone')
-        }),
-        ('Request Details', {
-            'fields': ('document_type', 'package_type', 'destination_country', 'description', 'consent')
-        }),
-        ('Status & Tracking', {
-            'fields': ('status', 'created_at')
-        }),
-    )
 

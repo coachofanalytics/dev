@@ -282,7 +282,7 @@ from django.shortcuts import render
 from .models import Service,ContactUs
 from django.db.models import Q
 from .models import Scholarship
-from .forms import ScholarshipSearchForm,DocumentRequestForm
+from .forms import ScholarshipSearchForm
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
@@ -660,39 +660,4 @@ def scholarship_search(request):
 #=======
     return render(request, 'scholarship_app/scholarship_search.html', context)
 
-# document request view
-def  services_spa(request):
-    form = DocumentRequestForm()
-    return render(request, 'main/index.html', {'form': form})
-@require_POST
-def submit_reques(request):
-    form = DocumentRequestForm(request.POST)
-    if form.is_valid():
-        try:
-            document_request =form.save(commit=False)
-            document_request.status = 'Pending'
-            document_request.save()
-            success_message = (
-                f"Thank you {document_request.full_name}."
-                f"Your document reques for {document_request.get_document_type_display()} has been submitted successfully."
-                f"We will get back to you at {document_request.email} as soon as possible."
-            )
-            return JsonResponse({
-                'success': True,
-                'message': success_message,
-                'redirect_id': document_request.id,
-            })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error':'An error occurred while processing your request. Please try again later.',
-            }, status=400) 
-    else:
-        error =  {}
-        for field, error_list in form.errors.items():
-            error[field] =[str(error) for error in error_list]
-        return JsonResponse({
-            'success': False,
-            'error':error,
-        }, status=400)
-    
+
