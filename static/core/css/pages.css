@@ -1,0 +1,339 @@
+/* ============================================================
+   BIASHARA BRIDGES - SHARED PAGE STYLES
+   ============================================================
+   Styles for About, Services, Projects, Partners, Gallery,
+   News, and Contact pages
+   ============================================================ */
+
+/* ============================================================
+   1. PAGE HERO SECTION
+   ============================================================ */
+.page-hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    padding-top: 120px;
+    padding-bottom: 60px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.page-hero-article {
+    min-height: 65vh;
+}
+
+.page-hero .breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.page-hero .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.page-hero .breadcrumb-item a:hover {
+    color: #fff;
+}
+
+.page-hero .breadcrumb-item.active {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.page-hero .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================================
+   2. CARDS & CONTENT BLOCKS
+   ============================================================ */
+.value-card,
+.service-model-card,
+.project-card,
+.partner-card,
+.news-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.value-card:hover,
+.service-model-card:hover,
+.project-card:hover,
+.partner-card:hover,
+.news-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+.project-card .card-img-top,
+.news-card .card-img-top {
+    height: 220px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.project-card:hover .card-img-top,
+.news-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* ============================================================
+   3. ICON STYLES
+   ============================================================ */
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-lg {
+    width: 70px;
+    height: 70px;
+}
+
+.icon-sm {
+    width: 50px;
+    height: 50px;
+}
+
+.partner-icon i {
+    color: var(--gold-primary, #b49044);
+}
+
+/* ============================================================
+   4. GALLERY STYLES
+   ============================================================ */
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.gallery-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(180, 144, 68, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-overlay i {
+    font-size: 2rem;
+    color: #fff;
+}
+
+.gallery-item:hover .gallery-overlay {
+    opacity: 1;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.1);
+}
+
+/* ============================================================
+   5. ARTICLE STYLES
+   ============================================================ */
+.article-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #444;
+}
+
+.article-content h3,
+.article-content h4 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #111518;
+}
+
+.article-content ul {
+    padding-left: 1.5rem;
+}
+
+.article-content ul li {
+    margin-bottom: 0.5rem;
+}
+
+.article-extended-content {
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+}
+
+/* ============================================================
+   6. FORM STYLES
+   ============================================================ */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--gold-primary, #b49044);
+    box-shadow: 0 0 0 0.25rem rgba(180, 144, 68, 0.15);
+}
+
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #198754;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+/* ============================================================
+   7. BADGE STYLES
+   ============================================================ */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 1em;
+    font-size: 0.75rem;
+}
+
+/* ============================================================
+   8. RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+@media (max-width: 991.98px) {
+    .page-hero {
+        min-height: 40vh;
+        padding-top: 100px;
+        padding-bottom: 40px;
+    }
+
+    .page-hero h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .page-hero {
+        min-height: 35vh;
+        padding-top: 90px;
+        padding-bottom: 30px;
+    }
+
+    .page-hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .gallery-item img {
+        height: 200px;
+    }
+
+    .project-card .card-img-top,
+    .news-card .card-img-top {
+        height: 180px;
+    }
+}
+
+/* ============================================================
+   9. UTILITY CLASSES
+   ============================================================ */
+.text-gold {
+    color: var(--gold-primary, #b49044) !important;
+}
+
+.bg-gold {
+    background-color: var(--gold-primary, #b49044) !important;
+}
+
+.border-gold {
+    border-color: var(--gold-primary, #b49044) !important;
+}
+
+/* Smooth image loading */
+img {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+img[data-src] {
+    opacity: 0;
+}
+
+img.loaded {
+    opacity: 1;
+}
+
+/* ============================================================
+   10. ANIMATION ENHANCEMENTS
+   ============================================================ */
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================
+   11. BUTTON STYLES
+   ============================================================ */
+.btn-primary {
+    background-color: var(--gold-primary, #b49044);
+    border-color: var(--gold-primary, #b49044);
+}
+
+.btn-primary:hover {
+    background-color: #9a7a3a;
+    border-color: #9a7a3a;
+}
+
+.btn-outline-primary {
+    color: var(--gold-primary, #b49044);
+    border-color: var(--gold-primary, #b49044);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--gold-primary, #b49044);
+    border-color: var(--gold-primary, #b49044);
+    color: #fff;
+}
+
+/* ============================================================
+   12. SCROLL BEHAVIOR
+   ============================================================ */
+html {
+    scroll-behavior: smooth;
+}
+
+/* ============================================================
+   13. PRINT STYLES
+   ============================================================ */
+@media print {
+    .page-hero {
+        min-height: auto;
+        padding: 20px 0;
+        background: #f5f5f5 !important;
+    }
+
+    .navbar,
+    .footer-global {
+        display: none;
+    }
+}

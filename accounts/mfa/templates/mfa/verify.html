@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Two-Factor Authentication{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-shield-alt"></i> Verification Required
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-center">
+                        Enter the 6-digit code from your authenticator app to complete login.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            {{ form.token.label_tag }}
+                            {{ form.token }}
+                            {% if form.token.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.token.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.token.help_text }}</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Verify and Log In
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="text-muted small">Don't have access to your authenticator app?</p>
+                        <a href="{% url 'mfa:verify_backup' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-key"></i> Use a Backup Code
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="{% url 'accounts:login' %}" class="text-muted">
+                    <i class="fas fa-arrow-left"></i> Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-submit form when 6 digits entered
+document.addEventListener('DOMContentLoaded', function() {
+    const tokenInput = document.querySelector('input[name="token"]');
+    if (tokenInput) {
+        tokenInput.addEventListener('input', function(e) {
+            const value = e.target.value;
+            if (value.length === 6 && /^\d{6}$/.test(value)) {
+                // Auto-submit after a short delay
+                setTimeout(() => {
+                    e.target.form.submit();
+                }, 300);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Use Backup Code{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-key"></i> Use Backup Code
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Enter one of your backup codes to log in. Each code can only be used once.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            {{ form.code.label_tag }}
+                            {{ form.code }}
+                            {% if form.code.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.code.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.code.help_text }}</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Verify and Log In
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="text-muted small">Have access to your authenticator app?</p>
+                        <a href="{% url 'mfa:verify' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-mobile-alt"></i> Use Authenticator App
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="{% url 'accounts:login' %}" class="text-muted">
+                    <i class="fas fa-arrow-left"></i> Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

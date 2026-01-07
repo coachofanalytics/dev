@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ meta_description }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/landing/favicon.jpg' %}">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- AOS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/pages.css' %}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:landing' %}">
+                <img src="{% static 'core/images/landing/logo.png' %}" alt="Biashara Bridges" height="50"><span class="ms-2 fw-bold text-dark d-none d-md-inline" style="font-size: 1.2rem;">Biashara Bridges</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'core:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:partners' %}">Partners</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:news' %}">News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-none d-lg-flex">
+                <a href="{% url 'login' %}" class="btn btn-outline-dark me-2">Login</a>
+                <a href="{% url 'onboarding:register' %}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Hero -->
+    <section class="page-hero" style="background: linear-gradient(rgba(17, 21, 24, 0.8), rgba(17, 21, 24, 0.8)), url('{% static 'core/images/about/office-team.jpg' %}'); background-size: cover; background-position: center 30%;">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="breadcrumb-item active">About Us</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 fw-bold text-white">About Us</h1>
+            <p class="lead text-white-50">Building bridges between Kenya, the U.S., and the world</p>
+        </div>
+    </section>
+
+    <!-- Company Story -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <img src="{% static 'core/images/about/company-meeting.jpg' %}" alt="Biashara Bridges Team" class="img-fluid rounded-4 shadow">
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <h2 class="display-6 fw-bold mb-4">Welcome to Biashara Bridges LLC</h2>
+                    <p class="lead text-muted">A U.S. and Kenya-registered firm founded by Kenyan diaspora professionals.</p>
+                    <p>Biashara Bridges LLC operates at the intersection of diaspora networks, government institutions, and international businesses. We are committed to facilitating trusted, transparent, and transformative partnerships that unlock opportunities for Kenya, empower the diaspora, and strengthen global trade relations.</p>
+                    <p>With strategic offices in <strong>Nairobi, Kenya</strong> and <strong>Cincinnati, Ohio, USA</strong>, we provide comprehensive services spanning:</p>
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
+                                <span>G2G Partnerships</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
+                                <span>G2B Collaborations</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
+                                <span>B2B Trade</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
+                                <span>Diaspora Investments</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vision & Mission -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mb-4" data-aos="fade-up">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-5">
+                            <div class="icon-box mb-4">
+                                <i class="bi bi-eye-fill fs-1 text-primary"></i>
+                            </div>
+                            <h3 class="fw-bold mb-3">Our Vision</h3>
+                            <p class="text-muted mb-0">To be the leading diaspora-driven bridge for international trade, investment, and development between Kenya, the U.S., and global partners.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-5">
+                            <div class="icon-box mb-4">
+                                <i class="bi bi-bullseye fs-1 text-primary"></i>
+                            </div>
+                            <h3 class="fw-bold mb-3">Our Mission</h3>
+                            <p class="text-muted mb-0">To facilitate trusted, transparent, and transformative partnerships that unlock opportunities for Kenya, empower the diaspora, and strengthen global trade relations.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Values -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Our Core Values</h2>
+                <p class="text-muted">The principles that guide everything we do</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up">
+                    <div class="value-card text-center p-4">
+                        <div class="value-icon mb-3">
+                            <i class="bi bi-shield-check fs-1 text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold">Integrity</h4>
+                        <p class="text-muted">Building trust-based partnerships through honesty and transparency in all our dealings.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="value-card text-center p-4">
+                        <div class="value-icon mb-3">
+                            <i class="bi bi-award fs-1 text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold">Excellence</h4>
+                        <p class="text-muted">Delivering meaningful results that exceed expectations in every project we undertake.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="value-card text-center p-4">
+                        <div class="value-icon mb-3">
+                            <i class="bi bi-lightbulb fs-1 text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold">Innovation</h4>
+                        <p class="text-muted">Using new approaches and technologies for sustainable development solutions.</p>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="value-card text-center p-4">
+                        <div class="value-icon mb-3">
+                            <i class="bi bi-people fs-1 text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold">Collaboration</h4>
+                        <p class="text-muted">Cross-border and cross-sector cooperation to achieve shared goals and mutual success.</p>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="value-card text-center p-4">
+                        <div class="value-icon mb-3">
+                            <i class="bi bi-graph-up-arrow fs-1 text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold">Impact</h4>
+                        <p class="text-muted">Improving lives through initiatives that create lasting positive change in communities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Office Locations -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Our Offices</h2>
+                <p class="text-muted">Strategic presence on two continents</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-6 mb-4" data-aos="fade-up">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4 text-center">
+                            <div class="office-icon mb-3">
+                                <i class="bi bi-geo-alt-fill fs-1 text-primary"></i>
+                            </div>
+                            <h4 class="fw-bold">Nairobi, Kenya</h4>
+                            <p class="text-muted mb-2">East Africa Hub</p>
+                            <p class="small text-muted">Our Kenya office serves as the operational hub for all East African activities, providing on-ground support for investments and partnerships.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4 text-center">
+                            <div class="office-icon mb-3">
+                                <i class="bi bi-geo-alt-fill fs-1 text-primary"></i>
+                            </div>
+                            <h4 class="fw-bold">Cincinnati, Ohio, USA</h4>
+                            <p class="text-muted mb-2">North America Operations</p>
+                            <p class="small text-muted">Our U.S. headquarters coordinates diaspora engagement, trade facilitation, and partnership development across North America.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="display-6 fw-bold mb-4">Let's Work Together</h2>
+            <p class="lead mb-4">Ready to explore opportunities with Biashara Bridges?</p>
+            <a href="{% url 'core:contact' %}" class="btn btn-light btn-lg px-5">
+                <i class="bi bi-envelope me-2"></i>Contact Us
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    {% include 'includes/footer.html' %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({duration: 800, once: true});</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Disputes - Staff Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .status-tabs {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .status-tab {
+        border: none;
+        background: #f8f9fa;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .status-tab:hover, .status-tab.active {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+    }
+
+    .dispute-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1rem;
+        border-left: 4px solid #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .dispute-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .dispute-card.status-open { border-left-color: #ffc107; }
+    .dispute-card.status-under_review { border-left-color: #17a2b8; }
+    .dispute-card.status-resolved_favor_user { border-left-color: #28a745; }
+    .dispute-card.status-resolved_favor_merchant { border-left-color: #dc3545; }
+    .dispute-card.status-closed { border-left-color: #6c757d; }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-open { background: #fff3cd; color: #856404; }
+    .status-under_review { background: #d1ecf1; color: #0c5460; }
+    .status-resolved_favor_user { background: #d4edda; color: #155724; }
+    .status-resolved_favor_merchant { background: #f8d7da; color: #721c24; }
+    .status-closed { background: #e2e3e5; color: #383d41; }
+
+    .btn-resolve {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
+
+    .btn-resolve:hover {
+        transform: scale(1.05);
+        color: white;
+    }
+
+    .amount-badge {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-gavel me-2"></i>Payment Disputes</h1>
+                <p class="mb-0 opacity-75">Review and resolve payment disputes</p>
+            </div>
+            <a href="{% url 'payments:staff_analytics_dashboard' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+        <a href="?status=all" class="btn status-tab {% if selected_status == 'all' %}active{% endif %}">
+            All
+        </a>
+        <a href="?status=open" class="btn status-tab {% if selected_status == 'open' %}active{% endif %}">
+            Open <span class="badge bg-warning text-dark">{{ status_counts.open }}</span>
+        </a>
+        <a href="?status=under_review" class="btn status-tab {% if selected_status == 'under_review' %}active{% endif %}">
+            Under Review <span class="badge bg-info">{{ status_counts.under_review }}</span>
+        </a>
+        <a href="?status=resolved_favor_user" class="btn status-tab {% if selected_status == 'resolved_favor_user' %}active{% endif %}">
+            User Favor <span class="badge bg-success">{{ status_counts.resolved_favor_user }}</span>
+        </a>
+        <a href="?status=resolved_favor_merchant" class="btn status-tab {% if selected_status == 'resolved_favor_merchant' %}active{% endif %}">
+            Merchant Favor <span class="badge bg-danger">{{ status_counts.resolved_favor_merchant }}</span>
+        </a>
+        <a href="?status=closed" class="btn status-tab {% if selected_status == 'closed' %}active{% endif %}">
+            Closed <span class="badge bg-secondary">{{ status_counts.closed }}</span>
+        </a>
+    </div>
+
+    <!-- Disputes List -->
+    {% for dispute in disputes %}
+    <div class="dispute-card status-{{ dispute.status }} {% if dispute.is_overdue %}border-danger{% endif %}">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                    <h5 class="mb-0 me-3">{{ dispute.dispute_id }}</h5>
+                    <span class="status-badge status-{{ dispute.status }}">{{ dispute.get_status_display }}</span>
+                    {% if dispute.priority == 'critical' %}
+                    <span class="badge bg-danger ms-2"><i class="fas fa-exclamation-triangle"></i> Critical</span>
+                    {% elif dispute.priority == 'high' %}
+                    <span class="badge bg-warning text-dark ms-2"><i class="fas fa-exclamation-circle"></i> High Priority</span>
+                    {% endif %}
+                    {% if dispute.is_overdue %}
+                    <span class="badge bg-danger ms-2 pulse"><i class="fas fa-clock"></i> OVERDUE</span>
+                    {% endif %}
+                </div>
+                <p class="mb-2">
+                    <strong>Reason:</strong> {{ dispute.get_reason_display }}
+                    <span class="badge bg-secondary ms-2">{{ dispute.get_risk_level_display }}</span>
+                </p>
+                <p class="text-muted mb-2">{{ dispute.description|truncatewords:25 }}</p>
+                <small class="text-muted">
+                    <i class="fas fa-user me-1"></i>{{ dispute.user.username }}
+                    <span class="mx-2">|</span>
+                    <i class="fas fa-receipt me-1"></i>{{ dispute.transaction.transaction_id }}
+                    <span class="mx-2">|</span>
+                    <i class="fas fa-calendar me-1"></i>{{ dispute.days_open }} day{{ dispute.days_open|pluralize }} open
+                </small>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mb-2">
+                    <small class="text-muted d-block">Disputed Amount</small>
+                    <span class="amount-badge text-danger">${{ dispute.amount_disputed|floatformat:2 }}</span>
+                </div>
+                {% if dispute.amount_refunded > 0 %}
+                <div>
+                    <small class="text-muted d-block">Refunded</small>
+                    <span class="text-success">${{ dispute.amount_refunded|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if dispute.sla_deadline and dispute.status != 'closed' %}
+                <div class="mt-2">
+                    <small class="text-muted d-block">SLA Deadline</small>
+                    <small class="{% if dispute.is_overdue %}text-danger fw-bold{% else %}text-primary{% endif %}">
+                        {{ dispute.sla_deadline|date:"M d, g:i A" }}
+                    </small>
+                </div>
+                {% endif %}
+                <div class="mt-2">
+                    <small class="text-muted">Created: {{ dispute.created_at|date:"M d, Y" }}</small>
+                </div>
+            </div>
+            <div class="col-md-3 text-end">
+                {% if dispute.status == 'open' or dispute.status == 'under_review' %}
+                <a href="{% url 'payments:staff_resolve_dispute' dispute.id %}" class="btn btn-resolve {% if dispute.is_overdue %}btn-danger{% endif %}">
+                    <i class="fas fa-check me-1"></i>Resolve{% if dispute.is_overdue %} Now{% endif %}
+                </a>
+                {% else %}
+                <div>
+                    <i class="fas fa-check-circle text-success"></i>
+                    <span class="text-muted">Resolved</span>
+                </div>
+                {% if dispute.assigned_to %}
+                <small class="text-muted d-block mt-1">by {{ dispute.assigned_to.username }}</small>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+        <h4>No Disputes</h4>
+        <p class="text-muted">No disputes matching your filters</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

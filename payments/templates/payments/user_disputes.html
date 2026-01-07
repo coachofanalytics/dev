@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Disputes - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .dispute-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .dispute-card.status-open { border-left-color: #ffc107; }
+    .dispute-card.status-under_review { border-left-color: #17a2b8; }
+    .dispute-card.status-resolved_favor_user { border-left-color: #28a745; }
+    .dispute-card.status-resolved_favor_merchant { border-left-color: #dc3545; }
+    .dispute-card.status-closed { border-left-color: #6c757d; }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-open { background: #fff3cd; color: #856404; }
+    .status-under_review { background: #d1ecf1; color: #0c5460; }
+    .status-resolved_favor_user { background: #d4edda; color: #155724; }
+    .status-resolved_favor_merchant { background: #f8d7da; color: #721c24; }
+    .status-closed { background: #e2e3e5; color: #383d41; }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-gavel me-2"></i>My Disputes</h1>
+                <p class="mb-0 opacity-75">Track and manage your payment disputes</p>
+            </div>
+            <a href="{% url 'payments:wallet_dashboard' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Wallet
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if disputes %}
+    {% for dispute in disputes %}
+    <div class="dispute-card status-{{ dispute.status }}">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-2">
+                    <h5 class="mb-0 me-3">{{ dispute.dispute_id }}</h5>
+                    <span class="status-badge status-{{ dispute.status }}">
+                        {{ dispute.get_status_display }}
+                    </span>
+                </div>
+                <p class="text-muted mb-2">
+                    <strong>Reason:</strong> {{ dispute.get_reason_display }}
+                </p>
+                <p class="mb-2">{{ dispute.description|truncatewords:30 }}</p>
+                <small class="text-muted">
+                    <i class="fas fa-receipt me-1"></i>Transaction: {{ dispute.transaction.transaction_id }}
+                    <span class="mx-2">|</span>
+                    <i class="fas fa-calendar me-1"></i>Created: {{ dispute.created_at|date:"M d, Y" }}
+                </small>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="mb-2">
+                    <span class="text-muted">Amount Disputed:</span>
+                    <span class="fw-bold text-danger">${{ dispute.amount_disputed|floatformat:2 }}</span>
+                </div>
+                {% if dispute.amount_refunded > 0 %}
+                <div>
+                    <span class="text-muted">Refunded:</span>
+                    <span class="fw-bold text-success">${{ dispute.amount_refunded|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if dispute.resolution_notes %}
+                <div class="mt-2">
+                    <small class="text-muted">Resolution: {{ dispute.resolution_notes|truncatewords:10 }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+        <h4>No Disputes</h4>
+        <p class="text-muted">You don't have any payment disputes. That's great!</p>
+        <p class="text-muted">If you have an issue with a transaction, you can create a dispute from your transaction history.</p>
+        <a href="{% url 'payments:transaction_history' %}" class="btn btn-primary mt-2">
+            <i class="fas fa-list me-2"></i>View Transactions
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

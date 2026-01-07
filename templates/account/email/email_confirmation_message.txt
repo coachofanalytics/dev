@@ -1,0 +1,18 @@
+Hello {{ user.get_full_name|default:user.username }},
+
+Thank you for registering with Biashara Bridges!
+
+To complete your registration and activate your account, please verify your email address by clicking the link below:
+
+{{ activate_url }}
+
+This link will expire in 3 days.
+
+If you did not create this account, please ignore this email.
+
+Best regards,
+The Biashara Bridges Team
+
+---
+Connecting businesses, investors, and opportunities across Africa and beyond
+{{ current_site.domain }}

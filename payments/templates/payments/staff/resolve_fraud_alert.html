@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resolve Fraud Alert - Staff Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .alert-details {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #dc3545;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+
+    .btn-submit:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-shield-alt me-2"></i>Resolve Fraud Alert</h1>
+                <p class="mb-0 opacity-75">Review and resolve this alert</p>
+            </div>
+            <a href="{% url 'payments:staff_fraud_alerts' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Alerts
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <!-- Alert Details -->
+                <div class="alert-details">
+                    <h5 class="mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Alert Details</h5>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Type:</strong></p>
+                            <p class="text-muted">{{ alert.get_alert_type_display }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Severity:</strong></p>
+                            <p class="text-muted text-capitalize">{{ alert.severity }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>User:</strong></p>
+                            <p class="text-muted">{{ alert.user.username }} ({{ alert.user.email }})</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Created:</strong></p>
+                            <p class="text-muted">{{ alert.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div class="col-12">
+                            <p class="mb-1"><strong>Description:</strong></p>
+                            <p class="text-muted">{{ alert.description }}</p>
+                        </div>
+                        {% if alert.metadata %}
+                        <div class="col-12">
+                            <p class="mb-1"><strong>Additional Data:</strong></p>
+                            <pre class="bg-light p-2 rounded">{{ alert.metadata|pprint }}</pre>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Resolution Form -->
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Resolution Status</label>
+                        <select name="status" class="form-select" required>
+                            {% for code, label in status_choices %}
+                            {% if code != 'pending' %}
+                            <option value="{{ code }}" {% if alert.status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Resolution Notes</label>
+                        <textarea name="resolution_notes" class="form-control" rows="4"
+                                  placeholder="Describe your findings and the reason for this resolution...">{{ alert.resolution_notes }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'payments:staff_fraud_alerts' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-check me-2"></i>Resolve Alert
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Verification Status - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2><i class="bi bi-shield-check"></i> Verification Status</h2>
+
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5>Current Level: {{ verification_level.get_level_display }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Verification Checklist:</h6>
+                    <ul class="list-unstyled">
+                        <li>{% if verification_level.email_verified %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %} Email Verified</li>
+                        <li>{% if verification_level.phone_verified %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %} Phone Verified</li>
+                        <li>{% if verification_level.identity_verified %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %} Identity Verified</li>
+                        <li>{% if verification_level.address_verified %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %} Address Verified</li>
+                        <li>{% if verification_level.business_verified %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %} Business Verified</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Permissions:</h6>
+                    <p><strong>Daily Transaction Limit:</strong> ${{ verification_level.transaction_limit_daily }}</p>
+                    <p><strong>Can Invest:</strong> {% if verification_level.can_invest %}✓ Yes{% else %}✗ No{% endif %}</p>
+                    <p><strong>Can Receive Investment:</strong> {% if verification_level.can_receive_investment %}✓ Yes{% else %}✗ No{% endif %}</p>
+                </div>
+            </div>
+
+            {% if verification_status.is_fully_verified %}
+            <div class="mt-4 alert alert-success">
+                <h5><i class="bi bi-check-circle-fill"></i> Fully Verified!</h5>
+                <p class="mb-0">Your account is fully verified. You have access to all platform features.</p>
+            </div>
+            {% else %}
+            <div class="mt-4">
+                <a href="{% url 'kyc:upload' %}" class="btn btn-primary">
+                    <i class="bi bi-upload"></i> Upload Documents
+                </a>
+                <a href="{% url 'kyc:my_documents' %}" class="btn btn-secondary">
+                    <i class="bi bi-folder"></i> View My Documents
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

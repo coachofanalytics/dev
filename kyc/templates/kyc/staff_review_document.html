@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Document - {{ document.user.username }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2><i class="bi bi-clipboard-check"></i> Review Document - {{ document.user.username }}</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{ document.get_document_type_display }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Document Number:</strong> {{ document.document_number|default:"N/A" }}</p>
+                    <p><strong>Issue Date:</strong> {{ document.issue_date|default:"N/A" }}</p>
+                    <p><strong>Expiry Date:</strong> {{ document.expiry_date|default:"N/A" }}</p>
+                    <p><strong>Issuing Authority:</strong> {{ document.issuing_authority|default:"N/A" }}</p>
+                    <p><strong>Uploaded:</strong> {{ document.uploaded_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>File:</strong> <a href="{{ document.document_file.url }}" target="_blank">View Document</a></p>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Decision:</strong></label>
+                            {% for choice in form.action %}
+                            <div class="form-check">
+                                {{ choice }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.verification_notes.id_for_label }}" class="form-label">Notes:</label>
+                            {{ form.verification_notes }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit Decision</button>
+                        <a href="{% url 'kyc:staff_review_list' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6>User Verification Level</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Level:</strong> <span class="badge bg-primary">{{ verification_level.get_level_display }}</span></p>
+                    <p><strong>Email:</strong> {% if verification_level.email_verified %}✓{% else %}✗{% endif %}</p>
+                    <p><strong>Identity:</strong> {% if verification_level.identity_verified %}✓{% else %}✗{% endif %}</p>
+                    <p><strong>Address:</strong> {% if verification_level.address_verified %}✓{% else %}✗{% endif %}</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>Other Documents</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for doc in user_documents %}
+                    <div class="list-group-item">
+                        <small>{{ doc.get_document_type_display }}</small>
+                        <span class="badge bg-{% if doc.status == 'approved' %}success{% else %}warning{% endif %} float-end">
+                            {{ doc.get_status_display }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

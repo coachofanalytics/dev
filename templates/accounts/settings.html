@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Settings - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .section-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .section-header {
+        padding: 1rem 1.5rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-header.blue { background: linear-gradient(135deg, #5e72e4 0%, #825ee4 100%); }
+    .section-header.cyan { background: linear-gradient(135deg, #11cdef 0%, #1171ef 100%); }
+    .section-header.orange { background: linear-gradient(135deg, #fb6340 0%, #fbb140 100%); }
+    .section-header.dark { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+    .section-header.warning { background: linear-gradient(135deg, #f7b500 0%, #fb6340 100%); }
+    .section-header.green { background: linear-gradient(135deg, #2dce89 0%, #2dcecc 100%); }
+
+    .section-body {
+        padding: 1.5rem;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .setting-item:first-child {
+        padding-top: 0;
+    }
+
+    .setting-info h6 {
+        margin-bottom: 0.25rem;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .setting-info p {
+        margin-bottom: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .info-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 500;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-value {
+        color: #666;
+        margin-top: 0.25rem;
+    }
+
+    .btn-action {
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-action-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-action-primary:hover {
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-action-danger {
+        background: linear-gradient(135deg, #f5365c 0%, #f536ab 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-action-danger:hover {
+        box-shadow: 0 4px 15px rgba(245, 54, 92, 0.4);
+        color: white;
+    }
+
+    .btn-action-dark {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-action-dark:hover {
+        box-shadow: 0 4px 15px rgba(26, 26, 46, 0.4);
+        color: white;
+    }
+
+    .btn-action-warning {
+        background: linear-gradient(135deg, #f7b500 0%, #fb6340 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-action-warning:hover {
+        box-shadow: 0 4px 15px rgba(247, 181, 0, 0.4);
+        color: white;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .account-type-badge {
+        padding: 0.35rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="mb-2"><i class="bi bi-gear me-2"></i>Account Settings</h1>
+        <p class="mb-0 opacity-90">Manage your account preferences and security settings</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <!-- Account Information Card -->
+            <div class="section-card">
+                <div class="section-header blue">
+                    <i class="bi bi-person-circle"></i>
+                    <h6 class="mb-0">Account Information</h6>
+                </div>
+                <div class="section-body">
+                    <div class="info-item">
+                        <div class="info-label"><i class="bi bi-person text-primary"></i> Username</div>
+                        <div class="info-value">{{ user.username }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="bi bi-envelope text-primary"></i> Email</div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="bi bi-person-badge text-primary"></i> Full Name</div>
+                        <div class="info-value">{{ user.get_full_name|default:"Not set" }}</div>
+                    </div>
+                    {% if user_type %}
+                    <div class="info-item">
+                        <div class="info-label"><i class="bi bi-tag text-primary"></i> Account Type</div>
+                        <div class="info-value">
+                            <span class="account-type-badge bg-{% if user.is_superuser %}danger{% elif 'Staff' in user_type %}warning{% else %}info{% endif %} text-white">
+                                {{ user_type }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="info-item">
+                        <div class="info-label"><i class="bi bi-calendar text-primary"></i> Member Since</div>
+                        <div class="info-value">{{ user.date_joined|date:"F d, Y" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="bi bi-clock-history text-primary"></i> Last Login</div>
+                        <div class="info-value">{{ user.last_login|date:"F d, Y, g:i a"|default:"Never" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Activity Card -->
+            <div class="section-card">
+                <div class="section-header green">
+                    <i class="bi bi-activity"></i>
+                    <h6 class="mb-0">Account Status</h6>
+                </div>
+                <div class="section-body text-center py-4">
+                    <span class="status-badge status-active">
+                        <i class="bi bi-check-circle-fill"></i> Active
+                    </span>
+                    <p class="text-muted small mt-3 mb-0">
+                        Your account is in good standing.<br>
+                        Last activity: {{ user.last_login|date:"M d, Y"|default:"N/A" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Profile Settings Card -->
+            <div class="section-card">
+                <div class="section-header cyan">
+                    <i class="bi bi-person-lines-fill"></i>
+                    <h6 class="mb-0">Profile Settings</h6>
+                </div>
+                <div class="section-body">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h6><i class="bi bi-pencil-square me-2"></i>Edit Profile</h6>
+                            <p>Update your profile information, contact details, and professional information</p>
+                        </div>
+                        <a href="{% url 'edit_profile' %}" class="btn btn-action btn-action-primary">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h6><i class="bi bi-eye me-2"></i>View Profile</h6>
+                            <p>See how your profile appears to others</p>
+                        </div>
+                        <a href="{% url 'my_profile' %}" class="btn btn-outline-primary btn-action">
+                            <i class="bi bi-eye me-1"></i> View
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings Card -->
+            <div class="section-card">
+                <div class="section-header orange">
+                    <i class="bi bi-shield-lock"></i>
+                    <h6 class="mb-0">Security Settings</h6>
+                </div>
+                <div class="section-body">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h6><i class="bi bi-key me-2"></i>Change Password</h6>
+                            <p>Update your password to keep your account secure</p>
+                        </div>
+                        <a href="{% url 'password_change' %}" class="btn btn-action btn-action-danger">
+                            <i class="bi bi-key me-1"></i> Change
+                        </a>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h6><i class="bi bi-arrow-clockwise me-2"></i>Reset Password</h6>
+                            <p>Forgot your password? Reset it via email</p>
+                        </div>
+                        <a href="{% url 'password_reset' %}" class="btn btn-outline-danger btn-action">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% if user.is_superuser %}
+            <!-- Admin Settings Card -->
+            <div class="section-card">
+                <div class="section-header dark">
+                    <i class="bi bi-shield-fill-check"></i>
+                    <h6 class="mb-0">Admin Settings</h6>
+                </div>
+                <div class="section-body">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h6><i class="bi bi-gear-wide-connected me-2"></i>Admin Panel</h6>
+                            <p>Access the Django admin interface for advanced management</p>
+                        </div>
+                        <a href="/admin/" class="btn btn-action btn-action-dark">
+                            <i class="bi bi-shield-fill-check me-1"></i> Open Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if user.staff %}
+            <!-- Staff Settings Card -->
+            <div class="section-card">
+                <div class="section-header warning">
+                    <i class="bi bi-shield-check"></i>
+                    <h6 class="mb-0">Staff Settings</h6>
+                </div>
+                <div class="section-body">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h6><i class="bi bi-speedometer2 me-2"></i>Staff Dashboard</h6>
+                            <p>Access your staff dashboard and management tools</p>
+                        </div>
+                        <a href="{% url 'staff_dashboard' %}" class="btn btn-action btn-action-warning">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-content-between">
+                {% if user.is_superuser %}
+                    <a href="/admin/" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Admin
+                    </a>
+                {% elif user.staff %}
+                    <a href="{% url 'staff_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                {% elif profile and profile.category %}
+                    <a href="{% url profile.dashboard_url %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                {% else %}
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Home
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'my_profile' %}" class="btn btn-action btn-action-primary">
+                    <i class="bi bi-person me-1"></i> View My Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,682 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Transaction History - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+        border-radius: 0;
+    }
+
+    .page-header h1 {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .page-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 16px;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    .filter-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .btn-filter {
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+    }
+
+    .transaction-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background-color: #f8f9fa;
+    }
+
+    .table th {
+        border: none;
+        padding: 20px;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .table td {
+        padding: 18px 20px;
+        border-top: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .transaction-id {
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .transaction-description {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .transaction-description .category {
+        display: block;
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 400;
+        margin-top: 3px;
+    }
+
+    .transaction-type-badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .type-deposit {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .type-withdrawal {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .type-payment {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .type-refund {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+
+    .amount-positive {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .amount-negative {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .status-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-cancelled {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+    }
+
+    .btn-sm {
+        padding: 6px 10px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .pagination-info {
+        font-size: 14px;
+        color: #6c757d;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 12px;
+    }
+
+    .empty-state-icon {
+        font-size: 80px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-state-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .empty-state-text {
+        color: #6c757d;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    .export-button {
+        display: inline-block;
+    }
+
+    .summary-box {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    .summary-label {
+        font-size: 13px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .summary-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .back-button {
+        margin-bottom: 20px;
+    }
+
+    .alert-container {
+        margin-bottom: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="back-button">
+            <a href="{% url 'payments:wallet_dashboard' %}" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Wallet
+            </a>
+        </div>
+        <h1>Transaction History</h1>
+        <p>View and manage all your wallet transactions</p>
+    </div>
+</div>
+
+<div class="container-fluid py-4">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Summary Cards -->
+    {% if transactions %}
+    <div class="summary-box">
+        <div class="summary-card">
+            <div class="summary-label">Total Transactions</div>
+            <div class="summary-value">{{ total_count }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Total Deposits</div>
+            <div class="summary-value text-success">+{{ total_deposits|floatformat:2 }} KES</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Total Spent</div>
+            <div class="summary-value text-danger">-{{ total_spent|floatformat:2 }} KES</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Current Balance</div>
+            <div class="summary-value">{{ current_balance|floatformat:2 }} KES</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filter Section -->
+    <div class="filter-card">
+        <h5 class="filter-title">
+            <i class="bi bi-funnel"></i> Filter Transactions
+        </h5>
+
+        <form method="get" id="filterForm">
+            <div class="filter-grid">
+                <!-- Transaction Type Filter -->
+                <div class="form-group">
+                    <label class="form-label">Transaction Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="deposit" {% if request.GET.type == 'deposit' %}selected{% endif %}>Deposits</option>
+                        <option value="withdrawal" {% if request.GET.type == 'withdrawal' %}selected{% endif %}>Withdrawals</option>
+                        <option value="payment" {% if request.GET.type == 'payment' %}selected{% endif %}>Payments</option>
+                        <option value="refund" {% if request.GET.type == 'refund' %}selected{% endif %}>Refunds</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- Date Range -->
+                <div class="form-group">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                </div>
+
+                <!-- Search -->
+                <div class="form-group">
+                    <label class="form-label">Search Reference</label>
+                    <input type="text" name="search" class="form-control" placeholder="Reference ID or description..." value="{{ request.GET.search }}">
+                </div>
+
+                <!-- Amount Range -->
+                <div class="form-group">
+                    <label class="form-label">Min Amount</label>
+                    <input type="number" name="amount_min" class="form-control" placeholder="0.00" step="0.01" value="{{ request.GET.amount_min }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Max Amount</label>
+                    <input type="number" name="amount_max" class="form-control" placeholder="999999.99" step="0.01" value="{{ request.GET.amount_max }}">
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-buttons" style="margin-top: 15px;">
+                <button type="submit" class="btn btn-primary btn-filter">
+                    <i class="bi bi-search"></i> Apply Filters
+                </button>
+                <a href="{% url 'payments:transaction_history' %}" class="btn btn-outline-secondary btn-filter">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+                <a href="{% url 'payments:export_transactions' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success btn-filter">
+                    <i class="bi bi-download"></i> Export CSV
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Transactions Table -->
+    {% if transactions %}
+    <div class="transaction-table">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Reference</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>
+                            <strong>{{ transaction.created_at|date:"M d, Y" }}</strong>
+                            <br>
+                            <small class="text-muted">{{ transaction.created_at|time:"H:i:s" }}</small>
+                        </td>
+                        <td>
+                            {% if transaction.type == 'deposit' %}
+                                <span class="transaction-type-badge type-deposit">Deposit</span>
+                            {% elif transaction.type == 'withdrawal' %}
+                                <span class="transaction-type-badge type-withdrawal">Withdrawal</span>
+                            {% elif transaction.type == 'refund' %}
+                                <span class="transaction-type-badge type-refund">Refund</span>
+                            {% else %}
+                                <span class="transaction-type-badge type-payment">{{ transaction.get_type_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="transaction-description">
+                                {{ transaction.description }}
+                                <span class="category">{{ transaction.payment_method|default:"N/A" }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if transaction.type == 'deposit' or transaction.type == 'refund' %}
+                                <span class="amount-positive">+{{ transaction.amount|floatformat:2 }} KES</span>
+                            {% else %}
+                                <span class="amount-negative">-{{ transaction.amount|floatformat:2 }} KES</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if transaction.status == 'completed' %}
+                                <span class="status-badge status-success">
+                                    <i class="bi bi-check-circle"></i> Completed
+                                </span>
+                            {% elif transaction.status == 'pending' %}
+                                <span class="status-badge status-pending">
+                                    <i class="bi bi-hourglass-split"></i> Pending
+                                </span>
+                            {% elif transaction.status == 'failed' %}
+                                <span class="status-badge status-failed">
+                                    <i class="bi bi-x-circle"></i> Failed
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-cancelled">
+                                    <i class="bi bi-slash-circle"></i> Cancelled
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="transaction-id" title="{{ transaction.reference_id }}">
+                                {{ transaction.reference_id|truncatechars:12 }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#transactionModal{{ transaction.id }}">
+                                    Details
+                                </button>
+                                {% if transaction.status == 'completed' or transaction.status == 'refunded' %}
+                                <a href="{% url 'payments:download_receipt' transaction.transaction_id %}" class="btn btn-sm btn-outline-primary" title="Download Receipt">
+                                    <i class="bi bi-download"></i> PDF
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ transactions.start_index }} to {{ transactions.end_index }} of {{ paginator.count }} transactions
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-title">No Transactions Found</div>
+        <p class="empty-state-text">
+            {% if request.GET.urlencode %}
+                No transactions match your filter criteria. Try adjusting your search.
+            {% else %}
+                You haven't made any transactions yet. Start by depositing funds to your wallet.
+            {% endif %}
+        </p>
+        {% if not request.GET.urlencode %}
+        <a href="{% url 'payments:deposit_initiate' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Make First Deposit
+        </a>
+        {% else %}
+        <a href="{% url 'payments:transaction_history' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-clockwise"></i> Clear Filters
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Transaction Details Modals -->
+{% for transaction in transactions %}
+<div class="modal fade" id="transactionModal{{ transaction.id }}" tabindex="-1" aria-labelledby="transactionModalLabel{{ transaction.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel{{ transaction.id }}">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-5 text-muted fw-bold">Transaction ID:</div>
+                    <div class="col-7">
+                        <code>{{ transaction.reference_id }}</code>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-5 text-muted fw-bold">Type:</div>
+                    <div class="col-7">
+                        {% if transaction.type == 'deposit' %}
+                            <span class="transaction-type-badge type-deposit">Deposit</span>
+                        {% elif transaction.type == 'withdrawal' %}
+                            <span class="transaction-type-badge type-withdrawal">Withdrawal</span>
+                        {% elif transaction.type == 'refund' %}
+                            <span class="transaction-type-badge type-refund">Refund</span>
+                        {% else %}
+                            <span class="transaction-type-badge type-payment">{{ transaction.get_type_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-5 text-muted fw-bold">Amount:</div>
+                    <div class="col-7">
+                        <strong class="{% if transaction.type == 'deposit' or transaction.type == 'refund' %}text-success{% else %}text-danger{% endif %}">
+                            {% if transaction.type == 'deposit' or transaction.type == 'refund' %}+{% else %}-{% endif %}{{ transaction.amount|floatformat:2 }} KES
+                        </strong>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-5 text-muted fw-bold">Status:</div>
+                    <div class="col-7">
+                        {% if transaction.status == 'completed' %}
+                            <span class="status-badge status-success">Completed</span>
+                        {% elif transaction.status == 'pending' %}
+                            <span class="status-badge status-pending">Pending</span>
+                        {% elif transaction.status == 'failed' %}
+                            <span class="status-badge status-failed">Failed</span>
+                        {% else %}
+                            <span class="status-badge status-cancelled">Cancelled</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-5 text-muted fw-bold">Payment Method:</div>
+                    <div class="col-7">
+                        {{ transaction.payment_method|default:"N/A" }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-5 text-muted fw-bold">Date &amp; Time:</div>
+                    <div class="col-7">
+                        {{ transaction.created_at|date:"M d, Y H:i:s" }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-5 text-muted fw-bold">Description:</div>
+                    <div class="col-7">
+                        {{ transaction.description }}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                {% if transaction.status == 'completed' or transaction.status == 'refunded' %}
+                <a href="{% url 'payments:download_receipt' transaction.transaction_id %}" class="btn btn-primary">
+                    <i class="bi bi-file-pdf"></i> Download Receipt
+                </a>
+                {% endif %}
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts
+    document.querySelectorAll('.alert').forEach(alert => {
+        setTimeout(() => {
+            new bootstrap.Alert(alert).close();
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

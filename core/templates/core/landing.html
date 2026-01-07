@@ -1,0 +1,695 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- SEO Meta Tags -->
+    <title>{{ page_title|default:"Biashara Bridges - International Business Connections" }}</title>
+    <meta name="description" content="{{ meta_description|default:'Connecting businesses, investors, and governments between Kenya, the U.S., and the world.' }}">
+    <meta name="keywords" content="diaspora investment, Kenya business, U.S.-Africa trade, business partnerships, investment opportunities, G2G, G2B, B2B">
+    <meta name="author" content="Biashara Bridges LLC">
+
+    <!-- Open Graph Meta Tags (for social sharing) -->
+    <meta property="og:title" content="Biashara Bridges - Building International Business Connections">
+    <meta property="og:description" content="Connecting businesses, investors, and governments between Kenya, the U.S., and the world.">
+    <meta property="og:image" content="{% static 'core/images/landing/hero-1.jpg' %}">
+    <meta property="og:url" content="https://biashara.nairobiluxhomes.co.ke">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Biashara Bridges">
+    <meta name="twitter:description" content="Building bridges between Kenya, the U.S., & the World">
+    <meta name="twitter:image" content="{% static 'core/images/landing/hero-1.jpg' %}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/landing/favicon.jpg' %}">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- AOS (Animate On Scroll) Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/landing.css' %}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'core:landing' %}">
+                <img src="{% static 'core/images/landing/logo.png' %}" alt="Biashara Bridges" height="40">
+                <span class="ms-2 fw-bold text-dark" style="font-size: 1rem;">Biashara Bridges</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:partners' %}">Partners</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:news' %}">News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+                <!-- Mobile Login/Register buttons -->
+                <div class="d-lg-none py-3 border-top mt-3">
+                    <a href="{% url 'login' %}" class="btn btn-outline-dark w-100 mb-2">Login</a>
+                    <a href="{% url 'onboarding:register' %}" class="btn btn-primary w-100">Get Started</a>
+                </div>
+                <!-- Desktop Login/Register buttons -->
+                <div class="d-none d-lg-flex">
+                    <a href="{% url 'login' %}" class="btn btn-outline-dark me-2">Login</a>
+                    <a href="{% url 'onboarding:register' %}" class="btn btn-primary">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section position-relative">
+        <!-- Background Carousel -->
+        <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active" style="background-image: url('{% static 'core/images/landing/hero-1.jpg' %}');">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-item" style="background-image: url('{% static 'core/images/landing/hero-2.jpg' %}');">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-item" style="background-image: url('{% static 'core/images/landing/hero-3.jpg' %}');">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-item" style="background-image: url('{% static 'core/images/landing/hero-4.jpg' %}');">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-item" style="background-image: url('{% static 'core/images/landing/hero-5.jpg' %}');">
+                    <div class="carousel-overlay"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Content Overlay -->
+        <div class="hero-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-7 col-md-9">
+                        <p class="hero-tagline text-white mb-3" data-aos="fade-up">
+                            <span class="tagline-line"></span> trusted, transparent, and transformative partnerships
+                        </p>
+                        <h1 class="hero-title display-3 text-white mb-4" data-aos="fade-up" data-aos-delay="50">
+                            Building Bridges Between Kenya, the U.S., & the World."
+                        </h1>
+                        <p class="hero-subtitle lead text-white mb-5" data-aos="fade-up" data-aos-delay="100">
+                            Biashara Bridges LLC is a U.S. and Kenya registered company led by the Kenyan diaspora. We specialize in <strong>international trade, diaspora investments, government engagement, and strategic partnerships</strong> that drive sustainable development.
+                        </p>
+                        <div class="hero-cta" data-aos="fade-up" data-aos-delay="200">
+                            <a href="{% url 'onboarding:register' %}" class="btn btn-explore btn-lg me-3">
+                                Explore Opportunities
+                            </a>
+                            <a href="{% url 'core:contact' %}" class="btn btn-outline-light btn-lg px-4 py-3 rounded-pill">
+                                Partner With Us
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <a href="#about"><i class="bi bi-chevron-down"></i></a>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about" class="about-section py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title display-4">About Biashara Bridges</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="section-subtitle lead text-muted">Your trusted partner in international business development</p>
+            </div>
+
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <img src="{% static 'core/images/landing/about.jpg' %}"
+                         alt="Biashara Bridges Office" class="img-fluid rounded shadow-lg">
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <h3 class="mb-4">Dual-Office Presence</h3>
+                    <p class="lead mb-4">
+                        Biashara Bridges LLC is a U.S.-registered company with strategic offices in
+                        Nairobi, Kenya, and Cincinnati, Ohio, United States.
+                    </p>
+                    <p class="mb-4">
+                        We specialize in facilitating Government-to-Government (G2G), Government-to-Business (G2B),
+                        and Business-to-Business (B2B) partnerships that drive economic growth and create sustainable
+                        opportunities across borders.
+                    </p>
+
+                    <!-- Registration Details -->
+                    <div class="registration-info bg-light p-4 rounded mb-4">
+                        <h5 class="text-warning mb-3"><i class="bi bi-award-fill"></i> Officially Registered</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> U.S. Company Registration</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Kenya Business Permit</li>
+                            <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> International Trade Compliance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Office Locations -->
+            <div class="row mb-5" data-aos="fade-up">
+                <div class="col-md-6 mb-4">
+                    <div class="office-card card h-100 border-0 shadow">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-building display-1 text-warning mb-3"></i>
+                            <h4 class="card-title">Nairobi Office</h4>
+                            <p class="text-muted">Kenya, East Africa</p>
+                            <p class="card-text">Serving as our primary hub for African operations and diaspora engagement</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="office-card card h-100 border-0 shadow">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-flag-usa display-1 text-warning mb-3"></i>
+                            <h4 class="card-title">U.S. Office</h4>
+                            <p class="text-muted">Cincinnati, Ohio</p>
+                            <p class="card-text">Managing U.S.-based partnerships and investor relations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core Services Preview -->
+            <div class="row mt-5" data-aos="fade-up">
+                <div class="col-12 text-center">
+                    <h4 class="mb-4">Our Core Focus Areas</h4>
+                    <div class="row g-4">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="focus-badge">
+                                <i class="bi bi-cash-stack"></i>
+                                <p>Diaspora Investments</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="focus-badge">
+                                <i class="bi bi-graph-up-arrow"></i>
+                                <p>Trade Partnerships</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="focus-badge">
+                                <i class="bi bi-bank"></i>
+                                <p>Government Engagement</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="focus-badge">
+                                <i class="bi bi-lightbulb"></i>
+                                <p>Business Advisory</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What We Do Section (Services) -->
+    <section id="services" class="services-section py-5 bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title display-4">What We Do</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="section-subtitle lead text-muted">Comprehensive services across four key pillars</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Service Card 1: Diaspora Investments -->
+                <div class="col-lg-6 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-card card h-100 border-0 shadow-sm">
+                        <div class="card-img-wrapper">
+                            <img src="{% static 'core/images/landing/service-investment.jpg' %}"
+                                 class="card-img-top" alt="Diaspora Investments">
+                            <div class="service-overlay">
+                                <i class="bi bi-cash-stack"></i>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <h3 class="card-title h4 mb-3">
+                                <i class="bi bi-cash-stack text-warning"></i> Diaspora Investments
+                            </h3>
+                            <p class="card-text">
+                                We connect diaspora investors with vetted opportunities in Kenya and East Africa,
+                                providing end-to-end support from due diligence to project implementation.
+                            </p>
+                            <ul class="service-features list-unstyled">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Investment advisory</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Project vetting & due diligence</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Portfolio management</li>
+                                <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> Remittance optimization</li>
+                            </ul>
+                            <a href="{% url 'core:services' %}" class="btn btn-outline-primary mt-3">Learn More <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Card 2: Trade Partnerships -->
+                <div class="col-lg-6 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-card card h-100 border-0 shadow-sm">
+                        <div class="card-img-wrapper">
+                            <img src="{% static 'core/images/landing/service-trade.jpg' %}"
+                                 class="card-img-top" alt="Trade Partnerships">
+                            <div class="service-overlay">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <h3 class="card-title h4 mb-3">
+                                <i class="bi bi-graph-up-arrow text-warning"></i> Trade Partnerships
+                            </h3>
+                            <p class="card-text">
+                                Facilitating cross-border trade relationships between U.S. and African businesses,
+                                with focus on sustainable and mutually beneficial partnerships.
+                            </p>
+                            <ul class="service-features list-unstyled">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Market entry strategy</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Partner matching & networking</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Export/import consulting</li>
+                                <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> Compliance & documentation</li>
+                            </ul>
+                            <a href="{% url 'core:services' %}" class="btn btn-outline-primary mt-3">Learn More <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Card 3: Government Engagement -->
+                <div class="col-lg-6 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="service-card card h-100 border-0 shadow-sm">
+                        <div class="card-img-wrapper">
+                            <img src="{% static 'core/images/landing/service-government.jpg' %}"
+                                 class="card-img-top" alt="Government Engagement">
+                            <div class="service-overlay">
+                                <i class="bi bi-bank"></i>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <h3 class="card-title h4 mb-3">
+                                <i class="bi bi-bank text-warning"></i> Government Engagement
+                            </h3>
+                            <p class="card-text">
+                                Bridging the gap between government entities and private sector through strategic
+                                G2G and G2B partnerships that drive policy and economic development.
+                            </p>
+                            <ul class="service-features list-unstyled">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Policy advocacy</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Public-private partnerships</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Stakeholder engagement</li>
+                                <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> Regulatory compliance</li>
+                            </ul>
+                            <a href="{% url 'core:services' %}" class="btn btn-outline-primary mt-3">Learn More <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Card 4: Business Advisory -->
+                <div class="col-lg-6 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="service-card card h-100 border-0 shadow-sm">
+                        <div class="card-img-wrapper">
+                            <img src="{% static 'core/images/landing/service-advisory.jpg' %}"
+                                 class="card-img-top" alt="Business Advisory">
+                            <div class="service-overlay">
+                                <i class="bi bi-lightbulb"></i>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <h3 class="card-title h4 mb-3">
+                                <i class="bi bi-lightbulb text-warning"></i> Business Advisory
+                            </h3>
+                            <p class="card-text">
+                                Strategic consulting services to help businesses navigate international markets,
+                                optimize operations, and achieve sustainable growth.
+                            </p>
+                            <ul class="service-features list-unstyled">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Business strategy consulting</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Financial planning & analysis</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Market research & intelligence</li>
+                                <li class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> Operational excellence</li>
+                            </ul>
+                            <a href="{% url 'core:services' %}" class="btn btn-outline-primary mt-3">Learn More <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Projects Section -->
+    <section id="projects" class="projects-section py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title display-4">Featured Projects</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="section-subtitle lead text-muted">Success stories that define our impact</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Project 1: Machakos Diaspora Desk -->
+                <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="project-card card h-100 border-0 shadow-lg">
+                        <div class="project-img-wrapper position-relative overflow-hidden">
+                            <img src="{% static 'core/images/landing/project-machakos.jpg' %}"
+                                 class="card-img-top" alt="Machakos Diaspora Desk">
+                            <div class="project-badge">
+                                <span class="badge bg-success">Government Partnership</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <h3 class="card-title h4 mb-3">Machakos County Diaspora Desk</h3>
+                            <p class="card-text">
+                                Partnered with Machakos County Government to establish a dedicated diaspora engagement
+                                desk, facilitating investment opportunities and strengthening connections.
+                            </p>
+                            <div class="project-meta mt-3">
+                                <span class="text-muted">
+                                    <i class="bi bi-geo-alt-fill text-warning"></i> Machakos, Kenya
+                                </span>
+                            </div>
+                            <ul class="project-highlights mt-3 list-unstyled">
+                                <li class="mb-1"><i class="bi bi-star-fill text-warning"></i> Direct government collaboration</li>
+                                <li class="mb-1"><i class="bi bi-star-fill text-warning"></i> Diaspora investment pipeline</li>
+                                <li class="mb-0"><i class="bi bi-star-fill text-warning"></i> Economic development impact</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                            <a href="{% url 'core:project_detail' slug='machakos-county' %}" class="btn btn-outline-primary w-100">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 2: AggreBind Solutions -->
+                <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="project-card card h-100 border-0 shadow-lg">
+                        <div class="project-img-wrapper position-relative overflow-hidden">
+                            <img src="{% static 'core/images/landing/project-aggrebind.jpg' %}"
+                                 class="card-img-top" alt="AggreBind Solutions">
+                            <div class="project-badge">
+                                <span class="badge bg-primary">Trade Partnership</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <h3 class="card-title h4 mb-3">AggreBind Road Solutions</h3>
+                            <p class="card-text">
+                                Facilitated technology transfer and market entry for innovative road construction
+                                solutions, connecting U.S. technology providers with African infrastructure development.
+                            </p>
+                            <div class="project-meta mt-3">
+                                <span class="text-muted">
+                                    <i class="bi bi-geo-alt-fill text-warning"></i> Kenya & East Africa
+                                </span>
+                            </div>
+                            <ul class="project-highlights mt-3 list-unstyled">
+                                <li class="mb-1"><i class="bi bi-star-fill text-warning"></i> Technology transfer</li>
+                                <li class="mb-1"><i class="bi bi-star-fill text-warning"></i> Infrastructure development</li>
+                                <li class="mb-0"><i class="bi bi-star-fill text-warning"></i> Sustainable solutions</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                            <a href="{% url 'core:project_detail' slug='aggrebind' %}" class="btn btn-outline-primary w-100">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 3: Diaspora Investment Network -->
+                <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="project-card card h-100 border-0 shadow-lg">
+                        <div class="project-img-wrapper position-relative overflow-hidden">
+                            <img src="{% static 'core/images/landing/project-diaspora.jpg' %}"
+                                 class="card-img-top" alt="Diaspora Engagement">
+                            <div class="project-badge">
+                                <span class="badge bg-info">Community Initiative</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <h3 class="card-title h4 mb-3">Diaspora Investment Network</h3>
+                            <p class="card-text">
+                                Building a robust network connecting Kenyan diaspora investors with verified investment
+                                opportunities, providing comprehensive support from inquiry to completion.
+                            </p>
+                            <div class="project-meta mt-3">
+                                <span class="text-muted">
+                                    <i class="bi bi-geo-alt-fill text-warning"></i> U.S. & Kenya
+                                </span>
+                            </div>
+                            <ul class="project-highlights mt-3 list-unstyled">
+                                <li class="mb-1"><i class="bi bi-star-fill text-warning"></i> Investor network building</li>
+                                <li class="mb-1"><i class="bi bi-star-fill text-warning"></i> Due diligence support</li>
+                                <li class="mb-0"><i class="bi bi-star-fill text-warning"></i> Portfolio diversification</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                            <a href="{% url 'core:project_detail' slug='diaspora-engagement' %}" class="btn btn-outline-primary w-100">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners Section -->
+    <section id="partners" class="partners-section py-5 bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title display-4">Our Partners</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="section-subtitle lead text-muted">Trusted collaborations driving success</p>
+            </div>
+
+            <div class="row justify-content-center align-items-center g-4 mb-5">
+                <div class="col-12 text-center mb-4">
+                    <p class="lead text-muted">
+                        We work with government agencies, private sector companies, and international organizations
+                        to create impactful partnerships across continents.
+                    </p>
+                </div>
+                <!-- Partner Logos -->
+                <div class="col-6 col-md-4 col-lg-2 text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="partner-logo-wrapper p-3 bg-white rounded shadow-sm">
+                        <img src="{% static 'core/images/partners/partner-1.png' %}" alt="Partner" class="img-fluid" style="max-height: 80px;">
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 text-center" data-aos="fade-up" data-aos-delay="150">
+                    <div class="partner-logo-wrapper p-3 bg-white rounded shadow-sm">
+                        <img src="{% static 'core/images/partners/partner-2.jpg' %}" alt="Partner" class="img-fluid" style="max-height: 80px;">
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="partner-logo-wrapper p-3 bg-white rounded shadow-sm">
+                        <img src="{% static 'core/images/partners/partner-3.jpg' %}" alt="Partner" class="img-fluid" style="max-height: 80px;">
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 text-center" data-aos="fade-up" data-aos-delay="250">
+                    <div class="partner-logo-wrapper p-3 bg-white rounded shadow-sm">
+                        <img src="{% static 'core/images/partners/partner-aggrebind.jpeg' %}" alt="AggreBind Solutions" class="img-fluid" style="max-height: 80px;">
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="partner-logo-wrapper p-3 bg-white rounded shadow-sm">
+                        <img src="{% static 'core/images/partners/partner-5.jpeg' %}" alt="Partner" class="img-fluid" style="max-height: 80px;">
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 text-center" data-aos="fade-up" data-aos-delay="350">
+                    <div class="partner-logo-wrapper p-3 bg-white rounded shadow-sm">
+                        <img src="{% static 'core/images/partners/partner-6.jpg' %}" alt="Partner" class="img-fluid" style="max-height: 80px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5" data-aos="fade-up">
+                <a href="{% url 'core:contact' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-handshake"></i> Become a Partner
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-choose-section py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title display-4">Why Choose Biashara Bridges</h2>
+                <div class="section-divider mx-auto"></div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6" data-aos="flip-left" data-aos-delay="100">
+                    <div class="benefit-card text-center p-4">
+                        <div class="benefit-icon mb-3">
+                            <i class="bi bi-globe-americas display-1 text-warning"></i>
+                        </div>
+                        <h4 class="benefit-title mb-3">Dual-Office Presence</h4>
+                        <p class="benefit-text text-muted">
+                            Strategic offices in Nairobi and Cincinnati providing seamless
+                            cross-continental support.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-aos="flip-left" data-aos-delay="200">
+                    <div class="benefit-card text-center p-4">
+                        <div class="benefit-icon mb-3">
+                            <i class="bi bi-shield-check display-1 text-warning"></i>
+                        </div>
+                        <h4 class="benefit-title mb-3">Verified Partners</h4>
+                        <p class="benefit-text text-muted">
+                            Rigorous due diligence ensures all partnerships and opportunities
+                            are thoroughly vetted.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-aos="flip-left" data-aos-delay="300">
+                    <div class="benefit-card text-center p-4">
+                        <div class="benefit-icon mb-3">
+                            <i class="bi bi-people-fill display-1 text-warning"></i>
+                        </div>
+                        <h4 class="benefit-title mb-3">Expert Team</h4>
+                        <p class="benefit-text text-muted">
+                            Experienced professionals with deep understanding of both U.S.
+                            and African markets.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-aos="flip-left" data-aos-delay="400">
+                    <div class="benefit-card text-center p-4">
+                        <div class="benefit-icon mb-3">
+                            <i class="bi bi-trophy display-1 text-warning"></i>
+                        </div>
+                        <h4 class="benefit-title mb-3">Proven Track Record</h4>
+                        <p class="benefit-text text-muted">
+                            Successfully delivered projects spanning government partnerships
+                            to private investments.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section py-5 bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title display-4">Get In Touch</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="section-subtitle lead text-muted">Ready to build bridges? Contact us today.</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="contact-form-wrapper card border-0 shadow-lg p-4" data-aos="fade-up">
+                        <form class="contact-form" id="contactForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="contactName" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="contactName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="contactEmail" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="contactEmail" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="contactPhone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="contactPhone">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="contactSubject" class="form-label">Subject *</label>
+                                    <select class="form-select" id="contactSubject" required>
+                                        <option value="">Select a topic</option>
+                                        <option value="investment">Investment Inquiry</option>
+                                        <option value="partnership">Partnership Opportunity</option>
+                                        <option value="general">General Inquiry</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label for="contactMessage" class="form-label">Message *</label>
+                                    <textarea class="form-control" id="contactMessage" rows="5" required></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="bi bi-send"></i> Send Message
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Info Cards -->
+            <div class="row mt-5 g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="contact-info-card card h-100 border-0 shadow text-center p-4">
+                        <i class="bi bi-telephone-fill display-4 text-warning mb-3"></i>
+                        <h5>Call Us</h5>
+                        <p class="mb-0"><a href="tel:+15132406808" class="text-decoration-none">+1-513-240-6808</a></p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="contact-info-card card h-100 border-0 shadow text-center p-4">
+                        <i class="bi bi-envelope-fill display-4 text-warning mb-3"></i>
+                        <h5>Email Us</h5>
+                        <p class="mb-0"><a href="mailto:info@biasharabridges.com" class="text-decoration-none">info@biasharabridges.com</a></p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="contact-info-card card h-100 border-0 shadow text-center p-4">
+                        <i class="bi bi-geo-alt-fill display-4 text-warning mb-3"></i>
+                        <h5>Visit Us</h5>
+                        <p class="mb-0">Nairobi, Kenya<br>Cincinnati, OH, USA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    {% include 'includes/footer.html' %}
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <!-- AOS (Animate On Scroll) -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100,
+        });
+    </script>
+
+    <!-- Custom Landing JS -->
+    <script src="{% static 'core/js/landing.js' %}"></script>
+</body>
+</html>

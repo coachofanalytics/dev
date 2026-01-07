@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}My KYC Documents - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-earmark-check"></i> My KYC Documents</h2>
+        {% if not verification_status.is_fully_verified %}
+        <a href="{% url 'kyc:upload' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Upload Document
+        </a>
+        {% else %}
+        <span class="badge bg-success fs-5">
+            <i class="bi bi-check-circle-fill"></i> Fully Verified
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- Verification Status Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Verification Level: <span class="badge bg-{{ verification_level.level }}">{{ verification_level.get_level_display }}</span></h5>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <strong>Email:</strong> {% if verification_level.email_verified %}<span class="text-success">✓ Verified</span>{% else %}<span class="text-danger">✗ Not Verified</span>{% endif %}
+                </div>
+                <div class="col-md-3">
+                    <strong>Identity:</strong> {% if verification_level.identity_verified %}<span class="text-success">✓ Verified</span>{% else %}<span class="text-danger">✗ Not Verified</span>{% endif %}
+                </div>
+                <div class="col-md-3">
+                    <strong>Address:</strong> {% if verification_level.address_verified %}<span class="text-success">✓ Verified</span>{% else %}<span class="text-danger">✗ Not Verified</span>{% endif %}
+                </div>
+                <div class="col-md-3">
+                    <strong>Daily Limit:</strong> ${{ verification_level.transaction_limit_daily }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents List -->
+    {% if documents %}
+        <div class="row">
+            {% for document in documents %}
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">{{ document.get_document_type_display }}</h5>
+                                <p class="text-muted mb-2">Uploaded: {{ document.uploaded_at|date:"M d, Y" }}</p>
+                            </div>
+                            <span class="badge bg-{% if document.status == 'approved' %}success{% elif document.status == 'rejected' %}danger{% elif document.status == 'under_review' %}info{% else %}warning{% endif %}">
+                                {{ document.get_status_display }}
+                            </span>
+                        </div>
+
+                        {% if document.document_number %}
+                        <p class="mb-1"><strong>Document #:</strong> {{ document.document_number }}</p>
+                        {% endif %}
+
+                        {% if document.verification_notes %}
+                        <div class="alert alert-sm alert-{% if document.status == 'approved' %}success{% else %}warning{% endif %} mt-2">
+                            <small>{{ document.verification_notes }}</small>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-3">
+                            <a href="{% url 'kyc:document_detail' document.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            {% if document.status == 'pending' or document.status == 'rejected' %}
+                            <form method="post" action="{% url 'kyc:delete_document' document.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% if not verification_status.is_fully_verified %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> You haven't uploaded any documents yet.
+            <a href="{% url 'kyc:upload' %}" class="alert-link">Upload your first document</a> to get verified.
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

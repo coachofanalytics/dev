@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ meta_description }}">
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/landing/favicon.jpg' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/pages.css' %}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:landing' %}">
+                <img src="{% static 'core/images/landing/logo.png' %}" alt="Biashara Bridges" height="50"><span class="ms-2 fw-bold text-dark d-none d-md-inline" style="font-size: 1.2rem;">Biashara Bridges</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:partners' %}">Partners</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:news' %}">News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-none d-lg-flex">
+                <a href="{% url 'login' %}" class="btn btn-outline-dark me-2">Login</a>
+                <a href="{% url 'onboarding:register' %}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Hero -->
+    <section class="page-hero" style="background: linear-gradient(rgba(17, 21, 24, 0.8), rgba(17, 21, 24, 0.8)), url('{% static 'core/images/projects/aggrebind/hero.jpg' %}') center/cover;">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="breadcrumb-item active">AggreBind</li>
+                </ol>
+            </nav>
+            <span class="badge bg-info mb-3">Trade Partnership</span>
+            <h1 class="display-4 fw-bold text-white">AggreBind Solutions Partnership</h1>
+            <p class="lead text-white-50">Sustainable construction solutions using locally available materials</p>
+        </div>
+    </section>
+
+    <!-- Partnership Overview -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <img src="{% static 'core/images/projects/aggrebind/construction.jpg' %}" alt="AggreBind Construction" class="img-fluid rounded-4 shadow">
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <h2 class="display-6 fw-bold mb-4">Technology Partnership</h2>
+                    <p class="lead text-muted">Biashara Bridges is the exclusive local agent for AggreBind soil stabilization technology in Kenya.</p>
+                    <p>AggreBind is a globally patented technology that enables sustainable construction using locally available materials. This partnership brings innovative, cost-effective solutions for infrastructure development in Kenya and East Africa.</p>
+                    <p>Our role includes government engagement, project facilitation, compliance management, and investment mobilization to deploy this transformative technology across the region.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Solutions -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Key Solutions</h2>
+                <p class="text-muted">Sustainable construction using AggreBind technology</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 mb-4" data-aos="fade-up">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <i class="bi bi-bricks fs-1 text-primary mb-3"></i>
+                            <h5 class="fw-bold">Soil-Stabilized Bricks & Blocks</h5>
+                            <p class="text-muted small mb-0">Durable, eco-friendly building materials using local soil and AggreBind polymer technology.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <i class="bi bi-house-heart fs-1 text-success mb-3"></i>
+                            <h5 class="fw-bold">Affordable Housing</h5>
+                            <p class="text-muted small mb-0">Cost-effective housing solutions using rammed earth and stabilized materials.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <i class="bi bi-signpost-split fs-1 text-warning mb-3"></i>
+                            <h5 class="fw-bold">Rural Roads & Infrastructure</h5>
+                            <p class="text-muted small mb-0">Road construction and infrastructure using locally available materials.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Role -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Biashara Bridges Role</h2>
+                <p class="text-muted">How we support AggreBind deployment in Kenya</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up">
+                    <div class="text-center">
+                        <div class="icon-circle bg-primary text-white mb-3 mx-auto">
+                            <i class="bi bi-bank2 fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">Government Engagement</h6>
+                        <p class="small text-muted">Facilitating partnerships with national and county governments.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-center">
+                        <div class="icon-circle bg-success text-white mb-3 mx-auto">
+                            <i class="bi bi-clipboard-check fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">Project Facilitation</h6>
+                        <p class="small text-muted">Managing project implementation and stakeholder coordination.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-center">
+                        <div class="icon-circle bg-info text-white mb-3 mx-auto">
+                            <i class="bi bi-shield-check fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">Compliance Management</h6>
+                        <p class="small text-muted">Ensuring regulatory compliance and quality standards.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-center">
+                        <div class="icon-circle bg-warning text-white mb-3 mx-auto">
+                            <i class="bi bi-cash-coin fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">Investment Mobilization</h6>
+                        <p class="small text-muted">Attracting investment for AggreBind projects.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="display-6 fw-bold mb-4">Partner With Us</h2>
+            <p class="lead mb-4">Interested in AggreBind solutions for your construction projects?</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="{% url 'core:contact' %}" class="btn btn-light btn-lg px-5">
+                    <i class="bi bi-envelope me-2"></i>Contact Us
+                </a>
+                <a href="{% url 'core:projects' %}" class="btn btn-outline-light btn-lg px-5">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Projects
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({duration: 800, once: true});</script>
+</body>
+</html>

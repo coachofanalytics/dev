@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload KYC Document - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> Upload KYC Document</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Upload your identity documents for verification. Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB)
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.document_type.id_for_label }}" class="form-label">Document Type *</label>
+                            {{ form.document_type }}
+                            {% if form.document_type.errors %}
+                                <div class="text-danger">{{ form.document_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.document_file.id_for_label }}" class="form-label">Document File *</label>
+                            {{ form.document_file }}
+                            <small class="form-text text-muted">{{ form.document_file.help_text }}</small>
+                            {% if form.document_file.errors %}
+                                <div class="text-danger">{{ form.document_file.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.document_number.id_for_label }}" class="form-label">Document Number</label>
+                            {{ form.document_number }}
+                            <small class="form-text text-muted">{{ form.document_number.help_text }}</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.issue_date.id_for_label }}" class="form-label">Issue Date</label>
+                                {{ form.issue_date }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.expiry_date.id_for_label }}" class="form-label">Expiry Date</label>
+                                {{ form.expiry_date }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.issuing_authority.id_for_label }}" class="form-label">Issuing Authority</label>
+                            {{ form.issuing_authority }}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-upload"></i> Upload Document
+                            </button>
+                            <a href="{% url 'kyc:my_documents' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to My Documents
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

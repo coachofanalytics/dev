@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Google Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #357ae8;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google OAuth Test Page</h1>
+
+    <h2>Test Google Login:</h2>
+    <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn">
+        🔐 Login with Google
+    </a>
+
+    <div class="info">
+        <h3>Debug Info:</h3>
+        <p><strong>Current URL:</strong> {{ request.build_absolute_uri }}</p>
+        <p><strong>Expected Redirect:</strong> /complete/google-oauth2/</p>
+        <p><strong>Settings:</strong></p>
+        <ul>
+            <li>Client ID configured: {% if GOOGLE_CLIENT_ID %}✅ Yes{% else %}❌ No{% endif %}</li>
+        </ul>
+    </div>
+</body>
+</html>

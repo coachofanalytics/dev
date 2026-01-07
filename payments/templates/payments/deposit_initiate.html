@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Deposit Funds - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .deposit-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .deposit-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .deposit-header h1 {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .deposit-header p {
+        color: #6c757d;
+        font-size: 16px;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+
+    .form-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 25px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-section-title .icon {
+        font-size: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 15px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+
+    .amount-preset-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .preset-btn {
+        padding: 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-weight: 600;
+        color: #667eea;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+
+    .preset-btn:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .preset-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .payment-method-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .payment-method-card {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .payment-method-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .payment-method-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 20px;
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+    }
+
+    .payment-method-card input:checked + .payment-method-label {
+        border-color: #667eea;
+        background: #f8f9ff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .payment-method-icon {
+        font-size: 36px;
+        line-height: 1;
+    }
+
+    .payment-method-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .payment-method-description {
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #2196F3;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #0c5460;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .info-box strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #084298;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #664d03;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .fee-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+
+    .fee-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .fee-row:last-child {
+        margin-bottom: 0;
+        padding-top: 10px;
+        border-top: 1px solid #dee2e6;
+        font-weight: 600;
+    }
+
+    .fee-row .label {
+        color: #6c757d;
+    }
+
+    .fee-row .value {
+        color: #333;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    .form-helper-text {
+        font-size: 13px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .alert-container {
+        margin-bottom: 25px;
+    }
+
+    .back-button {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="alert-container">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="back-button">
+        <a href="{% url 'payments:wallet_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Wallet
+        </a>
+    </div>
+
+    <div class="deposit-container">
+        <div class="deposit-header">
+            <h1>Add Funds to Your Wallet</h1>
+            <p>Choose your preferred deposit amount and payment method</p>
+        </div>
+
+        <form id="depositForm" method="post" action="{% url 'payments:deposit_initiate' %}">
+            {% csrf_token %}
+
+            <!-- Amount Section -->
+            <div class="form-section">
+                <h5 class="form-section-title">
+                    <span class="icon">💰</span>
+                    Deposit Amount
+                </h5>
+
+                <div class="form-group">
+                    <label class="form-label">Select or Enter Amount</label>
+                    <div class="amount-preset-buttons">
+                        <button type="button" class="preset-btn" data-amount="10">$10</button>
+                        <button type="button" class="preset-btn" data-amount="50">$50</button>
+                        <button type="button" class="preset-btn" data-amount="100">$100</button>
+                        <button type="button" class="preset-btn" data-amount="500">$500</button>
+                    </div>
+
+                    <input type="number"
+                           class="form-control"
+                           id="amount"
+                           name="amount"
+                           placeholder="Enter custom amount"
+                           min="1"
+                           max="10000"
+                           required>
+                    <div class="form-helper-text">
+                        Minimum: 100 KES | Maximum: 1,000,000 KES
+                    </div>
+                    <div class="error-message" id="amountError"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 Tip:</strong> Larger deposits often come with better rates. Consider depositing more to maximize your purchasing power.
+                </div>
+            </div>
+
+            <!-- Payment Method Section -->
+            <div class="form-section">
+                <h5 class="form-section-title">
+                    <span class="icon">🏦</span>
+                    Payment Method
+                </h5>
+
+                <div class="form-group">
+                    <label class="form-label">Choose Your Payment Method</label>
+
+                    <div class="payment-method-group">
+                        <!-- Stripe -->
+                        <div class="payment-method-card">
+                            <input type="radio"
+                                   id="method_stripe"
+                                   name="payment_method"
+                                   value="stripe"
+                                   class="payment-method-input"
+                                   data-fee="2.9"
+                                   data-fee-type="percentage">
+                            <label for="method_stripe" class="payment-method-label">
+                                <div class="payment-method-icon">💳</div>
+                                <div class="payment-method-name">Card (Stripe)</div>
+                                <div class="payment-method-description">Visa, Mastercard</div>
+                            </label>
+                        </div>
+
+                        <!-- PayPal -->
+                        <div class="payment-method-card">
+                            <input type="radio"
+                                   id="method_paypal"
+                                   name="payment_method"
+                                   value="paypal"
+                                   class="payment-method-input"
+                                   data-fee="3.49"
+                                   data-fee-type="percentage">
+                            <label for="method_paypal" class="payment-method-label">
+                                <div class="payment-method-icon">🅿️</div>
+                                <div class="payment-method-name">PayPal</div>
+                                <div class="payment-method-description">PayPal Account</div>
+                            </label>
+                        </div>
+
+                        <!-- M-Pesa -->
+                        <div class="payment-method-card">
+                            <input type="radio"
+                                   id="method_mpesa"
+                                   name="payment_method"
+                                   value="mpesa"
+                                   class="payment-method-input"
+                                   data-fee="50"
+                                   data-fee-type="fixed">
+                            <label for="method_mpesa" class="payment-method-label">
+                                <div class="payment-method-icon">📱</div>
+                                <div class="payment-method-name">M-Pesa</div>
+                                <div class="payment-method-description">Kenya Mobile Money</div>
+                            </label>
+                        </div>
+
+                        <!-- CashApp -->
+                        <div class="payment-method-card">
+                            <input type="radio"
+                                   id="method_cashapp"
+                                   name="payment_method"
+                                   value="cashapp"
+                                   class="payment-method-input"
+                                   data-fee="2.75"
+                                   data-fee-type="percentage">
+                            <label for="method_cashapp" class="payment-method-label">
+                                <div class="payment-method-icon">💵</div>
+                                <div class="payment-method-name">Cash App</div>
+                                <div class="payment-method-description">Cash App Pay</div>
+                            </label>
+                        </div>
+
+                        <!-- Venmo -->
+                        <div class="payment-method-card">
+                            <input type="radio"
+                                   id="method_venmo"
+                                   name="payment_method"
+                                   value="venmo"
+                                   class="payment-method-input"
+                                   data-fee="1.9"
+                                   data-fee-type="percentage">
+                            <label for="method_venmo" class="payment-method-label">
+                                <div class="payment-method-icon">💙</div>
+                                <div class="payment-method-name">Venmo</div>
+                                <div class="payment-method-description">Venmo Account</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="error-message" id="methodError"></div>
+                </div>
+
+                <!-- M-Pesa Additional Info -->
+                <div id="mpesaInfo" style="display: none;">
+                    <div class="info-box">
+                        <strong>📱 M-Pesa Instructions:</strong>
+                        <ul class="mb-0 ps-3">
+                            <li>Dial *150*00# on your registered M-Pesa number</li>
+                            <li>Enter our business shortcode and amount</li>
+                            <li>Confirm and enter your M-Pesa PIN</li>
+                            <li>Funds will be credited immediately upon successful payment</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Fee Summary -->
+                <div class="fee-summary">
+                    <div class="fee-row">
+                        <span class="label">Deposit Amount:</span>
+                        <span class="value" id="feeAmount">—</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Processing Fee:</span>
+                        <span class="value" id="feeCost">—</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">You'll Receive:</span>
+                        <span class="value" id="feeTotal">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="form-section">
+                <div class="form-group">
+                    <div class="form-check">
+                        <input type="checkbox"
+                               class="form-check-input"
+                               id="termsCheck"
+                               name="terms_accepted"
+                               required>
+                        <label class="form-check-label" for="termsCheck">
+                            I agree to the <a href="#" target="_blank">deposit terms and conditions</a>
+                        </label>
+                    </div>
+                    <div class="error-message" id="termsError"></div>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="form-section">
+                <button type="submit" class="btn btn-primary btn-submit" id="submitBtn">
+                    <i class="bi bi-credit-card"></i> Proceed to Payment
+                </button>
+                <a href="{% url 'payments:wallet_dashboard' %}" class="btn btn-outline-secondary btn-submit">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('depositForm');
+    const amountInput = document.getElementById('amount');
+    const presetBtns = document.querySelectorAll('.preset-btn');
+    const methodInputs = document.querySelectorAll('input[name="payment_method"]');
+    const mpesaInfo = document.getElementById('mpesaInfo');
+    const termsCheck = document.getElementById('termsCheck');
+
+    // Preset amount buttons
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            amountInput.value = this.dataset.amount;
+            presetBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            updateFeeCalculation();
+        });
+    });
+
+    // Update fee calculation
+    amountInput.addEventListener('change', function() {
+        presetBtns.forEach(btn => btn.classList.remove('active'));
+        updateFeeCalculation();
+    });
+
+    amountInput.addEventListener('input', function() {
+        updateFeeCalculation();
+    });
+
+    // Payment method selection
+    methodInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            mpesaInfo.style.display = this.value === 'mpesa' ? 'block' : 'none';
+            updateFeeCalculation();
+        });
+    });
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Clear error messages
+        document.querySelectorAll('.error-message').forEach(el => {
+            el.classList.remove('show');
+            el.textContent = '';
+        });
+
+        // Validate amount
+        const amount = parseFloat(amountInput.value);
+        if (!amount || amount < 1) {
+            document.getElementById('amountError').textContent = 'Minimum deposit is $1 USD';
+            document.getElementById('amountError').classList.add('show');
+            return;
+        }
+        if (amount > 10000) {
+            document.getElementById('amountError').textContent = 'Maximum deposit is $10,000 USD';
+            document.getElementById('amountError').classList.add('show');
+            return;
+        }
+
+        // Validate payment method
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+        if (!selectedMethod) {
+            document.getElementById('methodError').textContent = 'Please select a payment method';
+            document.getElementById('methodError').classList.add('show');
+            return;
+        }
+
+        // Validate terms
+        if (!termsCheck.checked) {
+            document.getElementById('termsError').textContent = 'Please accept the terms and conditions';
+            document.getElementById('termsError').classList.add('show');
+            return;
+        }
+
+        // Submit form
+        form.submit();
+    });
+
+    function updateFeeCalculation() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const methodInput = document.querySelector('input[name="payment_method"]:checked');
+
+        if (!methodInput || amount < 1) {
+            document.getElementById('feeAmount').textContent = '—';
+            document.getElementById('feeCost').textContent = '—';
+            document.getElementById('feeTotal').textContent = '—';
+            return;
+        }
+
+        const feePercentage = parseFloat(methodInput.dataset.fee);
+        const feeType = methodInput.dataset.feeType;
+
+        let fee = 0;
+        if (feeType === 'percentage') {
+            fee = (amount * feePercentage) / 100;
+        } else {
+            fee = feePercentage;
+        }
+
+        const total = amount - fee;
+
+        document.getElementById('feeAmount').textContent = amount.toFixed(2) + ' USD';
+        document.getElementById('feeCost').textContent = fee.toFixed(2) + ' USD';
+        document.getElementById('feeTotal').textContent = total.toFixed(2) + ' USD';
+    }
+
+    // Auto-hide alerts
+    document.querySelectorAll('.alert').forEach(alert => {
+        setTimeout(() => {
+            new bootstrap.Alert(alert).close();
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ meta_description }}">
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/landing/favicon.jpg' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/pages.css' %}">
+    <!-- Lightbox CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:landing' %}">
+                <img src="{% static 'core/images/landing/logo.png' %}" alt="Biashara Bridges" height="50"><span class="ms-2 fw-bold text-dark d-none d-md-inline" style="font-size: 1.2rem;">Biashara Bridges</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:partners' %}">Partners</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'core:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:news' %}">News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-none d-lg-flex">
+                <a href="{% url 'login' %}" class="btn btn-outline-dark me-2">Login</a>
+                <a href="{% url 'onboarding:register' %}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Hero -->
+    <section class="page-hero" style="background: linear-gradient(rgba(17, 21, 24, 0.8), rgba(17, 21, 24, 0.8)), url('{% static 'core/images/gallery/banner.jpg' %}'); background-size: cover; background-position: center 30%;">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="breadcrumb-item active">Gallery</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 fw-bold text-white">Gallery</h1>
+            <p class="lead text-white-50">Capturing moments from our projects and partnerships</p>
+        </div>
+    </section>
+
+    <!-- Gallery Grid -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Our Photo Gallery</h2>
+                <p class="text-muted">Click on any image to view in full size</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Gallery Images -->
+                <div class="col-lg-4 col-md-6" data-aos="fade-up">
+                    <a href="{% static 'core/images/gallery/gallery-35.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-35.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="50">
+                    <a href="{% static 'core/images/gallery/gallery-36.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-36.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <a href="{% static 'core/images/gallery/gallery-37.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-37.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="150">
+                    <a href="{% static 'core/images/gallery/gallery-38.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-38.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <a href="{% static 'core/images/gallery/gallery-40.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-40.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="250">
+                    <a href="{% static 'core/images/gallery/gallery-41.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-41.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <a href="{% static 'core/images/gallery/gallery-42.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-42.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="350">
+                    <a href="{% static 'core/images/gallery/gallery-43.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-43.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <a href="{% static 'core/images/gallery/gallery-44.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-44.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="450">
+                    <a href="{% static 'core/images/gallery/gallery-45.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-45.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <a href="{% static 'core/images/gallery/gallery-46.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-46.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="550">
+                    <a href="{% static 'core/images/gallery/gallery-47.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-47.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- More Gallery Images -->
+            <div class="row g-4 mt-2">
+                <div class="col-lg-3 col-md-6" data-aos="fade-up">
+                    <a href="{% static 'core/images/gallery/gallery-48.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-48.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="50">
+                    <a href="{% static 'core/images/gallery/gallery-49.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-49.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <a href="{% static 'core/images/gallery/gallery-50.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-50.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="150">
+                    <a href="{% static 'core/images/gallery/gallery-51.jpg' %}" data-lightbox="gallery" data-title="Biashara Bridges Project">
+                        <div class="gallery-item">
+                            <img src="{% static 'core/images/gallery/gallery-51.jpg' %}" class="img-fluid rounded" alt="Gallery Image">
+                            <div class="gallery-overlay">
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+    <script>
+        AOS.init({duration: 800, once: true});
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'albumLabel': 'Image %1 of %2'
+        });
+    </script>
+</body>
+</html>

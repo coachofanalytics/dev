@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resolve Dispute - Staff Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .dispute-details {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #6c757d;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+
+    .btn-submit:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .amount-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-gavel me-2"></i>Resolve Dispute</h1>
+                <p class="mb-0 opacity-75">{{ dispute.dispute_id }}</p>
+            </div>
+            <a href="{% url 'payments:staff_disputes' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Disputes
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <!-- Dispute Details -->
+                <div class="dispute-details">
+                    <h5 class="mb-3">
+                        <i class="fas fa-info-circle me-2"></i>Dispute Details
+                        {% if dispute.priority == 'critical' %}
+                        <span class="badge bg-danger ms-2"><i class="fas fa-exclamation-triangle"></i> Critical</span>
+                        {% elif dispute.priority == 'high' %}
+                        <span class="badge bg-warning text-dark ms-2"><i class="fas fa-exclamation-circle"></i> High Priority</span>
+                        {% endif %}
+                        {% if dispute.is_overdue %}
+                        <span class="badge bg-danger ms-2"><i class="fas fa-clock"></i> OVERDUE</span>
+                        {% endif %}
+                    </h5>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>User:</strong></p>
+                            <p class="text-muted">{{ dispute.user.username }} ({{ dispute.user.email }})</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Transaction:</strong></p>
+                            <p class="text-muted">{{ dispute.transaction.transaction_id }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Reason:</strong></p>
+                            <p class="text-muted">
+                                {{ dispute.get_reason_display }}
+                                <span class="badge bg-secondary ms-2">{{ dispute.get_risk_level_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Amount Disputed:</strong></p>
+                            <p class="amount-display text-danger">${{ dispute.amount_disputed|floatformat:2 }}</p>
+                        </div>
+                        <div class="col-12">
+                            <p class="mb-1"><strong>Description:</strong></p>
+                            <p class="text-muted">{{ dispute.description }}</p>
+                        </div>
+                        {% if dispute.evidence_files %}
+                        <div class="col-12">
+                            <p class="mb-1"><strong>Evidence Files:</strong></p>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for file_path in dispute.evidence_files.split ',' %}
+                                <a href="/media/{{ file_path }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-paperclip me-1"></i>View Evidence {{ forloop.counter }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Created:</strong></p>
+                            <p class="text-muted">
+                                {{ dispute.created_at|date:"M d, Y H:i" }}
+                                <small class="d-block">({{ dispute.days_open }} day{{ dispute.days_open|pluralize }} open)</small>
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Current Status:</strong></p>
+                            <p class="text-muted">{{ dispute.get_status_display }}</p>
+                        </div>
+                        {% if dispute.sla_deadline and dispute.status != 'closed' %}
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>SLA Deadline:</strong></p>
+                            <p class="{% if dispute.is_overdue %}text-danger fw-bold{% else %}text-primary{% endif %}">
+                                {{ dispute.sla_deadline|date:"M d, Y g:i A" }}
+                                {% if not dispute.is_overdue and dispute.hours_until_sla %}
+                                <small class="d-block text-muted">({{ dispute.hours_until_sla }} hours remaining)</small>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Priority Level:</strong></p>
+                            <p class="text-muted text-capitalize">{{ dispute.get_priority_display }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resolution Form -->
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Resolution Status</label>
+                        <select name="status" class="form-select" required>
+                            {% for code, label in status_choices %}
+                            <option value="{{ code }}" {% if dispute.status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Refund Amount (if applicable)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="refund_amount" class="form-control" step="0.01" min="0"
+                                   max="{{ dispute.amount_disputed }}" value="{{ dispute.amount_refunded }}"
+                                   placeholder="0.00">
+                        </div>
+                        <small class="text-muted">Maximum: ${{ dispute.amount_disputed|floatformat:2 }}</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Resolution Notes</label>
+                        <textarea name="resolution_notes" class="form-control" rows="4"
+                                  placeholder="Describe your findings and the reason for this resolution...">{{ dispute.resolution_notes }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'payments:staff_disputes' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-check me-2"></i>Resolve Dispute
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

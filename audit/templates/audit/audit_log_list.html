@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Audit Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Audit Logs</h2>
+            <p class="text-muted">View and filter system audit logs</p>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="event_type" class="form-label">Event Type</label>
+                            <select name="event_type" id="event_type" class="form-select">
+                                <option value="">All Events</option>
+                                {% for value, label in event_types %}
+                                <option value="{{ value }}" {% if current_filters.event_type == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="severity" class="form-label">Severity</label>
+                            <select name="severity" id="severity" class="form-select">
+                                <option value="">All Severities</option>
+                                {% for value, label in severities %}
+                                <option value="{{ value }}" {% if current_filters.severity == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" name="username" id="username" class="form-control"
+                                   placeholder="Search by username" value="{{ current_filters.username }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="ip_address" class="form-label">IP Address</label>
+                            <input type="text" name="ip_address" id="ip_address" class="form-control"
+                                   placeholder="Search by IP" value="{{ current_filters.ip_address }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" name="date_from" id="date_from" class="form-control"
+                                   value="{{ current_filters.date_from }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" name="date_to" id="date_to" class="form-control"
+                                   value="{{ current_filters.date_to }}">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" name="search" id="search" class="form-control"
+                                   placeholder="Search description, path..." value="{{ current_filters.search }}">
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Audit Log Entries ({{ page_obj.paginator.count }} total)</h5>
+                    <a href="{% url 'audit:audit_log_export' %}?{{ request.GET.urlencode }}"
+                       class="btn btn-sm btn-success">Export to CSV</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Event Type</th>
+                                    <th>Severity</th>
+                                    <th>User</th>
+                                    <th>Description</th>
+                                    <th>IP Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in audit_logs %}
+                                <tr>
+                                    <td class="text-nowrap">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ log.get_event_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if log.severity == 'critical' %}
+                                        <span class="badge bg-danger">CRITICAL</span>
+                                        {% elif log.severity == 'error' %}
+                                        <span class="badge bg-danger">ERROR</span>
+                                        {% elif log.severity == 'warning' %}
+                                        <span class="badge bg-warning text-dark">WARNING</span>
+                                        {% else %}
+                                        <span class="badge bg-info">INFO</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ log.username|default:"Anonymous" }}</td>
+                                    <td>{{ log.description|truncatewords:15 }}</td>
+                                    <td class="text-nowrap">{{ log.ip_address|default:"-" }}</td>
+                                    <td>
+                                        <a href="{% url 'audit:audit_log_detail' log.pk %}"
+                                           class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        No audit logs found matching your filters.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="card-footer">
+                    <nav aria-label="Audit log pagination">
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
+                            </li>
+                            {% endif %}
+
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

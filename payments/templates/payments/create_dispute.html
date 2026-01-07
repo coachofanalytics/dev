@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Dispute - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .transaction-summary {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+
+    .btn-submit:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-gavel me-2"></i>Create Dispute</h1>
+                <p class="mb-0 opacity-75">Report an issue with a transaction</p>
+            </div>
+            <a href="{% url 'payments:user_disputes' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Disputes
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <!-- Transaction Summary -->
+                <div class="transaction-summary">
+                    <h5 class="mb-3"><i class="fas fa-receipt me-2"></i>Transaction Details</h5>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Transaction ID:</strong></p>
+                            <p class="text-muted">{{ transaction.transaction_id }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Amount:</strong></p>
+                            <p class="text-muted">${{ transaction.amount|floatformat:2 }} {{ transaction.currency }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Date:</strong></p>
+                            <p class="text-muted">{{ transaction.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Status:</strong></p>
+                            <p class="text-muted text-capitalize">{{ transaction.status }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dispute Form -->
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Reason for Dispute</label>
+                        <select name="reason" class="form-select" required>
+                            <option value="">Select a reason...</option>
+                            {% for code, label in reason_choices %}
+                            <option value="{{ code }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea name="description" class="form-control" rows="5" required
+                                  placeholder="Please describe the issue in detail. Include any relevant information that will help us investigate."></textarea>
+                        <small class="text-muted">Provide as much detail as possible about the issue.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-paperclip me-2"></i>Evidence Files (Optional)
+                        </label>
+                        <input type="file"
+                               name="evidence_files"
+                               class="form-control"
+                               multiple
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        <small class="form-text text-muted">
+                            Upload supporting documents (screenshots, receipts, emails, etc.).
+                            Accepted formats: PDF, JPG, PNG, DOC, DOCX. Maximum 5MB per file.
+                        </small>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>What happens next?</strong><br>
+                        • Your dispute will be automatically categorized and assigned a priority level<br>
+                        • You will receive immediate email confirmation with expected resolution time<br>
+                        • Our team will review and respond within the SLA timeframe<br>
+                        • You will receive email notifications when the status changes
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'payments:transaction_history' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Dispute
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

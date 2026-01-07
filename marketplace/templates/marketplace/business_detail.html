@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ business.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1>{{ business.company_name }}</h1>
+    <p class="lead">{{ business.industry }}</p>
+    <p>Funding Stage: {{ business.get_funding_stage_display }}</p>
+    {% if business.investment_seeking %}
+    <p class="text-success">Seeking Investment: ${{ business.investment_seeking }}</p>
+    {% endif %}
+    <a href="{% url 'marketplace:browse_businesses' %}" class="btn btn-secondary">Back to Businesses</a>
+</div>
+{% endblock %}

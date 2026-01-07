@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Backup Codes{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-key"></i> Your Backup Codes
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Important:</strong> Save these backup codes in a safe place. Each code can only be used once.
+                        If you lose access to your authenticator app, you can use these codes to log in.
+                    </div>
+
+                    {% if backup_codes %}
+                    <div class="row mb-4">
+                        {% for code in backup_codes %}
+                        <div class="col-md-6 mb-2">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <code class="fs-5">{{ code.code }}</code>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        You have <strong>{{ remaining_count }}</strong> unused backup code(s).
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" onclick="window.print();">
+                            <i class="fas fa-print"></i> Print Backup Codes
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadCodes();">
+                            <i class="fas fa-download"></i> Download as Text File
+                        </button>
+                        <form method="post" action="{% url 'mfa:regenerate_codes' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning w-100"
+                                    onclick="return confirm('This will invalidate all your old backup codes. Continue?');">
+                                <i class="fas fa-sync"></i> Regenerate Backup Codes
+                            </button>
+                        </form>
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Profile
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        No backup codes available. Please regenerate your backup codes.
+                    </div>
+
+                    <form method="post" action="{% url 'mfa:regenerate_codes' %}">
+                        {% csrf_token %}
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sync"></i> Generate Backup Codes
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function downloadCodes() {
+    const codes = [
+        {% for code in backup_codes %}
+        "{{ code.code }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const text = "Biashara Bridges - Backup Codes\n" +
+                 "================================\n\n" +
+                 "Save these codes in a safe place.\n" +
+                 "Each code can only be used once.\n\n" +
+                 codes.join("\n") +
+                 "\n\nGenerated: {{ backup_codes.0.created_at|date:'Y-m-d H:i:s' }}";
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'biashara-bridges-backup-codes.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+</script>
+
+<style>
+@media print {
+    .btn, .alert, nav, footer {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Spending Limits - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .limit-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .limit-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+    }
+
+    .limit-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+    }
+
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+        background: #e9ecef;
+    }
+
+    .progress-bar {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border-radius: 5px;
+    }
+
+    .progress-bar.warning {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    }
+
+    .progress-bar.danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+
+    .limit-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .usage-text {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .btn-set-limit {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+    }
+
+    .btn-set-limit:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .info-box {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 4px solid #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-shield-alt me-2"></i>Spending Limits</h1>
+                <p class="mb-0 opacity-75">Control your spending with customizable limits</p>
+            </div>
+            <a href="{% url 'payments:wallet_dashboard' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Wallet
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Info Box -->
+    <div class="info-box mb-4">
+        <h5><i class="fas fa-info-circle me-2"></i>About Spending Limits</h5>
+        <p class="mb-0">Spending limits help protect your wallet by restricting how much can be spent within a time period.
+        If no custom limit is set, the default limits apply. You can customize each limit below.</p>
+    </div>
+
+    <div class="row">
+        <!-- Daily Limit -->
+        <div class="col-md-6">
+            <div class="limit-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="limit-icon me-3">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">Daily Limit</h5>
+                        <small class="text-muted">Resets every 24 hours</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="usage-text">Used: ${{ usage.daily|floatformat:2 }}</span>
+                        <span class="limit-value">${% if limits_dict.daily %}{{ limits_dict.daily.amount|floatformat:2 }}{% else %}{{ default_limits.daily|floatformat:2 }}{% endif %}</span>
+                    </div>
+                    {% with limit=limits_dict.daily.amount|default:default_limits.daily %}
+                    {% widthratio usage.daily limit 100 as usage_percent %}
+                    <div class="progress">
+                        <div class="progress-bar {% if usage_percent > 90 %}danger{% elif usage_percent > 70 %}warning{% endif %}"
+                             style="width: {{ usage_percent }}%"></div>
+                    </div>
+                    {% endwith %}
+                </div>
+                <form method="post" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="limit_type" value="daily">
+                    <input type="number" name="amount" step="0.01" min="1" class="form-control"
+                           placeholder="New limit" value="{% if limits_dict.daily %}{{ limits_dict.daily.amount }}{% endif %}">
+                    <button type="submit" class="btn btn-set-limit">Set</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Weekly Limit -->
+        <div class="col-md-6">
+            <div class="limit-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="limit-icon me-3">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">Weekly Limit</h5>
+                        <small class="text-muted">Resets every 7 days</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="usage-text">Used: ${{ usage.weekly|floatformat:2 }}</span>
+                        <span class="limit-value">${% if limits_dict.weekly %}{{ limits_dict.weekly.amount|floatformat:2 }}{% else %}{{ default_limits.weekly|floatformat:2 }}{% endif %}</span>
+                    </div>
+                    {% with limit=limits_dict.weekly.amount|default:default_limits.weekly %}
+                    {% widthratio usage.weekly limit 100 as usage_percent %}
+                    <div class="progress">
+                        <div class="progress-bar {% if usage_percent > 90 %}danger{% elif usage_percent > 70 %}warning{% endif %}"
+                             style="width: {{ usage_percent }}%"></div>
+                    </div>
+                    {% endwith %}
+                </div>
+                <form method="post" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="limit_type" value="weekly">
+                    <input type="number" name="amount" step="0.01" min="1" class="form-control"
+                           placeholder="New limit" value="{% if limits_dict.weekly %}{{ limits_dict.weekly.amount }}{% endif %}">
+                    <button type="submit" class="btn btn-set-limit">Set</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Monthly Limit -->
+        <div class="col-md-6">
+            <div class="limit-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="limit-icon me-3">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">Monthly Limit</h5>
+                        <small class="text-muted">Resets every 30 days</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="usage-text">Used: ${{ usage.monthly|floatformat:2 }}</span>
+                        <span class="limit-value">${% if limits_dict.monthly %}{{ limits_dict.monthly.amount|floatformat:2 }}{% else %}{{ default_limits.monthly|floatformat:2 }}{% endif %}</span>
+                    </div>
+                    {% with limit=limits_dict.monthly.amount|default:default_limits.monthly %}
+                    {% widthratio usage.monthly limit 100 as usage_percent %}
+                    <div class="progress">
+                        <div class="progress-bar {% if usage_percent > 90 %}danger{% elif usage_percent > 70 %}warning{% endif %}"
+                             style="width: {{ usage_percent }}%"></div>
+                    </div>
+                    {% endwith %}
+                </div>
+                <form method="post" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="limit_type" value="monthly">
+                    <input type="number" name="amount" step="0.01" min="1" class="form-control"
+                           placeholder="New limit" value="{% if limits_dict.monthly %}{{ limits_dict.monthly.amount }}{% endif %}">
+                    <button type="submit" class="btn btn-set-limit">Set</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Per Transaction Limit -->
+        <div class="col-md-6">
+            <div class="limit-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="limit-icon me-3">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">Per Transaction Limit</h5>
+                        <small class="text-muted">Maximum per single transaction</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="usage-text">Current limit:</span>
+                        <span class="limit-value">${% if limits_dict.per_transaction %}{{ limits_dict.per_transaction.amount|floatformat:2 }}{% else %}{{ default_limits.per_transaction|floatformat:2 }}{% endif %}</span>
+                    </div>
+                </div>
+                <form method="post" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="limit_type" value="per_transaction">
+                    <input type="number" name="amount" step="0.01" min="1" class="form-control"
+                           placeholder="New limit" value="{% if limits_dict.per_transaction %}{{ limits_dict.per_transaction.amount }}{% endif %}">
+                    <button type="submit" class="btn btn-set-limit">Set</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

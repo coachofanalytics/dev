@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Investor Dashboard - Biashara Bridges{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>
+        <span class="icon-badge stat-icon teal"><i class="bi bi-graph-up-arrow"></i></span>
+        Investor Dashboard
+    </h2>
+    <a href="{% url 'profile' user.username %}" class="btn btn-view-profile">
+        <i class="bi bi-person-fill"></i> View Profile
+    </a>
+</div>
+
+<!-- Welcome Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="welcome-card investor-theme">
+            <h4>Welcome back, {{ user.first_name|default:user.username }}! 👋</h4>
+            <p>Explore business opportunities and connect with entrepreneurs looking for investment.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-4 mb-md-0">
+        <div class="stat-card text-center">
+            <div class="stat-icon blue">
+                <i class="bi bi-building-fill"></i>
+            </div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">Businesses Viewing</div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4 mb-md-0">
+        <div class="stat-card text-center">
+            <div class="stat-icon orange">
+                <i class="bi bi-bookmark-star-fill"></i>
+            </div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">Saved Opportunities</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card text-center">
+            <div class="stat-icon cyan">
+                <i class="bi bi-chat-dots-fill"></i>
+            </div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">Active Conversations</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions & Recent Activity -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4 mb-md-0">
+        <div class="modern-card">
+            <div class="card-header blue-header">
+                <span class="header-icon"><i class="bi bi-lightning-fill"></i></span>
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="quick-action-list">
+                <a href="{% url 'marketplace:browse_businesses' %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-search"></i></span>
+                    <span>Browse Businesses</span>
+                </a>
+                <a href="#" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-sliders"></i></span>
+                    <span>Set Investment Preferences</span>
+                </a>
+                <a href="{% url 'marketplace:browse_opportunities' %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-graph-up"></i></span>
+                    <span>View Market Insights</span>
+                </a>
+                <a href="{% url 'profile' user.username %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-pencil-fill"></i></span>
+                    <span>Update Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="modern-card">
+            <div class="card-header">
+                <span class="header-icon"><i class="bi bi-clock-history"></i></span>
+                <h5>Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-inbox-fill"></i>
+                    </div>
+                    <p>No recent activity yet.<br>Start exploring opportunities!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Investment Opportunities -->
+<div class="row">
+    <div class="col-12">
+        <div class="modern-card">
+            <div class="card-header green-header">
+                <span class="header-icon"><i class="bi bi-briefcase-fill"></i></span>
+                <h5>Featured Investment Opportunities</h5>
+            </div>
+            <div class="card-body">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <p>Investment opportunities will appear here.<br>Check back soon!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

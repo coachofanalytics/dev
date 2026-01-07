@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Browse Businesses{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Browse Businesses</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" placeholder="Search businesses..." value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="industry" class="form-select">
+                        <option value="">All Industries</option>
+                        {% for ind in industries %}
+                        <option value="{{ ind }}">{{ ind }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if businesses %}
+            {% for business in businesses %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ business.company_name }}</h5>
+                        <p class="text-muted mb-2">{{ business.industry }}</p>
+                        <p class="text-muted mb-2">{{ business.get_funding_stage_display }}</p>
+                        {% if business.investment_seeking %}
+                        <p class="text-success">${{ business.investment_seeking }}</p>
+                        {% endif %}
+                        <a href="{% url 'marketplace:business_detail' business.user.id %}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12"><div class="alert alert-info">No businesses found.</div></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

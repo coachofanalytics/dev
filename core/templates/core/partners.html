@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ meta_description }}">
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/landing/favicon.jpg' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/pages.css' %}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:landing' %}">
+                <img src="{% static 'core/images/landing/logo.png' %}" alt="Biashara Bridges" height="50"><span class="ms-2 fw-bold text-dark d-none d-md-inline" style="font-size: 1.2rem;">Biashara Bridges</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'core:partners' %}">Partners</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:news' %}">News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-none d-lg-flex">
+                <a href="{% url 'login' %}" class="btn btn-outline-dark me-2">Login</a>
+                <a href="{% url 'onboarding:register' %}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Hero -->
+    <section class="page-hero" style="background: linear-gradient(rgba(17, 21, 24, 0.8), rgba(17, 21, 24, 0.8)), url('{% static 'core/images/partners/banner.jpg' %}'); background-size: cover; background-position: center 30%;">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="breadcrumb-item active">Partners</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 fw-bold text-white">Our Partners</h1>
+            <p class="lead text-white-50">Strategic collaborations driving impact</p>
+        </div>
+    </section>
+
+    <!-- Partners Introduction -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Strategic Partners</h2>
+                <p class="text-muted">Working together to build bridges between Kenya, the U.S., and the world</p>
+            </div>
+
+            <!-- Partner Cards -->
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up">
+                    <div class="card h-100 border-0 shadow-sm partner-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="partner-icon mb-3">
+                                <i class="bi bi-bank2 fs-1 text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold">Machakos County Government</h5>
+                            <span class="badge bg-success mb-3">Government</span>
+                            <p class="text-muted small">Strategic partnership for diaspora investment facilitation and economic development in Machakos County.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-0 shadow-sm partner-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="partner-icon mb-3">
+                                <i class="bi bi-building fs-1 text-info"></i>
+                            </div>
+                            <h5 class="fw-bold">AggreBind Solutions</h5>
+                            <span class="badge bg-info mb-3">Business</span>
+                            <p class="text-muted small">Exclusive local agency for soil stabilization technology and sustainable construction solutions.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 border-0 shadow-sm partner-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="partner-icon mb-3">
+                                <i class="bi bi-globe-americas fs-1 text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold">State Department for Diaspora Affairs</h5>
+                            <span class="badge bg-success mb-3">Government</span>
+                            <p class="text-muted small">Collaboration on diaspora policy development and engagement initiatives.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card h-100 border-0 shadow-sm partner-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="partner-icon mb-3">
+                                <i class="bi bi-briefcase fs-1 text-warning"></i>
+                            </div>
+                            <h5 class="fw-bold">Kenya Ministry of Trade</h5>
+                            <span class="badge bg-success mb-3">Government</span>
+                            <p class="text-muted small">Partnership for trade facilitation and export promotion initiatives.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card h-100 border-0 shadow-sm partner-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="partner-icon mb-3">
+                                <i class="bi bi-signpost-2 fs-1 text-secondary"></i>
+                            </div>
+                            <h5 class="fw-bold">Kenya Ministry of Roads</h5>
+                            <span class="badge bg-success mb-3">Government</span>
+                            <p class="text-muted small">Collaboration on infrastructure development and road construction projects.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="card h-100 border-0 shadow-sm partner-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="partner-icon mb-3">
+                                <i class="bi bi-house-door fs-1 text-success"></i>
+                            </div>
+                            <h5 class="fw-bold">Kenya Ministry of Housing</h5>
+                            <span class="badge bg-success mb-3">Government</span>
+                            <p class="text-muted small">Partnership for affordable housing initiatives and construction projects.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="600">
+                    <div class="card h-100 border-0 shadow-sm partner-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="partner-icon mb-3">
+                                <i class="bi bi-people-fill fs-1 text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold">U.S.-Kenya Diaspora Organizations</h5>
+                            <span class="badge bg-primary mb-3">Diaspora</span>
+                            <p class="text-muted small">Collaboration with diaspora associations for community engagement and investment mobilization.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Become a Partner -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <h2 class="display-6 fw-bold mb-4">Become a Partner</h2>
+                    <p class="lead text-muted">Join our network of strategic partners and contribute to building bridges between Kenya and the world.</p>
+                    <p>We actively seek collaborations with organizations that share our vision for diaspora engagement, international trade, and sustainable development.</p>
+                    <h5 class="fw-bold mt-4 mb-3">Who Can Partner With Us?</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Governments & Counties</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>International Investors</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>NGOs and Development Agencies</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Diaspora Associations</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Private Sector Companies</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Academic Institutions</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-body p-5">
+                            <h4 class="fw-bold mb-4 text-center">Partner Inquiry</h4>
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Organization Name</label>
+                                    <input type="text" class="form-control" placeholder="Your organization">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Person</label>
+                                    <input type="text" class="form-control" placeholder="Full name">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" placeholder="email@example.com">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Organization Type</label>
+                                    <select class="form-select">
+                                        <option>Select type...</option>
+                                        <option>Government/County</option>
+                                        <option>Private Company</option>
+                                        <option>NGO/Development Agency</option>
+                                        <option>Diaspora Association</option>
+                                        <option>Academic Institution</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Partnership Interest</label>
+                                    <textarea class="form-control" rows="3" placeholder="Briefly describe your partnership interest..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                    <i class="bi bi-send me-2"></i>Submit Inquiry
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="display-6 fw-bold mb-4">Ready to Collaborate?</h2>
+            <p class="lead mb-4">Let's discuss how we can work together.</p>
+            <a href="{% url 'core:contact' %}" class="btn btn-light btn-lg px-5">
+                <i class="bi bi-envelope me-2"></i>Contact Us
+            </a>
+        </div>
+    </section>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({duration: 800, once: true});</script>
+</body>
+</html>

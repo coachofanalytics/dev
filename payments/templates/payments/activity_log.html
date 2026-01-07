@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Activity Log - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .activity-item {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+    }
+
+    .activity-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .activity-item.suspicious {
+        border-left-color: #dc3545;
+        background: #fff5f5;
+    }
+
+    .activity-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .icon-login { background: #e3f2fd; color: #1976d2; }
+    .icon-deposit { background: #e8f5e9; color: #388e3c; }
+    .icon-withdrawal { background: #fff3e0; color: #f57c00; }
+    .icon-payment { background: #fce4ec; color: #c2185b; }
+    .icon-transfer { background: #e8eaf6; color: #3949ab; }
+    .icon-settings_change { background: #f3e5f5; color: #7b1fa2; }
+    .icon-limit_change { background: #e0f7fa; color: #0097a7; }
+    .icon-failed_attempt { background: #ffebee; color: #c62828; }
+    .icon-suspicious_activity { background: #ffebee; color: #c62828; }
+
+    .filter-btn {
+        border: 2px solid #667eea;
+        background: white;
+        color: #667eea;
+        border-radius: 25px;
+        padding: 0.4rem 1rem;
+        margin: 0.25rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+    }
+
+    .timestamp {
+        color: #888;
+        font-size: 0.85rem;
+    }
+
+    .metadata-badge {
+        background: #f8f9fa;
+        padding: 0.25rem 0.5rem;
+        border-radius: 5px;
+        font-size: 0.75rem;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-history me-2"></i>Activity Log</h1>
+                <p class="mb-0 opacity-75">Monitor all wallet-related activities</p>
+            </div>
+            <a href="{% url 'payments:wallet_dashboard' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Wallet
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <label class="fw-bold mb-2">Time Period</label>
+                <div>
+                    {% for option in period_options %}
+                    <a href="?days={{ option.value }}{% if selected_type %}&type={{ selected_type }}{% endif %}"
+                       class="btn filter-btn {% if selected_days == option.value %}active{% endif %}">
+                        {{ option.label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-bold mb-2">Activity Type</label>
+                <div>
+                    <a href="?days={{ selected_days }}" class="btn filter-btn {% if not selected_type %}active{% endif %}">
+                        All
+                    </a>
+                    {% for type_code, type_label in action_types %}
+                    <a href="?days={{ selected_days }}&type={{ type_code }}"
+                       class="btn filter-btn {% if selected_type == type_code %}active{% endif %}">
+                        {{ type_label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity List -->
+    <div class="activity-list">
+        {% for log in activity_logs %}
+        <div class="activity-item {% if log.is_suspicious %}suspicious{% endif %}">
+            <div class="d-flex align-items-start">
+                <div class="activity-icon icon-{{ log.action_type }} me-3">
+                    {% if log.action_type == 'login' %}
+                    <i class="fas fa-sign-in-alt"></i>
+                    {% elif log.action_type == 'deposit' %}
+                    <i class="fas fa-arrow-down"></i>
+                    {% elif log.action_type == 'withdrawal' %}
+                    <i class="fas fa-arrow-up"></i>
+                    {% elif log.action_type == 'payment' %}
+                    <i class="fas fa-credit-card"></i>
+                    {% elif log.action_type == 'transfer' %}
+                    <i class="fas fa-exchange-alt"></i>
+                    {% elif log.action_type == 'settings_change' %}
+                    <i class="fas fa-cog"></i>
+                    {% elif log.action_type == 'limit_change' %}
+                    <i class="fas fa-shield-alt"></i>
+                    {% elif log.action_type == 'failed_attempt' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {% elif log.action_type == 'suspicious_activity' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% else %}
+                    <i class="fas fa-info"></i>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ log.get_action_type_display }}</h6>
+                            <p class="mb-2 text-muted">{{ log.description }}</p>
+                            {% if log.is_suspicious %}
+                            <span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>Suspicious</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <div class="timestamp">{{ log.created_at|date:"M d, Y" }}</div>
+                            <div class="timestamp">{{ log.created_at|time:"H:i" }}</div>
+                        </div>
+                    </div>
+                    {% if log.ip_address %}
+                    <div class="mt-2">
+                        <span class="metadata-badge"><i class="fas fa-globe me-1"></i>{{ log.ip_address }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No activity found</h5>
+            <p class="text-muted">Your wallet activity will appear here</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

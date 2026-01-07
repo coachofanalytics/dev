@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Financial Insights - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .gradient-bg {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .stats-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        height: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .period-btn {
+        border: 2px solid #667eea;
+        background: white;
+        color: #667eea;
+        border-radius: 25px;
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .period-btn:hover, .period-btn.active {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+    }
+
+    .breakdown-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .breakdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .trend-positive { color: #28a745; }
+    .trend-negative { color: #dc3545; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-chart-line me-2"></i>Financial Insights</h1>
+                <p class="mb-0 opacity-75">Track your financial activity and trends</p>
+            </div>
+            <a href="{% url 'payments:wallet_dashboard' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Wallet
+            </a>
+        </div>
+    </div>
+
+    <!-- Period Selector -->
+    <div class="text-center mb-4">
+        {% for option in period_options %}
+        <a href="?days={{ option.value }}" class="btn period-btn {% if selected_days == option.value %}active{% endif %}">
+            {{ option.label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-arrow-down fa-2x text-success mb-3"></i>
+                    <div class="stat-value text-success">${{ summary.total_deposits|floatformat:2 }}</div>
+                    <div class="stat-label">Total Deposits</div>
+                    <small class="text-muted">{{ summary.deposit_count }} transactions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-arrow-up fa-2x text-danger mb-3"></i>
+                    <div class="stat-value text-danger">${{ summary.total_spending|floatformat:2 }}</div>
+                    <div class="stat-label">Total Spending</div>
+                    <small class="text-muted">{{ summary.spending_count }} transactions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-balance-scale fa-2x text-primary mb-3"></i>
+                    <div class="stat-value {% if summary.net_change >= 0 %}trend-positive{% else %}trend-negative{% endif %}">
+                        {% if summary.net_change >= 0 %}+{% endif %}${{ summary.net_change|floatformat:2 }}
+                    </div>
+                    <div class="stat-label">Net Change</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-wallet fa-2x text-info mb-3"></i>
+                    <div class="stat-value">${{ summary.current_balance|floatformat:2 }}</div>
+                    <div class="stat-label">Current Balance</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Monthly Breakdown Chart -->
+        <div class="col-lg-8">
+            <div class="chart-container mb-4">
+                <h5 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Monthly Trends</h5>
+                <canvas id="monthlyChart" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <h5 class="mb-4"><i class="fas fa-calendar-alt me-2"></i>Monthly Breakdown</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th class="text-end">Deposits</th>
+                                <th class="text-end">Spending</th>
+                                <th class="text-end">Net</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for month in monthly_breakdown %}
+                            <tr>
+                                <td>{{ month.month }}</td>
+                                <td class="text-end text-success">${{ month.deposits|floatformat:2 }}</td>
+                                <td class="text-end text-danger">${{ month.spending|floatformat:2 }}</td>
+                                <td class="text-end {% if month.net >= 0 %}trend-positive{% else %}trend-negative{% endif %}">
+                                    {% if month.net >= 0 %}+{% endif %}${{ month.net|floatformat:2 }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breakdown by Type -->
+        <div class="col-lg-4">
+            <div class="chart-container mb-4">
+                <h5 class="mb-4"><i class="fas fa-chart-pie me-2"></i>By Transaction Type</h5>
+                <canvas id="typeChart" height="200"></canvas>
+                <div class="mt-3">
+                {% for type, data in type_breakdown.items %}
+                <div class="breakdown-item">
+                    <span class="text-capitalize">{{ type|cut:"_" }}</span>
+                    <span class="fw-bold">${{ data.total|floatformat:2 }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No transactions yet</p>
+                {% endfor %}
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h5 class="mb-4"><i class="fas fa-credit-card me-2"></i>By Payment Method</h5>
+                {% for method, data in method_breakdown.items %}
+                <div class="breakdown-item">
+                    <span class="text-capitalize">{{ method }}</span>
+                    <span class="fw-bold">${{ data.total|floatformat:2 }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No transactions yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'payments:activity_log' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-history me-2"></i>Activity Log
+                        </a>
+                        <a href="{% url 'payments:spending_limits' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-shield-alt me-2"></i>Spending Limits
+                        </a>
+                        <a href="{% url 'payments:transaction_history' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i>All Transactions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Monthly Trends Chart
+    const monthlyCtx = document.getElementById('monthlyChart');
+    if (monthlyCtx) {
+        const monthlyData = {
+            labels: [{% for month in monthly_breakdown %}'{{ month.month }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [
+                {
+                    label: 'Deposits',
+                    data: [{% for month in monthly_breakdown %}{{ month.deposits }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: 'rgb(40, 167, 69)',
+                    borderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Spending',
+                    data: [{% for month in monthly_breakdown %}{{ month.spending }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                    borderColor: 'rgb(220, 53, 69)',
+                    borderWidth: 2,
+                    tension: 0.3
+                }
+            ]
+        };
+
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: monthlyData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Transaction Type Doughnut Chart
+    const typeCtx = document.getElementById('typeChart');
+    if (typeCtx) {
+        const typeData = {
+            labels: [{% for type, data in type_breakdown.items %}'{{ type|title }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for type, data in type_breakdown.items %}{{ data.total }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(118, 75, 162, 0.8)',
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderWidth: 0
+            }]
+        };
+
+        new Chart(typeCtx, {
+            type: 'doughnut',
+            data: typeData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

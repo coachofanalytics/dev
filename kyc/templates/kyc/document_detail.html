@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Details - Biashara Bridges{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-file-earmark-text"></i> {{ document.get_document_type_display }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Status:</strong>
+                            <span class="badge bg-{% if document.status == 'approved' %}success{% elif document.status == 'rejected' %}danger{% elif document.status == 'under_review' %}info{% else %}warning{% endif %}">
+                                {{ document.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Uploaded:</strong> {{ document.uploaded_at|date:"M d, Y H:i" }}
+                        </div>
+                    </div>
+
+                    {% if document.document_number %}
+                    <p><strong>Document Number:</strong> {{ document.document_number }}</p>
+                    {% endif %}
+
+                    {% if document.issue_date %}
+                    <p><strong>Issue Date:</strong> {{ document.issue_date }}</p>
+                    {% endif %}
+
+                    {% if document.expiry_date %}
+                    <p><strong>Expiry Date:</strong> {{ document.expiry_date }}</p>
+                    {% endif %}
+
+                    {% if document.issuing_authority %}
+                    <p><strong>Issuing Authority:</strong> {{ document.issuing_authority }}</p>
+                    {% endif %}
+
+                    {% if document.verified_by %}
+                    <p><strong>Verified By:</strong> {{ document.verified_by.username }} on {{ document.verified_at|date:"M d, Y" }}</p>
+                    {% endif %}
+
+                    {% if document.verification_notes %}
+                    <div class="alert alert-{% if document.status == 'approved' %}success{% else %}warning{% endif %}">
+                        <strong>Notes:</strong> {{ document.verification_notes }}
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="{% url 'kyc:my_documents' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Documents
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% load static %}
+<!-- Global Footer - Used across entire Biashara Bridges application -->
+<footer class="footer-global bg-dark text-white pt-5 pb-3 mt-auto">
+    <div class="container">
+        <div class="row">
+            <!-- Column 1: Company Overview & Social Media -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <img src="{% static 'core/images/landing/logo-white.png' %}" alt="Biashara Bridges" class="mb-3" style="max-height: 60px; height: auto;">
+                <p class="footer-tagline text-white-50">Building Bridges Between Kenya, the U.S., & the World</p>
+                <div class="social-links mt-3">
+                    <a href="https://web.facebook.com/profile.php?id=61580644792205" target="_blank" class="text-white me-3" aria-label="Facebook" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="https://x.com/biasharabridges" target="_blank" class="text-white me-3" aria-label="Twitter/X" title="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+                    <a href="https://www.linkedin.com/company/biashara-bridges-llc/" target="_blank" class="text-white me-3" aria-label="LinkedIn" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="https://www.instagram.com/biasharabridges/" target="_blank" class="text-white" aria-label="Instagram" title="Instagram"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+
+            <!-- Column 2: Legal/Policy Links -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h5 class="text-warning mb-3" style="color: #f7b500 !important;">Legal</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="{% url 'privacy_policy' %}" class="text-white-50 text-decoration-none">Privacy Policy</a></li>
+                    <li class="mb-2"><a href="{% url 'terms_of_service' %}" class="text-white-50 text-decoration-none">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 3: Navigation Links -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h5 class="text-warning mb-3" style="color: #f7b500 !important;">Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="{% url 'core:about' %}" class="text-white-50 text-decoration-none">About Us</a></li>
+                    <li class="mb-2"><a href="{% url 'core:services' %}" class="text-white-50 text-decoration-none">Services</a></li>
+                    <li class="mb-2"><a href="{% url 'core:projects' %}" class="text-white-50 text-decoration-none">Projects</a></li>
+                    <li class="mb-2"><a href="{% url 'core:partners' %}" class="text-white-50 text-decoration-none">Partners</a></li>
+                    <li class="mb-2"><a href="{% url 'core:contact' %}" class="text-white-50 text-decoration-none">Contact</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 4: Contact Information -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h5 class="text-warning mb-3" style="color: #f7b500 !important;">Contact Us</h5>
+                <div class="contact-info">
+                    <p class="mb-2">
+                        <i class="bi bi-geo-alt-fill" style="color: #b49044;"></i>
+                        <strong>Nairobi Office</strong><br>
+                        <small class="text-white-50">Kenya</small>
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-geo-alt-fill" style="color: #b49044;"></i>
+                        <strong>U.S. Office</strong><br>
+                        <small class="text-white-50">Cincinnati, OH</small>
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-telephone-fill" style="color: #b49044;"></i>
+                        <a href="tel:+15132406808" class="text-white-50 text-decoration-none">+1-513-240-6808</a>
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-envelope-fill" style="color: #b49044;"></i>
+                        <a href="mailto:info@biasharabridges.com" class="text-white-50 text-decoration-none">info@biasharabridges.com</a>
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-globe" style="color: #b49044;"></i>
+                        <a href="https://biasharabridges.com" target="_blank" class="text-white-50 text-decoration-none">www.biasharabridges.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <hr class="border-secondary my-4">
+
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="mb-0 text-white-50 small">&copy; 2025 Biashara Bridges LLC. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer hover effects */
+    .footer-global a:hover {
+        color: #f7b500 !important;
+        transition: color 0.3s ease;
+    }
+
+    .footer-global .social-links a {
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .footer-global .social-links a:hover {
+        transform: translateY(-3px);
+    }
+
+    .footer-global {
+        background: linear-gradient(180deg, #111518 0%, #1a1d20 100%) !important;
+    }
+</style>

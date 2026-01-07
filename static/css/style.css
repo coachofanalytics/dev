@@ -1,0 +1,172 @@
+/* Custom styles for Biashara Bridges - Gold & Blue Theme */
+
+:root {
+    /* Brand Colors from biasharabridges.com */
+    --gold-primary: #b49044;
+    --gold-bright: #f7b500;
+    --navy-dark: #111518;
+    --gray-mid: #687279;
+    --gray-light: #edeff2;
+    --white-bg: #ffffff;
+    --brown-text: #714508;
+
+    /* Functional Colors */
+    --success-color: #198754;
+    --info-color: #0dcaf0;
+    --warning-color: #f7b500;
+    --danger-color: #dc3545;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--gray-mid);
+    background-color: var(--gray-light);
+}
+
+main {
+    flex: 1;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--navy-dark);
+    font-weight: 600;
+}
+
+.navbar-brand {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: var(--gold-primary) !important;
+}
+
+/* Cards with gold accents */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(180, 144, 68, 0.1);
+    background: var(--white-bg);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(180, 144, 68, 0.2);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--navy-dark) 0%, #2a2e33 100%);
+    color: var(--gold-bright);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+}
+
+footer {
+    margin-top: auto;
+    background: var(--navy-dark);
+    color: var(--gray-light);
+}
+
+/* Jumbotron/Hero sections */
+.jumbotron {
+    background: linear-gradient(135deg, var(--navy-dark) 0%, #2a2e33 100%);
+    color: var(--gray-light);
+}
+
+.jumbotron h1, .jumbotron h2 {
+    color: var(--gold-bright);
+}
+
+.jumbotron .btn {
+    margin-top: 1rem;
+}
+
+/* Buttons - Gold Theme */
+.btn-primary {
+    background-color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    color: var(--brown-text);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--gold-bright);
+    border-color: var(--gold-bright);
+    color: var(--navy-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(247, 181, 0, 0.3);
+}
+
+.btn-outline-primary {
+    border-color: var(--gold-primary);
+    color: var(--gold-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    color: var(--brown-text);
+}
+
+/* Links */
+a {
+    color: var(--gold-primary);
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--gold-bright);
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Badges */
+.badge-primary {
+    background-color: var(--gold-primary);
+    color: var(--brown-text);
+}
+
+/* Tables */
+.table thead {
+    background-color: var(--navy-dark);
+    color: var(--gold-bright);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(180, 144, 68, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+}
+
+
+/* Fix button clickability - ensure icons don't block clicks */
+.btn i {
+    pointer-events: none;
+}
+
+.btn {
+    cursor: pointer !important;
+}

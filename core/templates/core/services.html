@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ meta_description }}">
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/landing/favicon.jpg' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/pages.css' %}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:landing' %}">
+                <img src="{% static 'core/images/landing/logo.png' %}" alt="Biashara Bridges" height="50"><span class="ms-2 fw-bold text-dark d-none d-md-inline" style="font-size: 1.2rem;">Biashara Bridges</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'core:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:partners' %}">Partners</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:news' %}">News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-none d-lg-flex">
+                <a href="{% url 'login' %}" class="btn btn-outline-dark me-2">Login</a>
+                <a href="{% url 'onboarding:register' %}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Hero -->
+    <section class="page-hero" style="background: linear-gradient(rgba(17, 21, 24, 0.8), rgba(17, 21, 24, 0.8)), url('{% static 'core/images/services/investment.jpg' %}') center/cover;">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="breadcrumb-item active">Services</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 fw-bold text-white">Our Services</h1>
+            <p class="lead text-white-50">Comprehensive solutions for diaspora investment and international trade</p>
+        </div>
+    </section>
+
+    <!-- Services Overview -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">What We Offer</h2>
+                <p class="text-muted">Facilitating connections between the diaspora, businesses, and governments</p>
+            </div>
+
+            <!-- Service 1: Diaspora Investment -->
+            <div class="row align-items-center mb-5" data-aos="fade-up">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <img src="{% static 'core/images/services/service-1.jpg' %}" alt="Diaspora Investment" class="img-fluid rounded-4 shadow">
+                </div>
+                <div class="col-lg-6">
+                    <div class="ps-lg-4">
+                        <span class="badge bg-primary mb-3">Investment</span>
+                        <h3 class="fw-bold mb-3">Diaspora Investment Facilitation</h3>
+                        <p class="text-muted">Support for diaspora and international investors seeking opportunities in Kenya. We provide comprehensive services to ensure successful investment outcomes.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Advisory and risk assessment services</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Matchmaking between investors and opportunities</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Due diligence support</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Structured investment support</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Business incubation services</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service 2: Trade Partnerships -->
+            <div class="row align-items-center mb-5 flex-lg-row-reverse" data-aos="fade-up">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <img src="{% static 'core/images/services/service-2.jpg' %}" alt="Trade Partnerships" class="img-fluid rounded-4 shadow">
+                </div>
+                <div class="col-lg-6">
+                    <div class="pe-lg-4">
+                        <span class="badge bg-success mb-3">Trade</span>
+                        <h3 class="fw-bold mb-3">Trade & Business Partnerships</h3>
+                        <p class="text-muted">Connecting U.S. firms with Kenyan economic zones and sectors for mutually beneficial trade relationships.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Links to Machakos SEZs and industrial hubs</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Private sector project connections</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>BPO and ICT export opportunities</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Agro-processing export facilitation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service 3: Events & Delegations -->
+            <div class="row align-items-center" data-aos="fade-up">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <img src="{% static 'core/images/services/service-3.jpg' %}" alt="Events & Delegations" class="img-fluid rounded-4 shadow">
+                </div>
+                <div class="col-lg-6">
+                    <div class="ps-lg-4">
+                        <span class="badge bg-info mb-3">Events</span>
+                        <h3 class="fw-bold mb-3">Events & Delegations</h3>
+                        <p class="text-muted">Organizing engagement activities and representation efforts to strengthen partnerships.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>Diaspora representation initiatives</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>Investment policy coordination</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>Trade missions and business summits</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>Engagements with SDDA and county governments</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Model -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Our Service Model</h2>
+                <p class="text-muted">Comprehensive engagement across government and business sectors</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 mb-4" data-aos="fade-up">
+                    <div class="card h-100 border-0 shadow-sm service-model-card">
+                        <div class="card-body p-4">
+                            <div class="service-icon-lg mb-3">
+                                <i class="bi bi-bank2 fs-1 text-primary"></i>
+                            </div>
+                            <h4 class="fw-bold">Government-to-Government (G2G)</h4>
+                            <p class="text-muted mb-3">Bilateral partnerships and policy coordination between governments.</p>
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="bi bi-dot text-primary"></i>Bilateral partnership facilitation</li>
+                                <li class="mb-2"><i class="bi bi-dot text-primary"></i>Diaspora policy development</li>
+                                <li class="mb-2"><i class="bi bi-dot text-primary"></i>Investment dialogue coordination</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-0 shadow-sm service-model-card">
+                        <div class="card-body p-4">
+                            <div class="service-icon-lg mb-3">
+                                <i class="bi bi-building fs-1 text-success"></i>
+                            </div>
+                            <h4 class="fw-bold">Government-to-Business (G2B)</h4>
+                            <p class="text-muted mb-3">Connecting firms with government opportunities and initiatives.</p>
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="bi bi-dot text-success"></i>Firm-to-government connections</li>
+                                <li class="mb-2"><i class="bi bi-dot text-success"></i>Vision 2030 alignment</li>
+                                <li class="mb-2"><i class="bi bi-dot text-success"></i>PPP facilitation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 border-0 shadow-sm service-model-card">
+                        <div class="card-body p-4">
+                            <div class="service-icon-lg mb-3">
+                                <i class="bi bi-briefcase fs-1 text-warning"></i>
+                            </div>
+                            <h4 class="fw-bold">Business-to-Business (B2B)</h4>
+                            <p class="text-muted mb-3">Facilitating trade and partnerships between private enterprises.</p>
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="bi bi-dot text-warning"></i>Trade facilitation</li>
+                                <li class="mb-2"><i class="bi bi-dot text-warning"></i>Investor matchmaking</li>
+                                <li class="mb-2"><i class="bi bi-dot text-warning"></i>Diaspora joint ventures</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Specialized Offerings -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Specialized Offerings</h2>
+                <p class="text-muted">Tailored solutions for diaspora and international investors</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 mb-4" data-aos="fade-up">
+                    <div class="card h-100 border-0 bg-primary text-white">
+                        <div class="card-body p-4 text-center">
+                            <i class="bi bi-clipboard-data fs-1 mb-3"></i>
+                            <h5 class="fw-bold">Diaspora Investment Desk</h5>
+                            <p class="mb-0 opacity-75">Market intelligence, project vetting, and investment advisory services.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-0 bg-success text-white">
+                        <div class="card-body p-4 text-center">
+                            <i class="bi bi-globe fs-1 mb-3"></i>
+                            <h5 class="fw-bold">Trade Missions & Delegations</h5>
+                            <p class="mb-0 opacity-75">Investor tours, business expos, and trade summits coordination.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 border-0 bg-info text-white">
+                        <div class="card-body p-4 text-center">
+                            <i class="bi bi-laptop fs-1 mb-3"></i>
+                            <h5 class="fw-bold">Digital Investment Portal</h5>
+                            <p class="mb-0 opacity-75">Vetted project showcase and online investment facilitation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="display-6 fw-bold mb-4">Ready to Get Started?</h2>
+            <p class="lead mb-4">Let us help you navigate investment and trade opportunities.</p>
+            <a href="{% url 'core:contact' %}" class="btn btn-light btn-lg px-5">
+                <i class="bi bi-envelope me-2"></i>Contact Us Today
+            </a>
+        </div>
+    </section>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({duration: 800, once: true});</script>
+</body>
+</html>

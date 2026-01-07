@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ plan.name }} - Subscription Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 40px;
+    }
+
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    .breadcrumb-custom a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+    }
+
+    .breadcrumb-custom a:hover {
+        color: white;
+    }
+
+    .breadcrumb-custom .active {
+        color: white;
+    }
+
+    .detail-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .detail-price {
+        font-size: 3rem;
+        font-weight: 700;
+    }
+
+    .detail-price small {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .features-section {
+        margin-bottom: 40px;
+    }
+
+    .features-section h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        color: #212529;
+    }
+
+    .features-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .features-list li {
+        padding: 15px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .features-list li:hover {
+        background: #e7f3ff;
+        transform: translateX(5px);
+    }
+
+    .features-list li i {
+        color: #667eea;
+        margin-right: 15px;
+        font-size: 1.2rem;
+    }
+
+    .features-list li strong {
+        color: #212529;
+    }
+
+    .info-box {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .info-box:hover {
+        border-color: #667eea;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+    }
+
+    .info-box h4 {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .info-box h4 i {
+        margin-right: 10px;
+        color: #667eea;
+    }
+
+    .info-box-content {
+        color: #6c757d;
+        line-height: 1.8;
+    }
+
+    .comparison-box {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        margin-top: 30px;
+    }
+
+    .comparison-box h4 {
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .comparison-table {
+        font-size: 0.95rem;
+    }
+
+    .comparison-table thead {
+        background: white;
+    }
+
+    .comparison-table td {
+        padding: 12px;
+        border-color: #e9ecef;
+    }
+
+    .comparison-table .current {
+        background: #e7f3ff;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .purchase-section {
+        position: sticky;
+        top: 20px;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .purchase-section h3 {
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #212529;
+    }
+
+    .purchase-detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .purchase-detail label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .purchase-detail-value {
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .purchase-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        margin-top: 15px;
+        border-top: 2px solid #e9ecef;
+        font-size: 1.1rem;
+    }
+
+    .purchase-total .total-label {
+        font-weight: 700;
+    }
+
+    .purchase-total .total-amount {
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .btn-purchase {
+        width: 100%;
+        padding: 15px;
+        margin-top: 25px;
+        font-weight: 600;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-purchase-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-purchase-primary:hover {
+        color: white;
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-purchase-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        margin-top: 15px;
+    }
+
+    .btn-purchase-secondary:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .badge-featured {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .warning-box i {
+        color: #ff9800;
+        margin-right: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .detail-header {
+            padding: 30px 0;
+        }
+
+        .detail-title {
+            font-size: 2rem;
+        }
+
+        .detail-price {
+            font-size: 2.5rem;
+        }
+
+        .purchase-section {
+            position: static;
+            margin-top: 30px;
+        }
+
+        .features-section h3 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+    <div class="container">
+        <nav class="breadcrumb-custom" aria-label="breadcrumb">
+            <a href="{% url 'payments:subscription_plans' %}">
+                <i class="bi bi-house"></i> Plans
+            </a>
+            <span> / </span>
+            <span class="active">{{ plan.name }}</span>
+        </nav>
+
+        {% if plan.is_featured %}
+            <span class="badge-featured">
+                <i class="bi bi-star-fill"></i> Featured Plan
+            </span>
+        {% endif %}
+
+        <h1 class="detail-title">{{ plan.name }}</h1>
+        <div class="detail-price">
+            ${{ plan.price|floatformat:2 }}
+            <small>/{{ plan.get_billing_period_display }}</small>
+        </div>
+        <p class="mt-3" style="font-size: 1.1rem; opacity: 0.95;">{{ plan.description }}</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{{ message.tags|default:'info-circle' }}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <!-- Plan Details -->
+            <div class="features-section">
+                <h3><i class="bi bi-check-circle"></i> What's Included</h3>
+                <ul class="features-list">
+                    {% for feature in plan.features.all %}
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>{{ feature.name }}</strong>
+                            {% if feature.description %}
+                                <span style="margin-left: 10px; color: #6c757d; font-size: 0.95rem;">
+                                    {{ feature.description }}
+                                </span>
+                            {% endif %}
+                        </li>
+                    {% empty %}
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>Premium features included</strong>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Plan Information -->
+            <div class="features-section">
+                <h3><i class="bi bi-info-circle"></i> Plan Details</h3>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h4>
+                                <i class="bi bi-calendar-event"></i> Billing Period
+                            </h4>
+                            <div class="info-box-content">
+                                <strong>{{ plan.get_billing_period_display }}</strong>
+                                <p style="margin-top: 8px; font-size: 0.9rem;">
+                                    Automatic renewal every {{ plan.billing_period }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h4>
+                                <i class="bi bi-credit-card"></i> Payment
+                            </h4>
+                            <div class="info-box-content">
+                                <strong>${{ plan.price|floatformat:2 }}</strong>
+                                <p style="margin-top: 8px; font-size: 0.9rem;">
+                                    One-time payment, then auto-renews
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h4>
+                                <i class="bi bi-arrow-repeat"></i> Cancellation
+                            </h4>
+                            <div class="info-box-content">
+                                <strong>Cancel Anytime</strong>
+                                <p style="margin-top: 8px; font-size: 0.9rem;">
+                                    No hidden fees or commitments
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h4>
+                                <i class="bi bi-shield-check"></i> Support
+                            </h4>
+                            <div class="info-box-content">
+                                <strong>24/7 Available</strong>
+                                <p style="margin-top: 8px; font-size: 0.9rem;">
+                                    Email and chat support included
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison with Other Plans -->
+            {% if other_plans %}
+                <div class="comparison-box">
+                    <h4><i class="bi bi-columns-gap"></i> Compare with Other Plans</h4>
+                    <div class="table-responsive">
+                        <table class="table comparison-table">
+                            <thead>
+                                <tr>
+                                    <th class="bg-light">Feature</th>
+                                    <th class="text-center bg-light current">{{ plan.name }}</th>
+                                    {% for other_plan in other_plans %}
+                                        <th class="text-center bg-light">{{ other_plan.name }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for feature in plan.features.all %}
+                                    <tr>
+                                        <td>{{ feature.name }}</td>
+                                        <td class="text-center current">
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                        </td>
+                                        {% for other_plan in other_plans %}
+                                            <td class="text-center">
+                                                {% if feature in other_plan.features.all %}
+                                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                                {% else %}
+                                                    <i class="bi bi-dash-circle text-muted"></i>
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Purchase Summary Sidebar -->
+        <div class="col-lg-4">
+            <div class="purchase-section">
+                <h3>Order Summary</h3>
+
+                {% if user in plan.subscribers.all %}
+                    <div class="warning-box">
+                        <i class="bi bi-info-circle-fill"></i>
+                        You already have an active subscription to this plan.
+                        <a href="{% url 'payments:my_subscriptions' %}" style="text-decoration: underline;">Manage your subscriptions</a>
+                    </div>
+                {% else %}
+                    <div class="purchase-detail">
+                        <label>Plan</label>
+                        <span class="purchase-detail-value">{{ plan.name }}</span>
+                    </div>
+
+                    <div class="purchase-detail">
+                        <label>Billing Period</label>
+                        <span class="purchase-detail-value">{{ plan.get_billing_period_display }}</span>
+                    </div>
+
+                    <div class="purchase-detail">
+                        <label>Auto-Renewal</label>
+                        <span class="purchase-detail-value">
+                            <span class="badge bg-success">Enabled</span>
+                        </span>
+                    </div>
+
+                    <div class="purchase-total">
+                        <span class="total-label">Total</span>
+                        <span class="total-amount">${{ plan.price|floatformat:2 }}</span>
+                    </div>
+
+                    <form method="post" action="{% url 'payments:subscription_purchase' plan.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-purchase btn-purchase-primary">
+                            <i class="bi bi-credit-card"></i> Proceed to Payment
+                        </button>
+                    </form>
+
+                    <a href="{% url 'payments:subscription_plans' %}" class="btn btn-purchase btn-purchase-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Plans
+                    </a>
+
+                    <div class="mt-4 p-3" style="background: #f8f9fa; border-radius: 8px; font-size: 0.9rem; color: #6c757d;">
+                        <i class="bi bi-shield-check"></i>
+                        <strong>Money-back guarantee:</strong> If you're not satisfied, cancel within 30 days for a full refund.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

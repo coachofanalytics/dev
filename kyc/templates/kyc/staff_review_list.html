@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}KYC Review - Staff{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2><i class="bi bi-clipboard-check"></i> KYC Document Review</h2>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Document Type</th>
+                        <th>Status</th>
+                        <th>Uploaded</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in page_obj %}
+                    <tr>
+                        <td>{{ document.user.username }}</td>
+                        <td>{{ document.get_document_type_display }}</td>
+                        <td>
+                            <span class="badge bg-{% if document.status == 'pending' %}warning{% else %}info{% endif %}">
+                                {{ document.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ document.uploaded_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'kyc:staff_review_document' document.id %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No documents pending review</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

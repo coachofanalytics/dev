@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Subscriptions - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    .subscriptions-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 40px;
+    }
+
+    .subscriptions-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .subscriptions-subtitle {
+        opacity: 0.95;
+        font-size: 1.1rem;
+    }
+
+    .subscription-card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 25px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .subscription-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+    }
+
+    .subscription-card.expired {
+        opacity: 0.7;
+        background: #f8f9fa;
+    }
+
+    .subscription-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 20px;
+    }
+
+    .subscription-info {
+        flex: 1;
+    }
+
+    .subscription-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 8px;
+    }
+
+    .subscription-plan-id {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .badge-status {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-left: auto;
+    }
+
+    .badge-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-expired {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-cancelled {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .subscription-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .detail-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .subscription-features {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }
+
+    .subscription-features h5 {
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #212529;
+    }
+
+    .features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .features-list li {
+        display: flex;
+        align-items: center;
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .features-list li i {
+        color: #28a745;
+        margin-right: 8px;
+    }
+
+    .subscription-actions {
+        display: flex;
+        gap: 10px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-renew {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-renew:hover {
+        color: white;
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        text-decoration: none;
+    }
+
+    .btn-cancel {
+        background: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffc107;
+    }
+
+    .btn-cancel:hover {
+        background: #ffc107;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-manage {
+        flex: 1;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-manage:hover {
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-upgrade {
+        flex: 1;
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-upgrade:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-disabled:hover {
+        transform: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #e9ecef;
+        margin-bottom: 20px;
+    }
+
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 10px;
+    }
+
+    .empty-state-text {
+        color: #6c757d;
+        margin-bottom: 30px;
+        font-size: 1.05rem;
+    }
+
+    .renewal-info {
+        background: #e7f3ff;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+    }
+
+    .renewal-info i {
+        color: #667eea;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .renewal-info-content {
+        color: #0c5de4;
+        font-size: 0.95rem;
+    }
+
+    .renewal-info-content strong {
+        color: #0c5de4;
+    }
+
+    .expiration-warning {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+    }
+
+    .expiration-warning i {
+        color: #ff9800;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .expiration-warning-content {
+        color: #856404;
+        font-size: 0.95rem;
+    }
+
+    .tabs-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e9ecef;
+        flex-wrap: wrap;
+    }
+
+    .tab-button {
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #6c757d;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        margin-bottom: -2px;
+    }
+
+    .tab-button.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+    .tab-button:hover {
+        color: #667eea;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .badge-counter {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin-left: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .subscriptions-header {
+            padding: 30px 0;
+        }
+
+        .subscriptions-title {
+            font-size: 2rem;
+        }
+
+        .subscription-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .badge-status {
+            margin-left: 0;
+        }
+
+        .subscription-details {
+            grid-template-columns: 1fr;
+        }
+
+        .subscription-actions {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+        }
+
+        .tabs-container {
+            justify-content: center;
+        }
+
+        .features-list {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="subscriptions-header">
+    <div class="container">
+        <h1 class="subscriptions-title">My Subscriptions</h1>
+        <p class="subscriptions-subtitle">Manage your active and expired subscriptions</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{{ message.tags|default:'info-circle' }}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+        <button class="tab-button active" data-tab="active-tab">
+            <i class="bi bi-check-circle-fill"></i> Active Subscriptions
+            <span class="badge-counter">{{ active_subscriptions|length }}</span>
+        </button>
+        <button class="tab-button" data-tab="expired-tab">
+            <i class="bi bi-x-circle"></i> Expired Subscriptions
+            <span class="badge-counter">{{ expired_subscriptions|length }}</span>
+        </button>
+    </div>
+
+    <!-- Active Subscriptions Tab -->
+    <div id="active-tab" class="tab-content active">
+        {% if active_subscriptions %}
+            {% for subscription in active_subscriptions %}
+                <div class="subscription-card">
+                    <div class="subscription-header">
+                        <div class="subscription-info">
+                            <div class="subscription-name">
+                                <i class="bi bi-star-fill" style="color: #667eea;"></i>
+                                {{ subscription.plan.name }}
+                            </div>
+                            <div class="subscription-plan-id">{{ subscription.plan.description }}</div>
+                        </div>
+                        <span class="badge-status badge-active">
+                            <i class="bi bi-check-circle"></i> Active
+                        </span>
+                    </div>
+
+                    {% if subscription.days_until_expiry <= 7 and subscription.days_until_expiry > 0 %}
+                        <div class="expiration-warning">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div class="expiration-warning-content">
+                                <strong>Expiring Soon:</strong> Your subscription will expire in {{ subscription.days_until_expiry }} day{{ subscription.days_until_expiry|pluralize }}.
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="subscription-details">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-calendar-event"></i> Started
+                            </div>
+                            <div class="detail-value">
+                                {{ subscription.start_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-calendar-check"></i> Expires
+                            </div>
+                            <div class="detail-value">
+                                {{ subscription.end_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-clock-history"></i> Days Remaining
+                            </div>
+                            <div class="detail-value">
+                                {{ subscription.days_until_expiry }} days
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-credit-card"></i> Amount Paid
+                            </div>
+                            <div class="detail-value">
+                                ${{ subscription.plan.price|floatformat:2 }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if subscription.plan.get_features_list %}
+                        <div class="subscription-features">
+                            <h5><i class="bi bi-check-circle"></i> Included Features</h5>
+                            <ul class="features-list">
+                                {% for feature in subscription.plan.get_features_list|slice:":6" %}
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        {{ feature.name }}
+                                    </li>
+                                {% endfor %}
+                                {% if subscription.plan.get_features_list.count > 6 %}
+                                    <li>
+                                        <i class="bi bi-plus-circle"></i>
+                                        +{{ subscription.plan.get_features_list.count|add:"-6" }} more features
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="renewal-info">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="renewal-info-content">
+                            <strong>Manual Renewal:</strong> Your subscription expires on <strong>{{ subscription.end_date|date:"M d, Y" }}</strong>. You will need to manually renew it before expiration.
+                        </div>
+                    </div>
+
+                    <div class="subscription-actions">
+                        {% if subscription.needs_renewal_notification %}
+                        <a href="{% url 'payments:subscription_renew' subscription.id %}" class="btn-action btn-manage" style="background: #667eea; color: white;">
+                            <i class="bi bi-arrow-repeat"></i> Renew Now
+                        </a>
+                        {% else %}
+                        <a href="{% url 'payments:subscription_plans' %}" class="btn-action btn-manage">
+                            <i class="bi bi-eye"></i> View Other Plans
+                        </a>
+                        {% endif %}
+                        <form method="post" action="{% url 'payments:cancel_subscription' subscription.id %}" style="flex: 1;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-action btn-cancel w-100" onclick="return confirm('Are you sure you want to cancel this subscription?');">
+                                <i class="bi bi-x-circle"></i> Cancel Subscription
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3 class="empty-state-title">No Active Subscriptions</h3>
+                <p class="empty-state-text">You don't have any active subscriptions yet.</p>
+                <a href="{% url 'payments:subscription_plans' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Browse Plans
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Expired Subscriptions Tab -->
+    <div id="expired-tab" class="tab-content">
+        {% if expired_subscriptions %}
+            {% for subscription in expired_subscriptions %}
+                <div class="subscription-card expired">
+                    <div class="subscription-header">
+                        <div class="subscription-info">
+                            <div class="subscription-name">
+                                <i class="bi bi-clock-history" style="color: #6c757d;"></i>
+                                {{ subscription.plan.name }}
+                            </div>
+                            <div class="subscription-plan-id">{{ subscription.plan.description }}</div>
+                        </div>
+                        <span class="badge-status badge-expired">
+                            <i class="bi bi-x-circle"></i> Expired
+                        </span>
+                    </div>
+
+                    <div class="subscription-details">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-calendar-event"></i> Started
+                            </div>
+                            <div class="detail-value">
+                                {{ subscription.start_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-calendar-x"></i> Expired
+                            </div>
+                            <div class="detail-value">
+                                {{ subscription.end_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-duration"></i> Duration
+                            </div>
+                            <div class="detail-value">
+                                {{ subscription.plan.duration_days }} days
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-credit-card"></i> Amount Paid
+                            </div>
+                            <div class="detail-value">
+                                ${{ subscription.plan.price|floatformat:2 }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if subscription.plan.get_features_list %}
+                        <div class="subscription-features">
+                            <h5><i class="bi bi-check-circle"></i> Included Features</h5>
+                            <ul class="features-list">
+                                {% for feature in subscription.plan.get_features_list|slice:":6" %}
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        {{ feature.name }}
+                                    </li>
+                                {% endfor %}
+                                {% if subscription.plan.get_features_list.count > 6 %}
+                                    <li>
+                                        <i class="bi bi-plus-circle"></i>
+                                        +{{ subscription.plan.get_features_list.count|add:"-6" }} more features
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="subscription-actions">
+                        <a href="{% url 'payments:subscription_renew' subscription.id %}" class="btn-action btn-renew" style="flex: 1; text-align: center;">
+                            <i class="bi bi-arrow-repeat"></i> Renew Subscription
+                        </a>
+                        <a href="{% url 'payments:subscription_plans' %}" class="btn-action btn-manage">
+                            <i class="bi bi-plus-circle"></i> Browse Other Plans
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3 class="empty-state-title">No Expired Subscriptions</h3>
+                <p class="empty-state-text">You don't have any expired subscriptions.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+
+                // Remove active class from all buttons and contents
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add active class to clicked button and corresponding content
+                this.classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

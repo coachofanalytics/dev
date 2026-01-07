@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your Category - Biashara Bridges</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/auth-pages.css' %}">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-slideshow">
+                <div class="auth-slide active" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-50.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-51.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-52.jpg');"></div>
+            </div>
+            <div class="auth-left-content">
+                <h1>Welcome,<br>{{ user.first_name }}!</h1>
+                <p>Just one more step to complete your profile</p>
+                <div class="feature-list">
+                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Connect with Investors</span></div>
+                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Grow Your Business</span></div>
+                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Find Opportunities</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="auth-right">
+            <div class="auth-form-container">
+                <div class="auth-form-header">
+                    <div class="logo-icon"><i class="bi bi-person-badge"></i></div>
+                    <h2>Select Your Category</h2>
+                    <p>How would you like to use Biashara Bridges?</p>
+                </div>
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-tag"></i> {{ form.category.label }}
+                        </label>
+
+                        {% for choice in form.category.field.queryset %}
+                        <div class="category-option mb-3 p-3 border rounded">
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="{{ form.category.name }}"
+                                       id="category_{{ choice.id }}"
+                                       value="{{ choice.id }}"
+                                       required>
+                                <label class="form-check-label w-100" for="category_{{ choice.id }}">
+                                    <div class="d-flex align-items-start">
+                                        <i class="{{ choice.icon }} fs-3 me-3"></i>
+                                        <div>
+                                            <strong class="d-block">{{ choice.name }}</strong>
+                                            <small class="text-muted">{{ choice.description }}</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% if form.category.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.category.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Continue to Dashboard
+                        </button>
+                    </div>
+                </form>
+
+                <div class="auth-form-footer mt-4">
+                    <p class="text-muted text-center small">
+                        <i class="bi bi-info-circle"></i> You can change this later in your profile settings
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.auth-slide');
+            let currentSlide = 0;
+            function nextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+            setInterval(nextSlide, 5000);
+
+            // Highlight selected category option
+            const categoryOptions = document.querySelectorAll('.category-option');
+            categoryOptions.forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+                radio.addEventListener('change', function() {
+                    categoryOptions.forEach(opt => opt.classList.remove('border-primary', 'bg-light'));
+                    if (this.checked) {
+                        option.classList.add('border-primary', 'bg-light');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,784 @@
+/* ============================================================
+   BIASHARA BRIDGES LANDING PAGE STYLES
+   Bootstrap 5 + Custom Styling with Gold & Navy Theme
+   ============================================================ */
+
+/* IMPORTS - Sans-serif font stack */
+
+/* CSS VARIABLES - Brand Colors */
+:root {
+    --gold-primary: #b49044;
+    --gold-bright: #f7b500;
+    --navy-dark: #111518;
+    --gray-mid: #687279;
+    --gray-light: #edeff2;
+    --white-bg: #ffffff;
+    --brown-text: #714508;
+}
+
+/* ============================================================
+   1. GLOBAL STYLES
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--gray-mid);
+    background-color: var(--white-bg);
+    overflow-x: hidden;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--navy-dark);
+    font-weight: 600;
+}
+
+a {
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* Text color utilities */
+.text-warning {
+    color: var(--gold-bright) !important;
+}
+
+/* ============================================================
+   2. NAVIGATION BAR
+   ============================================================ */
+.navbar {
+    transition: all 0.3s ease;
+    padding: 1rem 0;
+}
+
+.navbar.navbar-scrolled {
+    background-color: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0;
+}
+
+.navbar-brand img {
+    max-height: 50px;
+    transition: all 0.3s ease;
+}
+
+.navbar.navbar-scrolled .navbar-brand img {
+    max-height: 40px;
+}
+
+.navbar-nav .nav-link {
+    color: var(--navy-dark);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--gold-primary);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-link.active::after {
+    width: 80%;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--gold-primary);
+}
+
+.btn-primary {
+    background-color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--gold-bright);
+    border-color: var(--gold-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(180, 144, 68, 0.3);
+}
+
+.btn-outline-primary {
+    border-color: var(--gold-primary);
+    color: var(--gold-primary);
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    color: white;
+}
+
+/* ============================================================
+   3. HERO SECTION
+   ============================================================ */
+.hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 76px; /* Account for fixed navbar */
+}
+
+#heroCarousel,
+.carousel-inner,
+.carousel-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-item {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg,
+        rgba(17, 21, 24, 0.85) 0%,
+        rgba(180, 144, 68, 0.3) 100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    padding: 2rem;
+}
+
+.hero-title {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.08;
+    animation: fadeInUp 1s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+    animation: fadeInUp 1.2s ease-out;
+    max-width: 550px;
+}
+
+.hero-tagline {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    animation: fadeInUp 0.8s ease-out;
+    text-transform: lowercase;
+}
+
+.tagline-line {
+    display: inline-block;
+    width: 40px;
+    height: 2px;
+    background-color: #ffffff;
+    margin-right: 12px;
+}
+
+.hero-cta {
+    animation: fadeInUp 1.4s ease-out;
+}
+
+.hero-cta .btn {
+    margin: 0.5rem;
+    padding: 0.875rem 2rem;
+    font-size: 1.1rem;
+}
+
+.btn-outline-light {
+    border: 2px solid white;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-outline-light:hover {
+    background-color: white;
+    color: var(--navy-dark);
+}
+
+/* Explore Opportunities Button - Gold with White Text */
+.btn-explore {
+    background-color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    color: #ffffff !important;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 0.875rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.btn-explore:hover,
+.btn-explore:focus {
+    background-color: var(--gold-bright);
+    border-color: var(--gold-bright);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(247, 181, 0, 0.4);
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.scroll-indicator a {
+    color: white;
+    font-size: 2rem;
+    animation: bounce 2s infinite;
+}
+
+.scroll-indicator a:hover {
+    color: var(--gold-bright);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* ============================================================
+   4. SECTION COMMON STYLES
+   ============================================================ */
+section {
+    padding: 5rem 0;
+}
+
+.section-header {
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.section-divider {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold-primary), var(--gold-bright));
+    margin: 1rem auto;
+    border-radius: 2px;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--gray-mid);
+}
+
+/* ============================================================
+   5. ABOUT US SECTION
+   ============================================================ */
+.about-section {
+    background-color: var(--white-bg);
+}
+
+.registration-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid var(--gold-primary);
+}
+
+.office-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.office-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.focus-badge {
+    background: white;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.focus-badge:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.focus-badge i {
+    font-size: 2.5rem;
+    color: var(--gold-primary);
+    margin-bottom: 0.5rem;
+}
+
+.focus-badge p {
+    margin: 0;
+    font-weight: 600;
+    color: var(--navy-dark);
+}
+
+/* ============================================================
+   6. SERVICES SECTION
+   ============================================================ */
+.services-section {
+    background-color: #f8f9fa;
+}
+
+.service-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    height: 250px;
+}
+
+.card-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    transition: transform 0.4s ease;
+}
+
+.service-card:hover .card-img-wrapper img {
+    transform: scale(1.1);
+}
+
+.service-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(180, 144, 68, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.service-card:hover .service-overlay {
+    opacity: 1;
+}
+
+.service-overlay i {
+    font-size: 2rem;
+    color: white;
+}
+
+.service-features li {
+    padding-left: 0.5rem;
+}
+
+.service-features i {
+    margin-right: 0.5rem;
+}
+
+/* ============================================================
+   7. PROJECTS SECTION
+   ============================================================ */
+.projects-section {
+    background-color: var(--white-bg);
+}
+
+.project-card {
+    transition: all 0.4s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.project-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2) !important;
+}
+
+.project-img-wrapper {
+    height: 220px;
+}
+
+.project-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.project-card:hover .project-img-wrapper img {
+    transform: scale(1.1) rotate(2deg);
+}
+
+.project-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 2;
+}
+
+.project-badge .badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+.project-highlights {
+    font-size: 0.9rem;
+}
+
+.project-highlights i {
+    margin-right: 0.5rem;
+}
+
+/* ============================================================
+   8. PARTNERS SECTION
+   ============================================================ */
+.partners-section {
+    background-color: #f8f9fa;
+}
+
+/* ============================================================
+   9. WHY CHOOSE US SECTION
+   ============================================================ */
+.why-choose-section {
+    background-color: var(--white-bg);
+}
+
+.benefit-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    height: 100%;
+}
+
+.benefit-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.benefit-icon i {
+    transition: all 0.3s ease;
+}
+
+.benefit-card:hover .benefit-icon i {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* ============================================================
+   10. CONTACT SECTION
+   ============================================================ */
+.contact-section {
+    background-color: #f8f9fa;
+}
+
+.contact-form-wrapper {
+    border-radius: 15px;
+}
+
+.contact-form .form-control,
+.contact-form .form-select {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.contact-form .form-control:focus,
+.contact-form .form-select:focus {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 0.2rem rgba(180, 144, 68, 0.25);
+}
+
+.contact-form .form-label {
+    font-weight: 600;
+    color: var(--navy-dark);
+    margin-bottom: 0.5rem;
+}
+
+.contact-info-card {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.contact-info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.contact-info-card i {
+    transition: transform 0.3s ease;
+}
+
+.contact-info-card:hover i {
+    transform: scale(1.1);
+}
+
+/* ============================================================
+   11. RESPONSIVE DESIGN (Mobile-First)
+   ============================================================ */
+
+/* Extra Small devices (portrait phones, less than 576px) */
+@media (max-width: 575.98px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .hero-cta .btn {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    section {
+        padding: 3rem 0;
+    }
+
+    .navbar-brand img {
+        max-height: 40px;
+    }
+
+    .card-img-wrapper {
+        height: 200px;
+    }
+
+    .project-img-wrapper {
+        height: 180px;
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 0.5rem 1.25rem;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .hero-title {
+        font-size: 3.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .hero-title {
+        font-size: 4rem;
+    }
+
+    .container {
+        max-width: 1200px;
+    }
+}
+
+/* ============================================================
+   12. ANIMATIONS & TRANSITIONS
+   ============================================================ */
+.fade-in {
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Smooth transitions for all interactive elements */
+button,
+a,
+.card,
+.btn {
+    transition: all 0.3s ease;
+}
+
+/* ============================================================
+   13. UTILITY CLASSES
+   ============================================================ */
+.bg-gold-primary {
+    background-color: var(--gold-primary) !important;
+}
+
+.bg-gold-bright {
+    background-color: var(--gold-bright) !important;
+}
+
+.bg-navy-dark {
+    background-color: var(--navy-dark) !important;
+}
+
+.text-gold-primary {
+    color: var(--gold-primary) !important;
+}
+
+.text-gold-bright {
+    color: var(--gold-bright) !important;
+}
+
+.text-navy-dark {
+    color: var(--navy-dark) !important;
+}
+
+/* Shadow utilities */
+.shadow-gold {
+    box-shadow: 0 4px 15px rgba(180, 144, 68, 0.2) !important;
+}
+
+.shadow-gold-lg {
+    box-shadow: 0 10px 30px rgba(180, 144, 68, 0.3) !important;
+}
+
+/* ============================================================
+   14. ACCESSIBILITY IMPROVEMENTS
+   ============================================================ */
+:focus-visible {
+    outline: 2px solid var(--gold-primary);
+    outline-offset: 2px;
+}
+
+/* Skip to content link for screen readers */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--gold-primary);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-to-content:focus {
+    top: 0;
+}
+
+/* Ensure sufficient color contrast */
+a {
+    color: var(--gold-primary);
+}
+
+a:hover {
+    color: var(--gold-bright);
+}
+
+/* ============================================================
+   15. PRINT STYLES
+   ============================================================ */
+@media print {
+    .navbar,
+    .hero-section,
+    .scroll-indicator,
+    .contact-form,
+    footer {
+        display: none;
+    }
+
+    section {
+        page-break-inside: avoid;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+}

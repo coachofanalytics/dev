@@ -1,0 +1,742 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Purchase {{ plan.name }} Subscription{% endblock %}
+
+{% block extra_css %}
+<style>
+    .purchase-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 40px;
+    }
+
+    .purchase-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .purchase-subtitle {
+        opacity: 0.95;
+        font-size: 1rem;
+    }
+
+    .payment-form-section {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        border: 2px solid #e9ecef;
+        margin-bottom: 30px;
+    }
+
+    .form-section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-section-title i {
+        margin-right: 12px;
+        color: #667eea;
+    }
+
+    .payment-method {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        margin-bottom: 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .payment-method:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .payment-method input[type="radio"] {
+        margin-right: 15px;
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+    }
+
+    .payment-method.active {
+        border-color: #667eea;
+        background: #f8f9ff;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .payment-method-content {
+        flex: 1;
+    }
+
+    .payment-method-name {
+        font-weight: 700;
+        color: #212529;
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+
+    .payment-method-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .payment-method-icon {
+        font-size: 1.8rem;
+        color: #667eea;
+        margin-right: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-row.full {
+        grid-template-columns: 1fr;
+    }
+
+    .hidden-field {
+        display: none;
+    }
+
+    .payment-methods-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .order-summary-card {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .order-summary-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        color: #6c757d;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item-label {
+        font-weight: 600;
+    }
+
+    .order-item-value {
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .order-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 0;
+        margin-top: 15px;
+        border-top: 2px solid #e9ecef;
+        font-size: 1.3rem;
+    }
+
+    .order-total-label {
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .order-total-amount {
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .billing-info-preview {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .billing-info-preview strong {
+        color: #212529;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 15px;
+        font-weight: 600;
+        border-radius: 8px;
+        font-size: 1rem;
+        border: none;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .btn-submit-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-submit-primary:hover:not(:disabled) {
+        color: white;
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-submit-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-back {
+        width: 100%;
+        padding: 12px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: #f8f9ff;
+    }
+
+    .security-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        background: #e7f3ff;
+        border-radius: 8px;
+        color: #667eea;
+        font-weight: 600;
+        margin-top: 20px;
+        gap: 8px;
+    }
+
+    .security-badge i {
+        font-size: 1.3rem;
+    }
+
+    .alert-info-custom {
+        background: #e7f3ff;
+        border-left: 4px solid #667eea;
+        color: #0c5de4;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .alert-info-custom i {
+        margin-right: 10px;
+    }
+
+    .terms-checkbox {
+        margin-bottom: 20px;
+    }
+
+    .terms-checkbox input[type="checkbox"] {
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
+
+    .terms-checkbox label {
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
+    .terms-checkbox label a {
+        color: #667eea;
+        text-decoration: none;
+    }
+
+    .terms-checkbox label a:hover {
+        text-decoration: underline;
+    }
+
+    .wallet-info {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        color: #155724;
+    }
+
+    .wallet-balance {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .wallet-amount {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .purchase-header {
+            padding: 25px 0;
+        }
+
+        .purchase-title {
+            font-size: 1.5rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .row > div {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="purchase-header">
+    <div class="container">
+        <h1 class="purchase-title">Complete Your Purchase</h1>
+        <p class="purchase-subtitle">Select a payment method to complete your subscription</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{{ message.tags|default:'info-circle' }}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Order Summary -->
+        <div class="col-lg-5">
+            <div class="order-summary-card">
+                <div class="order-summary-title">
+                    <i class="bi bi-receipt"></i> Order Summary
+                </div>
+
+                <div class="order-item">
+                    <span class="order-item-label">Plan</span>
+                    <span class="order-item-value">{{ plan.name }}</span>
+                </div>
+
+                <div class="order-item">
+                    <span class="order-item-label">Billing Period</span>
+                    <span class="order-item-value">{{ plan.get_billing_period_display }}</span>
+                </div>
+
+                <div class="order-item">
+                    <span class="order-item-label">Description</span>
+                    <span class="order-item-value">{{ plan.description }}</span>
+                </div>
+
+                <div class="order-item">
+                    <span class="order-item-label">Auto-Renewal</span>
+                    <span class="order-item-value">
+                        <span class="badge bg-success">Enabled</span>
+                    </span>
+                </div>
+
+                <div class="order-total">
+                    <span class="order-total-label">Total Amount</span>
+                    <span class="order-total-amount">${{ plan.price|floatformat:2 }}</span>
+                </div>
+
+                <div class="security-badge">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Secure Payment</span>
+                </div>
+            </div>
+
+            <!-- Plan Features Summary -->
+            <div class="order-summary-card">
+                <div class="order-summary-title">
+                    <i class="bi bi-check-circle"></i> Plan Features
+                </div>
+
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    {% for feature in plan.features.all|slice:":5" %}
+                        <li style="padding: 10px 0; display: flex; align-items: center; color: #6c757d;">
+                            <i class="bi bi-check-circle-fill" style="color: #28a745; margin-right: 10px;"></i>
+                            {{ feature.name }}
+                        </li>
+                    {% empty %}
+                        <li style="padding: 10px 0; color: #6c757d;">
+                            <i class="bi bi-check-circle-fill" style="color: #28a745; margin-right: 10px;"></i>
+                            Premium features included
+                        </li>
+                    {% endfor %}
+                    {% if plan.features.all.count > 5 %}
+                        <li style="padding: 10px 0; color: #667eea; font-weight: 600;">
+                            <i class="bi bi-plus-circle"></i> +{{ plan.features.all.count|add:"-5" }} more features
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="col-lg-7">
+            <form method="post" action="{% url 'payments:process_payment' plan.id %}" id="paymentForm">
+                {% csrf_token %}
+
+                <div class="alert-info-custom">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Your payment information is secure and encrypted. We use industry-standard SSL encryption to protect your data.
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="payment-form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-credit-card"></i> Select Payment Method
+                    </div>
+
+                    <div class="payment-methods-grid">
+                        <!-- Wallet Payment -->
+                        <label class="payment-method active" data-method="wallet">
+                            <input type="radio" name="payment_method" value="wallet" checked required>
+                            <i class="bi bi-wallet2 payment-method-icon"></i>
+                            <div class="payment-method-content">
+                                <div class="payment-method-name">Wallet</div>
+                                <div class="payment-method-description">
+                                    Pay using your Biashara Bridges wallet
+                                </div>
+                            </div>
+                        </label>
+
+                        <!-- Stripe Payment -->
+                        <label class="payment-method" data-method="stripe">
+                            <input type="radio" name="payment_method" value="stripe" required>
+                            <i class="bi bi-credit-card payment-method-icon"></i>
+                            <div class="payment-method-content">
+                                <div class="payment-method-name">Credit/Debit Card</div>
+                                <div class="payment-method-description">
+                                    Visa, Mastercard, and American Express
+                                </div>
+                            </div>
+                        </label>
+
+                        <!-- PayPal Payment -->
+                        <label class="payment-method" data-method="paypal">
+                            <input type="radio" name="payment_method" value="paypal" required>
+                            <i class="bi bi-paypal payment-method-icon"></i>
+                            <div class="payment-method-content">
+                                <div class="payment-method-name">PayPal</div>
+                                <div class="payment-method-description">
+                                    Fast and secure PayPal checkout
+                                </div>
+                            </div>
+                        </label>
+
+                        <!-- M-Pesa Payment -->
+                        <label class="payment-method" data-method="mpesa">
+                            <input type="radio" name="payment_method" value="mpesa" required>
+                            <i class="bi bi-phone payment-method-icon"></i>
+                            <div class="payment-method-content">
+                                <div class="payment-method-name">M-Pesa</div>
+                                <div class="payment-method-description">
+                                    Mobile money payment for East Africa
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Wallet Payment Details -->
+                <div id="walletSection" class="payment-form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-wallet-check"></i> Wallet Payment
+                    </div>
+
+                    {% if wallet_balance >= plan.price %}
+                        <div class="wallet-info">
+                            <i class="bi bi-check-circle"></i>
+                            <strong>Your wallet has sufficient balance</strong>
+                            <div class="wallet-balance">
+                                <span>Available Balance:</span>
+                                <span class="wallet-amount">${{ wallet_balance|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Insufficient wallet balance</strong>
+                            <p style="margin: 10px 0 0 0;">
+                                Your current balance is ${{ wallet_balance|floatformat:2 }}, but this plan costs ${{ plan.price|floatformat:2 }}.
+                                <a href="{% url 'payments:add_funds' %}" style="color: #ff9800;">Add funds to your wallet</a>
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <p style="color: #6c757d; margin: 15px 0 0 0; font-size: 0.95rem;">
+                        <i class="bi bi-info-circle"></i>
+                        Payment will be deducted from your wallet balance immediately.
+                    </p>
+                </div>
+
+                <!-- Stripe Payment Details -->
+                <div id="stripeSection" class="payment-form-section hidden-field">
+                    <div class="form-section-title">
+                        <i class="bi bi-credit-card"></i> Card Details
+                    </div>
+
+                    <div class="form-group form-row full">
+                        <div>
+                            <label class="form-label">Cardholder Name</label>
+                            <input type="text" class="form-control" name="card_name" placeholder="John Doe">
+                        </div>
+                    </div>
+
+                    <div class="form-group form-row full">
+                        <div>
+                            <label class="form-label">Card Number</label>
+                            <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                    </div>
+
+                    <div class="form-group form-row">
+                        <div>
+                            <label class="form-label">Expiry Date</label>
+                            <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div>
+                            <label class="form-label">CVV</label>
+                            <input type="text" class="form-control" id="cvv" placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+
+                    <div class="alert-info-custom">
+                        <i class="bi bi-shield-lock"></i>
+                        Your card information is processed securely by Stripe and is never stored on our servers.
+                    </div>
+                </div>
+
+                <!-- PayPal Payment Details -->
+                <div id="paypalSection" class="payment-form-section hidden-field">
+                    <div class="form-section-title">
+                        <i class="bi bi-paypal"></i> PayPal Checkout
+                    </div>
+
+                    <p style="color: #6c757d;">
+                        You will be redirected to PayPal to complete your payment securely.
+                    </p>
+
+                    <div class="alert-info-custom">
+                        <i class="bi bi-info-circle-fill"></i>
+                        PayPal is one of the world's largest and most trusted payment platforms.
+                    </div>
+                </div>
+
+                <!-- M-Pesa Payment Details -->
+                <div id="mpesaSection" class="payment-form-section hidden-field">
+                    <div class="form-section-title">
+                        <i class="bi bi-phone"></i> M-Pesa Payment
+                    </div>
+
+                    <div class="form-group form-row full">
+                        <div>
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="mpesa_phone" placeholder="+254712345678">
+                            <small class="text-muted">Enter your M-Pesa registered phone number</small>
+                        </div>
+                    </div>
+
+                    <p style="color: #6c757d; margin-top: 15px;">
+                        You will receive a prompt on your phone to enter your M-Pesa PIN to complete the payment.
+                    </p>
+                </div>
+
+                <!-- Billing Address -->
+                <div class="payment-form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-house"></i> Billing Address
+                    </div>
+
+                    <div class="form-group form-row full">
+                        <div>
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" name="email" value="{{ user.email }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-row">
+                        <div>
+                            <label class="form-label">Country</label>
+                            <input type="text" class="form-control" name="country" placeholder="United States" required>
+                        </div>
+                        <div>
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" name="city" placeholder="New York" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-row full">
+                        <div>
+                            <label class="form-label">Zip Code</label>
+                            <input type="text" class="form-control" name="zip_code" placeholder="10001" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="payment-form-section">
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="termsCheckbox" name="accept_terms" required>
+                        <label for="termsCheckbox">
+                            I agree to the <a href="{% url 'payments:terms' %}" target="_blank">Terms and Conditions</a> and <a href="{% url 'payments:privacy' %}" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>30-day Money-Back Guarantee:</strong> If you're not satisfied with your subscription, you can request a full refund within 30 days of purchase.
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-submit btn-submit-primary" id="submitBtn">
+                    <i class="bi bi-lock-fill"></i> Complete Purchase - ${{ plan.price|floatformat:2 }}
+                </button>
+
+                <a href="{% url 'payments:subscription_detail' plan.id %}" class="btn btn-back">
+                    <i class="bi bi-arrow-left"></i> Back to Plan
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Payment method selection
+        const paymentMethods = document.querySelectorAll('.payment-method');
+        const walletSection = document.getElementById('walletSection');
+        const stripeSection = document.getElementById('stripeSection');
+        const paypalSection = document.getElementById('paypalSection');
+        const mpesaSection = document.getElementById('mpesaSection');
+
+        paymentMethods.forEach(method => {
+            method.addEventListener('click', function() {
+                // Remove active class from all methods
+                paymentMethods.forEach(m => m.classList.remove('active'));
+                // Add active class to clicked method
+                this.classList.add('active');
+
+                // Hide all sections
+                walletSection.classList.add('hidden-field');
+                stripeSection.classList.add('hidden-field');
+                paypalSection.classList.add('hidden-field');
+                mpesaSection.classList.add('hidden-field');
+
+                // Show relevant section
+                const method = this.dataset.method;
+                if (method === 'wallet') {
+                    walletSection.classList.remove('hidden-field');
+                } else if (method === 'stripe') {
+                    stripeSection.classList.remove('hidden-field');
+                } else if (method === 'paypal') {
+                    paypalSection.classList.remove('hidden-field');
+                } else if (method === 'mpesa') {
+                    mpesaSection.classList.remove('hidden-field');
+                }
+            });
+        });
+
+        // Card number formatting
+        const cardNumberInput = document.getElementById('cardNumber');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = value.replace(/(\d{4})/g, '$1 ').trim();
+                e.target.value = formattedValue;
+            });
+        }
+
+        // Expiry date formatting
+        const expiryInput = document.getElementById('expiryDate');
+        if (expiryInput) {
+            expiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                }
+                e.target.value = value;
+            });
+        }
+
+        // CVV only numbers
+        const cvvInput = document.getElementById('cvv');
+        if (cvvInput) {
+            cvvInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        }
+    });
+</script>
+{% endblock %}

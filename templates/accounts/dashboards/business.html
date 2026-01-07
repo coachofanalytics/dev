@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Business Dashboard - Biashara Bridges{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>
+        <span class="icon-badge stat-icon blue"><i class="bi bi-building-fill"></i></span>
+        Business Dashboard
+    </h2>
+    <a href="{% url 'profile' user.username %}" class="btn btn-view-profile">
+        <i class="bi bi-person-fill"></i> View Profile
+    </a>
+</div>
+
+<!-- Welcome Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="welcome-card business-theme">
+            <h4>Welcome back, {{ user.first_name|default:user.username }}! 🚀</h4>
+            <p>Manage your business profile, connect with investors, and explore partnership opportunities.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-4 mb-md-0">
+        <div class="stat-card text-center">
+            <div class="stat-icon purple">
+                <i class="bi bi-eye-fill"></i>
+            </div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">Profile Views</div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4 mb-md-0">
+        <div class="stat-card text-center">
+            <div class="stat-icon green">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">Investor Connections</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card text-center">
+            <div class="stat-icon cyan">
+                <i class="bi bi-chat-dots-fill"></i>
+            </div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">Messages</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions & Recent Activity -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4 mb-md-0">
+        <div class="modern-card">
+            <div class="card-header blue-header">
+                <span class="header-icon"><i class="bi bi-lightning-fill"></i></span>
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="quick-action-list">
+                <a href="{% url 'marketplace:update_business_profile' %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-pencil-square"></i></span>
+                    <span>Update Business Profile</span>
+                </a>
+                <a href="{% url 'marketplace:post_investment_opportunity' %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-cash-stack"></i></span>
+                    <span>Post Investment Opportunity</span>
+                </a>
+                <a href="{% url 'marketplace:post_job_opportunity' %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-briefcase-fill"></i></span>
+                    <span>Post Job Opportunity</span>
+                </a>
+                <a href="{% url 'marketplace:find_investors' %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-search"></i></span>
+                    <span>Find Investors</span>
+                </a>
+                <a href="{% url 'profile' user.username %}" class="quick-action-item">
+                    <span class="action-icon"><i class="bi bi-person-fill"></i></span>
+                    <span>View Public Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="modern-card">
+            <div class="card-header">
+                <span class="header-icon"><i class="bi bi-clock-history"></i></span>
+                <h5>Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-inbox-fill"></i>
+                    </div>
+                    <p>No recent activity yet.<br>Start connecting with investors!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Business Performance & Investor Interest -->
+<div class="row">
+    <div class="col-md-6 mb-4 mb-md-0">
+        <div class="modern-card">
+            <div class="card-header green-header">
+                <span class="header-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                <h5>Business Performance</h5>
+            </div>
+            <div class="card-body">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
+                    <p>Performance metrics will appear here soon.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="modern-card">
+            <div class="card-header cyan-header">
+                <span class="header-icon"><i class="bi bi-people-fill"></i></span>
+                <h5>Investor Interest</h5>
+            </div>
+            <div class="card-body">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <p>Investor inquiries will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

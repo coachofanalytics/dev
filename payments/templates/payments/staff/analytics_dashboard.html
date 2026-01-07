@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Analytics Dashboard - Biashara Bridges{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .icon-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .icon-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; }
+    .icon-warning { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white; }
+    .icon-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; }
+    .icon-info { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .quick-link {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #333;
+        display: block;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .quick-link:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        color: #667eea;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .chart-placeholder {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 3rem;
+        text-align: center;
+        color: #666;
+    }
+
+    .revenue-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .sub-stat {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .sub-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-chart-bar me-2"></i>Payment Analytics Dashboard</h1>
+                <p class="mb-0 opacity-75">Monitor payment metrics and performance</p>
+            </div>
+            <div>
+                <a href="{% url 'payments:staff_transactions' %}" class="btn btn-light me-2">
+                    <i class="fas fa-list me-2"></i>Transactions
+                </a>
+                <a href="{% url 'payments:staff_fraud_alerts' %}" class="btn btn-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Fraud Alerts
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <a href="{% url 'payments:staff_transactions' %}" class="quick-link">
+                <i class="fas fa-exchange-alt fa-2x mb-2 text-primary"></i>
+                <div>Transactions</div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'payments:staff_fraud_alerts' %}" class="quick-link">
+                <i class="fas fa-shield-alt fa-2x mb-2 text-warning"></i>
+                <div>Fraud Alerts</div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'payments:staff_disputes' %}" class="quick-link">
+                <i class="fas fa-gavel fa-2x mb-2 text-danger"></i>
+                <div>Disputes</div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'admin:index' %}" class="quick-link">
+                <i class="fas fa-cog fa-2x mb-2 text-secondary"></i>
+                <div>Admin Panel</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Today's Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-primary me-3">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">${{ stats.today.volume|floatformat:0 }}</div>
+                        <div class="stat-label">Today's Volume</div>
+                    </div>
+                </div>
+                <hr>
+                <small class="text-muted">{{ stats.today.completed }} completed / {{ stats.today.failed }} failed</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-success me-3">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">${{ stats.this_week.volume|floatformat:0 }}</div>
+                        <div class="stat-label">This Week</div>
+                    </div>
+                </div>
+                <hr>
+                <small class="text-muted">{{ stats.this_week.completed }} transactions</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-info me-3">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">${{ stats.this_month.volume|floatformat:0 }}</div>
+                        <div class="stat-label">This Month</div>
+                    </div>
+                </div>
+                <hr>
+                <small class="text-muted">{{ stats.this_month.completed }} transactions</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-danger me-3">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">{{ stats.disputes.open }}</div>
+                        <div class="stat-label">Open Disputes</div>
+                    </div>
+                </div>
+                <hr>
+                <a href="{% url 'payments:staff_disputes' %}" class="text-decoration-none">View all <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Revenue Chart Area -->
+        <div class="col-lg-8">
+            <div class="section-card">
+                <h5 class="section-title"><i class="fas fa-chart-line me-2"></i>Revenue Trend (Last 30 Days)</h5>
+                <div class="table-responsive">
+                    <table class="table revenue-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th class="text-end">Revenue</th>
+                                <th class="text-end">Deposits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in revenue_data|slice:":10" %}
+                            <tr>
+                                <td>{{ data.period }}</td>
+                                <td class="text-end text-success">${{ data.revenue|floatformat:2 }}</td>
+                                <td class="text-end">${{ data.deposits|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription Stats -->
+        <div class="col-lg-4">
+            <div class="section-card">
+                <h5 class="section-title"><i class="fas fa-users me-2"></i>Subscriptions</h5>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="sub-stat">
+                            <div class="sub-stat-value text-success">{{ subscription_stats.active }}</div>
+                            <small class="text-muted">Active</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="sub-stat">
+                            <div class="sub-stat-value text-warning">{{ stats.subscriptions.expiring_soon }}</div>
+                            <small class="text-muted">Expiring Soon</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="sub-stat">
+                            <div class="sub-stat-value text-primary">${{ subscription_stats.mrr|floatformat:0 }}</div>
+                            <small class="text-muted">MRR</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="sub-stat">
+                            <div class="sub-stat-value text-danger">{{ subscription_stats.churn_rate }}%</div>
+                            <small class="text-muted">Churn Rate</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="mt-4 mb-3">By Plan</h6>
+                {% for plan, count in subscription_stats.by_plan.items %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span>{{ plan }}</span>
+                    <span class="fw-bold">{{ count }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No subscriptions</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

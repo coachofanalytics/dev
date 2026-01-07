@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Biashara Bridges</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/landing/favicon.jpg' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'core/css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth-pages.css' %}">
+    <style>
+        .auth-page { padding-top: 76px; }
+        .auth-container { min-height: calc(100vh - 76px); }
+    </style>
+</head>
+<body class="auth-page">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:landing' %}">
+                <img src="{% static 'core/images/landing/logo.png' %}" alt="Biashara Bridges" height="50"><span class="ms-2 fw-bold text-dark d-none d-md-inline" style="font-size: 1.2rem;">Biashara Bridges</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:landing' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:projects' %}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:partners' %}">Partners</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:news' %}">News</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-none d-lg-flex">
+                <a href="{% url 'login' %}" class="btn btn-outline-dark me-2">Login</a>
+                <a href="{% url 'onboarding:register' %}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-slideshow">
+                <div class="auth-slide active" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-50.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-51.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-52.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/WhatsApp-Image-2025-08-29-at-14.38.48_03a152b6.jpg');"></div>
+                <div class="auth-slide" style="background-image: url('https://biasharabridges.com/wp-content/uploads/2025/09/Biashara-bridges-LLC-48.jpg');"></div>
+            </div>
+            <div class="auth-left-content">
+                <h1 class="text-white">Join<br>Biashara Bridges</h1>
+                <p>Create your account and unlock opportunities across Africa and beyond</p>
+                <div class="feature-list">
+                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Network with Business Leaders</span></div>
+                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Find Investment Opportunities</span></div>
+                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Grow Your Business</span></div>
+                    <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Connect Globally</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="auth-right">
+            <div class="auth-form-container">
+                <div class="auth-form-header">
+                    <div class="logo-icon"><i class="bi bi-person-plus-fill"></i></div>
+                    <h2>Create Your Account</h2>
+                    <p>Join Biashara Bridges today - Quick and easy signup</p>
+                </div>
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person"></i> First Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                                   id="{{ form.first_name.id_for_label }}"
+                                   name="{{ form.first_name.name }}"
+                                   value="{{ form.first_name.value|default:'' }}"
+                                   placeholder="Enter first name"
+                                   autocomplete="given-name"
+                                   required>
+                            {% if form.first_name.errors %}
+                            <div class="invalid-feedback">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person"></i> Last Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                                   id="{{ form.last_name.id_for_label }}"
+                                   name="{{ form.last_name.name }}"
+                                   value="{{ form.last_name.value|default:'' }}"
+                                   placeholder="Enter last name"
+                                   autocomplete="family-name"
+                                   required>
+                            {% if form.last_name.errors %}
+                            <div class="invalid-feedback">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="bi bi-envelope"></i> Email Address <span class="text-danger">*</span>
+                        </label>
+                        <input type="email"
+                               class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                               id="{{ form.email.id_for_label }}"
+                               name="{{ form.email.name }}"
+                               value="{{ form.email.value|default:'' }}"
+                               placeholder="your.email@example.com"
+                               autocomplete="email"
+                               required>
+                        {% if form.email.errors %}
+                        <div class="invalid-feedback">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">
+                            <i class="bi bi-tag"></i> I am a... <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select {% if form.category.errors %}is-invalid{% endif %}"
+                                id="{{ form.category.id_for_label }}"
+                                name="{{ form.category.name }}"
+                                required>
+                            <option value="">-- Select Category --</option>
+                            {% for choice in form.category.field.queryset %}
+                            <option value="{{ choice.id }}" {% if form.category.value == choice.id|stringformat:"s" %}selected{% endif %}>
+                                {{ choice.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.category.errors %}
+                        <div class="invalid-feedback">{{ form.category.errors }}</div>
+                        {% else %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> {{ form.category.help_text }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock"></i> Password <span class="text-danger">*</span>
+                        </label>
+                        <input type="password"
+                               class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                               id="{{ form.password.id_for_label }}"
+                               name="{{ form.password.name }}"
+                               placeholder="Create a strong password"
+                               autocomplete="new-password"
+                               required>
+                        {% if form.password.errors %}
+                        <div class="invalid-feedback">{{ form.password.errors }}</div>
+                        {% else %}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Minimum 8 characters required
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.password_confirm.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock-fill"></i> Confirm Password <span class="text-danger">*</span>
+                        </label>
+                        <input type="password"
+                               class="form-control {% if form.password_confirm.errors %}is-invalid{% endif %}"
+                               id="{{ form.password_confirm.id_for_label }}"
+                               name="{{ form.password_confirm.name }}"
+                               placeholder="Re-enter your password"
+                               autocomplete="new-password"
+                               required>
+                        {% if form.password_confirm.errors %}
+                        <div class="invalid-feedback">{{ form.password_confirm.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox"
+                               class="form-check-input {% if form.gdpr_consent.errors %}is-invalid{% endif %}"
+                               id="{{ form.gdpr_consent.id_for_label }}"
+                               name="{{ form.gdpr_consent.name }}"
+                               required>
+                        <label class="form-check-label" for="{{ form.gdpr_consent.id_for_label }}">
+                            I agree to the <a href="{% url 'terms_of_service' %}" target="_blank" class="text-decoration-none">Terms & Conditions</a> and <a href="{% url 'privacy_policy' %}" target="_blank" class="text-decoration-none">Privacy Policy</a> <span class="text-danger">*</span>
+                        </label>
+                        {% if form.gdpr_consent.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.gdpr_consent.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-check"></i> Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <div class="divider my-4">
+                    <span>OR</span>
+                </div>
+
+                <div class="social-login-buttons">
+                    <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-google">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18px" height="18px">
+                            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        </svg>
+                        <span>Sign up with Google</span>
+                    </a>
+                    <a href="{% url 'social:begin' 'facebook' %}" class="btn btn-facebook">
+                        <i class="bi bi-facebook"></i>
+                        <span>Sign up with Facebook</span>
+                    </a>
+                </div>
+
+                <div class="auth-form-footer">
+                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Sign in here <i class="bi bi-arrow-right"></i></a></p>
+                    <p class="mt-3 mb-0"><a href="{% url 'home' %}"><i class="bi bi-house"></i> Back to Home</a></p>
+                    <p class="mt-2 mb-0 text-muted" style="font-size: 0.9rem;">
+                        <a href="{% url 'privacy_policy' %}" class="text-muted"><i class="bi bi-shield-check"></i> Privacy Policy</a> •
+                        <a href="{% url 'terms_of_service' %}" class="text-muted"><i class="bi bi-file-text"></i> Terms of Service</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.auth-slide');
+            let currentSlide = 0;
+            function nextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+            setInterval(nextSlide, 5000);
+        });
+    </script>
+</body>
+</html>

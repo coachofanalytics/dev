@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Fraud Alerts - Staff Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --purple-start: #667eea;
+        --purple-end: #764ba2;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .status-tabs {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .status-tab {
+        border: none;
+        background: #f8f9fa;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .status-tab:hover, .status-tab.active {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        color: white;
+    }
+
+    .status-tab .badge {
+        margin-left: 0.5rem;
+    }
+
+    .alert-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1rem;
+        border-left: 4px solid #ffc107;
+        transition: all 0.3s ease;
+    }
+
+    .alert-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .alert-card.severity-high { border-left-color: #dc3545; }
+    .alert-card.severity-medium { border-left-color: #ffc107; }
+    .alert-card.severity-low { border-left-color: #28a745; }
+
+    .severity-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .severity-high { background: #f8d7da; color: #721c24; }
+    .severity-medium { background: #fff3cd; color: #856404; }
+    .severity-low { background: #d4edda; color: #155724; }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-investigating { background: #d1ecf1; color: #0c5460; }
+    .status-resolved { background: #d4edda; color: #155724; }
+    .status-false_positive { background: #e2e3e5; color: #383d41; }
+    .status-confirmed_fraud { background: #f8d7da; color: #721c24; }
+
+    .user-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-resolve {
+        background: linear-gradient(135deg, var(--purple-start) 0%, var(--purple-end) 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
+
+    .btn-resolve:hover {
+        transform: scale(1.05);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-shield-alt me-2"></i>Fraud Alerts</h1>
+                <p class="mb-0 opacity-75">Review and manage suspicious activity alerts</p>
+            </div>
+            <a href="{% url 'payments:staff_analytics_dashboard' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+        <a href="?status=pending" class="btn status-tab {% if selected_status == 'pending' %}active{% endif %}">
+            Pending <span class="badge bg-warning text-dark">{{ status_counts.pending }}</span>
+        </a>
+        <a href="?status=investigating" class="btn status-tab {% if selected_status == 'investigating' %}active{% endif %}">
+            Investigating <span class="badge bg-info">{{ status_counts.investigating }}</span>
+        </a>
+        <a href="?status=resolved" class="btn status-tab {% if selected_status == 'resolved' %}active{% endif %}">
+            Resolved <span class="badge bg-success">{{ status_counts.resolved }}</span>
+        </a>
+        <a href="?status=false_positive" class="btn status-tab {% if selected_status == 'false_positive' %}active{% endif %}">
+            False Positive <span class="badge bg-secondary">{{ status_counts.false_positive }}</span>
+        </a>
+        <a href="?status=confirmed_fraud" class="btn status-tab {% if selected_status == 'confirmed_fraud' %}active{% endif %}">
+            Confirmed Fraud <span class="badge bg-danger">{{ status_counts.confirmed_fraud }}</span>
+        </a>
+        <a href="?status=all" class="btn status-tab {% if selected_status == 'all' %}active{% endif %}">
+            All
+        </a>
+    </div>
+
+    <!-- Alert Type Filter -->
+    <div class="mb-4">
+        <span class="me-2">Filter by type:</span>
+        <a href="?status={{ selected_status }}" class="btn btn-sm btn-outline-secondary {% if not selected_type %}active{% endif %}">All</a>
+        {% for type_code, type_label in alert_types %}
+        <a href="?status={{ selected_status }}&type={{ type_code }}" class="btn btn-sm btn-outline-secondary {% if selected_type == type_code %}active{% endif %}">
+            {{ type_label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Alerts List -->
+    {% for alert in alerts %}
+    <div class="alert-card severity-{{ alert.severity }}">
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="severity-badge severity-{{ alert.severity }} me-2">{{ alert.severity }}</span>
+                    <span class="status-badge status-{{ alert.status }}">{{ alert.get_status_display }}</span>
+                </div>
+                <h5 class="mb-2">{{ alert.get_alert_type_display }}</h5>
+                <p class="text-muted mb-2">{{ alert.description }}</p>
+                <div class="user-info">
+                    <i class="fas fa-user me-2"></i>
+                    <strong>{{ alert.user.username }}</strong> ({{ alert.user.email }})
+                    {% if alert.transaction %}
+                    <span class="ms-3"><i class="fas fa-receipt me-1"></i>{{ alert.transaction.transaction_id }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <small class="text-muted d-block">Created</small>
+                <span>{{ alert.created_at|date:"M d, Y H:i" }}</span>
+                {% if alert.reviewed_by %}
+                <div class="mt-2">
+                    <small class="text-muted d-block">Reviewed by</small>
+                    <span>{{ alert.reviewed_by.username }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-2 text-end">
+                {% if alert.status == 'pending' or alert.status == 'investigating' %}
+                <a href="{% url 'payments:staff_resolve_fraud_alert' alert.id %}" class="btn btn-resolve">
+                    <i class="fas fa-check me-1"></i>Resolve
+                </a>
+                {% else %}
+                <span class="text-muted">
+                    <i class="fas fa-check-circle text-success"></i> Resolved
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="fas fa-shield-alt fa-4x text-success mb-3"></i>
+        <h4>No Fraud Alerts</h4>
+        <p class="text-muted">No alerts matching your filters</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
