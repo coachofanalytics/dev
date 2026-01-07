@@ -99,7 +99,7 @@ class DocumentationRequestForm(forms.ModelForm):
         ('','Select Service'),
         ('birth', 'Birth Certificate'),
         ('marriage', 'Marriage Certificate'),
-        ('police_clearance', 'Police Clearanc (Good Conduct)'),
+        ('police_clearance', 'Police Clearance (Good Conduct)'),
         ('legalization', 'Legalization/Apostille (MFA)'),
         ('notarization', 'Notarization/Oath Commissioner'),
         ('other', 'Other/Custom'),
@@ -149,7 +149,7 @@ class DocumentationRequestForm(forms.ModelForm):
                 'placeholder': '+254 7XX XXX XXX',
             }
         ), label="Phone Number")
-    destination = forms.CharField(
+    destination_country = forms.CharField(
         widget=forms.TextInput(
             attrs={
                 'id': 'destination_country',
@@ -157,6 +157,15 @@ class DocumentationRequestForm(forms.ModelForm):
                 'placeholder': 'e.g., USA, Germany, UAE',
             }
         ), label="Destination Country")
+    description = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                'id': 'description',
+                'class': 'form-input bg-white',
+                'rows': 4,
+                'placeholder': 'Explain what the document is needed for and any deadlines...',
+            }
+        ), label="Brief Description of Need")
     consent = forms.BooleanField(
         widget=forms.CheckboxInput(
             attrs={

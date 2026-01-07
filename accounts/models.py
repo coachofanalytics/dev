@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from accounts.choices import CategoryChoices, SubCategoryChoices
 from accounts.modelmanager import DepartmentManager
-from django_countries.fields import CountryField
+# from django_countries.fields import CountryField
 
 
 

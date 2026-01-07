@@ -660,11 +660,11 @@ def scholarship_search(request):
 #=======
     return render(request, 'scholarship_app/scholarship_search.html', context)
 
-def service_spa(request):
+def services_spa(request):
     form = DocumentationRequestForm()
     return render(request, 'main/index.html',{'form': form})
 @require_POST
-def submit_request(request):
+def submit_reques(request):
     form = DocumentationRequestForm(request.POST)
     if form.is_valid():
         try:
@@ -672,15 +672,14 @@ def submit_request(request):
             document_request.status = 'Pending'
             document_request.save()
             success_message = (
-                f"Thank you for you {document_request.full_name} has been submitted successfully."
-                f" Your document reques for {document_request.get_type_display()} has been submitted successfully."
-                f" We will get back to you at {document_request.email} as soon as possible."
+                f"Thank you, {document_request.full_name}. "
+                f"Your document request for {document_request.get_document_type_display()} has been submitted successfully. "
+                f"We will get back to you at {document_request.email} as soon as possible."
             )
             return JsonResponse({
                 'success': True, 
                 'message': success_message,
-                'redirect_id': 'document_request.id',
-                
+                'redirect_id': document_request.id,
                 })
         except Exception as e:
             return JsonResponse({

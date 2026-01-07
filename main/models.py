@@ -311,7 +311,7 @@ class DocumentationRequest(models.Model):
     DOCUMENTATION_TYPES = (
        ('birth', 'Birth Certificate'),
        ('marriage', 'Marriage Certificate'),
-       ('police_clearance', 'Police Clearanc (Good Conduct)'),
+       ('police_clearance', 'Police Clearance (Good Conduct)'),
        ('legalization', 'Legalization/Apostille (MFA)'),
        ('notarization', 'Notarization/Oath Commissioner'),
        ('other', 'Other/Custom'),

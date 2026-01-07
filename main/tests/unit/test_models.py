@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from main.models import Scholarship, TrainingCourse
+from main.models import Scholarship, TrainingCourse, DocumentationRequest
 
 
 class EducationModelsTest(TestCase):
@@ -30,4 +30,19 @@ class EducationModelsTest(TestCase):
 		)
 		self.assertIsNotNone(t.id)
 		self.assertEqual(str(t), 'Test Course')
+
+class DocumentationModelsTest(TestCase):
+	def test_create_documentation_request_and_str(self):
+		dr = DocumentationRequest.objects.create(
+			full_name='Test User',
+			email='test@example.com',
+			phone='+1234567890',
+			document_type='birth',
+			destination_country='USA',
+			description='Need birth certificate for visa',
+			consent=True
+		)
+		self.assertIsNotNone(dr.id)
+		self.assertEqual(str(dr), 'Test User (Birth Certificate)')
+		self.assertEqual(dr.status, 'Pending')
 
