@@ -270,7 +270,7 @@ def crisis_page(request):
 
 
 def our_service(request):
-    services = Service.objects.all()
+    services = Service.objects.all().order_by('ordering')
     return render(request, "main/our_service.html", {"services": services})
 
 def financial_planning(request):

@@ -238,223 +238,81 @@
             </p>
         </section>
 
-        <!-- SERVICES DETAILED BLOCKS (Alternating Layout) - Content remains the same as requested -->
+        <!-- SERVICES DETAILED BLOCKS (Dynamic Loop) -->
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            <!-- 1. Consular Assistance (Image Left) -->
-            <div id="consular"
+            {% for service in services %}
+            <div id="{{ service.slug }}"
                 class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
-                <!-- Image -->
+
+                <!-- Logic for Alternating Layout (Odd = Image Left, Even = Image Right) -->
+                {% if forloop.counter|divisibleby:2 %}
+                <!-- EVEN: Content Left, Image Right -->
                 <div class="lg:order-1">
-                    <img id="image-consular" src="{% static 'main/img/consularAssistance.png' %}"
-                        alt="Consular Assistance" class="w-full rounded-xl shadow-lg object-cover">
-                </div>
-                <!-- Content -->
-                <div class="lg:order-2">
-                    <!-- Title color is Brand Green (text-brand-green) -->
-                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Consular Assistance</h3>
-                    <p class="text-gray-700 mb-6">
-                        After losing her passport in a foreign country, Jane Matiko struggled to find a way home. Jane
-                        received DC48K consular support, helping navigate the bureaucratic maze and expediting her
-                        return.
-                    </p>
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">{{ service.title }}</h3>
+                    <p class="text-gray-700 mb-6">{{ service.description }}</p>
                     <ul class="service-list text-gray-600 mb-8">
-                        <li>Emergency Travel Documents</li>
-                        <li>Legal Aid and Referrals</li>
-                        <li>Notarization Services</li>
-                        <li>Assistance in Case of Arrest or Detention</li>
+                        {% for sub in service.subservices.all %}
+                        <li>{{ sub.title }}</li>
+                        {% endfor %}
                     </ul>
-                    <!-- CTA Button added: Remaining "Contact Our Experts" -->
+
+                    <!-- CTA Button -->
+                    {% if service.cta_link == '#' %}
                     <a href="#"
                         class="open-expert-modal mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
-                        Contact Our Experts
+                        {{ service.cta_text }}
                     </a>
-                </div>
-            </div>
-
-            <!-- 2. Document Services/preparation (Image Right) -->
-            <div id="documents"
-                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
-                <!-- Content -->
-                <div class="lg:order-1">
-                    <!-- Title color is Brand Green (text-brand-green) -->
-                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Document Services/preparation</h3>
-                    <p class="text-gray-700 mb-6">
-                        Otieno was facing hurdles in finalizing his immigration document. Document Services/Preparation
-                        provided invaluable assistance in compiling, reviewing, and completing his application to ensure
-                        accuracy and compliance.
-                    </p>
-                    <ul class="service-list text-gray-600 mb-8">
-                        <li>Application Assistance and Review</li>
-                        <li>Translation Services</li>
-                        <li>Document Review and Authentication</li>
-                        <li>Birth/Death Certificate Registration Support</li>
-                    </ul>
-                    <!-- CTA Button added: UPDATED to "Get Assistance" -->
-                    <a href="{% url 'main:document_services' %}"
+                    {% else %}
+                    <a href="{% if ':' in service.cta_link %}{% url service.cta_link %}{% elif service.cta_link == 'home' %}{% url 'home' %}{% else %}{{ service.cta_link }}{% endif %}"
                         class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
-                        Get Assistance
+                        {{ service.cta_text }}
                     </a>
+                    {% endif %}
                 </div>
-                <!-- Image -->
                 <div class="lg:order-2">
-                    <img id="image-documents" src="{% static 'main/img/documentServicespreparation.png' %}"
-                        alt="Document Services" class="w-full rounded-xl shadow-lg object-cover">
+                    {% if service.image %}
+                    <img src="{{ service.image.url }}" alt="{{ service.title }}"
+                        class="w-full rounded-xl shadow-lg object-cover">
+                    {% else %}
+                    <div class="loading-placeholder rounded-xl shadow-lg">No Image</div>
+                    {% endif %}
                 </div>
-            </div>
 
-            <!-- 3. Healthcare Information (Image Left) -->
-            <div id="healthcare"
-                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
-                <!-- Image -->
+                {% else %}
+                <!-- ODD: Image Left, Content Right -->
                 <div class="lg:order-1">
-                    <img id="image-healthcare" src="{% static 'main/img/healthcareproviders.png' %}"
-                        alt="Healthcare Information" class="w-full rounded-xl shadow-lg object-cover">
+                    {% if service.image %}
+                    <img src="{{ service.image.url }}" alt="{{ service.title }}"
+                        class="w-full rounded-xl shadow-lg object-cover">
+                    {% else %}
+                    <div class="loading-placeholder rounded-xl shadow-lg">No Image</div>
+                    {% endif %}
                 </div>
-                <!-- Content -->
                 <div class="lg:order-2">
-                    <!-- Title color is Brand Green (text-brand-green) -->
-                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Healthcare Information</h3>
-                    <p class="text-gray-700 mb-6">
-                        Recovering from an illness abroad, Brian Omondi utilized Healthcare Information services to
-                        understand his options and find a suitable, vetted doctor for his specific treatment needs in a
-                        foreign system.
-                    </p>
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">{{ service.title }}</h3>
+                    <p class="text-gray-700 mb-6">{{ service.description }}</p>
                     <ul class="service-list text-gray-600 mb-8">
-                        <li>Medical Referrals and Vetting</li>
-                        <li>Insurance Guidance and Enrollment Support</li>
-                        <li>Health Seminars and Wellness Programs</li>
-                        <li>Mental Health Resource Access</li>
+                        {% for sub in service.subservices.all %}
+                        <li>{{ sub.title }}</li>
+                        {% endfor %}
                     </ul>
-                    <!-- CTA Button added: UPDATED to "Find Healthcare Providers" -->
+
+                    <!-- CTA Button -->
+                    {% if service.cta_link == '#' %}
                     <a href="#"
-                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
-                        Find Healthcare Providers
+                        class="open-expert-modal mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        {{ service.cta_text }}
                     </a>
-                </div>
-            </div>
-
-            <!-- 4. Financial Services (Image Right) -->
-            <div id="financial"
-                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
-                <!-- Content -->
-                <div class="lg:order-1">
-                    <!-- Title color is Brand Green (text-brand-green) -->
-                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Financial Services</h3>
-                    <p class="text-gray-700 mb-6">
-                        Peter was advised on safer investment strategies through Financial Services after an initial
-                        venture failed. We help members secure their hard-earned assets and plan for long-term financial
-                        stability.
-                    </p>
-                    <ul class="service-list text-gray-600 mb-8">
-                        <li>Investment Advice and Planning</li>
-                        <li>Currency Exchange Information</li>
-                        <li>Reliable Remittance Assistance</li>
-                        <li>Tax and Compliance Guidance</li>
-                    </ul>
-                    <!-- CTA Button added: UPDATED to "Start Financial Planning" -->
-                    <a href="{% url 'finance:planning_list' %}"
+                    {% else %}
+                    <a href="{% if ':' in service.cta_link %}{% url service.cta_link %}{% elif service.cta_link == 'home' %}{% url 'home' %}{% else %}{{ service.cta_link }}{% endif %}"
                         class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
-                        Start Financial Planning
+                        {{ service.cta_text }}
                     </a>
+                    {% endif %}
                 </div>
-                <!-- Image -->
-                <div class="lg:order-2">
-                    <img id="image-financial" src="{% static 'main/img/financialserices.png' %}"
-                        alt="Financial Services" class="w-full rounded-xl shadow-lg object-cover">
-                </div>
+                {% endif %}
             </div>
-
-            <!-- 5. Community Support (Image Left) -->
-            <div id="community"
-                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
-                <!-- Image -->
-                <div class="lg:order-1">
-                    <img id="image-community" src="{% static 'main/img/communitysupport.png' %}" alt="Community Support"
-                        class="w-full rounded-xl shadow-lg object-cover">
-                </div>
-                <!-- Content -->
-                <div class="lg:order-2">
-                    <!-- Title color is Brand Green (text-brand-green) -->
-                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Community Support</h3>
-                    <p class="text-gray-700 mb-6">
-                        Moving to a new city can be isolating. Our Community Support programs ensure you have immediate
-                        connections and access to cultural events that make you feel at home, fostering a strong sense
-                        of belonging.
-                    </p>
-                    <ul class="service-list text-gray-600 mb-8">
-                        <li>Cultural Events and Festivals</li>
-                        <li>Wellness and Counseling Programs</li>
-                        <li>Social Networking Meetups (Local Chapters)</li>
-                        <li>Newcomer Orientation Assistance</li>
-                    </ul>
-                    <!-- CTA Button added: UPDATED to "Join the Community" -->
-                    <a href="{% url 'home' %}"
-                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
-                        Join the Community
-                    </a>
-                </div>
-            </div>
-
-            <!-- 6. Crisis Management (Image Right) -->
-            <div id="crisis" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
-                <!-- Content -->
-                <div class="lg:order-1">
-                    <!-- Title color is Brand Green (text-brand-green) -->
-                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Crisis Management</h3>
-                    <p class="text-gray-700 mb-6">
-                        During natural disasters or civil unrest, rapid, reliable information is key. Our 24/7 Crisis
-                        Management team provides real-time alerts, necessary evacuation guidance, and emergency
-                        communication channels.
-                    </p>
-                    <ul class="service-list text-gray-600 mb-8">
-                        <li>24/7 Emergency Hotline Access</li>
-                        <li>Real-time Security and Safety Alerts</li>
-                        <li>Emergency Planning and Evacuation Guidance</li>
-                        <li>Disaster Relief Coordination</li>
-                    </ul>
-                    <!-- CTA Button added:  "Leads the user to te crisi management page" -->
-                    <a href="{% url 'main:crisis_page' %}"
-                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
-                        Contact Our Crisis Team
-                    </a>
-                </div>
-                <!-- Image -->
-                <div class="lg:order-2">
-                    <img id="image-crisis" src="{% static 'main/img/crisismanagement.png' %}" alt="Crisis Management"
-                        class="w-full rounded-xl shadow-lg object-cover">
-                </div>
-            </div>
-
-            <!-- 7. Education and Training (Image Left) -->
-            <div id="education"
-                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
-                <!-- Image -->
-                <div class="lg:order-1">
-                    <img id="image-education" src="{% static 'main/img/educationandtraining.png' %}"
-                        alt="Education and Training" class="w-full rounded-xl shadow-lg object-cover">
-                </div>
-                <!-- Content -->
-                <div class="lg:order-2">
-                    <!-- Title color is Brand Green (text-brand-green) -->
-                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">Education and Training</h3>
-                    <p class="text-gray-700 mb-6">
-                        Mercy used our Education and Training services to find accredited online courses and career
-                        mentorship tailored for the diaspora market, helping her upskill for a major career promotion.
-                    </p>
-                    <ul class="service-list text-gray-600 mb-8">
-                        <li>Scholarship Guidance and Application Support</li>
-                        <li>Professional Development Workshops</li>
-                        <li>Skills Training and Certification Resources</li>
-                        <li>Career Mentorship Programs</li>
-                    </ul>
-                    <!-- CTA Button added: UPDATED to "Explore Educational Opportunities" -->
-                    <a href="{% url 'main:education_landing' %}"
-                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
-                        Explore Educational Opportunities
-                    </a>
-                </div>
-            </div>
+            {% endfor %}
         </section>
     </main>
 

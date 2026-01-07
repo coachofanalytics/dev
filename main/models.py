@@ -73,7 +73,15 @@ class Feedback(models.Model):
 
 class Service(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='services/', blank=True, null=True)
+    ordering = models.PositiveIntegerField(default=0)
+    slug = models.SlugField(blank=True, null=True, help_text="Unique ID for anchors (e.g. 'consular', 'financial')")
+    cta_text = models.CharField(max_length=100, default="Learn More", blank=True, null=True, help_text="Text for the call-to-action button")
+    cta_link = models.CharField(max_length=255, default="#", blank=True, null=True, help_text="URL name or path for the button")
+
+    class Meta:
+        ordering = ['ordering']
 
     def __str__(self):
         return self.title
@@ -82,7 +90,7 @@ class Service(models.Model):
 class SubService(models.Model):
     service = models.ForeignKey(Service, related_name='subservices', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.title} - {self.service}"
