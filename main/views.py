@@ -19,7 +19,8 @@ from .models import Assets,Description, News, Page, Service,Scholarship, SubServ
 #=======
 from .models import (
     Assets, Description, News, Page, Service, Scholarship, SubService, Team,
-    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry
+    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry,
+    ExpertServiceRequest, DocumentServiceRequest, Testimonial, GlobalSetting
 )
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
@@ -94,8 +95,14 @@ def contact_expert(request):
             urgency = form.cleaned_data['urgency']
             message = form.cleaned_data['message']
             
-            # Print to console for verification
-            print(f"Expert Request Received: Service={service}, Location={location}, Urgency={urgency}, Msg={message}")
+            # Save to Database
+            ExpertServiceRequest.objects.create(
+                service_type=service,
+                location=location,
+                urgency=urgency,
+                message=message,
+                user=request.user if request.user.is_authenticated else None
+            )
             
             return JsonResponse({'status': 'success', 'message': 'Request submitted successfully!'})
         else:
@@ -270,7 +277,7 @@ def crisis_page(request):
 
 
 def our_service(request):
-    services = Service.objects.all().order_by('ordering')
+    services = Service.objects.prefetch_related('subservices').order_by('ordering')
     return render(request, "main/our_service.html", {"services": services})
 
 def financial_planning(request):

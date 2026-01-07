@@ -187,6 +187,7 @@ if 'test' in sys.argv:
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'coda_dev'
     }
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
 db_from_env = dj_database_url.config(conn_max_age=600)
@@ -365,3 +366,8 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
+
+# TEST SETTINGS OVERRIDE
+if 'test' in sys.argv:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    print("TEST MODE: Using StaticFilesStorage to avoid manifest errors.")
