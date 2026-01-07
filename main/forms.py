@@ -126,7 +126,7 @@ class DocumentRequestForm(forms.ModelForm):
     ),
     label="package type (optional)"
     )
-    Full_name = forms.CharField(
+    full_name = forms.CharField(
         widget=forms.TextInput(
             attrs={
                 'id':'full_name',
@@ -178,9 +178,9 @@ class DocumentRequestForm(forms.ModelForm):
     )
     class Meta:
         model = DocumentRequest
-        fields = ['Full_name', 'email', 'phone','document_type', 'package_type', 'destination_country','description', 'consent']
+        fields = ['full_name', 'email', 'phone', 'document_type', 'package_type', 'destination_country', 'description', 'consent']
     def clean_consent(self):
-        consent = self.cleaned_data('consent')
+        consent = self.cleaned_data.get('consent')
         if not consent:
             raise forms.ValidationError("You must consent to the processing of your personal data.")
         return consent
