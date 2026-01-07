@@ -665,7 +665,7 @@ def  services_spa(request):
     form = DocumentRequestForm()
     return render(request, 'main/index.html', {'form': form})
 @require_POST
-def submit_request(request):
+def submit_reques(request):
     form = DocumentRequestForm(request.POST)
     if form.is_valid():
         try:
