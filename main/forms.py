@@ -98,12 +98,12 @@ class DocumentRequestForm(forms.ModelForm):
     # Add custom choices that match your HTML
     DOCUMENT_TYPE_CHOICES = [
         ('', 'Select a service'),
-        ('Birth Certificate', 'Birth Certificate'),
-        ('Marriage Certificate', 'Marriage Certificate'),
-        ('Police Clearance (Good Conduct)', 'Police Clearance (Good Conduct)'),
-        ('Legalization/Apostille (MFA)', 'Legalization/Apostille (MFA)'),
-        ('Notarization/Oath Commissioner', 'Notarization/Oath Commissioner'),
-        ('Other', 'Other / Custom Request'),
+        ('birth', 'Birth Certificate'),
+        ('marriage', 'Marriage Certificate'),
+        ('police_clearance', 'Police Clearance (Good Conduct)'),
+        ('legalization', 'Legalization/Apostille (MFA)'),
+        ('notarization', 'Notarization/Oath Commissioner'),
+        ('other', 'Other / Custom Request'),
     ]
     
     PACKAGE_TYPE_CHOICES = [
@@ -114,33 +114,28 @@ class DocumentRequestForm(forms.ModelForm):
     ]
     
     # Override form fields to match your HTML
-    documentType = forms.ChoiceField(
+    document_type = forms.ChoiceField(
         choices=DOCUMENT_TYPE_CHOICES,
         widget=forms.Select(attrs={
-            'id': 'documentType',
-            'name': 'documentType',
-            'required': 'required',
+            'id': 'id_document_type',
             'class': 'form-input bg-white',
         }),
         label="Type of Document Needed"
     )
     
-    packageType = forms.ChoiceField(
+    package_type = forms.ChoiceField(
         choices=PACKAGE_TYPE_CHOICES,
         required=False,
         widget=forms.Select(attrs={
-            'id': 'packageType',
-            'name': 'packageType',
+            'id': 'id_package_type',
             'class': 'form-input bg-white',
         }),
         label="Package Type (Optional)"
     )
     
-    fullName = forms.CharField(
+    full_name = forms.CharField(
         widget=forms.TextInput(attrs={
-            'id': 'fullName',
-            'name': 'fullName',
-            'required': 'required',
+            'id': 'id_full_name',
             'class': 'form-input',
             'placeholder': 'John Doe',
         }),
@@ -149,9 +144,7 @@ class DocumentRequestForm(forms.ModelForm):
     
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
-            'id': 'email',
-            'name': 'email',
-            'required': 'required',
+            'id': 'id_email',
             'class': 'form-input',
             'placeholder': 'you@example.com',
         }),
@@ -160,20 +153,16 @@ class DocumentRequestForm(forms.ModelForm):
     
     phone = forms.CharField(
         widget=forms.TextInput(attrs={
-            'id': 'phone',
-            'name': 'phone',
-            'required': 'required',
+            'id': 'id_phone',
             'class': 'form-input',
             'placeholder': '+254 7XX XXX XXX',
         }),
         label="Phone Number"
     )
     
-    destinationCountry = forms.CharField(
+    destination_country = forms.CharField(
         widget=forms.TextInput(attrs={
-            'id': 'destinationCountry',
-            'name': 'destinationCountry',
-            'required': 'required',
+            'id': 'id_destination_country',
             'class': 'form-input',
             'placeholder': 'e.g., USA, Germany, UAE',
         }),
@@ -182,9 +171,7 @@ class DocumentRequestForm(forms.ModelForm):
     
     description = forms.CharField(
         widget=forms.Textarea(attrs={
-            'id': 'description',
-            'name': 'description',
-            'required': 'required',
+            'id': 'id_description',
             'class': 'form-input',
             'rows': '4',
             'placeholder': 'Explain what the document is needed for and any deadlines...',
@@ -195,9 +182,7 @@ class DocumentRequestForm(forms.ModelForm):
     consent = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={
-            'id': 'consent',
-            'name': 'consent',
-            'required': 'required',
+            'id': 'id_consent',
             'class': 'h-4 w-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue',
         }),
         label="I confirm the information provided is accurate."
@@ -206,8 +191,8 @@ class DocumentRequestForm(forms.ModelForm):
     class Meta:
         model = DocumentRequest
         fields = [
-            'fullName', 'email', 'phone', 'documentType', 
-            'packageType', 'destinationCountry', 'description', 'consent'
+            'full_name', 'email', 'phone', 'document_type', 
+            'package_type', 'destination_country', 'description', 'consent'
         ]
     
     def clean_consent(self):

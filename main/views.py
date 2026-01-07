@@ -663,10 +663,10 @@ def scholarship_search(request):
 # document request view
 def services_spa(request):
      form = DocumentRequestForm()
-     return render(request, 'services/index.html', {'form': form})
+     return render(request, 'main/index.html', {'form': form})
 
 @require_POST
-def submit_document_request(request):
+def submit_reques(request):
     form = DocumentRequestForm(request.POST)
     if form.is_valid():
         try:
@@ -674,8 +674,8 @@ def submit_document_request(request):
             document_request.status = 'Pending'
             document_request.save()
             success_message = (
-                f"Thank you, {document_request.fullName}."
-                f"your request for {document_request.documentType} has been submitted successfully."
+                f"Thank you, {document_request.full_name}."
+                f"your request for {document_request.get_document_type_display()} has been submitted successfully."
                 f"We will get back to you at {document_request.email} as soon as possible."
             )
             return JsonResponse({
