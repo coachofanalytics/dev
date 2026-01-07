@@ -308,3 +308,37 @@ class TrainingCourse(models.Model):
     def __str__(self):
         return self.title
 
+class DocumentRequest(models.Model):
+    DOCUMENT_TYPES= [
+        ('birth', 'Birth Certificate'),
+        ('marriage', 'Marriage Certificate'),
+        ('police_clearance', 'Police Clearance(Good Conduct)'),
+        ('legalization', 'Legalization/Apostille (MFA)'),
+        ('notarization', 'Notarization/Oath Commissioner'),
+        ('other', 'Other / Custom Request'),
+    ]
+    PACKAGE_TYPES = [
+        ('standard', 'Standard ($99)'),
+        ('premium', 'Premium ($249)'),
+        ('diplomatic', 'Diplomatic ($399)'),
+    ]
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPES)
+    package_type = models.CharField(max_length=50, choices=PACKAGE_TYPES)
+    destination_country = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    consent = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='Pending', choices=[
+        ('Pending', 'Pending'),
+        ('reviewed', 'Reviewed'),
+        ('Processing', 'Processing'),
+        ('Completed', 'Completed'),
+    ])
+    def __str__(self):
+        return f"{self.full_name} - {self.get_document_type_display()}"
+
+   
+  

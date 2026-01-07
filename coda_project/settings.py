@@ -174,11 +174,21 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 #         "HOST": 'ce0lkuo944ch99.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  
 #     }
 # }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": os.path.join(BASE_DIR,"db.sqlite3"),
+#     }
+# }
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR,"db.sqlite3"),
-    
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "codadev_local",
+        "USER": "postgres",
+        "PASSWORD": "123",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 import sys

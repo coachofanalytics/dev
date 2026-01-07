@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship, DocumentRequest
 
 # Feedback / Contact Form
 class ContactForm(forms.ModelForm):
@@ -94,3 +94,17 @@ class ScholarshipSearchForm(forms.Form):
         )
     )
 
+class DocumentRequestForm(forms.ModelForm):
+    class Meta:
+        model = DocumentRequest
+        fields = ['full_name', 'email', 'phone', 'document_type', 'package_type', 'destination_country', 'description', 'consent']
+        widgets = {
+            'full_name': forms.TextInput(attrs={'class': 'form-input','placeholder':'John Doe'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input','placeholder':'john@example.com'}),
+            'phone': forms.TextInput(attrs={'class': 'form-input','placeholder':'+255 12345678'}),
+            'document_type': forms.Select(attrs={'class': 'form-input bg-white'}),
+            'package_type': forms.Select(attrs={'class': 'form-input bg-white'}),
+            'destination_country': forms.TextInput(attrs={'class': 'form-input','placeholder':'e.g., Kenya,Rwanda,USA'}),
+            'description': forms.Textarea(attrs={'class': 'form-input','rows':4,'placeholder':'Description'}),
+            'consent': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue'}),
+        }
