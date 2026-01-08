@@ -1,1 +1,1 @@
-__all__ = []
+# Payments module unit tests
