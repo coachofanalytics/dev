@@ -1,0 +1,1777 @@
+﻿python : INFO 2026-01-08 19:15:39,080 apps AXES: BEGIN version 6.1.1, blocking by combination of username and 
+ip_address
+At C:\Users\Fadhiri\AppData\Local\Temp\ps-script-d6621f70-bdd4-4f66-b163-c5995c98fb91.ps1:89 char:48
++ ... biasharaBB; python manage.py test tests.regression --verbosity=2 2>&1 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (INFO 2026-01-08... and ip_address:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Found 279 test(s).
+Creating test database for alias 'default' ('test_postgres')...
+
+Operations to perform:
+  Synchronize unmigrated apps: allauth, core, messages, monitoring, staticfiles
+  Apply all migrations: account, accounts, admin, audit, auth, axes, contenttypes, gdpr, kyc, marketplace, onboarding, payments, sessions, sites, social_django, socialaccount
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying account.0001_initial... OK
+  Applying account.0002_email_max_length... OK
+  Applying account.0003_alter_emailaddress_create_unique_verified_email... OK
+  Applying account.0004_alter_emailaddress_drop_unique_email... OK
+  Applying account.0005_emailaddress_idx_upper_email... OK
+  Applying accounts.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying audit.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying axes.0001_initial... OK
+  Applying axes.0002_auto_20151217_2044... OK
+  Applying axes.0003_auto_20160322_0929... OK
+  Applying axes.0004_auto_20181024_1538... OK
+  Applying axes.0005_remove_accessattempt_trusted... OK
+  Applying axes.0006_remove_accesslog_trusted... OK
+  Applying axes.0007_alter_accessattempt_unique_together... OK
+  Applying axes.0008_accessfailurelog... OK
+  Applying gdpr.0001_initial... OK
+  Applying kyc.0001_initial... OK
+  Applying marketplace.0001_initial... OK
+  Applying onboarding.0001_initial... OK
+  Applying payments.0001_initial... OK
+  Applying sessions.0001_initial... OK
+  Applying sites.0001_initial... OK
+  Applying sites.0002_alter_domain_unique... OK
+  Applying social_django.0001_initial... OK
+  Applying social_django.0002_add_related_name... OK
+  Applying social_django.0003_alter_email_max_length... OK
+  Applying social_django.0004_auto_20160423_0400... OK
+  Applying social_django.0005_auto_20160727_2333... OK
+  Applying social_django.0006_partial... OK
+  Applying social_django.0007_code_timestamp... OK
+  Applying social_django.0008_partial_timestamp... OK
+  Applying social_django.0009_auto_20191118_0520... OK
+  Applying social_django.0010_uid_db_index... OK
+  Applying social_django.0011_alter_id_fields... OK
+  Applying social_django.0012_usersocialauth_extra_data_new... OK
+  Applying social_django.0013_migrate_extra_data... OK
+  Applying social_django.0014_remove_usersocialauth_extra_data... OK
+  Applying social_django.0015_rename_extra_data_new_usersocialauth_extra_data... OK
+  Applying socialaccount.0001_initial... OK
+  Applying socialaccount.0002_token_max_lengths... OK
+  Applying socialaccount.0003_extra_data_default_dict... OK
+  Applying socialaccount.0004_app_provider_id_settings... OK
+  Applying socialaccount.0005_socialtoken_nullable_app... OK
+WARNING 2026-01-08 19:15:54,446 file_scanner_service python-magic not available. Using mimetypes fallback. For better 
+MIME detection on Windows, install python-magic-bin: pip install python-magic-bin
+System check identified no issues (0 silenced).
+test_mpesa_status_api_returns_json 
+(tests.regression.test_api_contract_regression.APIResponseSchemaRegressionTests.test_mpesa_status_api_returns_json)
+REGRESSION CHECK: M-Pesa status API returns JSON. ... INFO 2026-01-08 19:15:56,384 attempts AXES: Cleaned up 0 expired 
+access attempts from database that were older than 2025-10-25 17:15:56.364931+00:00
+INFO 2026-01-08 19:15:56,385 database AXES: Successful login by {username: "********************", ip_address: 
+"********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO 2026-01-08 19:15:56,407 attempts AXES: Reset 0 access attempts from database.
+INFO 2026-01-08 19:15:56,408 database AXES: Deleted 0 failed login attempts by {username: "********************", 
+ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR
+test_authenticated_wallet_access_returns_200 (tests.regression.test_api_contract_regression.APIStatusCodeRegressionTest
+s.test_authenticated_wallet_access_returns_200)
+REGRESSION CHECK: Authenticated wallet access succeeds. ... INFO 2026-01-08 19:15:57,682 attempts AXES: Cleaned up 0 
+expired access attempts from database that were older than 2025-10-25 17:15:57.677431+00:00
+INFO 2026-01-08 19:15:57,682 database AXES: Successful login by {username: "********************", ip_address: 
+"********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO 2026-01-08 19:15:57,689 attempts AXES: Reset 0 access attempts from database.
+INFO 2026-01-08 19:15:57,689 database AXES: Deleted 0 failed login attempts by {username: "********************", 
+ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR
+test_invalid_endpoint_returns_404 
+(tests.regression.test_api_contract_regression.APIStatusCodeRegressionTests.test_invalid_endpoint_returns_404)
+REGRESSION CHECK: Invalid endpoints return 404. ... 
+C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\core\handlers\base.py:61: UserWarning: No 
+directory at: C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\staticfiles\
+  mw_instance = middleware(adapted_handler)
+WARNING 2026-01-08 19:15:58,535 log Not Found: /payments/nonexistent-endpoint-12345/
+ok
+test_subscription_plans_list_returns_200 
+(tests.regression.test_api_contract_regression.APIStatusCodeRegressionTests.test_subscription_plans_list_returns_200)
+REGRESSION CHECK: Public subscription plans accessible. ... FAIL
+test_unauthenticated_wallet_access_returns_redirect_or_401 (tests.regression.test_api_contract_regression.APIStatusCode
+RegressionTests.test_unauthenticated_wallet_access_returns_redirect_or_401)
+REGRESSION CHECK: Wallet endpoint requires authentication. ... ok
+test_login_endpoint_exists 
+(tests.regression.test_api_contract_regression.AuthenticationContractRegressionTests.test_login_endpoint_exists)
+REGRESSION CHECK: Login endpoint exists. ... ok
+test_logout_endpoint_exists 
+(tests.regression.test_api_contract_regression.AuthenticationContractRegressionTests.test_logout_endpoint_exists)
+REGRESSION CHECK: Logout endpoint exists. ... ok
+test_password_reset_endpoint_exists (tests.regression.test_api_contract_regression.AuthenticationContractRegressionTest
+s.test_password_reset_endpoint_exists)
+REGRESSION CHECK: Password reset endpoint exists. ... WARNING 2026-01-08 19:16:01,399 log Not Found: 
+/accounts/password-reset/
+ok
+test_html_pages_return_html_content_type 
+(tests.regression.test_api_contract_regression.ContentTypeRegressionTests.test_html_pages_return_html_content_type)
+REGRESSION CHECK: HTML pages return HTML content type. ... ok
+test_json_endpoints_return_json_content_type 
+(tests.regression.test_api_contract_regression.ContentTypeRegressionTests.test_json_endpoints_return_json_content_type)
+REGRESSION CHECK: JSON endpoints return JSON content type. ... ERROR
+test_404_error_page_exists 
+(tests.regression.test_api_contract_regression.ErrorResponseRegressionTests.test_404_error_page_exists)
+REGRESSION CHECK: Custom 404 page exists. ... WARNING 2026-01-08 19:16:03,494 log Not Found: 
+/this-page-definitely-does-not-exist-12345/
+ok
+test_invalid_subscription_detail_returns_404 (tests.regression.test_api_contract_regression.ErrorResponseRegressionTest
+s.test_invalid_subscription_detail_returns_404)
+REGRESSION CHECK: Invalid subscription ID returns 404. ... INFO 2026-01-08 19:16:04,461 attempts AXES: Cleaned up 0 
+expired access attempts from database that were older than 2025-10-25 17:16:04.449616+00:00
+INFO 2026-01-08 19:16:04,461 database AXES: Successful login by {username: "********************", ip_address: 
+"********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO 2026-01-08 19:16:04,466 attempts AXES: Reset 0 access attempts from database.
+INFO 2026-01-08 19:16:04,466 database AXES: Deleted 0 failed login attempts by {username: "********************", 
+ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR
+test_transaction_history_handles_page_parameter (tests.regression.test_api_contract_regression.PaginationContractRegres
+sionTests.test_transaction_history_handles_page_parameter)
+REGRESSION CHECK: Transaction history handles pagination. ... INFO 2026-01-08 19:16:05,691 attempts AXES: Cleaned up 0 
+expired access attempts from database that were older than 2025-10-25 17:16:05.681142+00:00
+INFO 2026-01-08 19:16:05,693 database AXES: Successful login by {username: "********************", ip_address: 
+"********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO 2026-01-08 19:16:05,697 attempts AXES: Reset 0 access attempts from database.
+INFO 2026-01-08 19:16:05,697 database AXES: Deleted 0 failed login attempts by {username: "********************", 
+ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR
+test_login_has_rate_limiting 
+(tests.regression.test_api_contract_regression.RateLimitingRegressionTests.test_login_has_rate_limiting)
+REGRESSION CHECK: Login endpoint should have rate limiting. ... ok
+test_password_reset_has_rate_limiting 
+(tests.regression.test_api_contract_regression.RateLimitingRegressionTests.test_password_reset_has_rate_limiting)
+REGRESSION CHECK: Password reset should have rate limiting. ... WARNING 2026-01-08 19:16:06,107 log Not Found: 
+/accounts/password-reset/
+WARNING 2026-01-08 19:16:06,110 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,113 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,116 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,120 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,126 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,129 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,133 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,142 log Not Found: /accounts/password-reset/
+WARNING 2026-01-08 19:16:06,148 log Not Found: /accounts/password-reset/
+ok
+test_kyc_urls_resolvable 
+(tests.regression.test_api_contract_regression.URLRoutingRegressionTests.test_kyc_urls_resolvable)
+REGRESSION CHECK: KYC URLs are resolvable. ... ok
+test_marketplace_urls_resolvable 
+(tests.regression.test_api_contract_regression.URLRoutingRegressionTests.test_marketplace_urls_resolvable)
+REGRESSION CHECK: All marketplace URLs are resolvable. ... ok
+test_payments_urls_resolvable 
+(tests.regression.test_api_contract_regression.URLRoutingRegressionTests.test_payments_urls_resolvable)
+REGRESSION CHECK: All payment URLs are resolvable. ... ok
+test_mpesa_webhook_endpoint_exists 
+(tests.regression.test_api_contract_regression.WebhookContractRegressionTests.test_mpesa_webhook_endpoint_exists)
+REGRESSION CHECK: M-Pesa webhook endpoint exists. ... ok
+test_paypal_webhook_endpoint_exists 
+(tests.regression.test_api_contract_regression.WebhookContractRegressionTests.test_paypal_webhook_endpoint_exists)
+REGRESSION CHECK: PayPal webhook endpoint exists. ... WARNING 2026-01-08 19:16:09,121 log Bad Request: 
+/payments/webhooks/paypal/
+ok
+test_stripe_webhook_accepts_post_only 
+(tests.regression.test_api_contract_regression.WebhookContractRegressionTests.test_stripe_webhook_accepts_post_only)
+REGRESSION CHECK: Stripe webhook only accepts POST. ... WARNING 2026-01-08 19:16:09,128 log Method Not Allowed (GET): 
+/payments/webhooks/stripe/
+ok
+test_stripe_webhook_requires_signature 
+(tests.regression.test_api_contract_regression.WebhookContractRegressionTests.test_stripe_webhook_requires_signature)
+REGRESSION CHECK: Stripe webhook validates signature. ... ERROR 2026-01-08 19:16:09,185 log Internal Server Error: 
+/payments/webhooks/stripe/
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 61, in 
+verify_header
+    timestamp, signatures = cls._get_timestamp_and_signatures(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 53, in 
+_get_timestamp_and_signatures
+    list_items = [i.split("=", 2) for i in header.split(",")]
+                                           ^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'split'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\payments\webhooks.py", line 43, in stripe_webhook
+    event = stripe.Webhook.construct_event(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 25, in 
+construct_event
+    WebhookSignature.verify_header(payload, sig_header, secret, tolerance)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 65, in 
+verify_header
+    raise SignatureVerificationError(
+stripe._error.SignatureVerificationError: Unable to extract timestamp and signatures from header
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\__init__.py", line 872, in __getattr__
+    target, is_submodule = _import_map[name]
+                           ~~~~~~~~~~~^^^^^^
+KeyError: 'error'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, 
+in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in 
+_get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\views\decorators\csrf.py", line 56, 
+in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\views\decorators\http.py", line 43, 
+in inner
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\payments\webhooks.py", line 49, in stripe_webhook
+    except stripe.error.SignatureVerificationError:
+           ^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\__init__.py", line 882, in __getattr__
+    raise AttributeError()
+AttributeError
+ERROR
+test_cancel_old_pending_task_exists 
+(tests.regression.test_async_regression.CeleryTaskDefinitionRegressionTests.test_cancel_old_pending_task_exists)
+REGRESSION CHECK: Cancel old pending transactions task must be defined. ... ok
+test_payment_retry_task_exists 
+(tests.regression.test_async_regression.CeleryTaskDefinitionRegressionTests.test_payment_retry_task_exists)
+REGRESSION CHECK: Payment retry task must be defined. ... ok
+test_pending_transactions_check_task_exists (tests.regression.test_async_regression.CeleryTaskDefinitionRegressionTests
+.test_pending_transactions_check_task_exists)
+REGRESSION CHECK: Pending transactions check task must be defined. ... ok
+test_subscription_expiration_task_exists 
+(tests.regression.test_async_regression.CeleryTaskDefinitionRegressionTests.test_subscription_expiration_task_exists)
+REGRESSION CHECK: Subscription expiration task must be defined. ... ok
+test_subscription_activation_is_idempotent (tests.regression.test_async_regression.DuplicateExecutionProtectionRegressi
+onTests.test_subscription_activation_is_idempotent)
+REGRESSION CHECK: Multiple activations should not extend subscription. ... FAIL
+test_subscription_expiration_is_idempotent (tests.regression.test_async_regression.DuplicateExecutionProtectionRegressi
+onTests.test_subscription_expiration_is_idempotent)
+REGRESSION CHECK: Expiring an expired subscription is safe. ... ok
+test_wallet_credit_has_transaction_record (tests.regression.test_async_regression.DuplicateExecutionProtectionRegressio
+nTests.test_wallet_credit_has_transaction_record)
+REGRESSION CHECK: Wallet credits must have audit trail. ... ok
+test_completed_transaction_cannot_be_reprocessed (tests.regression.test_async_regression.IdempotencyVerificationRegress
+ionTests.test_completed_transaction_cannot_be_reprocessed)
+REGRESSION CHECK: Completed transactions should not be reprocessed. ... ok
+test_transaction_idempotency_key_uniqueness (tests.regression.test_async_regression.IdempotencyVerificationRegressionTe
+sts.test_transaction_idempotency_key_uniqueness)
+REGRESSION CHECK: Transaction gateway IDs must be unique. ... ok
+test_failed_transaction_retry_eligibility 
+(tests.regression.test_async_regression.RetryBehaviorRegressionTests.test_failed_transaction_retry_eligibility)
+REGRESSION CHECK: Failed transactions should be retry-eligible. ... ok
+test_max_retry_limit_respected 
+(tests.regression.test_async_regression.RetryBehaviorRegressionTests.test_max_retry_limit_respected)
+REGRESSION CHECK: Maximum retry limit should be respected. ... ok
+test_retry_count_tracking 
+(tests.regression.test_async_regression.RetryBehaviorRegressionTests.test_retry_count_tracking)
+REGRESSION CHECK: Retry attempts must be tracked. ... ok
+test_cancel_old_pending_handles_no_transactions (tests.regression.test_async_regression.TaskErrorHandlingRegressionTest
+s.test_cancel_old_pending_handles_no_transactions)
+REGRESSION CHECK: Cancel task handles no pending transactions. ... INFO 2026-01-08 19:16:22,319 tasks Cancelled 0 old 
+pending transactions
+ok
+test_expire_subscriptions_handles_empty_queryset (tests.regression.test_async_regression.TaskErrorHandlingRegressionTes
+ts.test_expire_subscriptions_handles_empty_queryset)
+REGRESSION CHECK: Expiration task handles no subscriptions gracefully. ... INFO 2026-01-08 19:16:22,324 tasks Checking 
+for subscriptions to expire...
+INFO 2026-01-08 19:16:22,331 tasks Expired 0 subscriptions
+ok
+test_retry_task_handles_missing_transaction 
+(tests.regression.test_async_regression.TaskErrorHandlingRegressionTests.test_retry_task_handles_missing_transaction)
+REGRESSION CHECK: Retry task handles missing transaction gracefully. ... ERROR 2026-01-08 19:16:22,343 tasks 
+Transaction 99999 not found
+ok
+test_celery_beat_schedule_is_defined 
+(tests.regression.test_async_regression.TaskScheduleRegressionTests.test_celery_beat_schedule_is_defined)
+REGRESSION CHECK: Celery beat schedule should exist. ... ok
+test_consent_default_state_is_not_given (tests.regression.test_change_impact_regression.GDPRComplianceFlowRegressionTes
+ts.test_consent_default_state_is_not_given)
+REGRESSION PROTECTION: Consent must default to NOT given (privacy by default). ... ok
+test_consent_metadata_capture_completeness (tests.regression.test_change_impact_regression.GDPRComplianceFlowRegression
+Tests.test_consent_metadata_capture_completeness)
+REGRESSION PROTECTION: Consent must capture all required metadata. ... ok
+test_data_deletion_grace_period_calculation (tests.regression.test_change_impact_regression.GDPRComplianceFlowRegressio
+nTests.test_data_deletion_grace_period_calculation)
+REGRESSION PROTECTION: Deletion grace period must be exactly 30 days. ... ok
+test_data_export_expiration_is_30_days (tests.regression.test_change_impact_regression.GDPRComplianceFlowRegressionTest
+s.test_data_export_expiration_is_30_days)
+REGRESSION PROTECTION: Export files must expire after 30 days. ... ok
+test_kyc_default_permissions_are_restrictive (tests.regression.test_change_impact_regression.KYCComplianceFlowRegressio
+nTests.test_kyc_default_permissions_are_restrictive)
+REGRESSION PROTECTION: Default KYC permissions must be restrictive. ... ok
+test_kyc_level_progression_requires_all_verifications (tests.regression.test_change_impact_regression.KYCComplianceFlow
+RegressionTests.test_kyc_level_progression_requires_all_verifications)
+REGRESSION PROTECTION: Premium level requires ALL verification flags. ... ok
+test_kyc_transaction_limits_by_level 
+(tests.regression.test_change_impact_regression.KYCComplianceFlowRegressionTests.test_kyc_transaction_limits_by_level)
+REGRESSION PROTECTION: Transaction limits must match KYC levels. ... ok
+test_subscription_duration_calculation_accuracy (tests.regression.test_change_impact_regression.SubscriptionBillingAccu
+racyRegressionTests.test_subscription_duration_calculation_accuracy)
+REGRESSION PROTECTION: Subscription end date must be exactly duration_days from start. ... ok
+test_subscription_expiration_detection_accuracy (tests.regression.test_change_impact_regression.SubscriptionBillingAccu
+racyRegressionTests.test_subscription_expiration_detection_accuracy)
+REGRESSION PROTECTION: Expired subscriptions must be detected correctly. ... ok
+test_subscription_renewal_notification_timing (tests.regression.test_change_impact_regression.SubscriptionBillingAccura
+cyRegressionTests.test_subscription_renewal_notification_timing)
+REGRESSION PROTECTION: Renewal notifications must trigger at correct time. ... ok
+test_subscription_status_transition_integrity (tests.regression.test_change_impact_regression.SubscriptionBillingAccura
+cyRegressionTests.test_subscription_status_transition_integrity)
+REGRESSION PROTECTION: Status transitions must follow valid state machine. ... ok
+test_inactive_users_cannot_authenticate (tests.regression.test_change_impact_regression.UserAuthorizationRegressionTest
+s.test_inactive_users_cannot_authenticate)
+REGRESSION PROTECTION: Inactive users must be blocked from authentication. ... ok
+test_new_users_are_not_staff_by_default (tests.regression.test_change_impact_regression.UserAuthorizationRegressionTest
+s.test_new_users_are_not_staff_by_default)
+REGRESSION PROTECTION: New users must NOT have staff privileges. ... ok
+test_username_uniqueness_enforced 
+(tests.regression.test_change_impact_regression.UserAuthorizationRegressionTests.test_username_uniqueness_enforced)
+REGRESSION PROTECTION: Username uniqueness must be database-enforced. ... ok
+test_wallet_balance_immutability_without_transaction (tests.regression.test_change_impact_regression.WalletIntegrityReg
+ressionTests.test_wallet_balance_immutability_without_transaction)
+REGRESSION PROTECTION: Wallet balance should only change via credit/debit methods. ... ok
+test_wallet_concurrent_credit_protection (tests.regression.test_change_impact_regression.WalletIntegrityRegressionTests
+.test_wallet_concurrent_credit_protection)
+REGRESSION PROTECTION: Concurrent credits should not cause race conditions. ... ok
+test_wallet_concurrent_debit_protection 
+(tests.regression.test_change_impact_regression.WalletIntegrityRegressionTests.test_wallet_concurrent_debit_protection)
+REGRESSION PROTECTION: Concurrent debits should not allow overdraft. ... ok
+test_wallet_decimal_precision_preservation (tests.regression.test_change_impact_regression.WalletIntegrityRegressionTes
+ts.test_wallet_decimal_precision_preservation)
+REGRESSION PROTECTION: Decimal precision must be maintained. ... ok
+test_wallet_zero_and_boundary_operations (tests.regression.test_change_impact_regression.WalletIntegrityRegressionTests
+.test_wallet_zero_and_boundary_operations)
+REGRESSION PROTECTION: Edge case handling for zero and boundary values. ... ok
+test_business_profile_to_opportunity_flow 
+(tests.regression.test_critical_paths.BusinessOpportunityFlowRegressionTests.test_business_profile_to_opportunity_flow)
+REGRESSION TEST: Business profile to opportunity posting flow. ... ok
+test_consent_management_flow 
+(tests.regression.test_critical_paths.GDPRComplianceFlowRegressionTests.test_consent_management_flow)
+REGRESSION TEST: Consent management flow. ... ok
+test_data_deletion_request_flow 
+(tests.regression.test_critical_paths.GDPRComplianceFlowRegressionTests.test_data_deletion_request_flow)
+REGRESSION TEST: Data deletion request flow with grace period. ... ok
+test_data_export_request_flow 
+(tests.regression.test_critical_paths.GDPRComplianceFlowRegressionTests.test_data_export_request_flow)
+REGRESSION TEST: Data export request flow. ... ok
+test_job_posting_to_application_flow 
+(tests.regression.test_critical_paths.JobApplicationFlowRegressionTests.test_job_posting_to_application_flow)
+REGRESSION TEST: Job posting to application flow. ... ok
+test_document_upload_to_verification_flow 
+(tests.regression.test_critical_paths.KYCVerificationFlowRegressionTests.test_document_upload_to_verification_flow)
+REGRESSION TEST: Document upload to verification flow. ... ok
+test_verification_level_progression_flow 
+(tests.regression.test_critical_paths.KYCVerificationFlowRegressionTests.test_verification_level_progression_flow)
+REGRESSION TEST: KYC verification level progression. ... ok
+test_subscription_cancellation_flow 
+(tests.regression.test_critical_paths.SubscriptionLifecycleFlowRegressionTests.test_subscription_cancellation_flow)
+REGRESSION TEST: Subscription cancellation flow. ... ok
+test_subscription_creation_to_activation_flow (tests.regression.test_critical_paths.SubscriptionLifecycleFlowRegression
+Tests.test_subscription_creation_to_activation_flow)
+REGRESSION TEST: Subscription creation and activation flow. ... ok
+test_subscription_expiration_detection 
+(tests.regression.test_critical_paths.SubscriptionLifecycleFlowRegressionTests.test_subscription_expiration_detection)
+REGRESSION TEST: Subscription expiration detection. ... ok
+test_email_verification_flow 
+(tests.regression.test_critical_paths.UserRegistrationFlowRegressionTests.test_email_verification_flow)
+REGRESSION TEST: Email verification flow should work. ... ok
+test_user_creation_flow 
+(tests.regression.test_critical_paths.UserRegistrationFlowRegressionTests.test_user_creation_flow)
+REGRESSION TEST: User creation flow should work completely. ... ok
+test_deposit_flow (tests.regression.test_critical_paths.WalletOperationsFlowRegressionTests.test_deposit_flow)
+REGRESSION TEST: Deposit flow should work completely. ... ok
+test_insufficient_balance_flow 
+(tests.regression.test_critical_paths.WalletOperationsFlowRegressionTests.test_insufficient_balance_flow)
+REGRESSION TEST: Insufficient balance should prevent payment. ... ok
+test_payment_flow (tests.regression.test_critical_paths.WalletOperationsFlowRegressionTests.test_payment_flow)
+REGRESSION TEST: Payment flow should work completely. ... ok
+test_equity_percentage_max_value 
+(tests.regression.test_database_integrity.DataValidationConstraintRegressionTests.test_equity_percentage_max_value)
+REGRESSION TEST: Equity percentage should not exceed 100%. ... ok
+test_subscription_plan_price_min_value (tests.regression.test_database_integrity.DataValidationConstraintRegressionTest
+s.test_subscription_plan_price_min_value)
+REGRESSION TEST: Subscription plan price should not be negative. ... ok
+test_wallet_balance_min_value 
+(tests.regression.test_database_integrity.DataValidationConstraintRegressionTests.test_wallet_balance_min_value)
+REGRESSION TEST: Wallet balance should not be negative. ... ok
+test_subscription_plan_protect_delete 
+(tests.regression.test_database_integrity.ForeignKeyConstraintRegressionTests.test_subscription_plan_protect_delete)
+REGRESSION TEST: SubscriptionPlan should be protected from deletion if subscriptions exist. ... ok
+test_userprofile_user_cascade_delete 
+(tests.regression.test_database_integrity.ForeignKeyConstraintRegressionTests.test_userprofile_user_cascade_delete)
+REGRESSION TEST: UserProfile should be deleted when user is deleted. ... ok
+test_wallet_user_cascade_delete 
+(tests.regression.test_database_integrity.ForeignKeyConstraintRegressionTests.test_wallet_user_cascade_delete)
+REGRESSION TEST: Wallet should be deleted when user is deleted. ... ok
+test_accounts_migrations_exist 
+(tests.regression.test_database_integrity.MigrationExistenceRegressionTests.test_accounts_migrations_exist)
+REGRESSION TEST: accounts app should have migrations. ... ok
+test_audit_migrations_exist 
+(tests.regression.test_database_integrity.MigrationExistenceRegressionTests.test_audit_migrations_exist)
+REGRESSION TEST: audit app should have migrations. ... ok
+test_gdpr_migrations_exist 
+(tests.regression.test_database_integrity.MigrationExistenceRegressionTests.test_gdpr_migrations_exist)
+REGRESSION TEST: gdpr app should have migrations. ... ok
+test_kyc_migrations_exist 
+(tests.regression.test_database_integrity.MigrationExistenceRegressionTests.test_kyc_migrations_exist)
+REGRESSION TEST: kyc app should have migrations. ... ok
+test_marketplace_migrations_exist 
+(tests.regression.test_database_integrity.MigrationExistenceRegressionTests.test_marketplace_migrations_exist)
+REGRESSION TEST: marketplace app should have migrations. ... ok
+test_onboarding_migrations_exist 
+(tests.regression.test_database_integrity.MigrationExistenceRegressionTests.test_onboarding_migrations_exist)
+REGRESSION TEST: onboarding app should have migrations. ... ok
+test_payments_migrations_exist 
+(tests.regression.test_database_integrity.MigrationExistenceRegressionTests.test_payments_migrations_exist)
+REGRESSION TEST: payments app should have migrations. ... ok
+test_business_profile_onetoone 
+(tests.regression.test_database_integrity.OneToOneConstraintRegressionTests.test_business_profile_onetoone)
+REGRESSION TEST: Each user should have only one business profile. ... ok
+test_kyc_level_onetoone 
+(tests.regression.test_database_integrity.OneToOneConstraintRegressionTests.test_kyc_level_onetoone)
+REGRESSION TEST: Each user should have only one KYC level. ... ok
+test_userprofile_onetoone 
+(tests.regression.test_database_integrity.OneToOneConstraintRegressionTests.test_userprofile_onetoone)
+REGRESSION TEST: Each user should have only one profile. ... ok
+test_wallet_onetoone (tests.regression.test_database_integrity.OneToOneConstraintRegressionTests.test_wallet_onetoone)
+REGRESSION TEST: Each user should have only one wallet. ... ok
+test_category_slug_unique 
+(tests.regression.test_database_integrity.UniqueConstraintRegressionTests.test_category_slug_unique)
+REGRESSION TEST: Category slug uniqueness should be enforced. ... ok
+test_invoice_number_unique 
+(tests.regression.test_database_integrity.UniqueConstraintRegressionTests.test_invoice_number_unique)
+REGRESSION TEST: Invoice number uniqueness should be enforced. ... ok
+test_subscription_plan_slug_unique 
+(tests.regression.test_database_integrity.UniqueConstraintRegressionTests.test_subscription_plan_slug_unique)
+REGRESSION TEST: Subscription plan slug uniqueness should be enforced. ... ok
+test_user_username_unique 
+(tests.regression.test_database_integrity.UniqueConstraintRegressionTests.test_user_username_unique)
+REGRESSION TEST: Username uniqueness should be enforced. ... ok
+test_required_fields_have_defaults_or_null (tests.regression.test_database_migration_safety.BackwardCompatibilityRiskRe
+gressionTests.test_required_fields_have_defaults_or_null)
+REGRESSION CHECK: Required fields should have safe defaults. ... ok
+test_slug_generation_backward_compatible (tests.regression.test_database_migration_safety.BackwardCompatibilityRiskRegr
+essionTests.test_slug_generation_backward_compatible)
+REGRESSION CHECK: Slug generation should handle edge cases. ... ok
+test_foreign_key_relationships_intact (tests.regression.test_database_migration_safety.DataIntegrityAfterMigrationRegre
+ssionTests.test_foreign_key_relationships_intact)
+REGRESSION CHECK: All FK relationships should be valid. ... ok
+test_one_to_one_relationships_intact (tests.regression.test_database_migration_safety.DataIntegrityAfterMigrationRegres
+sionTests.test_one_to_one_relationships_intact)
+REGRESSION CHECK: All 1:1 relationships should be valid. ... ok
+test_wallet_balance_precision_preserved (tests.regression.test_database_migration_safety.DataIntegrityAfterMigrationReg
+ressionTests.test_wallet_balance_precision_preserved)
+REGRESSION CHECK: Wallet balance decimal precision must be preserved. ... ok
+test_invoice_number_uniqueness 
+(tests.regression.test_database_migration_safety.IndexAndConstraintRegressionTests.test_invoice_number_uniqueness)
+REGRESSION CHECK: Invoice numbers must be unique. ... ERROR
+test_unique_constraints_enforced 
+(tests.regression.test_database_migration_safety.IndexAndConstraintRegressionTests.test_unique_constraints_enforced)
+REGRESSION CHECK: Unique constraints must be database-enforced. ... ok
+test_legacy_consent_records_queryable (tests.regression.test_database_migration_safety.LegacyDataCompatibilityRegressio
+nTests.test_legacy_consent_records_queryable)
+REGRESSION CHECK: Old consent records should be queryable. ... ok
+test_legacy_subscription_formats_supported (tests.regression.test_database_migration_safety.LegacyDataCompatibilityRegr
+essionTests.test_legacy_subscription_formats_supported)
+REGRESSION CHECK: Old subscription data formats should load. ... ok
+test_legacy_transaction_without_metadata_loads (tests.regression.test_database_migration_safety.LegacyDataCompatibility
+RegressionTests.test_legacy_transaction_without_metadata_loads)
+REGRESSION CHECK: Old transactions without metadata should load. ... ok
+test_all_migrations_applied 
+(tests.regression.test_database_migration_safety.MigrationIntegrityRegressionTests.test_all_migrations_applied)
+REGRESSION CHECK: All migrations should be applied. ... ok
+test_no_migration_conflicts 
+(tests.regression.test_database_migration_safety.MigrationIntegrityRegressionTests.test_no_migration_conflicts)
+REGRESSION CHECK: No migration conflicts should exist. ... ok
+test_all_model_tables_exist 
+(tests.regression.test_database_migration_safety.SchemaValidationRegressionTests.test_all_model_tables_exist)
+REGRESSION CHECK: All model tables should exist in database. ... FAIL
+test_model_field_types_match_database 
+(tests.regression.test_database_migration_safety.SchemaValidationRegressionTests.test_model_field_types_match_database)
+REGRESSION CHECK: Model field types should match database. ... ok
+test_exact_balance_debit 
+(tests.regression.test_error_handling.EdgeCaseScenarioRegressionTests.test_exact_balance_debit)
+REGRESSION TEST: Debiting exact balance should work. ... ok
+test_subscription_activation_twice 
+(tests.regression.test_error_handling.EdgeCaseScenarioRegressionTests.test_subscription_activation_twice)
+REGRESSION TEST: Activating subscription twice should be handled. ... ok
+test_unicode_in_text_fields 
+(tests.regression.test_error_handling.EdgeCaseScenarioRegressionTests.test_unicode_in_text_fields)
+REGRESSION TEST: Unicode characters should be handled in text fields. ... ok
+test_very_large_amounts (tests.regression.test_error_handling.EdgeCaseScenarioRegressionTests.test_very_large_amounts)
+REGRESSION TEST: Very large amounts should be handled. ... ok
+test_very_small_decimal_amounts 
+(tests.regression.test_error_handling.EdgeCaseScenarioRegressionTests.test_very_small_decimal_amounts)
+REGRESSION TEST: Small decimal amounts should be handled. ... ok
+test_zero_amount_wallet_operations 
+(tests.regression.test_error_handling.EdgeCaseScenarioRegressionTests.test_zero_amount_wallet_operations)
+REGRESSION TEST: Zero amount operations should be handled. ... ok
+test_empty_username_registration 
+(tests.regression.test_error_handling.InvalidInputHandlingRegressionTests.test_empty_username_registration)
+REGRESSION TEST: Empty username should be rejected. ... ok
+test_invalid_email_format 
+(tests.regression.test_error_handling.InvalidInputHandlingRegressionTests.test_invalid_email_format)
+REGRESSION TEST: Invalid email format should be caught during validation. ... ok
+test_negative_subscription_plan_price 
+(tests.regression.test_error_handling.InvalidInputHandlingRegressionTests.test_negative_subscription_plan_price)
+REGRESSION TEST: Negative plan price should be rejected. ... ok
+test_wallet_credit_with_string_amount 
+(tests.regression.test_error_handling.InvalidInputHandlingRegressionTests.test_wallet_credit_with_string_amount)
+REGRESSION TEST: Credit with string amount should be handled. ... ok
+test_wallet_debit_with_insufficient_balance 
+(tests.regression.test_error_handling.InvalidInputHandlingRegressionTests.test_wallet_debit_with_insufficient_balance)
+REGRESSION TEST: Debit with insufficient balance should fail gracefully. ... ok
+test_zero_duration_subscription_plan 
+(tests.regression.test_error_handling.InvalidInputHandlingRegressionTests.test_zero_duration_subscription_plan)
+REGRESSION TEST: Zero duration plan handling. ... ok
+test_insufficient_balance_for_subscription 
+(tests.regression.test_error_handling.PaymentFailureScenarioRegressionTests.test_insufficient_balance_for_subscription)
+REGRESSION TEST: Subscription payment should fail with insufficient balance. ... ok
+test_transaction_status_on_failure 
+(tests.regression.test_error_handling.PaymentFailureScenarioRegressionTests.test_transaction_status_on_failure)
+REGRESSION TEST: Transaction should be marked with correct status. ... ok
+test_category_description_max_length 
+(tests.regression.test_error_handling.ValidationErrorHandlingRegressionTests.test_category_description_max_length)
+REGRESSION TEST: Category description should respect max length. ... ok
+test_investment_opportunity_equity_validation (tests.regression.test_error_handling.ValidationErrorHandlingRegressionTe
+sts.test_investment_opportunity_equity_validation)
+REGRESSION TEST: Equity over 100% should fail validation. ... ok
+test_wallet_negative_balance_validation 
+(tests.regression.test_error_handling.ValidationErrorHandlingRegressionTests.test_wallet_negative_balance_validation)
+REGRESSION TEST: Negative wallet balance should fail validation. ... ok
+test_duplicate_payment_webhook_does_not_double_credit (tests.regression.test_failure_scenarios_regression.DuplicateWebh
+ookDeliveryRegressionTests.test_duplicate_payment_webhook_does_not_double_credit)
+FAILURE TEST: Duplicate webhooks should not double-credit. ... ok
+test_delayed_activation_does_not_extend_period (tests.regression.test_failure_scenarios_regression.FailedSubscriptionAc
+tivationRegressionTests.test_delayed_activation_does_not_extend_period)
+FAILURE TEST: Activation delay should not grant extra subscription time. ... ok
+test_failed_activation_leaves_subscription_pending (tests.regression.test_failure_scenarios_regression.FailedSubscripti
+onActivationRegressionTests.test_failed_activation_leaves_subscription_pending)
+FAILURE TEST: Activation failure should not leave subscription in limbo. ... ok
+test_multiple_activation_attempts_idempotent (tests.regression.test_failure_scenarios_regression.FailedSubscriptionActi
+vationRegressionTests.test_multiple_activation_attempts_idempotent)
+FAILURE TEST: Multiple activation calls should be idempotent. ... FAIL
+test_deletion_does_not_orphan_related_data (tests.regression.test_failure_scenarios_regression.PartialGDPRDeletionRegre
+ssionTests.test_deletion_does_not_orphan_related_data)
+FAILURE TEST: Deletion should not leave orphaned records. ... ok
+test_deletion_request_status_tracking (tests.regression.test_failure_scenarios_regression.PartialGDPRDeletionRegression
+Tests.test_deletion_request_status_tracking)
+FAILURE TEST: Deletion request must track progress accurately. ... ok
+test_grace_period_cancellation_is_reversible (tests.regression.test_failure_scenarios_regression.PartialGDPRDeletionReg
+ressionTests.test_grace_period_cancellation_is_reversible)
+FAILURE TEST: User can cancel deletion during grace period. ... ok
+test_partial_failure_does_not_corrupt_wallet (tests.regression.test_failure_scenarios_regression.PaymentGatewayTimeoutR
+egressionTests.test_partial_failure_does_not_corrupt_wallet)
+FAILURE TEST: Partial failure should not affect wallet balance. ... ok
+test_retryable_transactions_are_identifiable (tests.regression.test_failure_scenarios_regression.PaymentGatewayTimeoutR
+egressionTests.test_retryable_transactions_are_identifiable)
+FAILURE TEST: Failed transactions that can be retried are identifiable. ... ok
+test_timeout_leaves_transaction_in_queryable_state (tests.regression.test_failure_scenarios_regression.PaymentGatewayTi
+meoutRegressionTests.test_timeout_leaves_transaction_in_queryable_state)
+FAILURE TEST: Timeout should leave transaction in recoverable state. ... ok
+test_document_stuck_in_pending_is_detectable (tests.regression.test_failure_scenarios_regression.StuckKYCVerificationRe
+gressionTests.test_document_stuck_in_pending_is_detectable)
+FAILURE TEST: Documents stuck in pending state can be queried. ... ERROR
+test_verification_level_not_updated_without_documents (tests.regression.test_failure_scenarios_regression.StuckKYCVerif
+icationRegressionTests.test_verification_level_not_updated_without_documents)
+FAILURE TEST: Level should not update without approved documents. ... ok
+test_consent_give_consent_method 
+(tests.regression.test_gdpr_regression.ConsentRecordRegressionTests.test_consent_give_consent_method)
+REGRESSION TEST: give_consent() should mark consent as given. ... ok
+test_consent_record_creation 
+(tests.regression.test_gdpr_regression.ConsentRecordRegressionTests.test_consent_record_creation)
+REGRESSION TEST: Consent record should be created successfully. ... ok
+test_consent_record_default_not_given 
+(tests.regression.test_gdpr_regression.ConsentRecordRegressionTests.test_consent_record_default_not_given)
+REGRESSION TEST: Default consent should be not given (False). ... ok
+test_consent_type_choices_valid 
+(tests.regression.test_gdpr_regression.ConsentRecordRegressionTests.test_consent_type_choices_valid)
+REGRESSION TEST: All consent types should be valid. ... ok
+test_consent_withdraw_consent_method 
+(tests.regression.test_gdpr_regression.ConsentRecordRegressionTests.test_consent_withdraw_consent_method)
+REGRESSION TEST: withdraw_consent() should mark consent as withdrawn. ... ok
+test_deletion_request_cancellation 
+(tests.regression.test_gdpr_regression.DataDeletionRequestRegressionTests.test_deletion_request_cancellation)
+REGRESSION TEST: cancel_request() should cancel the request. ... ok
+test_deletion_request_cannot_cancel_completed (tests.regression.test_gdpr_regression.DataDeletionRequestRegressionTests
+.test_deletion_request_cannot_cancel_completed)
+REGRESSION TEST: Completed requests cannot be cancelled. ... ok
+test_deletion_request_captures_user_info 
+(tests.regression.test_gdpr_regression.DataDeletionRequestRegressionTests.test_deletion_request_captures_user_info)
+REGRESSION TEST: User info should be captured on save. ... ok
+test_deletion_request_creation 
+(tests.regression.test_gdpr_regression.DataDeletionRequestRegressionTests.test_deletion_request_creation)
+REGRESSION TEST: Deletion request should be created successfully. ... ok
+test_deletion_request_days_until_deletion 
+(tests.regression.test_gdpr_regression.DataDeletionRequestRegressionTests.test_deletion_request_days_until_deletion)
+REGRESSION TEST: days_until_deletion should calculate correctly. ... ok
+test_deletion_request_default_status_pending 
+(tests.regression.test_gdpr_regression.DataDeletionRequestRegressionTests.test_deletion_request_default_status_pending)
+REGRESSION TEST: Default status should be 'pending'. ... ok
+test_deletion_request_grace_period 
+(tests.regression.test_gdpr_regression.DataDeletionRequestRegressionTests.test_deletion_request_grace_period)
+REGRESSION TEST: start_grace_period() should set correct dates. ... ok
+test_export_request_creation 
+(tests.regression.test_gdpr_regression.DataExportRequestRegressionTests.test_export_request_creation)
+REGRESSION TEST: Export request should be created successfully. ... ok
+test_export_request_default_status_pending 
+(tests.regression.test_gdpr_regression.DataExportRequestRegressionTests.test_export_request_default_status_pending)
+REGRESSION TEST: Default status should be 'pending'. ... ok
+test_export_request_download_count_tracking 
+(tests.regression.test_gdpr_regression.DataExportRequestRegressionTests.test_export_request_download_count_tracking)
+REGRESSION TEST: record_download() should increment download count. ... ok
+test_export_request_is_expired_property 
+(tests.regression.test_gdpr_regression.DataExportRequestRegressionTests.test_export_request_is_expired_property)
+REGRESSION TEST: is_expired should correctly identify expired exports. ... ok
+test_export_request_mark_completed 
+(tests.regression.test_gdpr_regression.DataExportRequestRegressionTests.test_export_request_mark_completed)
+REGRESSION TEST: mark_completed() should update status and set file info. ... ok
+test_export_request_mark_failed 
+(tests.regression.test_gdpr_regression.DataExportRequestRegressionTests.test_export_request_mark_failed)
+REGRESSION TEST: mark_failed() should update status and set error message. ... ok
+test_export_request_mark_processing 
+(tests.regression.test_gdpr_regression.DataExportRequestRegressionTests.test_export_request_mark_processing)
+REGRESSION TEST: mark_processing() should update status. ... ok
+test_policy_version_creation 
+(tests.regression.test_gdpr_regression.PrivacyPolicyVersionRegressionTests.test_policy_version_creation)
+REGRESSION TEST: Policy version should be created successfully. ... ok
+test_policy_version_default_not_active 
+(tests.regression.test_gdpr_regression.PrivacyPolicyVersionRegressionTests.test_policy_version_default_not_active)
+REGRESSION TEST: New policies should not be active by default. ... ok
+test_policy_version_only_one_active 
+(tests.regression.test_gdpr_regression.PrivacyPolicyVersionRegressionTests.test_policy_version_only_one_active)
+REGRESSION TEST: Only one policy version should be active at a time. ... ok
+test_policy_version_unique 
+(tests.regression.test_gdpr_regression.PrivacyPolicyVersionRegressionTests.test_policy_version_unique)
+REGRESSION TEST: Version numbers should be unique. ... ok
+test_kyc_document_creation 
+(tests.regression.test_kyc_regression.KYCDocumentCreationRegressionTests.test_kyc_document_creation)
+REGRESSION TEST: KYC document should be created successfully. ... ok
+test_kyc_document_default_status_pending 
+(tests.regression.test_kyc_regression.KYCDocumentCreationRegressionTests.test_kyc_document_default_status_pending)
+REGRESSION TEST: Default document status should be 'pending'. ... ok
+test_kyc_document_type_choices_valid 
+(tests.regression.test_kyc_regression.KYCDocumentCreationRegressionTests.test_kyc_document_type_choices_valid)
+REGRESSION TEST: All document type choices should be valid. ... ok
+test_kyc_document_uuid_primary_key 
+(tests.regression.test_kyc_regression.KYCDocumentCreationRegressionTests.test_kyc_document_uuid_primary_key)
+REGRESSION TEST: Document should use UUID as primary key. ... ok
+test_kyc_document_is_expired_for_past_expiry (tests.regression.test_kyc_regression.KYCDocumentPropertiesRegressionTests
+.test_kyc_document_is_expired_for_past_expiry)
+REGRESSION TEST: is_expired should return True for expired documents. ... ok
+test_kyc_document_is_verified_for_approved 
+(tests.regression.test_kyc_regression.KYCDocumentPropertiesRegressionTests.test_kyc_document_is_verified_for_approved)
+REGRESSION TEST: is_verified should return True for approved documents. ... ok
+test_kyc_document_not_expired_for_future_expiry (tests.regression.test_kyc_regression.KYCDocumentPropertiesRegressionTe
+sts.test_kyc_document_not_expired_for_future_expiry)
+REGRESSION TEST: is_expired should return False for valid documents. ... ok
+test_kyc_document_not_verified_for_pending 
+(tests.regression.test_kyc_regression.KYCDocumentPropertiesRegressionTests.test_kyc_document_not_verified_for_pending)
+REGRESSION TEST: is_verified should return False for pending documents. ... ok
+test_kyc_document_requires_review_for_pending (tests.regression.test_kyc_regression.KYCDocumentPropertiesRegressionTest
+s.test_kyc_document_requires_review_for_pending)
+REGRESSION TEST: requires_review should return True for pending documents. ... ok
+test_kyc_document_approve 
+(tests.regression.test_kyc_regression.KYCDocumentStatusRegressionTests.test_kyc_document_approve)
+REGRESSION TEST: approve() should update document status. ... ok
+test_kyc_document_mark_under_review 
+(tests.regression.test_kyc_regression.KYCDocumentStatusRegressionTests.test_kyc_document_mark_under_review)
+REGRESSION TEST: mark_under_review() should update status. ... ok
+test_kyc_document_reject 
+(tests.regression.test_kyc_regression.KYCDocumentStatusRegressionTests.test_kyc_document_reject)
+REGRESSION TEST: reject() should update document status. ... ok
+test_kyc_document_status_choices_valid 
+(tests.regression.test_kyc_regression.KYCDocumentStatusRegressionTests.test_kyc_document_status_choices_valid)
+REGRESSION TEST: All status choices should be valid. ... ok
+test_verification_level_creation 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_creation)
+REGRESSION TEST: Verification level should be created successfully. ... ok
+test_verification_level_default_basic 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_default_basic)
+REGRESSION TEST: Default level should be 'basic'. ... ok
+test_verification_level_default_flags 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_default_flags)
+REGRESSION TEST: Default verification flags should be False. ... ok
+test_verification_level_default_permissions 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_default_permissions)
+REGRESSION TEST: Default permissions should be False. ... ok
+test_verification_level_one_per_user 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_one_per_user)
+REGRESSION TEST: Each user should have only one verification level. ... ok
+test_verification_level_update_to_enhanced 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_update_to_enhanced)
+REGRESSION TEST: update_level() should set enhanced for full non-business verification. ... ok
+test_verification_level_update_to_premium 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_update_to_premium)
+REGRESSION TEST: update_level() should set premium for full verification. ... ok
+test_verification_level_update_to_standard 
+(tests.regression.test_kyc_regression.KYCVerificationLevelRegressionTests.test_verification_level_update_to_standard)
+REGRESSION TEST: update_level() should set standard for email+identity. ... ok
+test_business_profile_company_size_choices (tests.regression.test_marketplace_regression.BusinessProfileRegressionTests
+.test_business_profile_company_size_choices)
+REGRESSION TEST: Company size should accept valid choices. ... ok
+test_business_profile_creation 
+(tests.regression.test_marketplace_regression.BusinessProfileRegressionTests.test_business_profile_creation)
+REGRESSION TEST: Business profile should be created successfully. ... ok
+test_business_profile_equity_offered_validation (tests.regression.test_marketplace_regression.BusinessProfileRegression
+Tests.test_business_profile_equity_offered_validation)
+REGRESSION TEST: Equity offered should be between 0 and 100. ... ok
+test_business_profile_funding_stage_choices (tests.regression.test_marketplace_regression.BusinessProfileRegressionTest
+s.test_business_profile_funding_stage_choices)
+REGRESSION TEST: Funding stage should accept valid choices. ... ok
+test_business_profile_increment_views 
+(tests.regression.test_marketplace_regression.BusinessProfileRegressionTests.test_business_profile_increment_views)
+REGRESSION TEST: increment_views() should increase view count. ... ok
+test_business_profile_one_per_user 
+(tests.regression.test_marketplace_regression.BusinessProfileRegressionTests.test_business_profile_one_per_user)
+REGRESSION TEST: Each user should have only one business profile. ... ok
+test_business_profile_views_default_zero 
+(tests.regression.test_marketplace_regression.BusinessProfileRegressionTests.test_business_profile_views_default_zero)
+REGRESSION TEST: Profile views should default to zero. ... ok
+test_investment_opportunity_creation (tests.regression.test_marketplace_regression.InvestmentOpportunityRegressionTests
+.test_investment_opportunity_creation)
+REGRESSION TEST: Investment opportunity should be created successfully. ... ok
+test_investment_opportunity_default_status_open (tests.regression.test_marketplace_regression.InvestmentOpportunityRegr
+essionTests.test_investment_opportunity_default_status_open)
+REGRESSION TEST: Default status should be 'open'. ... ok
+test_investment_opportunity_equity_validation (tests.regression.test_marketplace_regression.InvestmentOpportunityRegres
+sionTests.test_investment_opportunity_equity_validation)
+REGRESSION TEST: Equity percentage should be between 0 and 100. ... ok
+test_investment_opportunity_increment_views (tests.regression.test_marketplace_regression.InvestmentOpportunityRegressi
+onTests.test_investment_opportunity_increment_views)
+REGRESSION TEST: increment_views() should increase view count. ... ok
+test_investment_opportunity_slug_auto_generated (tests.regression.test_marketplace_regression.InvestmentOpportunityRegr
+essionTests.test_investment_opportunity_slug_auto_generated)
+REGRESSION TEST: Slug should be auto-generated from title. ... ok
+test_investment_opportunity_slug_unique (tests.regression.test_marketplace_regression.InvestmentOpportunityRegressionTe
+sts.test_investment_opportunity_slug_unique)
+REGRESSION TEST: Slugs should be unique (with counter for duplicates). ... ok
+test_job_application_creation 
+(tests.regression.test_marketplace_regression.JobApplicationRegressionTests.test_job_application_creation)
+REGRESSION TEST: Job application should be created successfully. ... ok
+test_job_application_default_status_pending (tests.regression.test_marketplace_regression.JobApplicationRegressionTests
+.test_job_application_default_status_pending)
+REGRESSION TEST: Default application status should be 'pending'. ... ok
+test_job_application_one_per_user_per_job 
+(tests.regression.test_marketplace_regression.JobApplicationRegressionTests.test_job_application_one_per_user_per_job)
+REGRESSION TEST: Only one application per user per job. ... ok
+test_job_application_status_choices_valid 
+(tests.regression.test_marketplace_regression.JobApplicationRegressionTests.test_job_application_status_choices_valid)
+REGRESSION TEST: All status choices should be valid. ... ok
+test_job_opportunity_creation 
+(tests.regression.test_marketplace_regression.JobOpportunityRegressionTests.test_job_opportunity_creation)
+REGRESSION TEST: Job opportunity should be created successfully. ... ok
+test_job_opportunity_default_experience_level (tests.regression.test_marketplace_regression.JobOpportunityRegressionTes
+ts.test_job_opportunity_default_experience_level)
+REGRESSION TEST: Default experience level should be 'mid'. ... ok
+test_job_opportunity_default_job_type 
+(tests.regression.test_marketplace_regression.JobOpportunityRegressionTests.test_job_opportunity_default_job_type)
+REGRESSION TEST: Default job type should be 'full_time'. ... ok
+test_job_opportunity_default_status_open 
+(tests.regression.test_marketplace_regression.JobOpportunityRegressionTests.test_job_opportunity_default_status_open)
+REGRESSION TEST: Default status should be 'open'. ... ok
+test_job_opportunity_remote_option_default 
+(tests.regression.test_marketplace_regression.JobOpportunityRegressionTests.test_job_opportunity_remote_option_default)
+REGRESSION TEST: Remote option should default to False. ... ok
+test_job_opportunity_slug_auto_generated 
+(tests.regression.test_marketplace_regression.JobOpportunityRegressionTests.test_job_opportunity_slug_auto_generated)
+REGRESSION TEST: Slug should be auto-generated from title. ... ok
+test_save_item_creation (tests.regression.test_marketplace_regression.SavedItemRegressionTests.test_save_item_creation)
+REGRESSION TEST: Saved item should be created successfully. ... ok
+test_save_item_no_duplicate 
+(tests.regression.test_marketplace_regression.SavedItemRegressionTests.test_save_item_no_duplicate)
+REGRESSION TEST: Same item cannot be saved twice by same user. ... ok
+test_save_item_timestamp_set 
+(tests.regression.test_marketplace_regression.SavedItemRegressionTests.test_save_item_timestamp_set)
+REGRESSION TEST: saved_at timestamp should be set automatically. ... ok
+test_invoice_is_overdue_for_past_due_date (tests.regression.test_subscription_regression.InvoiceGenerationRegressionTes
+ts.test_invoice_is_overdue_for_past_due_date)
+REGRESSION TEST: is_overdue() should return True for past due invoices. ... ok
+test_invoice_mark_as_paid 
+(tests.regression.test_subscription_regression.InvoiceGenerationRegressionTests.test_invoice_mark_as_paid)
+REGRESSION TEST: mark_as_paid() should update status and paid_date. ... ok
+test_invoice_not_overdue_when_paid 
+(tests.regression.test_subscription_regression.InvoiceGenerationRegressionTests.test_invoice_not_overdue_when_paid)
+REGRESSION TEST: is_overdue() should return False for paid invoices. ... ok
+test_invoice_number_auto_generated 
+(tests.regression.test_subscription_regression.InvoiceGenerationRegressionTests.test_invoice_number_auto_generated)
+REGRESSION TEST: Invoice number should be auto-generated. ... ok
+test_invoice_number_unique 
+(tests.regression.test_subscription_regression.InvoiceGenerationRegressionTests.test_invoice_number_unique)
+REGRESSION TEST: Invoice numbers should be unique. ... ok
+test_plan_creation_with_required_fields 
+(tests.regression.test_subscription_regression.SubscriptionPlanRegressionTests.test_plan_creation_with_required_fields)
+REGRESSION TEST: Plan should be created with all required fields. ... ok
+test_plan_duration_days_default 
+(tests.regression.test_subscription_regression.SubscriptionPlanRegressionTests.test_plan_duration_days_default)
+REGRESSION TEST: Plan duration should default to 30 days. ... ok
+test_plan_features_as_json 
+(tests.regression.test_subscription_regression.SubscriptionPlanRegressionTests.test_plan_features_as_json)
+REGRESSION TEST: Features should be stored as JSON list. ... ok
+test_plan_is_active_by_default 
+(tests.regression.test_subscription_regression.SubscriptionPlanRegressionTests.test_plan_is_active_by_default)
+REGRESSION TEST: New plans should be active by default. ... ok
+test_plan_price_minimum_value 
+(tests.regression.test_subscription_regression.SubscriptionPlanRegressionTests.test_plan_price_minimum_value)
+REGRESSION TEST: Plan price should not be negative. ... ok
+test_plan_slug_unique 
+(tests.regression.test_subscription_regression.SubscriptionPlanRegressionTests.test_plan_slug_unique)
+REGRESSION TEST: Plan slugs should be unique. ... ok
+test_activate_sets_end_date 
+(tests.regression.test_subscription_regression.UserSubscriptionActivationRegressionTests.test_activate_sets_end_date)
+REGRESSION TEST: activate() should set end_date based on plan duration. ... ok
+test_activate_sets_start_date 
+(tests.regression.test_subscription_regression.UserSubscriptionActivationRegressionTests.test_activate_sets_start_date)
+REGRESSION TEST: activate() should set start_date. ... ok
+test_activate_sets_status_active (tests.regression.test_subscription_regression.UserSubscriptionActivationRegressionTes
+ts.test_activate_sets_status_active)
+REGRESSION TEST: activate() should set status to 'active'. ... ok
+test_cancel_disables_auto_renew (tests.regression.test_subscription_regression.UserSubscriptionCancellationRegressionTe
+sts.test_cancel_disables_auto_renew)
+REGRESSION TEST: cancel() should disable auto-renew. ... ok
+test_cancel_sets_status_cancelled (tests.regression.test_subscription_regression.UserSubscriptionCancellationRegression
+Tests.test_cancel_sets_status_cancelled)
+REGRESSION TEST: cancel() should set status to 'cancelled'. ... ok
+test_subscription_auto_renew_default_true (tests.regression.test_subscription_regression.UserSubscriptionCreationRegres
+sionTests.test_subscription_auto_renew_default_true)
+REGRESSION TEST: Auto-renew should default to True. ... ok
+test_subscription_creation 
+(tests.regression.test_subscription_regression.UserSubscriptionCreationRegressionTests.test_subscription_creation)
+REGRESSION TEST: Subscription should be created successfully. ... ok
+test_subscription_default_payment_method_wallet (tests.regression.test_subscription_regression.UserSubscriptionCreation
+RegressionTests.test_subscription_default_payment_method_wallet)
+REGRESSION TEST: Default payment method should be wallet. ... ok
+test_subscription_default_status_pending (tests.regression.test_subscription_regression.UserSubscriptionCreationRegress
+ionTests.test_subscription_default_status_pending)
+REGRESSION TEST: New subscription should have pending status. ... ok
+test_days_remaining_for_active 
+(tests.regression.test_subscription_regression.UserSubscriptionValidityRegressionTests.test_days_remaining_for_active)
+REGRESSION TEST: days_remaining() should return positive days for active subscription. ... ok
+test_days_remaining_for_inactive (tests.regression.test_subscription_regression.UserSubscriptionValidityRegressionTests
+.test_days_remaining_for_inactive)
+REGRESSION TEST: days_remaining() should return 0 for inactive subscription. ... ok
+test_is_valid_returns_false_for_expired (tests.regression.test_subscription_regression.UserSubscriptionValidityRegressi
+onTests.test_is_valid_returns_false_for_expired)
+REGRESSION TEST: is_valid() should return False for expired subscription. ... ok
+test_is_valid_returns_false_for_pending (tests.regression.test_subscription_regression.UserSubscriptionValidityRegressi
+onTests.test_is_valid_returns_false_for_pending)
+REGRESSION TEST: is_valid() should return False for pending subscription. ... ok
+test_is_valid_returns_true_for_active (tests.regression.test_subscription_regression.UserSubscriptionValidityRegression
+Tests.test_is_valid_returns_true_for_active)
+REGRESSION TEST: is_valid() should return True for active subscription. ... ok
+test_needs_renewal_notification_false_for_new_subscription (tests.regression.test_subscription_regression.UserSubscript
+ionValidityRegressionTests.test_needs_renewal_notification_false_for_new_subscription)
+REGRESSION TEST: needs_renewal_notification should be False for new subscription. ... ok
+test_needs_renewal_notification_true_when_expiring_soon (tests.regression.test_subscription_regression.UserSubscription
+ValidityRegressionTests.test_needs_renewal_notification_true_when_expiring_soon)
+REGRESSION TEST: needs_renewal_notification should be True when expiring within 7 days. ... ok
+test_category_creation (tests.regression.test_user_auth_regression.CategoryRegressionTests.test_category_creation)
+REGRESSION TEST: Category creation should work. ... ok
+test_category_is_active_default 
+(tests.regression.test_user_auth_regression.CategoryRegressionTests.test_category_is_active_default)
+REGRESSION TEST: New categories should be active by default. ... ok
+test_category_slug_unique 
+(tests.regression.test_user_auth_regression.CategoryRegressionTests.test_category_slug_unique)
+REGRESSION TEST: Category slugs should be unique. ... ok
+test_employee_id_unique 
+(tests.regression.test_user_auth_regression.RoleBasedAccessRegressionTests.test_employee_id_unique)
+REGRESSION TEST: Employee IDs should be unique. ... ok
+test_role_permissions_stored 
+(tests.regression.test_user_auth_regression.RoleBasedAccessRegressionTests.test_role_permissions_stored)
+REGRESSION TEST: Role permissions should be stored correctly. ... ok
+test_staff_role_relationship 
+(tests.regression.test_user_auth_regression.RoleBasedAccessRegressionTests.test_staff_role_relationship)
+REGRESSION TEST: Staff should be linked to role. ... ok
+test_staff_user_relationship 
+(tests.regression.test_user_auth_regression.RoleBasedAccessRegressionTests.test_staff_user_relationship)
+REGRESSION TEST: Staff should be linked to user. ... ok
+test_force_login_works (tests.regression.test_user_auth_regression.UserLoginRegressionTests.test_force_login_works)
+REGRESSION TEST: Force login for testing should work. ... INFO 2026-01-08 19:20:33,101 attempts AXES: Cleaned up 0 
+expired access attempts from database that were older than 2025-10-25 17:20:33.093676+00:00
+INFO 2026-01-08 19:20:33,101 database AXES: Successful login by {username: "********************", ip_address: 
+"********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO 2026-01-08 19:20:33,107 attempts AXES: Reset 0 access attempts from database.
+INFO 2026-01-08 19:20:33,107 database AXES: Deleted 0 failed login attempts by {username: "********************", 
+ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ok
+test_inactive_user_cannot_authenticate 
+(tests.regression.test_user_auth_regression.UserLoginRegressionTests.test_inactive_user_cannot_authenticate)
+REGRESSION TEST: Inactive users should not be able to login. ... ok
+test_logout_clears_session 
+(tests.regression.test_user_auth_regression.UserLoginRegressionTests.test_logout_clears_session)
+REGRESSION TEST: Logout should clear user session. ... INFO 2026-01-08 19:20:34,854 attempts AXES: Cleaned up 0 
+expired access attempts from database that were older than 2025-10-25 17:20:34.852330+00:00
+INFO 2026-01-08 19:20:34,854 database AXES: Successful login by {username: "********************", ip_address: 
+"********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO 2026-01-08 19:20:34,861 attempts AXES: Reset 0 access attempts from database.
+INFO 2026-01-08 19:20:34,863 database AXES: Deleted 0 failed login attempts by {username: "********************", 
+ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO 2026-01-08 19:20:34,869 attempts AXES: Cleaned up 0 expired access attempts from database that were older than 
+2025-10-25 17:20:34.868485+00:00
+INFO 2026-01-08 19:20:34,869 database AXES: Successful logout by {username: "********************", ip_address: 
+"********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+ok
+test_dashboard_url_for_investor 
+(tests.regression.test_user_auth_regression.UserProfileRegressionTests.test_dashboard_url_for_investor)
+REGRESSION TEST: Investor category should route to investor dashboard. ... ok
+test_dashboard_url_without_category 
+(tests.regression.test_user_auth_regression.UserProfileRegressionTests.test_dashboard_url_without_category)
+REGRESSION TEST: User without category should route to home. ... ok
+test_profile_fields_saved_correctly 
+(tests.regression.test_user_auth_regression.UserProfileRegressionTests.test_profile_fields_saved_correctly)
+REGRESSION TEST: Profile fields should persist. ... ok
+test_profile_string_representation 
+(tests.regression.test_user_auth_regression.UserProfileRegressionTests.test_profile_string_representation)
+REGRESSION TEST: Profile string representation should work. ... ok
+test_profile_user_relationship 
+(tests.regression.test_user_auth_regression.UserProfileRegressionTests.test_profile_user_relationship)
+REGRESSION TEST: Profile should be linked to user. ... ok
+test_duplicate_email_handling 
+(tests.regression.test_user_auth_regression.UserRegistrationRegressionTests.test_duplicate_email_handling)
+REGRESSION TEST: Check email uniqueness behavior. ... ok
+test_duplicate_username_prevented 
+(tests.regression.test_user_auth_regression.UserRegistrationRegressionTests.test_duplicate_username_prevented)
+REGRESSION TEST: Duplicate usernames should be prevented. ... ok
+test_user_creation_basic 
+(tests.regression.test_user_auth_regression.UserRegistrationRegressionTests.test_user_creation_basic)
+REGRESSION TEST: Basic user creation should work. ... ok
+test_user_is_active_by_default 
+(tests.regression.test_user_auth_regression.UserRegistrationRegressionTests.test_user_is_active_by_default)
+REGRESSION TEST: New users should be active by default. ... ok
+test_user_not_staff_by_default 
+(tests.regression.test_user_auth_regression.UserRegistrationRegressionTests.test_user_not_staff_by_default)
+REGRESSION TEST: New users should not be staff by default. ... ok
+test_exact_balance_returns_true 
+(tests.regression.test_wallet_regression.WalletBalanceCheckRegressionTests.test_exact_balance_returns_true)
+REGRESSION TEST: has_sufficient_balance should return True for exact balance. ... ok
+test_insufficient_balance_returns_false 
+(tests.regression.test_wallet_regression.WalletBalanceCheckRegressionTests.test_insufficient_balance_returns_false)
+REGRESSION TEST: has_sufficient_balance should return False when balance is insufficient. ... ok
+test_sufficient_balance_returns_true 
+(tests.regression.test_wallet_regression.WalletBalanceCheckRegressionTests.test_sufficient_balance_returns_true)
+REGRESSION TEST: has_sufficient_balance should return True when balance is sufficient. ... ok
+test_zero_amount_returns_true 
+(tests.regression.test_wallet_regression.WalletBalanceCheckRegressionTests.test_zero_amount_returns_true)
+REGRESSION TEST: has_sufficient_balance should return True for zero amount. ... ok
+test_one_wallet_per_user 
+(tests.regression.test_wallet_regression.WalletCreationRegressionTests.test_one_wallet_per_user)
+REGRESSION TEST: Each user should have only one wallet. ... ok
+test_wallet_creation_with_defaults 
+(tests.regression.test_wallet_regression.WalletCreationRegressionTests.test_wallet_creation_with_defaults)
+REGRESSION TEST: Wallet should be created with correct defaults. ... ok
+test_wallet_is_active_by_default 
+(tests.regression.test_wallet_regression.WalletCreationRegressionTests.test_wallet_is_active_by_default)
+REGRESSION TEST: New wallets should be active by default. ... ok
+test_wallet_timestamps_set 
+(tests.regression.test_wallet_regression.WalletCreationRegressionTests.test_wallet_timestamps_set)
+REGRESSION TEST: Wallet timestamps should be automatically set. ... ok
+test_wallet_user_relationship 
+(tests.regression.test_wallet_regression.WalletCreationRegressionTests.test_wallet_user_relationship)
+REGRESSION TEST: Wallet should be linked to user. ... ok
+test_credit_decimal_precision 
+(tests.regression.test_wallet_regression.WalletCreditRegressionTests.test_credit_decimal_precision)
+REGRESSION TEST: Credit should maintain decimal precision. ... ok
+test_credit_increases_balance 
+(tests.regression.test_wallet_regression.WalletCreditRegressionTests.test_credit_increases_balance)
+REGRESSION TEST: Credit should increase wallet balance. ... ok
+test_credit_large_amount (tests.regression.test_wallet_regression.WalletCreditRegressionTests.test_credit_large_amount)
+REGRESSION TEST: Large credit amounts should work. ... ok
+test_credit_negative_amount_rejected 
+(tests.regression.test_wallet_regression.WalletCreditRegressionTests.test_credit_negative_amount_rejected)
+REGRESSION TEST: Negative amount credit should be rejected. ... ok
+test_credit_zero_amount_rejected 
+(tests.regression.test_wallet_regression.WalletCreditRegressionTests.test_credit_zero_amount_rejected)
+REGRESSION TEST: Zero amount credit should be rejected. ... ok
+test_debit_decreases_balance 
+(tests.regression.test_wallet_regression.WalletDebitRegressionTests.test_debit_decreases_balance)
+REGRESSION TEST: Debit should decrease wallet balance. ... ok
+test_debit_exact_balance_allowed 
+(tests.regression.test_wallet_regression.WalletDebitRegressionTests.test_debit_exact_balance_allowed)
+REGRESSION TEST: Debit of exact balance should be allowed. ... ok
+test_debit_insufficient_balance_rejected 
+(tests.regression.test_wallet_regression.WalletDebitRegressionTests.test_debit_insufficient_balance_rejected)
+REGRESSION TEST: Debit exceeding balance should be rejected. ... ok
+test_debit_negative_amount_rejected 
+(tests.regression.test_wallet_regression.WalletDebitRegressionTests.test_debit_negative_amount_rejected)
+REGRESSION TEST: Negative amount debit should be rejected. ... ok
+test_debit_zero_amount_rejected 
+(tests.regression.test_wallet_regression.WalletDebitRegressionTests.test_debit_zero_amount_rejected)
+REGRESSION TEST: Zero amount debit should be rejected. ... ok
+test_wallet_string_format 
+(tests.regression.test_wallet_regression.WalletStringRepresentationRegressionTests.test_wallet_string_format)
+REGRESSION TEST: Wallet string representation should include username and balance. ... ok
+test_negative_balance_validation 
+(tests.regression.test_wallet_regression.WalletValidationRegressionTests.test_negative_balance_validation)
+REGRESSION TEST: Negative balance should fail validation. ... ok
+test_valid_balance_passes_validation 
+(tests.regression.test_wallet_regression.WalletValidationRegressionTests.test_valid_balance_passes_validation)
+REGRESSION TEST: Valid balance should pass validation. ... ok
+test_transaction_atomicity_on_bulk_updates (tests.regression.test_database_migration_safety.DataMigrationSafetyRegressi
+onTests.test_transaction_atomicity_on_bulk_updates)
+REGRESSION CHECK: Bulk updates should be atomic. ... ok
+test_double_credit_prevention_after_interrupt (tests.regression.test_failure_scenarios_regression.InterruptedWalletTran
+sactionRegressionTests.test_double_credit_prevention_after_interrupt)
+FAILURE TEST: Ensures credits cannot be applied twice after retry. ... ok
+test_interrupted_credit_does_not_corrupt_balance (tests.regression.test_failure_scenarios_regression.InterruptedWalletT
+ransactionRegressionTests.test_interrupted_credit_does_not_corrupt_balance)
+FAILURE TEST: Simulates interrupted credit operation. ... ok
+test_interrupted_debit_does_not_create_negative_balance (tests.regression.test_failure_scenarios_regression.Interrupted
+WalletTransactionRegressionTests.test_interrupted_debit_does_not_create_negative_balance)
+FAILURE TEST: Simulates interrupted debit operation. ... ok
+
+======================================================================
+ERROR: test_mpesa_status_api_returns_json 
+(tests.regression.test_api_contract_regression.APIResponseSchemaRegressionTests.test_mpesa_status_api_returns_json)
+REGRESSION CHECK: M-Pesa status API returns JSON.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (729429c8-19aa-4064-95ba-9282b126e829, login_success, info, Login attempt: success, 
+schema_test_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "f..., 
+2026-01-08 17:15:56.429539+00, null, 1).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_api_contract_regression.py", line 295, in 
+test_mpesa_status_api_returns_json
+    self.client.force_login(self.user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 779, in 
+force_login
+    self._login(user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 791, in _login
+    login(request, user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\contrib\auth\__init__.py", line 144, 
+in login
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 176, in 
+send
+    return [
+           ^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 177, in 
+<listcomp>
+    (receiver, receiver(signal=self, sender=sender, **named))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\signals.py", line 39, in log_user_login
+    AuditService.log_login_attempt(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 162, in log_login_attempt
+    AuditService.log_event(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 83, in log_event
+    audit_log = AuditLog.objects.create(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 660, in 
+create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\models.py", line 166, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 877, in 
+save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1020, in 
+_save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1061, in 
+_do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 1810, in 
+_insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 
+1822, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in 
+execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in 
+_execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in 
+_execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (729429c8-19aa-4064-95ba-9282b126e829, login_success, info, Login attempt: success, 
+schema_test_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "f..., 
+2026-01-08 17:15:56.429539+00, null, 1).
+
+
+======================================================================
+ERROR: test_authenticated_wallet_access_returns_200 (tests.regression.test_api_contract_regression.APIStatusCodeRegress
+ionTests.test_authenticated_wallet_access_returns_200)
+REGRESSION CHECK: Authenticated wallet access succeeds.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (899cd316-e5c5-4b4f-87d3-3628ed75f428, login_success, info, Login attempt: success, 
+api_status_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "3..., 2026-01-08 
+17:15:57.692965+00, null, 2).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_api_contract_regression.py", line 106, in 
+test_authenticated_wallet_access_returns_200
+    self.client.force_login(self.user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 779, in 
+force_login
+    self._login(user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 791, in _login
+    login(request, user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\contrib\auth\__init__.py", line 144, 
+in login
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 176, in 
+send
+    return [
+           ^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 177, in 
+<listcomp>
+    (receiver, receiver(signal=self, sender=sender, **named))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\signals.py", line 39, in log_user_login
+    AuditService.log_login_attempt(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 162, in log_login_attempt
+    AuditService.log_event(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 83, in log_event
+    audit_log = AuditLog.objects.create(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 660, in 
+create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\models.py", line 166, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 877, in 
+save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1020, in 
+_save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1061, in 
+_do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 1810, in 
+_insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 
+1822, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in 
+execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in 
+_execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in 
+_execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (899cd316-e5c5-4b4f-87d3-3628ed75f428, login_success, info, Login attempt: success, 
+api_status_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "3..., 2026-01-08 
+17:15:57.692965+00, null, 2).
+
+
+======================================================================
+ERROR: test_json_endpoints_return_json_content_type 
+(tests.regression.test_api_contract_regression.ContentTypeRegressionTests.test_json_endpoints_return_json_content_type)
+REGRESSION CHECK: JSON endpoints return JSON content type.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_wallet_user_id_key"
+DETAIL:  Key (user_id)=(6) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_api_contract_regression.py", line 529, in 
+test_json_endpoints_return_json_content_type
+    wallet = Wallet.objects.create(user=user, balance=Decimal('0.00'))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 660, in 
+create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 877, in 
+save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1020, in 
+_save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1061, in 
+_do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 1810, in 
+_insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 
+1822, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in 
+execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in 
+_execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in 
+_execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_wallet_user_id_key"
+DETAIL:  Key (user_id)=(6) already exists.
+
+
+======================================================================
+ERROR: test_invalid_subscription_detail_returns_404 (tests.regression.test_api_contract_regression.ErrorResponseRegress
+ionTests.test_invalid_subscription_detail_returns_404)
+REGRESSION CHECK: Invalid subscription ID returns 404.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (17f3a3e2-d118-4ae8-aa23-92191837b894, login_success, info, Login attempt: success, 
+error_response_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "0..., 
+2026-01-08 17:16:04.473842+00, null, 8).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_api_contract_regression.py", line 617, in 
+test_invalid_subscription_detail_returns_404
+    self.client.force_login(self.user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 779, in 
+force_login
+    self._login(user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 791, in _login
+    login(request, user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\contrib\auth\__init__.py", line 144, 
+in login
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 176, in 
+send
+    return [
+           ^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 177, in 
+<listcomp>
+    (receiver, receiver(signal=self, sender=sender, **named))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\signals.py", line 39, in log_user_login
+    AuditService.log_login_attempt(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 162, in log_login_attempt
+    AuditService.log_event(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 83, in log_event
+    audit_log = AuditLog.objects.create(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 660, in 
+create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\models.py", line 166, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 877, in 
+save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1020, in 
+_save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1061, in 
+_do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 1810, in 
+_insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 
+1822, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in 
+execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in 
+_execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in 
+_execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (17f3a3e2-d118-4ae8-aa23-92191837b894, login_success, info, Login attempt: success, 
+error_response_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "0..., 
+2026-01-08 17:16:04.473842+00, null, 8).
+
+
+======================================================================
+ERROR: test_transaction_history_handles_page_parameter (tests.regression.test_api_contract_regression.PaginationContrac
+tRegressionTests.test_transaction_history_handles_page_parameter)
+REGRESSION CHECK: Transaction history handles pagination.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (1abdbcfb-9717-46f6-a93e-34e8621d8c1f, login_success, info, Login attempt: success, 
+pagination_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "c..., 2026-01-08 
+17:16:05.700113+00, null, 9).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_api_contract_regression.py", line 742, in 
+test_transaction_history_handles_page_parameter
+    self.client.force_login(self.user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 779, in 
+force_login
+    self._login(user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 791, in _login
+    login(request, user, backend)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\contrib\auth\__init__.py", line 144, 
+in login
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 176, in 
+send
+    return [
+           ^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\dispatch\dispatcher.py", line 177, in 
+<listcomp>
+    (receiver, receiver(signal=self, sender=sender, **named))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\signals.py", line 39, in log_user_login
+    AuditService.log_login_attempt(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 162, in log_login_attempt
+    AuditService.log_event(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\services\audit_service.py", line 83, in log_event
+    audit_log = AuditLog.objects.create(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 660, in 
+create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\audit\models.py", line 166, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 877, in 
+save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1020, in 
+_save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1061, in 
+_do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 1810, in 
+_insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 
+1822, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in 
+execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in 
+_execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in 
+_execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "request_method" of relation "audit_log" violates not-null 
+constraint
+DETAIL:  Failing row contains (1abdbcfb-9717-46f6-a93e-34e8621d8c1f, login_success, info, Login attempt: success, 
+pagination_user, null, null, , null, , {"risk_score": 0, "failure_reason": null, "login_history_id": "c..., 2026-01-08 
+17:16:05.700113+00, null, 9).
+
+
+======================================================================
+ERROR: test_stripe_webhook_requires_signature 
+(tests.regression.test_api_contract_regression.WebhookContractRegressionTests.test_stripe_webhook_requires_signature)
+REGRESSION CHECK: Stripe webhook validates signature.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 61, in 
+verify_header
+    timestamp, signatures = cls._get_timestamp_and_signatures(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 53, in 
+_get_timestamp_and_signatures
+    list_items = [i.split("=", 2) for i in header.split(",")]
+                                           ^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'split'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\payments\webhooks.py", line 43, in stripe_webhook
+    event = stripe.Webhook.construct_event(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 25, in 
+construct_event
+    WebhookSignature.verify_header(payload, sig_header, secret, tolerance)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\_webhook.py", line 65, in 
+verify_header
+    raise SignatureVerificationError(
+stripe._error.SignatureVerificationError: Unable to extract timestamp and signatures from header
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\__init__.py", line 872, in __getattr__
+    target, is_submodule = _import_map[name]
+                           ~~~~~~~~~~~^^^^^^
+KeyError: 'error'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_api_contract_regression.py", line 193, in 
+test_stripe_webhook_requires_signature
+    response = self.client.post(
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 948, in post
+    response = super().post(
+               ^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 482, in post
+    return self.generic(
+           ^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 609, in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 891, in request
+    self.check_exception(response)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\test\client.py", line 738, in 
+check_exception
+    raise exc_value
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, 
+in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in 
+_get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\views\decorators\csrf.py", line 56, 
+in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\views\decorators\http.py", line 43, 
+in inner
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\payments\webhooks.py", line 49, in stripe_webhook
+    except stripe.error.SignatureVerificationError:
+           ^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\__init__.py", line 882, in __getattr__
+    raise AttributeError()
+AttributeError
+
+======================================================================
+ERROR: test_invoice_number_uniqueness 
+(tests.regression.test_database_migration_safety.IndexAndConstraintRegressionTests.test_invoice_number_uniqueness)
+REGRESSION CHECK: Invoice numbers must be unique.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "due_date" of relation "payments_invoice" violates not-null 
+constraint
+DETAIL:  Failing row contains (3, INV-TEST-UNIQUE-001, 49.99, USD, paid, null, null, , 2026-01-08 17:17:54.225806+00, 
+2026-01-08 17:17:54.225806+00, 12, 75).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_database_migration_safety.py", line 586, in 
+test_invoice_number_uniqueness
+    Invoice.objects.create(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 660, in 
+create
+    obj.save(force_insert=True, using=self.db)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\payments\models.py", line 152, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 877, in 
+save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1020, in 
+_save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 1061, in 
+_do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 1810, in 
+_insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 
+1822, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in 
+execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in 
+_execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in 
+_execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in 
+_execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "due_date" of relation "payments_invoice" violates not-null 
+constraint
+DETAIL:  Failing row contains (3, INV-TEST-UNIQUE-001, 49.99, USD, paid, null, null, , 2026-01-08 17:17:54.225806+00, 
+2026-01-08 17:17:54.225806+00, 12, 75).
+
+
+======================================================================
+ERROR: test_document_stuck_in_pending_is_detectable (tests.regression.test_failure_scenarios_regression.StuckKYCVerific
+ationRegressionTests.test_document_stuck_in_pending_is_detectable)
+FAILURE TEST: Documents stuck in pending state can be queried.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_failure_scenarios_regression.py", line 504, 
+in test_document_stuck_in_pending_is_detectable
+    document = KYCDocument.objects.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\manager.py", line 87, in 
+manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\query.py", line 658, in 
+create
+    obj = self.model(**kwargs)
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py", line 567, in 
+__init__
+    raise TypeError(
+TypeError: KYCDocument() got unexpected keyword arguments: 'document'
+
+======================================================================
+FAIL: test_subscription_plans_list_returns_200 
+(tests.regression.test_api_contract_regression.APIStatusCodeRegressionTests.test_subscription_plans_list_returns_200)
+REGRESSION CHECK: Public subscription plans accessible.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_api_contract_regression.py", line 150, in 
+test_subscription_plans_list_returns_200
+    self.assertEqual(
+AssertionError: 302 != 200 : REGRESSION DETECTED: Subscription plans returned 302
+
+======================================================================
+FAIL: test_subscription_activation_is_idempotent (tests.regression.test_async_regression.DuplicateExecutionProtectionRe
+gressionTests.test_subscription_activation_is_idempotent)
+REGRESSION CHECK: Multiple activations should not extend subscription.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_async_regression.py", line 432, in 
+test_subscription_activation_is_idempotent
+    self.assertEqual(
+AssertionError: datetime.datetime(2026, 1, 8, 17, 16, 13, 13295, tzinfo=datetime.timezone.utc) != 
+datetime.datetime(2026, 1, 8, 17, 16, 13, 16326, tzinfo=datetime.timezone.utc) : REGRESSION DETECTED: Duplicate 
+activation changed start date
+
+======================================================================
+FAIL: test_all_model_tables_exist 
+(tests.regression.test_database_migration_safety.SchemaValidationRegressionTests.test_all_model_tables_exist)
+REGRESSION CHECK: All model tables should exist in database.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_database_migration_safety.py", line 467, in 
+test_all_model_tables_exist
+    self.fail(
+AssertionError: REGRESSION DETECTED: Missing tables: gdpr_consentrecord, gdpr_dataexportrequest, 
+gdpr_datadeletionrequest
+
+======================================================================
+FAIL: test_multiple_activation_attempts_idempotent (tests.regression.test_failure_scenarios_regression.FailedSubscripti
+onActivationRegressionTests.test_multiple_activation_attempts_idempotent)
+FAILURE TEST: Multiple activation calls should be idempotent.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Fadhiri\Desktop\pmzomo\biasharaBB\tests\regression\test_failure_scenarios_regression.py", line 314, 
+in test_multiple_activation_attempts_idempotent
+    self.assertEqual(
+AssertionError: datetime.datetime(2026, 1, 8, 17, 18, 23, 901949, tzinfo=datetime.timezone.utc) != 
+datetime.datetime(2026, 1, 8, 17, 18, 23, 903462, tzinfo=datetime.timezone.utc) : REGRESSION DETECTED: Start date 
+changed on re-activation
+
+----------------------------------------------------------------------
+Ran 279 tests in 331.260s
+
+FAILED (failures=4, errors=8)
+Destroying test database for alias 'default' ('test_postgres')...
+
