@@ -1,0 +1,192 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.2, pytest-8.0.0, pluggy-1.6.0 -- C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Scripts\python.exe
+cachedir: .pytest_cache
+django: version: 4.2.27, settings: config.settings (from ini)
+rootdir: C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB
+configfile: pytest.ini
+plugins: Faker-22.0.0, cov-4.1.0, django-4.7.0, xdist-3.5.0
+collecting ... collected 104 items
+
+tests/security/test_authentication_security.py::TestBruteForceProtection::test_login_rate_limiting__excessive_attempts__429_or_lockout FAILED [  0%]
+tests/security/test_authentication_security.py::TestBruteForceProtection::test_login_timing_attack_resistance__consistent_response_time PASSED [  1%]
+tests/security/test_authentication_security.py::TestPasswordResetSecurity::test_password_reset_token__invalid_format__rejected PASSED [  2%]
+tests/security/test_authentication_security.py::TestPasswordResetSecurity::test_password_reset_token__invalid_user_id__rejected PASSED [  3%]
+tests/security/test_authentication_security.py::TestPasswordResetSecurity::test_password_reset_token__replay_attack__rejected PASSED [  4%]
+tests/security/test_authentication_security.py::TestMFASecurity::test_mfa_backup_codes__requires_mfa_enabled FAILED [  5%]
+tests/security/test_authentication_security.py::TestMFASecurity::test_mfa_setup__requires_authentication PASSED [  6%]
+tests/security/test_authentication_security.py::TestMFASecurity::test_mfa_verify__invalid_token__rejected FAILED [  7%]
+tests/security/test_authentication_security.py::TestSessionInvalidationOnPasswordChange::test_password_change__old_sessions__invalidated PASSED [  8%]
+tests/security/test_authentication_security.py::TestEmailVerification::test_registration__email_verification_required PASSED [  9%]
+tests/security/test_authentication_security.py::TestPasswordPolicy::test_password_change__weak_password__rejected PASSED [ 10%]
+tests/security/test_authentication_security.py::TestPasswordPolicy::test_registration__weak_password__rejected PASSED [ 11%]
+tests/security/test_authorization_rbac.py::TestRoleBasedAccessControl::test_admin_pages__regular_user__access_denied PASSED [ 12%]
+tests/security/test_authorization_rbac.py::TestRoleBasedAccessControl::test_staff_pages__non_staff_user__access_denied PASSED [ 13%]
+tests/security/test_authorization_rbac.py::TestRoleBasedAccessControl::test_staff_pages__staff_user__access_granted PASSED [ 14%]
+tests/security/test_authorization_rbac.py::TestWalletIDOR::test_transaction_export__cross_user_data__not_leaked PASSED [ 15%]
+tests/security/test_authorization_rbac.py::TestWalletIDOR::test_transaction_receipt__cross_user__access_denied PASSED [ 16%]
+tests/security/test_authorization_rbac.py::TestWalletIDOR::test_wallet_dashboard__cross_user__access_denied PASSED [ 17%]
+tests/security/test_authorization_rbac.py::TestInvoiceIDOR::test_invoice_pdf__cross_user__access_denied PASSED [ 18%]
+tests/security/test_authorization_rbac.py::TestKYCDocumentIDOR::test_kyc_document_delete__cross_user__access_denied PASSED [ 19%]
+tests/security/test_authorization_rbac.py::TestKYCDocumentIDOR::test_kyc_document_detail__cross_user__access_denied PASSED [ 20%]
+tests/security/test_authorization_rbac.py::TestMarketplaceIDOR::test_business_profile_update__cross_user__access_denied FAILED [ 21%]
+tests/security/test_authorization_rbac.py::TestDisputeIDOR::test_create_dispute__cross_user_transaction__access_denied PASSED [ 22%]
+tests/security/test_authorization_rbac.py::TestVerticalPrivilegeEscalation::test_regular_user__staff_fraud_alert_resolve__access_denied PASSED [ 23%]
+tests/security/test_authorization_rbac.py::TestVerticalPrivilegeEscalation::test_regular_user__staff_resolve_dispute__access_denied PASSED [ 24%]
+tests/security/test_authorization_rbac.py::TestVerticalPrivilegeEscalation::test_staff_user__superuser_actions__access_denied PASSED [ 25%]
+tests/security/test_authorization_rbac.py::TestHorizontalPrivilegeEscalation::test_profile_edit__other_user__access_denied PASSED [ 25%]
+tests/security/test_authorization_rbac.py::TestHorizontalPrivilegeEscalation::test_subscription_cancel__other_user__access_denied PASSED [ 26%]
+tests/security/test_gdpr_data_security.py::TestDataExportSecurity::test_data_export__cross_user_access__denied PASSED [ 27%]
+tests/security/test_gdpr_data_security.py::TestDataExportSecurity::test_data_export__unauthenticated__denied FAILED [ 28%]
+tests/security/test_gdpr_data_security.py::TestDataExportSecurity::test_data_export_request__rate_limiting__enforced PASSED [ 29%]
+tests/security/test_gdpr_data_security.py::TestDataDeletionSecurity::test_data_deletion__cross_user__denied PASSED [ 30%]
+tests/security/test_gdpr_data_security.py::TestDataDeletionSecurity::test_data_deletion__grace_period__exists PASSED [ 31%]
+tests/security/test_gdpr_data_security.py::TestDataDeletionSecurity::test_data_deletion__requires_password_confirmation PASSED [ 32%]
+tests/security/test_gdpr_data_security.py::TestConsentRecordIntegrity::test_consent_record__tampering__prevented PASSED [ 33%]
+tests/security/test_gdpr_data_security.py::TestConsentRecordIntegrity::test_consent_withdrawal__creates_new_record PASSED [ 34%]
+tests/security/test_gdpr_data_security.py::TestPIIExposure::test_api_responses__pii_not_leaked PASSED [ 35%]
+tests/security/test_gdpr_data_security.py::TestPIIExposure::test_public_profile__email_not_visible PASSED [ 36%]
+tests/security/test_gdpr_data_security.py::TestPIIExposure::test_public_profile__phone_not_visible PASSED [ 37%]
+tests/security/test_gdpr_data_security.py::TestSecretsHygiene::test_allowed_hosts_not_wildcard PASSED [ 38%]
+tests/security/test_gdpr_data_security.py::TestSecretsHygiene::test_database_credentials__not_exposed PASSED [ 39%]
+tests/security/test_gdpr_data_security.py::TestSecretsHygiene::test_debug_mode_warning PASSED [ 40%]
+tests/security/test_gdpr_data_security.py::TestSecretsHygiene::test_error_pages__no_debug_info PASSED [ 41%]
+tests/security/test_gdpr_data_security.py::TestSecretsHygiene::test_no_hardcoded_api_keys_in_settings SKIPPEDonment variables in
+production.)                                                             [ 42%]
+tests/security/test_gdpr_data_security.py::TestSecretsHygiene::test_no_hardcoded_secret_key PASSED [ 43%]
+tests/security/test_gdpr_data_security.py::TestAuditTrailSecurity::test_login_events__logged FAILED [ 44%]
+tests/security/test_gdpr_data_security.py::TestAuditTrailSecurity::test_password_change__logged FAILED [ 45%]
+tests/security/test_marketplace_security.py::TestBusinessProfileAuthorization::test_business_profile_update__cross_user__denied FAILED [ 46%]
+tests/security/test_marketplace_security.py::TestBusinessProfileAuthorization::test_business_profile_view__public_access__allowed FAILED [ 47%]
+tests/security/test_marketplace_security.py::TestInvestmentOpportunityAuthorization::test_opportunity_delete__cross_user__denied FAILED [ 48%]
+tests/security/test_marketplace_security.py::TestInvestmentOpportunityAuthorization::test_opportunity_edit__cross_user__denied FAILED [ 49%]
+tests/security/test_marketplace_security.py::TestInvestmentOpportunityAuthorization::test_opportunity_post__requires_business_profile FAILED [ 50%]
+tests/security/test_marketplace_security.py::TestJobOpportunityAuthorization::test_job_delete__cross_user__denied FAILED [ 50%]
+tests/security/test_marketplace_security.py::TestJobOpportunityAuthorization::test_job_edit__cross_user__denied FAILED [ 51%]
+tests/security/test_marketplace_security.py::TestJobApplicationSecurity::test_application__cross_user_view__denied FAILED [ 52%]
+tests/security/test_marketplace_security.py::TestJobApplicationSecurity::test_application__duplicate_prevention FAILED [ 53%]
+tests/security/test_marketplace_security.py::TestJobApplicationSecurity::test_application_status__applicant_cannot_change FAILED [ 54%]
+tests/security/test_marketplace_security.py::TestContentInjection::test_company_name_xss__html_escaped FAILED [ 55%]
+tests/security/test_marketplace_security.py::TestContentInjection::test_opportunity_xss__html_escaped FAILED [ 56%]
+tests/security/test_marketplace_security.py::TestSearchInjection::test_search__sql_injection__safe PASSED [ 57%]
+tests/security/test_marketplace_security.py::TestSearchInjection::test_search__xss__sanitized PASSED [ 58%]
+tests/security/test_marketplace_security.py::TestSavedItemsSecurity::test_saved_items__cross_user__denied FAILED [ 59%]
+tests/security/test_marketplace_security.py::TestSavedItemsSecurity::test_saved_items_delete__cross_user__denied FAILED [ 60%]
+tests/security/test_owasp.py::TestA01BrokenAccessControl::test_force_browsing_sensitive_files PASSED [ 61%]
+tests/security/test_owasp.py::TestA01BrokenAccessControl::test_role_based_access_control PASSED [ 62%]
+tests/security/test_owasp.py::TestA01BrokenAccessControl::test_vertical_privilege_escalation_admin PASSED [ 63%]
+tests/security/test_owasp.py::TestA02CryptographicFailures::test_no_hardcoded_secrets_in_settings PASSED [ 64%]
+tests/security/test_owasp.py::TestA02CryptographicFailures::test_password_hashing_strength FAILED [ 65%]
+tests/security/test_owasp.py::TestA03Injection::test_sql_injection_resilience PASSED [ 66%]
+tests/security/test_owasp.py::TestA05SecurityMisconfiguration::test_allowed_hosts_configured PASSED [ 67%]
+tests/security/test_owasp.py::TestA05SecurityMisconfiguration::test_debug_mode_is_off PASSED [ 68%]
+tests/security/test_owasp.py::TestA07IdentificationAuthenticationFailures::test_weak_password_registration PASSED [ 69%]
+tests/security/test_owasp.py::TestA04InsecureDesign::test_account_enumeration__login_response_consistent PASSED [ 70%]
+tests/security/test_owasp.py::TestA04InsecureDesign::test_password_reset__no_token_verification_bypass PASSED [ 71%]
+tests/security/test_owasp.py::TestA06VulnerableComponents::test_django_version__not_eol PASSED [ 72%]
+tests/security/test_owasp.py::TestA06VulnerableComponents::test_security_middleware__present PASSED [ 73%]
+tests/security/test_owasp.py::TestA08SoftwareDataIntegrity::test_webhook_signature__required FAILED [ 74%]
+tests/security/test_owasp.py::TestA09LoggingMonitoringFailures::test_audit_logging__exists PASSED [ 75%]
+tests/security/test_owasp.py::TestA09LoggingMonitoringFailures::test_failed_login__logged FAILED [ 75%]
+tests/security/test_owasp.py::TestA10SSRF::test_profile_website_ssrf_sanitization PASSED [ 76%]
+tests/security/test_rate_limiting.py::TestRateLimiting::test_login_bruteforce_protection FAILED [ 77%]
+tests/security/test_rate_limiting.py::TestRateLimiting::test_password_reset_throttling FAILED [ 78%]
+tests/security/test_rate_limiting.py::TestRateLimiting::test_registration_throttling FAILED [ 79%]
+tests/security/test_session_security.py::TestSessionSecurity::test_session_cookie_flags PASSED [ 80%]
+tests/security/test_session_security.py::TestSessionSecurity::test_session_fixation_on_login FAILED [ 81%]
+tests/security/test_session_security.py::TestCSRFProtection::test_csrf_on_post PASSED [ 82%]
+tests/security/test_session_security.py::TestCSRFProtection::test_csrf_on_put_delete FAILED [ 83%]
+tests/security/test_wallet_and_payment_security.py::TestWalletLogicSecurity::test_cannot_debit_more_than_balance PASSED [ 84%]
+tests/security/test_wallet_and_payment_security.py::TestWalletLogicSecurity::test_negative_amount_credit_blocked PASSED [ 85%]
+tests/security/test_wallet_and_payment_security.py::TestWalletLogicSecurity::test_negative_amount_debit_blocked PASSED [ 86%]
+tests/security/test_wallet_and_payment_security.py::TestWalletAccessControl::test_user_cannot_access_other_transaction_csv PASSED [ 87%]
+tests/security/test_wallet_and_payment_security.py::TestWalletAccessControl::test_user_cannot_view_other_wallet_dashboard PASSED [ 88%]
+tests/security/test_wallet_and_payment_security.py::TestInvoiceSecurity::test_invoice_amount_tampering FAILED [ 89%]
+tests/security/test_wallet_and_payment_security.py::TestInvoiceSecurity::test_mark_invoice_paid_without_payment FAILED [ 90%]
+tests/security/test_webhook_security.py::TestStripeWebhookSecurity::test_invalid_signature_rejected FAILED [ 91%]
+tests/security/test_webhook_security.py::TestStripeWebhookSecurity::test_missing_signature_rejected FAILED [ 92%]
+tests/security/test_webhook_security.py::TestStripeWebhookSecurity::test_replay_idempotency FAILED [ 93%]
+tests/security/test_webhook_security.py::TestStripeWebhookSecurity::test_valid_signature_accepted PASSED [ 94%]
+tests/security/test_webhook_security.py::TestPayPalWebhookSecurity::test_unverified_ipn_rejected PASSED [ 95%]
+tests/security/test_webhook_security.py::TestPayPalWebhookSecurity::test_verified_ipn_accepted PASSED [ 96%]
+tests/security/test_webhook_security.py::TestMPesaWebhookSecurity::test_mpesa_missing_security_headers FAILED [ 97%]
+tests/security/test_webhook_security.py::TestCashAppWebhookSecurity::test_cashapp_missing_signature FAILED [ 98%]
+tests/security/test_webhook_security.py::TestVenmoWebhookSecurity::test_venmo_missing_signature FAILED [ 99%]
+tests/security/test_wallet_and_payment_security.py::TestWalletConcurrencySecurity::test_double_spend_race_condition PASSED [100%]
+
+================================== FAILURES ===================================
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_authentication_security.py:71: Failed: SECURITY VULNERABILITY: No rate limiting detected after 25 failed login attempts. Brute force attacks are possible. Implement django-axes or django-defender.
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\template\loader.py:47: django.template.exceptions.TemplateDoesNotExist: mfa/backup_codes.html
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\urls\base.py:82: django.urls.exceptions.NoReverseMatch: 'accounts' is not a registered namespace
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Program Files\Python311\Lib\unittest\case.py:703: AssertionError: 404 not found in [302, 403] : SECURITY VULNERABILITY: Unauthenticated user can request data exports
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\query.py:1726: django.core.exceptions.FieldError: Cannot resolve keyword 'action' into field. Choices are: content_object, content_type, content_type_id, created_at, description, event_type, id, ip_address, metadata, object_id, request_method, request_path, severity, user, user_agent, user_id, username
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\query.py:1726: django.core.exceptions.FieldError: Cannot resolve keyword 'action' into field. Choices are: content_object, content_type, content_type_id, created_at, description, event_type, id, ip_address, metadata, object_id, request_method, request_path, severity, user, user_agent, user_id, username
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\base.py:567: TypeError: BusinessProfile() got unexpected keyword arguments: 'description', 'funding_amount_seeking'
+C:\Program Files\Python311\Lib\unittest\case.py:715: AssertionError: False is not true : Weak password hasher detected: django.contrib.auth.hashers.PBKDF2PasswordHasher
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\__init__.py:882: AttributeError
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\models\sql\query.py:1726: django.core.exceptions.FieldError: Cannot resolve keyword 'action' into field. Choices are: content_object, content_type, content_type_id, created_at, description, event_type, id, ip_address, metadata, object_id, request_method, request_path, severity, user, user_agent, user_id, username
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_rate_limiting.py:51: Failed: SECURITY VULNERABILITY: No rate limiting on login detected after 30 failed attempts. Implement django-axes or similar.
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\template\loader.py:19: django.template.exceptions.TemplateDoesNotExist: 429.html
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_rate_limiting.py:93: Failed: SECURITY WARNING: No rate limiting on registration endpoint.
+C:\Program Files\Python311\Lib\unittest\case.py:882: AssertionError: 'f76f5ev8qwlkm5es1v0n2ujli8qe3er7' == 'f76f5ev8qwlkm5es1v0n2ujli8qe3er7' : Session Fixation Vulnerability: Session ID did not rotate after login!
+C:\Program Files\Python311\Lib\unittest\case.py:866: AssertionError: 404 != 403 : PUT request without CSRF token was permitted!
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_wallet_and_payment_security.py:194: AttributeError: module 'django.db.transaction' has no attribute 'timezone'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_wallet_and_payment_security.py:194: AttributeError: module 'django.db.transaction' has no attribute 'timezone'
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\__init__.py:882: AttributeError
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\stripe\__init__.py:882: AttributeError
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\venv\Lib\site-packages\django\db\backends\utils.py:89: django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_wallet_user_id_key"
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_webhook_security.py:215: Failed: SECURITY VULNERABILITY: M-Pesa webhook endpoint accepted a request without signature verification. Anyone can spoof payment confirmations.
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_webhook_security.py:240: Failed: SECURITY VULNERABILITY: CashApp webhook endpoint accepted a request without signature verification.
+C:\Users\Fadhiri\Desktop\Work\pmzomo\biasharaBB\tests\security\test_webhook_security.py:260: Failed: SECURITY VULNERABILITY: Venmo webhook endpoint accepted a request without signature verification.
+=========================== short test summary info ===========================
+FAILED tests/security/test_authentication_security.py::TestBruteForceProtection::test_login_rate_limiting__excessive_attempts__429_or_lockout
+FAILED tests/security/test_authentication_security.py::TestMFASecurity::test_mfa_backup_codes__requires_mfa_enabled
+FAILED tests/security/test_authentication_security.py::TestMFASecurity::test_mfa_verify__invalid_token__rejected
+FAILED tests/security/test_authorization_rbac.py::TestMarketplaceIDOR::test_business_profile_update__cross_user__access_denied
+FAILED tests/security/test_gdpr_data_security.py::TestDataExportSecurity::test_data_export__unauthenticated__denied
+FAILED tests/security/test_gdpr_data_security.py::TestAuditTrailSecurity::test_login_events__logged
+FAILED tests/security/test_gdpr_data_security.py::TestAuditTrailSecurity::test_password_change__logged
+FAILED tests/security/test_marketplace_security.py::TestBusinessProfileAuthorization::test_business_profile_update__cross_user__denied
+FAILED tests/security/test_marketplace_security.py::TestBusinessProfileAuthorization::test_business_profile_view__public_access__allowed
+FAILED tests/security/test_marketplace_security.py::TestInvestmentOpportunityAuthorization::test_opportunity_delete__cross_user__denied
+FAILED tests/security/test_marketplace_security.py::TestInvestmentOpportunityAuthorization::test_opportunity_edit__cross_user__denied
+FAILED tests/security/test_marketplace_security.py::TestInvestmentOpportunityAuthorization::test_opportunity_post__requires_business_profile
+FAILED tests/security/test_marketplace_security.py::TestJobOpportunityAuthorization::test_job_delete__cross_user__denied
+FAILED tests/security/test_marketplace_security.py::TestJobOpportunityAuthorization::test_job_edit__cross_user__denied
+FAILED tests/security/test_marketplace_security.py::TestJobApplicationSecurity::test_application__cross_user_view__denied
+FAILED tests/security/test_marketplace_security.py::TestJobApplicationSecurity::test_application__duplicate_prevention
+FAILED tests/security/test_marketplace_security.py::TestJobApplicationSecurity::test_application_status__applicant_cannot_change
+FAILED tests/security/test_marketplace_security.py::TestContentInjection::test_company_name_xss__html_escaped
+FAILED tests/security/test_marketplace_security.py::TestContentInjection::test_opportunity_xss__html_escaped
+FAILED tests/security/test_marketplace_security.py::TestSavedItemsSecurity::test_saved_items__cross_user__denied
+FAILED tests/security/test_marketplace_security.py::TestSavedItemsSecurity::test_saved_items_delete__cross_user__denied
+FAILED tests/security/test_owasp.py::TestA02CryptographicFailures::test_password_hashing_strength
+FAILED tests/security/test_owasp.py::TestA08SoftwareDataIntegrity::test_webhook_signature__required
+FAILED tests/security/test_owasp.py::TestA09LoggingMonitoringFailures::test_failed_login__logged
+FAILED tests/security/test_rate_limiting.py::TestRateLimiting::test_login_bruteforce_protection
+FAILED tests/security/test_rate_limiting.py::TestRateLimiting::test_password_reset_throttling
+FAILED tests/security/test_rate_limiting.py::TestRateLimiting::test_registration_throttling
+FAILED tests/security/test_session_security.py::TestSessionSecurity::test_session_fixation_on_login
+FAILED tests/security/test_session_security.py::TestCSRFProtection::test_csrf_on_put_delete
+FAILED tests/security/test_wallet_and_payment_security.py::TestInvoiceSecurity::test_invoice_amount_tampering
+FAILED tests/security/test_wallet_and_payment_security.py::TestInvoiceSecurity::test_mark_invoice_paid_without_payment
+FAILED tests/security/test_webhook_security.py::TestStripeWebhookSecurity::test_invalid_signature_rejected
+FAILED tests/security/test_webhook_security.py::TestStripeWebhookSecurity::test_missing_signature_rejected
+FAILED tests/security/test_webhook_security.py::TestStripeWebhookSecurity::test_replay_idempotency
+FAILED tests/security/test_webhook_security.py::TestMPesaWebhookSecurity::test_mpesa_missing_security_headers
+FAILED tests/security/test_webhook_security.py::TestCashAppWebhookSecurity::test_cashapp_missing_signature
+FAILED tests/security/test_webhook_security.py::TestVenmoWebhookSecurity::test_venmo_missing_signature
+============ 37 failed, 66 passed, 1 skipped in 158.35s (0:02:38) =============
