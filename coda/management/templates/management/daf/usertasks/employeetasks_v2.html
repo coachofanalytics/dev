@@ -1,0 +1,947 @@
+{%extends "main/base_templates/new_base.html"%} 
+{% load static %}
+{% load humanize %}
+
+{% block title %}My DAF v2{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <!-- Header -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <h1 class="h3 mb-1">
+      {% if is_viewing_other_user %}
+        {{ employee.get_full_name|default:employee.username }}'s DAF
+        {% if can_approve %}
+        <span class="badge badge-success ml-2">Viewing as Manager</span>
+        {% else %}
+        <span class="badge badge-info ml-2">Viewing as Staff</span>
+        {% endif %}
+        {% include "management/components/career_ladder_badge.html" with employee=employee %}
+      {% else %}
+        My DAF
+        {% include "management/components/career_ladder_badge.html" with employee=employee %}
+      {% endif %}
+    </h1>
+      <p class="text-muted small mb-0">Daily Activity Form</p>
+    </div>
+  </div>
+
+  <!-- Welcome Back + Time Remaining + Pay Day Row (Old DAF Layout) -->
+  <div class="row mb-3">
+    <!-- Welcome Back Card -->
+    <div class="col-12 col-md-2 mb-2">
+      <div class="card h-100">
+        <div class="card-body text-center py-2">
+          <h6 class="card-subtitle mb-1 text-muted small"><b>WELCOME BACK</b></h6>
+          <hr class="my-1">
+          <h6 class="card-title mb-1"><i>{{ employee.first_name|upper|default:employee.username|upper }}</i></h6>
+          <hr class="my-1">
+          <p class="mb-0 small"><i>Please Proceed!</i></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Time Remaining Countdown Card (to Month End) -->
+    <div class="col-12 col-md-8 mb-2">
+      <div class="card h-100">
+        <div class="card-body text-center py-2">
+          <h6 class="card-subtitle mb-2"><b>TIME LEFT TO MAXIMIZE YOUR PAY</b></h6>
+          <hr class="my-1">
+          <div class="countdown-display d-flex justify-content-center align-items-center">
+            <div class="countdown-item text-center mx-2">
+              <div class="countdown-number h4 mb-0" id="countdown-days">{{ remaining_days }}</div>
+              <div class="countdown-label small">Days</div>
+            </div>
+            <div class="countdown-separator mx-1">:</div>
+            <div class="countdown-item text-center mx-2">
+              <div class="countdown-number h4 mb-0" id="countdown-hours">{{ remaining_hours }}</div>
+              <div class="countdown-label small">Hours</div>
+            </div>
+            <div class="countdown-separator mx-1">:</div>
+            <div class="countdown-item text-center mx-2">
+              <div class="countdown-number h4 mb-0" id="countdown-minutes">{{ remaining_minutes }}</div>
+              <div class="countdown-label small">Mins</div>
+            </div>
+            <div class="countdown-separator mx-1">:</div>
+            <div class="countdown-item text-center mx-2">
+              <div class="countdown-number h4 mb-0" id="countdown-seconds">{{ remaining_seconds }}</div>
+              <div class="countdown-label small">Secs</div>
+            </div>
+          </div>
+          <hr class="my-1">
+          <div class="progress-info small">
+            <i class="fas fa-target"></i>
+            <strong>{{ target_points|floatformat:0|add:"-"|add:points_earned_provisional|floatformat:0|default:"0" }}</strong> Points Left to be completed, kindly proceed!
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pay Day Card -->
+    <div class="col-12 col-md-2 mb-2">
+      <div class="card h-100">
+        <div class="card-body text-center py-2">
+          <h6 class="card-subtitle mb-1"><b>PAY DAY</b></h6>
+          <hr class="my-1">
+          <h6 class="card-title mb-1"><i>{{ pay_day_formatted|default:pay_day_date|date:"M d, Y" }}</i></h6>
+          <hr class="my-1">
+          <span class="text-muted small"><strong>Time:</strong> {{ pay_day_remaining_days }}d {{ pay_day_remaining_hours }}h</span>
+          <hr class="my-1">
+          <p class="mb-0 small" style="font-size: 11px;">
+            <i>Pay release requires ≥33% approvals by month-end.</i>
+          </p>
+          <!-- 33% Rule Status Badge -->
+          <div class="mt-1">
+            {% if approval_status == 'PASS' %}
+            <span class="badge badge-success">✓ {{ approval_percentage|floatformat:1 }}%</span>
+            {% else %}
+            <span class="badge badge-warning">⚠ {{ approval_percentage|floatformat:1 }}%</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row mb-3">
+    <div class="col-6 col-md-3 mb-2">
+      <div class="card border-primary h-100">
+        <div class="card-body text-center py-2">
+          <h6 class="card-subtitle mb-1 text-muted small">Due Today</h6>
+          <h4 class="card-title mb-0 text-primary">{{ tasks_today_count }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+      <div class="card border-success h-100">
+        <div class="card-body text-center py-2">
+          <h6 class="card-subtitle mb-1 text-muted small">Completed</h6>
+          <h4 class="card-title mb-0 text-success">{{ completed_today_count }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+      <div class="card border-info h-100">
+        <div class="card-body text-center py-2">
+          <h6 class="card-subtitle mb-1 text-muted small">Quality Pass</h6>
+          <h4 class="card-title mb-0 text-info">{{ quality_pass_rate }}%</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+      <div class="card border-warning h-100">
+        <div class="card-body text-center py-2">
+          <h6 class="card-subtitle mb-1 text-muted small">Needs Attention</h6>
+          <h4 class="card-title mb-0 text-warning">{{ needs_attention_count }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Summary (Compact) -->
+  <div class="card mb-3">
+    <div class="card-body py-2">
+      <div class="d-flex flex-wrap align-items-center justify-content-between">
+        <div class="d-flex flex-wrap align-items-center">
+          <span class="text-muted small mr-3"><strong>Target:</strong> Ksh. {{ target_amount|floatformat:2 }}</span>
+          <span class="text-muted small mr-3"><strong>Earned (Provisional):</strong> Ksh. {{ earned_amount_provisional|floatformat:2 }}</span>
+          <span class="text-success small mr-3"><strong>Approved Earned:</strong> Ksh. {{ approved_earned_amount|floatformat:2 }}</span>
+          <span class="text-muted small mr-3"><strong>Remaining:</strong> Ksh. {{ remaining_amount|floatformat:2 }}</span>
+          <span class="text-warning small mr-3"><strong>Pending Approval:</strong> Ksh. {{ pending_approval_amount|floatformat:2 }}</span>
+          <span class="text-muted small mr-3"><strong>Points (Provisional):</strong> {{ points_earned_provisional|floatformat:0 }}/{{ target_points|floatformat:0 }}</span>
+          <span class="text-success small mr-3"><strong>Approved Points:</strong> {{ approved_earned_points|floatformat:0 }}</span>
+          <span class="text-muted small"><strong>Time:</strong> {{ remaining_days }}d {{ remaining_hours }}h</span>
+        </div>
+        <div class="mt-2 mt-md-0">
+          <!-- E) View Payslip Button -->
+          <a href="{% url 'management:user_pay' %}?username={% if is_viewing_other_user %}{{ employee.username }}{% else %}{{ request.user.username }}{% endif %}&pay_type=payslip" 
+             class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-file-invoice-dollar"></i> View Payslip
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-2" id="statusTabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link py-2 px-3 {% if status_filter == 'all' or not status_filter %}active{% endif %}" 
+         href="?status=all{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if activity_filter %}&activity={{ activity_filter|urlencode }}{% endif %}{% if evidence_filter %}&evidence={{ evidence_filter|urlencode }}{% endif %}{% if quality_filter %}&quality={{ quality_filter|urlencode }}{% endif %}">
+        All <span class="badge badge-secondary ml-1">{{ tasks|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link py-2 px-3 {% if status_filter == 'assigned' %}active{% endif %}" 
+         href="?status=assigned{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if activity_filter %}&activity={{ activity_filter|urlencode }}{% endif %}{% if evidence_filter %}&evidence={{ evidence_filter|urlencode }}{% endif %}{% if quality_filter %}&quality={{ quality_filter|urlencode }}{% endif %}">
+        Assigned <span class="badge badge-secondary ml-1">{{ tasks_by_status.assigned|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link py-2 px-3 {% if status_filter == 'in_progress' %}active{% endif %}" 
+         href="?status=in_progress{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if activity_filter %}&activity={{ activity_filter|urlencode }}{% endif %}{% if evidence_filter %}&evidence={{ evidence_filter|urlencode }}{% endif %}{% if quality_filter %}&quality={{ quality_filter|urlencode }}{% endif %}">
+        In Progress <span class="badge badge-secondary ml-1">{{ tasks_by_status.in_progress|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link py-2 px-3 {% if status_filter == 'submitted' %}active{% endif %}" 
+         href="?status=submitted{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if activity_filter %}&activity={{ activity_filter|urlencode }}{% endif %}{% if evidence_filter %}&evidence={{ evidence_filter|urlencode }}{% endif %}{% if quality_filter %}&quality={{ quality_filter|urlencode }}{% endif %}">
+        Submitted <span class="badge badge-secondary ml-1">{{ tasks_by_status.submitted|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link py-2 px-3 {% if status_filter == 'approved' %}active{% endif %}" 
+         href="?status=approved{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if activity_filter %}&activity={{ activity_filter|urlencode }}{% endif %}{% if evidence_filter %}&evidence={{ evidence_filter|urlencode }}{% endif %}{% if quality_filter %}&quality={{ quality_filter|urlencode }}{% endif %}">
+        Approved <span class="badge badge-success ml-1">{{ tasks_by_status.approved|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link py-2 px-3 {% if status_filter == 'needs_attention' %}active{% endif %}" 
+         href="?status=needs_attention{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if activity_filter %}&activity={{ activity_filter|urlencode }}{% endif %}{% if evidence_filter %}&evidence={{ evidence_filter|urlencode }}{% endif %}{% if quality_filter %}&quality={{ quality_filter|urlencode }}{% endif %}">
+        Needs Attention <span class="badge badge-warning ml-1">{{ tasks_by_status.needs_attention|length }}</span>
+      </a>
+    </li>
+  </ul>
+
+  <!-- Needs Attention Explanation -->
+  {% if status_filter == 'needs_attention' %}
+  <div class="alert alert-info mb-3" role="alert">
+    <i class="fas fa-info-circle"></i> <strong>About this tab:</strong> These tasks are missing evidence, missing duration, or have low quality scores. Review each task to see specific issues.
+  </div>
+  {% endif %}
+  </ul>
+
+  <!-- Compact Filter Toolbar -->
+  <div class="card mb-3">
+    <div class="card-body py-2">
+      <form method="get" action="{% url 'management:daf_v2' %}" class="form-inline align-items-end d-flex flex-wrap">
+        <div class="form-group mr-2 mb-0">
+          <label for="search" class="sr-only">Search</label>
+          <input type="text" 
+                 class="form-control form-control-sm" 
+                 id="search"
+                 name="search" 
+                 placeholder="Search tasks..." 
+                 value="{{ search_query }}"
+                 style="width: 180px;">
+        </div>
+        
+        <div class="form-group mr-2 mb-0">
+          <label for="activity" class="sr-only">Activity</label>
+          <select class="form-control form-control-sm" id="activity" name="activity" style="width: 150px;">
+            <option value="">All Activities</option>
+            {% for slug, name in activity_types %}
+            <option value="{{ slug }}" {% if activity_filter == slug %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="form-group mr-2 mb-0">
+          <label for="evidence" class="sr-only">Evidence</label>
+          <select class="form-control form-control-sm" id="evidence" name="evidence" style="width: 130px;">
+            <option value="">All Evidence</option>
+            <option value="complete" {% if evidence_filter == 'complete' %}selected{% endif %}>Complete</option>
+            <option value="partial" {% if evidence_filter == 'partial' %}selected{% endif %}>Partial</option>
+            <option value="missing" {% if evidence_filter == 'missing' %}selected{% endif %}>Missing</option>
+          </select>
+        </div>
+        
+        <div class="form-group mr-2 mb-0">
+          <label for="quality" class="sr-only">Quality</label>
+          <select class="form-control form-control-sm" id="quality" name="quality" style="width: 120px;">
+            <option value="">All Quality</option>
+            <option value="high" {% if quality_filter == 'high' %}selected{% endif %}>High (≥80%)</option>
+            <option value="medium" {% if quality_filter == 'medium' %}selected{% endif %}>Medium (50-79%)</option>
+            <option value="low" {% if quality_filter == 'low' %}selected{% endif %}>Low (<50%)</option>
+          </select>
+        </div>
+        
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        
+        <div class="ml-auto">
+          <button type="submit" class="btn btn-primary btn-sm mr-1">Apply</button>
+          <a href="{% url 'management:daf_v2' %}?status={{ status_filter }}" class="btn btn-outline-secondary btn-sm">Reset</a>
+        </div>
+      </form>
+      <small class="text-muted d-block mt-1">Tip: Use 'Needs Attention' tab to focus on tasks missing evidence or duration.</small>
+    </div>
+  </div>
+
+  <!-- Task Cards -->
+  <div class="row" id="tasksContainer">
+    {% for task in tasks %}
+      <div class="col-12 col-md-6 col-lg-4 mb-3">
+        <div class="card h-100 task-card" data-task-id="{{ task.id }}">
+          <!-- Card Header -->
+          <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <div class="flex-grow-1 mr-2" style="min-width: 0;">
+              <h6 class="mb-0 font-weight-bold text-truncate" 
+                  title="{% if task.display_label %}{{ task.display_label }}{% elif task.display_title %}{{ task.display_title }}{% elif task.activity_name %}{{ task.activity_name }}{% else %}Untitled Task{% endif %}">
+                {% if task.display_label %}
+                  {{ task.display_label }}
+                {% elif task.display_title %}
+                  {{ task.display_title }}
+                {% elif task.activity_name %}
+                  {{ task.activity_name }}
+                {% else %}
+                  Untitled Task
+                {% endif %}
+              </h6>
+            </div>
+            <div class="d-flex align-items-center flex-shrink-0">
+              <!-- Activity Badge -->
+              {% if task.activity_type_slug %}
+              <span class="badge badge-secondary mr-1" title="{{ task.activity_type_slug }}">{{ task.activity_type_slug|slice:":10"|title }}</span>
+              {% endif %}
+              <!-- Status Badge (B2: Respect gate_pass) -->
+              {% if task.status == 'approved' %}
+                {% if task.gate_pass %}
+                <span class="badge badge-success mr-1">Approved</span>
+                {% elif user.is_staff or user.is_superuser %}
+                <span class="badge badge-warning mr-1" title="Approved but non-compliant">Approved (Non-Compliant)</span>
+                {% else %}
+                <span class="badge badge-warning mr-1">Needs Fix</span>
+                {% endif %}
+              {% elif task.status == 'submitted' %}
+              <span class="badge badge-info mr-1">Submitted</span>
+              {% elif task.status == 'in_progress' %}
+              <span class="badge badge-primary mr-1">In Progress</span>
+              {% elif task.status == 'needs_attention' %}
+              <span class="badge badge-warning mr-1">Needs Attention</span>
+              {% else %}
+              <span class="badge badge-secondary mr-1">Assigned</span>
+              {% endif %}
+              <small class="text-muted">{{ task.deadline|date:"M d" }}</small>
+            </div>
+          </div>
+          
+          <!-- Manager Approval Controls (for submitted tasks only) -->
+          {% if task.status == 'submitted' and can_approve and is_viewing_other_user %}
+          <div class="card-body border-bottom pb-2">
+            <div class="d-flex align-items-center">
+              <form method="post" action="{% url 'management:approve_task' task.id %}?user_id={{ request.GET.user_id|default:employee.id }}" class="mr-2" style="flex: 1;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm btn-block" onclick="return confirm('Approve this task?');">
+                  <i class="fas fa-check"></i> Approve
+                </button>
+              </form>
+              <button type="button" class="btn btn-danger btn-sm" style="flex: 1;" data-toggle="modal" data-target="#rejectModal{{ task.id }}">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+          </div>
+          
+          <!-- Reject Modal -->
+          <div class="modal fade" id="rejectModal{{ task.id }}" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Reject Task</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form method="post" action="{% url 'management:reject_task' task.id %}?user_id={{ request.GET.user_id|default:employee.id }}">
+                  {% csrf_token %}
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="rejectComment{{ task.id }}">Manager Comment (required):</label>
+                      <textarea class="form-control" id="rejectComment{{ task.id }}" name="comment" rows="3" required placeholder="Explain why this task is being rejected..."></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject Task</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <div class="card-body py-2">
+            <!-- Compliance Chips Row -->
+            <div class="d-flex flex-wrap mb-2 align-items-center">
+              <!-- Requirement Chip (only for required activity types) -->
+              {% if task.compliance_chips.requirement.required %}
+                {% if task.compliance_chips.requirement.status == 'missing' %}
+                <span class="badge badge-danger mr-1 mb-1" title="Requirement: Missing">Req: Missing</span>
+                {% else %}
+                <span class="badge badge-success mr-1 mb-1" title="Requirement: Present">Req: ✓</span>
+                {% endif %}
+              {% endif %}
+              
+              <!-- Requirement Integrity Status Chip (if available) -->
+              {% if task.requirement_match_status %}
+                {% if task.requirement_match_status.status == 'pass' %}
+                <span class="badge badge-success mr-1 mb-1" title="Requirement Integrity: Verified ({{ task.requirement_match_status.confidence|floatformat:0 }}%)">
+                  <i class="fas fa-check-circle"></i> Integrity: ✓
+                </span>
+                {% elif task.requirement_match_status.status == 'review' %}
+                <span class="badge badge-warning mr-1 mb-1" title="Requirement Integrity: Needs Review">
+                  <i class="fas fa-exclamation-triangle"></i> Integrity: Review
+                </span>
+                {% elif task.requirement_match_status.status == 'fail' %}
+                <span class="badge badge-danger mr-1 mb-1" title="Requirement Integrity: Suspected Mismatch">
+                  <i class="fas fa-times-circle"></i> Integrity: ✗
+                </span>
+                {% endif %}
+              {% endif %}
+              
+              <!-- Evidence Chip (with progress if insufficient) -->
+              {% if task.compliance_chips.evidence.status == 'complete' %}
+              <span class="badge badge-success mr-1 mb-1" title="Evidence: Complete">Evidence: ✓</span>
+              {% elif task.compliance_chips.evidence.status == 'partial' %}
+              <span class="badge badge-warning mr-1 mb-1" title="Evidence: Partial">
+                Evidence: Partial
+                {% if task.compliance and task.compliance.evidence_minimum and task.evidence_count < task.compliance.evidence_minimum %}
+                <span class="ml-1">({{ task.evidence_count }}/{{ task.compliance.evidence_minimum }})</span>
+                {% endif %}
+              </span>
+              {% elif task.compliance_chips.evidence.status == 'auto_pending' %}
+              <span class="badge badge-info mr-1 mb-1" title="Evidence: Auto pending sync">Evidence: Auto Pending</span>
+              {% else %}
+              <span class="badge badge-danger mr-1 mb-1" title="Evidence: Missing">
+                Evidence: ✗
+                {% if task.compliance and task.compliance.evidence_minimum %}
+                <span class="ml-1">(0/{{ task.compliance.evidence_minimum }})</span>
+                {% endif %}
+              </span>
+              {% endif %}
+              
+              <!-- Checklist Chip -->
+              {% if task.compliance_chips.checklist.total > 0 %}
+                {% if task.compliance_chips.checklist.incomplete %}
+                <span class="badge badge-warning mr-1 mb-1" title="Checklist: {{ task.compliance_chips.checklist.completed }}/{{ task.compliance_chips.checklist.total }}">Checklist: {{ task.compliance_chips.checklist.completed }}/{{ task.compliance_chips.checklist.total }}</span>
+                {% else %}
+                <span class="badge badge-success mr-1 mb-1" title="Checklist: Complete">Checklist: {{ task.compliance_chips.checklist.completed }}/{{ task.compliance_chips.checklist.total }}</span>
+                {% endif %}
+              {% endif %}
+              
+              <!-- Duration Chip -->
+              {% if task.compliance_chips.duration.status == 'missing' %}
+              <span class="badge badge-warning mr-1 mb-1" title="Duration: Missing">Duration: ✗</span>
+              {% else %}
+              <span class="badge badge-success mr-1 mb-1" title="Duration: OK">Duration: ✓</span>
+              {% endif %}
+              
+              <!-- Quality Chip -->
+              {% if task.compliance_chips.quality.status == 'pass' %}
+              <span class="badge badge-success mr-1 mb-1" title="Quality: Pass ({{ task.compliance_chips.quality.score|floatformat:0 }}%)">Quality: Pass</span>
+              {% else %}
+              <span class="badge badge-danger mr-1 mb-1" title="Quality: Fail ({{ task.compliance_chips.quality.score|floatformat:0 }}%)">Quality: Fail</span>
+              {% endif %}
+              
+              <!-- Meetings/Sessions Chip (only show if requires_meeting) -->
+              {% if task.requires_meeting %}
+                {% if task.meeting_ok %}
+                <span class="badge badge-success mr-1 mb-1" title="Meetings: {{ task.meetings_completed_count }}/{{ task.required_meeting_count }}">Meetings: {{ task.meetings_completed_count }}/{{ task.required_meeting_count }}</span>
+                {% else %}
+                <span class="badge badge-warning mr-1 mb-1" title="Meetings: {{ task.meetings_completed_count }}/{{ task.required_meeting_count }}">Meetings: {{ task.meetings_completed_count }}/{{ task.required_meeting_count }}</span>
+                {% endif %}
+              {% endif %}
+            </div>
+            
+            <!-- Points and Earning (C: Truthful - Approved vs Provisional) -->
+            <div class="mb-2">
+              <small class="text-muted">
+                <strong>Earned Points:</strong> {{ task.points|floatformat:0 }}/{{ task.max_points|floatformat:0 }}
+                {% if not task.gate_pass %}
+                <small class="text-muted">(Pending approval)</small>
+                {% endif %}
+                | 
+                {% if task.gate_pass %}
+                <strong class="text-success">Approved:</strong> Ksh. {{ task.earning_approved|floatformat:2 }} / Ksh. {{ task.mxearning|floatformat:2 }}
+                {% else %}
+                <strong class="text-muted">Provisional:</strong> Ksh. {{ task.earning_provisional|floatformat:2 }} / Ksh. {{ task.mxearning|floatformat:2 }}
+                <small class="text-warning">(Non-compliant)</small>
+                {% endif %}
+              </small>
+            </div>
+            
+            <!-- Automation State (C: Lightweight visibility) -->
+            {% if task.autolink_state == 'auto_created' %}
+            <div class="mb-1">
+              <small class="badge badge-info"><i class="fas fa-robot"></i> Evidence: Auto</small>
+            </div>
+            {% elif task.autolink_state == 'auto_pending' %}
+            <div class="mb-1">
+              <small class="badge badge-warning"><i class="fas fa-clock"></i> Auto pending</small>
+            </div>
+            {% endif %}
+            
+            <!-- Manager Review Comment -->
+            {% if task.latest_review_comment %}
+            <div class="alert alert-info py-1 px-2 mb-2">
+              <small class="mb-0">
+                <strong>Manager Comment ({{ task.latest_review_comment.reviewer.username }}):</strong> 
+                {{ task.latest_review_comment.comment|truncatewords:15 }}
+                {% if task.latest_review_comment.status == 'NEEDS_FIX' %}
+                <span class="badge badge-danger ml-1">Needs Fix</span>
+                {% elif task.latest_review_comment.status == 'APPROVED' %}
+                <span class="badge badge-success ml-1">Approved</span>
+                {% endif %}
+              </small>
+            </div>
+            {% endif %}
+            
+            <!-- AI Review Fix Guidance (Employee View - Safe Subset) -->
+            {% if task.ai_review_next_actions %}
+            <div class="alert alert-light border-left-info py-1 px-2 mb-2" style="font-size: 0.8rem; border-left: 3px solid #17a2b8;">
+              <strong><i class="fas fa-lightbulb"></i> Fix Guidance:</strong>
+              <ul class="mb-0 small pl-3">
+                {% for action in task.ai_review_next_actions %}
+                <li>{{ action }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Needs Attention Reason (Deterministic - Single Source of Truth) -->
+            {% if task.status == 'needs_attention' %}
+            <div class="alert alert-warning py-1 px-2 mb-2">
+              {% if task.needs_attention_reason_text %}
+              <small class="mb-0">
+                <strong>⚠ Reason:</strong> {{ task.needs_attention_reason_text }}
+              </small>
+              {% elif task.attention_reasons %}
+              <small class="mb-0"><strong>⚠</strong> {{ task.attention_reasons.0 }}</small>
+              {% else %}
+              <small class="mb-0"><strong>⚠</strong> Task needs attention. Review all requirements.</small>
+              {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Policy Group Indicator (Staff Only) -->
+            {% if request.user.is_staff or request.user.is_superuser %}
+            {% if task.policy_group %}
+            <div class="mb-1">
+              <small class="badge badge-secondary"><i class="fas fa-shield-alt"></i> Policy: {{ task.policy_group }}</small>
+            </div>
+            {% endif %}
+            {% endif %}
+            
+            <!-- Primary CTAs: Start Meeting (always shown), Upload Evidence, View Details -->
+            <div class="d-flex">
+              <!-- 1. Start Meeting Button (ALWAYS shown on every task) -->
+              <!-- B) NEW RULE: Show on ALL tasks, enable when sessions_remaining > 0 AND meeting_join_url exists -->
+              {% if task.sessions_remaining > 0 and task.meeting_join_url %}
+              <a href="{% url 'management:launch_meeting' %}?activity_type={{ task.activity_type_slug }}&task_id={{ task.id }}" 
+                 class="btn btn-success btn-sm flex-fill mr-1" 
+                 target="_blank"
+                 title="Start/Join Meeting">
+                <i class="fas fa-video"></i> Start Meeting
+                {% if task.meeting_progress_text %}
+                <span class="badge badge-light ml-1">{{ task.meeting_progress_text }}</span>
+                {% endif %}
+              </a>
+              {% elif task.sessions_remaining > 0 and not task.meeting_join_url %}
+              <button type="button"
+                      class="btn btn-success btn-sm flex-fill mr-1"
+                      disabled
+                      title="Meeting link not configured. Contact admin.">
+                <i class="fas fa-video"></i> Start Meeting
+              </button>
+              {% else %}
+              <button type="button"
+                      class="btn btn-success btn-sm flex-fill mr-1"
+                      disabled
+                      title="No sessions remaining.">
+                <i class="fas fa-video"></i> Start Meeting
+              </button>
+              {% endif %}
+              
+              <!-- 2. Upload Evidence Button -->
+              {% if task.needs_attention_reason_code == 'REQUIREMENT_MISSING' %}
+              <a href="{% url 'management:new_evidence' task.id %}" class="btn btn-danger btn-sm flex-fill mr-1">
+                <i class="fas fa-exclamation-triangle"></i> Select Requirement
+              </a>
+              {% elif task.needs_attention_reason_code == 'EVIDENCE_MISSING' or task.needs_attention_reason_code == 'EVIDENCE_COUNT_INSUFFICIENT' %}
+              <a href="{% url 'management:new_evidence' task.id %}" class="btn btn-primary btn-sm flex-fill mr-1">
+                <i class="fas fa-upload"></i> Upload Evidence
+                {% if task.compliance and task.compliance.evidence_minimum and task.evidence_count < task.compliance.evidence_minimum %}
+                <span class="badge badge-light ml-1">{{ task.evidence_count }}/{{ task.compliance.evidence_minimum }}</span>
+                {% endif %}
+              </a>
+              {% elif task.compliance_chips.requirement.required and task.compliance_chips.requirement.status == 'missing' %}
+              <a href="{% url 'management:new_evidence' task.id %}" class="btn btn-danger btn-sm flex-fill mr-1">
+                <i class="fas fa-exclamation-triangle"></i> Select Requirement
+              </a>
+              {% elif task.compliance_chips.evidence.status == 'missing' or task.compliance_chips.evidence.status == 'partial' %}
+              <a href="{% url 'management:new_evidence' task.id %}" class="btn btn-primary btn-sm flex-fill mr-1">
+                <i class="fas fa-upload"></i> Upload Evidence
+              </a>
+              {% elif task.needs_attention_reason_code == 'CHECKLIST_INCOMPLETE' %}
+              <a href="{{ task.task_url }}" class="btn btn-warning btn-sm flex-fill mr-1" onclick="document.getElementById('taskDetails{{ task.id }}').classList.add('show'); return false;">
+                <i class="fas fa-tasks"></i> Complete Checklist
+              </a>
+              {% elif task.needs_attention_reason_code == 'DURATION_MISSING' %}
+              <a href="{{ task.task_url }}" class="btn btn-warning btn-sm flex-fill mr-1" onclick="document.getElementById('taskDetails{{ task.id }}').classList.add('show'); return false;">
+                <i class="fas fa-clock"></i> Fix Duration
+              </a>
+              {% elif task.needs_attention_reason_code == 'QUALITY_FAIL' %}
+              <a href="{{ task.task_url }}" class="btn btn-warning btn-sm flex-fill mr-1" onclick="document.getElementById('taskDetails{{ task.id }}').classList.add('show'); return false;">
+                <i class="fas fa-chart-line"></i> Improve Evidence/Checklist
+              </a>
+              {% elif task.compliance_chips.requirement.required and task.compliance_chips.requirement.status == 'missing' %}
+              {# Fallback to old logic for backward compatibility #}
+              <a href="{% url 'management:new_evidence' task.id %}" class="btn btn-danger btn-sm flex-fill mr-1">
+                <i class="fas fa-exclamation-triangle"></i> Select Requirement
+              </a>
+              {% elif task.compliance_chips.evidence.status == 'missing' or task.compliance_chips.evidence.status == 'partial' %}
+              <a href="{% url 'management:new_evidence' task.id %}" class="btn btn-primary btn-sm flex-fill mr-1">
+                <i class="fas fa-upload"></i> Upload Evidence
+              </a>
+              {% elif task.compliance_chips.checklist.incomplete %}
+              <a href="{{ task.task_url }}" class="btn btn-warning btn-sm flex-fill mr-1" onclick="document.getElementById('taskDetails{{ task.id }}').classList.add('show'); return false;">
+                <i class="fas fa-tasks"></i> Complete Checklist
+              </a>
+              {% else %}
+              <a href="{{ task.task_url }}" class="btn btn-info btn-sm flex-fill mr-1">
+                <i class="fas fa-eye"></i> View Details
+              </a>
+              {% endif %}
+              <!-- 3. View Details Button -->
+              <!-- REVERTED: Inline expander using Bootstrap collapse to avoid flicker -->
+              <button type="button" 
+                      class="btn btn-sm btn-outline-secondary"
+                      data-toggle="collapse"
+                      data-target="#taskDetails{{ task.id }}"
+                      aria-expanded="false"
+                      aria-controls="taskDetails{{ task.id }}">
+                View Details
+              </button>
+            </div>
+          </div>
+          
+          <!-- Expandable Details -->
+          <div class="collapse" id="taskDetails{{ task.id }}">
+            <div class="card-body border-top pt-3">
+              <!-- 1. Issues Breakdown -->
+              {% if task.attention_reasons %}
+              <div class="mb-3">
+                <h6 class="font-weight-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Issues Breakdown</h6>
+                <ul class="list-unstyled mb-0">
+                  {% for reason in task.attention_reasons %}
+                  <li class="mb-1">
+                    <span class="badge badge-warning mr-2">⚠</span>{{ reason }}
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <hr>
+              {% endif %}
+              
+              <!-- 2. Checklist Section -->
+              {% if task.activity_checklist %}
+              <div class="mb-3">
+                <h6 class="font-weight-bold mb-2"><i class="fas fa-tasks"></i> Checklist</h6>
+                <ul class="list-unstyled mb-2">
+                  {% for item in task.activity_checklist %}
+                  <li class="mb-1">
+                    {% if item.code in task.missing_checklist_items %}
+                    <span class="badge badge-danger mr-2">✖</span>
+                    {% else %}
+                    <span class="badge badge-success mr-2">✓</span>
+                    {% endif %}
+                    <strong>{{ item.label|default:item.code }}</strong>
+                    {% if item.help %}
+                    <small class="text-muted d-block ml-4">{{ item.help }}</small>
+                    {% endif %}
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% if task.next_steps %}
+                <div class="alert alert-info py-2 px-2 mt-2">
+                  <strong class="small">What to do next:</strong>
+                  <ul class="mb-0 small">
+                    {% for step in task.next_steps %}
+                    <li>{{ step }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+              <hr>
+              {% endif %}
+              
+              <!-- 3. Evidence Section -->
+              <div class="mb-3">
+                <h6 class="font-weight-bold mb-2"><i class="fas fa-file-alt"></i> Evidence</h6>
+              {% if task.evidence_list %}
+              <ul class="list-unstyled small mb-2">
+                {% for evidence in task.evidence_list %}
+                <li class="mb-1">
+                  {% if evidence.link %}
+                  <a href="{{ evidence.link }}" target="_blank" class="text-primary">
+                    <i class="fas fa-link"></i> Link
+                  </a>
+                  {% endif %}
+                  {% if evidence.doc %}
+                  <a href="{{ evidence.doc.url }}" target="_blank" class="text-primary">
+                    <i class="fas fa-file"></i> Document
+                  </a>
+                  {% endif %}
+                  {% if evidence.drive_link %}
+                  <a href="{{ evidence.drive_link }}" target="_blank" class="text-primary">
+                    <i class="fas fa-cloud"></i> Drive
+                  </a>
+                  {% endif %}
+                  {% if evidence.description %}
+                  <p class="text-muted mb-0 small">{{ evidence.description }}</p>
+                  {% endif %}
+                </li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+              {# Use compliance_chips.evidence.status as single source of truth #}
+              {% if task.compliance_chips.evidence.status == 'auto_pending' %}
+              <p class="small text-warning mb-2">
+                <i class="fas fa-clock"></i> Auto evidence pending sync. Meeting matched.
+              </p>
+              {% elif task.compliance_chips.evidence.status == 'complete' %}
+              {# Evidence is complete - show count #}
+              <p class="small text-muted mb-2">
+                {% if task.evidence_list|length > 0 %}
+                  Evidence: {{ task.evidence_list|length }} item(s)
+                {% elif task.gate_status and task.gate_status.evidence_count %}
+                  Evidence: {{ task.gate_status.evidence_count }} item(s)
+                {% else %}
+                  Evidence: Complete
+                {% endif %}
+              </p>
+              {% elif task.compliance_chips.evidence.status == 'partial' %}
+              <p class="small text-warning mb-2">
+                Evidence: Partial (missing required link/file)
+              </p>
+              {% else %}
+              <p class="text-muted mb-2">No evidence uploaded yet.</p>
+              {% endif %}
+              {% if task.compliance_chips.evidence.status == 'auto_pending' %}
+              <p class="small text-warning mb-2">
+                <i class="fas fa-clock"></i> Auto evidence pending sync. Meeting matched.
+              </p>
+              {% endif %}
+              <a href="{% url 'management:new_evidence' task.id %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-upload"></i> Upload Evidence
+              </a>
+              </div>
+              <hr>
+              
+              <!-- 4. Meetings Section -->
+              {% if task.requires_meeting or task.meeting_progress_text or task.meeting_match_info %}
+              <div class="mb-3">
+                <h6 class="font-weight-bold mb-2"><i class="fas fa-video"></i> Meetings</h6>
+                {% if task.meeting_progress_text %}
+                <p class="mb-2"><strong>Progress:</strong> {{ task.meeting_progress_text }}</p>
+                {% endif %}
+                {% if task.meeting_match_info and task.meeting_match_info.has_match %}
+                <div class="alert alert-info py-2">
+                  <small>
+                    <strong>Matched Meeting:</strong> 
+                    {% if task.meeting_match_info.meeting %}
+                    {{ task.meeting_match_info.meeting.subject|default:task.meeting_match_info.meeting.topic|default:"Meeting" }}
+                    ({{ task.meeting_match_info.meeting.start_time|date:"M d, Y H:i" }})
+                    {% endif %}
+                    {% if task.meeting_match_info.confidence %}
+                    <span class="badge badge-info ml-1">{{ task.meeting_match_info.confidence|floatformat:0 }}% confidence</span>
+                    {% endif %}
+                  </small>
+                </div>
+                {% endif %}
+              </div>
+              <hr>
+              {% endif %}
+              
+              <!-- Manager-Only Audit Details -->
+              {% if request.user.is_staff or request.user.is_superuser %}
+              <div class="mt-2 mb-2 border-top pt-2">
+                <h6 class="small font-weight-bold text-muted mb-1"><i class="fas fa-shield-alt"></i> Manager Audit</h6>
+                <div class="small text-muted">
+                  <div class="mb-1">
+                    <strong>Meeting Match:</strong>
+                    {% if task.meeting_match_info and task.meeting_match_info.has_match %}
+                      <span class="badge badge-info">
+                        {% if task.autolink_state == 'auto_created' %}Autolink
+                        {% elif task.autolink_state == 'auto_pending' %}Auto Pending
+                        {% else %}Manual
+                        {% endif %}
+                      </span>
+                      {% if task.meeting_match_info.confidence %}
+                      <span class="ml-1">({{ task.meeting_match_info.confidence|floatformat:0 }}% confidence)</span>
+                      {% endif %}
+                    {% else %}
+                      <span class="badge badge-secondary">None</span>
+                    {% endif %}
+                  </div>
+                  <div class="mb-1">
+                    <strong>Evidence Counts:</strong>
+                    Active: <strong>{{ task.evidence_count }}</strong>
+                    {% if task.evidence_count_total %}
+                    | Total: <strong>{{ task.evidence_count_total }}</strong>
+                    {% endif %}
+                    {% if task.last_evidence_timestamp %}
+                    | Last: <strong>{{ task.last_evidence_timestamp|date:"M d, Y H:i" }}</strong>
+                    {% endif %}
+                  </div>
+                  <div class="mb-1">
+                    <strong>Policy:</strong> <span class="badge badge-secondary">{{ task.policy_group|default:"Group B" }}</span>
+                    {% if task.compliance and task.compliance.evidence_minimum %}
+                    | Min Evidence: <strong>{{ task.compliance.evidence_minimum }}</strong>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              
+              <!-- Duration Details -->
+              {% if task.total_duration_minutes > 0 %}
+              <p class="small text-muted mt-2 mb-0">
+                <strong>Duration:</strong> {{ task.total_duration_minutes }} minutes
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">
+        <h6 class="mb-1">No tasks found</h6>
+        <p class="mb-2 small">There are no tasks matching your current filters.</p>
+        {% if search_query or activity_filter or evidence_filter or quality_filter %}
+        <a href="{% url 'management:daf_v2' %}?status={{ status_filter }}" class="btn btn-sm btn-outline-primary">Clear filters</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+/* DAF v2 Refined Styles */
+.task-card {
+  /* REMOVED transform from transition - no position changes on hover */
+  transition: box-shadow 0.2s ease;
+  border: 1px solid #dee2e6;
+}
+
+.task-card:hover {
+  /* REMOVED transform: translateY(-1px) - causes hover bounce loop */
+  /* Only change box-shadow, no position/geometry changes */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+  color: #495057;
+  font-size: 0.875rem;
+}
+
+.nav-tabs .nav-link.active {
+  color: #007bff;
+  font-weight: 600;
+  border-bottom: 2px solid #007bff;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 0.25em 0.5em;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .col-md-6.col-lg-4 {
+    margin-bottom: 1rem;
+  }
+  
+  .form-inline .form-group {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-inline .form-control-sm {
+    width: 100% !important;
+  }
+}
+</style>
+
+<script>
+// Optional: Accordion behavior - close other collapses when one opens
+// Bootstrap collapse handles the toggle, this just closes others
+(function() {
+  'use strict';
+  
+  // Listen for Bootstrap collapse show event
+  $(document).on('show.bs.collapse', '.collapse[id^="taskDetails"]', function() {
+    // Close all other task detail collapses
+    $('.collapse[id^="taskDetails"]').not(this).collapse('hide');
+  });
+})();
+
+// Countdown timer for Pay Day (updates seconds every second)
+(function() {
+  'use strict';
+  
+  function updateCountdown() {
+    const daysEl = document.getElementById('countdown-days');
+    const hoursEl = document.getElementById('countdown-hours');
+    const minutesEl = document.getElementById('countdown-minutes');
+    const secondsEl = document.getElementById('countdown-seconds');
+    
+    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
+      return; // Elements not found, skip
+    }
+    
+    // Get initial values from server
+    let days = parseInt(daysEl.textContent) || 0;
+    let hours = parseInt(hoursEl.textContent) || 0;
+    let minutes = parseInt(minutesEl.textContent) || 0;
+    let seconds = parseInt(secondsEl.textContent) || 0;
+    
+    // Decrement seconds
+    seconds--;
+    
+    if (seconds < 0) {
+      seconds = 59;
+      minutes--;
+      
+      if (minutes < 0) {
+        minutes = 59;
+        hours--;
+        
+        if (hours < 0) {
+          hours = 23;
+          days--;
+          
+          if (days < 0) {
+            // Countdown expired
+            days = 0;
+            hours = 0;
+            minutes = 0;
+            seconds = 0;
+          }
+        }
+      }
+    }
+    
+    // Update DOM
+    daysEl.textContent = days;
+    hoursEl.textContent = hours;
+    minutesEl.textContent = minutes;
+    secondsEl.textContent = seconds;
+  }
+  
+  // Update every second
+  setInterval(updateCountdown, 1000);
+})();
+</script>
+
+{% endblock content %}

@@ -57,7 +57,7 @@
         {% for task in tasks %}
         <tr>
           <td>
-            <a href="{% url 'management:tasks' %}?employee={{ task.employee.id }}" 
+            <a href="{% url 'management:daf_v2' %}?user_id={{ task.employee.id }}" 
                class="text-decoration-none fw-bold text-primary">
               {{ task.employee.get_full_name|default:task.employee.username }}
             </a>

@@ -1,68 +1,311 @@
-{% extends "main/base_templates/application_base.html" %}
+{% extends "main/base_templates/new_base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Upload Evidence{% endblock %}
+
+{% block extra_css %}
+<style>
+  .evidence-form-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .evidence-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  .evidence-item {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  .evidence-item h6 {
+    margin-bottom: 8px;
+    color: #333;
+  }
+  .evidence-item .text-muted {
+    font-size: 0.875rem;
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+  .step-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="content-section">
-  <form method="POST" enctype="multipart/form-data" autocomplete="off">
-    {% csrf_token %}
-    <fieldset class="form-group">
-      <legend class="border-bottom mb-4 text-center">
-        DAF EVIDENCE
-        <p class="lead font-italic text-center">
-         Kindly Enter Your Evidence in This Form
-        </p>
-        <hr />
-      </legend>
-      <div class="row">
-        <div class="col-md-4">{{ form.requirement|as_crispy_field }}</div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">{{ form.link_name|as_crispy_field }}</div>
-      </div>
-      <div class="row">
-        <div class="col-md-8">{{ form.description|as_crispy_field }}</div>
-      </div>
-      <div class="row">
-        <div class="col-md-6">{{ form.link|as_crispy_field }}</div><br>
-        <div class="col-md-4">{{ form.linkpassword|as_crispy_field }}</div><br>
-      </div>
-      <div class="row">
-        <div class="col-md-6">{{ form.doc|as_crispy_field }}</div><br>
-        {% if messages %}
-          <ul class="messages">
-            {% for message in messages %}
-              <li>{{ message }}</li>
-            {% endfor %}
-          </ul>
+<div class="evidence-form-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Add Evidence</h2>
+      {% if task %}
+      <div class="d-flex align-items-center">
+        <span class="text-muted mr-2">Task:</span>
+        <strong>{{ task.activity_name|default:task.display_label|default:"Untitled Task" }}</strong>
+        {% if task.activity_type %}
+        <span class="badge badge-success ml-2">{{ task.activity_type.name }}</span>
         {% endif %}
       </div>
+      {% endif %}
+    </div>
+    <a href="{% url 'management:daf_v2' %}" class="btn btn-primary">
+      <i class="fas fa-arrow-left"></i> Back to My DAF
+    </a>
+  </div>
 
-      <!-- Hidden Fields -->
-      <div class="row" style="visibility: hidden;">
-        <div class="col-md-4">{{ form.added_by|as_crispy_field }}</div>
-        <div class="col-md-4">{{ form.task|as_crispy_field }}</div>
-        <!-- Removed 'doc' as it's now handled above -->
-      </div>
-    </fieldset>
-    <div class="form-group">
-      <button class="btn btn-primary" type="submit">Submit</button>
-    </div>
-  </form>
-  {% if user.admin %}
-    <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
-    <div class="row text-center">
-      <div class="col-md-4">{{ form.is_featured|as_crispy_field }}</div>
-      <div class="col-md-4">{{ form.is_active|as_crispy_field }}</div>
-    </div>
-  {% else %}
-    <div class="row text-center">
-      <hr style="height:3px;border:none;color:rgb(102, 102, 105);background-color:rgb(106, 106, 155);" />
-    </div>
+  <!-- Error Messages -->
+  {% if messages %}
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {% for message in messages %}
+    <div>{{ message }}</div>
+    {% endfor %}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
   {% endif %}
+
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger">
+    {{ form.non_field_errors }}
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <!-- Left Column: Add Evidence Form -->
+    <div class="col-lg-8">
+      <form method="POST" enctype="multipart/form-data" autocomplete="off">
+        {% csrf_token %}
+        
+        <!-- Hidden Fields -->
+        {{ form.added_by }}
+        {{ form.task }}
+
+        <!-- Step 1: Select Requirement (if required) -->
+        {% if requires_requirement %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="step-header">
+              <h5 class="mb-0">Step 1: Select Requirement</h5>
+              {% if task.requirement %}
+              <span class="step-badge badge-success">Requirement Selected</span>
+              {% else %}
+              <span class="step-badge badge-warning">Required</span>
+              {% endif %}
+            </div>
+            {% if requirement_locked %}
+            <div class="alert alert-info">
+              <small>Requirement is locked because evidence already exists. Contact admin to change.</small>
+            </div>
+            {% endif %}
+            {{ form.requirement|as_crispy_field }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Step 2: Upload Evidence -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="step-header">
+              <h5 class="mb-0">Step 2: Upload Evidence</h5>
+              {% if evidence_list|length > 0 %}
+              <span class="step-badge badge-success">Has Evidence</span>
+              {% else %}
+              <span class="step-badge badge-warning">No Evidence</span>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ form.link_name.id_for_label }}">
+                Topic/Title
+                {% if form.link_name.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.link_name|as_crispy_field }}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ form.description.id_for_label }}">
+                What is this link/Evidence about
+                {% if form.description.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.description|as_crispy_field }}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ form.link.id_for_label }}">
+                Upload link/paste your link below
+                {% if form.link.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.link|as_crispy_field }}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ form.linkpassword.id_for_label }}">
+                Provide Password if necessary
+              </label>
+              {{ form.linkpassword|as_crispy_field }}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ form.doc.id_for_label }}">
+                Upload file/document if possible
+              </label>
+              {{ form.doc|as_crispy_field }}
+              <small class="form-text text-muted">
+                Upload a file or document (optional, if link is not available)
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Approval Readiness -->
+        {% if approval_readiness %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="step-header">
+              <h5 class="mb-0">Step 3: Approval Readiness</h5>
+              {% if approval_readiness.overall_ready %}
+              <span class="step-badge badge-success">Ready</span>
+              {% else %}
+              <span class="step-badge badge-warning">Not Ready</span>
+              {% endif %}
+            </div>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <strong>Requirement:</strong>
+                {% if approval_readiness.requirement_present %}
+                <span class="badge badge-success">OK</span>
+                {% else %}
+                <span class="badge badge-danger">Missing</span>
+                {% endif %}
+              </li>
+              <li class="mb-2">
+                <strong>Evidence:</strong>
+                {% if approval_readiness.evidence_complete %}
+                <span class="badge badge-success">Complete</span>
+                {% else %}
+                <span class="badge badge-warning">Incomplete</span>
+                {% endif %}
+              </li>
+              <li class="mb-2">
+                <strong>Checklist:</strong>
+                {% if approval_readiness.checklist_complete %}
+                <span class="badge badge-success">Complete</span>
+                {% else %}
+                <span class="badge badge-warning">Incomplete</span>
+                {% endif %}
+              </li>
+              <li class="mb-2">
+                <strong>Duration:</strong>
+                {% if approval_readiness.duration_ok %}
+                <span class="badge badge-success">OK</span>
+                {% else %}
+                <span class="badge badge-warning">Missing</span>
+                {% endif %}
+              </li>
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Admin Fields (Staff Only) -->
+        {% if is_staff %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="mb-3">Admin Options</h5>
+            <div class="row">
+              <div class="col-md-6">{{ form.is_featured|as_crispy_field }}</div>
+              <div class="col-md-6">{{ form.is_active|as_crispy_field }}</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-upload"></i> Submit Evidence
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Column: Existing Evidence -->
+    <div class="col-lg-4">
+      <div class="evidence-panel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Existing Evidence</h5>
+          <span class="badge badge-secondary">{{ evidence_list|length }}</span>
+        </div>
+
+        {% if evidence_list %}
+        {% for evidence in evidence_list %}
+        <div class="evidence-item">
+          <h6>{{ evidence.primary_label|default:evidence.link_name|default:"Untitled" }}</h6>
+          <div class="mb-2">
+            {% if evidence.is_auto_generated %}
+            <span class="badge badge-success">Auto</span>
+            {% else %}
+            <span class="badge badge-info">Manual</span>
+            {% endif %}
+            {% if is_staff and evidence.added_by %}
+            <small class="text-muted d-block mt-1">Uploaded by: {{ evidence.added_by }}</small>
+            {% endif %}
+            <small class="text-muted d-block">{{ evidence.created_at|date:"M d, Y" }}</small>
+          </div>
+          {% if evidence.description %}
+          <p class="text-muted small mb-2">{{ evidence.description|truncatewords:20 }}</p>
+          {% endif %}
+          <div class="d-flex gap-2">
+            {% if evidence.link %}
+            <a href="{{ evidence.link }}" target="_blank" class="btn btn-sm btn-primary">
+              <i class="fas fa-external-link-alt"></i> Open Link
+            </a>
+            {% endif %}
+            {% if evidence.doc and evidence.doc.name %}
+            <a href="{{ evidence.doc.url }}" target="_blank" class="btn btn-sm btn-secondary" download>
+              <i class="fas fa-download"></i> Download
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center text-muted py-4">
+          <i class="fas fa-inbox fa-3x mb-3"></i>
+          <p>No evidence uploaded yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-  var urlparams = window.location.href.split("/");
-  $('#div_id_added_by select').val("{{ request.user.id }}");
-  $("#div_id_task select").val(urlparams[urlparams.length-1]);
+  // Set hidden field values
+  $(document).ready(function() {
+    var urlparams = window.location.href.split("/");
+    var taskId = urlparams[urlparams.length-1];
+    
+    if ($('#id_added_by').length) {
+      $('#id_added_by').val("{{ request.user.id }}");
+    }
+    if ($('#id_task').length) {
+      $('#id_task').val(taskId);
+    }
+  });
 </script>
-{% endblock content %}
+{% endblock %}

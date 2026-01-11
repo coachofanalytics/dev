@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:17
+    container_name: coda_postgres17
+    environment:
+      POSTGRES_USER: coda
+      POSTGRES_PASSWORD: coda
+      POSTGRES_DB: coda_prod_clone
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:

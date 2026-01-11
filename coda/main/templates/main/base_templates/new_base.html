@@ -72,7 +72,7 @@
     <link rel="stylesheet" href="https://cdn.plyr.io/3.6.3/plyr.css" />
     <script src="https://cdn.plyr.io/3.6.3/plyr.js"></script>
 
-    
+    {% block extra_css %}{% endblock extra_css %}
 
       {% if title %}
       <title>CODA - {{ title }}</title>
@@ -323,6 +323,7 @@
             }
         })();
     </script>
+    {% block extra_js %}{% endblock extra_js %}
 </body>
 
 </html>

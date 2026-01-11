@@ -251,6 +251,11 @@
                                         <a href="{% url 'management:user_evidence' %}" class="btn btn-outline-primary btn-lg">
                                             📥 Evidence Inbox
                                         </a>
+                                        {% if user.is_staff or user.is_superuser %}
+                                        <a href="{% url 'management:tasks' %}" class="btn btn-outline-primary btn-lg">
+                                            📊 DAF Management
+                                        </a>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 

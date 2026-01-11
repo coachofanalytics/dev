@@ -1,0 +1,5 @@
+FROM postgres:17
+
+# This image already contains pg_dump and pg_restore (PG17)
+WORKDIR /restore
+COPY coda_prod_latest.dump /restore/coda_prod_latest.dump

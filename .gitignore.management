@@ -1,0 +1,20 @@
+# Management App Sharing Branch - Include only these:
+
+# Include management docs
+!docs/apps/management/
+
+# Include management tests
+!tests/management/
+
+# Include management-related scripts
+!scripts/audit/phase0_*.py
+!scripts/verification/
+!scripts/analysis/
+
+# Exclude everything else by default
+/*
+!docs/
+!tests/
+!scripts/
+!README.md
+!LICENSE

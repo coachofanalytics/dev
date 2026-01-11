@@ -1,0 +1,49 @@
+{% comment %}
+Reusable Career Ladder Badge Component
+
+Displays the employee's current career ladder level (track + tier).
+
+Accepts either 'user' or 'employee' context variable.
+Gracefully handles missing profile or career_group (null-safe using |default:None).
+{% endcomment %}
+
+{% if user %}
+  {% with u=user %}
+    {% if u and u.profile %}
+      {% with cg=u.profile.career_group|default:None %}
+        {% if cg %}
+          {% if cg.track and cg.tier %}
+            <span class="badge bg-info text-dark ml-2" title="Career Ladder: {{ cg.track }} Track, Tier {{ cg.tier }}">
+              {{ cg.track }} Tier {{ cg.tier }}
+            </span>
+          {% elif cg.title %}
+            {# Fallback to title if track/tier not set #}
+            <span class="badge bg-info text-dark ml-2" title="Career Group: {{ cg.title }}">
+              {{ cg.title }}
+            </span>
+          {% endif %}
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+  {% endwith %}
+{% elif employee %}
+  {% with u=employee %}
+    {% if u and u.profile %}
+      {% with cg=u.profile.career_group|default:None %}
+        {% if cg %}
+          {% if cg.track and cg.tier %}
+            <span class="badge bg-info text-dark ml-2" title="Career Ladder: {{ cg.track }} Track, Tier {{ cg.tier }}">
+              {{ cg.track }} Tier {{ cg.tier }}
+            </span>
+          {% elif cg.title %}
+            {# Fallback to title if track/tier not set #}
+            <span class="badge bg-info text-dark ml-2" title="Career Group: {{ cg.title }}">
+              {{ cg.title }}
+            </span>
+          {% endif %}
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+  {% endwith %}
+{% endif %}
+

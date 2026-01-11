@@ -73,18 +73,16 @@ QUICK REFERENCE:
 For complete guide: docs/LOCAL_DEVELOPMENT_WITH_PROD_DATA.md
 """
 
-
 import os
 import sys
 
 from .base_settings import *
 
-
 # Override environment for local development
-ENV_CONFIG['environment'] = 'local'
-ENV_CONFIG['is_development'] = True
-ENV_CONFIG['is_testing'] = False
-ENV_CONFIG['is_production'] = False
+ENV_CONFIG["environment"] = "local"
+ENV_CONFIG["is_development"] = True
+ENV_CONFIG["is_testing"] = False
+ENV_CONFIG["is_production"] = False
 
 
 # Local development specific settings
@@ -99,49 +97,48 @@ SECURE_SSL_REDIRECT = False
 def get_database_config():
     """
     Get database configuration based on environment variables
-    Supports: 
+    Supports:
     - 'clone': Local PostgreSQL clone of production (RECOMMENDED for development)
     - 'sqlite': Local SQLite (default, lightweight)
     - 'uat': Heroku UAT database (NOT recommended for local dev)
     - 'prod': Heroku Production database (NEVER use for local dev!)
     - 'postgres': Custom local PostgreSQL
     """
-    TEST_MODE = os.environ.get('TEST_MODE', 'False').lower() == 'true'
-    db_type_env = os.environ.get('DB_TYPE', '').strip().lower()
+    TEST_MODE = os.environ.get("TEST_MODE", "False").lower() == "true"
+    db_type_env = os.environ.get("DB_TYPE", "").strip().lower()
 
     if TEST_MODE:
         print("   🧪 TEST_MODE detected — using in-memory SQLite database")
         return get_sqlite_config(memory=True)
 
-    DB_TYPE = db_type_env or 'clone'
-    DB_TYPE = 'uat'
+    DB_TYPE = db_type_env or "clone"
     print("🗄️  DB_TYPE: ", DB_TYPE)
-    USE_POSTGRESQL = os.environ.get('USE_POSTGRESQL', 'False').lower() == 'true'
-   
+    USE_POSTGRESQL = os.environ.get("USE_POSTGRESQL", "False").lower() == "true"
+
     # Database URLs from environment
-    UAT_DATABASE_URL = os.environ.get('UAT_DATABASE_URL')  # Heroku UAT
-    PROD_DATABASE_URL = os.environ.get('PROD_DATABASE_URL')  # Heroku Production
-    LOCAL_POSTGRES_URL = os.environ.get('LOCAL_POSTGRES_URL')  # Local PostgreSQL
-   
+    UAT_DATABASE_URL = os.environ.get("UAT_DATABASE_URL")  # Heroku UAT
+    PROD_DATABASE_URL = os.environ.get("PROD_DATABASE_URL")  # Heroku Production
+    LOCAL_POSTGRES_URL = os.environ.get("LOCAL_POSTGRES_URL")  # Local PostgreSQL
+
     print("🗄️ Database Configuration:")
     print(f"   DB_TYPE: {DB_TYPE}")
     print(f"   USE_POSTGRESQL: {USE_POSTGRESQL}")
-   
+
     # RECOMMENDED: Use cloned production database
-    if DB_TYPE == 'clone':
+    if DB_TYPE == "clone":
         print("   ✅ Using CLONED production database (safe for development)")
         return get_clone_config()
-   
+
     # Determine which database to use
-    if DB_TYPE in ['uat', 'prod', 'postgres'] or USE_POSTGRESQL:
+    if DB_TYPE in ["uat", "prod", "postgres"] or USE_POSTGRESQL:
         # PostgreSQL configuration
-        if DB_TYPE == 'uat' and UAT_DATABASE_URL:
+        if DB_TYPE == "uat" and UAT_DATABASE_URL:
             db_url = UAT_DATABASE_URL
             db_name = "UAT (Heroku)"
-        elif DB_TYPE == 'prod' and PROD_DATABASE_URL:
+        elif DB_TYPE == "prod" and PROD_DATABASE_URL:
             db_url = PROD_DATABASE_URL
             db_name = "Production (Heroku)"
-        elif DB_TYPE == 'postgres' and LOCAL_POSTGRES_URL:
+        elif DB_TYPE == "postgres" and LOCAL_POSTGRES_URL:
             db_url = LOCAL_POSTGRES_URL
             db_name = "Local PostgreSQL"
         elif USE_POSTGRESQL and UAT_DATABASE_URL:
@@ -159,16 +156,17 @@ def get_database_config():
         else:
             print("   ⚠️  No PostgreSQL URL found, falling back to SQLite")
             return get_sqlite_config()
-       
+
         try:
             import dj_database_url
-            db_config = dj_database_url.parse(db_url, conn_max_age=600, ssl_require=True)
+
+            db_config = dj_database_url.parse(
+                db_url, conn_max_age=600, ssl_require=True
+            )
             print(f"   ✅ Connected to {db_name}")
             print(f"   📍 Host: {db_config.get('HOST', 'Unknown')}")
             print(f"   📍 Database: {db_config.get('NAME', 'Unknown')}")
-            return {
-                'default': db_config
-            }
+            return {"default": db_config}
         except ImportError:
             print("   ❌ dj_database_url not installed, falling back to SQLite")
             return get_sqlite_config()
@@ -176,7 +174,7 @@ def get_database_config():
             print(f"   ❌ PostgreSQL connection failed: {e}")
             print("   🔄 Falling back to SQLite")
             return get_sqlite_config()
-   
+
     else:
         # SQLite configuration (default)
         return get_sqlite_config()
@@ -191,19 +189,23 @@ def get_clone_config():
     print("   📍 Database: coda_prod_clone")
     print("   📍 Host: localhost (PostgreSQL)")
     print("   ✅ Safe to test - isolated from production!")
-    
+
+    # Use environment variable for DB user, fallback to 'coda' (macOS) or 'postgres' (Windows)
+    db_user = os.environ.get("CLONE_DB_USER", "coda")  # Default to 'coda' for macOS
+    db_password = os.environ.get("CLONE_DB_PASSWORD", "coda")
+
     return {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'coda_prod_clone',
-            'USER': 'postgres',  # Default Windows PostgreSQL user
-            'PASSWORD': 'MANAGER2030',  # Update if you set a password
-            'HOST': 'localhost',
-            'PORT': '5432',
-            'CONN_MAX_AGE': 600,
-            'OPTIONS': {
-                'connect_timeout': 10,
-            }
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "coda_prod_clone",
+            "USER": db_user,  # Use 'coda' on macOS, 'postgres' on Windows, or from env
+            "PASSWORD": db_password,  # From env or default 'coda'
+            "HOST": "localhost",
+            "PORT": "5432",
+            "CONN_MAX_AGE": 600,
+            "OPTIONS": {
+                "connect_timeout": 10,
+            },
         }
     }
 
@@ -211,12 +213,12 @@ def get_clone_config():
 def get_sqlite_config(memory: bool = False):
     """Get SQLite database configuration"""
     print("   📁 Using SQLite database for local development")
-    db_name = ':memory:' if memory else os.path.join(BASE_DIR, 'db.sqlite3')
+    db_name = ":memory:" if memory else os.path.join(BASE_DIR, "db.sqlite3")
     return {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': db_name,
-            'CONN_MAX_AGE': 0,
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": db_name,
+            "CONN_MAX_AGE": 0,
         }
     }
 
@@ -225,44 +227,44 @@ def get_sqlite_config(memory: bool = False):
 DATABASES = get_database_config()
 
 # For test runs, switch to in-memory SQLite to avoid Postgres permission issues
-if 'test' in sys.argv:
+if "test" in sys.argv:
     DATABASES = get_sqlite_config()
 
 # Display database info
-print("   " + "="*50)
+print("   " + "=" * 50)
 print("   🗄️  Database Details:")
 print(f"      Engine: {DATABASES['default']['ENGINE']}")
 print(f"      Name: {DATABASES['default']['NAME']}")
 
-if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     print(f"      Location: {DATABASES['default']['NAME']}")
 else:
     # PostgreSQL database
     print(f"      Host: {DATABASES['default'].get('HOST', 'N/A')}")
     print(f"      Port: {DATABASES['default'].get('PORT', 'N/A')}")
     print(f"      User: {DATABASES['default'].get('USER', 'N/A')}")
-    
+
     # Warn if using production database
-    db_name = DATABASES['default']['NAME']
-    if 'prod' in db_name.lower() or 'd5ts3j5r06arts' in db_name:
-        print("   " + "="*50)
+    db_name = DATABASES["default"]["NAME"]
+    if "prod" in db_name.lower() or "d5ts3j5r06arts" in db_name:
+        print("   " + "=" * 50)
         print("   ⚠️  WARNING: Using PRODUCTION database!")
         print("   ⚠️  This is DANGEROUS - test changes will affect real users!")
         print("   ⚠️  RECOMMENDED: Use DB_TYPE='clone' instead")
-        print("   " + "="*50)
-    elif db_name == 'coda_prod_clone':
+        print("   " + "=" * 50)
+    elif db_name == "coda_prod_clone":
         print("      ✅ SAFE: Using cloned database (isolated from production)")
 
-print("   " + "="*50)
+print("   " + "=" * 50)
 # Email settings for local development
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # Allauth settings for local development - no email verification required
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTO_SIGNUP = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_USERNAME_REQUIRED = False
 
 
@@ -275,7 +277,7 @@ SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 SECURE_BROWSER_XSS_FILTER = False
 SECURE_CONTENT_TYPE_NOSNIFF = False
-X_FRAME_OPTIONS = 'SAMEORIGIN'
+X_FRAME_OPTIONS = "SAMEORIGIN"
 SECURE_REFERRER_POLICY = None
 
 
@@ -289,33 +291,33 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Logging for local development
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
 }
@@ -323,24 +325,24 @@ LOGGING = {
 
 # Local development specific settings
 ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '0.0.0.0',
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
 ]
 
 
 # Cache settings for local development
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
     }
 }
 
 
 # Email settings for local development
-DEFAULT_FROM_EMAIL = 'noreply@localhost'
-SERVER_EMAIL = 'noreply@localhost'
+DEFAULT_FROM_EMAIL = "noreply@localhost"
+SERVER_EMAIL = "noreply@localhost"
 
 
 # Performance settings for local development
@@ -357,7 +359,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    'Middleware.MiddlewareFile.MailMiddleware',
+    "Middleware.MiddlewareFile.MailMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
 
@@ -365,9 +367,11 @@ MIDDLEWARE = [
 # Stripe Configuration for Local Development
 # Note: You need BOTH publishable key (pk_test_) and secret key (sk_test_)
 # Get both from: https://dashboard.stripe.com/test/apikeys
-STRIPE_PUBLISHABLE_KEY="pk_test_51RcwhrFmZDMqLvNl5ygyIvt8p17GZdWi52WJku1ScwWyUpe3QwTfWErhqLXI6AHdxVtytJ7LKtJv3IKp2ewViJ9l00DDQ9p39l"
-STRIPE_SECRET_KEY="sk_test_51RtbJqKUqxKl3Yd1NhS4QouYBhKWbogQiL0MgCNXukX7wyMY4hM7Ta7VQkJA3cTtK59oBTUMWsM4sbS347n6sIAt00Xu17hXyf"
-STRIPE_WEBHOOK_SECRET="whsec_58c6ae18b2d10387771d5788818e91cb5e8ad0746f79714cfe78fbfb2b210b02"
+STRIPE_PUBLISHABLE_KEY = "pk_test_51RcwhrFmZDMqLvNl5ygyIvt8p17GZdWi52WJku1ScwWyUpe3QwTfWErhqLXI6AHdxVtytJ7LKtJv3IKp2ewViJ9l00DDQ9p39l"
+STRIPE_SECRET_KEY = "sk_test_51RtbJqKUqxKl3Yd1NhS4QouYBhKWbogQiL0MgCNXukX7wyMY4hM7Ta7VQkJA3cTtK59oBTUMWsM4sbS347n6sIAt00Xu17hXyf"
+STRIPE_WEBHOOK_SECRET = (
+    "whsec_58c6ae18b2d10387771d5788818e91cb5e8ad0746f79714cfe78fbfb2b210b02"
+)
 
 
 # Stripe settings (will use environment variables if set)
@@ -386,24 +390,24 @@ if not STRIPE_PUBLISHABLE_KEY:
 
 # Payment method configurations for testing
 PAYMENT_METHODS = {
-    'stripe': {
-        'test_mode': True,
-        'sandbox': True,
-        'description': 'Test with Stripe sandbox - use test card numbers'
+    "stripe": {
+        "test_mode": True,
+        "sandbox": True,
+        "description": "Test with Stripe sandbox - use test card numbers",
     }
 }
 
 
 # Test card numbers for Stripe sandbox
 STRIPE_TEST_CARDS = {
-    'visa': '4242424242424242',
-    'visa_debit': '4000056655665556',
-    'mastercard': '5555555555554444',
-    'amex': '378282246310005',
-    'declined': '4000000000000002',
-    'insufficient_funds': '4000000000009995',
-    'expired': '4000000000000069',
-    'cvc_fail': '4000000000000127',
+    "visa": "4242424242424242",
+    "visa_debit": "4000056655665556",
+    "mastercard": "5555555555554444",
+    "amex": "378282246310005",
+    "declined": "4000000000000002",
+    "insufficient_funds": "4000000000009995",
+    "expired": "4000000000000069",
+    "cvc_fail": "4000000000000127",
 }
 
 
