@@ -59,3 +59,4 @@ backups/
 coda/certs/*.pem
 coda/certs/*.key
 coda/certs/*.crt
+coda/dev.env
