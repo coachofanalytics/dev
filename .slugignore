@@ -1,0 +1,15 @@
+dc48k_venv/
+node_modules/
+staticfiles/
+media/
+django
+*.log
+.git
+.gitignore
+TESTING.md
+README.md
+backup.json
+package-lock.json
+package.json
+migrate-all.sh
+token.json
