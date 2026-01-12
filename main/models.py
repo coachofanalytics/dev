@@ -325,7 +325,7 @@ class DocumentationRequest(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     document_type = models.CharField(max_length=50, choices=DOCUMENTATION_TYPES)
-    package_type = models.CharField(max_length=50, choices=PACKAGE_TYPES)
+    package_type = models.CharField(max_length=50, choices=PACKAGE_TYPES, blank=True, null=True)
     destination_country = models.CharField(max_length=100)
     description = models.TextField()
     consent = models.BooleanField(default=False)

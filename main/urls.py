@@ -62,5 +62,5 @@ urlpatterns = [
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
     path('services_spa/', views.services_spa, name='services_spa'),
-    path('submit_request/', views.submit_reques, name='submit_request'),
+    path('submit_request/', views.submit_request, name='submit_request'),
 ]    

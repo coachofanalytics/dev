@@ -349,7 +349,7 @@
             }
             
             // Debug: Check if form exists
-            const form = document.querySelector('form[onsubmit="submitDocumentRequest(event)"]');
+            const form = document.querySelector('form[onsubmit*="submitDocumentRequest"]');
             if (form) {
                 console.log('Form found, action:', form.action);
             } else {
@@ -585,14 +585,14 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="id_full_name" class="block text-sm font-medium text-gray-700 mb-2">{{ form.full_name.label }}</label>
+                                <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">{{ form.full_name.label }}</label>
                                 {{ form.full_name }}
                                 {% if form.full_name.errors %}
                                 <div class="errorlist">{{ form.full_name.errors }}</div>
                                 {% endif %}
                             </div>
                             <div>
-                                <label for="id_email" class="block text-sm font-medium text-gray-700 mb-2">{{ form.email.label }}</label>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">{{ form.email.label }}</label>
                                 {{ form.email }}
                                 {% if form.email.errors %}
                                 <div class="errorlist">{{ form.email.errors }}</div>
@@ -609,7 +609,7 @@
                                 {% endif %}
                             </div>
                             <div>
-                                <label for="id_document_type" class="block text-sm font-medium text-gray-700 mb-2">{{ form.document_type.label }}</label>
+                                <label for="document_type" class="block text-sm font-medium text-gray-700 mb-2">{{ form.document_type.label }}</label>
                                 {{ form.document_type }}
                                 {% if form.document_type.errors %}
                                 <div class="errorlist">{{ form.document_type.errors }}</div>
@@ -619,14 +619,14 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="id_package_type" class="block text-sm font-medium text-gray-700 mb-2">{{ form.package_type.label }}</label>
+                                <label for="package_type" class="block text-sm font-medium text-gray-700 mb-2">{{ form.package_type.label }}</label>
                                 {{ form.package_type }}
                                 {% if form.package_type.errors %}
                                 <div class="errorlist">{{ form.package_type.errors }}</div>
                                 {% endif %}
                             </div>
                             <div>
-                                <label for="id_destination_country" class="block text-sm font-medium text-gray-700 mb-2">{{ form.destination_country.label }}</label>
+                                <label for="destination_country" class="block text-sm font-medium text-gray-700 mb-2">{{ form.destination_country.label }}</label>
                                 {{ form.destination_country }}
                                 {% if form.destination_country.errors %}
                                 <div class="errorlist">{{ form.destination_country.errors }}</div>
@@ -635,7 +635,7 @@
                         </div>
                         
                         <div>
-                            <label for="id_description" class="block text-sm font-medium text-gray-700 mb-2">{{ form.description.label }}</label>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">{{ form.description.label }}</label>
                             {{ form.description }}
                             {% if form.description.errors %}
                             <div class="errorlist">{{ form.description.errors }}</div>

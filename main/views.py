@@ -664,7 +664,7 @@ def services_spa(request):
     form = DocumentationRequestForm()
     return render(request, 'main/index.html',{'form': form})
 @require_POST
-def submit_reques(request):
+def submit_request(request):
     form = DocumentationRequestForm(request.POST)
     if form.is_valid():
         try:
@@ -684,7 +684,7 @@ def submit_reques(request):
         except Exception as e:
             return JsonResponse({
                 'success': False,
-                'error': 'An error occurred while submitting the request.'
+                'error': f'Database error: {str(e)}'
                 }, status=400)
     else:
         error = {}
