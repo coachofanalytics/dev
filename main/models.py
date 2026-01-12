@@ -189,10 +189,7 @@ class Donation_organization(models.Model):
         return f"{self.donor_name} - {self.amount}"
 
 
-#<<<<<<< 25.10_DC48_UAT_UO
-
-#<<<<<<< 25.10_DC48_UAT_UO
-# Stores email subscriptions for Safety Alerts
+# Safety Alerts and Emergency Services
 class SafetyAlertSubscription(models.Model):
     email = models.EmailField(unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
@@ -203,7 +200,6 @@ class SafetyAlertSubscription(models.Model):
         return self.email
 
 
-# Emergency help line configuration
 class EmergencyHotlines(models.Model):
     name = models.CharField(max_length=100, help_text="Display label, e.g., Global Hotline")
     number = models.CharField(max_length=32, help_text="E.164 like +15551234567 or local format")
@@ -243,11 +239,6 @@ class EmergencyHelpActivations(models.Model):
 
     def __str__(self):
         return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
-#=======
-
-# Medical Resource Inquiry model at top-level
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
 class MedicalResourceInquiry(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -321,11 +312,6 @@ class TrainingCourse(models.Model):
 
     def __str__(self):
         return self.title
-#<<<<<<< 25.10_DC48_UAT_UO
-    
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
 
 class DocumentServiceRequest(models.Model):
     SERVICE_CHOICES = [

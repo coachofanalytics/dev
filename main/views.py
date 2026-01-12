@@ -8,21 +8,12 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-#<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
-#=======
-from django.db.models import Q
-#<<<<<<< HEAD
-#<<<<<<< HEAD
-from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
 from .models import (
     Assets, Description, News, Page, Service, Scholarship, SubService, Team,
     Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry,
-    ExpertServiceRequest, DocumentServiceRequest, Testimonial, GlobalSetting
+    ExpertServiceRequest, DocumentServiceRequest, Testimonial, GlobalSetting,
+    SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
 )
-#>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
@@ -185,20 +176,8 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-#<<<<<<< 25.10_DC48_UAT_UO
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page=page_instance)
-#=======
-#<<<<<<< HEAD
-    # Define page_instance for the home page or desired page
-    page_instance = Page.objects.filter(page_name='Home').first()
-    description = Description.objects.filter(page=page_instance)
-#=======
-    # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
-    page_instance, _ = Page.objects.get_or_create(page_name='Home')
-    description = Description.objects.filter(page = page_instance)
-#>>>>>>> origin/25.10_DC48K_UAT_FN
-#>>>>>>> 25.10_DC48_UAT_ND
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
