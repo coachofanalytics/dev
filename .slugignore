@@ -18,11 +18,14 @@ env/
 .venv/
 
 # Tests and Coverage
-tests/
+**/tests/
+**/test/
 htmlcov/
 .coverage
 .tox/
 .nox/
+pytest.ini
+tox.ini
 
 # Documentation
 docs/
@@ -30,6 +33,12 @@ docs/
 !README.md
 README.md
 TESTING.md
+
+# Application specific large files
+main/static/main/img/background/
+main/static/main/img/home/
+communities/static/community/img/
+media/services/
 
 # Node/Static
 node_modules/
@@ -49,3 +58,5 @@ backup.json
 migrate-all.sh
 token.json
 django
+db.sqlite3
+dc48k_venv/
