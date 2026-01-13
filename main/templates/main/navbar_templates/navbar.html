@@ -145,10 +145,11 @@
 
                     <!-- Document Services -->
                     <div class="sub-dropdown">
-                        <a href="https://dc48k.org/">Document Services</a>
+                        <a href="{% url 'main:services_spa' %}">Document Services</a>
                         <div class="sub-dropdown-content">
-                            <a href="#">Issuance of Certificates</a>
-                            <a href="#">Document Legalization and Authentication</a>
+                            <a href="{% url 'main:services_spa' %}#application">Issuance of Certificates</a>
+                            <a href="{% url 'main:services_spa' %}#application">Document Legalization and
+                                Authentication</a>
                         </div>
                     </div>
 
@@ -200,8 +201,6 @@
                     </div>
                 </div>
             </li>
-
-
             <li><a href="https://dc48k.org/news/" class="navLin">NEWS</a></li>
             <li><a href="{% url 'accounts:membership_registration' %}" class="navLin">MEMBERSHIP</a></li>
             <li><a href="https://dc48k.org/contact/" class="navLin">CONTACT US</a></li>

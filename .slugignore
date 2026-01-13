@@ -1,15 +1,51 @@
-dc48k_venv/
-node_modules/
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 staticfiles/
 media/
-django
+
+# Virtual Environment
+dc48k_venv/
+venv/
+env/
+.venv/
+
+# Tests and Coverage
+tests/
+htmlcov/
+.coverage
+.tox/
+.nox/
+
+# Documentation
+docs/
+*.md
+!README.md
+README.md
+TESTING.md
+
+# Node/Static
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+package.json
+
+# Other
+.DS_Store
+.idea/
+.vscode/
 *.log
 .git
 .gitignore
-TESTING.md
-README.md
 backup.json
-package-lock.json
-package.json
 migrate-all.sh
 token.json
+django
