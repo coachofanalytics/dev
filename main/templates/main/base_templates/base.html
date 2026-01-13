@@ -106,6 +106,7 @@
         });
     </script>
 
+    {% if request.resolver_match.url_name == 'our_service' %}
     <!-- Persistent Emergency Floating Button -->
     <div id="emergency-floating-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
         <!-- Popup Menu (Hidden by default) -->
@@ -213,6 +214,7 @@
 
     <!-- Include Chatbot JS -->
     <script src="{% static 'main/js/chatbot.js' %}"></script>
+    {% endif %}
 </body>
 
 </html>
