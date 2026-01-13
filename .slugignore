@@ -35,10 +35,15 @@ README.md
 TESTING.md
 
 # Application specific large files
-main/static/main/img/background/
-main/static/main/img/home/
-communities/static/community/img/
-media/services/
+main/static/main/img/background/swiper1.jpg
+main/static/main/img/background/swiper2.jpg
+main/static/main/img/background/swiper3.jpg
+main/static/main/img/background/sta.png
+main/static/main/img/background/issue.png
+communities/static/community/img/img1.png
+communities/static/community/img/img2.png
+communities/static/community/img/img3.png
+# Keep media/services/ for now as it doesn't seem to cause build issues but check size later if needed
 
 # Node/Static
 node_modules/
