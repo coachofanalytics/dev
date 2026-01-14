@@ -110,7 +110,7 @@
         });
     </script>
 
-    {% if request.resolver_match.url_name == 'our_service' %}
+    {% if request.resolver_match.url_name == 'our_service' or request.resolver_match.url_name == 'document_services' %}
     <!-- Persistent Emergency Floating Button -->
     <div id="emergency-floating-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
         <!-- Popup Menu (Hidden by default) -->
@@ -156,7 +156,7 @@
 
         <!-- Main Floating Button -->
         <button id="emergency-fab"
-            class="bg-[#cc0000] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center transform hover:scale-105 transition duration-300 focus:outline-none ring-4 ring-red-200 animate-pulse">
+            class="bg-[#cc0000] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center transform hover:scale-105 transition duration-300 focus:outline-none ring-4 ring-red-200">
             <i class="fa fa-ambulance text-2xl" aria-hidden="true"></i>
         </button>
     </div>
