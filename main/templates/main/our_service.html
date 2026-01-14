@@ -270,22 +270,28 @@
                     {% endif %}
                 </div>
                 <div class="lg:order-2">
-                    {% if service.image %}
+                    {% if service.image and service.image.url %}
                     <img src="{{ service.image.url }}" alt="{{ service.title }}"
                         class="w-full rounded-xl shadow-lg object-cover">
                     {% else %}
-                    <div class="loading-placeholder rounded-xl shadow-lg">No Image</div>
+                    {# Fallback to static images if media is missing (common on Heroku) #}
+                    <img src="{% static 'main/img/' %}{{ service.slug }}.png"
+                        onerror="this.src='{% static 'main/img/home/image1.png' %}'" alt="{{ service.title }}"
+                        class="w-full rounded-xl shadow-lg object-cover">
                     {% endif %}
                 </div>
 
                 {% else %}
                 <!-- ODD: Image Left, Content Right -->
                 <div class="lg:order-1">
-                    {% if service.image %}
+                    {% if service.image and service.image.url %}
                     <img src="{{ service.image.url }}" alt="{{ service.title }}"
                         class="w-full rounded-xl shadow-lg object-cover">
                     {% else %}
-                    <div class="loading-placeholder rounded-xl shadow-lg">No Image</div>
+                    {# Fallback to static images if media is missing #}
+                    <img src="{% static 'main/img/' %}{{ service.slug }}.png"
+                        onerror="this.src='{% static 'main/img/home/image1.png' %}'" alt="{{ service.title }}"
+                        class="w-full rounded-xl shadow-lg object-cover">
                     {% endif %}
                 </div>
                 <div class="lg:order-2">
