@@ -59,12 +59,9 @@ kombu==5.2.4
 lazy-object-proxy==1.4.3
 MarkupSafe==2.1.2
 multidict==6.6.4
-numpy==1.26.4
 oauthlib==3.2.2
 openai==0.27.0
 packaging==23.0
-pandas==1.5.3
-pdfkit==1.0.0
 Pillow==12.1.0
 prompt-toolkit==3.0.37
 propcache==0.3.2
