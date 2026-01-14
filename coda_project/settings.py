@@ -259,8 +259,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # If you have a project-level static directory
     # Add other directories if necessary
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-WHITENOISE_MANIFEST_STRICT = False
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 

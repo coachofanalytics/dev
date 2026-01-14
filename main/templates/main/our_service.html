@@ -8,7 +8,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legal & Immigration Guidance | Diaspora County 48</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -154,13 +153,10 @@
 
         /* Hero Styling for background image and overlay */
         #hero-background {
-            /* Fallback style, will be replaced by generated image background */
             background-color: #1e40af;
             background-image: url('{% static "main/img/backgroundimage.png" %}');
             background-size: cover;
             background-position: center;
-            /* Applying pulse animation directly in CSS for initial loading visual */
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     </style>
 </head>
@@ -270,29 +266,17 @@
                     {% endif %}
                 </div>
                 <div class="lg:order-2">
-                    {% if service.image and service.image.url %}
-                    <img src="{{ service.image.url }}" alt="{{ service.title }}"
-                        class="w-full rounded-xl shadow-lg object-cover">
-                    {% else %}
-                    {# Fallback to static images if media is missing (common on Heroku) #}
-                    <img src="{% static 'main/img/' %}{{ service.slug }}.png"
-                        onerror="this.src='{% static 'main/img/home/image1.png' %}'" alt="{{ service.title }}"
-                        class="w-full rounded-xl shadow-lg object-cover">
-                    {% endif %}
+                    <img src="{% static 'main/img/services/' %}{{ service.image.name | cut:'services/' }}"
+                        alt="{{ service.title }}" class="w-full rounded-xl shadow-lg object-cover"
+                        onerror="this.src='{{ service.image.url }}'; this.onerror=null;">
                 </div>
 
                 {% else %}
                 <!-- ODD: Image Left, Content Right -->
                 <div class="lg:order-1">
-                    {% if service.image and service.image.url %}
-                    <img src="{{ service.image.url }}" alt="{{ service.title }}"
-                        class="w-full rounded-xl shadow-lg object-cover">
-                    {% else %}
-                    {# Fallback to static images if media is missing #}
-                    <img src="{% static 'main/img/' %}{{ service.slug }}.png"
-                        onerror="this.src='{% static 'main/img/home/image1.png' %}'" alt="{{ service.title }}"
-                        class="w-full rounded-xl shadow-lg object-cover">
-                    {% endif %}
+                    <img src="{% static 'main/img/services/' %}{{ service.image.name | cut:'services/' }}"
+                        alt="{{ service.title }}" class="w-full rounded-xl shadow-lg object-cover"
+                        onerror="this.src='{{ service.image.url }}'; this.onerror=null;">
                 </div>
                 <div class="lg:order-2">
                     <h3 class="text-3xl font-extrabold text-brand-green mb-4">{{ service.title }}</h3>
