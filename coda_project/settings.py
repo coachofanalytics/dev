@@ -16,11 +16,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(BASE_DIR)
 
-SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
-# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 
-DEBUG = True
-# DEBUG = os.environ.get("DEBUG_VALUE") == "True"
+# Default to False unless explicitly enabled via environment variable.
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 SECURE_SSL_REDIRECT = False
 
@@ -215,7 +214,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.MD5PasswordHasher",
+    # Use secure, production-appropriate password hashers. MD5 is insecure and should not be used.
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 
 # Internationalization
