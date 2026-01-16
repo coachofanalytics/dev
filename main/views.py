@@ -8,6 +8,8 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+#<<<<<<< 26.01_DC48_UAT_UO
+#=======
 #<<<<<<< 25.10_DC48_UAT_UO
 from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations
 #=======
@@ -17,17 +19,18 @@ from django.db.models import Q
 from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
 #>>>>>>> 25.10_DC48_UAT_ND
 #=======
+#>>>>>>> 25.11_DC48K_UAT_GN
 from .models import (
     Assets, Description, News, Page, Service, Scholarship, SubService, Team,
-    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry
+    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry,
+    ExpertServiceRequest, DocumentServiceRequest, Testimonial, GlobalSetting,
+    SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
 )
-#>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, DocumentationRequestForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, ExpertContactForm, DocumentServiceRequestForm, DocumentationRequestForm
 from django.contrib.auth import get_user_model
-#<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse
@@ -55,6 +58,58 @@ User=get_user_model()
 
 def error400(request):
     return render(request, "main/errors/400.html", {"title": "400Error"})
+
+
+
+def document_services(request):
+    """
+    Renders the Document Services landing page.
+    """
+    form = DocumentServiceRequestForm()
+    return render(request, 'main/document_services.html', {'form': form, 'title': 'Document Services'})
+
+@csrf_exempt
+def document_request_submit(request):
+    """
+    Handles Document Service Requests via AJAX.
+    """
+    if request.method == 'POST':
+        form = DocumentServiceRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc_request = form.save(commit=False)
+            if request.user.is_authenticated:
+                doc_request.user = request.user
+            doc_request.save()
+            return JsonResponse({'status': 'success', 'message': 'Request submitted successfully!'})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+def contact_expert(request):
+    if request.method == 'POST':
+        form = ExpertContactForm(request.POST)
+        if form.is_valid():
+            # In a real scenario, you would save this or send an email
+            service = form.cleaned_data['service_type']
+            location = form.cleaned_data['location']
+            urgency = form.cleaned_data['urgency']
+            message = form.cleaned_data['message']
+            
+            # Save to Database
+            ExpertServiceRequest.objects.create(
+                service_type=service,
+                location=location,
+                urgency=urgency,
+                message=message,
+                user=request.user if request.user.is_authenticated else None
+            )
+            
+            return JsonResponse({'status': 'success', 'message': 'Request submitted successfully!'})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 def error403(request):
     return render(request, "main/errors/403.html", {"title": "403Error"})
@@ -132,20 +187,8 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-#<<<<<<< 25.10_DC48_UAT_UO
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page=page_instance)
-#=======
-#<<<<<<< HEAD
-    # Define page_instance for the home page or desired page
-    page_instance = Page.objects.filter(page_name='Home').first()
-    description = Description.objects.filter(page=page_instance)
-#=======
-    # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
-    page_instance, _ = Page.objects.get_or_create(page_name='Home')
-    description = Description.objects.filter(page = page_instance)
-#>>>>>>> origin/25.10_DC48K_UAT_FN
-#>>>>>>> 25.10_DC48_UAT_ND
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -223,7 +266,13 @@ def crisis_page(request):
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
+def our_service(request):
+    services = Service.objects.prefetch_related('subservices').order_by('ordering')
+    return render(request, "main/our_service.html", {"services": services})
 
+def financial_planning(request):
+    services = Service.objects.all()
+    return render(request, "main/financial_planning.html", {"services": services})
 
 def team_list(request):
     teams = Team.objects.all()
@@ -654,10 +703,6 @@ def scholarship_search(request):
         'form': form,
         'result_count': scholarships.count(),
     }
-#<<<<<<< HEAD
-    return render(request, 'scholarship_app/scholarship_search.html',context)
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
     return render(request, 'scholarship_app/scholarship_search.html', context)
 
 def services_spa(request):

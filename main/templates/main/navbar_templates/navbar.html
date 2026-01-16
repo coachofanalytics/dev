@@ -1,89 +1,105 @@
 {% load static %}
 <style>
-.dropdown {
-    position: relative;
-}
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    z-index: 1;
-    background-color:#35bdbd;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    width: max-content; /* Adjust width as needed */
-}
-
-.dropdown-content .sub-dropdown {
-    position: relative;
-}
-
-.sub-dropdown-content {
-    display: none;
-    position: absolute;
-    margin-left: 3px;
-    top: 0;
-    left: 100%; /* Position the sub-dropdown to the right of the main dropdown */
-    background-color: #3b5d5f;
-    border-radius: 4px;
-    min-width: 200px; /* Adjust width as needed */
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-}
-
-/* Hover effect for desktop */
-.sub-dropdown:hover .sub-dropdown-content,
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-.dropdown-content a, .sub-dropdown-content a {
-    color:  white;
-    font-size: 12px;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-.dropdown-content a:hover, .sub-dropdown-content a:hover {
-    background-color: #ddd;
-}
-
-/* Media query for smaller screens */
-@media screen and (max-width: 768px) {
     .dropdown {
-        display: block; /* Ensure the dropdown appears as a block */
-        position: static; /* Reset position for stacking items */
+        position: relative;
     }
-    
+
     .dropdown-content {
-        position: static; /* Change position to static for stacking items */
-        width: 100%; /* Full width on smaller screens */
-        box-shadow: none; /* Remove box shadow */
-        background-color: #35bdbd; /* Transparent background */
+        display: none;
+        position: absolute;
+        z-index: 1;
+        background-color: #35bdbd;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        width: max-content;
+        /* Adjust width as needed */
     }
-    
-    .sub-dropdown {
-        position: static; /* Static position for sub-dropdown items */
+
+    .dropdown-content .sub-dropdown {
+        position: relative;
     }
-    
+
     .sub-dropdown-content {
-        display: none; /* Hide sub-dropdown content by default */
-        position: static; /* Adjust po#03b1af !importantsition to stack below main dropdown */
-        width: 100%; /* Full width */
-        box-shadow: none; /* Remove box shadow */
-        background-color: #3b5d5f; /* Background color for sub-dropdown */
+        display: none;
+        position: absolute;
+        margin-left: 3px;
+        top: 0;
+        left: 100%;
+        /* Position the sub-dropdown to the right of the main dropdown */
+        background-color: #3b5d5f;
+        border-radius: 4px;
+        min-width: 200px;
+        /* Adjust width as needed */
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     }
-    
-    .sub-dropdown:hover .sub-dropdown-content {
-        display: block; /* Display sub-dropdown on hover */
+
+    /* Hover effect for desktop */
+    .sub-dropdown:hover .sub-dropdown-content,
+    .dropdown:hover .dropdown-content {
+        display: block;
     }
-}
 
+    .dropdown-content a,
+    .sub-dropdown-content a {
+        color: white;
+        font-size: 12px;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
 
+    .dropdown-content a:hover,
+    .sub-dropdown-content a:hover {
+        background-color: #ddd;
+    }
+
+    /* Media query for smaller screens */
+    @media screen and (max-width: 768px) {
+        .dropdown {
+            display: block;
+            /* Ensure the dropdown appears as a block */
+            position: static;
+            /* Reset position for stacking items */
+        }
+
+        .dropdown-content {
+            position: static;
+            /* Change position to static for stacking items */
+            width: 100%;
+            /* Full width on smaller screens */
+            box-shadow: none;
+            /* Remove box shadow */
+            background-color: #35bdbd;
+            /* Transparent background */
+        }
+
+        .sub-dropdown {
+            position: static;
+            /* Static position for sub-dropdown items */
+        }
+
+        .sub-dropdown-content {
+            display: none;
+            /* Hide sub-dropdown content by default */
+            position: static;
+            /* Adjust po#03b1af !importantsition to stack below main dropdown */
+            width: 100%;
+            /* Full width */
+            box-shadow: none;
+            /* Remove box shadow */
+            background-color: #3b5d5f;
+            /* Background color for sub-dropdown */
+        }
+
+        .sub-dropdown:hover .sub-dropdown-content {
+            display: block;
+            /* Display sub-dropdown on hover */
+        }
+    }
 </style>
 
 <nav class="navbar" style="background-color: #0A926D">
-   <img rel="icon" src="{% static 'main/img/favicon.png' %}" type="image/png">
-    <div class="logos"> 
+    <img rel="icon" src="{% static 'main/img/favicon.png' %}" type="image/png">
+    <div class="logos">
         <ul class="navList">
             <div class="menu-icon" onclick="toggleNavbar()">
                 &#9776;
@@ -99,16 +115,16 @@
                     <a href="https://dc48k.org/about-us/">Our History</a>
                     <div class="sub-dropdown">
                         <a href="https://dc48k.org/about-us/">Our Team</a>
-                        <div class="sub-dropdown-content">                      
+                        <div class="sub-dropdown-content">
                             <a href="#">Local Leadership</a>
-                            <a href="#">Global Leadership</a> 
+                            <a href="#">Global Leadership</a>
                         </div>
                     </div>
                     <div class="sub-dropdown">
                         <a href="#">Structure</a>
-                        <div class="sub-dropdown-content">                      
+                        <div class="sub-dropdown-content">
                             <a href="https://dc48k.org/governance/">Our Governance</a>
-                            <a href="https://dc48k.org/governance/">Global Administration</a> 
+                            <a href="https://dc48k.org/governance/">Global Administration</a>
                             <a href="https://dc48k.org/governance/">Ward Administration</a>
 
                         </div>
@@ -116,79 +132,75 @@
                 </div>
             </li>
             <li class="dropdown">
-                <li class="dropdown">
-                    <a href="https://dc48k.org/" class="navLin">SERVICES</a>
-                    <div class="dropdown-content">
-                        <!-- Consular Assistance -->
-                        <div class="sub-dropdown">
-                            <a href="#">Consular Assistance</a>
-                            <div class="sub-dropdown-content">
-                                <a href="#">Information and Updates</a>
-                                <a href="#">Legal and Immigration Guidance</a>
-                            </div>
-                        </div>
-                
-                        <!-- Document Services -->
-                        <div class="sub-dropdown">
-                            <a href="{% url 'main:services_spa' %}">Document Services</a>
-                            <div class="sub-dropdown-content">
-                                <a href="{% url 'main:services_spa' %}#application">Issuance of Certificates</a>
-                                <a href="{% url 'main:services_spa' %}#application">Document Legalization and Authentication</a>
-                            </div>
-                        </div>
-                
-                        <!-- Community Support -->
-                        <div class="sub-dropdown">
-                            <a href="{% url 'home' %}">Community Support</a>
-                            <div class="sub-dropdown-content">
-                                <a href="#">Forums and Networking</a>
-                                <a href="#">Community Events</a>
-                            </div>
-                        </div>
-                
-                        <!-- Healthcare Information -->
-                        <div class="sub-dropdown">
-                            <!-- Direct link to internal healthcare page -->
-                            <a href="/data/healthcare-info/">Healthcare Information</a>
-                            <div class="sub-dropdown-content">
-                                <!-- Anchor links into the healthcare page for quick access -->
-                                <a href="/data/healthcare-info/#healthcare-services">Healthcare Services</a>
-                                <a href="/data/healthcare-info/#health-insurance">Health Insurance Options</a>
-                            </div>
-                        </div>
-                
-                        <!-- Financial Services -->
-                        <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Financial Services</a>
-                            <div class="sub-dropdown-content">
-                                <a href="#">Banking and Investment</a>
-                                <a href="#">Remittances and Investments</a>
-                            </div>
-                        </div>
-                
-                        <!-- Crisis Management -->
-                        <div class="sub-dropdown">
-                            <a href="{% url 'main:crisis_page' %}">Crisis Management</a>
-                            <div class="sub-dropdown-content">
-                                <a href="#">Emergency Response</a>
-                                <a href="#">Advisories</a>
-                            </div>
-                        </div>
-                
-                        <!-- Education and Training -->
-                        <div class="sub-dropdown">
-                            <a href="{% url 'main:education_landing' %}">Education and Training</a>
-                            <div class="sub-dropdown-content">
-                                <a href="{% url 'main:scholarship_search' %}">Scholarships</a>
-                                <a href="{% url 'main:education_landing' %}">Training Sessions</a>
-                            </div>
+                <a href="{% url 'main:our_service' %}" class="navLin">SERVICES</a>
+                <div class="dropdown-content">
+                    <!-- Consular Assistance -->
+                    <div class="sub-dropdown">
+                        <a href="#">Consular Assistance</a>
+                        <div class="sub-dropdown-content">
+                            <a href="#">Information and Updates</a>
+                            <a href="#">Legal and Immigration Guidance</a>
                         </div>
                     </div>
-                </li>
-                
-            
-            <!-- <li><a href="https://dc48k.org/membership/" class="navLin">MEMBERSHIP</a></li> -->
-           
+
+                    <!-- Document Services -->
+                    <div class="sub-dropdown">
+                        <a href="{% url 'main:services_spa' %}">Document Services</a>
+                        <div class="sub-dropdown-content">
+                            <a href="{% url 'main:services_spa' %}#application">Issuance of Certificates</a>
+                            <a href="{% url 'main:services_spa' %}#application">Document Legalization and
+                                Authentication</a>
+                        </div>
+                    </div>
+
+                    <!-- Community Support -->
+                    <div class="sub-dropdown">
+                        <a href="{% url 'home' %}">Community Support</a>
+                        <div class="sub-dropdown-content">
+                            <a href="#">Forums and Networking</a>
+                            <a href="#">Community Events</a>
+                        </div>
+                    </div>
+
+                    <!-- Healthcare Information -->
+                    <div class="sub-dropdown">
+                        <!-- Direct link to internal healthcare page -->
+                        <a href="/data/healthcare-info/">Healthcare Information</a>
+                        <div class="sub-dropdown-content">
+                            <!-- Anchor links into the healthcare page for quick access -->
+                            <a href="/data/healthcare-info/#healthcare-services">Healthcare Services</a>
+                            <a href="/data/healthcare-info/#health-insurance">Health Insurance Options</a>
+                        </div>
+                    </div>
+
+                    <!-- Financial Services -->
+                    <div class="sub-dropdown">
+                        <a href="https://dc48k.org/">Financial Services</a>
+                        <div class="sub-dropdown-content">
+                            <a href="#">Banking and Investment</a>
+                            <a href="#">Remittances and Investments</a>
+                        </div>
+                    </div>
+
+                    <!-- Crisis Management -->
+                    <div class="sub-dropdown">
+                        <a href="{% url 'main:crisis_page' %}">Crisis Management</a>
+                        <div class="sub-dropdown-content">
+                            <a href="#">Emergency Response</a>
+                            <a href="#">Advisories</a>
+                        </div>
+                    </div>
+
+                    <!-- Education and Training -->
+                    <div class="sub-dropdown">
+                        <a href="{% url 'main:education_landing' %}">Education and Training</a>
+                        <div class="sub-dropdown-content">
+                            <a href="{% url 'main:scholarship_search' %}">Scholarships</a>
+                            <a href="{% url 'main:education_landing' %}">Training Sessions</a>
+                        </div>
+                    </div>
+                </div>
+            </li>
             <li><a href="https://dc48k.org/news/" class="navLin">NEWS</a></li>
             <li><a href="{% url 'accounts:membership_registration' %}" class="navLin">MEMBERSHIP</a></li>
             <li><a href="https://dc48k.org/contact/" class="navLin">CONTACT US</a></li>
@@ -198,7 +210,7 @@
                     <a href="https://dc48k.org/support/">Donate</a>
                     <a href="https://dc48k.org/support/">Become Volunteer</a>
                     <a href="https://dc48k.org/support/">Get Help</a>
-                    
+
                 </div>
             </li>
             {% if user.is_authenticated %}
@@ -215,12 +227,12 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         const dropdowns = document.querySelectorAll('.dropdown');
         let activeDropdown = null;
 
         dropdowns.forEach(dropdown => {
-            dropdown.addEventListener('mouseenter', function() {
+            dropdown.addEventListener('mouseenter', function () {
                 if (activeDropdown) {
                     activeDropdown.querySelector('.dropdown-content').style.display = 'none';
                 }
@@ -228,7 +240,7 @@
                 activeDropdown = this;
             });
 
-            dropdown.addEventListener('mouseleave', function(event) {
+            dropdown.addEventListener('mouseleave', function (event) {
                 // Use a timeout to handle the transition smoothly
                 setTimeout(() => {
                     const relatedTarget = event.relatedTarget;
@@ -240,7 +252,7 @@
             });
         });
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             if (activeDropdown && !activeDropdown.contains(event.target)) {
                 activeDropdown.querySelector('.dropdown-content').style.display = 'none';
                 activeDropdown = null;

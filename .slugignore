@@ -1,5 +1,8 @@
+#<<<<<<< 26.01_DC48_UAT_UO
+#=======
 #<<<<<<< 26.01_DC48_UAT_ND
 
+#>>>>>>> 25.11_DC48K_UAT_GN
 # Python
 __pycache__
 *.pyc
@@ -10,39 +13,65 @@ __pycache__
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+staticfiles/
+media/
 
-# Virtual Environment (if accidentally committed)
+# Virtual Environment
 dc48k_venv/
 venv/
 env/
 .venv/
 
 # Tests and Coverage
-tests/
+**/tests/
+**/test/
 htmlcov/
 .coverage
 .tox/
 .nox/
+pytest.ini
+tox.ini
 
 # Documentation
 docs/
 *.md
 !README.md
+README.md
+TESTING.md
 
-# Static/Media (Generated/User Uploaded)
-# Usually we want to keep staticfiles/ if we are not running collectstatic, but Heroku runs it.
-# If we store media on S3, we don't need media/
-media/
-staticfiles/
+# Application specific large files
+main/static/main/img/background/swiper1.jpg
+main/static/main/img/background/swiper2.jpg
+main/static/main/img/background/swiper3.jpg
+main/static/main/img/background/sta.png
+main/static/main/img/background/issue.png
+communities/static/community/img/img1.png
+communities/static/community/img/img2.png
+communities/static/community/img/img3.png
+# Keep media/services/ for now as it doesn't seem to cause build issues but check size later if needed
+
+# Node/Static
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+package.json
 
 # Other
 .DS_Store
 .idea/
 .vscode/
-node_modules/
-npm-debug.log
-yarn-error.log
 *.log
+#<<<<<<< 26.01_DC48_UAT_UO
+.git
+.gitignore
+backup.json
+migrate-all.sh
+token.json
+django
+db.sqlite3
+dc48k_venv/
+#=======
 #=======
 # Exclude test files and directories
 */tests/
@@ -92,4 +121,5 @@ config/
 marketplace/
 payments/
 schoralship/
+#>>>>>>> 25.11_DC48K_UAT_GN
 #>>>>>>> 25.11_DC48K_UAT_GN

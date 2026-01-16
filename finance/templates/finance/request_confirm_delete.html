@@ -1,0 +1,33 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<main class="mx-auto pb-16 pt-8">
+    <div class="max-w-lg mx-auto px-4">
+        <div class="bg-white p-8 rounded-xl shadow-lg border border-red-100">
+            <div class="text-center mb-6">
+                <!-- Warning Icon -->
+                <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h2 class="text-2xl font-bold text-gray-800 mt-2">Cancel Request?</h2>
+                <p class="text-gray-600 mt-2">Are you sure you want to cancel your request for <strong>{{
+                        item.get_service_type_display }}</strong>?</p>
+                <p class="text-sm text-red-500 mt-1">This action cannot be undone.</p>
+            </div>
+
+            <form method="post" class="flex justify-center space-x-4">
+                {% csrf_token %}
+                <a href="{% url 'finance:planning_list' %}"
+                    class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition duration-300 transform hover:scale-105">
+                    Go Back
+                </a>
+                <button type="submit"
+                    class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition duration-300 shadow-md transform hover:scale-105">
+                    Yes, Cancel Request
+                </button>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock content %}

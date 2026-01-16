@@ -1,0 +1,457 @@
+{% extends "main/base_templates/base.html"%}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal & Immigration Guidance | Diaspora County 48</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        /* Custom Colors */
+        .text-brand-blue {
+            color: #1e40af;
+        }
+
+        .bg-brand-blue {
+            background-color: #1e40af;
+        }
+
+        .border-brand-blue {
+            border-color: #1e40af;
+        }
+
+        .text-brand-green {
+            color: #0a926d;
+        }
+
+        .bg-brand-green {
+            background-color: #0a926d;
+        }
+
+        .border-brand-green {
+            border-color: #0a926d;
+        }
+
+        /* Red Accent (For Logo/CTA highlights) */
+        .text-brand-red {
+            color: #cc0000;
+        }
+
+        .bg-brand-red {
+            background-color: #cc0000;
+        }
+
+        /* Highlight Cyan color for titles */
+        .text-highlight-cyan {
+            color: #00cccc;
+        }
+
+        .main-heading {
+            font-weight: 900;
+        }
+
+        /* Service Block Styling */
+        .service-block {
+            margin-bottom: 4rem;
+            padding: 2rem;
+            border-radius: 1rem;
+            transition: all 0.3s ease-in-out;
+            border: 1px solid transparent;
+        }
+
+        .service-block:hover {
+            border-color: #0a926d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom List Styling (for service details) */
+        .service-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            /* Bullet point color remains High-Contrast Red (#cc0000) */
+            background-color: #cc0000;
+            border-radius: 50%;
+        }
+
+        /* Custom Loading Indicator Style for images */
+        .loading-placeholder {
+            min-height: 250px;
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse-custom {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Style for anchor target to fix offset from sticky header */
+        .service-block:target {
+            padding-top: 5rem;
+            margin-top: -5rem;
+            /* Adjust for the sticky header height */
+        }
+
+        /* Custom Nav Styling for desktop links */
+        .nav-link {
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            /* text-sm */
+            font-weight: 500;
+            /* font-medium */
+            transition: all 0.15s ease-in-out;
+            white-space: nowrap;
+            /* Prevents wrapping */
+            text-transform: uppercase;
+            /* Match screenshot */
+        }
+
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+
+        .nav-link.current-page {
+            font-weight: 700;
+        }
+
+        /* Hero Styling for background image and overlay */
+        #hero-background {
+            background-color: #1e40af;
+            background-image: url('{% static "main/img/backgroundimage.png" %}');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <script>
+        window.onload = function () {
+            // --- Mobile Menu Toggle Script ---
+            const button = document.getElementById('mobile-menu-button');
+            const menu = document.getElementById('mobile-menu');
+            if (button && menu) {
+                button.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
+            }
+        };
+    </script>
+
+    <main class="mx-auto pb-16">
+
+        <!-- HERO SECTION START: Full-width background image with dark overlay and centered text -->
+        <header id="hero-section"
+            class="relative min-h-[600px] flex items-center justify-center text-center shadow-2xl">
+            <!-- Image/Overlay Container (will hold the generated background image) -->
+            <div id="hero-background" class="absolute inset-0 bg-cover bg-center">
+                <!-- Dark Overlay for Readability -->
+                <div class="absolute inset-0 bg-black opacity-75"></div>
+            </div>
+
+            <!-- Content (Center-aligned, Z-indexed above the overlay) -->
+            <div class="relative z-10 max-w-4xl mx-auto px-4 py-16">
+                <!-- UPDATED MAIN HEADING -->
+                <h1 class="text-5xl sm:text-7xl main-heading text-white mb-4 leading-tight drop-shadow-lg">
+                    OUR SERVICES
+                </h1>
+                <!-- UPDATED SUBTITLE -->
+                <p class="text-xl sm:text-2xl text-gray-200 mb-10 font-medium max-w-2xl mx-auto drop-shadow-md">
+                    Connecting, protecting, and empowering Kenyans worldwide with services tailored to your unique
+                    global needs.
+                </p>
+                <!-- UPDATED CTA BUTTON TEXT -->
+                <a href="#"
+                    class="open-expert-modal inline-block px-8 py-4 bg-brand-red text-white font-bold text-xl rounded-lg shadow-2xl transition duration-300 transform hover:scale-[1.05] hover:bg-red-700 uppercase tracking-wider">
+                    GET IN TOUCH
+                </a>
+            </div>
+        </header>
+        <!-- HERO SECTION END -->
+
+        <!-- BREADCRUMB NAVIGATION START -->
+        <section id="breadcrumb" class="bg-gray-100 py-4 shadow-sm">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-lg flex items-center">
+                <!-- Previous Page Link -->
+                <a href="#" class="text-brand-blue hover:underline transition duration-150 font-medium">Home</a>
+
+                <!-- Separator -->
+                <span class="text-gray-400 mx-2">/</span>
+
+                <!-- Current Page -->
+                <span class="text-brand-green font-semibold">Our Services</span>
+            </div>
+        </section>
+        <!-- BREADCRUMB NAVIGATION END -->
+
+
+        <!-- Empowering Kenyans Abroad Section - NEW MISSION FOCUS -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-12 text-center">
+            <h2 class="text-4xl main-heading text-gray-800 mb-4">Our Mission: Essential Support for the Global Kenyan
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Diaspora County 48 (DC48K) is dedicated to being the essential link for all Kenyans living abroad. We
+                offer comprehensive support—from **consular and crisis management** to **financial and community
+                services**—ensuring you have the security, resources, and peace of mind to thrive globally while staying
+                connected to home.
+            </p>
+        </section>
+
+        <!-- SERVICES DETAILED BLOCKS (Dynamic Loop) -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            {% for service in services %}
+            <div id="{{ service.slug }}"
+                class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-white shadow-md">
+
+                <!-- Logic for Alternating Layout (Odd = Image Left, Even = Image Right) -->
+                {% if forloop.counter|divisibleby:2 %}
+                <!-- EVEN: Content Left, Image Right -->
+                <div class="lg:order-1">
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">{{ service.title }}</h3>
+                    <p class="text-gray-700 mb-6">{{ service.description }}</p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        {% for sub in service.subservices.all %}
+                        <li>{{ sub.title }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- CTA Button -->
+                    {% if service.cta_link == '#' %}
+                    <a href="#"
+                        class="open-expert-modal mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        {{ service.cta_text }}
+                    </a>
+                    {% else %}
+                    <a href="{% if ':' in service.cta_link %}{% url service.cta_link %}{% elif service.cta_link == 'home' %}{% url 'home' %}{% else %}{{ service.cta_link }}{% endif %}"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        {{ service.cta_text }}
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="lg:order-2">
+                    <img src="{% static 'main/img/services/' %}{{ service.image.name | cut:'services/' }}"
+                        alt="{{ service.title }}" class="w-full rounded-xl shadow-lg object-cover"
+                        onerror="this.src='{{ service.image.url }}'; this.onerror=null;">
+                </div>
+
+                {% else %}
+                <!-- ODD: Image Left, Content Right -->
+                <div class="lg:order-1">
+                    <img src="{% static 'main/img/services/' %}{{ service.image.name | cut:'services/' }}"
+                        alt="{{ service.title }}" class="w-full rounded-xl shadow-lg object-cover"
+                        onerror="this.src='{{ service.image.url }}'; this.onerror=null;">
+                </div>
+                <div class="lg:order-2">
+                    <h3 class="text-3xl font-extrabold text-brand-green mb-4">{{ service.title }}</h3>
+                    <p class="text-gray-700 mb-6">{{ service.description }}</p>
+                    <ul class="service-list text-gray-600 mb-8">
+                        {% for sub in service.subservices.all %}
+                        <li>{{ sub.title }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- CTA Button -->
+                    {% if service.cta_link == '#' %}
+                    <a href="#"
+                        class="open-expert-modal mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        {{ service.cta_text }}
+                    </a>
+                    {% else %}
+                    <a href="{% if ':' in service.cta_link %}{% url service.cta_link %}{% elif service.cta_link == 'home' %}{% url 'home' %}{% else %}{{ service.cta_link }}{% endif %}"
+                        class="mt-4 inline-block px-6 py-3 bg-brand-blue text-white font-bold text-lg rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] hover:bg-[#16317b] uppercase tracking-wider">
+                        {{ service.cta_text }}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+    </main>
+
+    <!-- Contact Experts Modal -->
+    <div id="expert-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-brand-blue px-6 py-4 flex justify-between items-center">
+                <h3 class="text-white text-xl font-bold">Contact Our Experts</h3>
+                <button id="close-modal-btn" class="text-white hover:text-gray-200 focus:outline-none">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <!-- Contact Info -->
+                <div class="mb-6 text-center border-b pb-4">
+                    <p class="text-gray-600 mb-2"><i class="fas fa-envelope text-brand-green mr-2"></i>experts@dc48k.org
+                    </p>
+                    <p class="text-gray-600"><i class="fas fa-phone text-brand-green mr-2"></i>+1-555-0199</p>
+                </div>
+
+                <!-- Form -->
+                <form id="expert-contact-form">
+                    {% csrf_token %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Service Required</label>
+                            <select name="service_type" required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue">
+                                <option value="consular_assistance">Consular Assistance</option>
+                                <option value="crisis_management">Crisis Management</option>
+                                <option value="legal_aid">Legal Aid</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Your Location</label>
+                            <input type="text" name="location" placeholder="e.g., London, UK" required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Urgency Level</label>
+                            <select name="urgency" required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue">
+                                <option value="normal">Normal</option>
+                                <option value="urgent" class="text-red-600 font-bold">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Short Message</label>
+                            <textarea name="message" rows="3" placeholder="Briefly describe your situation..." required
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue"></textarea>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-brand-green text-white font-bold py-3 rounded-lg shadow hover:bg-green-700 transition duration-300">
+                            Send Request <i class="fas fa-paper-plane ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success Message (Hidden by default) -->
+                <div id="success-message" class="hidden text-center py-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                        <i class="fas fa-check text-3xl text-green-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 mb-2">Request Sent!</h4>
+                    <p class="text-gray-600">Our experts will contact you shortly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('expert-modal');
+            const openBtns = document.querySelectorAll('.open-expert-modal'); // Select all buttons with this class
+            const closeBtn = document.getElementById('close-modal-btn');
+            const form = document.getElementById('expert-contact-form');
+            const successMsg = document.getElementById('success-message');
+
+            // Open Modal - Attach event to ALL trigger buttons
+            openBtns.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                });
+            });
+
+            // Close Modal
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                // Reset form state after delay
+                setTimeout(() => {
+                    form.reset();
+                    form.classList.remove('hidden');
+                    successMsg.classList.add('hidden');
+                }, 300);
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+
+            // Close on click outside
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Handle Form Submission
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+
+                fetch("{% url 'main:contact_expert' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            form.classList.add('hidden');
+                            successMsg.classList.remove('hidden');
+                            setTimeout(closeModal, 3000); // Auto close after 3 seconds
+                        } else {
+                            alert('Error submitting request. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An unexpected error occurred.');
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>
+{% endblock %}

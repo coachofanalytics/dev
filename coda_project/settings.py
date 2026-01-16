@@ -16,7 +16,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(BASE_DIR)
 
-SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf')
 # SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = True
@@ -33,7 +33,7 @@ AUTH_USER_MODEL = "accounts.CustomerUser"
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    # 'allauth.account.auth_backends.AuthenticationBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 # Application definition
 INSTALLED_APPS = [
@@ -56,11 +56,11 @@ INSTALLED_APPS = [
     # "django_filters",
     # "django_celery_beat",
     # "django_celery_results",
-    # "allauth",
-    # "allauth.account",
-    # "allauth.socialaccount",
-    # "allauth.socialaccount.providers.google",
-    # "allauth.socialaccount.providers.facebook",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.facebook",
     # "django_crontab",
     'memberjoin',
     'communities'
@@ -85,7 +85,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    # 'allauth.account.middleware.AccountMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
 
 ]
@@ -180,20 +180,27 @@ host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #h
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "codadev_local",
-        "USER": "postgres",
-        "PASSWORD": "123",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "codadev_local",
+#         "USER": "postgres",
+#         "PASSWORD": "123",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
 import sys
 if 'test' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'coda_dev'
     }
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
 db_from_env = dj_database_url.config(conn_max_age=600)
@@ -372,3 +379,8 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
+
+# TEST SETTINGS OVERRIDE
+if 'test' in sys.argv:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    print("TEST MODE: Using StaticFilesStorage to avoid manifest errors.")

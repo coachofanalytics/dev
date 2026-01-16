@@ -4,26 +4,105 @@
 {% block content %}
 
 <!-- Include Tailwind CDN and Inter font locally in the page to match the requested UI -->
-<script src="https://cdn.tailwindcss.com"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; color: #1f2937; }
-    .text-brand-blue { color: #1e40af; }
-    .bg-brand-blue { background-color: #1e40af; }
-    .text-brand-green { color: #0a926d; }
-    .bg-brand-green { background-color: #0a926d; }
-    .text-brand-red { color: #cc0000; }
-    .bg-brand-red { background-color: #cc0000; }
-    .main-heading { font-weight: 900; }
-    .service-block { margin-bottom: 4rem; padding-top: 2rem; padding-bottom: 2rem; }
-    .service-list li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
-    .service-list li::before { content: ''; position: absolute; left: 0; top: 0.5rem; width: 0.5rem; height: 0.5rem; background-color: #1e40af; border-radius: 50%; }
-    .loading-placeholder { min-height: 280px; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-weight: 600; }
-    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
-    .animate-pulse-custom { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
-    .hero-image-container { overflow: hidden; display:flex; align-items:center; justify-content:center; }
-    .hero-image-container img { width:100%; height:100%; object-fit:cover; }
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f0f4f8;
+        color: #1f2937;
+    }
+
+    .text-brand-blue {
+        color: #1e40af;
+    }
+
+    .bg-brand-blue {
+        background-color: #1e40af;
+    }
+
+    .text-brand-green {
+        color: #0a926d;
+    }
+
+    .bg-brand-green {
+        background-color: #0a926d;
+    }
+
+    .text-brand-red {
+        color: #cc0000;
+    }
+
+    .bg-brand-red {
+        background-color: #cc0000;
+    }
+
+    .main-heading {
+        font-weight: 900;
+    }
+
+    .service-block {
+        margin-bottom: 4rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    .service-list li {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .service-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background-color: #1e40af;
+        border-radius: 50%;
+    }
+
+    .loading-placeholder {
+        min-height: 280px;
+        background-color: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .animate-pulse-custom {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .hero-image-container {
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hero-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 </style>
 
 <!-- Main content (hero, sections, and JS-powered scholarship/training app) -->
@@ -32,13 +111,16 @@
 
     <main class="mx-auto pb-16">
         <!-- Mentorship success modal (shows after successful form submission) -->
-        <div id="mentorship-success-modal" role="dialog" aria-modal="true" aria-labelledby="mentorship-success-title" style="display:none;">
+        <div id="mentorship-success-modal" role="dialog" aria-modal="true" aria-labelledby="mentorship-success-title"
+            style="display:none;">
             <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                 <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 mx-4">
                     <h2 id="mentorship-success-title" class="text-xl font-semibold text-gray-900 mb-2">Thank you</h2>
-                    <p class="text-gray-700 mb-4">Thank you for your request — we will review it and get back to you shortly.</p>
+                    <p class="text-gray-700 mb-4">Thank you for your request — we will review it and get back to you
+                        shortly.</p>
                     <div class="text-right">
-                        <button id="mentorship-success-close" class="bg-brand-blue text-white px-4 py-2 rounded">Close</button>
+                        <button id="mentorship-success-close"
+                            class="bg-brand-blue text-white px-4 py-2 rounded">Close</button>
                     </div>
                 </div>
             </div>
@@ -47,28 +129,39 @@
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
                 <div class="p-8 md:p-12 lg:p-16">
                     <h1 class="text-5xl main-heading mb-4">EDUCATION & TRAINING</h1>
-                    <h2 class="text-xl font-medium text-gray-200 mb-8">Empower your future with access to scholarships, professional development, and skills training tailored for global success.</h2>
-                    <a href="#" onclick="setView('scholarship'); return false;" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300">FIND YOUR SCHOLARSHIP</a>
+                    <h2 class="text-xl font-medium text-gray-200 mb-8">Empower your future with access to scholarships,
+                        professional development, and skills training tailored for global success.</h2>
+                    <a href="#" onclick="setView('scholarship'); return false;"
+                        class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300">FIND
+                        YOUR SCHOLARSHIP</a>
                 </div>
                 <div class="w-full h-full hero-image-container">
-                    <img id="image-hero" src="{% static 'main/img/education/education-hero.jpg' %}" alt="Education Hero" class="w-full h-full object-cover loading-placeholder" style="max-height:400px; min-height:400px;">
+                    <img id="image-hero" src="{% static 'main/img/education/education-hero.jpg' %}" alt="Education Hero"
+                        class="w-full h-full object-cover loading-placeholder"
+                        style="max-height:400px; min-height:400px;">
                 </div>
             </div>
         </header>
 
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
             <h3 class="text-4xl main-heading text-gray-800 mb-4">Invest in Your Skills and Knowledge</h3>
-            <p class="text-xl text-gray-600 max-w-4xl mx-auto">Whether you are seeking advanced degrees, vocational training, or resources for your children, we bridge the gap by connecting you to vetted educational opportunities and funding.</p>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto">Whether you are seeking advanced degrees, vocational
+                training, or resources for your children, we bridge the gap by connecting you to vetted educational
+                opportunities and funding.</p>
         </section>
 
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div id="scholarships-landing" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div class="lg:order-1">
-                    <img id="image-scholarships" src="{% static 'main/img/education/scholarships.jpg' %}" alt="Scholarships and Financial Aid Image" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                    <img id="image-scholarships" src="{% static 'main/img/education/scholarships.jpg' %}"
+                        alt="Scholarships and Financial Aid Image"
+                        class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
                 </div>
                 <div class="lg:order-2">
                     <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Scholarships and Financial Aid</h3>
-                    <p class="text-gray-700 mb-6">We maintain a comprehensive, verified database of scholarships, grants, and financial aid specifically available to diaspora students globally and those studying in Kenya.</p>
+                    <p class="text-gray-700 mb-6">We maintain a comprehensive, verified database of scholarships,
+                        grants, and financial aid specifically available to diaspora students globally and those
+                        studying in Kenya.</p>
                     <ul class="service-list text-gray-600">
                         <li>Database of international and Kenyan university scholarships</li>
                         <li>Guidance on application processes and essay writing for aid</li>
@@ -76,7 +169,9 @@
                         <li>Assistance with foreign credential recognition and equivalency</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="#" onclick="setView('scholarship'); return false;" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">View Scholarship Database</a>
+                        <a href="#" onclick="setView('scholarship'); return false;"
+                            class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">View
+                            Scholarship Database</a>
                     </div>
                 </div>
             </div>
@@ -84,7 +179,9 @@
             <div id="training-sessions" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div class="lg:order-1">
                     <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Professional Training and Skills</h3>
-                    <p class="text-gray-700 mb-6">Access continuous professional development programs, vocational training, and mentorship to enhance career prospects and facilitate re-entry into the Kenyan job market.</p>
+                    <p class="text-gray-700 mb-6">Access continuous professional development programs, vocational
+                        training, and mentorship to enhance career prospects and facilitate re-entry into the Kenyan job
+                        market.</p>
                     <ul class="service-list text-gray-600">
                         <li>Exclusive webinars and workshops on digital skills and entrepreneurship</li>
                         <li>Mentorship programs connecting diaspora professionals</li>
@@ -92,11 +189,15 @@
                         <li>Career advisory and job placement assistance networks</li>
                     </ul>
                     <div class="mt-6">
-                        <a id="register-courses-btn" href="{% url 'main:course_register' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">Register for Upcoming Courses</a>
+                        <a id="register-courses-btn" href="{% url 'main:course_register' %}"
+                            class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">Register
+                            for Upcoming Courses</a>
                     </div>
                 </div>
                 <div class="lg:order-2">
-                    <img id="image-training" src="{% static 'main/img/education/training.jpg' %}" alt="Professional Training Image" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                    <img id="image-training" src="{% static 'main/img/education/training.jpg' %}"
+                        alt="Professional Training Image"
+                        class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
                 </div>
             </div>
 
@@ -105,8 +206,11 @@
 
             <div class="bg-brand-blue text-white p-8 md:p-12 rounded-xl shadow-2xl mt-16 text-center">
                 <h3 class="text-4xl font-extrabold mb-3">SEEKING CAREER GUIDANCE?</h3>
-                <p class="text-xl text-gray-200 mb-6">Connect with a Diaspora County 48 career mentor for personalized advice on global career transitions and opportunities back home.</p>
-                <a href="{% url 'main:request_mentorship' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">Request Mentorship Session</a>
+                <p class="text-xl text-gray-200 mb-6">Connect with a Diaspora County 48 career mentor for personalized
+                    advice on global career transitions and opportunities back home.</p>
+                <a href="{% url 'main:request_mentorship' %}"
+                    class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">Request
+                    Mentorship Session</a>
             </div>
         </section>
     </main>
@@ -133,8 +237,8 @@
 
         // Small mock lists and renderers to provide the interactive experience without backend changes
         const MOCK_SCHOLARSHIPS = [
-            { id:1, title: 'Global STEM Masters Fellowship', provider: 'The Diaspora Foundation', level: 'Masters', field: 'STEM', location: 'Global', deadline: '2025-11-15', amount: '$50,000', status: 'Open' },
-            { id:2, title: 'Kenyan Undergraduate Merit Grant', provider: 'County 48 Education Trust', level: 'Undergraduate', field: 'Humanities', location: 'Kenya', deadline: '2025-09-30', amount: 'KES 500,000', status: 'Closing Soon' }
+            { id: 1, title: 'Global STEM Masters Fellowship', provider: 'The Diaspora Foundation', level: 'Masters', field: 'STEM', location: 'Global', deadline: '2025-11-15', amount: '$50,000', status: 'Open' },
+            { id: 2, title: 'Kenyan Undergraduate Merit Grant', provider: 'County 48 Education Trust', level: 'Undergraduate', field: 'Humanities', location: 'Kenya', deadline: '2025-09-30', amount: 'KES 500,000', status: 'Closing Soon' }
         ];
 
         function renderScholarships() {
@@ -153,8 +257,8 @@
         }
 
         const MOCK_COURSES = [
-            { id:101, title: 'Modern Web Development (React & Node)', category: 'Digital Skills', duration: '12 Weeks', format: 'Online Live', enrollment: 'Open', start: '2025-11-01' },
-            { id:102, title: 'Financial Literacy for Diaspora Investors', category: 'Finance & Business', duration: '4 Weeks', format: 'Online Self-Paced', enrollment: 'Closing Soon', start: '2025-10-25' }
+            { id: 101, title: 'Modern Web Development (React & Node)', category: 'Digital Skills', duration: '12 Weeks', format: 'Online Live', enrollment: 'Open', start: '2025-11-01' },
+            { id: 102, title: 'Financial Literacy for Diaspora Investors', category: 'Finance & Business', duration: '4 Weeks', format: 'Online Self-Paced', enrollment: 'Closing Soon', start: '2025-10-25' }
         ];
 
         function renderCourses() {
@@ -172,7 +276,7 @@
             container.appendChild(wrapper);
         }
 
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', function () {
             // Render initial selections
             if (initialView === 'scholarship') {
                 setView('scholarship');
@@ -198,33 +302,33 @@
 
     <script>
         // Show mentorship success modal if the view was passed a success flag
-        (function(){
+        (function () {
             const show = "{{ mentorship_success|yesno:'true,false' }}" === "true";
-            if(!show) return;
+            if (!show) return;
             const modal = document.getElementById('mentorship-success-modal');
             const close = document.getElementById('mentorship-success-close');
-            if(!modal) return;
+            if (!modal) return;
             modal.style.display = 'block';
             // focus the close button for accessibility
-            if(close) close.focus();
-            close && close.addEventListener('click', function(){
+            if (close) close.focus();
+            close && close.addEventListener('click', function () {
                 modal.style.display = 'none';
                 // remove the mentorship query param from the URL so refresh won't show the modal again
-                try{
+                try {
                     const url = new URL(window.location.href);
                     url.searchParams.delete('mentorship');
                     window.history.replaceState({}, document.title, url.pathname + url.search);
-                }catch(e){ /* ignore */ }
+                } catch (e) { /* ignore */ }
             });
         })();
     </script>
 
     <script>
         // Navigate to the dedicated Course Registration page when Register is clicked
-        (function(){
+        (function () {
             const btn = document.getElementById('register-courses-btn');
-            if(!btn) return;
-            btn.addEventListener('click', function(e){
+            if (!btn) return;
+            btn.addEventListener('click', function (e) {
                 // Ensure we always redirect to the full registration page
                 e.preventDefault();
                 window.location.href = btn.getAttribute('href');
@@ -235,30 +339,35 @@
     <!-- Floating Chatbot Widget: lightweight client-side mock (no external calls) -->
     <div id="dc48k-chatbot" class="fixed bottom-6 right-6 z-50">
         <button id="dc48k-chatbot-toggle" aria-label="Open chat" title="Ask the Education Assistant"
-                class="bg-brand-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue">
+            class="bg-brand-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue">
             Chat
         </button>
 
-    <div id="dc48k-chatbot-window" class="w-80 bg-white rounded-xl shadow-2xl mt-3 box-border" style="display:none; box-sizing: border-box;">
+        <div id="dc48k-chatbot-window" class="w-80 bg-white rounded-xl shadow-2xl mt-3 box-border"
+            style="display:none; box-sizing: border-box;">
             <div class="bg-brand-blue text-white px-4 py-3 flex items-center justify-between">
                 <div class="font-semibold">Education Assistant</div>
-                <button id="dc48k-chatbot-close" aria-label="Close chat" class="text-white opacity-90 hover:opacity-100">✕</button>
+                <button id="dc48k-chatbot-close" aria-label="Close chat"
+                    class="text-white opacity-90 hover:opacity-100">✕</button>
             </div>
             <div id="dc48k-chatbot-messages" class="p-3 h-56 overflow-auto text-sm bg-gray-50">
                 <!-- messages are appended here -->
                 <div class="text-gray-500 text-xs mb-2">Hi — ask me about scholarships, courses, or mentorship.</div>
             </div>
-            <form id="dc48k-chatbot-form" class="flex items-center border-t px-3 py-2 bg-white" action="javascript:void(0);">
+            <form id="dc48k-chatbot-form" class="flex items-center border-t px-3 py-2 bg-white"
+                action="javascript:void(0);">
                 <!-- min-w-0 prevents flex children from overflowing the container on narrow widths -->
-                <input id="dc48k-chatbot-input" type="text" placeholder="Type a question..." class="flex-1 min-w-0 mr-2 px-3 py-2 rounded-md border focus:outline-none" />
+                <input id="dc48k-chatbot-input" type="text" placeholder="Type a question..."
+                    class="flex-1 min-w-0 mr-2 px-3 py-2 rounded-md border focus:outline-none" />
                 <!-- flex-shrink-0 ensures the button keeps its size and isn't partially hidden -->
-                <button id="dc48k-chatbot-send" type="submit" class="flex-shrink-0 bg-brand-green text-white font-semibold px-3 py-2 rounded-md">Send</button>
+                <button id="dc48k-chatbot-send" type="submit"
+                    class="flex-shrink-0 bg-brand-green text-white font-semibold px-3 py-2 rounded-md">Send</button>
             </form>
         </div>
     </div>
 
     <script>
-        (function() {
+        (function () {
             const toggleBtn = document.getElementById('dc48k-chatbot-toggle');
             const win = document.getElementById('dc48k-chatbot-window');
             const closeBtn = document.getElementById('dc48k-chatbot-close');
@@ -294,7 +403,7 @@
                 return canned[Math.floor(Math.random() * canned.length)];
             }
 
-            toggleBtn.addEventListener('click', function() {
+            toggleBtn.addEventListener('click', function () {
                 if (win.style.display === 'none' || win.style.display === '') {
                     win.style.display = 'block';
                     input.focus();
@@ -303,11 +412,11 @@
                 }
             });
 
-            closeBtn.addEventListener('click', function() {
+            closeBtn.addEventListener('click', function () {
                 win.style.display = 'none';
             });
 
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const txt = input.value && input.value.trim();
                 if (!txt) return;
@@ -326,7 +435,7 @@
             });
 
             // close on Escape key when open
-            document.addEventListener('keydown', function(ev) {
+            document.addEventListener('keydown', function (ev) {
                 if (ev.key === 'Escape' && win.style.display === 'block') {
                     win.style.display = 'none';
                 }

@@ -73,7 +73,15 @@ class Feedback(models.Model):
 
 class Service(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='services/', blank=True, null=True)
+    ordering = models.PositiveIntegerField(default=0)
+    slug = models.SlugField(blank=True, null=True, help_text="Unique ID for anchors (e.g. 'consular', 'financial')")
+    cta_text = models.CharField(max_length=100, default="Learn More", blank=True, null=True, help_text="Text for the call-to-action button")
+    cta_link = models.CharField(max_length=255, default="#", blank=True, null=True, help_text="URL name or path for the button")
+
+    class Meta:
+        ordering = ['ordering']
 
     def __str__(self):
         return self.title
@@ -82,7 +90,7 @@ class Service(models.Model):
 class SubService(models.Model):
     service = models.ForeignKey(Service, related_name='subservices', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.title} - {self.service}"
@@ -181,7 +189,6 @@ class Donation_organization(models.Model):
         return f"{self.donor_name} - {self.amount}"
 
 
-
 # Stores email subscriptions for Safety Alerts
 class SafetyAlertSubscription(models.Model):
     email = models.EmailField(unique=True)
@@ -193,8 +200,17 @@ class SafetyAlertSubscription(models.Model):
         return self.email
 
 
+#<<<<<<< 26.01_DC48_UAT_UO
+#<<<<<<< 26.01_DC48_UAT_UO
+class EmergencyHotlines(models.Model):
+#=======
 # Emergency help line configuration
 class EmergencyHot(models.Model):
+#>>>>>>> 25.11_DC48K_UAT_GN
+#=======
+# Emergency help line configuration
+class EmergencyHot(models.Model):
+#>>>>>>> 25.11_DC48K_UAT_GN
     name = models.CharField(max_length=100, help_text="Display label, e.g., Global Hotline")
     number = models.CharField(max_length=32, help_text="E.164 like +15551234567 or local format")
     is_active = models.BooleanField(default=True)
@@ -307,6 +323,82 @@ class TrainingCourse(models.Model):
 
     def __str__(self):
         return self.title
+
+class DocumentServiceRequest(models.Model):
+    SERVICE_CHOICES = [
+        ('application_assistance', 'Application Assistance and Review'),
+        ('translation', 'Translation Services'),
+        ('document_review', 'Document Review and Authentication'),
+        ('registration_support', 'Birth/Death Certificate Registration Support'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('rejected', 'Rejected'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    service_type = models.CharField(max_length=50, choices=SERVICE_CHOICES)
+    document_file = models.FileField(upload_to='document_services/', blank=True, null=True)
+    message = models.TextField(help_text="Describe your specific needs or issues.")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.get_service_type_display()} - {self.user} ({self.status})"
+
+
+class ExpertServiceRequest(models.Model):
+    SERVICE_CHOICES = [
+        ('consular_assistance', 'Consular Assistance'),
+        ('crisis_management', 'Crisis Management'),
+        ('legal_aid', 'Legal Aid'),
+        ('other', 'Other'),
+    ]
+
+    URGENCY_CHOICES = [
+        ('normal', 'Normal'),
+        ('urgent', 'Urgent'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    service_type = models.CharField(max_length=50, choices=SERVICE_CHOICES)
+    location = models.CharField(max_length=255)
+    urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES, default='normal')
+    message = models.TextField()
+    status = models.CharField(max_length=20, default='pending') # pending, working, resolved
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.service_type} ({self.urgency}) - {self.location}"
+
+
+class Testimonial(models.Model):
+    name = models.CharField(max_length=100)
+    story = models.TextField()
+    image = models.ImageField(upload_to='testimonials/', blank=True, null=True)
+    # Optional: link to a specific service if you want to categorize them
+    service_category = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. Consular, Document")
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class GlobalSetting(models.Model):
+    """
+    Store key-value pairs for dynamic site settings (e.g., Expert Email, Hotline Number).
+    """
+    key = models.CharField(max_length=100, unique=True, help_text="Unique identifier, e.g., 'expert_email'")
+    value = models.TextField(help_text="The content/value for this setting")
+    description = models.CharField(max_length=255, blank=True, null=True, help_text="What is this setting for?")
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+
 class DocumentationRequest(models.Model):
     DOCUMENTATION_TYPES = (
        ('birth', 'Birth Certificate'),
@@ -338,7 +430,3 @@ class DocumentationRequest(models.Model):
     ])
     def __str__(self):
         return f"{self.full_name} ({self.get_document_type_display()})"
-        
-    
-    
-    
