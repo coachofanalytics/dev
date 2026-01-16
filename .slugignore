@@ -1,3 +1,8 @@
+#<<<<<<< 26.01_DC48_UAT_UO
+#=======
+#<<<<<<< 26.01_DC48_UAT_ND
+
+#>>>>>>> 25.11_DC48K_UAT_GN
 # Python
 __pycache__
 *.pyc
@@ -57,6 +62,7 @@ package.json
 .idea/
 .vscode/
 *.log
+#<<<<<<< 26.01_DC48_UAT_UO
 .git
 .gitignore
 backup.json
@@ -65,3 +71,55 @@ token.json
 django
 db.sqlite3
 dc48k_venv/
+#=======
+#=======
+# Exclude test files and directories
+*/tests/
+*/test/
+*.pyc
+__pycache__/
+
+# Exclude development tools
+.vscode/
+.idea/
+.git/
+
+# Exclude documentation
+*.md
+docs/
+
+# Exclude virtual environment (should already be in .gitignore)
+dc48k_venv/
+venv/
+.venv/
+
+# Exclude node_modules
+node_modules/
+
+# Exclude local database
+db.sqlite3
+*.sqlite3
+
+# Exclude media files (use cloud storage in production)
+media/
+
+# Exclude static files (collected during build)
+staticfiles/
+
+# Exclude logs
+*.log
+logs/
+
+# Exclude backup files
+*.json.bak
+backup.json
+
+# Exclude config directory if not needed
+config/
+
+# Exclude marketplace, payments, schoralship if not in use
+marketplace/
+payments/
+schoralship/
+#>>>>>>> 25.11_DC48K_UAT_GN
+#>>>>>>> 25.11_DC48K_UAT_GN

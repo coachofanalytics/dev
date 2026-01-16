@@ -201,7 +201,12 @@ class SafetyAlertSubscription(models.Model):
 
 
 #<<<<<<< 26.01_DC48_UAT_UO
+#<<<<<<< 26.01_DC48_UAT_UO
 class EmergencyHotlines(models.Model):
+#=======
+# Emergency help line configuration
+class EmergencyHot(models.Model):
+#>>>>>>> 25.11_DC48K_UAT_GN
 #=======
 # Emergency help line configuration
 class EmergencyHot(models.Model):
