@@ -8,6 +8,18 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+#<<<<<<< 26.01_DC48_UAT_UO
+#=======
+#<<<<<<< 25.10_DC48_UAT_UO
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations
+#=======
+from django.db.models import Q
+#<<<<<<< HEAD
+#<<<<<<< HEAD
+from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
+#>>>>>>> 25.10_DC48_UAT_ND
+#=======
+#>>>>>>> 25.11_DC48K_UAT_GN
 from .models import (
     Assets, Description, News, Page, Service, Scholarship, SubService, Team,
     Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry,
@@ -250,7 +262,7 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
         return reverse('main:images') 
     
 def crisis_page(request):
-    hotlines = EmergencyHotlines.objects.filter(is_active=True).order_by("sort_order", "id")
+    hotlines = EmergencyHot.objects.filter(is_active=True).order_by("sort_order", "id")
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
