@@ -200,17 +200,8 @@ class SafetyAlertSubscription(models.Model):
         return self.email
 
 
-#<<<<<<< 26.01_DC48_UAT_UO
-#<<<<<<< 26.01_DC48_UAT_UO
-class EmergencyHotlines(models.Model):
-#=======
 # Emergency help line configuration
 class EmergencyHot(models.Model):
-#>>>>>>> 25.11_DC48K_UAT_GN
-#=======
-# Emergency help line configuration
-class EmergencyHot(models.Model):
-#>>>>>>> 25.11_DC48K_UAT_GN
     name = models.CharField(max_length=100, help_text="Display label, e.g., Global Hotline")
     number = models.CharField(max_length=32, help_text="E.164 like +15551234567 or local format")
     is_active = models.BooleanField(default=True)

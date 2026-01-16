@@ -8,43 +8,35 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-#<<<<<<< 26.01_DC48_UAT_UO
-#=======
-#<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations
-#=======
-from django.db.models import Q
-#<<<<<<< HEAD
-#<<<<<<< HEAD
-from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
-#>>>>>>> 25.11_DC48K_UAT_GN
 from .models import (
     Assets, Description, News, Page, Service, Scholarship, SubService, Team,
     Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry,
     ExpertServiceRequest, DocumentServiceRequest, Testimonial, GlobalSetting,
-    SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
+    SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations
 )
+from django.db.models import Q
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, ExpertContactForm, DocumentServiceRequestForm, DocumentationRequestForm
+from .forms import (
+    ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, 
+    ExpertContactForm, DocumentServiceRequestForm, DocumentationRequestForm
+)
 from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
-#=======
-
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
+
 # Details Donation View
 class DonationDetailView(DetailView):
     model = Donation_organization
     template_name = 'main/snippets_templates/table/donation_detail.html'
+
 # Create Donation View
 class DonationCreateView(CreateView):
     model = Donation_organization
@@ -52,7 +44,6 @@ class DonationCreateView(CreateView):
     template_name = 'main/snippets_templates/table/donation_create.html'
     success_url = reverse_lazy('main:donation')
 
-#>>>>>>> 25.10_DC48_UAT_ND
 User=get_user_model()
 
 
@@ -429,7 +420,7 @@ class AboutView(TemplateView):
     template_name = 'main/snippets_templates/table/abour.html'
 
 
-#<<<<<<< 25.10_DC48_UAT_UO
+
 @require_POST
 @csrf_protect
 def activate_helpline(request):
@@ -488,8 +479,7 @@ def activate_helpline(request):
     return JsonResponse({'success': True, 'message': 'Request received. Our team will call you shortly.'})
 
 
-#=======
-#<<<<<<< HEAD
+
 def donor_list(request):
     donations = Donation_organisation.objects.all()  # Remove is_donor filter
     return render(request, 'main/donor.html', {'donations': donations})
@@ -577,7 +567,7 @@ def add_message(request):
             "form": form,
         }
     return render(request, "main/add_message.html",context)
-#=======
+
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
