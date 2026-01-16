@@ -1,1 +1,1 @@
-"""finance tests package"""
+"""Finance unit tests package."""

@@ -1,1 +1,1 @@
-"""memberjoin tests package"""
+__all__ = []
