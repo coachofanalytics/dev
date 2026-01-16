@@ -194,7 +194,7 @@ class SafetyAlertSubscription(models.Model):
 
 
 # Emergency help line configuration
-class EmergencyHotlines(models.Model):
+class EmergencyHot(models.Model):
     name = models.CharField(max_length=100, help_text="Display label, e.g., Global Hotline")
     number = models.CharField(max_length=32, help_text="E.164 like +15551234567 or local format")
     is_active = models.BooleanField(default=True)

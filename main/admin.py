@@ -16,7 +16,7 @@ admin.site.register(Gallery_image)
 admin.site.register(ContactUs)
 #<<<<<<< 25.10_DC48_UAT_UO
 admin.site.register(SafetyAlertSubscription)
-admin.site.register(EmergencyHotlines)
+admin.site.register(EmergencyHot)
 admin.site.register(StaffContact)
 admin.site.register(EmergencyHelpActivations)
 

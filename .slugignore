@@ -1,3 +1,4 @@
+#<<<<<<< 26.01_DC48_UAT_ND
 
 # Python
 __pycache__
@@ -42,3 +43,53 @@ node_modules/
 npm-debug.log
 yarn-error.log
 *.log
+#=======
+# Exclude test files and directories
+*/tests/
+*/test/
+*.pyc
+__pycache__/
+
+# Exclude development tools
+.vscode/
+.idea/
+.git/
+
+# Exclude documentation
+*.md
+docs/
+
+# Exclude virtual environment (should already be in .gitignore)
+dc48k_venv/
+venv/
+.venv/
+
+# Exclude node_modules
+node_modules/
+
+# Exclude local database
+db.sqlite3
+*.sqlite3
+
+# Exclude media files (use cloud storage in production)
+media/
+
+# Exclude static files (collected during build)
+staticfiles/
+
+# Exclude logs
+*.log
+logs/
+
+# Exclude backup files
+*.json.bak
+backup.json
+
+# Exclude config directory if not needed
+config/
+
+# Exclude marketplace, payments, schoralship if not in use
+marketplace/
+payments/
+schoralship/
+#>>>>>>> 25.11_DC48K_UAT_GN
