@@ -92,7 +92,7 @@
     </div>
     <div class="list" id="navList">
         <ul class="navList">
-            <li><a href="https://dc48k.org/" class="navLin">HOME</a></li>
+            <li><a href="{% url 'main:layout' %}" class="navLin">HOME</a></li>
             <li class="dropdown">
                 <a href="#" class="navLin">ABOUT US</a>
                 <div class="dropdown-content">
@@ -130,10 +130,10 @@
                 
                         <!-- Document Services -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Document Services</a>
+                            <a href="{% url 'main:services_spa' %}">Document Services</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Issuance of Certificates</a>
-                                <a href="#">Document Legalization and Authentication</a>
+                                <a href="{% url 'main:services_spa' %}#application">Issuance of Certificates</a>
+                                <a href="{% url 'main:services_spa' %}#application">Document Legalization and Authentication</a>
                             </div>
                         </div>
                 
@@ -187,7 +187,7 @@
                 </li>
                 
             
-            <li><a href="https://dc48k.org/membership/" class="navLin">MEMBERSHIP</a></li>
+            <!-- <li><a href="https://dc48k.org/membership/" class="navLin">MEMBERSHIP</a></li> -->
            
             <li><a href="https://dc48k.org/news/" class="navLin">NEWS</a></li>
             <li><a href="{% url 'accounts:membership_registration' %}" class="navLin">MEMBERSHIP</a></li>

@@ -25,7 +25,7 @@ from .models import (
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, DocumentationRequestForm
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
@@ -659,4 +659,39 @@ def scholarship_search(request):
 #>>>>>>> 25.10_DC48_UAT_ND
 #=======
     return render(request, 'scholarship_app/scholarship_search.html', context)
-#>>>>>>> origin/25.11_DC48K_UAT_FN
+
+def services_spa(request):
+    form = DocumentationRequestForm()
+    return render(request, 'main/index.html',{'form': form})
+@require_POST
+def submit_request(request):
+    form = DocumentationRequestForm(request.POST)
+    if form.is_valid():
+        try:
+            document_request = form.save(commit=False)
+            document_request.status = 'Pending'
+            document_request.save()
+            success_message = (
+                f"Thank you, {document_request.full_name}. "
+                f"Your document request for {document_request.get_document_type_display()} has been submitted successfully. "
+                f"We will get back to you at {document_request.email} as soon as possible."
+            )
+            return JsonResponse({
+                'success': True, 
+                'message': success_message,
+                'redirect_id': document_request.id,
+                })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Database error: {str(e)}'
+                }, status=400)
+    else:
+        error = {}
+        for field, error_list in form.errors.items():
+            error[field] = error_list[0]
+        return JsonResponse({
+            'success': False,
+            'error': error
+            }, status=400)
+ 

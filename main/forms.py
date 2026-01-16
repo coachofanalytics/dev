@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship, DocumentationRequest
 
 # Feedback / Contact Form
 class ContactForm(forms.ModelForm):
@@ -94,3 +94,90 @@ class ScholarshipSearchForm(forms.Form):
         )
     )
 
+class DocumentationRequestForm(forms.ModelForm):
+    DOCUMENT_TYPE_CHOICES = [
+        ('','Select Service'),
+        ('birth', 'Birth Certificate'),
+        ('marriage', 'Marriage Certificate'),
+        ('police_clearance', 'Police Clearance (Good Conduct)'),
+        ('legalization', 'Legalization/Apostille (MFA)'),
+        ('notarization', 'Notarization/Oath Commissioner'),
+        ('other', 'Other/Custom'),
+    ]
+    PACKAGE_TYPE_CHOICES = [
+        ('','Select Package(Optional)'),
+        ('standard', 'Standard ($99)'),
+        ('premium', 'Premium ($249)'),
+        ('diplomatic', 'Diplomatic ($399)'),
+    ]
+    document_type = forms.ChoiceField(choices=DOCUMENT_TYPE_CHOICES,
+    widget=forms.Select(
+        attrs={
+            'id': 'document_type',
+            'class': 'form-input bg-white'
+        }
+    ), label="type of document needed")
+    package_type = forms.ChoiceField(choices=PACKAGE_TYPE_CHOICES,
+    required=False,
+    widget=forms.Select(
+        attrs={
+            'id': 'package_type',
+            'class': 'form-input bg-white'
+        }
+    ), label="package type (optional)")
+    full_name = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                'id': 'full_name',
+                'class': 'form-input bg-white',
+                'placeholder': 'John Doe',
+            }
+        ), label="full name")
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                'id': 'email',
+                'class': 'form-input bg-white',
+                'placeholder': 'you@example.com',
+            }
+        ), label="Email Address")
+    phone= forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                'id': 'id_phone',
+                'class': 'form-input bg-white',
+                'placeholder': '+254 7XX XXX XXX',
+            }
+        ), label="Phone Number")
+    destination_country = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                'id': 'destination_country',
+                'class': 'form-input bg-white',
+                'placeholder': 'e.g., USA, Germany, UAE',
+            }
+        ), label="Destination Country")
+    description = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                'id': 'description',
+                'class': 'form-input bg-white',
+                'rows': 4,
+                'placeholder': 'Explain what the document is needed for and any deadlines...',
+            }
+        ), label="Brief Description of Need")
+    consent = forms.BooleanField(
+        widget=forms.CheckboxInput(
+            attrs={
+                'id': 'consent',
+                'class': 'form-input bg-white',
+            }
+        ), label="I consent to the processing of my personal data for the purpose of providing the service")
+    class Meta:
+        model = DocumentationRequest
+        fields = ['full_name', 'email', 'phone', 'document_type', 'package_type', 'destination_country','description', 'consent']
+    def clean_consent(self):
+        consent = self.cleaned_data.get('consent')
+        if not consent:
+            raise forms.ValidationError("You must consent to the processing of your personal data for the purpose of providing the service")
+        return consent

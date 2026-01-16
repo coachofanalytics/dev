@@ -181,9 +181,7 @@ class Donation_organization(models.Model):
         return f"{self.donor_name} - {self.amount}"
 
 
-#<<<<<<< 25.10_DC48_UAT_UO
 
-#<<<<<<< 25.10_DC48_UAT_UO
 # Stores email subscriptions for Safety Alerts
 class SafetyAlertSubscription(models.Model):
     email = models.EmailField(unique=True)
@@ -235,11 +233,7 @@ class EmergencyHelpActivations(models.Model):
 
     def __str__(self):
         return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
-#=======
-
 # Medical Resource Inquiry model at top-level
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
 class MedicalResourceInquiry(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -313,8 +307,38 @@ class TrainingCourse(models.Model):
 
     def __str__(self):
         return self.title
-#<<<<<<< 25.10_DC48_UAT_UO
+class DocumentationRequest(models.Model):
+    DOCUMENTATION_TYPES = (
+       ('birth', 'Birth Certificate'),
+       ('marriage', 'Marriage Certificate'),
+       ('police_clearance', 'Police Clearance (Good Conduct)'),
+       ('legalization', 'Legalization/Apostille (MFA)'),
+       ('notarization', 'Notarization/Oath Commissioner'),
+       ('other', 'Other/Custom'),
+    )
+    PACKAGE_TYPES= (
+        ('standard', 'Standard ($99)'),
+        ('premium', 'Premium ($249)'),
+        ('diplomatic', 'Diplomatic ($399)'),
+    )
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    document_type = models.CharField(max_length=50, choices=DOCUMENTATION_TYPES)
+    package_type = models.CharField(max_length=50, choices=PACKAGE_TYPES, blank=True, null=True)
+    destination_country = models.CharField(max_length=100)
+    description = models.TextField()
+    consent = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='Pending', choices=[
+        ('pending', 'Pending'),
+        ('review', 'Review'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+    ])
+    def __str__(self):
+        return f"{self.full_name} ({self.get_document_type_display()})"
+        
     
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
+    
+    
