@@ -1,4 +1,4 @@
-```
+
 # Created by https://www.toptal.com/developers/gitignore/api/django
 # Edit at https://www.toptal.com/developers/gitignore?templates=django
 
@@ -12,8 +12,6 @@ __pycache__/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-staticfiles/
-media/
 
 .idea/
 .vscode/
@@ -24,6 +22,8 @@ venv/
 env/
 ENV/
 my_env/
+staticfiles/
+media/
 
 /gapi/creds/credentials.json
 # /gapi/stored_mails/*
@@ -138,6 +138,13 @@ celerybeat.pid
 
 # Environments
 .env
+.venv
+env/
+venv/
+dc48k_venv/
+staticfiles/
+media/
+ENV/
 env.bak/
 venv.bak/
 node_modules/
@@ -167,4 +174,3 @@ dmypy.json
 cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/django
-```
