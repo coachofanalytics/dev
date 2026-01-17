@@ -1,6 +1,6 @@
 import time
 from django.test import TestCase
-from main.models import Scholarship
+from main.models import Scholarship,Governance, Team
 from datetime import date, timedelta
 from django.utils import timezone
 import random
@@ -131,3 +131,34 @@ class ScholarshipModelPerformanceTest(TestCase):
         # Verify ordering is correct
         deadlines = [s.deadline for s in ordered_scholarships]
         self.assertEqual(deadlines, sorted(deadlines))
+
+class GovernanceModelPerformanceTest(TestCase):
+    """
+    Performance tests for the Governance model.
+    Measures time to create multiple objects to catch potential bottlenecks.
+    """
+
+    def setUp(self):
+        # Runs before each test method
+        self.member = Team.objects.create(name="Performance Test Member")
+
+    def test_bulk_governance_creation_speed(self):
+        """
+        Test creating 1000 Governance objects quickly.
+        """
+        start_time = time.time()  # Start timer
+
+        for i in range(1000):
+            Governance.objects.create(
+                governance_category=f"Policy {i}",
+                description=f"Performance test {i}",
+                members=self.member
+            )
+
+        end_time = time.time()  # End timer
+        duration = end_time - start_time
+
+        print(f"Time to create 1000 Governance objects: {duration:.2f} seconds")
+
+        # Assert it’s under a threshold (example: 10 seconds)
+        self.assertTrue(duration < 10, "Bulk creation took too long")

@@ -58,5 +58,5 @@ urlpatterns = [
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
     path('education/training/',views.education_landing, name = 'education_training'),
-
+    path('governance/create/', views.governance_create, name='governance_create'),
 ]    

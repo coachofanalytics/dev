@@ -18,4 +18,4 @@ admin.site.register(Donation_organisation)
 admin.site.register(ContactMessage)
 admin.site.register(Donation_organization)
 admin.site.register(Scholarship)
-
+admin.site.register(Governance)

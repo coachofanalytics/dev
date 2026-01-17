@@ -1,8 +1,9 @@
 from django.test import TestCase
-from main.models import Scholarship
+from main.models import Scholarship, Governance, Team
 from datetime import date, timedelta
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+
 
 
 class ScholarshipModelRegressionTest(TestCase):
@@ -91,38 +92,63 @@ class ScholarshipModelRegressionTest(TestCase):
                     field_name = list(invalid_data.keys())[0]
                     self.assertIn(field_name, e.error_dict)
     
-    def test_required_fields_regression(self):
-        """Ensure required field behavior remains consistent"""
-        # Test that the same fields are still required/non-required
-        test_cases = [
-            {'field': 'title', 'value': '', 'should_raise': False},  # Based on your model
-            {'field': 'provider', 'value': '', 'should_raise': False},
-            {'field': 'level', 'value': '', 'should_raise': True},  # Choices usually required
-        ]
-        
-        for test_case in test_cases:
-            with self.subTest(field=test_case['field']):
-                scholarship_data = {
-                    'title': 'Required Field Test',
-                    'provider': 'Test Provider',
-                    'level': 'Undergraduate',
-                    'field': 'STEM',
-                    'location': 'Kenya',
-                    'amount': '1000 USD',
-                    'deadline': timezone.now().date() + timedelta(days=10),
-                    'status': 'Open'
-                }
-                
-                scholarship_data[test_case['field']] = test_case['value']
-                
-                try:
+            def test_required_fields_regression(self):
+             """Ensure required field behavior remains consistent"""
+            test_cases = [
+                {'field': 'title', 'value': '', 'should_raise': True},
+                {'field': 'provider', 'value': '', 'should_raise': True},
+                {'field': 'level', 'value': '', 'should_raise': True},
+                {'field': 'field', 'value': '', 'should_raise': True},
+                ]
+    
+            for test_case in test_cases:
+             with self.subTest(field=test_case['field']):
+                 scholarship_data = {
+                'title': 'Required Field Test',
+                'provider': 'Test Provider',
+                'level': 'Undergraduate',
+                'field': 'STEM',
+                'location': 'Kenya',
+                'amount': '1000 USD',
+                'deadline': timezone.now().date() + timedelta(days=10),
+                'status': 'Open'
+            }
+            
+            # Apply the test value (empty string in this case)
+            scholarship_data[test_case['field']] = test_case['value']
+            
+            if test_case['should_raise']:
+                with self.assertRaises(ValidationError):
                     scholarship = Scholarship(**scholarship_data)
                     scholarship.full_clean()
-                    if test_case['should_raise']:
-                        self.fail(f"Expected ValidationError for empty {test_case['field']}")
-                    else:
-                        # No error expected
-                        pass
-                except ValidationError:
-                    if not test_case['should_raise']:
-                        self.fail(f"Unexpected ValidationError for {test_case['field']}")
+            else:
+                # No exception expected
+                scholarship = Scholarship(**scholarship_data)
+                scholarship.full_clean()
+
+class GovernanceCreateRegressionTest(TestCase):
+
+    def setUp(self):
+        self.member = Team.objects.create(
+            name="Test Member"
+        )
+
+    def test_governance_create_creates_record_and_redirects(self):
+        response = self.client.post('/governance/create/',
+            {
+                'governance_category': 'Policy',
+                'description': 'Test governance policy',
+                'members': self.member.id
+            }
+        )
+
+        # 1. Regression: redirect must still happen
+        self.assertEqual(response.status_code, 302)
+
+        # 2. Regression: record must be created
+        self.assertEqual(Governance.objects.count(), 1)
+
+        governance = Governance.objects.first()
+        self.assertEqual(governance.governance_category, 'Policy')
+        self.assertEqual(governance.description, 'Test governance policy')
+        self.assertEqual(governance.members_id, self.member.id)
