@@ -58,5 +58,11 @@ urlpatterns = [
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
     path('education/training/',views.education_landing, name = 'education_training'),
+
+#>>>>>>> 26.01_DC48K_Dev_md
+    path('governance/', views.governance_list, name='governance_list'),
     path('governance/create/', views.governance_create, name='governance_create'),
+    path('governance/update/<int:pk>/', views.governance_update, name='governance_update'),
+    path('governance/delete/<int:pk>/', views.governance_delete, name='governance_delete'),
+
 ]    

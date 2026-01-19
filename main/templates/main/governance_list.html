@@ -6,7 +6,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Donations</title>
+    <title>Governance</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,40 +41,39 @@
     </style>
 </head>
 <body>
-    <h1>Gover List</h1>
-        <a href="{% url 'governance_create' %}" class="add-btn">+ Add Governance</a>
+    <h1>Governance List</h1>
+        <a href="{% url 'main:governance_create' %}" class="add-btn">+ Add Governance</a>
 
     {% if governances %}
         <table>
             <thead>
                 <tr>
-                    <th>Donor Name</th>
-                    <th>Email</th>
-                    <th>Amount</th>
-                    <th>Message</th>
-                    <th>Date</th>
-                    <th>Actions</th>
+                    <th>Category</th>
+                     <th>Description</th> 
+                     <th>Members</th> 
+                     <th>Created At</th>
+                      <th>Updated At</th> 
+                      <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for governance in governances %}
                 <tr>
-                    <td>{{ governance.donor_name }}</td>
-                    <td>{{ governance.email }}</td>
-                    <td>{{ governance.amount }}</td>
-                    <td>{{ governance.message|default:"—" }}</td>
-                    <td>{{ donation.created_at|date:"M d, Y " }}</td>
+                    <td>{{ governance.governance_category }}</td>
+                    <td>{{ governance.members }}</td>
+                    <td>{{ governance.description }}</td>
+                    <td>{{ governance.updatedAt|date:"Y-m-d H:i" }}</td>
+                    <td>{{ governance.createdAt|date:"Y-m-d H:i" }}</td>
                     <td>
-                        <a href="{% url 'main:donation_detail' donation.pk %}" class="action-btn detail-btn">Details</a>
-                        <a href="{% url 'main:donation_edit' donation.pk %}" class="action-btn edit-btn">Edit</a>
-                        <a href="{% url 'main:donation_delete' donation.pk %}" class="action-btn delete-btn">Delete</a>
+                       <a href="{% url 'main:governance_update' governance.id %}" class="action-btn edit-btn"> Edit </a> 
+                       <a href="{% url 'main:governance_delete' governance.id %}" class="action-btn delete-btn"> Delete </a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p class="empty">No donations have been made yet.</p>
+        <p class="empty">No governance have been made yet.</p>
     {% endif %}
         <style>
             .add-btn {

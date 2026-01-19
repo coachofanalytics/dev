@@ -464,19 +464,41 @@ def scholarship_search(request):
     }
     return render(request, 'scholarship_app/scholarship_search.html', context)
 
+from .models import Governance
+from .forms import GovernanceForm
 
 def governance_create(request):
     if request.method == 'POST':
-        # Simple logic to save data from the test
-        category = request.POST.get('governance_category')
-        desc = request.POST.get('description')
-        member_id = request.POST.get('members')
-        
-        Governance.objects.create(
-            governance_category=category,
-            description=desc,
-            members_id=member_id
-        )
-        return redirect('/') # Redirect after success (this triggers the 302 in your test)
-    
-    return HttpResponse("Submit a POST request")
+        form = GovernanceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:governance_list')
+    else:
+        form = GovernanceForm()
+    return render(request, 'main/governance_create.html', {'form': form})
+
+###################    
+
+def governance_list(request):
+    governances = Governance.objects.all()
+    return render(request, 'main/governance_list.html', {'governances': governances})
+
+###################
+def governance_update(request,pk):
+    governance = get_object_or_404(Governance, pk=pk)
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST, instance=governance)
+        if form.is_valid():
+            form.save()
+            return redirect('main:governance_list')
+    else:
+        form = GovernanceForm(instance=governance)
+    return render(request, 'main/governance_update.html', {'form': form, 'governance': governance})
+
+#####################
+def governance_delete(request,pk):
+    governance = get_object_or_404(Governance, pk=pk)
+    if request.method == 'POST':
+        governance.delete()
+        return redirect('main:governance_list')
+    return render(request, 'main/governance_delete.html', {'governance': governance})

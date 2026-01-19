@@ -1,3 +1,3 @@
-import pytest
-
-pytest.skip("replaced by test_memberjoin_models.py", allow_module_level=True)
+"""Compatibility shim: re-export memberjoin models tests from the newer module.
+"""
+from .test_memberjoin_models import TestMemberJoinModels as TestMemberJoinModels_copy

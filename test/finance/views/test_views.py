@@ -1,3 +1,3 @@
-import pytest
-
-pytest.skip("replaced by test_finance_views.py", allow_module_level=True)
+"""Compatibility shim: re-export finance views tests from the newer module.
+"""
+from .test_finance_views import TestFinanceViews as TestFinanceViews_copy

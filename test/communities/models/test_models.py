@@ -1,3 +1,3 @@
-import pytest
-
-pytest.skip("replaced by test_communities_models.py", allow_module_level=True)
+"""Compatibility shim: re-export communities models tests from the newer module.
+"""
+from .test_communities_models import TestCommunitiesModels as TestCommunitiesModels_copy

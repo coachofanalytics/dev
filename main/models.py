@@ -268,7 +268,6 @@ class Scholarship(models.Model):
         return self.title
     
 class Governance(models.Model):
-    id = models.AutoField(("pk"), primary_key=True, null=False, blank=False)
     governance_category = models.CharField(max_length=200, null=False, blank=False)
     description = models.TextField(null=False, blank=False)
     members= models.ForeignKey(null=False, blank=False, on_delete=models.CASCADE, to=Team)

@@ -1,3 +1,4 @@
-import pytest
-
-pytest.skip("replaced by test_accounts_views.py", allow_module_level=True)
+"""Compatibility shim: re-export tests from the newer module so this
+module's tests run as well.
+"""
+from .test_accounts_views import TestAccountsViews as TestAccountsViews_copy
