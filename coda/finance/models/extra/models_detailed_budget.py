@@ -18,6 +18,8 @@ class BudgetItemDetail(models.Model):
     category = models.ForeignKey(
         BudgetCategory,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='item_details'
     )
     subcategory = models.ForeignKey(
@@ -109,11 +111,15 @@ class BudgetEstimateItem(models.Model):
     projection = models.ForeignKey(
         BudgetEstimateProjection,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='estimate_items'
     )
     item_detail = models.ForeignKey(
         BudgetItemDetail,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='estimates'
     )
     estimated_quantity = models.DecimalField(

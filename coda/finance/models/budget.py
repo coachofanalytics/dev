@@ -142,7 +142,7 @@ class BudgetCategory(models.Model):
 class BudgetSubCategory(models.Model):
     """Budget subcategory classification"""
     
-    category = models.ForeignKey(BudgetCategory, on_delete=models.CASCADE, related_name='subcategories')
+    category = models.ForeignKey(BudgetCategory, on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories')
     name = models.CharField(max_length=100)
 
     class Meta:
@@ -162,13 +162,17 @@ class BudgetItemLibrary(models.Model):
     """
     category = models.ForeignKey(
         BudgetCategory, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='items',
         help_text="Budget category this item belongs to"
     )
     subcategory = models.ForeignKey(
         BudgetSubCategory, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='items',
         help_text="Budget subcategory this item belongs to"
     )
@@ -211,7 +215,9 @@ class BudgetItemLibrary(models.Model):
         unique_together = ['category', 'subcategory', 'item_name']
     
     def __str__(self):
-        return "{} → {} → {}".format(self.category.name, self.subcategory.name, self.item_name)
+        cat_name = self.category.name if self.category else 'No Category'
+        subcat_name = self.subcategory.name if self.subcategory else 'No Subcategory'
+        return "{} → {} → {}".format(cat_name, subcat_name, self.item_name)
     
     def increment_usage(self):
         """Increment usage count when item is selected"""
@@ -249,6 +255,8 @@ class Budget(models.Model):
     budget_lead = models.ForeignKey(
         "accounts.CustomerUser", 
         on_delete=models.CASCADE, 
+        null=True,
+        blank=True,
         limit_choices_to=(Q(is_staff=True, is_active=True, category=2) | Q(is_superuser=True)),
         related_name="budget_lead"
     )
@@ -500,7 +508,7 @@ class BudgetEstimationTemplate(models.Model):
 class BudgetEstimateProjection(models.Model):
     """Budget estimate projections and forecasts"""
     
-    budget = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name='projections')
+    budget = models.ForeignKey(Budget, on_delete=models.CASCADE, null=True, blank=True, related_name='projections')
     projection_date = models.DateField()
     projected_amount = models.DecimalField(max_digits=15, decimal_places=2)
     confidence_score = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
@@ -514,7 +522,8 @@ class BudgetEstimateProjection(models.Model):
         verbose_name_plural = "Budget Estimate Projections"
     
     def __str__(self):
-        return "{} - {} - {}".format(self.budget.item_name, self.projection_date, self.projected_amount)
+        budget_name = self.budget.item_name if self.budget else 'No Budget'
+        return "{} - {} - {}".format(budget_name, self.projection_date, self.projected_amount)
 
 
 class MultiYearBudgetPlan(models.Model):
@@ -564,7 +573,9 @@ class BudgetRequest(TimeStampedModel, StatusMixin):
     # Request Information
     requester = models.ForeignKey(
         User, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='budget_requests',
         help_text="User who submitted the request"
     )
@@ -584,6 +595,8 @@ class BudgetRequest(TimeStampedModel, StatusMixin):
     department = models.ForeignKey(
         Department, 
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         help_text="Department requesting the budget"
     )
     
@@ -640,6 +653,8 @@ class BudgetRequest(TimeStampedModel, StatusMixin):
     budget_category = models.ForeignKey(
         BudgetCategory, 
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         help_text="Budget category for this request"
     )
     cost_center = models.CharField(
@@ -657,13 +672,17 @@ class BudgetRequest(TimeStampedModel, StatusMixin):
     # Audit Fields
     created_by = models.ForeignKey(
         User, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='created_budget_requests',
         help_text="User who created the request"
     )
     last_modified_by = models.ForeignKey(
         User, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='modified_budget_requests',
         help_text="User who last modified the request"
     )
@@ -857,7 +876,9 @@ class DisbursementRequest(TimeStampedModel, StatusMixin):
     # Request Information
     budget_request = models.ForeignKey(
         BudgetRequest, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='disbursement_requests',
         help_text="Associated budget request"
     )
@@ -908,7 +929,9 @@ class DisbursementRequest(TimeStampedModel, StatusMixin):
     # Audit Fields
     created_by = models.ForeignKey(
         User, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='created_disbursement_requests',
         help_text="User who created the disbursement request"
     )
@@ -1003,7 +1026,9 @@ class AutomationAuditLog(TimeStampedModel):
     user = models.ForeignKey(
         User, 
         on_delete=models.CASCADE,
-        help_text="User who performed the action"
+        null=True,
+        blank=True,
+        help_text="User who performed the action (null for system actions)"
     )
     
     # Additional Data
@@ -1023,4 +1048,5 @@ class AutomationAuditLog(TimeStampedModel):
         verbose_name_plural = "Automation Audit Logs"
     
     def __str__(self):
-        return "{} - {} - {}".format(self.get_action_display(), self.user.username, self.created_at.strftime('%Y-%m-%d %H:%M'))
+        username = self.user.username if self.user else 'System'
+        return "{} - {} - {}".format(self.get_action_display(), username, self.created_at.strftime('%Y-%m-%d %H:%M'))

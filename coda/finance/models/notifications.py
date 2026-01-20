@@ -43,7 +43,7 @@ class FinanceNotification(models.Model):
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
     
     # Targeting
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='finance_notifications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='finance_notifications')
     is_read = models.BooleanField(default=False)
     
     # Action
@@ -107,7 +107,7 @@ class BudgetAlert(models.Model):
     message = models.TextField()
     
     # Related budget
-    budget = models.ForeignKey('Budget', on_delete=models.CASCADE, related_name='alerts')
+    budget = models.ForeignKey('Budget', on_delete=models.CASCADE, null=True, blank=True, related_name='alerts')
     budget_category = models.ForeignKey('BudgetCategory', on_delete=models.CASCADE, null=True, blank=True)
     
     # Thresholds
@@ -133,7 +133,8 @@ class BudgetAlert(models.Model):
         verbose_name_plural = 'Budget Alerts'
     
     def __str__(self):
-        return "{} - {}".format(self.get_alert_type_display(), self.budget.item_name)
+        budget_name = self.budget.item_name if self.budget else 'No Budget'
+        return "{} - {}".format(self.get_alert_type_display(), budget_name)
     
     def acknowledge(self, user):
         """Acknowledge the alert"""
@@ -172,8 +173,8 @@ class LoanNotification(models.Model):
     message = models.TextField()
     
     # Related loan
-    loan_application = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, related_name='notifications')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loan_notifications')
+    loan_application = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='loan_notifications')
     
     # Status
     is_read = models.BooleanField(default=False)
@@ -264,7 +265,7 @@ class DepartmentNotification(models.Model):
     
     # Tracking
     viewed_by = models.ManyToManyField(User, related_name='viewed_notifications', blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_notifications')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='created_notifications')
     
     class Meta:
         ordering = ['-created_at']
@@ -308,7 +309,7 @@ class DepartmentAnnouncement(models.Model):
     is_active = models.BooleanField(default=True)
     
     # Author
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     
     class Meta:
         ordering = ['-created_at']

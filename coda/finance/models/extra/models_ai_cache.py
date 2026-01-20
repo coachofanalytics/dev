@@ -26,7 +26,7 @@ class AIPredictionCache(models.Model):
     context_hash = models.CharField(max_length=64, db_index=True, unique=True)  # MD5 of all inputs
     
     # AI Response (cached value)
-    predicted_category = models.ForeignKey('finance.BudgetCategory', on_delete=models.CASCADE)
+    predicted_category = models.ForeignKey('finance.BudgetCategory', on_delete=models.CASCADE, null=True, blank=True)
     predicted_subcategory = models.ForeignKey('finance.BudgetSubCategory', null=True, blank=True, on_delete=models.SET_NULL)
     predicted_item = models.CharField(max_length=200)
     predicted_amount = models.DecimalField(max_digits=10, decimal_places=2)

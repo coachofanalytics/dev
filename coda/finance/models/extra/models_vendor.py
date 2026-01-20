@@ -143,6 +143,8 @@ class VendorAlias(models.Model):
     vendor = models.ForeignKey(
         Vendor,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='aliases',
         help_text="The standardized vendor this alias refers to"
     )
@@ -189,12 +191,16 @@ class VendorCategory(models.Model):
     vendor = models.ForeignKey(
         Vendor,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='category_patterns'
     )
     
     category = models.ForeignKey(
         'BudgetCategory',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
     
     transaction_count = models.IntegerField(

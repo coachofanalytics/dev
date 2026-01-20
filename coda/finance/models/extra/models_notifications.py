@@ -48,7 +48,7 @@ class DepartmentNotification(models.Model):
     
     # Tracking
     viewed_by = models.ManyToManyField(User, related_name='viewed_notifications', blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_notifications')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='created_notifications')
     
     class Meta:
         ordering = ['-created_at']
@@ -92,7 +92,7 @@ class DepartmentAnnouncement(models.Model):
     is_active = models.BooleanField(default=True)
     
     # Author
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     
     class Meta:
         ordering = ['-created_at']

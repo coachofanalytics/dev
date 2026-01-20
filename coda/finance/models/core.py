@@ -311,7 +311,7 @@ class Inflow(models.Model):
 class DC48_Inflow(models.Model):
     """DC48 specific inflow tracking"""
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     currency = models.CharField(max_length=3, default='KES')
     description = models.TextField(blank=True, null=True)
@@ -510,7 +510,7 @@ class CodaBudget(TimeStampedModel):
     end_date = models.DateField()
     
     # Metadata
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_budgets')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='created_budgets')
     updated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_budgets', null=True, blank=True)
     
     class Meta:
@@ -525,7 +525,7 @@ class CodaBudget(TimeStampedModel):
 class Field_Expense(models.Model):
     """Field expense tracking"""
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     currency = models.CharField(max_length=3, default='KES')
     description = models.TextField(blank=True, null=True)
@@ -591,7 +591,7 @@ class WebSubCategory(models.Model):
     
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    category = models.ForeignKey(WebCategory, on_delete=models.CASCADE, related_name='subcategories')
+    category = models.ForeignKey(WebCategory, on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories')
     is_active = models.BooleanField(default=True)
     
     class Meta:
@@ -617,7 +617,7 @@ class web_budget(TimeStampedModel):
     end_date = models.DateField()
     
     # Metadata
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_web_budgets')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='created_web_budgets')
     
     class Meta:
         ordering = ['-created_at']

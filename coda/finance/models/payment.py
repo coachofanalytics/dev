@@ -37,7 +37,7 @@ class Payment(models.Model):
         ('other', 'Other'),
     ]
     
-    loan = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, related_name="payments")
+    loan = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, null=True, blank=True, related_name="payments")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     payment_date = models.DateTimeField()
@@ -133,7 +133,7 @@ class PaymentTransaction(models.Model):
     
     # Core transaction data
     transaction_id = models.CharField(max_length=100, unique=True)
-    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     currency = models.CharField(max_length=3, default='KES')
     processing_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -149,7 +149,7 @@ class PaymentTransaction(models.Model):
     gateway_response = models.JSONField(default=dict, blank=True)
     
     # User and context
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_transactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='payment_transactions')
     description = models.TextField(blank=True, null=True)
     
     # Metadata
