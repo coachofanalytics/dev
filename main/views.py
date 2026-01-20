@@ -1,5 +1,9 @@
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
@@ -14,15 +18,15 @@ from .models import Scholarship, Donation_organisation, ContactMessage, Testimon
 #>>>>>>> 25.10_DC48_UAT_ND
 from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
-from .models import Donation_organization, MedicalResourceInquiry
+from .models import Donation_organization, MedicalResourceInquiry, Governance
 from django.views.decorators.csrf import csrf_exempt
-from main.forms import ContactForm
+from main.forms import ContactForm, GovernanceForm
 #>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 #=======
@@ -642,3 +646,298 @@ def scholarship_search(request):
 def testimonial_list(request):
     testimonial = Testimonial.objects.all() 
     return render(request, "main/snippets_templates/table/testimonial_list.html",{"testimonial":testimonial})
+# views.py - ADD THESE VIEWS (place them together)
+
+# ============================================
+# SIMPLE GOVERNANCE CRUD VIEWS
+# ============================================
+
+# views.py - CORRECTED TEMPLATE NAMES
+
+# List all governance records
+def governance_list(request):
+    from .models import Governance
+    records = Governance.objects.all().select_related('members')
+    
+    context = {
+        'records': records,
+        'title': 'Governance Records'
+    }
+    # Changed from 'list.html' to 'governance_list.html'
+    return render(request, 'main/governance/governance_list.html', context)
+
+# Create new governance record
+# REPLACE your entire governance_create function with this:
+
+def governance_create(request):
+    """Create governance record - handles both existing and new users"""
+    from .forms import GovernanceForm
+    from django.contrib.auth.models import User
+    from django.contrib import messages
+    
+    print("=== CREATE VIEW STARTED ===")
+    
+    if request.method == 'POST':
+        print("POST data:", request.POST)
+        
+        form = GovernanceForm(request.POST)
+        
+        if form.is_valid():
+            print("Form is valid!")
+            
+            # Get cleaned data
+            cleaned_data = form.cleaned_data
+            members = cleaned_data.get('members')
+            new_username = cleaned_data.get('new_username', '').strip()
+            new_password = cleaned_data.get('new_password', '').strip()
+            new_email = cleaned_data.get('new_email', '').strip()
+            
+            # If creating a new user
+            if new_username and new_password:
+                print(f"Creating new user: {new_username}")
+                try:
+                    # Create the user
+                    new_user = User.objects.create_user(
+                        username=new_username,
+                        password=new_password,
+                        email=new_email if new_email else ''
+                    )
+                    print(f"User created: {new_user.id}")
+                    
+                    # Update the form instance to use new user
+                    form.instance.members = new_user
+                    messages.success(request, f'User "{new_username}" created successfully!')
+                    
+                except Exception as e:
+                    print(f"Error creating user: {e}")
+                    messages.error(request, f'Error creating user: {str(e)}')
+                    return render(request, 'main/governance/governance_form.html', {
+                        'form': form,
+                        'title': 'Create Governance Record'
+                    })
+            
+            # Save the governance record
+            governance = form.save()
+            print(f"Governance saved: {governance.id}")
+            messages.success(request, f'Governance record "{governance.governance_category}" created!')
+            
+            return redirect('main:governance_detail', pk=governance.pk)
+        else:
+            print("Form errors:", form.errors)
+            # Show form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    
+    else:
+        # GET request - show empty form
+        form = GovernanceForm()
+    
+    return render(request, 'main/governance/governance_form.html', {
+        'form': form,
+        'title': 'Create Governance Record'
+    })
+
+# View single governance record
+def governance_detail(request, pk):
+    from .models import Governance
+    from django.shortcuts import get_object_or_404
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
+    context = {
+        'record': record,
+        'title': f'Details - {record.governance_category}'
+    }
+    # Changed from 'detail.html' to 'governance_detail.html'
+    return render(request, 'main/governance/governance_detail.html', context)
+
+# Update governance record
+def governance_update(request, pk):
+    from .models import Governance
+    from .forms import GovernanceForm
+    from django.shortcuts import get_object_or_404
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST, instance=record)
+        if form.is_valid():
+            form.save()
+            return redirect('main:governance_detail', pk=record.pk)
+    else:
+        form = GovernanceForm(instance=record)
+    
+    context = {
+        'form': form,
+        'title': f'Update {record.governance_category}',
+        'record': record
+    }
+    # Changed from 'form.html' to 'governance_form.html'
+    return render(request, 'main/governance/governance_form.html', context)
+
+# Delete governance record
+# views.py - UPDATED DELETE VIEW WITH ERROR HANDLING
+def governance_delete(request, pk):
+    """Delete a governance record"""
+    from django.shortcuts import get_object_or_404, redirect
+    from django.contrib import messages
+    from .models import Governance
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
+    if request.method == 'POST':
+        record.delete()
+        messages.success(request, f'Record "{record.governance_category}" deleted successfully!')
+        return redirect('main:governance_list')
+    
+    # Use the correct template name
+    return render(request, 'main/governance/governance_confirm_delete.html', {
+        'record': record,
+        'title': f'Delete {record.governance_category}'
+    })
+
+    # Add this function to your views.py
+
+@csrf_exempt
+def quick_add_user(request):
+    """
+    Quick user creation endpoint
+    Returns JSON response
+    """
+    print("DEBUG: quick_add_user called")
+    
+    # Only accept POST requests
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': 'Only POST requests are allowed'
+        })
+    
+    try:
+        # Parse JSON data if sent as JSON, otherwise use form data
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            username = data.get('username', '').strip()
+            password = data.get('password', '').strip()
+            email = data.get('email', '').strip()
+        else:
+            # Form data
+            username = request.POST.get('username', '').strip()
+            password = request.POST.get('password', '').strip()
+            email = request.POST.get('email', '').strip()
+        
+        print(f"DEBUG: Received - username='{username}', password length={len(password)}, email='{email}'")
+        
+        # Validate
+        if not username:
+            return JsonResponse({
+                'success': False,
+                'error': 'Username is required'
+            })
+        
+        if not password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Password is required'
+            })
+        
+        # Check if user exists
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'Username "{username}" already exists'
+            })
+        
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email if email else ''
+        )
+        
+        print(f"DEBUG: User created successfully - ID: {user.id}, Username: {user.username}")
+        
+        # Return success
+        return JsonResponse({
+            'success': True,
+            'user_id': user.id,
+            'username': user.username,
+            'email': user.email if user.email else ''
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        })
+    except Exception as e:
+        print(f"DEBUG: Exception: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        })
+           
+
+    # Add to views.py
+def test_user_endpoint(request):
+    """Test page for quick_add_user endpoint"""
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test User Endpoint</title>
+        <script>
+        async function testEndpoint() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('email', email);
+            
+            try {
+                const response = await fetch('/quick-add-user/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.text();
+                document.getElementById('result').innerHTML = 
+                    '<h3>Raw Response:</h3><pre>' + result + '</pre>';
+                
+                try {
+                    const jsonResult = JSON.parse(result);
+                    document.getElementById('result').innerHTML += 
+                        '<h3>Parsed JSON:</h3><pre>' + JSON.stringify(jsonResult, null, 2) + '</pre>';
+                } catch(e) {
+                    document.getElementById('result').innerHTML += 
+                        '<h3>Not valid JSON</h3>';
+                }
+            } catch(error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+        </script>
+    </head>
+    <body>
+        <h1>Test Quick Add User Endpoint</h1>
+        <div>
+            <input type="text" id="username" placeholder="Username" value="testuser"><br>
+            <input type="password" id="password" placeholder="Password" value="testpass123"><br>
+            <input type="email" id="email" placeholder="Email" value="test@example.com"><br>
+            <button onclick="testEndpoint()">Test Endpoint</button>
+        </div>
+        <div id="result"></div>
+    </body>
+    </html>
+    '''
+    from django.http import HttpResponse
+    return HttpResponse(html)
+
+
+    # Changed from 'delete.html' to 'governance_confirm_delete.html'
+    return render(request, 'main/governance/governance_confirm_delete.html', context)
+

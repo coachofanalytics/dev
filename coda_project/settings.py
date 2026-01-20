@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
     'memberjoin',
-    'communities'
+    'communities',
 
 ]
 
@@ -244,7 +244,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # If you have a project-level static directory
     # Add other directories if necessary
 ]
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 

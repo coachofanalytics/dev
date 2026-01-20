@@ -26,5 +26,6 @@ admin.site.register(ContactMessage)
 admin.site.register(Donation_organization)
 admin.site.register(Scholarship)
 admin.site.register(Testimonial)
+admin.site.register(Governance)
 #>>>>>>> 25.10_DC48_UAT_ND
 
