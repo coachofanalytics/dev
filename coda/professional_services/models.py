@@ -424,7 +424,7 @@ class FeaturedCategory(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(default=datetime.now)
     updated_at = models.DateTimeField(auto_now=True)
-    is_active = models.IntegerField(default=1)
+    is_active = models.BooleanField(default=True)
 
     objects=CategoryManager()
 

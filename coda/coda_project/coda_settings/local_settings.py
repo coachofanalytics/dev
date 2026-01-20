@@ -111,8 +111,9 @@ def get_database_config():
         print("   🧪 TEST_MODE detected — using in-memory SQLite database")
         return get_sqlite_config(memory=True)
 
-    DB_TYPE = db_type_env or "clone"
-    print("🗄️  DB_TYPE: ", DB_TYPE)
+    #DB_TYPE = db_type_env or "postgres"
+    DB_TYPE = db_type_env or "postgres"
+    print("DB_TYPE: ", DB_TYPE)
     USE_POSTGRESQL = os.environ.get("USE_POSTGRESQL", "False").lower() == "true"
 
     # Database URLs from environment
@@ -120,7 +121,7 @@ def get_database_config():
     PROD_DATABASE_URL = os.environ.get("PROD_DATABASE_URL")  # Heroku Production
     LOCAL_POSTGRES_URL = os.environ.get("LOCAL_POSTGRES_URL")  # Local PostgreSQL
 
-    print("🗄️ Database Configuration:")
+    print("Database Configuration:")
     print(f"   DB_TYPE: {DB_TYPE}")
     print(f"   USE_POSTGRESQL: {USE_POSTGRESQL}")
 
@@ -161,8 +162,11 @@ def get_database_config():
             import dj_database_url
 
             db_config = dj_database_url.parse(
-                db_url, conn_max_age=600, ssl_require=True
+                db_url,
+                conn_max_age=600,
+                ssl_require=False,  # ✅ DO NOT force SSL
             )
+            
             print(f"   ✅ Connected to {db_name}")
             print(f"   📍 Host: {db_config.get('HOST', 'Unknown')}")
             print(f"   📍 Database: {db_config.get('NAME', 'Unknown')}")
