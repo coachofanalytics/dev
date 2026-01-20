@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -353,6 +355,30 @@ class Testimonial(models.Model):
 
     def __str__(self):
         return f"Testimonial from {self.name}"
+    
+class Governance(models.Model):
+    """
+    Governance Model for CRUD operations
+    """
+    governance_category = models.CharField(max_length=255, null=False, blank=False)
+    description = models.TextField(null=False, blank=False)
+    members = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        null=False, 
+        blank=False,
+        related_name='governance_memberships'
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.governance_category} - {self.members.username}"
+    
+    class Meta:
+        verbose_name = "Governance"
+        verbose_name_plural = "Governance Records"
+        ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
         # You can add more custom logic here if needed

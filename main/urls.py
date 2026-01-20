@@ -69,4 +69,14 @@ urlpatterns = [
 
     path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
 
+     path('governance/', views.governance_list, name='governance_list'),
+    path('governance/create/', views.governance_create, name='governance_create'),
+    path('governance/<int:pk>/', views.governance_detail, name='governance_detail'),
+    path('governance/<int:pk>/update/', views.governance_update, name='governance_update'),
+    path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),
+
+    # Quick add user endpoint
+    path('quick-add-user/', views.quick_add_user, name='quick_add_user'),
+    # In your app's urls.py
+    path('test-user-endpoint/', views.test_user_endpoint, name='test_user_endpoint'),
 ]    
