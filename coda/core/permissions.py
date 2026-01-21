@@ -331,6 +331,12 @@ def get_user_dashboards(user):
             'url': '/finance/automation/',
             'icon': 'fas fa-robot'
         })
+        dashboards.append({
+            'name': 'shareholders',
+            'title': 'Shareholders Management',
+            'url': '/shareholders/dashboard/',
+            'icon': 'fas fa-users-cog'
+        })
     
     return dashboards
 

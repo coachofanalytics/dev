@@ -1,0 +1,842 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% comment %}
+ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholders/icons/
+{% endcomment %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ShareHold Dashboard Styles - Matching Reference UI */
+:root {
+    --sh-sidebar-bg: #0f172a;
+    --sh-primary: #2563eb;
+    --sh-primary-light: #3b82f6;
+    --sh-text-dark: #1e293b;
+    --sh-text-muted: #64748b;
+    --sh-border: #e2e8f0;
+    --sh-card-bg: #ffffff;
+    --sh-page-bg: #f8fafc;
+}
+
+.sh-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: var(--sh-page-bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Sidebar Styles */
+.sh-sidebar {
+    width: 280px;
+    background: var(--sh-sidebar-bg);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sh-sidebar-header {
+    padding: 2rem;
+}
+
+.sh-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+}
+
+.sh-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--sh-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-logo-text {
+    color: white;
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+}
+
+.sh-logo-text span {
+    color: var(--sh-primary-light);
+}
+
+.sh-logo-subtitle {
+    color: #475569;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Navigation */
+.sh-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sh-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.sh-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.sh-nav-item.active {
+    background: var(--sh-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.sh-nav-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.sh-nav-item .sh-icon,
+.sh-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.sh-logo-icon .sh-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.sh-stat-icon.sh-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.sh-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.sh-nav-section {
+    padding: 2rem 1rem 1rem;
+}
+
+.sh-nav-section-title {
+    color: #475569;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Main Content */
+.sh-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sh-header {
+    height: 80px;
+    background: white;
+    border-bottom: 1px solid var(--sh-border);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sh-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sh-text-muted);
+    font-size: 0.875rem;
+}
+
+.sh-breadcrumb-current {
+    color: var(--sh-text-dark);
+    font-weight: 600;
+}
+
+.sh-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2.5rem;
+}
+
+.sh-content-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Stats Cards */
+.sh-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sh-stat-card {
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: white;
+    border: 1px solid var(--sh-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sh-stat-card.primary {
+    background: var(--sh-primary);
+    border: none;
+    color: white;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+}
+
+.sh-stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.sh-stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.sh-stat-card.primary .sh-stat-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.sh-stat-card:not(.primary) .sh-stat-label {
+    color: var(--sh-text-muted);
+}
+
+.sh-stat-icon {
+    opacity: 0.6;
+}
+
+.sh-stat-card.primary .sh-stat-icon {
+    opacity: 0.5;
+}
+
+.sh-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.sh-stat-card:not(.primary) .sh-stat-value {
+    color: var(--sh-text-dark);
+}
+
+.sh-stat-meta {
+    font-size: 0.75rem;
+}
+
+.sh-stat-card.primary .sh-stat-meta {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sh-stat-card:not(.primary) .sh-stat-meta {
+    color: var(--sh-text-muted);
+}
+
+.sh-stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* Two Column Layout */
+.sh-two-col {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+/* Card Component */
+.sh-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--sh-border);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sh-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: rgba(248, 250, 252, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sh-card-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--sh-text-dark);
+}
+
+.sh-card-action {
+    color: var(--sh-primary);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.sh-card-action:hover {
+    text-decoration: underline;
+}
+
+.sh-card-body {
+    padding: 1.5rem;
+}
+
+/* Cap Table */
+.sh-table {
+    width: 100%;
+}
+
+.sh-table thead tr {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sh-table th {
+    padding: 0 0 0.75rem 0;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--sh-text-muted);
+    text-align: left;
+}
+
+.sh-table th:last-child {
+    text-align: right;
+}
+
+.sh-table tbody tr {
+    border-bottom: 1px solid #f8fafc;
+    transition: background 0.15s ease;
+    cursor: pointer;
+}
+
+.sh-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.sh-table td {
+    padding: 1rem 0;
+}
+
+.sh-table td:last-child {
+    text-align: right;
+}
+
+.sh-member-name {
+    font-weight: 600;
+    color: var(--sh-text-dark);
+}
+
+.sh-member-role {
+    font-size: 12px;
+    color: var(--sh-text-muted);
+}
+
+.sh-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.sh-badge-default {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.sh-badge-info {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.sh-cash-value {
+    font-family: 'SF Mono', Monaco, monospace;
+    color: #475569;
+    font-size: 0.875rem;
+}
+
+.sh-equity-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.sh-equity-value {
+    font-weight: 600;
+    color: var(--sh-primary);
+}
+
+.sh-equity-bar {
+    width: 80px;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.sh-equity-bar-fill {
+    height: 100%;
+    background: var(--sh-primary-light);
+    border-radius: 999px;
+}
+
+/* Weights Policy */
+.sh-fx-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.sh-fx-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sh-text-dark);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.sh-fx-label i {
+    color: var(--sh-primary);
+}
+
+.sh-fx-value {
+    font-family: 'SF Mono', Monaco, monospace;
+    font-weight: 700;
+    color: var(--sh-text-dark);
+    font-size: 0.875rem;
+}
+
+.sh-weight-item {
+    margin-bottom: 1rem;
+}
+
+.sh-weight-item:last-child {
+    margin-bottom: 0;
+}
+
+.sh-weight-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 0.375rem;
+}
+
+.sh-weight-label {
+    color: #475569;
+}
+
+.sh-weight-value {
+    font-weight: 700;
+    color: var(--sh-text-dark);
+}
+
+.sh-weight-bar {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.sh-weight-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.sh-weight-bar-fill.cash {
+    background: #10b981;
+}
+
+.sh-weight-bar-fill.inkind {
+    background: #3b82f6;
+}
+
+.sh-weight-bar-fill.time {
+    background: #6366f1;
+}
+
+.sh-weight-bar-fill.work {
+    background: #f59e0b;
+}
+
+/* Back Link */
+.sh-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sh-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.sh-back-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .sh-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .sh-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .sh-sidebar {
+        display: none;
+    }
+    
+    .sh-header {
+        padding: 0 1.5rem;
+    }
+    
+    .sh-content {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .sh-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <!-- Logo -->
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                </div>
+                <div>
+                    <div class="sh-logo-text">SHARE<span>HOLD</span></div>
+                    <div class="sh-logo-subtitle">Equity Pilot v1.0</div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="sh-nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+                    <span>Ledgers</span>
+                </a>
+                <a href="#" class="sh-nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>Members & Equity</span>
+                </a>
+                <a href="#" class="sh-nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span>Snapshots</span>
+                </a>
+                
+                <div class="sh-nav-section">
+                    <div class="sh-nav-section-title">Administration</div>
+                </div>
+                
+                <a href="#" class="sh-nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span>Deal Config</span>
+                </a>
+                <a href="#" class="sh-nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>
+                    <span>Audit Log</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="sh-main">
+        <!-- Header -->
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'dashboard:unified_dashboard' %}" style="color: inherit; text-decoration: none;">Deal Portal</a>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <span class="sh-breadcrumb-current">Project Phoenix Pilot</span>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="sh-content">
+            <div class="sh-content-inner">
+                <!-- Back to Dashboard -->
+                <a href="{% url 'dashboard:unified_dashboard' %}" class="sh-back-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Command Center
+                </a>
+                
+                <!-- Stats Grid -->
+                <div class="sh-stats-grid">
+                    <!-- Total Cash Invested -->
+                    <div class="sh-stat-card primary">
+                        <div class="sh-stat-header">
+                            <span class="sh-stat-label">Total Cash Invested</span>
+                            <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+                        </div>
+                        <div class="sh-stat-value">$67,000</div>
+                        <div class="sh-stat-meta">Pegged @ 127 KES/USD</div>
+                    </div>
+                    
+                    <!-- Active Members -->
+                    <div class="sh-stat-card">
+                        <div class="sh-stat-header">
+                            <span class="sh-stat-label">Active Members</span>
+                            <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <div class="sh-stat-value">4</div>
+                        <div class="sh-stat-trend">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                            +2 this month
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Approvals -->
+                    <div class="sh-stat-card">
+                        <div class="sh-stat-header">
+                            <span class="sh-stat-label">Pending Approvals</span>
+                            <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                        <div class="sh-stat-value">14</div>
+                        <div class="sh-stat-meta">7 items require action</div>
+                    </div>
+                    
+                    <!-- Next Snapshot -->
+                    <div class="sh-stat-card">
+                        <div class="sh-stat-header">
+                            <span class="sh-stat-label">Next Snapshot</span>
+                            <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div class="sh-stat-value">12d</div>
+                        <div class="sh-stat-meta">Jan 01, 2026</div>
+                    </div>
+                </div>
+                
+                <!-- Two Column Layout -->
+                <div class="sh-two-col">
+                    <!-- Cap Table Card -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <span class="sh-card-title">Equity Cap Table (Live Estimates)</span>
+                            <a href="#" class="sh-card-action">Manage Members</a>
+                        </div>
+                        <div class="sh-card-body">
+                            <table class="sh-table">
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Type</th>
+                                        <th>Cash ($)</th>
+                                        <th>Equity %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="sh-member-name">Alice Mwangi</div>
+                                            <div class="sh-member-role">Founder</div>
+                                        </td>
+                                        <td><span class="sh-badge sh-badge-default">PERSON</span></td>
+                                        <td class="sh-cash-value">15,000</td>
+                                        <td>
+                                            <div class="sh-equity-cell">
+                                                <span class="sh-equity-value">35.5%</span>
+                                                <div class="sh-equity-bar">
+                                                    <div class="sh-equity-bar-fill" style="width: 35.5%;"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="sh-member-name">Bob Chen</div>
+                                            <div class="sh-member-role">Lead Dev</div>
+                                        </td>
+                                        <td><span class="sh-badge sh-badge-default">PERSON</span></td>
+                                        <td class="sh-cash-value">2,000</td>
+                                        <td>
+                                            <div class="sh-equity-cell">
+                                                <span class="sh-equity-value">28.2%</span>
+                                                <div class="sh-equity-bar">
+                                                    <div class="sh-equity-bar-fill" style="width: 28.2%;"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="sh-member-name">Global Ventures</div>
+                                            <div class="sh-member-role">Investor</div>
+                                        </td>
+                                        <td><span class="sh-badge sh-badge-info">ENTITY</span></td>
+                                        <td class="sh-cash-value">50,000</td>
+                                        <td>
+                                            <div class="sh-equity-cell">
+                                                <span class="sh-equity-value">30.3%</span>
+                                                <div class="sh-equity-bar">
+                                                    <div class="sh-equity-bar-fill" style="width: 30.3%;"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="sh-member-name">David Kim</div>
+                                            <div class="sh-member-role">PM</div>
+                                        </td>
+                                        <td><span class="sh-badge sh-badge-default">PERSON</span></td>
+                                        <td class="sh-cash-value">0</td>
+                                        <td>
+                                            <div class="sh-equity-cell">
+                                                <span class="sh-equity-value">6%</span>
+                                                <div class="sh-equity-bar">
+                                                    <div class="sh-equity-bar-fill" style="width: 6%;"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Weights Policy Card -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <span class="sh-card-title">Weights Policy</span>
+                        </div>
+                        <div class="sh-card-body">
+                            <!-- FX Peg -->
+                            <div class="sh-fx-box">
+                                <div class="sh-fx-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 21 7 17 3"></polyline><line x1="21" y1="7" x2="9" y2="7"></line><polyline points="7 21 3 17 7 13"></polyline><line x1="15" y1="17" x2="3" y2="17"></line></svg>
+                                    <span>FX Peg</span>
+                                </div>
+                                <span class="sh-fx-value">$1 = KES 127</span>
+                            </div>
+                            
+                            <!-- Weight Bars -->
+                            <div class="sh-weight-item">
+                                <div class="sh-weight-header">
+                                    <span class="sh-weight-label">Cash</span>
+                                    <span class="sh-weight-value">55%</span>
+                                </div>
+                                <div class="sh-weight-bar">
+                                    <div class="sh-weight-bar-fill cash" style="width: 55%;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="sh-weight-item">
+                                <div class="sh-weight-header">
+                                    <span class="sh-weight-label">In-Kind</span>
+                                    <span class="sh-weight-value">20%</span>
+                                </div>
+                                <div class="sh-weight-bar">
+                                    <div class="sh-weight-bar-fill inkind" style="width: 20%;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="sh-weight-item">
+                                <div class="sh-weight-header">
+                                    <span class="sh-weight-label">Time</span>
+                                    <span class="sh-weight-value">10%</span>
+                                </div>
+                                <div class="sh-weight-bar">
+                                    <div class="sh-weight-bar-fill time" style="width: 10%;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="sh-weight-item">
+                                <div class="sh-weight-header">
+                                    <span class="sh-weight-label">Work</span>
+                                    <span class="sh-weight-value">15%</span>
+                                </div>
+                                <div class="sh-weight-bar">
+                                    <div class="sh-weight-bar-fill work" style="width: 15%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('ShareHold Dashboard initialized');
+    
+    // Add click handlers to table rows for future detail views
+    const tableRows = document.querySelectorAll('.sh-table tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('click', function() {
+            console.log('Member row clicked - detail view coming soon');
+        });
+    });
+});
+</script>
+{% endblock %}
