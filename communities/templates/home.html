@@ -6,27 +6,20 @@
    
     <main class="mx-auto pb-16">
 
-        <!-- HERO SECTION - Community Support Focus (Matching Legal/Document Design) -->
-        <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12 mt-3 small">
-            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
-                <!-- Text Content Column -->
-                <div class="p-8 md:p-12 lg:p-16">
-                    <h1 class="text-5xl main-heading mb-4">COMMUNITY SUPPORT</h1>
-                    <h2 class="text-xl font-medium text-gray-200 mb-8">
-                        Connecting the diaspora through networking, cultural events, and reliable social resources.
+        <!-- HERO SECTION - Full-width background image with centered overlay -->
+        <header class="relative text-white shadow-xl overflow-hidden mb-12 small" style="background-image: url('{% static "community/img/img1.png" %}'); background-size: cover; background-position: center; min-height: 400px;">
+            <div class="absolute inset-0 bg-black opacity-50"></div>
+            <div class="relative max-w-7xl mx-auto h-full flex items-center justify-center">
+                <div class="text-center p-8 md:p-12 lg:p-16">
+                    <h1 class="text-5xl main-heading mb-4 font-extrabold text-white">COMMUNITY SUPPORT</h1>
+                    <h2 class="text-xl font-medium text-white mb-8">
+                        Connecting the diaspora through networking, cultural events, 
+                        and reliable social resources.
                     </h2>
-                 <a id="join-btn" href="{% url 'join' %}" 
-   class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
-   JOIN THE COMMUNITY
-</a>
+                    <a id="join-btn" href="{% url 'join' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
+                        JOIN THE COMMUNITY
+                    </a>
                 </div>
-               <div class="w-full h-full hero-image-container">
-    <img id="image-hero"
-         src="{% static 'community/img/img1.png' %}"
-         alt="Community Hero Image"
-         class="w-full h-full object-cover loading-placeholder"
-         style="max-height: 400px; min-height: 400px;">
-</div>
             </div>
         </header>
 
