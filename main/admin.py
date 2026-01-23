@@ -14,6 +14,13 @@ admin.site.register(SubService)
 admin.site.register(News)
 admin.site.register(Gallery_image)
 admin.site.register(ContactUs)
+#<<<<<<< 25.10_DC48_UAT_UO
+admin.site.register(SafetyAlertSubscription)
+admin.site.register(EmergencyHotlines)
+admin.site.register(StaffContact)
+admin.site.register(EmergencyHelpActivations)
+
+#=======
 admin.site.register(Donation_organisation)
 admin.site.register(ContactMessage)
 admin.site.register(Donation_organization)

@@ -31,6 +31,18 @@
     <!-- Navigation is provided by base template's navbar include -->
 
     <main class="mx-auto pb-16">
+        <!-- Mentorship success modal (shows after successful form submission) -->
+        <div id="mentorship-success-modal" role="dialog" aria-modal="true" aria-labelledby="mentorship-success-title" style="display:none;">
+            <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 mx-4">
+                    <h2 id="mentorship-success-title" class="text-xl font-semibold text-gray-900 mb-2">Thank you</h2>
+                    <p class="text-gray-700 mb-4">Thank you for your request — we will review it and get back to you shortly.</p>
+                    <div class="text-right">
+                        <button id="mentorship-success-close" class="bg-brand-blue text-white px-4 py-2 rounded">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
                 <div class="p-8 md:p-12 lg:p-16">
@@ -80,7 +92,7 @@
                         <li>Career advisory and job placement assistance networks</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="#" onclick="setView('training'); return false;" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">Register for Upcoming Courses</a>
+                        <a id="register-courses-btn" href="{% url 'main:course_register' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">Register for Upcoming Courses</a>
                     </div>
                 </div>
                 <div class="lg:order-2">
@@ -88,10 +100,13 @@
                 </div>
             </div>
 
+            <!-- Placeholder where course register fragment will be injected when user clicks Register -->
+            <div id="course-register-container" class="mt-8"></div>
+
             <div class="bg-brand-blue text-white p-8 md:p-12 rounded-xl shadow-2xl mt-16 text-center">
                 <h3 class="text-4xl font-extrabold mb-3">SEEKING CAREER GUIDANCE?</h3>
                 <p class="text-xl text-gray-200 mb-6">Connect with a Diaspora County 48 career mentor for personalized advice on global career transitions and opportunities back home.</p>
-                <a href="#" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">Request Mentorship Session</a>
+                <a href="{% url 'main:request_mentorship' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">Request Mentorship Session</a>
             </div>
         </section>
     </main>
@@ -179,6 +194,144 @@
             document.getElementById('image-scholarships').src = scholarshipsStatic;
             document.getElementById('image-training').src = trainingStatic;
         });
+    </script>
+
+    <script>
+        // Show mentorship success modal if the view was passed a success flag
+        (function(){
+            const show = "{{ mentorship_success|yesno:'true,false' }}" === "true";
+            if(!show) return;
+            const modal = document.getElementById('mentorship-success-modal');
+            const close = document.getElementById('mentorship-success-close');
+            if(!modal) return;
+            modal.style.display = 'block';
+            // focus the close button for accessibility
+            if(close) close.focus();
+            close && close.addEventListener('click', function(){
+                modal.style.display = 'none';
+                // remove the mentorship query param from the URL so refresh won't show the modal again
+                try{
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('mentorship');
+                    window.history.replaceState({}, document.title, url.pathname + url.search);
+                }catch(e){ /* ignore */ }
+            });
+        })();
+    </script>
+
+    <script>
+        // Navigate to the dedicated Course Registration page when Register is clicked
+        (function(){
+            const btn = document.getElementById('register-courses-btn');
+            if(!btn) return;
+            btn.addEventListener('click', function(e){
+                // Ensure we always redirect to the full registration page
+                e.preventDefault();
+                window.location.href = btn.getAttribute('href');
+            });
+        })();
+    </script>
+
+    <!-- Floating Chatbot Widget: lightweight client-side mock (no external calls) -->
+    <div id="dc48k-chatbot" class="fixed bottom-6 right-6 z-50">
+        <button id="dc48k-chatbot-toggle" aria-label="Open chat" title="Ask the Education Assistant"
+                class="bg-brand-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue">
+            Chat
+        </button>
+
+    <div id="dc48k-chatbot-window" class="w-80 bg-white rounded-xl shadow-2xl mt-3 box-border" style="display:none; box-sizing: border-box;">
+            <div class="bg-brand-blue text-white px-4 py-3 flex items-center justify-between">
+                <div class="font-semibold">Education Assistant</div>
+                <button id="dc48k-chatbot-close" aria-label="Close chat" class="text-white opacity-90 hover:opacity-100">✕</button>
+            </div>
+            <div id="dc48k-chatbot-messages" class="p-3 h-56 overflow-auto text-sm bg-gray-50">
+                <!-- messages are appended here -->
+                <div class="text-gray-500 text-xs mb-2">Hi — ask me about scholarships, courses, or mentorship.</div>
+            </div>
+            <form id="dc48k-chatbot-form" class="flex items-center border-t px-3 py-2 bg-white" action="javascript:void(0);">
+                <!-- min-w-0 prevents flex children from overflowing the container on narrow widths -->
+                <input id="dc48k-chatbot-input" type="text" placeholder="Type a question..." class="flex-1 min-w-0 mr-2 px-3 py-2 rounded-md border focus:outline-none" />
+                <!-- flex-shrink-0 ensures the button keeps its size and isn't partially hidden -->
+                <button id="dc48k-chatbot-send" type="submit" class="flex-shrink-0 bg-brand-green text-white font-semibold px-3 py-2 rounded-md">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const toggleBtn = document.getElementById('dc48k-chatbot-toggle');
+            const win = document.getElementById('dc48k-chatbot-window');
+            const closeBtn = document.getElementById('dc48k-chatbot-close');
+            const form = document.getElementById('dc48k-chatbot-form');
+            const input = document.getElementById('dc48k-chatbot-input');
+            const messages = document.getElementById('dc48k-chatbot-messages');
+
+            const canned = [
+                'You can search scholarships in the Scholarships section above. Try clicking "FIND YOUR SCHOLARSHIP".',
+                'Mentorship requests are available — click the "Request Mentorship Session" button to start.',
+                'We list both online and Kenya-based training courses. Use the Register button under Training to enroll.',
+                'If you need help with applications, I can suggest tips: tailor your essay, meet deadlines, and provide references.'
+            ];
+
+            function appendMessage(text, who) {
+                const el = document.createElement('div');
+                el.className = who === 'user' ? 'text-right mb-2' : 'text-left mb-2';
+                const bubble = document.createElement('div');
+                bubble.className = (who === 'user' ? 'inline-block bg-brand-green text-white px-3 py-2 rounded-lg' : 'inline-block bg-white border px-3 py-2 rounded-lg');
+                bubble.textContent = text;
+                el.appendChild(bubble);
+                messages.appendChild(el);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function botReply(userText) {
+                // very small heuristic: if user mentions "scholar" reply with scholarship hint
+                const t = userText.toLowerCase();
+                if (t.includes('scholar')) return 'Try the "FIND YOUR SCHOLARSHIP" button — it shows curated scholarships and deadlines.';
+                if (t.includes('mentor') || t.includes('mentorship')) return 'Use the Request Mentorship Session button to contact a mentor. Provide your availability and goals.';
+                if (t.includes('course') || t.includes('training')) return 'Check the Training section for upcoming courses; you can register directly from this page.';
+                // fallback: random canned reply
+                return canned[Math.floor(Math.random() * canned.length)];
+            }
+
+            toggleBtn.addEventListener('click', function() {
+                if (win.style.display === 'none' || win.style.display === '') {
+                    win.style.display = 'block';
+                    input.focus();
+                } else {
+                    win.style.display = 'none';
+                }
+            });
+
+            closeBtn.addEventListener('click', function() {
+                win.style.display = 'none';
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const txt = input.value && input.value.trim();
+                if (!txt) return;
+                appendMessage(txt, 'user');
+                input.value = '';
+                // simulate thinking
+                const thinking = document.createElement('div');
+                thinking.className = 'text-left mb-2';
+                thinking.innerHTML = '<div class="inline-block bg-white border px-3 py-2 rounded-lg text-gray-500 italic">Typing…</div>';
+                messages.appendChild(thinking);
+                messages.scrollTop = messages.scrollHeight;
+                setTimeout(() => {
+                    thinking.remove();
+                    appendMessage(botReply(txt), 'bot');
+                }, 700 + Math.random() * 900);
+            });
+
+            // close on Escape key when open
+            document.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Escape' && win.style.display === 'block') {
+                    win.style.display = 'none';
+                }
+            });
+        })();
     </script>
 
 </div>
