@@ -23,7 +23,12 @@ from .models import (
 )
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
-from .utils import image_view, path_values
+from .utils import image_view,path_values
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
+##=======
+from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance
+from accounts.models import CustomerUser
+from .utils import image_view,path_values
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
 from django.contrib.auth import get_user_model
@@ -38,6 +43,7 @@ from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
+from django.http import HttpResponse
 # Details Donation View
 class DonationDetailView(DetailView):
     model = Donation_organization
@@ -622,41 +628,73 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
-# Scholarship search view — renders the scholarship search template and handles basic filters
+#>>>>>>> origin/25.10_DC48K_UAT_FN
+
 def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
+
+    # Direct GET filters (used by integration tests)
+    level = request.GET.get('level')
+    field = request.GET.get('field')
+
+    if level and level != 'All':
+        scholarships = scholarships.filter(level=level)
+
+    if field and field != 'All':
+        scholarships = scholarships.filter(field=field)
+
     if form.is_valid():
         data = form.cleaned_data
-        # keyword search
-        kw = data.get('search_keyword')
-        if kw:
-            scholarships = scholarships.filter(
-                Q(title__icontains=kw) | Q(provider__icontains=kw)
-            )
-        # level filter
-        level = data.get('filter_level')
-        if level:
-            scholarships = scholarships.filter(level=level)
-        # field filter
-        field = data.get('filter_field')
-        if field:
-            scholarships = scholarships.filter(field=field)
-        # location filter
-        location = data.get('filter_location')
-        if location:
-            scholarships = scholarships.filter(location=location)
-        # status
-        if data.get('filter_status'):
-            scholarships = scholarships.filter(status__icontains='Closing')
+
+        if data.get('filter_level') and data['filter_level'] != 'All' and not level:
+            scholarships = scholarships.filter(level=data['filter_level'])
+
+        if data.get('filter_field') and data['filter_field'] != 'All' and not field:
+            scholarships = scholarships.filter(field=data['filter_field'])
+
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
-#<<<<<<< HEAD
-    return render(request, 'scholarship_app/scholarship_search.html',context)
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
     return render(request, 'scholarship_app/scholarship_search.html', context)
-#>>>>>>> origin/25.11_DC48K_UAT_FN
+
+from .models import Governance
+from .forms import GovernanceForm
+
+def governance_create(request):
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:governance_list')
+    else:
+        form = GovernanceForm()
+    return render(request, 'main/governance_create.html', {'form': form})
+
+###################    
+
+def governance_list(request):
+    governances = Governance.objects.all()
+    return render(request, 'main/governance_list.html', {'governances': governances})
+
+###################
+def governance_update(request,pk):
+    governance = get_object_or_404(Governance, pk=pk)
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST, instance=governance)
+        if form.is_valid():
+            form.save()
+            return redirect('main:governance_list')
+    else:
+        form = GovernanceForm(instance=governance)
+    return render(request, 'main/governance_update.html', {'form': form, 'governance': governance})
+
+#####################
+def governance_delete(request,pk):
+    governance = get_object_or_404(Governance, pk=pk)
+    if request.method == 'POST':
+        governance.delete()
+        return redirect('main:governance_list')
+    return render(request, 'main/governance_delete.html', {'governance': governance})

@@ -25,5 +25,4 @@ admin.site.register(Donation_organisation)
 admin.site.register(ContactMessage)
 admin.site.register(Donation_organization)
 admin.site.register(Scholarship)
-#>>>>>>> 25.10_DC48_UAT_ND
-
+admin.site.register(Governance)

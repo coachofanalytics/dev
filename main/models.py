@@ -315,6 +315,12 @@ class TrainingCourse(models.Model):
         return self.title
 #<<<<<<< 25.10_DC48_UAT_UO
     
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
+class Governance(models.Model):
+    governance_category = models.CharField(max_length=200, null=False, blank=False)
+    description = models.TextField(null=False, blank=False)
+    members= models.ForeignKey(null=False, blank=False, on_delete=models.CASCADE, to=Team)
+    createdAt= models.DateTimeField(auto_now_add=True)
+    updatedAt= models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.governance_category

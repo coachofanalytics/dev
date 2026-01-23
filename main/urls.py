@@ -62,4 +62,10 @@ urlpatterns = [
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
+#>>>>>>> 26.01_DC48K_Dev_md
+    path('governance/', views.governance_list, name='governance_list'),
+    path('governance/create/', views.governance_create, name='governance_create'),
+    path('governance/update/<int:pk>/', views.governance_update, name='governance_update'),
+    path('governance/delete/<int:pk>/', views.governance_delete, name='governance_delete'),
+
 ]    

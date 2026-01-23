@@ -365,3 +365,6 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
+
+# settings.py
+WHITENOISE_MANIFEST_STRICT = False

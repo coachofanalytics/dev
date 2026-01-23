@@ -93,4 +93,13 @@ class ScholarshipSearchForm(forms.Form):
             }
         )
     )
+    
+
+
+from .models import Governance
+
+class GovernanceForm(forms.ModelForm):
+    class Meta:
+        model = Governance
+        fields = ['governance_category', 'description', 'members']
 

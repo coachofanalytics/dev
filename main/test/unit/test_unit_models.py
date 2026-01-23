@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from main.models import Scholarship
+from main.models import Scholarship, Governance, Team
 
 class ScholarshipModelTest(TestCase):
 
@@ -252,3 +252,14 @@ class ScholarshipManagerTest(TestCase):
         open_scholarships = Scholarship.objects.filter(status="Open")
         self.assertIn(self.open_scholarship, open_scholarships)
         self.assertNotIn(self.closed_scholarship, open_scholarships)
+
+class GovernanceModelTest(TestCase):
+    def test_create_governance(self):
+        member = Team.objects.create(name="John Doe")
+        gov = Governance.objects.create(
+            governance_category="Policy",
+            description="Test description",
+            members=member  
+        )
+        
+        self.assertEqual(gov.governance_category, "Policy")
