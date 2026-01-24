@@ -1,11 +1,16 @@
 from django.shortcuts import render
 
 # Create your views here.
-from django.shortcuts import redirect, get_object_or_404
+from sched import Event
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
+from main.forms import MessageForm
 from .utils import send_email
 from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm
 from .models import Post, ForumCategory, CommentP, EventCalendar  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
@@ -164,6 +169,37 @@ def event_detail(request, id):
     event = get_object_or_404(EventCalendar, id=id)
     
     return render(request, 'event_detail.html', {'event': event})
+
+# Edit event
+def edit_event(request, id):
+    # Fetch the event by ID
+    event = get_object_or_404(EventCalendar, id=id)
+    
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()  # Save the updated event to the database
+            messages.success(request, "Event updated successfully!")
+            return redirect('event_detail', id=event.id)  # Redirect to event detail page
+        else:
+            messages.error(request, "There was an error with your form. Please try again.")
+    else:
+        form = EventForm(instance=event)
+    
+    return render(request, 'edit_event.html', {'form': form, 'event': event})
+
+# Delete event
+def delete_event(request, id):
+    # Fetch the event by ID
+    event = get_object_or_404(EventCalendar, id=id)
+    
+    if request.method == 'POST':
+        event.delete()  # Delete the event from the database
+        messages.success(request, "Event deleted successfully!")
+        return redirect('event_calendar')  # Redirect to the event calendar page
+    
+    return render(request, 'delete_event.html', {'event': event})
+
 # Contact Regional Coordinator
 def contact_view(request):
     if request.method == 'POST':
