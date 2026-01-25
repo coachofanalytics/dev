@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 from django.db import models
-from django.contrib.auth.models import User
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -51,7 +51,7 @@ class EventCalendar(models.Model):
     description = models.TextField()
 
     def __str__(self):
-        return self.name
+        return self.name     
 class ContactMessage(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -60,3 +60,72 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.email}) on {self.created_at}"
+
+class UserProfile(models.Model):
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
+
+
+    full_name = models.CharField(max_length=150, blank=True, null=True)
+
+    contact_email = models.EmailField(blank=True, null=True)
+
+    county_city = models.CharField(max_length=120, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+
+        return f"{self.user.username} Profile"
+
+class UserSettings(models.Model):
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="settings")
+
+    enable_notifications = models.BooleanField(default=True)
+
+    enable_2fa = models.BooleanField(default=False)
+
+    allow_marketing_emails = models.BooleanField(default=False)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+
+        return f"{self.user.username} Settings"
+
+class UserPreferences(models.Model):
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preferences")
+
+    interest_area = models.CharField(max_length=150, blank=True, null=True)
+
+    communication_channel = models.CharField(
+
+    max_length=50,
+
+    choices=[
+
+    ("Email", "Email"),
+
+    ("SMS", "SMS"),
+
+    ("WhatsApp", "WhatsApp"),
+
+    ("Telegram", "Telegram"),
+
+    ],
+
+    default="Email"
+
+    )
+
+    profile_visibility = models.BooleanField(default=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+
+        return f"{self.user.username} Preferences"
