@@ -1,0 +1,47 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block title %}Service Categories{% endblock %}
+
+{% block content %}
+<section class="py-4">
+  <div class="container">
+
+    <h3 class="fw-bold mb-3">
+      Categories under Service: {{ service.title }}
+    </h3>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Slug</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for cat in categories %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ cat.name }}</td>
+              <td>{{ cat.slug }}</td>
+              <td>{{ cat.description|truncatechars:60 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-3">No categories found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

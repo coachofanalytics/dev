@@ -20,14 +20,11 @@ class LocationAdmin(admin.ModelAdmin):
     ...
     # your_app/admin.py
 
-
 @admin.register(ServiceCategory)
 class ServiceCategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'slug', 'is_active', 'is_featured')
-    list_filter = ('is_active', 'is_featured')
-    search_fields = ('name', 'slug'),
-    prepopulated_fields = {'slug': ('name',)}  # Optional: auto-generate slug from name
+    list_display = ("id", "name", "slug", "service", "is_active", "is_featured")
+    list_filter = ("is_active", "is_featured")
+    search_fields = ("name", "slug", "description")  # ✅ FIXED
+    prepopulated_fields = {"slug": ("name",)}
+    ordering = ("-id",)
 
-
-
-admin.site.register(WCAGStandardWebsite)

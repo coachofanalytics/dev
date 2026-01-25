@@ -1,0 +1,87 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block title %}All Service Categories{% endblock %}
+
+{% block content %}
+<section class="py-4">
+  <div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="fw-bold mb-0">All Service Categories</h3>
+
+      <a href="{% url 'main:servicecategory_create' %}" class="btn btn-success btn-sm">
+        + Add Category
+      </a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Service</th>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Active</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for cat in categories %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ cat.service }}</td>
+                <td>{{ cat.name }}</td>
+                <td>{{ cat.slug }}</td>
+
+                <td>
+                  {% if cat.is_active %}
+                    <span class="badge bg-success">Yes</span>
+                  {% else %}
+                    <span class="badge bg-danger">No</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if cat.is_featured %}
+                    <span class="badge bg-primary">Yes</span>
+                  {% else %}
+                    <span class="badge bg-secondary">No</span>
+                  {% endif %}
+                </td>
+
+                <td class="d-flex gap-2">
+                  <a href="{% url 'main:servicecategory_delete' cat.pk %}" class="btn btn-sm btn-info text-white">
+                    View
+                  </a>
+                  <a href="{% url 'main:servicecategory_update' cat.pk %}" class="btn btn-sm btn-warning">
+                    Edit
+                  </a>
+                  <a href="{% url 'main:servicecategory_delete' cat.pk %}" class="btn btn-sm btn-danger">
+                    Delete
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-4">
+                  No Service Categories found.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

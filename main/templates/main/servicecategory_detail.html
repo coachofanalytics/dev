@@ -1,0 +1,56 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block title %}Service Category Detail{% endblock %}
+
+{% block content %}
+<section class="py-4">
+  <div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="fw-bold mb-0">Service Category Detail</h3>
+
+      <div class="d-flex gap-2">
+        <a href="{% url 'main:service_category_list' %}" class="btn btn-secondary btn-sm">
+          Back to List
+        </a>
+
+        <a href="{% url 'main:servicecategory_update' category.pk %}" class="btn btn-warning btn-sm">
+          Edit
+        </a>
+
+        <a href="{% url 'main:servicecategory_delete' category.pk %}" class="btn btn-danger btn-sm">
+          Delete
+        </a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <p><b>Service:</b> {{ category.service }}</p>
+        <p><b>Name:</b> {{ category.name }}</p>
+        <p><b>Slug:</b> {{ category.slug }}</p>
+        <p><b>Description:</b> {{ category.description }}</p>
+
+        <p><b>Active:</b>
+          {% if category.is_active %}
+            <span class="badge bg-success">Yes</span>
+          {% else %}
+            <span class="badge bg-danger">No</span>
+          {% endif %}
+        </p>
+
+        <p><b>Featured:</b>
+          {% if category.is_featured %}
+            <span class="badge bg-primary">Yes</span>
+          {% else %}
+            <span class="badge bg-secondary">No</span>
+          {% endif %}
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

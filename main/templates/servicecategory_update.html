@@ -1,0 +1,32 @@
+{% extends "main/base_templates/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Update Service Category{% endblock %}
+
+{% block content %}
+<section class="py-4">
+  <div class="container">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="fw-bold mb-3">Update Service Category</h4>
+
+        <form method="POST" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-success">Update</button>
+
+            <a href="#" class="btn btn-secondary">
+              Back to Details
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

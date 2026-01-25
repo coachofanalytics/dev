@@ -148,6 +148,9 @@ class MembershipRegistration(models.Model):
 
 from django.db import models
 
+
+
+
 class ServiceCategory(models.Model):
     service = models.IntegerField(null=True)
     name = models.CharField(max_length=255, null=True)
@@ -184,6 +187,27 @@ class WCAGStandardWebsite(models.Model):
     def __str__(self):
         return self.page_name or "Unnamed Page"
 
+
+
+class ServiceCategory(models.Model):
+    service = models.IntegerField(null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Service Category"
+        verbose_name_plural = "Service Categories"
+
+    def __str__(self):
+        return self.name or "Service Category"
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.name:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 
