@@ -4,27 +4,74 @@
     <h3 class="title">DAF ACTIVITIES</h3>
     <p class="p text-center">Click on your name to access your monthly tasks <b>{{total_count}}</b> activities this month</p>
 
-    <div class="row">
-      <div class="col-md-4">
+    <div class="row mb-3">
+      <div class="col-md-12">
         <p>
           <a href="{% url 'management:newcategory'%}" class="btn btn-secondary btn-sm">ADD CATEGORY</a>
           <a href="{% url 'management:newtaskgroup'%}" class="btn btn-secondary btn-sm">ADD GROUP</a>
+          <a href="{% url 'management:newtask'%}" class="btn btn-secondary btn-sm">ADD TASK</a>
+          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#filterPanel" aria-expanded="true" aria-controls="filterPanel">
+            <i class="fas fa-filter"></i> Filters
+          </button>
+          {% if request.GET %}
+          <a href="{% url 'management:tasks' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-times"></i> Clear All Filters
+          </a>
+          {% endif %}
         </p>
       </div>
-      <div class="col-md-4">
-        <form method="POST"  class="form-group">
-          {% csrf_token %}
-          <label for="user_tasks_filter">To filter by Category Tag</label>
-          <p>{{ form.category }} <button class="btn btn-outline-info" type="submit">Filter</button></p>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="collapse show" id="filterPanel">
+      <div class="card card-body mb-4 bg-light">
+        <h5 class="mb-3"><i class="fas fa-filter"></i> Filter Tasks</h5>
+        <form method="GET" class="row g-3">
+          <div class="col-md-3">
+            <label for="{{ filter_form.employee.id_for_label }}" class="form-label">{{ filter_form.employee.label }}</label>
+            {{ filter_form.employee }}
+          </div>
+          <div class="col-md-3">
+            <label for="{{ filter_form.category.id_for_label }}" class="form-label">{{ filter_form.category.label }}</label>
+            {{ filter_form.category }}
+          </div>
+          <div class="col-md-3">
+            <label for="{{ filter_form.group.id_for_label }}" class="form-label">{{ filter_form.group.label }}</label>
+            {{ filter_form.group }}
+          </div>
+          <div class="col-md-3">
+            <label for="{{ filter_form.is_active.id_for_label }}" class="form-label">{{ filter_form.is_active.label }}</label>
+            {{ filter_form.is_active }}
+          </div>
+          <div class="col-md-3">
+            <label for="{{ filter_form.featured.id_for_label }}" class="form-label">{{ filter_form.featured.label }}</label>
+            {{ filter_form.featured }}
+          </div>
+          <div class="col-md-3">
+            <label for="{{ filter_form.search.id_for_label }}" class="form-label">{{ filter_form.search.label }}</label>
+            {{ filter_form.search }}
+          </div>
+          <div class="col-md-3">
+            <label for="{{ filter_form.date_from.id_for_label }}" class="form-label">{{ filter_form.date_from.label }}</label>
+            {{ filter_form.date_from }}
+          </div>
+          <div class="col-md-3">
+            <label for="{{ filter_form.date_to.id_for_label }}" class="form-label">{{ filter_form.date_to.label }}</label>
+            {{ filter_form.date_to }}
+          </div>
+          <div class="col-md-12">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-search"></i> Apply Filters
+            </button>
+            <a href="{% url 'management:tasks' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-redo"></i> Reset
+            </a>
+          </div>
         </form>
       </div>
-      <div class="col-md-4">
-        <p><a href="{% url 'management:newtask'%}" class="btn btn-secondary btn-sm">ADD TASK</a></p>
-      </div>
     </div>
-  </div>
 
-  <hr>
+    <hr>
 
   {% if filtered_employee %}
   <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -120,12 +167,12 @@
     <ul class="pagination justify-content-center">
       {% if page_obj.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?page=1" aria-label="First">
+        <a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page=1" aria-label="First">
           <span aria-hidden="true">&laquo;&laquo;</span>
         </a>
       </li>
       <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+        <a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
           <span aria-hidden="true">&laquo;</span>
         </a>
       </li>
@@ -143,18 +190,18 @@
         {% if page_obj.number == num %}
         <li class="page-item active"><span class="page-link">{{ num }}</span></li>
         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+        <li class="page-item"><a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ num }}">{{ num }}</a></li>
         {% endif %}
       {% endfor %}
 
       {% if page_obj.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+        <a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">
           <span aria-hidden="true">&raquo;</span>
         </a>
       </li>
       <li class="page-item">
-        <a class="page-link" href="?page={{ paginator.num_pages }}" aria-label="Last">
+        <a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ paginator.num_pages }}" aria-label="Last">
           <span aria-hidden="true">&raquo;&raquo;</span>
         </a>
       </li>
@@ -201,6 +248,33 @@
     .btn-group {
       display: flex;
       gap: 4px;
+    }
+    
+    /* Filter panel styling */
+    #filterPanel .form-label {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+    
+    #filterPanel select,
+    #filterPanel input[type="text"],
+    #filterPanel input[type="date"] {
+      width: 100%;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+    }
+    
+    #filterPanel .card-body {
+      border-radius: 0.5rem;
+    }
+    
+    /* Active filter indicator */
+    .filter-active {
+      background-color: #e7f3ff;
+      border-left: 3px solid #0d6efd;
     }
   </style>
 </section>

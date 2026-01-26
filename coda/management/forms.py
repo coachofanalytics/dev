@@ -286,8 +286,73 @@ class BackgroundForm(forms.ModelForm):
 class TagFilterForm(forms.Form):
     category = forms.ModelChoiceField(
         queryset=TaskCategory.objects.all(),
-        label='Select a Category Tag'
+        label='Select a Category Tag',
+        required=False
     )
+
+class TaskFilterForm(forms.Form):
+    """Enhanced filter form for tasks"""
+    employee = forms.ModelChoiceField(
+        queryset=None,  # Will be set in __init__
+        label='Employee',
+        required=False,
+        empty_label='All Employees',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    category = forms.ModelChoiceField(
+        queryset=TaskCategory.objects.all(),
+        label='Category',
+        required=False,
+        empty_label='All Categories',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    group = forms.ModelChoiceField(
+        queryset=None,  # Will be set in __init__
+        label='Group',
+        required=False,
+        empty_label='All Groups',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    is_active = forms.ChoiceField(
+        choices=[('', 'All'), ('1', 'Active'), ('0', 'Inactive')],
+        label='Status',
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    featured = forms.ChoiceField(
+        choices=[('', 'All'), ('1', 'Featured'), ('0', 'Not Featured')],
+        label='Featured',
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    search = forms.CharField(
+        label='Search Activity',
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Search by activity name...', 'class': 'form-control'})
+    )
+    date_from = forms.DateField(
+        label='From Date',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    date_to = forms.DateField(
+        label='To Date',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from shared_core.users import CustomerUser
+        from accounts.models import TaskGroups
+        
+        # Set employee queryset
+        self.fields['employee'].queryset = CustomerUser.objects.filter(
+            is_staff=True, is_active=True
+        ).order_by('username')
+        
+        # Set group queryset
+        self.fields['group'].queryset = TaskGroups.objects.all().order_by('title')
 
 class MonthForm(forms.Form):
     MONTHS = (

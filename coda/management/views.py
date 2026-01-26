@@ -54,6 +54,7 @@ from management.forms import (
     EmployeeContractForm,
     MeetingForm,
     TagFilterForm,
+    TaskFilterForm,
     dynamic_agenda_form,
     GrievanceForm,
     BackgroundForm
@@ -791,12 +792,47 @@ class TaskListView(FilteredListViewMixin, ListView):
         # Exclude tasks with no employee email
         queryset = queryset.exclude(employee__email=None)
         
-        # Apply category filter if POST request
-        if self.request.method == "POST":
-            form = TagFilterForm(self.request.POST)
-            if form.is_valid():
-                category = form.cleaned_data['category']
-                queryset = queryset.filter(category__title=category)
+        # Apply filters from GET parameters (enhanced filtering)
+        filter_form = TaskFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            # Employee filter
+            if filter_form.cleaned_data.get('employee'):
+                queryset = queryset.filter(employee=filter_form.cleaned_data['employee'])
+            
+            # Category filter
+            if filter_form.cleaned_data.get('category'):
+                queryset = queryset.filter(category=filter_form.cleaned_data['category'])
+            
+            # Group filter
+            if filter_form.cleaned_data.get('group'):
+                queryset = queryset.filter(groupname=filter_form.cleaned_data['group'])
+            
+            # Status filter
+            is_active = filter_form.cleaned_data.get('is_active')
+            if is_active == '1':
+                queryset = queryset.filter(is_active=True)
+            elif is_active == '0':
+                queryset = queryset.filter(is_active=False)
+            
+            # Featured filter
+            featured = filter_form.cleaned_data.get('featured')
+            if featured == '1':
+                queryset = queryset.filter(featured=True)
+            elif featured == '0':
+                queryset = queryset.filter(featured=False)
+            
+            # Search filter
+            search = filter_form.cleaned_data.get('search')
+            if search:
+                queryset = queryset.filter(activity_name__icontains=search)
+            
+            # Date range filter
+            date_from = filter_form.cleaned_data.get('date_from')
+            date_to = filter_form.cleaned_data.get('date_to')
+            if date_from:
+                queryset = queryset.filter(submission__gte=date_from)
+            if date_to:
+                queryset = queryset.filter(submission__lte=date_to)
         
         return queryset.order_by(self.order_by)
     
@@ -804,12 +840,9 @@ class TaskListView(FilteredListViewMixin, ListView):
         """Add task-specific context data"""
         context = super().get_context_data(**kwargs)
         
-        if self.request.method == "POST":
-            form = TagFilterForm(self.request.POST)
-        else:
-            form = TagFilterForm()
-        
-        context['form'] = form
+        # Enhanced filter form (GET-based)
+        filter_form = TaskFilterForm(self.request.GET)
+        context['filter_form'] = filter_form
         context['total_count'] = self.get_queryset().count()
         
         # Add filtered employee info if present
@@ -821,6 +854,12 @@ class TaskListView(FilteredListViewMixin, ListView):
                 context['filtered_employee'] = filtered_employee
             except (CustomerUser.DoesNotExist, ValueError):
                 pass
+        
+        # Build query string for pagination (preserve all GET params except page)
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        context['query_string'] = query_params.urlencode()
         
         return context
 
