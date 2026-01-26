@@ -111,6 +111,7 @@ class Payment_Information(PaymentBase):
         db_table = 'finance_payment_information'
         managed = False
         ordering = ['-contract_submitted_date']
+        app_label = 'finance'
 
     def __str__(self):
         return "Payment Info for {} - Plan {}".format(self.customer.username, self.plan)
@@ -119,8 +120,10 @@ class Payment_Information(PaymentBase):
         """Calculate fee_balance dynamically - subtracts payments already made"""
         from django.db.models import Sum
         
-        # Get total of all payments made
-        total_payments = Payment_History.objects.filter(
+        # Get total of all payments made (exclude non-existent company_id field)
+        total_payments = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'is_active'
+        ).filter(
             customer=self.customer,
             is_active=True
         ).aggregate(total=Sum('payment_fees'))['total'] or 0
@@ -149,19 +152,20 @@ class Payment_History(PaymentBase):
     # payment_purpose = models.CharField(max_length=50, blank=True, null=True)  # Commented out: column doesn't exist in production DB
     
     # Organization/Company that processed this payment
-    company = models.ForeignKey(
-        'main.Company',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='payments',
-        help_text="Organization that processed this payment"
-    )
+    # company = models.ForeignKey(
+    #     'main.Company',
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name='payments',
+    #     help_text="Organization that processed this payment"
+    # )  # Commented out: column doesn't exist in production DB
     
     class Meta:
         db_table = 'finance_payment_history'
         managed = False
         ordering = ['-contract_submitted_date']
+        app_label = 'finance'
 
     def __str__(self):
         return "Payment History for {} - Plan {}".format(self.customer.username, self.plan)
@@ -192,6 +196,9 @@ class DeletedPaymentHistory(models.Model):
     def __str__(self):
         return "Deleted Payment for {} - Plan {}".format(self.customer.username, self.plan)
 
+    class Meta:
+        app_label = 'finance'
+
 
 class Default_Payment_Fees(models.Model):
     """Default payment fees configuration"""
@@ -209,6 +216,12 @@ class Default_Payment_Fees(models.Model):
 
     def __str__(self):
         return "Plan {} - Fees: {}".format(self.plan, self.payment_fees)
+
+    class Meta:
+        app_label = 'finance'
+
+    class Meta:
+        app_label = 'finance'
 
 
 class PayslipConfig(models.Model):

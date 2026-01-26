@@ -42,14 +42,28 @@
                 <td><input type="checkbox" class="checkthis" /></td>
                 {% if task.employee.first_name == "" or  task.employee.last_name == "" %}
                 <td>
+                  {% if filtered_employee and filtered_employee.id == task.employee.id %}
                     <a class="article-title" href="{% url 'management:user_pay' %}?username={{task.employee}}&pay_type=usertaskhistory">
                       {{task.employee}}
-                    </td>
-                    {% else %}
-                    <td>
-                      <a class="article-title" href="{% url 'management:user_pay' %}?username={{task.employee}}&pay_type=usertaskhistory">
+                    </a>
+                  {% else %}
+                    <a class="article-title" href="{% url 'management:task-history' %}?employee={{ task.employee.id }}">
+                      {{task.employee}}
+                    </a>
+                  {% endif %}
+                </td>
+                {% else %}
+                <td>
+                  {% if filtered_employee and filtered_employee.id == task.employee.id %}
+                    <a class="article-title" href="{% url 'management:user_pay' %}?username={{task.employee}}&pay_type=usertaskhistory">
                       {{task.employee.first_name}},{{task.employee.last_name}}
-                  </td>
+                    </a>
+                  {% else %}
+                    <a class="article-title" href="{% url 'management:task-history' %}?employee={{ task.employee.id }}">
+                      {{task.employee.first_name}},{{task.employee.last_name}}
+                    </a>
+                  {% endif %}
+                </td>
                 {% endif %}
                 <td>
                     <a class="text-dark  text-decoration-none" 

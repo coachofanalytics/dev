@@ -34,8 +34,13 @@ def admin_payment_verification_dashboard(request):
         search_query = request.GET.get('search', '')
         active_filter = request.GET.get('active', 'all')
         
-        # Base queryset - all payments
-        payments = Payment_History.objects.all().select_related('customer').order_by('-contract_submitted_date')
+        # Base queryset - all payments (exclude non-existent company_id field)
+        payments = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ).select_related('customer').order_by('-contract_submitted_date')
         
         # Apply active filter (using is_active instead of status)
         if active_filter == 'active':
@@ -57,7 +62,12 @@ def admin_payment_verification_dashboard(request):
             )
         
         # Calculate summary statistics
-        all_payments = Payment_History.objects.all()
+        all_payments = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ).all()
         stats = {
             'active_count': all_payments.filter(is_active=True).count(),
             'inactive_count': all_payments.filter(is_active=False).count(),
@@ -273,7 +283,12 @@ def bulk_approve_payments(request):
                 try:
                     # Note: Payment_History doesn't have a status field
                     # Only get active payments that need approval
-                    payment = Payment_History.objects.get(id=payment_id, is_active=True)
+                    payment = Payment_History.objects.only(
+                        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                        'plan', 'subplan', 'pricing_plan', 'payment_method',
+                        'contract_submitted_date', 'client_signature', 'company_rep',
+                        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                    ).get(id=payment_id, is_active=True)
                     
                     # Skip own payments
                     if payment.customer == request.user:

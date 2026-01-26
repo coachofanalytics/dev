@@ -104,10 +104,18 @@
         {% for task in tasks %}
         <tr>
           <td>
-            <a href="{% url 'management:tasks' %}?employee={{ task.employee.id }}" 
-               class="text-decoration-none fw-bold text-primary">
-              {{ task.employee.get_full_name|default:task.employee.username }}
-            </a>
+            {# If the page is already filtered by an employee, clicking the name should go to the payroll view for that user #}
+            {% if filtered_employee and filtered_employee.id == task.employee.id %}
+              <a href="{% url 'management:user_pay' %}?username={{ task.employee.username }}&pay_type=usertasks" 
+                 class="text-decoration-none fw-bold text-primary">
+                {{ task.employee.get_full_name|default:task.employee.username }}
+              </a>
+            {% else %}
+              <a href="{% url 'management:tasks' %}?employee={{ task.employee.id }}" 
+                 class="text-decoration-none fw-bold text-primary">
+                {{ task.employee.get_full_name|default:task.employee.username }}
+              </a>
+            {% endif %}
           </td>
           <td>{{ task.activity_name }}</td>
           <td>{{ task.groupname }}</td>

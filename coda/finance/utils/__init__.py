@@ -55,7 +55,7 @@ def save_payment_history(user, payment_info, method, reference, amount, status="
             company_rep=payment_info.company_rep if hasattr(payment_info, 'company_rep') else 'CODA System',
             client_date=payment_info.client_date if hasattr(payment_info, 'client_date') else timezone.now().strftime('%Y-%m-%d'),
             rep_date=payment_info.rep_date if hasattr(payment_info, 'rep_date') else timezone.now().strftime('%Y-%m-%d'),
-            company=company,  # ADD: Store organization/company
+            # company=company,  # Commented out: company_id column doesn't exist in database
             is_active=True,
         )
         print(f"[Payments][DEBUG] Payment history saved: id={payment_history.id} amount={amount} method={method} reference={reference} company={company.name if company else 'None'}")

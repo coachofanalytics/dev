@@ -1763,37 +1763,70 @@ def payments(request, title="history", status=None):
     else:
         if status == "complete":
             if is_staff_user:
+                # Use .only() to explicitly select fields (excludes non-existent company_id)
                 payment_history = [
-                    p for p in Payment_History.objects.all() if p.fee_balance == 0
+                    p for p in Payment_History.objects.only(
+                        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                        'plan', 'subplan', 'pricing_plan', 'payment_method',
+                        'contract_submitted_date', 'client_signature', 'company_rep',
+                        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                    ).all() if p.fee_balance == 0
                 ]
             else:
                 payment_history = [
                     p
-                    for p in Payment_History.objects.filter(customer=request.user)
+                    for p in Payment_History.objects.only(
+                        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                        'plan', 'subplan', 'pricing_plan', 'payment_method',
+                        'contract_submitted_date', 'client_signature', 'company_rep',
+                        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                    ).filter(customer=request.user)
                     if p.fee_balance == 0
                 ]
 
         elif status == "in_progress":
             if is_staff_user:
+                # Use .only() to explicitly select fields (excludes non-existent company_id)
                 payment_history = [
                     p
-                    for p in Payment_History.objects.all()
+                    for p in Payment_History.objects.only(
+                        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                        'plan', 'subplan', 'pricing_plan', 'payment_method',
+                        'contract_submitted_date', 'client_signature', 'company_rep',
+                        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                    ).all()
                     if p.is_active and p.is_featured and p.fee_balance > 0
                 ]
             else:
                 payment_history = [
                     p
-                    for p in Payment_History.objects.filter(customer=request.user)
+                    for p in Payment_History.objects.only(
+                        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                        'plan', 'subplan', 'pricing_plan', 'payment_method',
+                        'contract_submitted_date', 'client_signature', 'company_rep',
+                        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                    ).filter(customer=request.user)
                     if p.is_active and p.is_featured and p.fee_balance > 0
                 ]
 
         elif status == "collection":
             if is_staff_user:
-                payment_history = Payment_History.objects.filter(
+                # Use .only() to explicitly select fields (excludes non-existent company_id)
+                payment_history = Payment_History.objects.only(
+                    'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                    'plan', 'subplan', 'pricing_plan', 'payment_method',
+                    'contract_submitted_date', 'client_signature', 'company_rep',
+                    'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                ).filter(
                     is_active=False, is_featured=True, payment_method="paypal"
                 )
             else:
-                payment_history = Payment_History.objects.filter(
+                payment_history = Payment_History.objects.only(
+                    'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                    'plan', 'subplan', 'pricing_plan', 'payment_method',
+                    'contract_submitted_date', 'client_signature', 'company_rep',
+                    'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                ).filter(
                     customer=request.user,
                     is_active=False,
                     is_featured=True,
@@ -1802,11 +1835,22 @@ def payments(request, title="history", status=None):
 
         elif status == "bad":
             if is_staff_user:
-                payment_history = Payment_History.objects.exclude(
+                # Use .only() to explicitly select fields (excludes non-existent company_id)
+                payment_history = Payment_History.objects.only(
+                    'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                    'plan', 'subplan', 'pricing_plan', 'payment_method',
+                    'contract_submitted_date', 'client_signature', 'company_rep',
+                    'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                ).exclude(
                     customer__category__in=[1, 3, 4, 5, 6, 7]
                 )
             else:
-                payment_history = Payment_History.objects.filter(
+                payment_history = Payment_History.objects.only(
+                    'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                    'plan', 'subplan', 'pricing_plan', 'payment_method',
+                    'contract_submitted_date', 'client_signature', 'company_rep',
+                    'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+                ).filter(
                     customer=request.user
                 ).exclude(customer__category__in=[1, 3, 4, 5, 6, 7])
 
@@ -1949,7 +1993,12 @@ def payment(request, method):
 def send_notification(request, payment_id=None):
     path_list, sub_title, pre_sub_title = path_values(request)
     url = None
-    user_payment_information = Payment_History.objects.get(id=payment_id)
+    user_payment_information = Payment_History.objects.only(
+        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+        'plan', 'subplan', 'pricing_plan', 'payment_method',
+        'contract_submitted_date', 'client_signature', 'company_rep',
+        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+    ).get(id=payment_id)
     user_category = user_payment_information.customer.category
     user_plan = user_payment_information.plan
 
@@ -2078,11 +2127,21 @@ def send_invoice(request, type="collection"):
     # user_payment_information = Payment_History.objects.filter(fee_balance__gt=0, customer__is_client=True).distinct('customer_id')
     if type == "collection":
         url = "email/payment/collection.html"
-        user_payment_information = Payment_History.objects.filter(
+        user_payment_information = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ).filter(
             fee_balance__gt=0, is_active=False, is_featured=True
         ).distinct("customer_id")
     else:
-        user_payment_information = Payment_History.objects.filter(
+        user_payment_information = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ).filter(
             fee_balance__gt=0, is_active=True, is_featured=True
         ).distinct("customer_id")
         url = "email/payment/invoice.html"

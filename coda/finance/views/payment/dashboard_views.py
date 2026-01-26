@@ -25,8 +25,13 @@ def payment_dashboard(request):
         method_filter = request.GET.get('method', 'all')
         search_query = request.GET.get('search', '')
         
-        # Base queryset - user's payments only
-        payments = Payment_History.objects.filter(customer=request.user).order_by('-contract_submitted_date')
+        # Base queryset - user's payments only (exclude non-existent company_id field)
+        payments = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ).filter(customer=request.user).order_by('-contract_submitted_date')
         
         # Apply method filter
         if method_filter != 'all':
@@ -40,7 +45,12 @@ def payment_dashboard(request):
             )
         
         # Calculate summary statistics (without status field)
-        all_payments = Payment_History.objects.filter(customer=request.user)
+        all_payments = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ).filter(customer=request.user)
         
         stats = {
             'total_payments': all_payments.count(),
@@ -93,7 +103,12 @@ def retry_payment(request, payment_id):
     """
     try:
         payment = get_object_or_404(
-            Payment_History,
+            Payment_History.objects.only(
+                'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                'plan', 'subplan', 'pricing_plan', 'payment_method',
+                'contract_submitted_date', 'client_signature', 'company_rep',
+                'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+            ),
             id=payment_id,
             customer=request.user
         )
