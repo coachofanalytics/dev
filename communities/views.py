@@ -13,8 +13,8 @@ from django.utils import timezone
 from main.forms import MessageForm
 from .utils import send_email
 from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm
-from .models import Post, ForumCategory, CommentP, EventCalendar  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
-
+from .models import Post, ForumCategory, CommentP, EventCalendar, CommunityMember  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
+from django.db.models import Q
 # Create your views here.
 def home(request):
     return render(request, 'home.html')
@@ -24,15 +24,22 @@ def join(request):
     if request.method == 'POST':
         form = JoinForm(request.POST)
         if form.is_valid():
-            # Save the form data (e.g., save the new user)
-            form.save()
-
+            # Save the form data
+            member = form.save(commit=False)
+            member.is_verified = True  # Auto-verify for now
+             # Check if they agreed to directory
+            if form.cleaned_data.get('agree_to_directory'):
+                 member.is_public_directory = True
+            member.save()
+             # Store member ID in session for the "Join Directory" button
+            request.session['joined_member_id'] = member.id
             # Send the confirmation email
-            subject = 'Thank you for joining the community!'
-            recipient_list = [form.cleaned_data['email']]  # Get the email from form
+            # Send confirmation email
+            subject = 'Welcome to Our Community!'
+            recipient_list = [member.email]
             context = {
-                'name': form.cleaned_data['name'],
-                'dashboard_url': 'http://127.0.0.1:8080/community/',  # Update with the actual URL
+                'name': member.name,
+                'directory_url': 'http://127.0.0.1:8000/community/directory/',
             }
 
             # Call the send_email function
@@ -44,12 +51,90 @@ def join(request):
                 'email.txt'    # Path to the plain text template
             )
 
-            messages.success(request, 'You have successfully joined the community. A confirmation email has been sent!')
-            return redirect('join')  # Redirect to a page after successful form submission
+            messages.success(request, f'Welcome {member.name}! You are now a verified member.')
+            return redirect('member_directory')  # Redirect to a page after successful form submission
     else:
         form = JoinForm()
 
     return render(request, 'join.html', {'form': form})
+
+def member_directory(request):
+    """
+    Verified Member Directory with search functionality
+    """
+    # Get all verified members who want to be in the directory
+    members = CommunityMember.objects.filter(
+        is_verified=True,
+        is_public_directory=True
+    ).order_by('-date_joined')
+
+    # Initialize variables
+    search_query = request.GET.get('search', '')
+    region_filter = request.GET.get('region', '')
+    profession_filter = request.GET.get('profession', '')
+    
+    # Handle search/filter from form
+    if request.method == 'GET':
+        search_query = request.GET.get('search', '')
+        region_filter = request.GET.get('region', '')
+        profession_filter = request.GET.get('profession', '')
+
+         # Apply search by name or profession
+        if search_query:
+            members = members.filter(
+                Q(name__icontains=search_query) |
+                Q(profession__icontains=search_query) |
+                Q(specialization__icontains=search_query) |
+                Q(bio__icontains=search_query)
+            )
+
+         # Apply region filter
+        if region_filter:
+            members = members.filter(region__icontains=region_filter)
+        
+        # Apply profession filter
+        if profession_filter:
+            members = members.filter(profession__icontains=profession_filter)
+         # Get unique regions and professions for filter dropdowns
+    unique_regions = CommunityMember.objects.filter(
+        is_verified=True,
+        is_public_directory=True
+    ).values_list('region', flat=True).distinct().order_by('region')
+    
+    unique_professions = CommunityMember.objects.filter(
+        is_verified=True,
+        is_public_directory=True
+    ).values_list('profession', flat=True).distinct().order_by('profession')
+
+    #Add is_premium field (you'll need to add this to your model or calculate)
+    # For now, let's assume premium status
+    for member in members:
+        member.is_premium = member.id % 3 == 0  # Every 3rd member is premium for demo
+
+    context = {
+        'members': members,
+        'search_query': search_query,
+        'region_filter': region_filter,
+        'profession_filter': profession_filter,
+        'unique_regions': unique_regions,
+        'unique_professions': unique_professions,
+        'total_members': members.count(),
+    }
+    
+    return render(request, 'member_directory.html', context)
+
+def join_directory(request, member_id):
+    """
+    Allow members to join the public directory
+    """
+    if request.method == 'POST':
+        member = get_object_or_404(CommunityMember, id=member_id)
+        member.is_public_directory = True
+        member.save()
+        messages.success(request, 'Your profile is now visible in the directory!')
+        return redirect('member_directory')
+    return redirect('member_directory')
+
 # Forum Home Page
 def forum_home(request):
     # Fetch all categories for the homepage

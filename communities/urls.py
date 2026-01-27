@@ -5,6 +5,8 @@ from  . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('join/', views.join, name='join'),
+    path('directory/', views.member_directory, name='member_directory'),
+    path('directory/join/<int:member_id>/', views.join_directory, name='join_directory'),
     path('forum/', views.forum_home, name='forum_home'),
     path('category/<slug:slug>/', views.category_detail, name='category_detail'),
     path('post/<int:post_id>/', views.view_post, name='view_post'),

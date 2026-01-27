@@ -1,36 +1,637 @@
-{% extends "main/base_templates/base.html" %}
-{% load static %}
-
-{% block content %}
-<section class="max-w-3xl mx-auto mt-4 p-6 bg-white rounded-lg shadow-lg">
-    <h2 class="text-3xl font-bold mb-6">Join the Community</h2>
-
-    <div id="form-messages">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="mb-4 px-4 py-2 rounded {{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-
-    <form method="POST" action="{% url 'join' %}" class="space-y-4">
-        {% csrf_token %}
-        {{ form.as_p }}  <!-- This renders your form fields -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Our Community</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #10b981;
+            --light-green: #d1fae5;
+            --dark-green: #059669;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --brand-green: #059669;
+        }
         
-        <div class="flex justify-between">
-            <!-- Submit Button -->
-            <button type="submit" class="bg-brand-green text-white font-bold py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
-                Submit
-            </button>
+        body {
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-green) 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            padding: 2rem 0;
+        }
+        
+        .join-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.08);
+        }
+        
+        .form-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .main-title {
+            color: var(--dark-green);
+            font-weight: 800;
+            font-size: 2.75rem;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .main-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--light-green));
+            border-radius: 2px;
+        }
+        
+        .subtitle {
+            color: var(--gray-700);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+        }
+        
+        .benefits-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: var(--gray-700);
+        }
+        
+        .benefits-list i {
+            color: var(--primary-green);
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: var(--white);
+            color: var(--gray-900);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            outline: none;
+        }
+        
+        .form-control:hover {
+            border-color: var(--gray-300);
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Checkbox Styling */
+        .checkbox-group {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 2px solid var(--gray-200);
+            margin: 2rem 0;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-300);
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 0.25rem;
+            accent-color: var(--primary-green);
+        }
+        
+        .checkbox-label {
+            font-size: 0.95rem;
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+        
+        .checkbox-label a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Button Styles */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .submit-btn {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .cancel-btn {
+            flex: 1;
+            background: var(--white);
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .cancel-btn:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+            transform: translateY(-2px);
+            color: var(--gray-900);
+            text-decoration: none;
+        }
+        
+        /* Messages */
+        .message-container {
+            margin-bottom: 2rem;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, var(--light-green) 0%, #a7f3d0 100%);
+            border: 1px solid var(--primary-green);
+            color: var(--dark-green);
+            padding: 1.25rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .alert-success i {
+            font-size: 1.5rem;
+        }
+        
+        /* Progress Indicator */
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--gray-400);
+            transition: all 0.3s ease;
+        }
+        
+        .step-circle.active {
+            background: var(--primary-green);
+            border-color: var(--primary-green);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .step-line {
+            height: 2px;
+            width: 60px;
+            background: var(--gray-200);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-card,
+            .form-card {
+                padding: 1.5rem;
+            }
             
-            <!-- Cancel Button - Redirects to the community page or any other page -->
-            <a href="{% url 'home' %}" class="bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
-                Cancel
-            </a>
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .progress-indicator {
+                gap: 1rem;
+            }
+            
+            .step-line {
+                width: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container join-container">
+        <!-- Progress Indicator -->
+        <div class="progress-indicator">
+            <div class="progress-step">
+                <div class="step-circle active">1</div>
+                <div class="step-label">Join Form</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="progress-step">
+                <div class="step-circle">2</div>
+                <div class="step-label">Email Verification</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="progress-step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Member Directory</div>
+            </div>
         </div>
-    </form>
-</section>
-{% endblock %}
-
+        
+        <!-- Header Card -->
+        <div class="header-card">
+            <h1 class="main-title">Join Our Exclusive Community</h1>
+            <p class="subtitle">
+                Connect with professionals, share knowledge, and grow together in our trusted network. 
+                Fill out the form below to become a verified member.
+            </p>
+            
+            <ul class="benefits-list">
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Verified Network:</strong> All members are vetted and verified</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Professional Directory:</strong> Get listed in our member directory</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Networking Opportunities:</strong> Connect with like-minded professionals</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Exclusive Resources:</strong> Access community-only content and events</span>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Messages -->
+        <div class="message-container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Success!</strong> {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <!-- Form Card -->
+        <div class="form-card">
+            <form method="POST" action="{% url 'join' %}">
+                {% csrf_token %}
+                
+                <!-- Name & Email -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" 
+                                   id="name" 
+                                   name="name" 
+                                   class="form-control" 
+                                   placeholder="John Doe"
+                                   value="{{ form.name.value|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   class="form-control" 
+                                   placeholder="john@example.com"
+                                   value="{{ form.email.value|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Phone & Profession -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" 
+                                   id="phone" 
+                                   name="phone" 
+                                   class="form-control" 
+                                   placeholder="+1 (555) 123-4567"
+                                   value="{{ form.phone.value|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="profession" class="form-label">Profession</label>
+                            <input type="text" 
+                                   id="profession" 
+                                   name="profession" 
+                                   class="form-control" 
+                                   placeholder="Software Engineer, Lawyer, Consultant..."
+                                   value="{{ form.profession.value|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Region & Specialization -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="region" class="form-label">Region</label>
+                            <input type="text" 
+                                   id="region" 
+                                   name="region" 
+                                   class="form-control" 
+                                   placeholder="North America, Europe, Asia..."
+                                   value="{{ form.region.value|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="specialization" class="form-label">Specialization</label>
+                            <input type="text" 
+                                   id="specialization" 
+                                   name="specialization" 
+                                   class="form-control" 
+                                   placeholder="Web Development, Immigration Law, Financial Planning..."
+                                   value="{{ form.specialization.value|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Website -->
+                <div class="form-group">
+                    <label for="website" class="form-label">Website (Optional)</label>
+                    <input type="url" 
+                           id="website" 
+                           name="website" 
+                           class="form-control" 
+                           placeholder="https://yourwebsite.com"
+                           value="{{ form.website.value|default:'' }}">
+                </div>
+                
+                <!-- Bio -->
+                <div class="form-group">
+                    <label for="bio" class="form-label">Professional Bio</label>
+                    <textarea id="bio" 
+                              name="bio" 
+                              class="form-control" 
+                              placeholder="Tell us about your professional background, expertise, and what you hope to gain from the community..."
+                    >{{ form.bio.value|default:'' }}</textarea>
+                </div>
+                
+                <!-- Directory Agreement Checkbox -->
+                <div class="checkbox-group">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" 
+                               id="agree_to_directory" 
+                               name="agree_to_directory" 
+                               value="true"
+                               {% if form.agree_to_directory.value %}checked{% endif %}
+                               required>
+                        <label for="agree_to_directory" class="checkbox-label">
+                            I agree to be listed in the public member directory. By checking this box, I consent to having my professional information displayed to other community members. I understand that I can update or remove my information at any time.
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Terms Agreement -->
+                <div class="checkbox-group">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" 
+                               id="agree_to_terms" 
+                               name="agree_to_terms" 
+                               value="true"
+                               required>
+                        <label for="agree_to_terms" class="checkbox-label">
+                            I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>. I understand that this is a professional community and agree to maintain respectful and appropriate conduct.
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-user-plus"></i> Join Community
+                    </button>
+                    <a href="{% url 'home' %}" class="cancel-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+                
+                <!-- Form Protection Notice -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="fas fa-shield-alt text-success"></i> Your information is secure and protected. We never share your data with third parties.
+                    </p>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="text-center mt-4">
+            <p class="text-gray-600">
+                Already a member? <a href="#" class="text-success fw-semibold">Sign in here</a>
+            </p>
+            <p class="text-gray-500 text-sm mt-2">
+                <i class="fas fa-envelope text-success"></i> Questions? Contact us at <a href="mailto:community@example.com" class="text-success">community@example.com</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Form validation and enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Real-time validation feedback
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach(control => {
+                control.addEventListener('blur', function() {
+                    if (this.value.trim() === '' && this.hasAttribute('required')) {
+                        this.style.borderColor = '#ef4444';
+                    } else {
+                        this.style.borderColor = '#10b981';
+                    }
+                });
+                
+                control.addEventListener('input', function() {
+                    this.style.borderColor = '#e5e7eb';
+                });
+            });
+            
+            // Character counter for bio
+            const bioTextarea = document.getElementById('bio');
+            const charCounter = document.createElement('div');
+            charCounter.className = 'text-sm text-gray-500 mt-1';
+            charCounter.textContent = '0/500 characters';
+            bioTextarea.parentNode.appendChild(charCounter);
+            
+            bioTextarea.addEventListener('input', function() {
+                const length = this.value.length;
+                charCounter.textContent = `${length}/500 characters`;
+                if (length > 450) {
+                    charCounter.style.color = '#ef4444';
+                } else if (length > 400) {
+                    charCounter.style.color = '#f59e0b';
+                } else {
+                    charCounter.style.color = '#6b7280';
+                }
+            });
+            
+            // Form submission feedback
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('.submit-btn');
+                const originalText = submitBtn.innerHTML;
+                
+                // Show loading state
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                submitBtn.disabled = true;
+                
+                // Re-enable after 5 seconds if submission fails
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 5000);
+            });
+            
+            // Format phone number as user types
+            const phoneInput = document.getElementById('phone');
+            phoneInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/\D/g, '');
+                if (value.length > 0) {
+                    if (value.length <= 3) {
+                        value = `(${value}`;
+                    } else if (value.length <= 6) {
+                        value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+                    } else if (value.length <= 10) {
+                        value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+                    } else {
+                        value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)} x${value.slice(10,14)}`;
+                    }
+                }
+                this.value = value;
+            });
+        });
+    </script>
+</body>
+</html>
