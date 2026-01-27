@@ -91,6 +91,7 @@ urlpatterns = [
     path('userevidence/',views.userevidence, name='user_evidence'),
     # path('userevidence/<str:username>/',views.userevidence, name='user_evidence'),
     path('<id>/update', views.evidence_update_view ,name='evidence_update'),
+    path('<id>/delete', views.evidence_delete_view ,name='evidence_delete'),
     path('getaveragetargets/', views.getaveragetargets, name='getaveragetargets'),
     path('newtask/', views.newtaskcreation, name='newtask'),
     path('gettasksuggestions/', views.gettasksuggestions, name='gettasksuggestions'),

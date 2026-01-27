@@ -2,6 +2,10 @@
 <section id="career">
   <div class="career text-center">
     <h2>DAF EVIDENCE</h2>
+    {% if username %}
+      <p class="text-muted">Showing evidence for: <strong>{{ username }}</strong></p>
+    {% endif %}
+    <!-- Debug: userlinks exists: {{ userlinks|yesno:"Yes,No" }}, count: {{ userlinks|length|default:"0" }} -->
     <table class="table table-borderless" style="width: 100%">
       <thead class="border-bottom font-weight-bold">
         <tr>
@@ -17,17 +21,20 @@
         </tr>
       </thead>
       <tbody>
-        {% for link in userlinks %}
-        <tr>
+        {% if userlinks %}
+          {% for link in userlinks %}
+          <tr>
             <td>{{link.created_at}}</td>
            <td>
             <a href="{% url 'management:user_evidence' %}?username={{ username }}">{{ link.added_by }}</a>
         </td>
         
             <td>
-              {% for task in link.task.all %}
-                 <p>{{ task.activity_name }}</p>
-              {% endfor %}
+              {% if link.task %}
+                {{ link.task.activity_name }}
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
           </td>
             <td>
               {% if link.link %}
@@ -61,16 +68,33 @@
           </td>
         <!-- <td>{{link.doc.url}}</td> -->
         <td>
-          <a class="text-dark  text-decoration-none" 
-          href="{{ link.doc.url}}">
-          Download
-          </a>
+          {% if link.doc and link.doc.url %}
+            <a class="text-dark  text-decoration-none" 
+            href="{{ link.doc.url}}">
+            Download
+            </a>
+          {% else %}
+            <span class="text-muted">No file</span>
+          {% endif %}
       </td>
         <td>{{link.is_featured}}</td>
-            <td> <a class="article-title" href="{%url 'management:evidence_update' link.id %}">Edit</a></td>
-            <td> <a class="article-title" href="#">Delete</a></td>
+            <td> <a class="article-title" href="{%url 'management:evidence_update' link.id %}{% if username %}?username={{ username }}{% endif %}{% if task_id %}{% if username %}&{% else %}?{% endif %}task={{ task_id }}{% endif %}">Edit</a></td>
+            <td> 
+                <a class="article-title text-danger" 
+                   href="{%url 'management:evidence_delete' link.id %}{% if username %}?username={{ username }}{% endif %}{% if task_id %}{% if username %}&{% else %}?{% endif %}task={{ task_id }}{% endif %}"
+                   onclick="return confirm('Are you sure you want to delete this evidence? This action can be undone by an administrator.');">
+                    Delete
+                </a>
+            </td>
         </tr>   
-        {% endfor %}
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9" class="text-center text-muted">
+              No evidence found{% if username %} for user "{{ username }}"{% endif %}.
+            </td>
+          </tr>
+        {% endif %}
       </tbody>
     </table>
   </div>

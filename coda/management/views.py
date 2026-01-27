@@ -9,7 +9,7 @@ import tempfile
 import threading
 import uuid
 from typing import Any
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 import http.client
 from dateutil import parser
 from urllib.parse import urlencode
@@ -1388,33 +1388,116 @@ def process_evidence_submission(data, temp_file_path, original_filename, user, t
 def userevidence(request, user=None, *args, **kwargs):
     # current_user = request.user
     username = request.GET.get('username', None)
-    # Calculate the date range for the last 2 months
-    now = timezone.localtime()
-    # print(now)
-    two_months_ago = now - timezone.timedelta(days=60)
+    task_id = request.GET.get('task', None)
+    
+    # Base queryset - filter out soft-deleted evidence (is_active=False)
+    # Use Q object to handle NULL values (older records might have NULL is_active)
+    # Note: Removed date range filter to show all evidence, not just last 60 days
+    base_query = TaskLinks.objects.filter(
+        Q(is_active=True) | Q(is_active__isnull=True)  # Include active or NULL (legacy records)
+    )
+    
     if username:
-        # Filter the TaskLinks based on the created_at field within the date range
-        userlinks = TaskLinks.objects.filter(added_by__username=username, created_at__range=[two_months_ago, now]).order_by("-created_at")
-    else:
-        userlinks = TaskLinks.objects.filter(created_at__range=[two_months_ago, now]).order_by("-created_at")
+        # Filter by username
+        base_query = base_query.filter(added_by__username=username)
+    
+    if task_id:
+        # Filter by task ID if provided
+        try:
+            base_query = base_query.filter(task_id=task_id)
+        except (ValueError, TypeError):
+            pass
+    
+    userlinks = base_query.order_by("-created_at")
+    
+    # Debug: Log the query results
+    import logging
+    logger = logging.getLogger(__name__)
+    count = userlinks.count()
+    logger.info(f"userevidence view - username: {username}, task_id: {task_id}, count: {count}")
+    
+    # Get username and task for template context
+    context = {
+        "userlinks": userlinks,  # Pass queryset directly - Django templates handle it fine
+        "username": username,
+        "task_id": task_id,
+    }
+    
+    return render(request, "management/daf/userevidence.html", context)
 
-    return render(request, "management/daf/userevidence.html", {"userlinks": userlinks})
+def evidence_delete_view(request, id, *args, **kwargs):
+    """Soft delete evidence by setting is_active=False"""
+    # Get username and task from query parameters for redirect
+    username = request.GET.get('username', None)
+    task_id = request.GET.get('task', None)
+    
+    # Fetch the evidence object
+    obj = get_object_or_404(TaskLinks, id=id, is_active=True)  # Only allow deleting active records
+    
+    # Soft delete: set is_active=False instead of actually deleting
+    obj.is_active = False
+    obj.save()
+    
+    messages.success(request, f'Evidence "{obj.link_name}" has been deleted successfully.')
+    
+    # Redirect back to the evidence page with same filters
+    # Build query parameters
+    params = {}
+    if username:
+        params['username'] = username
+    if task_id:
+        params['task'] = task_id
+    
+    # Use reverse() to get the URL path, then append query parameters
+    # Use HttpResponseRedirect directly to avoid Django trying to reverse the full URL string
+    try:
+        base_url = reverse('management:user_evidence')
+        if params:
+            query_string = urlencode(params)
+            redirect_url = f'{base_url}?{query_string}'
+        else:
+            redirect_url = base_url
+        
+        # Ensure we're returning an HttpResponseRedirect with a path, not a URL name
+        return HttpResponseRedirect(redirect_url)
+    except Exception as e:
+        # Fallback: redirect to base evidence page without filters
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in evidence_delete_view redirect: {e}")
+        return HttpResponseRedirect(reverse('management:user_evidence'))
 
 def evidence_update_view(request, id, *args, **kwargs):
     context = {}
     # fetch the object related to passed id
-    obj = get_object_or_404(TaskLinks, id=id)
+    obj = get_object_or_404(TaskLinks, id=id, is_active=True)  # Only allow editing active records
     # pass the object as instance in form
     form = EvidenceForm(request.POST or None, instance=obj)
     # save the data from the form and
     # redirect to detail_view
     if form.is_valid():
         form.save()
-        # try:
-        #     username=kwargs.get("username")
-        #     return redirect("management:user_evidence", username)
-        # except:
-        return redirect('management:evidence')
+        # Get username and task from query parameters for redirect
+        username = request.GET.get('username', None)
+        task_id = request.GET.get('task', None)
+        
+        # Redirect back to evidence page with same filters
+        # Build query parameters
+        params = {}
+        if username:
+            params['username'] = username
+        if task_id:
+            params['task'] = task_id
+        
+        # Use reverse() to get the URL path, then append query parameters
+        base_url = reverse('management:user_evidence')
+        if params:
+            query_string = urlencode(params)
+            redirect_url = f'{base_url}?{query_string}'
+        else:
+            redirect_url = base_url
+        
+        return HttpResponseRedirect(redirect_url)
     # add form dictionary to context
     # context["form"] = form
     message='Edit Evidence'

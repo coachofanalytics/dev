@@ -258,7 +258,8 @@
           var titleElement = document.querySelector('h2');
           var truncatedTitleElement = document.getElementById('truncatedTitle');
     
-          if (titleElement) {
+          // Only proceed if both elements exist
+          if (titleElement && truncatedTitleElement) {
               var words = titleElement.innerText.split(' ');
     
               // Check if title contains more than 3 words
