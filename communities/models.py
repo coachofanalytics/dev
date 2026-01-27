@@ -5,13 +5,36 @@ from django.conf import settings
 
 User = get_user_model() # Sg add this line
 # Community member
+# models.py - Add this to your existing models.py
+from django.db import models
+
+# models.py
 class CommunityMember(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    joined_at = models.DateTimeField(auto_now_add=True)
-
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    
+    # ADD DEFAULT VALUES for new fields
+    profession = models.CharField(max_length=100, default="Not Specified")
+    region = models.CharField(max_length=100, default="Not Specified")
+    specialization = models.CharField(max_length=200, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='member_profiles/', blank=True, null=True)
+    
+    # Status fields
+    is_verified = models.BooleanField(default=True)  # Changed to True
+    is_public_directory = models.BooleanField(default=True)  # Changed to True
+    
+    # Timestamps
+    date_joined = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    
     def __str__(self):
-        return f"{self.name} ({self.email})"
+        return f"{self.name} - {self.profession}"
+    
+    class Meta:
+        ordering = ['-date_joined']
 
 class ForumCategory(models.Model):
     name = models.CharField(max_length=255)
