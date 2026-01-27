@@ -1785,29 +1785,24 @@ def payments(request, title="history", status=None):
                 ]
 
         elif status == "in_progress":
-            if is_staff_user:
-                # Use .only() to explicitly select fields (excludes non-existent company_id)
-                payment_history = [
-                    p
-                    for p in Payment_History.objects.only(
-                        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
-                        'plan', 'subplan', 'pricing_plan', 'payment_method',
-                        'contract_submitted_date', 'client_signature', 'company_rep',
-                        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
-                    ).all()
-                    if p.is_active and p.is_featured and p.fee_balance > 0
-                ]
-            else:
-                payment_history = [
-                    p
-                    for p in Payment_History.objects.only(
-                        'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
-                        'plan', 'subplan', 'pricing_plan', 'payment_method',
-                        'contract_submitted_date', 'client_signature', 'company_rep',
-                        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
-                    ).filter(customer=request.user)
-                    if p.is_active and p.is_featured and p.fee_balance > 0
-                ]
+            # Use .only() to explicitly select fields (excludes non-existent company_id)
+            # Filter at database level for is_active and is_featured
+            # Then filter in Python for fee_balance (property calculation)
+            base_query = Payment_History.objects.only(
+                'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                'plan', 'subplan', 'pricing_plan', 'payment_method',
+                'contract_submitted_date', 'client_signature', 'company_rep',
+                'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+            ).filter(is_active=True, is_featured=True)
+            
+            if not is_staff_user:
+                base_query = base_query.filter(customer=request.user)
+            
+            # Filter by fee_balance > 0 (property calculation, must be done in Python)
+            payment_history = [
+                p for p in base_query
+                if p.fee_balance > 0
+            ]
 
         elif status == "collection":
             if is_staff_user:
@@ -1854,11 +1849,19 @@ def payments(request, title="history", status=None):
                     customer=request.user
                 ).exclude(customer__category__in=[1, 3, 4, 5, 6, 7])
 
+    # Convert payment_history to list if it's a queryset (for list comprehensions)
+    # Also ensure it's not None
+    if payment_history is None:
+        payment_history = []
+    elif not isinstance(payment_history, list):
+        payment_history = list(payment_history)
+    
     context = {
         "heading": (
             "PAYMENT INFORMATION" if path_list[2] == "info" else "PAYMENT HISTORY"
         ),
         "payment_history": payment_history,
+        "payments": payment_history,  # Template expects 'payments' variable
         "Payment_Info": Payment_Info,
         "status": status,
         "is_staff_user": is_staff_user,  # Add this to context for template use
@@ -1868,7 +1871,15 @@ def payments(request, title="history", status=None):
 
 def payment_plan(request, payment_id):
     # Get the specific payment information based on payment_id
-    pay_obj = get_object_or_404(Payment_History, id=payment_id)
+    pay_obj = get_object_or_404(
+        Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ),
+        id=payment_id
+    )
     pay_amount = pay_obj.payment_fees
     if 1000 < pay_amount <= 3000:
         divided_amount = pay_amount / 3
@@ -2309,9 +2320,15 @@ def pay(request, *args, **kwargs):
         
         # 3. If still no payment info, check Payment_History for unpaid items
         if not payment_info:
-            unpaid_history = Payment_History.objects.filter(
+            # Note: Payment_History doesn't have a 'status' field, using is_active instead
+            unpaid_history = Payment_History.objects.only(
+                'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                'plan', 'subplan', 'pricing_plan', 'payment_method',
+                'contract_submitted_date', 'client_signature', 'company_rep',
+                'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+            ).filter(
                 customer=request.user,
-                status__in=['pending', 'incomplete']
+                is_active=True  # Using is_active instead of status
             ).first()
             
             if unpaid_history:
@@ -2612,10 +2629,38 @@ class PaymentInformationUpdateView(UpdateView):
 
 class PaymentHistoryUpdateView(UpdateView):
     model = Payment_History
-    success_url = "/finance/payments/history/in_progress"
     template_name = "main/snippets_templates/generalform.html"
 
-    fields = "__all__"
+    # Exclude company field (doesn't exist in database)
+    fields = [
+        'customer', 'payment_fees', 'down_payment', 'student_bonus',
+        'plan', 'subplan', 'pricing_plan', 'payment_method',
+        'contract_submitted_date', 'client_signature', 'company_rep',
+        'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+    ]
+
+    def get_queryset(self):
+        """Override to use .only() to exclude non-existent company_id field"""
+        return Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        )
+    
+    def get_success_url(self):
+        """Redirect back to the payment history page with the same status"""
+        # Get status from referer or default to in_progress
+        referer = self.request.META.get('HTTP_REFERER', '')
+        if 'status=' in referer:
+            # Extract status from referer URL
+            import re
+            match = re.search(r'status=([^&]+)', referer)
+            if match:
+                status = match.group(1)
+                return f"/finance/payments/history/{status}/"
+        # Default to in_progress
+        return "/finance/payments/history/in_progress/"
 
     # fields=['customer_id','down_payment']
     def form_valid(self, form):
@@ -4009,7 +4054,12 @@ class StatementsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 def delete_bad_entry_in_payment_history(request):
     if request.user and request.user.is_superuser:
-        delete_payment_history = Payment_History.objects.filter(customer__is_staff=True)
+        delete_payment_history = Payment_History.objects.only(
+            'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+            'plan', 'subplan', 'pricing_plan', 'payment_method',
+            'contract_submitted_date', 'client_signature', 'company_rep',
+            'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+        ).filter(customer__is_staff=True)
         for payment in delete_payment_history:
             DeletedPaymentHistory.objects.create(
                 customer=payment.customer,

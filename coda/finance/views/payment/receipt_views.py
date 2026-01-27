@@ -119,7 +119,15 @@ def verify_payment_receipt(request, payment_id):
     Accessed via QR code scan
     """
     try:
-        payment = get_object_or_404(Payment_History, id=payment_id)
+        payment = get_object_or_404(
+            Payment_History.objects.only(
+                'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                'plan', 'subplan', 'pricing_plan', 'payment_method',
+                'contract_submitted_date', 'client_signature', 'company_rep',
+                'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+            ),
+            id=payment_id
+        )
         
         context = {
             'payment': payment,

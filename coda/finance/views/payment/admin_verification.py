@@ -105,7 +105,15 @@ def approve_payment(request, payment_id):
     Approve a pending payment
     """
     try:
-        payment = get_object_or_404(Payment_History, id=payment_id)
+        payment = get_object_or_404(
+            Payment_History.objects.only(
+                'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                'plan', 'subplan', 'pricing_plan', 'payment_method',
+                'contract_submitted_date', 'client_signature', 'company_rep',
+                'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+            ),
+            id=payment_id
+        )
         
         # Note: Payment_History doesn't have a status field
         # Using is_active to track payment state
@@ -166,7 +174,15 @@ def reject_payment(request, payment_id):
     Reject a pending payment with reason
     """
     try:
-        payment = get_object_or_404(Payment_History, id=payment_id)
+        payment = get_object_or_404(
+            Payment_History.objects.only(
+                'id', 'customer', 'payment_fees', 'down_payment', 'student_bonus',
+                'plan', 'subplan', 'pricing_plan', 'payment_method',
+                'contract_submitted_date', 'client_signature', 'company_rep',
+                'client_date', 'rep_date', 'is_active', 'is_featured', 'description'
+            ),
+            id=payment_id
+        )
         
         # Note: Payment_History doesn't have a status field
         # Using is_active to track payment state

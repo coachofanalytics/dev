@@ -97,114 +97,184 @@ def payment_method_selection(request):
     Unified payment method selection view
     Shows all available payment methods with consistent UI
     Checks for loans FIRST, then service payments
+    
+    Supports service-specific payments via GET parameters:
+    - service: Service type (e.g., 'interview_prep', 'interview_coach')
+    - amount: Payment amount (e.g., 229, 1499)
+    - position: Optional position/role identifier
     """
     try:
         from finance.models import LoanApplication
+        from decimal import Decimal
         
         payment_info = None
         payment_source = None  # Track if payment is for 'loan' or 'service'
         
+        # Check for service-specific payment request (NEW service payment)
+        service_type = request.GET.get('service')
+        service_amount = request.GET.get('amount')
+        service_position = request.GET.get('position')
+        
         # PRIORITY 1: Check for active loans first (highest priority)
-        active_loans = LoanApplication.objects.filter(
-            borrower=request.user,
-            status__in=['active', 'approved', 'disbursed']
-        ).first()
-        
-        if active_loans:
-            # User has active loan - create payment_info from loan
-            logger.info(f"User {request.user.username} has active loan: {active_loans.id}")
+        # BUT: Only if this is NOT a new service payment request
+        if not service_type:
+            active_loans = LoanApplication.objects.filter(
+                borrower=request.user,
+                status__in=['active', 'approved', 'disbursed']
+            ).first()
             
-            # IMPORTANT: Refresh the loan object from database to get latest payments
-            # This ensures balance_amount property calculates with fresh payment data
-            active_loans.refresh_from_db()
-            
-            # Clear related objects cache to force fresh query for loan_payments
-            # This is critical because balance_amount depends on total_paid which sums loan_payments.all()
-            if hasattr(active_loans, '_loan_payments_cache'):
-                delattr(active_loans, '_loan_payments_cache')
-            if hasattr(active_loans, '_prefetched_objects_cache'):
-                active_loans._prefetched_objects_cache = {}
-            
-            # Use balance_amount (outstanding balance) if available, otherwise total_payable or amount_requested
-            # balance_amount is a property that dynamically calculates: total_payable - total_paid
-            current_balance = float(active_loans.balance_amount) if active_loans.balance_amount else 0.0
-            if current_balance > 0:
-                loan_amount = current_balance
-            elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
-                loan_amount = float(active_loans.total_payable)
-            else:
-                loan_amount = float(active_loans.amount_requested or 0)
-            
-            # Create payment_info-like object from loan
-            # Add get_fee_balance() method that returns loan balance
-            class LoanPaymentInfo:
-                def __init__(self, loan, amount):
-                    self.id = loan.id
-                    self.customer = loan.borrower
-                    self.payment_fees = amount
-                    self.down_payment = 0  # Loans don't have down payments
-                    self.plan = None
-                    self.loan_application = loan
-                    self._loan = loan
+            if active_loans:
+                # User has active loan - create payment_info from loan
+                logger.info(f"User {request.user.username} has active loan: {active_loans.id}")
                 
-                def get_fee_balance(self):
-                    """
-                    Calculate outstanding loan balance using Loan model's balance_amount property
-                    Validates property result and falls back to direct calculation if property is incorrect
-                    """
-                    # Refresh loan from DB to ensure we get latest payment records
-                    self._loan.refresh_from_db()
+                # IMPORTANT: Refresh the loan object from database to get latest payments
+                # This ensures balance_amount property calculates with fresh payment data
+                active_loans.refresh_from_db()
+                
+                # Clear related objects cache to force fresh query for loan_payments
+                # This is critical because balance_amount depends on total_paid which sums loan_payments.all()
+                if hasattr(active_loans, '_loan_payments_cache'):
+                    delattr(active_loans, '_loan_payments_cache')
+                if hasattr(active_loans, '_prefetched_objects_cache'):
+                    active_loans._prefetched_objects_cache = {}
+                
+                # Use balance_amount (outstanding balance) if available, otherwise total_payable or amount_requested
+                # balance_amount is a property that dynamically calculates: total_payable - total_paid
+                current_balance = float(active_loans.balance_amount) if active_loans.balance_amount else 0.0
+                if current_balance > 0:
+                    loan_amount = current_balance
+                elif hasattr(active_loans, 'total_payable') and active_loans.total_payable:
+                    loan_amount = float(active_loans.total_payable)
+                else:
+                    loan_amount = float(active_loans.amount_requested or 0)
+                
+                # Create payment_info-like object from loan
+                # Add get_fee_balance() method that returns loan balance
+                class LoanPaymentInfo:
+                    def __init__(self, loan, amount):
+                        self.id = loan.id
+                        self.customer = loan.borrower
+                        self.payment_fees = amount
+                        self.down_payment = 0  # Loans don't have down payments
+                        self.plan = None
+                        self.loan_application = loan
+                        self._loan = loan
                     
-                    # Clear related objects cache to force fresh query for loan_payments
-                    if hasattr(self._loan, '_loan_payments_cache'):
-                        delattr(self._loan, '_loan_payments_cache')
-                    if hasattr(self._loan, '_prefetched_objects_cache'):
-                        self._loan._prefetched_objects_cache = {}
-                    
-                    # Calculate balance directly first to validate property result
-                    from decimal import Decimal
-                    total_paid = self._loan.total_paid
-                    total_payable = self._loan.total_payable or Decimal('0.00')
-                    calculated_balance = max(Decimal('0.00'), total_payable - total_paid)
-                    calculated_float = float(calculated_balance)
-                    
-                    # PRIORITY 1: Try using the loan's balance_amount property (from Loan model)
-                    # This is the proper way to get loan balance, but we validate it
-                    try:
-                        if hasattr(self._loan, 'balance_amount'):
-                            balance_property = self._loan.balance_amount
-                            if balance_property is not None:
-                                balance_float = float(balance_property)
-                                
-                                # VALIDATION: Check if property value makes sense
-                                # If property returns 0 but calculated balance > 0, property is wrong
-                                # If property and calculated are close (within $0.01), use property
-                                if balance_float >= 0:
-                                    difference = abs(balance_float - calculated_float)
-                                    if difference < 0.01:
-                                        # Property matches calculated - use property (preferred)
-                                        return balance_float
-                                    elif balance_float == 0 and calculated_float > 0:
-                                        # Property incorrectly returns 0 - use calculated
-                                        logger.warning(f"balance_amount property returns $0.0 but calculated is ${calculated_float}, using calculated")
-                                        return calculated_float
-                                    else:
-                                        # Property differs significantly - use calculated (more reliable)
-                                        logger.warning(f"balance_amount property (${balance_float}) differs from calculated (${calculated_float}), using calculated")
-                                        return calculated_float
-                    except Exception as e:
-                        logger.warning(f"Error using balance_amount property: {e}, using calculated value")
-                    
-                    # PRIORITY 2: Use calculated balance (fallback or when property is invalid)
-                    return calculated_float
-            
-            payment_info = LoanPaymentInfo(active_loans, loan_amount)
-            payment_source = 'loan'
-            current_balance_display = payment_info.get_fee_balance()
-            logger.info(f"Created loan payment_info: amount=${loan_amount}, balance=${current_balance_display}")
+                    def get_fee_balance(self):
+                        """
+                        Calculate outstanding loan balance using Loan model's balance_amount property
+                        Validates property result and falls back to direct calculation if property is incorrect
+                        """
+                        # Refresh loan from DB to ensure we get latest payment records
+                        self._loan.refresh_from_db()
+                        
+                        # Clear related objects cache to force fresh query for loan_payments
+                        if hasattr(self._loan, '_loan_payments_cache'):
+                            delattr(self._loan, '_loan_payments_cache')
+                        if hasattr(self._loan, '_prefetched_objects_cache'):
+                            self._loan._prefetched_objects_cache = {}
+                        
+                        # Calculate balance directly first to validate property result
+                        from decimal import Decimal
+                        total_paid = self._loan.total_paid
+                        total_payable = self._loan.total_payable or Decimal('0.00')
+                        calculated_balance = max(Decimal('0.00'), total_payable - total_paid)
+                        calculated_float = float(calculated_balance)
+                        
+                        # PRIORITY 1: Try using the loan's balance_amount property (from Loan model)
+                        # This is the proper way to get loan balance, but we validate it
+                        try:
+                            if hasattr(self._loan, 'balance_amount'):
+                                balance_property = self._loan.balance_amount
+                                if balance_property is not None:
+                                    balance_float = float(balance_property)
+                                    
+                                    # VALIDATION: Check if property value makes sense
+                                    # If property returns 0 but calculated balance > 0, property is wrong
+                                    # If property and calculated are close (within $0.01), use property
+                                    if balance_float >= 0:
+                                        difference = abs(balance_float - calculated_float)
+                                        if difference < 0.01:
+                                            # Property matches calculated - use property (preferred)
+                                            return balance_float
+                                        elif balance_float == 0 and calculated_float > 0:
+                                            # Property incorrectly returns 0 - use calculated
+                                            logger.warning(f"balance_amount property returns $0.0 but calculated is ${calculated_float}, using calculated")
+                                            return calculated_float
+                                        else:
+                                            # Property differs significantly - use calculated (more reliable)
+                                            logger.warning(f"balance_amount property (${balance_float}) differs from calculated (${calculated_float}), using calculated")
+                                            return calculated_float
+                        except Exception as e:
+                            logger.warning(f"Error using balance_amount property: {e}, using calculated value")
+                        
+                        # PRIORITY 2: Use calculated balance (fallback or when property is invalid)
+                        return calculated_float
+                
+                payment_info = LoanPaymentInfo(active_loans, loan_amount)
+                payment_source = 'loan'
+                current_balance_display = payment_info.get_fee_balance()
+                logger.info(f"Created loan payment_info: amount=${loan_amount}, balance=${current_balance_display}")
         
-        # PRIORITY 2: If no active loan, check for service payment info
-        if not payment_info:
+        # PRIORITY 2: Handle service-specific payment request
+        if service_type and service_amount:
+            try:
+                service_amount_decimal = Decimal(str(service_amount))
+                logger.info(f"Service payment request: service={service_type}, amount=${service_amount}, position={service_position}")
+                
+                # Check if user already has Payment_Information for this EXACT service
+                # Match by: same customer, same amount, same plan (if plan represents service type)
+                existing_service_payment = Payment_Information.objects.filter(
+                    customer=request.user,
+                    payment_fees=int(service_amount_decimal)
+                ).order_by('-id').first()
+                
+                if existing_service_payment:
+                    # Check if this specific service is already paid
+                    balance = existing_service_payment.get_fee_balance()
+                    if balance <= 0:
+                        # This specific service is already paid - redirect to success
+                        logger.info(f"User {request.user.username} already paid for service {service_type} (${service_amount})")
+                        messages.success(request, f'You have already paid for this service. Access granted!')
+                        request.session['payment_reference'] = f'SERVICE-{service_type.upper()}-PAID'
+                        request.session['payment_amount'] = float(service_amount_decimal)
+                        request.session['payment_method'] = 'N/A'
+                        return redirect('finance:unified_success')
+                    else:
+                        # Service exists but not fully paid - use existing payment_info
+                        payment_info = existing_service_payment
+                        payment_source = 'service'
+                        logger.info(f"Using existing payment_info for service {service_type} with balance ${balance}")
+                else:
+                    # Create NEW Payment_Information for this service
+                    logger.info(f"Creating new Payment_Information for service {service_type} (${service_amount})")
+                    payment_info = Payment_Information.objects.create(
+                        customer=request.user,
+                        payment_fees=int(service_amount_decimal),
+                        down_payment=0,  # No down payment for interview prep services
+                        student_bonus=0,
+                        plan=999,  # Default plan - can be customized based on service_type
+                        payment_method='pending',  # Will be set when payment method is selected
+                        contract_submitted_date=timezone.now(),
+                        client_signature=request.user.username,
+                        company_rep='CODA',
+                        client_date=timezone.now().date(),
+                        rep_date=timezone.now().date(),
+                    )
+                    payment_source = 'service'
+                    logger.info(f"Created new Payment_Information ID={payment_info.id} for user {request.user.username}")
+                    
+            except (ValueError, TypeError) as e:
+                logger.error(f"Invalid service payment parameters: {e}")
+                messages.error(request, 'Invalid payment parameters. Please try again.')
+                return redirect('professional_services:interview_roles')
+            except Exception as e:
+                logger.error(f"Error creating service payment: {e}")
+                messages.error(request, 'Error setting up payment. Please try again.')
+                return redirect('professional_services:interview_roles')
+        
+        # PRIORITY 3: If no service request and no loan, check for existing service payment info
+        if not payment_info and not service_type:
             try:
                 payment_info = Payment_Information.objects.filter(
                     customer=request.user
@@ -289,7 +359,8 @@ def payment_method_selection(request):
                 balance = total_amount
         
         # CRITICAL: Check if balance is zero - redirect to success if already paid
-        if balance <= 0:
+        # BUT: Only for existing payments, not new service payments
+        if balance <= 0 and not service_type:
             logger.info(f"User {request.user.username} has zero balance (${balance}), redirecting to success page")
             messages.success(request, 'Your account balance is already paid in full. No payment needed!')
             # Store in session for success page

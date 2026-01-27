@@ -236,7 +236,13 @@
               {%if user.is_admin or user.is_superuser%}
               <td> <a class="article-title" href="{% url 'management:userupdatetask' task.id %}">Edit</a></td>
               {%else%}
-                <td> <a class="article-title" href="{{task.task_url}}">Evidence</a></td>
+                <td>
+                  {% if filtered_employee and filtered_employee.id == task.employee.id %}
+                    <a class="article-title" href="{% url 'management:user_evidence' %}?username={{ task.employee.username }}&task={{ task.id }}">Evidence</a>
+                  {% else %}
+                    <a class="article-title" href="{{ task.task_url }}">Evidence</a>
+                  {% endif %}
+                </td>
               {%endif%}
               </tr>
           {% endfor %}

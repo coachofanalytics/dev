@@ -20,11 +20,11 @@
       </p>
     </div> 
     <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-2">
-      <a href="{% url 'finance:pay' %}" target="_blank">
+      <a href="{% url 'finance:pay' %}?service=interview_coach&amount=1499" target="_blank">
         <button type="button" class="btn btn-primary btn-sm">$1499: With Coach</button>
       </a>
       <hr/>
-      <a href="{% url 'finance:pay' %}" target="_blank">
+      <a href="{% url 'finance:pay' %}?service=interview_prep&amount=229" target="_blank">
         <button type="button" class="btn btn-primary btn-sm">$229: Without Coach</button>
       </a>
     </div>
@@ -58,10 +58,10 @@
         {% endfor %}
         <hr/>
         <p class="bd">
-          Access the responses,samples and videos to PM Interview questions for $229
+          Access the responses,samples and videos to {{position}} Interview questions for $229
         </p>
-        <a class="text-center" href="{% url 'finance:pay' %}">
-        <button type="btn" class="btn-primary">Pay to Begin</button>
+        <a class="text-center" href="{% url 'finance:pay' %}?service=interview_prep&amount=229&position={{ position|urlencode }}">
+        <button type="btn" class="btn-primary">Pay to Begin ($229)</button>
         </a>
       </div>
     </div>
@@ -90,10 +90,10 @@
          {% endfor %}
          <hr/>
          <p class="bd">
-           Access the responses,samples and videos to PM Interview questions for $229
+           Access the responses,samples and videos to {{position}} Interview questions for $229
          </p>
-         <a class="text-center" href="{% url 'finance:pay' %}">
-         <button type="btn" class="btn-primary">Pay to Begin</button>
+         <a class="text-center" href="{% url 'finance:pay' %}?service=interview_prep&amount=229&position={{ position|urlencode }}">
+         <button type="btn" class="btn-primary">Pay to Begin ($229)</button>
          </a>
        </div>
      </div>
