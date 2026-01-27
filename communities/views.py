@@ -20,43 +20,50 @@ def home(request):
     return render(request, 'home.html')
 
 # community views
+# views.py - Minimal join view with only 2 fields
 def join(request):
     if request.method == 'POST':
-        form = JoinForm(request.POST)
-        if form.is_valid():
-            # Save the form data
-            member = form.save(commit=False)
-            member.is_verified = True  # Auto-verify for now
-             # Check if they agreed to directory
-            if form.cleaned_data.get('agree_to_directory'):
-                 member.is_public_directory = True
-            member.save()
-             # Store member ID in session for the "Join Directory" button
-            request.session['joined_member_id'] = member.id
-            # Send the confirmation email
-            # Send confirmation email
-            subject = 'Welcome to Our Community!'
-            recipient_list = [member.email]
-            context = {
-                'name': member.name,
-                'directory_url': 'http://127.0.0.1:8000/community/directory/',
-            }
-
-            # Call the send_email function
-            send_email(
-                subject,
-                recipient_list,
-                context,
-                'email.html',  # Path to the HTML template
-                'email.txt'    # Path to the plain text template
-            )
-
-            messages.success(request, f'Welcome {member.name}! You are now a verified member.')
-            return redirect('member_directory')  # Redirect to a page after successful form submission
-    else:
-        form = JoinForm()
-
-    return render(request, 'join.html', {'form': form})
+        # Get ONLY the 2 fields from request
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        agree_to_directory = request.POST.get('agree_to_directory') == 'true'
+        
+        # Simple validation
+        if not name or not email:
+            messages.error(request, 'Please fill in all required fields')
+            return redirect('join')
+        
+        # Check if email already exists
+        if CommunityMember.objects.filter(email=email).exists():
+            messages.error(request, 'This email is already registered')
+            return redirect('join')
+        
+        # Create member with ONLY the 2 fields
+        member = CommunityMember.objects.create(
+            name=name,
+            email=email,
+            is_public_directory=agree_to_directory,
+            profession="To be updated",  # Default values for other fields
+            region="To be updated"
+        )
+        
+        # Send email
+        subject = 'Welcome to Our Community!'
+        recipient_list = [email]
+        context = {'name': name}
+        
+        send_email(
+            subject,
+            recipient_list,
+            context,
+            'email.html',
+            'email.txt'
+        )
+        
+        messages.success(request, f'Welcome {name}! You have joined the community.')
+        return redirect('member_directory')
+    
+    return render(request, 'join.html')
 
 def member_directory(request):
     """
