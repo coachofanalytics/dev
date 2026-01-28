@@ -12,8 +12,8 @@ from django.utils import timezone
 
 from main.forms import MessageForm
 from .utils import send_email
-from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm
-from .models import Post, ForumCategory, CommentP, EventCalendar, CommunityMember  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
+from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm, DirectoryProfileForm
+from .models import Post, ForumCategory, CommentP, EventCalendar, CommunityMember, DirectoryProfile  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
 from django.db.models import Q
 # Create your views here.
 def home(request):
@@ -44,7 +44,7 @@ def join(request):
             email=email,
             is_public_directory=agree_to_directory,
             profession="To be updated",  # Default values for other fields
-            region="To be updated"
+            region="Global"
         )
         
         # Send email
@@ -69,52 +69,40 @@ def member_directory(request):
     """
     Verified Member Directory with search functionality
     """
-    # Get all verified members who want to be in the directory
-    members = CommunityMember.objects.filter(
-        is_verified=True,
-        is_public_directory=True
-    ).order_by('-date_joined')
+    # Start with ALL members (remove restrictive filters temporarily)
+    members = CommunityMember.objects.all().order_by('-date_joined')
 
     # Initialize variables
     search_query = request.GET.get('search', '')
     region_filter = request.GET.get('region', '')
     profession_filter = request.GET.get('profession', '')
     
-    # Handle search/filter from form
-    if request.method == 'GET':
-        search_query = request.GET.get('search', '')
-        region_filter = request.GET.get('region', '')
-        profession_filter = request.GET.get('profession', '')
+    # Apply search by name or profession
+    if search_query:
+        members = members.filter(
+            Q(name__icontains=search_query) |
+            Q(profession__icontains=search_query) |
+            Q(specialization__icontains=search_query) |
+            Q(bio__icontains=search_query)
+        )
 
-         # Apply search by name or profession
-        if search_query:
-            members = members.filter(
-                Q(name__icontains=search_query) |
-                Q(profession__icontains=search_query) |
-                Q(specialization__icontains=search_query) |
-                Q(bio__icontains=search_query)
-            )
-
-         # Apply region filter
-        if region_filter:
-            members = members.filter(region__icontains=region_filter)
-        
-        # Apply profession filter
-        if profession_filter:
-            members = members.filter(profession__icontains=profession_filter)
-         # Get unique regions and professions for filter dropdowns
-    unique_regions = CommunityMember.objects.filter(
-        is_verified=True,
-        is_public_directory=True
-    ).values_list('region', flat=True).distinct().order_by('region')
+    # Apply region filter
+    if region_filter:
+        members = members.filter(region__icontains=region_filter)
     
-    unique_professions = CommunityMember.objects.filter(
-        is_verified=True,
-        is_public_directory=True
-    ).values_list('profession', flat=True).distinct().order_by('profession')
+    # Apply profession filter
+    if profession_filter:
+        members = members.filter(profession__icontains=profession_filter)
+    
+    # OPTIONAL: Only show members who want to be in directory
+    # Uncomment this line if you want directory-only members
+    # members = members.filter(is_public_directory=True)
+    
+    # Get unique regions and professions for filter dropdowns
+    unique_regions = CommunityMember.objects.values_list('region', flat=True).distinct().order_by('region')
+    unique_professions = CommunityMember.objects.values_list('profession', flat=True).distinct().order_by('profession')
 
-    #Add is_premium field (you'll need to add this to your model or calculate)
-    # For now, let's assume premium status
+    # Add is_premium field (temporary)
     for member in members:
         member.is_premium = member.id % 3 == 0  # Every 3rd member is premium for demo
 
@@ -141,6 +129,74 @@ def join_directory(request, member_id):
         messages.success(request, 'Your profile is now visible in the directory!')
         return redirect('member_directory')
     return redirect('member_directory')
+
+# REMOVE @login_required OR update to:
+def join_directory_form(request):
+    """
+    Form for joining the professional directory
+    """
+    # Check if user just joined (has member_id in session)
+    member_id = request.session.get('joined_member_id')
+    
+    if member_id:
+        try:
+            member = CommunityMember.objects.get(id=member_id)
+        except CommunityMember.DoesNotExist:
+            member = None
+    else:
+        member = None
+    
+    if request.method == 'POST':
+        # Get form data
+        name = request.POST.get('name')
+        profession = request.POST.get('profession')
+        region = request.POST.get('region')
+        category = request.POST.get('category')
+        expertise = request.POST.get('expertise')
+        
+        # Update the member if exists
+        if member:
+            member.name = name
+            member.profession = profession
+            member.region = region
+            member.save()
+            
+            # Create or update DirectoryProfile
+            DirectoryProfile.objects.update_or_create(
+                community_member=member,
+                defaults={
+                    'full_name': name,
+                    'profession': profession,
+                    'region_city': region,
+                    'category': category,
+                    'expertise_summary': expertise,
+                    'is_approved': True,
+                }
+            )
+            
+            messages.success(request, f'Profile updated for {name}!')
+        else:
+            messages.success(request, 'Profile information saved!')
+        
+        return redirect('member_directory')
+    
+    # Pre-fill with member data if exists
+    initial_data = {}
+    if member:
+        initial_data = {
+            'name': member.name,
+            'profession': member.profession,
+            'region': member.region,
+        }
+    
+    context = {
+        'name': initial_data.get('name', 'Your Name'),
+        'profession': initial_data.get('profession', ''),
+        'region': initial_data.get('region', ''),
+        'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
+    }
+    
+    return render(request, 'join_directory_form.html', context)
 
 # Forum Home Page
 def forum_home(request):

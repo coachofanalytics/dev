@@ -1,7 +1,7 @@
 from asyncio import Event
 from django import forms
 from django.utils import timezone
-from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar,CommunityMember
+from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar,CommunityMember,DirectoryProfile
 
 
 
@@ -77,6 +77,34 @@ class JoinForm(forms.ModelForm):
             if len(digits) < 10:
                 raise forms.ValidationError("Please enter a valid phone number with area code.")
         return phone
+
+
+class DirectoryProfileForm(forms.ModelForm):
+    class Meta:
+        model = DirectoryProfile
+        fields = ['full_name', 'profession', 'region_city', 'category', 
+                 'membership_type', 'expertise_summary', 'profile_photo']
+        widgets = {
+            'expertise_summary': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Briefly describe your skills and what you offer to the community...'
+            }),
+            'full_name': forms.TextInput(attrs={
+                'placeholder': 'e.g., Jane Doe'
+            }),
+            'profession': forms.TextInput(attrs={
+                'placeholder': 'e.g., Civil Engineer'
+            }),
+            'region_city': forms.TextInput(attrs={
+                'placeholder': 'e.g., Seattle, WA'
+            }),
+        }
+        labels = {
+            'full_name': 'Full Name',
+            'region_city': 'Region / City',
+            'expertise_summary': 'Expertise Summary',
+            'profile_photo': 'Profile Photo',
+        }
     
 class PostForm(forms.ModelForm):
     class Meta:
