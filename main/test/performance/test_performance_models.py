@@ -1,9 +1,14 @@
 import time
 from django.test import TestCase
-from main.models import Scholarship
+from main.models import Scholarship, Governance
 from datetime import timedelta
 from django.utils import timezone
 import random
+
+from django.contrib.auth import get_user_model
+import random
+
+User = get_user_model()
 
 
 class ScholarshipModelPerformanceTest(TestCase):
@@ -131,3 +136,120 @@ class ScholarshipModelPerformanceTest(TestCase):
         # Verify ordering is correct
         deadlines = [s.deadline for s in ordered_scholarships]
         self.assertEqual(deadlines, sorted(deadlines))
+
+
+
+
+class GovernanceModelPerformanceTest(TestCase):
+    """Performance tests for Governance model operations"""
+
+    def setUp(self):
+        self.bulk_size = 1000
+        # Create a single test user for all governance records
+        self.user = User.objects.create_user(
+            username="perfuser",
+            email="perfuser@test.com",
+            password="password123"
+        )
+        self.now = timezone.now()
+
+    def test_bulk_create_performance(self):
+        """Test performance of bulk governance creation"""
+        governance_data = [
+            Governance(
+                governance_category=f"Bulk Governance {i}",
+                description=f"Description for governance {i}",
+                members=self.user,
+                created_at=self.now,
+                updated_at=self.now
+            )
+            for i in range(self.bulk_size)
+        ]
+
+        start_time = time.time()
+        Governance.objects.bulk_create(governance_data)
+        end_time = time.time()
+
+        creation_time = end_time - start_time
+        print(f"Bulk created {self.bulk_size} Governance records in {creation_time:.2f} seconds")
+
+        # Performance assertion
+        self.assertLess(creation_time, 5.0, "Bulk creation took too long")
+        self.assertEqual(Governance.objects.count(), self.bulk_size)
+
+    def test_bulk_update_performance(self):
+        """Test performance of bulk governance updates"""
+        # Create test data
+        records = [
+            Governance(
+                governance_category=f"Update Test {i}",
+                description="Testing bulk update",
+                members=self.user,
+                created_at=self.now,
+                updated_at=self.now
+            )
+            for i in range(self.bulk_size)
+        ]
+        Governance.objects.bulk_create(records)
+
+        # Bulk update
+        start_time = time.time()
+        updated_count = Governance.objects.all().update(description="Updated description")
+        end_time = time.time()
+
+        update_time = end_time - start_time
+        print(f"Bulk updated {updated_count} Governance records in {update_time:.2f} seconds")
+
+        self.assertLess(update_time, 2.0, "Bulk update took too long")
+        self.assertEqual(updated_count, self.bulk_size)
+
+    def test_complex_queryset_performance(self):
+        """Test performance of complex queryset operations"""
+        # Create diverse test data
+        for i in range(500):
+            Governance.objects.create(
+                governance_category=f"Complex Query {i}",
+                description=f"Description {i}",
+                members=self.user,
+                created_at=self.now,
+                updated_at=self.now
+            )
+
+        start_time = time.time()
+        complex_queryset = Governance.objects.filter(
+            description__icontains="Description"
+        ).order_by('created_at')[:100]
+
+        results = list(complex_queryset)
+        end_time = time.time()
+
+        query_time = end_time - start_time
+        print(f"Complex query executed in {query_time:.2f} seconds, returned {len(results)} results")
+
+        self.assertLess(query_time, 1.0, "Complex query took too long")
+        self.assertLessEqual(len(results), 100)
+
+    def test_ordering_performance(self):
+        """Test performance of ordering operations"""
+        # Create records with varied timestamps
+        for i in range(1000):
+            Governance.objects.create(
+                governance_category=f"Ordering Test {i}",
+                description="Test ordering",
+                members=self.user,
+                created_at=self.now + timezone.timedelta(seconds=i),
+                updated_at=self.now + timezone.timedelta(seconds=i)
+            )
+
+        start_time = time.time()
+        ordered_records = list(Governance.objects.all().order_by('created_at'))
+        end_time = time.time()
+
+        ordering_time = end_time - start_time
+        print(f"Ordered {len(ordered_records)} Governance records in {ordering_time:.2f} seconds")
+
+        self.assertLess(ordering_time, 2.0, "Ordering operation took too long")
+
+        # Verify ordering
+        timestamps = [r.created_at for r in ordered_records]
+        self.assertEqual(timestamps, sorted(timestamps))

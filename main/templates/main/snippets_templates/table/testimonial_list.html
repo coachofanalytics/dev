@@ -42,7 +42,8 @@
 </head>
 <body>
     <h1>Testimonial List</h1>
-        <a href="#" class="add-btn">+ Add Donation</a>
+        <a href="{% url 'testimonial_create' %}" class="add-btn">+ Add Testimonial</a>
+
 
     {% if testimonial %}
         <table>
@@ -64,13 +65,20 @@
                     <td>{{ t.position }}</td>
                     <td>{{ t.organization }}</td>
                     <td>{{ t.testimonial }}</td>
-                    <td>{{ t.image }}</td>
+                    <td>
+                        {% if t.image %}
+                            <img src="{{ t.image.url }}" width="60">
+                        {% else %}
+                            No Image
+                        {% endif %}
+                    </td>
                     <td>{{ t.date|date:"M d, Y " }}</td>
                     <td>
-                        <a href="#" class="action-btn detail-btn">Details</a>
-                        <a href="#" class="action-btn edit-btn">Edit</a>
-                        <a href="#" class="action-btn delete-btn">Delete</a>
+                        <a href="{% url 'testimonial_detail' t.id %}" class="action-btn detail-btn">Details</a>
+                        <a href="{% url 'testimonial_update' t.id %}" class="action-btn edit-btn">Edit</a>
+                        <a href="{% url 'testimonial_delete' t.id %}" class="action-btn delete-btn">Delete</a>
                     </td>
+
                 </tr>
                 {% endfor %}
             </tbody>

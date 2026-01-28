@@ -1,0 +1,142 @@
+<!-- ============================================ -->
+<!-- templates/directory.html -->
+<!-- ============================================ -->
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<main class="max-w-7xl mx-auto py-16 px-6">
+    
+    <!-- Page Title -->
+    <h1 class="text-5xl font-extrabold text-blue-600 mb-8">Verified Member Directory</h1>
+    
+    <!-- Search Section -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <form method="GET" action="{% url 'directory' %}" class="flex flex-wrap gap-4">
+            <input 
+                type="text" 
+                name="search"
+                class="flex-1 min-w-[250px] px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green focus:outline-none"
+                placeholder="Search by Name or Profession..."
+                value="{{ request.GET.search }}"
+            >
+            
+            <input 
+                type="text" 
+                name="region"
+                class="px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green focus:outline-none min-w-[150px]"
+                placeholder="Region (All)"
+                value="{{ request.GET.region }}"
+            >
+            
+            <select name="profession" class="px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green min-w-[150px]">
+                <option value="">Profession (All)</option>
+                {% for value, label in professions %}
+                <option value="{{ value }}" {% if request.GET.profession == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit" class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 font-semibold">
+                Search
+            </button>
+            
+            <a href="{% url 'join_directory' %}" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] font-semibold">
+                + Join Directory
+            </a>
+        </form>
+    </div>
+    
+    <!-- Member Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for member in members %}
+        <div class="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition-shadow duration-300">
+            <!-- Avatar -->
+            <div class="flex justify-center mb-4">
+                {% if member.profile_photo %}
+                <img src="{{ member.profile_photo.url }}" alt="{{ member.full_name }}" 
+                     class="w-20 h-20 rounded-full object-cover">
+                {% else %}
+                <div class="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+                     >
+                    {{ member.initials }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Name -->
+            <h2 class="text-xl font-bold text-gray-900 mb-2">{{ member.full_name }}</h2>
+            
+            <!-- Title -->
+            <div class="font-semibold mb-1" >
+                {{ member.profession }}
+            </div>
+            
+            <!-- Location -->
+            <div class="text-gray-600 text-sm mb-3">({{ member.region }})</div>
+            
+            <!-- Description -->
+            <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ member.expertise|truncatewords:15 }}</p>
+            
+            <!-- Badges -->
+            <div class="flex justify-center gap-2 mb-4 flex-wrap">
+                {% if member.is_premium %}
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold uppercase">
+                    Premium Member
+                </span>
+                {% endif %}
+                {% if member.is_verified %}
+                <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-semibold uppercase">
+                    Verified
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- Send Message Button -->
+            <button class="w-full bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f] font-semibold transition duration-300">
+                Send Message
+            </button>
+            
+            <!-- Edit/Delete for own profile -->
+            {% if user == member.user %}
+            <div class="flex gap-2 mt-3">
+                <a href="{% url 'edit_directory_profile' member.pk %}" 
+                   class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 text-sm">
+                    Edit
+                </a>
+                <a href="{% url 'delete_directory_profile' member.pk %}" 
+                   class="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 text-sm">
+                    Delete
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="col-span-full text-center text-gray-600 text-lg">No members found matching your search criteria.</p>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if members.has_other_pages %}
+    <div class="flex justify-center gap-2 mt-8">
+        {% if members.has_previous %}
+        <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.profession %}&profession={{ request.GET.profession }}{% endif %}" 
+           class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">First</a>
+        <a href="?page={{ members.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.profession %}&profession={{ request.GET.profession }}{% endif %}" 
+           class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Previous</a>
+        {% endif %}
+        
+        <span class="px-4 py-2">{{ members.number }} of {{ members.paginator.num_pages }}</span>
+        
+        {% if members.has_next %}
+        <a href="?page={{ members.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.profession %}&profession={{ request.GET.profession }}{% endif %}" 
+           class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Next</a>
+        <a href="?page={{ members.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.profession %}&profession={{ request.GET.profession }}{% endif %}" 
+           class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Last</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+</main>
+{% endblock %}

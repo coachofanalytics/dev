@@ -1,7 +1,8 @@
 
 from django import forms
 from django.utils import timezone
-from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar
+from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar, DirectoryMember
+from django import forms
 
 class JoinForm(forms.ModelForm):
     class Meta:
@@ -41,3 +42,75 @@ class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'message']
+
+
+
+# ============================================
+# forms.py - Add these forms to your existing forms.py
+# ============================================
+
+
+
+class DirectoryMemberForm(forms.ModelForm):
+    class Meta:
+        model = DirectoryMember
+        fields = ['full_name', 'profession', 'region', 'category', 
+                  'membership_type', 'expertise', 'profile_photo']
+        widgets = {
+            'full_name': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'e.g., Jane Doe'
+            }),
+            'profession': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'e.g., Civil Engineer'
+            }),
+            'region': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'e.g., Seattle, WA'
+            }),
+            'category': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'membership_type': forms.RadioSelect(attrs={
+                'class': 'radio-input'
+            }),
+            'expertise': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'placeholder': 'Briefly describe your skills and what you offer to the community...',
+                'rows': 4
+            }),
+            'profile_photo': forms.FileInput(attrs={
+                'class': 'file-input',
+                'accept': 'image/*'
+            })
+        }
+
+
+class EventUpdateForm(forms.ModelForm):
+    class Meta:
+        model = EventCalendar
+        fields = ['name', 'start_date', 'end_date', 'location', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
+                'placeholder': 'Event Name'
+            }),
+            'start_date': forms.DateTimeInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
+                'type': 'datetime-local'
+            }),
+            'end_date': forms.DateTimeInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
+                'type': 'datetime-local'
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
+                'placeholder': 'Location'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
+                'placeholder': 'Description',
+                'rows': 4
+            })
+        }

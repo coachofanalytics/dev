@@ -7,8 +7,11 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
 from .utils import send_email
-from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm
-from .models import Post, ForumCategory, CommentP, EventCalendar  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
+from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm,DirectoryMemberForm, EventUpdateForm
+from .models import Post, ForumCategory, CommentP, EventCalendar, DirectoryMember  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
+from django.db.models import Q
+
+
 
 # Create your views here.
 def home(request):
@@ -208,3 +211,160 @@ def contact_view(request):
         form = ContactForm()
 
     return render(request, 'contact_form.html', {'form': form})
+
+
+# ============================================
+# views.py - Add these views to your existing views.py
+# ============================================
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .models import DirectoryMember, EventCalendar
+from .forms import DirectoryMemberForm, EventUpdateForm
+
+# ============== DIRECTORY VIEWS ==============
+
+def directory(request):
+    """Display all directory members with search and filter functionality"""
+    members = DirectoryMember.objects.filter(is_active=True)
+    
+    # Apply search filter
+    search = request.GET.get('search', '').strip()
+    if search:
+        members = members.filter(
+            Q(full_name__icontains=search) | 
+            Q(profession__icontains=search) |
+            Q(expertise__icontains=search)
+        )
+    
+    # Apply region filter
+    region = request.GET.get('region', '').strip()
+    if region:
+        members = members.filter(region__icontains=region)
+    
+    # Apply profession/category filter
+    profession = request.GET.get('profession', '').strip()
+    if profession:
+        members = members.filter(category=profession)
+    
+    # Get unique regions and categories for dropdowns
+    regions = DirectoryMember.objects.values_list('region', flat=True).distinct()
+    categories = DirectoryMember.CATEGORY_CHOICES
+    
+    # Pagination
+    paginator = Paginator(members, 12)  # 12 members per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'members': page_obj,
+        'regions': regions,
+        'professions': categories,
+    }
+    return render(request, 'directory.html', context)
+
+
+def join_directory(request):
+    """Allow users to join the professional directory - No login required"""
+    # Check if user is authenticated and already has a profile
+    if request.user.is_authenticated:
+        existing_profile = DirectoryMember.objects.filter(user=request.user, is_active=True).first()
+        if existing_profile:
+            messages.info(request, 'You already have an active directory profile.')
+            return redirect('directory')
+    
+    if request.method == 'POST':
+        form = DirectoryMemberForm(request.POST, request.FILES)
+        if form.is_valid():
+            member = form.save(commit=False)
+            # Associate with user if logged in, otherwise set to None
+            member.user = request.user if request.user.is_authenticated else None
+            member.is_verified = True  # Auto-verify or set to False for manual approval
+            member.save()
+            
+            messages.success(request, 'Your profile has been submitted successfully!')
+            return redirect('directory')
+    else:
+        # Pre-fill form with user data if available
+        initial_data = {}
+        if request.user.is_authenticated and hasattr(request.user, 'profile'):
+            initial_data['full_name'] = request.user.profile.full_name
+            initial_data['region'] = request.user.profile.county_city
+        
+        form = DirectoryMemberForm(initial=initial_data)
+    
+    return render(request, 'join_directory.html', {'form': form})
+
+
+def edit_directory_profile(request, pk):
+    """Edit existing directory profile - No login required"""
+    member = get_object_or_404(DirectoryMember, pk=pk)
+    
+    # If user is authenticated, verify ownership
+    if request.user.is_authenticated and member.user and member.user != request.user:
+        messages.error(request, 'You do not have permission to edit this profile.')
+        return redirect('directory')
+    
+    if request.method == 'POST':
+        form = DirectoryMemberForm(request.POST, request.FILES, instance=member)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('directory')
+    else:
+        form = DirectoryMemberForm(instance=member)
+    
+    return render(request, 'join_directory.html', {'form': form, 'edit_mode': True})
+
+
+def delete_directory_profile(request, pk):
+    """Delete/deactivate directory profile - No login required"""
+    member = get_object_or_404(DirectoryMember, pk=pk)
+    
+    # If user is authenticated, verify ownership
+    if request.user.is_authenticated and member.user and member.user != request.user:
+        messages.error(request, 'You do not have permission to delete this profile.')
+        return redirect('directory')
+    
+    if request.method == 'POST':
+        member.is_active = False
+        member.save()
+        messages.success(request, 'Your profile has been removed from the directory.')
+        return redirect('directory')
+    
+    return render(request, 'confirm_delete_profile.html', {'member': member})
+
+
+# ============== EVENT CALENDAR CRUD ==============
+
+def update_event(request, id):
+    """Update an existing event - No login required"""
+    event = get_object_or_404(EventCalendar, id=id)
+    
+    if request.method == 'POST':
+        form = EventUpdateForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Event updated successfully!")
+            return redirect('event_detail', id=event.id)
+        else:
+            messages.error(request, "There was an error updating the event.")
+    else:
+        form = EventUpdateForm(instance=event)
+    
+    return render(request, 'update_event.html', {'form': form, 'event': event})
+
+
+def delete_event(request, id):
+    """Delete an event - No login required"""
+    event = get_object_or_404(EventCalendar, id=id)
+    
+    if request.method == 'POST':
+        event.delete()
+        messages.success(request, "Event deleted successfully!")
+        return redirect('event_calendar')
+    
+    return render(request, 'confirm_delete_event.html', {'event': event})

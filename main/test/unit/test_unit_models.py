@@ -2,7 +2,13 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from main.models import Scholarship
+from main.models import Scholarship, Governance
+
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
+
 
 class ScholarshipModelTest(TestCase):
 
@@ -251,3 +257,100 @@ class ScholarshipManagerTest(TestCase):
         open_scholarships = Scholarship.objects.filter(status="Open")
         self.assertIn(self.open_scholarship, open_scholarships)
         self.assertNotIn(self.closed_scholarship, open_scholarships)
+
+
+
+
+class GovernanceModelTest(TestCase):
+
+    def setUp(self):
+        """Set up test data"""
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="password123"
+        )
+
+        self.now = timezone.now()
+
+        self.governance = Governance.objects.create(
+            governance_category="Board Resolution",
+            description="Approval of annual budget",
+            members=self.user,
+            created_at=self.now,
+            updated_at=self.now
+        )
+
+    def test_governance_creation(self):
+        """Test governance creation with all fields"""
+        self.assertEqual(self.governance.governance_category, "Board Resolution")
+        self.assertEqual(self.governance.description, "Approval of annual budget")
+        self.assertEqual(self.governance.members, self.user)
+        self.assertTrue(isinstance(self.governance, Governance))
+
+    def test_str_representation(self):
+        """Test string representation"""
+        self.assertEqual(str(self.governance), "Board Resolution")
+
+    def test_required_fields(self):
+        """Test that required fields are enforced"""
+        governance = Governance()
+
+        with self.assertRaises(ValidationError):
+            governance.full_clean()
+
+    def test_foreign_key_user_required(self):
+        """Test members (User) foreign key is required"""
+        governance = Governance(
+            governance_category="Policy",
+            description="Security policy",
+            members=None,
+            created_at=self.now,
+            updated_at=self.now
+        )
+
+        with self.assertRaises(ValidationError):
+            governance.full_clean()
+
+    def test_created_at_required(self):
+        """Test created_at is required"""
+        governance = Governance(
+            governance_category="Policy",
+            description="Missing created_at",
+            members=self.user,
+            updated_at=self.now
+        )
+
+        with self.assertRaises(ValidationError):
+            governance.full_clean()
+
+    def test_updated_at_required(self):
+        """Test updated_at is required"""
+        governance = Governance(
+            governance_category="Policy",
+            description="Missing updated_at",
+            members=self.user,
+            created_at=self.now
+        )
+
+        with self.assertRaises(ValidationError):
+            governance.full_clean()
+
+    def test_field_max_lengths(self):
+        """Test field max lengths"""
+        self.assertEqual(Governance._meta.get_field('governance_category').max_length, 255)
+
+    def test_model_validation(self):
+        """Test model validation using full_clean()"""
+        valid_governance = Governance(
+            governance_category="Compliance",
+            description="Compliance policy",
+            members=self.user,
+            created_at=self.now,
+            updated_at=self.now
+        )
+
+        try:
+            valid_governance.full_clean()
+        except ValidationError:
+            self.fail("Valid Governance instance should not raise ValidationError")

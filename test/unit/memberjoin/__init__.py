@@ -1,0 +1,1 @@
+"""memberjoin tests package"""

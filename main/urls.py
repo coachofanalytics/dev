@@ -61,6 +61,11 @@ urlpatterns = [
     path('education/training/',views.education_landing, name = 'education_training'),
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
-    path('testmonial/', views.testimonial_list, name='testimonial')
+
+    path('testimonials/', views.testimonial_list, name='testimonial_list'),
+    path('testimonials/add/', views.testimonial_create, name='testimonial_create'),
+    path('testimonials/<int:pk>/', views.testimonial_detail, name='testimonial_detail'),
+    path('testimonials/<int:pk>/edit/', views.testimonial_update, name='testimonial_update'),
+    path('testimonials/<int:pk>/delete/', views.testimonial_delete, name='testimonial_delete'),
 
 ]    

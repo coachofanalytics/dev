@@ -1,5 +1,5 @@
 from django import forms
-from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 
 # Feedback / Contact Form
 class ContactForm(forms.ModelForm):
@@ -92,4 +92,15 @@ class ScholarshipSearchForm(forms.Form):
             }
         )
     )
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonial
+        fields = ['name', 'position', 'organization', 'testimonial', 'image']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'position': forms.TextInput(attrs={'class': 'form-control'}),
+            'organization': forms.TextInput(attrs={'class': 'form-control'}),
+            'testimonial': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
 

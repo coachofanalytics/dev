@@ -1,0 +1,17 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+
+<h2>{{ testimonial.name }}</h2>
+<p><strong>Position:</strong> {{ testimonial.position }}</p>
+<p><strong>Organization:</strong> {{ testimonial.organization }}</p>
+<p>{{ testimonial.testimonial }}</p>
+
+{% if testimonial.image %}
+    <img src="{{ testimonial.image.url }}" width="200">
+{% endif %}
+
+<br><br>
+<a href="{% url 'testimonial_update' testimonial.id %}" class="action-btn edit-btn">Edit</a>
+<a href="{% url 'testimonial_list' %}" class="action-btn detail-btn">Back</a>
+
+{% endblock %}

@@ -19,28 +19,45 @@
             
             <!-- Event Start Date -->
             <div>
-                <strong class="text-lg">Start Date:</strong>
-                <p class="text-gray-600">{{ event.start_date|date:"F j, Y, g:i a" }}</p>
+                <strong class="text-lg text-gray-800">Start Date:</strong>
+                <p class="text-gray-600 mt-1">{{ event.start_date|date:"F j, Y, g:i a" }}</p>
             </div>
 
             <!-- Event End Date -->
             <div>
-                <strong class="text-lg">End Date:</strong>
-                <p class="text-gray-600">{{ event.end_date|date:"F j, Y, g:i a" }}</p>
+                <strong class="text-lg text-gray-800">End Date:</strong>
+                <p class="text-gray-600 mt-1">{{ event.end_date|date:"F j, Y, g:i a" }}</p>
+            </div>
+
+            <!-- Event Location -->
+            <div class="col-span-2">
+                <strong class="text-lg text-gray-800">Location:</strong>
+                <p class="text-gray-600 mt-1">{{ event.location }}</p>
             </div>
 
             <!-- Event Description -->
             <div class="col-span-2">
-                <strong class="text-lg">Description:</strong>
-                <p class="text-gray-600">{{ event.description }}</p>
+                <strong class="text-lg text-gray-800">Description:</strong>
+                <p class="text-gray-600 mt-1">{{ event.description }}</p>
             </div>
 
         </div>
 
-        <!-- Button to Return to Event List -->
-        <div class="col-span-2 text-center mt-6">
-            <a href="{% url 'event_calendar' %}" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
-                Back to Event Calendar
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap justify-center gap-4 mt-8 pt-6 border-t border-gray-200">
+            <a href="{% url 'event_calendar' %}" 
+               class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300 font-semibold">
+                ← Back to Calendar
+            </a>
+            
+            <a href="{% url 'update_event' event.id %}" 
+               class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold">
+                ✏️ Edit Event
+            </a>
+            
+            <a href="{% url 'delete_event' event.id %}" 
+               class="bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition duration-300 font-semibold">
+                🗑️ Delete Event
             </a>
         </div>
 

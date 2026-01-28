@@ -19,7 +19,7 @@ from .models import (
 )
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, TestimonialForm
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
@@ -652,6 +652,78 @@ def scholarship_search(request):
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 
 
+# def testimonial_list(request):
+#     testimonial = Testimonial.objects.all()
+#     return render(request, "main/snippets_templates/table/testimonial_list.html", {'testimonial': testimonial})
+
+# LIST
 def testimonial_list(request):
-    testimonial = Testimonial.objects.all()
-    return render(request, "main/snippets_templates/table/testimonial_list.html", {'testimonial': testimonial})
+    testimonials = Testimonial.objects.all()
+    return render(request, "main/testimonial/testimonial_list.html", {
+        'testimonials': testimonials
+    })
+
+
+
+
+def testimonial_detail(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    testimonials = Testimonial.objects.all()
+
+    return render(request, "main/testimonial/testimonial_detail.html", {
+        'testimonial': testimonial,
+        'testimonials': testimonials,
+    })
+
+
+
+
+def testimonial_create(request):
+    testimonials = Testimonial.objects.all()
+
+    if request.method == "POST":
+        form = TestimonialForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('main:testimonial_list')
+    else:
+        form = TestimonialForm()
+
+    return render(request, "main/testimonial/testimonial_form.html", {
+        'form': form,
+        'title': 'Add Testimonial',
+        'testimonials': testimonials,
+    })
+
+def testimonial_update(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    testimonials = Testimonial.objects.all()
+
+    if request.method == "POST":
+        form = TestimonialForm(request.POST, request.FILES, instance=testimonial)
+        if form.is_valid():
+            form.save()
+            return redirect('main:testimonial_list')
+    else:
+        form = TestimonialForm(instance=testimonial)
+
+    return render(request, "main/testimonial/testimonial_form.html", {
+        'form': form,
+        'title': 'Edit Testimonial',
+        'testimonials': testimonials,
+    })
+
+
+
+def testimonial_delete(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    testimonials = Testimonial.objects.all()
+
+    if request.method == "POST":
+        testimonial.delete()
+        return redirect('main:testimonial_list')
+
+    return render(request, "main/testimonial/testimonial_confirm_delete.html", {
+        'testimonial': testimonial,
+        'testimonials': testimonials,
+    })
