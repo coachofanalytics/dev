@@ -24,19 +24,30 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = EventCalendar
         fields = ['name', 'start_date', 'end_date', 'location', 'description']
-
-    # Optionally, you can add custom validations if needed
+        
     def clean_start_date(self):
         start_date = self.cleaned_data.get('start_date')
-        if start_date and start_date <= timezone.now():
-            raise forms.ValidationError("Start date must be in the future.")
+
+        if start_date:
+            if timezone.is_naive(start_date):
+                start_date = timezone.make_aware(start_date)
+
+            if start_date <= timezone.now():
+                raise forms.ValidationError("Start date must be in the future.")
+
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
-        if end_date and end_date <= start_date:
-            raise forms.ValidationError("End date must be after the start date.")
+
+        if end_date and start_date:
+            if timezone.is_naive(end_date):
+                end_date = timezone.make_aware(end_date)
+
+            if end_date <= start_date:
+                raise forms.ValidationError("End date must be after the start date.")
+
         return end_date
 class ContactForm(forms.ModelForm):
     class Meta:

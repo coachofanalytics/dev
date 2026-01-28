@@ -12,6 +12,7 @@ urlpatterns = [
     path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/', views.news_list, name='news_list'),
+    path('news/<int:id>/', views.news_detail, name='news_detail'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
 #<<<<<<< 25.10_DC48_UAT_UO

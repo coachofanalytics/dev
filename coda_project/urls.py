@@ -69,15 +69,15 @@ urlpatterns = [
   
     path("", include("main.urls", namespace="main")),
     path('member/', include('memberjoin.urls')),
-    path("accounts/", include("accounts.urls")),
-    path("finance/", include("finance.urls"), name="finance"),
+    path("accounts/", include("accounts.urls", namespace="accounts")),
+    path("finance/", include("finance.urls", namespace="finance")),
 
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),
     path('social_accounts/signup/', account_views.join),
     path('social_accounts/login/', account_views.login_view),
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
-   path('communities/', include('communities.urls')),
+    path('communities/', include('communities.urls', namespace='communities')),
 ]
 
 if settings.DEBUG:

@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
@@ -367,6 +367,11 @@ def news_list(request):
     news_list = News.objects.all()
     print('info=============',news_list)
     return render(request, 'main/snippets_templates/table/news.html', {'news_list': news_list})
+
+
+def news_detail(request, id):
+    news = get_object_or_404(News, id=id)
+    return render(request, 'main/snippets_templates/table/news_detail.html', {'news': news})
 
 
 def contact_us_list(request):

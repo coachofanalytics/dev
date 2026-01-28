@@ -15,7 +15,7 @@
         {% endif %}
     </div>
 
-    <form method="POST" action="{% url 'join' %}" class="space-y-4">
+    <form method="POST" action="{% url 'communities:join' %}" class="space-y-4">
         {% csrf_token %}
         {{ form.as_p }}  <!-- This renders your form fields -->
         
@@ -26,7 +26,7 @@
             </button>
             
             <!-- Cancel Button - Redirects to the community page or any other page -->
-            <a href="{% url 'home' %}" class="bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+            <a href="{% url 'communities:home' %}" class="bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
                 Cancel
             </a>
         </div>

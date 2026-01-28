@@ -45,7 +45,7 @@ def join(request):
             )
 
             messages.success(request, 'You have successfully joined the community. A confirmation email has been sent!')
-            return redirect('join')  # Redirect to a page after successful form submission
+            return redirect('communities:join')  # Redirect to a page after successful form submission
     else:
         form = JoinForm()
 
@@ -54,7 +54,7 @@ def join(request):
 def forum_home(request):
     # Fetch all categories for the homepage
     forum_categories = ForumCategory.objects.all()
-    return render(request, 'forum_home.html', {'forum_categories': forum_categories})
+    return render(request, 'communities:forum_home.html', {'forum_categories': forum_categories})
 
 #category detail view
 def category_detail(request, slug):
@@ -87,7 +87,7 @@ def view_post(request, post_id):
             comment.author = request.user  # Assuming the user is logged in
             comment.save()
             # Redirect to the same post page after comment submission
-            return redirect('view_post', post_id=post.id)  # Corrected: 'post_id' instead of 'id'
+            return redirect('communities:view_post', post_id=post.id)  # namespaced
     else:
         form = CommentForm()
 
@@ -130,7 +130,7 @@ def add_comment(request, post_id):
             comment.save()
 
             # Redirect to the post detail page
-            return redirect('view_post', post_id=post.id)  # Corrected: 'post_id' instead of 'id'
+            return redirect('communities:view_post', post_id=post.id)  # namespaced
     else:
         form = CommentForm()
 
@@ -138,37 +138,56 @@ def add_comment(request, post_id):
         'form': form,
         'post': post
     })
-# Event Calendar Views
+
+#event calendar view
 def event_calendar(request):
-    # Fetch all events from the EventCalendar model, paginated
     events = EventCalendar.objects.all().order_by('start_date')
+    return render(request, 'event_calendar.html', {'events': events})
 
-    # Add pagination
-    from django.core.paginator import Paginator
-    paginator = Paginator(events, 5)  # Show 5 events per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'event_calendar.html', {'events': page_obj})
-# Create a new event
+# create event views
 def create_event(request):
     if request.method == 'POST':
         form = EventForm(request.POST)
         if form.is_valid():
-            form.save()  # Save the event to the database
-            messages.success(request, "Event created successfully!")
-            return redirect('event_calendar')  # Redirect to the event calendar page
+            form.save()
+            messages.success(request, "Event created successfully")
+            return redirect('communities:event_calendar')
         else:
-            messages.error(request, "There was an error with your form. Please try again.")
+            messages.error(request, "There was an error in your form.")
     else:
         form = EventForm()
     return render(request, 'create_event.html', {'form': form})
+
 # View event details
-def event_detail(request, id):
-    # Fetch the event by ID
+def event_detail(request,id):
     event = get_object_or_404(EventCalendar, id=id)
-    
     return render(request, 'event_detail.html', {'event': event})
+
+#edit events
+def edit_event(request,id):
+    event = get_object_or_404(EventCalendar, id=id)
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance = event)
+        if form.is_valid(): 
+            form.save()
+            messages.success(request, "Event updated successfully")
+            return redirect('communities:event_detail', id=event.id)
+        else:
+            messages.error(request,"There was an error in your form.")
+    else: 
+        form = EventForm
+        return render(request, 'create_event.html', {'form': form, 'event': event})
+
+def delete_event(request,id):
+    event = get_object_or_404(EventCalendar, id=id)
+
+    if request.method == 'POST':
+        event.delete()
+        messages.success(request, "Event deleted successfully")
+        return redirect('communities:event_calendar')
+    return render(request, 'delete_event.html', {'event': event})
+
+
 # Contact Regional Coordinator
 def contact_view(request):
     if request.method == 'POST':
@@ -207,9 +226,9 @@ def contact_view(request):
                 plain_template='emails/admin_contact_notification.txt'
             )
 
-            return redirect('home')  # Redirect after success
+            return redirect('communities:home')  # Redirect after success
 
     else:
         form = ContactForm()
 
-    return render(request, 'contact_form.html', {'form': form})
+    return render(request, 'communities:contact_form.html', {'form': form})
