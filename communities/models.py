@@ -36,6 +36,61 @@ class CommunityMember(models.Model):
     class Meta:
         ordering = ['-date_joined']
 
+# models.py
+class DirectoryProfile(models.Model):
+    MEMBERSHIP_CHOICES = [
+        ('verified', 'Verified (Free)'),
+        ('premium', 'Premium ($9/mo)'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('tech', 'Tech & IT'),
+        ('legal', 'Legal'),
+        ('finance', 'Finance & Accounting'),
+        ('health', 'Healthcare'),
+        ('education', 'Education'),
+        ('business', 'Business & Consulting'),
+        ('creative', 'Creative & Media'),
+        ('engineering', 'Engineering'),
+        ('other', 'Other'),
+    ]
+    
+    # Link to basic CommunityMember
+    community_member = models.OneToOneField(
+        'CommunityMember',
+        on_delete=models.CASCADE,
+        related_name='directory_profile'
+    )
+    
+    # Form fields
+    full_name = models.CharField(max_length=100)
+    profession = models.CharField(max_length=100)
+    region_city = models.CharField(max_length=100)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    membership_type = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES, default='verified')
+    expertise_summary = models.TextField()
+    profile_photo = models.ImageField(upload_to='directory_profiles/', blank=True, null=True)
+    
+    # Status
+    is_approved = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.full_name} - {self.profession}"
+    
+    def save(self, *args, **kwargs):
+        # Update the main CommunityMember if needed
+        if self.community_member:
+            self.community_member.name = self.full_name
+            self.community_member.profession = self.profession
+            self.community_member.region = self.region_city
+            self.community_member.save()
+        super().save(*args, **kwargs)
+
 class ForumCategory(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
