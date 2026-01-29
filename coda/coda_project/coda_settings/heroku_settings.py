@@ -137,13 +137,24 @@ STANBIC_ROUTING = os.environ.get('STANBIC_ROUTING', '')
 SWIFT_CODE = os.environ.get('SWIFT_CODE', '')
 
 # Heroku-specific settings
-ALLOWED_HOSTS = [
-    'codamakutano.herokuapp.com',
-    'www.codanalytics.net',
-    'codanalytics.net',
-    'localhost',
-    '127.0.0.1',
-]
+# ALLOWED_HOSTS: Support dynamic hosts from environment variable
+# This allows different Heroku apps (dev, staging, prod) to specify their own domains
+# without code changes, following Django security best practices
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', '')
+
+if ALLOWED_HOSTS_ENV:
+    # Parse comma-separated list from environment variable
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',') if host.strip()]
+else:
+    # Default fallback hosts for Heroku deployments
+    ALLOWED_HOSTS = [
+        'codamakutano.herokuapp.com',
+        'codadev.herokuapp.com',
+        'www.codanalytics.net',
+        'codanalytics.net',
+        'localhost',
+        '127.0.0.1',
+    ]
 
 # Cache settings for Heroku
 CACHES = {
