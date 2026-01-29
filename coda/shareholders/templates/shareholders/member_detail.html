@@ -1,6 +1,5 @@
 {% extends "main/base_templates/new_base.html" %}
 {% load static %}
-{% load humanize %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -577,7 +576,7 @@
                     </div>
                     <div class="sh-stat-card">
                         <div class="sh-stat-label">Cash Invested</div>
-                        <div class="sh-stat-value">${{ member.cash_invested|intcomma }}</div>
+                        <div class="sh-stat-value">${{ member.cash_invested }}</div>
                     </div>
                     <div class="sh-stat-card">
                         <div class="sh-stat-label">Time Logged</div>
