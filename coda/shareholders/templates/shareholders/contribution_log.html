@@ -1,0 +1,689 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ShareHold Base Styles */
+:root {
+    --sh-primary: #2563eb;
+    --sh-primary-light: #60a5fa;
+    --sh-text-dark: #1e293b;
+    --sh-text-muted: #64748b;
+    --sh-border: #e2e8f0;
+    --sh-bg-dark: #0f172a;
+}
+
+.sh-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.sh-sidebar {
+    width: 280px;
+    background: var(--sh-bg-dark);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sh-sidebar-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sh-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sh-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--sh-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-logo-text {
+    color: white;
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+}
+
+.sh-logo-text span { color: var(--sh-primary-light); }
+
+.sh-logo-subtitle {
+    color: #475569;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.sh-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sh-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.sh-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.sh-nav-item.active {
+    background: var(--sh-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.sh-nav-item .sh-icon, .sh-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sh-logo-icon .sh-icon { width: 24px; height: 24px; }
+.sh-icon svg { width: 100%; height: 100%; }
+
+.sh-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sh-header {
+    height: 80px;
+    background: white;
+    border-bottom: 1px solid var(--sh-border);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sh-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sh-text-muted);
+    font-size: 0.875rem;
+}
+
+.sh-breadcrumb-current {
+    color: var(--sh-text-dark);
+    font-weight: 600;
+}
+
+.sh-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2.5rem;
+}
+
+/* Contribution Log Page Styles */
+.sh-form-container { max-width: 800px; margin: 0 auto; }
+
+.sh-form-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sh-back-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 10px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.sh-back-btn:hover {
+    background: white;
+    border-color: #e2e8f0;
+}
+
+.sh-form-header-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+}
+
+.sh-form-header-content p {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Card Component */
+.sh-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.sh-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: rgba(248, 250, 252, 0.5);
+}
+
+.sh-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1e293b;
+    margin: 0;
+}
+
+.sh-card-body { padding: 1.5rem; }
+
+/* Tier Selector */
+.sh-tier-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sh-tier-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.sh-tier-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sh-tier-card {
+    padding: 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.2s ease;
+    background: #f8fafc;
+}
+
+.sh-tier-option input:checked + .sh-tier-card {
+    border-color: #2563eb;
+    background: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+}
+
+.sh-tier-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sh-tier-icon.cash { background: #dcfce7; color: #166534; }
+.sh-tier-icon.inkind { background: #dbeafe; color: #1e40af; }
+.sh-tier-icon.time { background: #e0e7ff; color: #3730a3; }
+.sh-tier-icon.work { background: #fef3c7; color: #92400e; }
+
+.sh-tier-name {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.sh-tier-desc {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Form Fields */
+.sh-form-group { margin-bottom: 1.25rem; }
+
+.sh-form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.sh-form-input,
+.sh-form-select,
+.sh-form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.sh-form-textarea { min-height: 80px; resize: vertical; }
+
+.sh-form-input:focus,
+.sh-form-select:focus,
+.sh-form-textarea:focus {
+    background: white;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sh-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.sh-form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Upload Area */
+.sh-upload-area {
+    padding: 1.5rem;
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sh-upload-area:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
+.sh-upload-area svg {
+    width: 32px;
+    height: 32px;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+}
+
+.sh-upload-area p {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0 0 0.25rem 0;
+}
+
+.sh-upload-area .sh-upload-hint {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+/* Form Actions */
+.sh-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+}
+
+.sh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.sh-btn-secondary {
+    background: transparent;
+    color: #64748b;
+}
+
+.sh-btn-secondary:hover { color: #1e293b; }
+
+.sh-btn-primary {
+    background: #2563eb;
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+/* Selected Member Info */
+.sh-selected-member {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #eff6ff;
+    border-radius: 10px;
+    border: 1px solid #bfdbfe;
+    margin-bottom: 1rem;
+}
+
+.sh-selected-member-avatar {
+    width: 40px;
+    height: 40px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+.sh-selected-member-name {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.sh-selected-member-label {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+@media (max-width: 768px) {
+    .sh-tier-selector { grid-template-columns: repeat(2, 1fr); }
+    .sh-form-grid-2, .sh-form-grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="sh-logo-text">SHARE<span>HOLD</span></h1>
+                    <p class="sh-logo-subtitle">Equity Pilot v1.0</p>
+                </div>
+            </div>
+
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Ledgers</span>
+                </a>
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Members & Equity</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="sh-main">
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" style="color: #64748b; text-decoration: none;">Deal Portal</a>
+                <span style="color: #cbd5e1;">›</span>
+                <a href="{% url 'shareholders:ledgers_view' %}" style="color: #64748b; text-decoration: none;">Ledgers</a>
+                <span style="color: #cbd5e1;">›</span>
+                <span class="sh-breadcrumb-current">Log Contribution</span>
+            </div>
+        </header>
+
+        <div class="sh-content">
+            <div class="sh-form-container">
+                <!-- Form Header -->
+                <div class="sh-form-header">
+                    <a href="{% url 'shareholders:ledgers_view' %}" class="sh-back-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                    </a>
+                    <div class="sh-form-header-content">
+                        <h2>Log New Contribution</h2>
+                        <p>Record a new equity-triggering contribution to the ledger.</p>
+                    </div>
+                </div>
+
+                <form method="POST" id="contributionForm">
+                    {% csrf_token %}
+                    
+                    <!-- Selected Member (if pre-selected) -->
+                    {% if selected_member %}
+                    <div class="sh-selected-member">
+                        <div class="sh-selected-member-avatar">
+                            {% for word in selected_member.name.split %}{{ word.0 }}{% endfor %}
+                        </div>
+                        <div>
+                            <div class="sh-selected-member-name">{{ selected_member.name }}</div>
+                            <div class="sh-selected-member-label">Contributing Member</div>
+                        </div>
+                        <input type="hidden" name="member_id" value="{{ selected_member.id }}">
+                    </div>
+                    {% endif %}
+
+                    <!-- Contribution Tier -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <h3 class="sh-card-title">Contribution Tier</h3>
+                        </div>
+                        <div class="sh-card-body">
+                            <div class="sh-tier-selector">
+                                <label class="sh-tier-option">
+                                    <input type="radio" name="tier" value="Cash" checked>
+                                    <div class="sh-tier-card">
+                                        <div class="sh-tier-icon cash">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                                <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                            </svg>
+                                        </div>
+                                        <div class="sh-tier-name">Cash</div>
+                                        <div class="sh-tier-desc">Money investment</div>
+                                    </div>
+                                </label>
+                                <label class="sh-tier-option">
+                                    <input type="radio" name="tier" value="In-Kind">
+                                    <div class="sh-tier-card">
+                                        <div class="sh-tier-icon inkind">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                            </svg>
+                                        </div>
+                                        <div class="sh-tier-name">In-Kind</div>
+                                        <div class="sh-tier-desc">Assets & Equipment</div>
+                                    </div>
+                                </label>
+                                <label class="sh-tier-option">
+                                    <input type="radio" name="tier" value="Time">
+                                    <div class="sh-tier-card">
+                                        <div class="sh-tier-icon time">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                            </svg>
+                                        </div>
+                                        <div class="sh-tier-name">Time</div>
+                                        <div class="sh-tier-desc">Hours logged</div>
+                                    </div>
+                                </label>
+                                <label class="sh-tier-option">
+                                    <input type="radio" name="tier" value="Work">
+                                    <div class="sh-tier-card">
+                                        <div class="sh-tier-icon work">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                <polyline points="14 2 14 8 20 8"/>
+                                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                            </svg>
+                                        </div>
+                                        <div class="sh-tier-name">Work</div>
+                                        <div class="sh-tier-desc">Deliverables</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contribution Details -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <h3 class="sh-card-title">Contribution Details</h3>
+                        </div>
+                        <div class="sh-card-body">
+                            {% if not selected_member %}
+                            <div class="sh-form-group">
+                                <label class="sh-form-label">Contributor</label>
+                                <select name="member_id" class="sh-form-select" required>
+                                    <option value="">Select Member...</option>
+                                    <option value="1">Alice Mwangi</option>
+                                    <option value="2">Bob Chen</option>
+                                    <option value="3">Global Ventures</option>
+                                    <option value="4">David Kim</option>
+                                </select>
+                            </div>
+                            {% endif %}
+
+                            <div class="sh-form-grid-2">
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Asset Class / Description</label>
+                                    <input type="text" name="asset_class" class="sh-form-input" placeholder="e.g., Capital Injection, Dev Work" required>
+                                </div>
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Date</label>
+                                    <input type="date" name="date" class="sh-form-input" required>
+                                </div>
+                            </div>
+
+                            <div class="sh-form-grid-3">
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Internal Units</label>
+                                    <input type="text" name="internal_units" class="sh-form-input" placeholder="e.g., 15,000 or 120 hrs">
+                                </div>
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Value (USD)</label>
+                                    <input type="number" name="value_usd" class="sh-form-input" placeholder="0.00" step="0.01" required>
+                                </div>
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Exchange Rate</label>
+                                    <input type="text" name="exchange_rate" class="sh-form-input" placeholder="127 KES/USD" value="127 KES/USD">
+                                </div>
+                            </div>
+
+                            <div class="sh-form-group">
+                                <label class="sh-form-label">Notes</label>
+                                <textarea name="notes" class="sh-form-textarea" placeholder="Additional details or context..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supporting Documents -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <h3 class="sh-card-title">Supporting Documents</h3>
+                        </div>
+                        <div class="sh-card-body">
+                            <div class="sh-upload-area">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <p>Upload Proof / Receipt</p>
+                                <p class="sh-upload-hint">PDF, JPG, PNG up to 10MB</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="sh-form-actions">
+                        <a href="{% url 'shareholders:ledgers_view' %}" class="sh-btn sh-btn-secondary">Cancel</a>
+                        <button type="submit" class="sh-btn sh-btn-primary">
+                            Submit Contribution
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+document.getElementById('contributionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Contribution logged successfully!');
+    window.location.href = "{% url 'shareholders:ledgers_view' %}";
+});
+</script>
+{% endblock %}

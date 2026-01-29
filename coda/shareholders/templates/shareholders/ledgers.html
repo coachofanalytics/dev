@@ -931,7 +931,7 @@ This template is structured to seamlessly accept real queryset data when backend
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
                     <span>Ledgers</span>
                 </a>
-                <a href="#" class="sh-nav-item">
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     <span>Members & Equity</span>
                 </a>
@@ -991,10 +991,14 @@ This template is structured to seamlessly accept real queryset data when backend
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                             Filter
                         </button>
-                        <button class="sh-btn sh-btn-primary" onclick="alert('Export CSV functionality coming soon')">
+                        <button class="sh-btn sh-btn-secondary" onclick="alert('Export CSV functionality coming soon')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             Export CSV
                         </button>
+                        <a href="{% url 'shareholders:contribution_log' %}" class="sh-btn sh-btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Log Contribution
+                        </a>
                     </div>
                 </div>
                 
@@ -1128,7 +1132,7 @@ This template is structured to seamlessly accept real queryset data when backend
                                         <!-- View Receipt Icon -->
                                         <button class="sh-action-icon-btn" 
                                                 title="View Receipt" 
-                                                onclick="openReceipt('{{ entry.id }}', '{{ entry.contributor_name }}', '{{ entry.asset_class }}', {{ entry.value_usd }}, '{{ entry.internal_units }}', '{{ entry.tier }}', '{{ entry.date }}', '{{ entry.status }}')">
+                                                onclick="openReceipt('{{ entry.id }}', '{{ entry.contributor_name }}', '{{ entry.asset_class }}', '{{ entry.value_usd }}', '{{ entry.internal_units }}', '{{ entry.tier }}', '{{ entry.date }}', '{{ entry.status }}')">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                         </button>
                                         
@@ -1142,7 +1146,7 @@ This template is structured to seamlessly accept real queryset data when backend
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                                     View Details
                                                 </button>
-                                                <button class="sh-dropdown-item" onclick="openReceipt('{{ entry.id }}', '{{ entry.contributor_name }}', '{{ entry.asset_class }}', {{ entry.value_usd }}, '{{ entry.internal_units }}', '{{ entry.tier }}', '{{ entry.date }}', '{{ entry.status }}')">
+                                                <button class="sh-dropdown-item" onclick="openReceipt('{{ entry.id }}', '{{ entry.contributor_name }}', '{{ entry.asset_class }}', '{{ entry.value_usd }}', '{{ entry.internal_units }}', '{{ entry.tier }}', '{{ entry.date }}', '{{ entry.status }}')">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                                                     View Receipt
                                                 </button>
@@ -1394,7 +1398,7 @@ function openReceipt(txId, contributor, assetClass, amount, units, tier, date, s
     // Populate modal with data
     document.getElementById('receiptTxId').textContent = txId;
     document.getElementById('receiptDate').textContent = date;
-    document.getElementById('receiptAmount').textContent = '$' + amount.toLocaleString();
+    document.getElementById('receiptAmount').textContent = '$' + parseFloat(amount).toLocaleString();
     document.getElementById('receiptMeta').textContent = units + ' • ' + tier + ' Tier';
     document.getElementById('receiptContributor').textContent = contributor;
     document.getElementById('receiptClass').textContent = assetClass;

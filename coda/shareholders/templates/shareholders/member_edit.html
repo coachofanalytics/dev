@@ -1,0 +1,650 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ShareHold Base Styles */
+:root {
+    --sh-primary: #2563eb;
+    --sh-primary-light: #60a5fa;
+    --sh-text-dark: #1e293b;
+    --sh-text-muted: #64748b;
+    --sh-border: #e2e8f0;
+    --sh-bg-dark: #0f172a;
+}
+
+.sh-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.sh-sidebar {
+    width: 280px;
+    background: var(--sh-bg-dark);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sh-sidebar-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sh-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sh-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--sh-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-logo-text {
+    color: white;
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+}
+
+.sh-logo-text span { color: var(--sh-primary-light); }
+
+.sh-logo-subtitle {
+    color: #475569;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.sh-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sh-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.sh-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.sh-nav-item.active {
+    background: var(--sh-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.sh-nav-item .sh-icon, .sh-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sh-logo-icon .sh-icon { width: 24px; height: 24px; }
+.sh-icon svg { width: 100%; height: 100%; }
+
+.sh-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sh-header {
+    height: 80px;
+    background: white;
+    border-bottom: 1px solid var(--sh-border);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sh-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sh-text-muted);
+    font-size: 0.875rem;
+}
+
+.sh-breadcrumb-current {
+    color: var(--sh-text-dark);
+    font-weight: 600;
+}
+
+.sh-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2.5rem;
+}
+
+/* Edit Member Page Styles */
+.sh-form-container { max-width: 900px; margin: 0 auto; }
+
+.sh-form-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sh-back-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 10px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.sh-back-btn:hover {
+    background: white;
+    border-color: #e2e8f0;
+}
+
+.sh-form-header-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+}
+
+.sh-form-header-content p {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Card Component */
+.sh-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.sh-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: rgba(248, 250, 252, 0.5);
+}
+
+.sh-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1e293b;
+    margin: 0;
+}
+
+.sh-card-body { padding: 1.5rem; }
+
+/* Form Fields */
+.sh-form-group { margin-bottom: 1.25rem; }
+
+.sh-form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.sh-form-input,
+.sh-form-select,
+.sh-form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.sh-form-textarea { min-height: 100px; resize: vertical; }
+
+.sh-form-input:focus,
+.sh-form-select:focus,
+.sh-form-textarea:focus {
+    background: white;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sh-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Avatar Upload */
+.sh-avatar-upload {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.sh-avatar-preview {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+}
+
+.sh-avatar-actions h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+}
+
+.sh-avatar-actions p {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0 0 0.75rem 0;
+}
+
+.sh-btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sh-btn-sm:hover {
+    background: #f8fafc;
+}
+
+/* Toggle */
+.sh-toggle-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.sh-toggle-label {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.sh-toggle-desc {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+}
+
+.sh-toggle {
+    position: relative;
+    width: 48px;
+    height: 24px;
+}
+
+.sh-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sh-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.sh-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.sh-toggle input:checked + .sh-toggle-slider {
+    background-color: #2563eb;
+}
+
+.sh-toggle input:checked + .sh-toggle-slider:before {
+    transform: translateX(24px);
+}
+
+/* Danger Zone */
+.sh-danger-zone {
+    border-color: #fecaca;
+}
+
+.sh-danger-zone .sh-card-header {
+    background: #fef2f2;
+}
+
+.sh-danger-zone .sh-card-title {
+    color: #dc2626;
+}
+
+.sh-btn-danger {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 0.625rem 1rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sh-btn-danger:hover {
+    background: #b91c1c;
+}
+
+/* Form Actions */
+.sh-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+}
+
+.sh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.sh-btn-secondary {
+    background: transparent;
+    color: #64748b;
+}
+
+.sh-btn-secondary:hover { color: #1e293b; }
+
+.sh-btn-primary {
+    background: #2563eb;
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .sh-form-grid-2 { grid-template-columns: 1fr; }
+    .sh-avatar-upload { flex-direction: column; text-align: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="sh-logo-text">SHARE<span>HOLD</span></h1>
+                    <p class="sh-logo-subtitle">Equity Pilot v1.0</p>
+                </div>
+            </div>
+
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Ledgers</span>
+                </a>
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Members & Equity</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="sh-main">
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" style="color: #64748b; text-decoration: none;">Deal Portal</a>
+                <span style="color: #cbd5e1;">›</span>
+                <a href="{% url 'shareholders:members_overview' %}" style="color: #64748b; text-decoration: none;">Members & Equity</a>
+                <span style="color: #cbd5e1;">›</span>
+                <a href="{% url 'shareholders:member_detail' member.id %}" style="color: #64748b; text-decoration: none;">{{ member.name }}</a>
+                <span style="color: #cbd5e1;">›</span>
+                <span class="sh-breadcrumb-current">Edit</span>
+            </div>
+        </header>
+
+        <div class="sh-content">
+            <div class="sh-form-container">
+                <!-- Form Header -->
+                <div class="sh-form-header">
+                    <a href="{% url 'shareholders:member_detail' member.id %}" class="sh-back-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                    </a>
+                    <div class="sh-form-header-content">
+                        <h2>Edit Member Profile</h2>
+                        <p>Update {{ member.name }}'s registration details and verification status.</p>
+                    </div>
+                </div>
+
+                <form method="POST" id="memberEditForm">
+                    {% csrf_token %}
+                    
+                    <!-- Avatar Section -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <h3 class="sh-card-title">Profile Photo</h3>
+                        </div>
+                        <div class="sh-card-body">
+                            <div class="sh-avatar-upload">
+                                <div class="sh-avatar-preview">
+                                    {% for word in member.name.split %}{{ word.0 }}{% endfor %}
+                                </div>
+                                <div class="sh-avatar-actions">
+                                    <h4>Profile Avatar</h4>
+                                    <p>JPG, PNG or GIF. Max 2MB.</p>
+                                    <button type="button" class="sh-btn-sm">Upload New Photo</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <h3 class="sh-card-title">Basic Information</h3>
+                        </div>
+                        <div class="sh-card-body">
+                            <div class="sh-form-grid-2">
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Legal Name</label>
+                                    <input type="text" name="legal_name" class="sh-form-input" value="{{ member.name }}" required>
+                                </div>
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Designated Role</label>
+                                    <select name="role" class="sh-form-select" required>
+                                        {% for role in role_catalog %}
+                                        <option value="{{ role }}" {% if member.role == role %}selected{% endif %}>{{ role }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Email Address</label>
+                                    <input type="email" name="email" class="sh-form-input" value="{{ member.email }}" required>
+                                </div>
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Phone Number</label>
+                                    <input type="tel" name="phone" class="sh-form-input" value="{{ member.phone }}" required>
+                                </div>
+                            </div>
+                            <div class="sh-form-group">
+                                <label class="sh-form-label">Bio / Description</label>
+                                <textarea name="bio" class="sh-form-textarea">{{ member.bio }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verification Status -->
+                    <div class="sh-card">
+                        <div class="sh-card-header">
+                            <h3 class="sh-card-title">Verification Status</h3>
+                        </div>
+                        <div class="sh-card-body">
+                            <div class="sh-toggle-group">
+                                <div>
+                                    <div class="sh-toggle-label">Identity Verified</div>
+                                    <div class="sh-toggle-desc">Mark this member as KYC/identity verified.</div>
+                                </div>
+                                <label class="sh-toggle">
+                                    <input type="checkbox" name="verified" {% if member.verified %}checked{% endif %}>
+                                    <span class="sh-toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="sh-card sh-danger-zone">
+                        <div class="sh-card-header">
+                            <h3 class="sh-card-title">Danger Zone</h3>
+                        </div>
+                        <div class="sh-card-body">
+                            <p style="color: #64748b; margin-bottom: 1rem;">Permanently remove this member from the equity pool. This action cannot be undone.</p>
+                            <button type="button" class="sh-btn-danger" onclick="confirmDelete()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                                Remove Member
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="sh-form-actions">
+                        <a href="{% url 'shareholders:member_detail' member.id %}" class="sh-btn sh-btn-secondary">Cancel</a>
+                        <button type="submit" class="sh-btn sh-btn-primary">
+                            Save Changes
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+document.getElementById('memberEditForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Changes saved successfully!');
+    window.location.href = "{% url 'shareholders:member_detail' member.id %}";
+});
+
+function confirmDelete() {
+    if (confirm('Are you sure you want to permanently remove {{ member.name }} from the equity pool? This action cannot be undone.')) {
+        alert('Member removed (frontend demo)');
+        window.location.href = "{% url 'shareholders:members_overview' %}";
+    }
+}
+</script>
+{% endblock %}

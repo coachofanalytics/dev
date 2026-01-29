@@ -1,0 +1,612 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% comment %}
+Members & Equity Overview - Main listing page with member cards
+{% endcomment %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ShareHold Base Styles */
+:root {
+    --sh-primary: #2563eb;
+    --sh-primary-light: #60a5fa;
+    --sh-text-dark: #1e293b;
+    --sh-text-muted: #64748b;
+    --sh-border: #e2e8f0;
+    --sh-bg-dark: #0f172a;
+}
+
+.sh-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+/* Sidebar */
+.sh-sidebar {
+    width: 280px;
+    background: var(--sh-bg-dark);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sh-sidebar-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sh-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sh-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--sh-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-logo-text {
+    color: white;
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+}
+
+.sh-logo-text span {
+    color: var(--sh-primary-light);
+}
+
+.sh-logo-subtitle {
+    color: #475569;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Navigation */
+.sh-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sh-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.sh-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.sh-nav-item.active {
+    background: var(--sh-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.sh-nav-item .sh-icon,
+.sh-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sh-logo-icon .sh-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.sh-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.sh-nav-section {
+    padding: 2rem 1rem 1rem;
+}
+
+.sh-nav-section-title {
+    color: #475569;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0;
+}
+
+/* Main Content */
+.sh-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sh-header {
+    height: 80px;
+    background: white;
+    border-bottom: 1px solid var(--sh-border);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sh-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sh-text-muted);
+    font-size: 0.875rem;
+}
+
+.sh-breadcrumb-current {
+    color: var(--sh-text-dark);
+    font-weight: 600;
+}
+
+.sh-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2.5rem;
+}
+
+.sh-content-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Members & Equity Page Styles */
+.sh-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+}
+
+.sh-page-header-content h2 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+}
+
+.sh-page-header-content p {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.sh-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+}
+
+/* Member Cards Grid */
+.sh-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sh-member-card {
+    background: white;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.sh-member-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.sh-member-card-stripe {
+    height: 8px;
+    background: #2563eb;
+    width: 100%;
+}
+
+.sh-member-card-body {
+    padding: 1.5rem;
+}
+
+.sh-member-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.sh-member-avatar {
+    width: 48px;
+    height: 48px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.sh-member-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.sh-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sh-badge-default {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.sh-badge-info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.sh-member-card-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+}
+
+.sh-member-card-role {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+.sh-member-card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 1rem;
+}
+
+.sh-member-stat {
+    display: block;
+}
+
+.sh-member-stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.sh-member-stat-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.sh-member-stat-value.equity {
+    color: #2563eb;
+}
+
+.sh-member-stat-value.cash {
+    color: #475569;
+}
+
+.sh-member-card-action {
+    width: 100%;
+    padding: 0.625rem;
+    background: #f8fafc;
+    color: #64748b;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.sh-member-card:hover .sh-member-card-action {
+    background: #2563eb;
+    color: white;
+}
+
+.sh-verified-icon {
+    width: 14px;
+    height: 14px;
+    color: #2563eb;
+}
+
+/* Empty State */
+.sh-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+}
+
+.sh-empty-state svg {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    opacity: 0.2;
+}
+
+.sh-empty-state p {
+    font-size: 0.875rem;
+    margin: 0.5rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sh-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .sh-members-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon">
+                    <span class="sh-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </span>
+                </div>
+                <div>
+                    <h1 class="sh-logo-text">SHARE<span>HOLD</span></h1>
+                    <p class="sh-logo-subtitle">Equity Pilot v1.0</p>
+                </div>
+            </div>
+
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item">
+                    <span class="sh-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item">
+                    <span class="sh-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </span>
+                    <span>Ledgers</span>
+                </a>
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item active">
+                    <span class="sh-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </span>
+                    <span>Members & Equity</span>
+                </a>
+                <a href="#" class="sh-nav-item">
+                    <span class="sh-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </span>
+                    <span>Snapshots</span>
+                </a>
+                <div class="sh-nav-section">
+                    <p class="sh-nav-section-title">Administration</p>
+                </div>
+                <a href="#" class="sh-nav-item">
+                    <span class="sh-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6m0 6v6m6-12h-6m-6 0H1m18 6h-6m-6 0H1"/>
+                        </svg>
+                    </span>
+                    <span>Deal Config</span>
+                </a>
+                <a href="#" class="sh-nav-item">
+                    <span class="sh-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </span>
+                    <span>Audit Log</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="sh-main">
+        <!-- Header -->
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" style="color: #64748b; text-decoration: none;">Deal Portal</a>
+                <span style="color: #cbd5e1;">›</span>
+                <span>Project Phoenix Pilot</span>
+                <span style="color: #cbd5e1;">›</span>
+                <span class="sh-breadcrumb-current">Members & Equity</span>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="sh-content">
+            <div class="sh-content-inner">
+                <!-- Page Header -->
+                <div class="sh-page-header">
+                    <div class="sh-page-header-content">
+                        <h2>Members & Equity</h2>
+                        <p>Manage participants and their legal registration details.</p>
+                    </div>
+                    <a href="{% url 'shareholders:member_register' %}" class="sh-btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="8.5" cy="7" r="4"/>
+                            <line x1="20" y1="8" x2="20" y2="14"/>
+                            <line x1="23" y1="11" x2="17" y2="11"/>
+                        </svg>
+                        Register Member
+                    </a>
+                </div>
+
+                <!-- Members Grid -->
+                {% if members %}
+                <div class="sh-members-grid">
+                    {% for member in members %}
+                    <a href="{% url 'shareholders:member_detail' member.id %}" class="sh-member-card">
+                        <div class="sh-member-card-stripe"></div>
+                        <div class="sh-member-card-body">
+                            <div class="sh-member-card-header">
+                                <div class="sh-member-avatar">
+                                    {% for word in member.name.split %}{{ word.0 }}{% endfor %}
+                                </div>
+                                <div class="sh-member-badges">
+                                    <span class="sh-badge {% if member.type == 'Entity' %}sh-badge-info{% else %}sh-badge-default{% endif %}">
+                                        {{ member.type }}
+                                    </span>
+                                    {% if member.verified %}
+                                    <svg class="sh-verified-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                        <polyline points="9 12 11 14 15 10"/>
+                                    </svg>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <h3 class="sh-member-card-name">{{ member.name }}</h3>
+                            <p class="sh-member-card-role">{{ member.role }}</p>
+                            
+                            <div class="sh-member-card-stats">
+                                <div class="sh-member-stat">
+                                    <div class="sh-member-stat-label">Equity</div>
+                                    <div class="sh-member-stat-value equity">{{ member.equity_percentage }}%</div>
+                                </div>
+                                <div class="sh-member-stat">
+                                    <div class="sh-member-stat-label">Cash Invested</div>
+                                    <div class="sh-member-stat-value cash">${{ member.cash_invested|floatformat:0|intcomma }}</div>
+                                </div>
+                            </div>
+                            
+                            <button class="sh-member-card-action">
+                                View Full Profile
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="sh-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <p style="font-weight: 600;">No members registered yet.</p>
+                    <p>Click "Register Member" to add your first shareholder.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
