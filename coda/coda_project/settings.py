@@ -11,6 +11,9 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 
 print(f"Loading settings for environment: {ENVIRONMENT}")
 
+ALLOWED_HOSTS = ["*"]
+
+
 
 # First, import all base settings
 from .coda_settings.base_settings import *
