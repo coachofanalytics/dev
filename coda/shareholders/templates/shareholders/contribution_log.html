@@ -604,11 +604,15 @@
                                 <label class="sh-form-label">Contributor</label>
                                 <select name="member_id" class="sh-form-select" required>
                                     <option value="">Select Member...</option>
-                                    <option value="1">Alice Mwangi</option>
-                                    <option value="2">Bob Chen</option>
-                                    <option value="3">Global Ventures</option>
-                                    <option value="4">David Kim</option>
+                                    {% for member in all_members %}
+                                    <option value="{{ member.id }}">{{ member.legal_name }}</option>
+                                    {% endfor %}
                                 </select>
+                                {% if not all_members %}
+                                <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #94a3b8;">
+                                    No members found. <a href="{% url 'shareholders:member_register' %}" style="color: #2563eb;">Register a member first</a>
+                                </p>
+                                {% endif %}
                             </div>
                             {% endif %}
 

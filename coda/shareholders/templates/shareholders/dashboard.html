@@ -615,7 +615,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
             <div class="sh-breadcrumb">
                 <a href="{% url 'dashboard:unified_dashboard' %}" style="color: inherit; text-decoration: none;">Deal Portal</a>
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                <span class="sh-breadcrumb-current">Project Phoenix Pilot</span>
+                <span class="sh-breadcrumb-current">{{ deal.name|default:"Shareholders" }}</span>
             </div>
         </header>
 
@@ -636,8 +636,8 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                             <span class="sh-stat-label">Total Cash Invested</span>
                             <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
                         </div>
-                        <div class="sh-stat-value">$67,000</div>
-                        <div class="sh-stat-meta">Pegged @ 127 KES/USD</div>
+                        <div class="sh-stat-value">${{ total_cash_invested|floatformat:0|default:"0" }}</div>
+                        <div class="sh-stat-meta">Pegged @ {{ fx_peg_rate|floatformat:0|default:"127" }} KES/USD</div>
                     </div>
                     
                     <!-- Active Members -->
@@ -646,11 +646,8 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                             <span class="sh-stat-label">Active Members</span>
                             <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         </div>
-                        <div class="sh-stat-value">4</div>
-                        <div class="sh-stat-trend">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-                            +2 this month
-                        </div>
+                        <div class="sh-stat-value">{{ active_members|default:"0" }}</div>
+                        <div class="sh-stat-meta" style="color: #64748b;">Registered members</div>
                     </div>
                     
                     <!-- Pending Approvals -->
@@ -659,8 +656,8 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                             <span class="sh-stat-label">Pending Approvals</span>
                             <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                         </div>
-                        <div class="sh-stat-value">14</div>
-                        <div class="sh-stat-meta">7 items require action</div>
+                        <div class="sh-stat-value">{{ pending_approvals|default:"0" }}</div>
+                        <div class="sh-stat-meta">{% if pending_approvals > 0 %}{{ pending_approvals }} item{% if pending_approvals != 1 %}s{% endif %} require action{% else %}No pending reviews{% endif %}</div>
                     </div>
                     
                     <!-- Next Snapshot -->
@@ -669,8 +666,8 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                             <span class="sh-stat-label">Next Snapshot</span>
                             <svg class="sh-stat-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         </div>
-                        <div class="sh-stat-value">12d</div>
-                        <div class="sh-stat-meta">Jan 01, 2026</div>
+                        <div class="sh-stat-value">{{ snapshot_display|default:"—" }}</div>
+                        <div class="sh-stat-meta">{{ snapshot_date|default:"Not scheduled" }}</div>
                     </div>
                 </div>
                 
@@ -683,6 +680,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                             <a href="{% url 'shareholders:members_overview' %}" class="sh-card-action">Manage Members</a>
                         </div>
                         <div class="sh-card-body">
+                            {% if members_data %}
                             <table class="sh-table">
                                 <thead>
                                     <tr>
@@ -693,72 +691,41 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    {% for member in members_data %}
+                                    <tr onclick="window.location.href='{% url 'shareholders:member_detail' member.id %}'">
                                         <td>
-                                            <div class="sh-member-name">Alice Mwangi</div>
-                                            <div class="sh-member-role">Founder</div>
+                                            <div class="sh-member-name">{{ member.name }}</div>
+                                            <div class="sh-member-role">{{ member.role|default:"No role" }}</div>
                                         </td>
-                                        <td><span class="sh-badge sh-badge-default">PERSON</span></td>
-                                        <td class="sh-cash-value">15,000</td>
+                                        <td>
+                                            <span class="sh-badge {% if member.type == 'ENTITY' %}sh-badge-info{% else %}sh-badge-default{% endif %}">
+                                                {{ member.type }}
+                                            </span>
+                                        </td>
+                                        <td class="sh-cash-value">{{ member.cash_invested|floatformat:0 }}</td>
                                         <td>
                                             <div class="sh-equity-cell">
-                                                <span class="sh-equity-value">35.5%</span>
+                                                {% if member.equity_percentage == 0 %}
+                                                <span class="sh-equity-value">0%</span>
+                                                {% else %}
+                                                <span class="sh-equity-value">{{ member.equity_percentage|floatformat:1 }}%</span>
+                                                {% endif %}
                                                 <div class="sh-equity-bar">
-                                                    <div class="sh-equity-bar-fill" style="width: 35.5%;"></div>
+                                                    <div class="sh-equity-bar-fill" style="width: {{ member.equity_percentage|default:0 }}%;"></div>
                                                 </div>
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="sh-member-name">Bob Chen</div>
-                                            <div class="sh-member-role">Lead Dev</div>
-                                        </td>
-                                        <td><span class="sh-badge sh-badge-default">PERSON</span></td>
-                                        <td class="sh-cash-value">2,000</td>
-                                        <td>
-                                            <div class="sh-equity-cell">
-                                                <span class="sh-equity-value">28.2%</span>
-                                                <div class="sh-equity-bar">
-                                                    <div class="sh-equity-bar-fill" style="width: 28.2%;"></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="sh-member-name">Global Ventures</div>
-                                            <div class="sh-member-role">Investor</div>
-                                        </td>
-                                        <td><span class="sh-badge sh-badge-info">ENTITY</span></td>
-                                        <td class="sh-cash-value">50,000</td>
-                                        <td>
-                                            <div class="sh-equity-cell">
-                                                <span class="sh-equity-value">30.3%</span>
-                                                <div class="sh-equity-bar">
-                                                    <div class="sh-equity-bar-fill" style="width: 30.3%;"></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="sh-member-name">David Kim</div>
-                                            <div class="sh-member-role">PM</div>
-                                        </td>
-                                        <td><span class="sh-badge sh-badge-default">PERSON</span></td>
-                                        <td class="sh-cash-value">0</td>
-                                        <td>
-                                            <div class="sh-equity-cell">
-                                                <span class="sh-equity-value">6%</span>
-                                                <div class="sh-equity-bar">
-                                                    <div class="sh-equity-bar-fill" style="width: 6%;"></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
+                            {% else %}
+                            <div style="text-align: center; padding: 3rem 1rem; color: #94a3b8;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1rem; opacity: 0.4;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                <p style="font-size: 0.875rem; margin-bottom: 1rem;">No members registered yet</p>
+                                <a href="{% url 'shareholders:member_register' %}" style="display: inline-block; padding: 0.5rem 1rem; background: #2563eb; color: white; border-radius: 8px; text-decoration: none; font-size: 0.875rem; font-weight: 600;">Register First Member</a>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -774,47 +741,47 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 21 7 17 3"></polyline><line x1="21" y1="7" x2="9" y2="7"></line><polyline points="7 21 3 17 7 13"></polyline><line x1="15" y1="17" x2="3" y2="17"></line></svg>
                                     <span>FX Peg</span>
                                 </div>
-                                <span class="sh-fx-value">$1 = KES 127</span>
+                                <span class="sh-fx-value">$1 = KES {{ fx_peg_rate|floatformat:0|default:"127" }}</span>
                             </div>
                             
                             <!-- Weight Bars -->
                             <div class="sh-weight-item">
                                 <div class="sh-weight-header">
                                     <span class="sh-weight-label">Cash</span>
-                                    <span class="sh-weight-value">55%</span>
+                                    <span class="sh-weight-value">{{ cash_weight|floatformat:0|default:"55" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill cash" style="width: 55%;"></div>
+                                    <div class="sh-weight-bar-fill cash" style="width: {{ cash_weight|default:"55" }}%;"></div>
                                 </div>
                             </div>
                             
                             <div class="sh-weight-item">
                                 <div class="sh-weight-header">
                                     <span class="sh-weight-label">In-Kind</span>
-                                    <span class="sh-weight-value">20%</span>
+                                    <span class="sh-weight-value">{{ inkind_weight|floatformat:0|default:"20" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill inkind" style="width: 20%;"></div>
+                                    <div class="sh-weight-bar-fill inkind" style="width: {{ inkind_weight|default:"20" }}%;"></div>
                                 </div>
                             </div>
                             
                             <div class="sh-weight-item">
                                 <div class="sh-weight-header">
                                     <span class="sh-weight-label">Time</span>
-                                    <span class="sh-weight-value">10%</span>
+                                    <span class="sh-weight-value">{{ time_weight|floatformat:0|default:"10" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill time" style="width: 10%;"></div>
+                                    <div class="sh-weight-bar-fill time" style="width: {{ time_weight|default:"10" }}%;"></div>
                                 </div>
                             </div>
                             
                             <div class="sh-weight-item">
                                 <div class="sh-weight-header">
                                     <span class="sh-weight-label">Work</span>
-                                    <span class="sh-weight-value">15%</span>
+                                    <span class="sh-weight-value">{{ work_weight|floatformat:0|default:"15" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill work" style="width: 15%;"></div>
+                                    <div class="sh-weight-bar-fill work" style="width: {{ work_weight|default:"15" }}%;"></div>
                                 </div>
                             </div>
                         </div>
