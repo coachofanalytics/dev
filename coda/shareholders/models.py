@@ -301,6 +301,12 @@ class Member(TimeStampedModel):
         auto_now_add=True,
         help_text="Date member was registered"
     )
+    identity_document = models.FileField(
+        upload_to='shareholders/identity_documents/%Y/%m/',
+        blank=True,
+        null=True,
+        help_text="Uploaded identity document (ID, passport, or business certificate)"
+    )
     
     class Meta:
         db_table = 'shareholders_member'

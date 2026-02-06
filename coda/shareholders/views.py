@@ -259,14 +259,14 @@ def member_register(request):
                 member = form.save(commit=False)
                 member.deal = deal
                 member.verified = False  # Default unverified
-                member.is_active = True
+                member.is_active = True  # Member is active upon creation
                 member.save()
                 
                 # Handle optional identity document upload
                 identity_doc = form.cleaned_data.get('identity_document')
                 if identity_doc:
-                    # Store as LedgerEvidence or separate model if needed
-                    # For now, just log that it was uploaded
+                    member.identity_document = identity_doc
+                    member.save()
                     logger.info(f"Identity document uploaded for {member.legal_name}: {identity_doc.name}")
                 
                 # Create audit log
