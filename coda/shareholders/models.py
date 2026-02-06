@@ -62,6 +62,10 @@ class Deal(TimeStampedModel):
         null=True,
         help_text="Optional deal description"
     )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this deal is currently active"
+    )
     
     class Meta:
         db_table = 'shareholders_deal'
@@ -496,3 +500,267 @@ class LedgerEvidence(models.Model):
     
     def __str__(self):
         return f"Evidence for {self.ledger_entry.tx_id}"
+
+
+# =============================================================================
+# VALUATION MODELS (Phase 2)
+# =============================================================================
+
+class ValuationRate(models.Model):
+    """
+    Configurable valuation rates for non-cash contribution tiers.
+    
+    Used to convert internal units (hours, points, units) to USD value.
+    Each deal can have custom rates per tier.
+    """
+    
+    TIER_CHOICES = [
+        ('IN_KIND', 'In-Kind Asset'),
+        ('TIME', 'Time Logged'),
+        ('WORK', 'Work Deliverable'),
+    ]
+    
+    deal = models.ForeignKey(
+        Deal,
+        on_delete=models.CASCADE,
+        related_name='valuation_rates',
+        help_text="Associated deal"
+    )
+    tier = models.CharField(
+        max_length=10,
+        choices=TIER_CHOICES,
+        help_text="Contribution tier this rate applies to"
+    )
+    rate_per_unit = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        validators=[MinValueValidator(0)],
+        help_text="USD value per internal unit (e.g., 50.00 USD/hour)"
+    )
+    unit_label = models.CharField(
+        max_length=50,
+        help_text="Unit label (e.g., 'hour', 'point', 'unit')"
+    )
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Description of this rate (e.g., 'Senior Developer hourly rate')"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this rate is currently active"
+    )
+    effective_date = models.DateField(
+        auto_now_add=True,
+        help_text="Date this rate became effective"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'shareholders_valuation_rate'
+        ordering = ['-effective_date']
+        verbose_name = 'Valuation Rate'
+        verbose_name_plural = 'Valuation Rates'
+        indexes = [
+            models.Index(fields=['deal', 'tier', 'is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.deal.name} - {self.get_tier_display()}: ${self.rate_per_unit}/{self.unit_label}"
+
+
+# =============================================================================
+# APPROVAL & DISPUTE MODELS (Phase 2)
+# =============================================================================
+
+class LedgerApproval(models.Model):
+    """
+    Approval record for ledger entries.
+    
+    Tracks who approved an entry and when, with audit trail.
+    """
+    
+    ACTION_CHOICES = [
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+    
+    ledger_entry = models.ForeignKey(
+        LedgerEntry,
+        on_delete=models.CASCADE,
+        related_name='approvals',
+        help_text="The ledger entry being approved"
+    )
+    action = models.CharField(
+        max_length=10,
+        choices=ACTION_CHOICES,
+        help_text="Approval action taken"
+    )
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='ledger_approvals',
+        help_text="User who approved this entry"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Approval notes or comments"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'shareholders_ledger_approval'
+        ordering = ['-created_at']
+        verbose_name = 'Ledger Approval'
+        verbose_name_plural = 'Ledger Approvals'
+    
+    def __str__(self):
+        return f"{self.ledger_entry.tx_id} - {self.action} by {self.approved_by}"
+
+
+class LedgerDispute(models.Model):
+    """
+    Dispute record for ledger entries.
+    
+    Tracks disputes raised against entries within the dispute window.
+    """
+    
+    STATUS_CHOICES = [
+        ('OPEN', 'Open'),
+        ('UNDER_REVIEW', 'Under Review'),
+        ('RESOLVED', 'Resolved'),
+        ('DISMISSED', 'Dismissed'),
+    ]
+    
+    ledger_entry = models.ForeignKey(
+        LedgerEntry,
+        on_delete=models.CASCADE,
+        related_name='disputes',
+        help_text="The ledger entry being disputed"
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default='OPEN',
+        help_text="Current dispute status"
+    )
+    raised_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='raised_disputes',
+        help_text="User who raised this dispute"
+    )
+    reason = models.TextField(
+        help_text="Reason for the dispute"
+    )
+    resolution_notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Notes on how the dispute was resolved"
+    )
+    resolved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='resolved_disputes',
+        help_text="User who resolved this dispute"
+    )
+    resolved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the dispute was resolved"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'shareholders_ledger_dispute'
+        ordering = ['-created_at']
+        verbose_name = 'Ledger Dispute'
+        verbose_name_plural = 'Ledger Disputes'
+    
+    def __str__(self):
+        return f"{self.ledger_entry.tx_id} - Dispute ({self.status})"
+
+
+class LedgerAuditLog(models.Model):
+    """
+    Audit log for all ledger-related actions.
+    
+    Provides complete traceability for compliance and debugging.
+    """
+    
+    ACTION_CHOICES = [
+        ('CREATED', 'Entry Created'),
+        ('UPDATED', 'Entry Updated'),
+        ('STATUS_CHANGED', 'Status Changed'),
+        ('APPROVED', 'Entry Approved'),
+        ('REJECTED', 'Entry Rejected'),
+        ('DISPUTE_RAISED', 'Dispute Raised'),
+        ('DISPUTE_RESOLVED', 'Dispute Resolved'),
+        ('EVIDENCE_ADDED', 'Evidence Added'),
+        ('EVIDENCE_REMOVED', 'Evidence Removed'),
+    ]
+    
+    ledger_entry = models.ForeignKey(
+        LedgerEntry,
+        on_delete=models.CASCADE,
+        related_name='audit_logs',
+        help_text="The ledger entry this log pertains to"
+    )
+    action = models.CharField(
+        max_length=20,
+        choices=ACTION_CHOICES,
+        help_text="Action performed"
+    )
+    performed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='ledger_audit_actions',
+        help_text="User who performed this action"
+    )
+    old_value = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Previous value (for updates)"
+    )
+    new_value = models.TextField(
+        blank=True,
+        null=True,
+        help_text="New value (for updates)"
+    )
+    details = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="Additional context in JSON format"
+    )
+    ip_address = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        help_text="IP address of the request"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'shareholders_ledger_audit_log'
+        ordering = ['-created_at']
+        verbose_name = 'Ledger Audit Log'
+        verbose_name_plural = 'Ledger Audit Logs'
+        indexes = [
+            models.Index(fields=['ledger_entry', 'action']),
+            models.Index(fields=['performed_by', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.ledger_entry.tx_id} - {self.action} at {self.created_at}"

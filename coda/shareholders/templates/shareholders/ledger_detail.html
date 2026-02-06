@@ -1,0 +1,523 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% comment %}
+ShareHold Ledger Entry Detail Page
+Displays comprehensive details for a single ledger entry.
+{% endcomment %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ShareHold Detail Page Styles */
+:root {
+    --sh-primary: #2563eb;
+    --sh-text-dark: #1e293b;
+    --sh-text-muted: #64748b;
+    --sh-border: #e2e8f0;
+    --sh-card-bg: #ffffff;
+    --sh-page-bg: #f8fafc;
+}
+
+.sh-detail-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.sh-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sh-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.sh-back-link:hover {
+    text-decoration: underline;
+}
+
+.sh-detail-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--sh-border);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sh-detail-header {
+    background: linear-gradient(135deg, var(--sh-primary), #1d4ed8);
+    color: white;
+    padding: 2rem;
+}
+
+.sh-detail-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+}
+
+.sh-detail-header .subtitle {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.sh-detail-body {
+    padding: 2rem;
+}
+
+.sh-detail-section {
+    margin-bottom: 2rem;
+}
+
+.sh-detail-section:last-child {
+    margin-bottom: 0;
+}
+
+.sh-detail-section h3 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--sh-text-muted);
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--sh-border);
+}
+
+.sh-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.sh-detail-row {
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.sh-detail-row label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--sh-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.sh-detail-row span {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sh-text-dark);
+}
+
+.sh-amount-highlight {
+    text-align: center;
+    padding: 2rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.sh-amount-highlight .amount {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--sh-text-dark);
+}
+
+.sh-amount-highlight .meta {
+    font-size: 0.875rem;
+    color: var(--sh-text-muted);
+    margin-top: 0.5rem;
+}
+
+.sh-status-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.sh-status-badge.approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.sh-status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.sh-status-badge.dispute {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sh-tier-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.sh-tier-badge.cash { background: #d1fae5; color: #065f46; }
+.sh-tier-badge.inkind { background: #dbeafe; color: #1e40af; }
+.sh-tier-badge.time { background: #e0e7ff; color: #4338ca; }
+.sh-tier-badge.work { background: #fef3c7; color: #92400e; }
+
+.sh-timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.sh-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--sh-border);
+}
+
+.sh-timeline-item {
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.sh-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.25rem;
+    top: 0.25rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sh-primary);
+    border: 2px solid white;
+}
+
+.sh-timeline-item .time {
+    font-size: 0.75rem;
+    color: var(--sh-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.sh-timeline-item .action {
+    font-weight: 600;
+    color: var(--sh-text-dark);
+}
+
+.sh-timeline-item .user {
+    font-size: 0.875rem;
+    color: var(--sh-text-muted);
+}
+
+.sh-actions-bar {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1.5rem 2rem;
+    background: #f8fafc;
+    border-top: 1px solid var(--sh-border);
+}
+
+.sh-btn {
+    padding: 0.625rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sh-btn-primary {
+    background: var(--sh-primary);
+    color: white;
+}
+
+.sh-btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.sh-btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.sh-btn-success:hover {
+    background: #059669;
+}
+
+.sh-btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.sh-btn-danger:hover {
+    background: #dc2626;
+}
+
+.sh-btn-secondary {
+    background: white;
+    color: var(--sh-text-dark);
+    border: 1px solid var(--sh-border);
+}
+
+.sh-btn-secondary:hover {
+    background: #f8fafc;
+}
+
+@media (max-width: 768px) {
+    .sh-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-detail-container">
+    <a href="{% url 'shareholders:ledgers_view' %}" class="sh-back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Ledger
+    </a>
+    
+    <div class="sh-detail-card">
+        <div class="sh-detail-header">
+            <h1>Transaction {{ entry.id }}</h1>
+            <p class="subtitle">{{ entry.tier }} • {{ entry.date_formatted }}</p>
+        </div>
+        
+        <div class="sh-detail-body">
+            <!-- Amount Highlight -->
+            <div class="sh-amount-highlight">
+                <div class="amount">${{ entry.value_usd|floatformat:0 }}</div>
+                <div class="meta">{{ entry.internal_units_value|floatformat:0 }} {{ entry.internal_units_label }} • {{ entry.asset_class }}</div>
+            </div>
+            
+            <!-- Details Section -->
+            <div class="sh-detail-section">
+                <h3>Transaction Details</h3>
+                <div class="sh-detail-grid">
+                    <div class="sh-detail-row">
+                        <label>Transaction ID</label>
+                        <span style="font-family: monospace;">{{ entry.id }}</span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Status</label>
+                        <span class="sh-status-badge {% if entry.status_code == 'APPROVED' %}approved{% elif entry.status_code == 'SUBMITTED' %}pending{% else %}dispute{% endif %}">
+                            {{ entry.status }}
+                        </span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Tier</label>
+                        <span class="sh-tier-badge {% if entry.tier_code == 'CASH' %}cash{% elif entry.tier_code == 'IN_KIND' %}inkind{% elif entry.tier_code == 'TIME' %}time{% else %}work{% endif %}">
+                            {{ entry.tier }}
+                        </span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Asset Class</label>
+                        <span>{{ entry.asset_class }}</span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Date</label>
+                        <span>{{ entry.date_formatted }}</span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Currency</label>
+                        <span>{{ entry.currency }} @ {{ entry.exchange_rate }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contributor Section -->
+            <div class="sh-detail-section">
+                <h3>Contributor</h3>
+                <div class="sh-detail-grid">
+                    <div class="sh-detail-row">
+                        <label>Name</label>
+                        <span>{{ entry.contributor_name }}</span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Type</label>
+                        <span>{{ entry.contributor_type }}</span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Email</label>
+                        <span>{{ entry.contributor_email }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            {% if entry.notes %}
+            <!-- Notes Section -->
+            <div class="sh-detail-section">
+                <h3>Notes</h3>
+                <p style="color: var(--sh-text-dark); font-size: 0.875rem; line-height: 1.6;">{{ entry.notes }}</p>
+            </div>
+            {% endif %}
+            
+            {% if entry.approvals %}
+            <!-- Approval History -->
+            <div class="sh-detail-section">
+                <h3>Approval History</h3>
+                <div class="sh-timeline">
+                    {% for approval in entry.approvals %}
+                    <div class="sh-timeline-item">
+                        <div class="time">{{ approval.created_at }}</div>
+                        <div class="action">{{ approval.action }}</div>
+                        <div class="user">by {{ approval.approved_by }}</div>
+                        {% if approval.notes %}<div class="user" style="margin-top: 0.25rem;">{{ approval.notes }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if entry.disputes %}
+            <!-- Dispute History -->
+            <div class="sh-detail-section">
+                <h3>Dispute History</h3>
+                <div class="sh-timeline">
+                    {% for dispute in entry.disputes %}
+                    <div class="sh-timeline-item">
+                        <div class="time">{{ dispute.created_at }}</div>
+                        <div class="action">{{ dispute.status }}</div>
+                        <div class="user">Raised by {{ dispute.raised_by }}: {{ dispute.reason }}</div>
+                        {% if dispute.resolution_notes %}<div class="user" style="margin-top: 0.25rem;">Resolution: {{ dispute.resolution_notes }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Metadata -->
+            <div class="sh-detail-section">
+                <h3>Record Metadata</h3>
+                <div class="sh-detail-grid">
+                    <div class="sh-detail-row">
+                        <label>Created</label>
+                        <span>{{ entry.created_at }}</span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Last Updated</label>
+                        <span>{{ entry.updated_at }}</span>
+                    </div>
+                    <div class="sh-detail-row">
+                        <label>Has Proof</label>
+                        <span>{% if entry.has_proof %}Yes{% else %}No{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions Bar -->
+        <div class="sh-actions-bar">
+            {% if entry.status_code != 'APPROVED' and entry.status_code != 'IN_DISPUTE' %}
+            <button onclick="approveEntry('{{ entry.id }}')" class="sh-btn sh-btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Approve
+            </button>
+            {% endif %}
+            {% if entry.status_code != 'IN_DISPUTE' %}
+            <button onclick="flagDispute('{{ entry.id }}')" class="sh-btn sh-btn-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                Flag Dispute
+            </button>
+            {% endif %}
+            <a href="{% url 'shareholders:ledgers_view' %}" class="sh-btn sh-btn-secondary" style="margin-left: auto;">
+                Close
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCsrfToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue || '';
+}
+
+async function approveEntry(txId) {
+    if (!confirm(`Are you sure you want to approve entry ${txId}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/shareholders/ledgers/${txId}/approve/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ notes: 'Approved via Detail page' })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Approval failed');
+        }
+        
+        alert(result.message || 'Entry approved successfully!');
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('Error approving entry:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+async function flagDispute(txId) {
+    const reason = prompt('Please enter the reason for this dispute:');
+    
+    if (!reason || !reason.trim()) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/shareholders/ledgers/${txId}/dispute/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ reason: reason.trim() })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to flag dispute');
+        }
+        
+        alert(result.message || 'Dispute flagged successfully!');
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('Error flagging dispute:', error);
+        alert('Error: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

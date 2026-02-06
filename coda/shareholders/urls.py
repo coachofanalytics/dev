@@ -8,6 +8,13 @@ urlpatterns = [
     path('dashboard/', views.shareholders_dashboard, name='shareholders_dashboard'),
     path('ledgers/', views.ledgers_view, name='ledgers_view'),
     
+    # Phase 2: Ledger Actions
+    path('ledgers/export/', views.ledgers_export_csv, name='ledgers_export_csv'),
+    path('ledgers/<str:tx_id>/', views.ledger_detail, name='ledger_detail'),
+    path('ledgers/<str:tx_id>/receipt/', views.ledger_receipt, name='ledger_receipt'),
+    path('ledgers/<str:tx_id>/approve/', views.ledger_approve, name='ledger_approve'),
+    path('ledgers/<str:tx_id>/dispute/', views.ledger_dispute, name='ledger_dispute'),
+    
     # Members & Equity
     path('members/', views.members_overview, name='members_overview'),
     path('members/register/', views.member_register, name='member_register'),

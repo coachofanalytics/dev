@@ -983,18 +983,24 @@ This template is structured to seamlessly accept real queryset data when backend
                         <p class="sh-page-description">Comprehensive log of all verified contributions and equity triggers.</p>
                     </div>
                     <div class="sh-page-actions">
-                        <div class="sh-search-bar">
-                            <svg class="sh-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <input type="text" id="searchInput" class="sh-search-input" placeholder="Search transactions...">
-                        </div>
+                        <form method="get" action="{% url 'shareholders:ledgers_view' %}" id="searchForm" style="display: contents;">
+                            <div class="sh-search-bar">
+                                <svg class="sh-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="text" name="search" id="searchInput" class="sh-search-input" placeholder="Search transactions..." value="{{ current_search|default:'' }}">
+                            </div>
+                            <!-- Hidden fields for current filters -->
+                            <input type="hidden" name="status" id="hiddenStatus" value="{{ current_status|default:'all' }}">
+                            <input type="hidden" name="tier" id="hiddenTier" value="{{ current_tier|default:'all' }}">
+                            <input type="hidden" name="date_range" id="hiddenDateRange" value="{{ current_date_range|default:'all_time' }}">
+                        </form>
                         <button class="sh-btn sh-btn-secondary" id="filterToggle">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                             Filter
                         </button>
-                        <button class="sh-btn sh-btn-secondary" onclick="alert('Export CSV functionality coming soon')">
+                        <a href="{% url 'shareholders:ledgers_export_csv' %}?search={{ current_search|urlencode }}&status={{ current_status|urlencode }}&tier={{ current_tier|urlencode }}&date_range={{ current_date_range|urlencode }}" class="sh-btn sh-btn-secondary">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             Export CSV
-                        </button>
+                        </a>
                         <a href="{% url 'shareholders:contribution_log' %}" class="sh-btn sh-btn-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             Log Contribution
@@ -1002,39 +1008,39 @@ This template is structured to seamlessly accept real queryset data when backend
                     </div>
                 </div>
                 
-                <!-- Filter Panel -->
+                <!-- Filter Panel (Server-side) -->
                 <div class="sh-filter-panel" id="filterPanel">
                     <div class="sh-filter-group">
                         <label class="sh-filter-label">Status</label>
                         <select id="filterStatus" class="sh-filter-select">
-                            <option value="all">All Statuses</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Pending">Pending</option>
-                            <option value="In Dispute">In Dispute</option>
+                            <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Statuses</option>
+                            <option value="Approved" {% if current_status == 'Approved' %}selected{% endif %}>Approved</option>
+                            <option value="Pending" {% if current_status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Dispute" {% if current_status == 'In Dispute' %}selected{% endif %}>In Dispute</option>
                         </select>
                     </div>
                     <div class="sh-filter-group">
                         <label class="sh-filter-label">Tier</label>
                         <select id="filterTier" class="sh-filter-select">
-                            <option value="all">All Tiers</option>
-                            <option value="Cash">Cash</option>
-                            <option value="In-Kind">In-Kind</option>
-                            <option value="Time">Time</option>
-                            <option value="Work">Work</option>
+                            <option value="all" {% if current_tier == 'all' %}selected{% endif %}>All Tiers</option>
+                            <option value="Cash" {% if current_tier == 'Cash' %}selected{% endif %}>Cash</option>
+                            <option value="In-Kind" {% if current_tier == 'In-Kind' %}selected{% endif %}>In-Kind</option>
+                            <option value="Time" {% if current_tier == 'Time' %}selected{% endif %}>Time</option>
+                            <option value="Work" {% if current_tier == 'Work' %}selected{% endif %}>Work</option>
                         </select>
                     </div>
                     <div class="sh-filter-group">
                         <label class="sh-filter-label">Date Range</label>
-                        <select class="sh-filter-select">
-                            <option>Last 30 Days</option>
-                            <option>Last Quarter</option>
-                            <option>Year to Date</option>
-                            <option>All Time</option>
+                        <select id="filterDateRange" class="sh-filter-select">
+                            <option value="all_time" {% if current_date_range == 'all_time' %}selected{% endif %}>All Time</option>
+                            <option value="last_30_days" {% if current_date_range == 'last_30_days' %}selected{% endif %}>Last 30 Days</option>
+                            <option value="last_quarter" {% if current_date_range == 'last_quarter' %}selected{% endif %}>Last Quarter</option>
+                            <option value="year_to_date" {% if current_date_range == 'year_to_date' %}selected{% endif %}>Year to Date</option>
                         </select>
                     </div>
                     <div class="sh-filter-group">
                         <label class="sh-filter-label">&nbsp;</label>
-                        <button class="sh-reset-btn" id="resetFilters">Reset Filters</button>
+                        <button type="button" class="sh-reset-btn" id="resetFilters">Reset Filters</button>
                     </div>
                 </div>
                 
@@ -1129,10 +1135,15 @@ This template is structured to seamlessly accept real queryset data when backend
                                 <td><span class="sh-date">{{ entry.date }}</span></td>
                                 <td>
                                     <div class="sh-actions-cell">
+                                        <!-- View Details Icon -->
+                                        <a href="{% url 'shareholders:ledger_detail' entry.id %}" class="sh-action-icon-btn" title="View Details">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                        
                                         <!-- View Receipt Icon -->
                                         <button class="sh-action-icon-btn" 
                                                 title="View Receipt" 
-                                                onclick="openReceipt('{{ entry.id }}', '{{ entry.contributor_name }}', '{{ entry.asset_class }}', '{{ entry.value_usd }}', '{{ entry.internal_units }}', '{{ entry.tier }}', '{{ entry.date }}', '{{ entry.status }}')">
+                                                onclick="openReceiptFromAPI('{{ entry.id }}')">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                         </button>
                                         
@@ -1142,27 +1153,31 @@ This template is structured to seamlessly accept real queryset data when backend
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                                             </button>
                                             <div class="sh-dropdown-menu">
-                                                <button class="sh-dropdown-item" onclick="alert('View Details: {{ entry.id }}')">
+                                                <a href="{% url 'shareholders:ledger_detail' entry.id %}" class="sh-dropdown-item">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                                     View Details
-                                                </button>
-                                                <button class="sh-dropdown-item" onclick="openReceipt('{{ entry.id }}', '{{ entry.contributor_name }}', '{{ entry.asset_class }}', '{{ entry.value_usd }}', '{{ entry.internal_units }}', '{{ entry.tier }}', '{{ entry.date }}', '{{ entry.status }}')">
+                                                </a>
+                                                <button class="sh-dropdown-item" onclick="openReceiptFromAPI('{{ entry.id }}')">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                                                     View Receipt
                                                 </button>
-                                                <button class="sh-dropdown-item" onclick="alert('Discuss: {{ entry.id }}')">
+                                                <button class="sh-dropdown-item" onclick="alert('Discuss feature coming in Phase 3')">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                                                     Discuss
                                                 </button>
                                                 <div class="sh-dropdown-divider"></div>
-                                                <button class="sh-dropdown-item success" onclick="alert('Approve: {{ entry.id }}')">
+                                                {% if entry.status_code != 'APPROVED' and entry.status_code != 'IN_DISPUTE' %}
+                                                <button class="sh-dropdown-item success" onclick="approveEntry('{{ entry.id }}')">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                                     Approve
                                                 </button>
-                                                <button class="sh-dropdown-item danger" onclick="alert('Flag Dispute: {{ entry.id }}')">
+                                                {% endif %}
+                                                {% if entry.status_code != 'IN_DISPUTE' %}
+                                                <button class="sh-dropdown-item danger" onclick="openDisputeModal('{{ entry.id }}')">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                                                     Flag Dispute
                                                 </button>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -1181,6 +1196,27 @@ This template is structured to seamlessly accept real queryset data when backend
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: white; border-radius: 0 0 16px 16px; border-top: 1px solid #e2e8f0;">
+                    <div style="font-size: 0.875rem; color: #64748b;">
+                        Showing page {{ current_page }} of {{ total_pages }} ({{ total_count }} total entries)
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if has_previous %}
+                        <a href="?page={{ current_page|add:-1 }}&search={{ current_search|urlencode }}&status={{ current_status|urlencode }}&tier={{ current_tier|urlencode }}&date_range={{ current_date_range|urlencode }}" class="sh-btn sh-btn-secondary" style="padding: 0.5rem 0.75rem;">
+                            Previous
+                        </a>
+                        {% endif %}
+                        {% if has_next %}
+                        <a href="?page={{ current_page|add:1 }}&search={{ current_search|urlencode }}&status={{ current_status|urlencode }}&tier={{ current_tier|urlencode }}&date_range={{ current_date_range|urlencode }}" class="sh-btn sh-btn-secondary" style="padding: 0.5rem 0.75rem;">
+                            Next
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </main>
@@ -1200,46 +1236,74 @@ This template is structured to seamlessly accept real queryset data when backend
             <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Transaction Receipt</div>
         </div>
         <div class="sh-receipt-content" style="position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #f1f5f9;">
-                <div>
-                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 0.25rem;">Transaction ID</div>
-                    <div id="receiptTxId" style="font-family: monospace; font-weight: 600; color: #2563eb;"></div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 0.25rem;">Date</div>
-                    <div id="receiptDate" style="font-weight: 600;"></div>
-                </div>
+            <div id="receiptLoading" style="text-align: center; padding: 3rem 0; display: none;">
+                <p style="color: #64748b;">Loading receipt data...</p>
             </div>
-            
-            <div class="sh-receipt-amount">
-                <div class="sh-receipt-amount-label">Total Value</div>
-                <div class="sh-receipt-amount-value" id="receiptAmount"></div>
-                <div class="sh-receipt-amount-meta" id="receiptMeta"></div>
-            </div>
-            
-            <div class="sh-receipt-details">
-                <div class="sh-receipt-row">
-                    <span class="sh-receipt-row-label">Contributor</span>
-                    <span class="sh-receipt-row-value" id="receiptContributor"></span>
+            <div id="receiptData">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #f1f5f9;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 0.25rem;">Transaction ID</div>
+                        <div id="receiptTxId" style="font-family: monospace; font-weight: 600; color: #2563eb;"></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 0.25rem;">Date</div>
+                        <div id="receiptDate" style="font-weight: 600;"></div>
+                    </div>
                 </div>
-                <div class="sh-receipt-row">
-                    <span class="sh-receipt-row-label">Classification</span>
-                    <span class="sh-receipt-row-value" id="receiptClass"></span>
+                
+                <div class="sh-receipt-amount">
+                    <div class="sh-receipt-amount-label">Total Value</div>
+                    <div class="sh-receipt-amount-value" id="receiptAmount"></div>
+                    <div class="sh-receipt-amount-meta" id="receiptMeta"></div>
                 </div>
-                <div class="sh-receipt-row">
-                    <span class="sh-receipt-row-label">Status</span>
-                    <span class="sh-receipt-row-value" id="receiptStatus" style="text-transform: uppercase; font-size: 0.75rem;"></span>
+                
+                <div class="sh-receipt-details">
+                    <div class="sh-receipt-row">
+                        <span class="sh-receipt-row-label">Contributor</span>
+                        <span class="sh-receipt-row-value" id="receiptContributor"></span>
+                    </div>
+                    <div class="sh-receipt-row">
+                        <span class="sh-receipt-row-label">Classification</span>
+                        <span class="sh-receipt-row-value" id="receiptClass"></span>
+                    </div>
+                    <div class="sh-receipt-row">
+                        <span class="sh-receipt-row-label">Status</span>
+                        <span class="sh-receipt-row-value" id="receiptStatus" style="text-transform: uppercase; font-size: 0.75rem;"></span>
+                    </div>
                 </div>
+                
+                <div class="sh-receipt-footer">
+                    <p class="sh-receipt-footer-text">
+                        This digital receipt serves as official proof of contribution to the Project Phoenix Pilot equity pool.
+                        <span id="receiptFxInfo">Calculated using Pegged FX Rate.</span>
+                    </p>
+                </div>
+                
+                <div class="sh-receipt-stamp" id="receiptStamp" style="display: none;">APPROVED</div>
             </div>
-            
-            <div class="sh-receipt-footer">
-                <p class="sh-receipt-footer-text">
-                    This digital receipt serves as official proof of contribution to the Project Phoenix Pilot equity pool.
-                    Calculated using Pegged FX Rate.
-                </p>
+        </div>
+    </div>
+</div>
+
+<!-- Dispute Modal -->
+<div class="sh-modal-overlay" id="disputeModal">
+    <div class="sh-modal" style="max-width: 450px;">
+        <div class="sh-modal-header" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            <button class="sh-modal-close" onclick="closeDisputeModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Flag Dispute</h3>
+            <p style="font-size: 0.875rem; opacity: 0.9; margin: 0.5rem 0 0;">Entry: <span id="disputeTxId" style="font-family: monospace;"></span></p>
+        </div>
+        <div style="padding: 1.5rem;">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 0.5rem;">Reason for Dispute *</label>
+                <textarea id="disputeReason" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem; resize: vertical;" placeholder="Please describe the reason for flagging this entry..."></textarea>
             </div>
-            
-            <div class="sh-receipt-stamp" id="receiptStamp" style="display: none;">APPROVED</div>
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button onclick="closeDisputeModal()" style="padding: 0.625rem 1rem; background: #f1f5f9; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">Cancel</button>
+                <button onclick="submitDispute()" style="padding: 0.625rem 1rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">Submit Dispute</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1248,14 +1312,10 @@ This template is structured to seamlessly accept real queryset data when backend
 {% block extra_js %}
 <script>
 // Global state
-let currentFilters = {
-    status: 'all',
-    tier: 'all',
-    search: ''
-};
+let currentDisputeTxId = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('ShareHold Ledger Snapshots initialized');
+    console.log('ShareHold Ledger Snapshots initialized (Phase 2 - Server-side)');
     
     initializeEventListeners();
     initializeTableInteractions();
@@ -1271,30 +1331,48 @@ function initializeEventListeners() {
         });
     }
     
-    // Search input
+    // Search input - submit on Enter
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitFilters();
+            }
+        });
+        // Also submit after typing stops (debounced)
+        let searchTimeout;
         searchInput.addEventListener('input', function(e) {
-            currentFilters.search = e.target.value.toLowerCase();
-            applyFilters();
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                submitFilters();
+            }, 800);
         });
     }
     
-    // Status filter
+    // Filter dropdowns - submit on change
     const filterStatus = document.getElementById('filterStatus');
+    const filterTier = document.getElementById('filterTier');
+    const filterDateRange = document.getElementById('filterDateRange');
+    
     if (filterStatus) {
         filterStatus.addEventListener('change', function(e) {
-            currentFilters.status = e.target.value;
-            applyFilters();
+            document.getElementById('hiddenStatus').value = e.target.value;
+            submitFilters();
         });
     }
     
-    // Tier filter
-    const filterTier = document.getElementById('filterTier');
     if (filterTier) {
         filterTier.addEventListener('change', function(e) {
-            currentFilters.tier = e.target.value;
-            applyFilters();
+            document.getElementById('hiddenTier').value = e.target.value;
+            submitFilters();
+        });
+    }
+    
+    if (filterDateRange) {
+        filterDateRange.addEventListener('change', function(e) {
+            document.getElementById('hiddenDateRange').value = e.target.value;
+            submitFilters();
         });
     }
     
@@ -1302,11 +1380,7 @@ function initializeEventListeners() {
     const resetFilters = document.getElementById('resetFilters');
     if (resetFilters) {
         resetFilters.addEventListener('click', function() {
-            currentFilters = { status: 'all', tier: 'all', search: '' };
-            document.getElementById('searchInput').value = '';
-            document.getElementById('filterStatus').value = 'all';
-            document.getElementById('filterTier').value = 'all';
-            applyFilters();
+            window.location.href = '{% url "shareholders:ledgers_view" %}';
         });
     }
     
@@ -1317,70 +1391,45 @@ function initializeEventListeners() {
         }
     });
     
-    // Close modal when clicking overlay
-    const modalOverlay = document.getElementById('receiptModal');
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', function(e) {
-            if (e.target === modalOverlay) {
-                closeReceipt();
-            }
-        });
+    // Close modals when clicking overlay
+    ['receiptModal', 'disputeModal'].forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    if (modalId === 'receiptModal') closeReceipt();
+                    else closeDisputeModal();
+                }
+            });
+        }
+    });
+}
+
+function submitFilters() {
+    const form = document.getElementById('searchForm');
+    if (form) {
+        form.submit();
     }
 }
 
 function initializeTableInteractions() {
-    // Add click handlers to table rows
+    // Add click handlers to table rows for quick view
     const tableRows = document.querySelectorAll('.sh-ledger-table tbody tr');
     tableRows.forEach(row => {
         row.addEventListener('click', function(e) {
             // Skip if clicking action buttons or dropdowns
             if (e.target.closest('.sh-action-icon-btn') || 
                 e.target.closest('.sh-action-btn') || 
-                e.target.closest('.sh-dropdown-menu')) {
+                e.target.closest('.sh-dropdown-menu') ||
+                e.target.closest('a')) {
                 return;
             }
-            console.log('Row clicked - detail view coming soon');
+            const txId = row.getAttribute('data-tx-id');
+            if (txId) {
+                window.location.href = `/shareholders/ledgers/${txId}/`;
+            }
         });
     });
-}
-
-function applyFilters() {
-    const tbody = document.getElementById('ledgerTableBody');
-    if (!tbody) return;
-    
-    const rows = tbody.querySelectorAll('tr');
-    let visibleCount = 0;
-    
-    rows.forEach(row => {
-        const status = row.getAttribute('data-status');
-        const tier = row.getAttribute('data-tier');
-        const contributor = row.getAttribute('data-contributor').toLowerCase();
-        const txId = row.getAttribute('data-tx-id').toLowerCase();
-        
-        let show = true;
-        
-        // Status filter
-        if (currentFilters.status !== 'all' && status !== currentFilters.status) {
-            show = false;
-        }
-        
-        // Tier filter
-        if (currentFilters.tier !== 'all' && tier !== currentFilters.tier) {
-            show = false;
-        }
-        
-        // Search filter
-        if (currentFilters.search && 
-            !contributor.includes(currentFilters.search) && 
-            !txId.includes(currentFilters.search)) {
-            show = false;
-        }
-        
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-    });
-    
-    console.log(`Showing ${visibleCount} of ${rows.length} entries`);
 }
 
 function toggleDropdown(event, button) {
@@ -1403,29 +1452,55 @@ function closeAllDropdowns() {
     });
 }
 
-function openReceipt(txId, contributor, assetClass, amount, units, tier, date, status) {
-    // Populate modal with data
-    document.getElementById('receiptTxId').textContent = txId;
-    document.getElementById('receiptDate').textContent = date;
-    document.getElementById('receiptAmount').textContent = '$' + parseFloat(amount).toLocaleString();
-    document.getElementById('receiptMeta').textContent = units + ' • ' + tier + ' Tier';
-    document.getElementById('receiptContributor').textContent = contributor;
-    document.getElementById('receiptClass').textContent = assetClass;
-    document.getElementById('receiptStatus').textContent = status;
-    
-    // Show/hide approval stamp
-    const stamp = document.getElementById('receiptStamp');
-    if (status === 'Approved') {
-        stamp.style.display = 'block';
-    } else {
-        stamp.style.display = 'none';
-    }
-    
-    // Show modal
+// =====================
+// Receipt Modal (API-based)
+// =====================
+
+async function openReceiptFromAPI(txId) {
     const modal = document.getElementById('receiptModal');
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+    const loadingEl = document.getElementById('receiptLoading');
+    const dataEl = document.getElementById('receiptData');
+    
+    if (!modal) return;
+    
+    // Show loading state
+    loadingEl.style.display = 'block';
+    dataEl.style.display = 'none';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    try {
+        const response = await fetch(`/shareholders/ledgers/${txId}/receipt/`);
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to load receipt');
+        }
+        
+        const receipt = result.receipt;
+        
+        // Populate modal with data
+        document.getElementById('receiptTxId').textContent = receipt.tx_id;
+        document.getElementById('receiptDate').textContent = receipt.date;
+        document.getElementById('receiptAmount').textContent = '$' + parseFloat(receipt.value_usd).toLocaleString();
+        document.getElementById('receiptMeta').textContent = receipt.internal_units + ' • ' + receipt.tier + ' Tier';
+        document.getElementById('receiptContributor').textContent = receipt.contributor_name;
+        document.getElementById('receiptClass').textContent = receipt.asset_class;
+        document.getElementById('receiptStatus').textContent = receipt.status;
+        document.getElementById('receiptFxInfo').textContent = `Calculated using ${receipt.fx_mode} FX Rate (${receipt.fx_rate} KES/USD).`;
+        
+        // Show/hide approval stamp
+        const stamp = document.getElementById('receiptStamp');
+        stamp.style.display = receipt.status_code === 'APPROVED' ? 'block' : 'none';
+        
+        // Show data, hide loading
+        loadingEl.style.display = 'none';
+        dataEl.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading receipt:', error);
+        alert('Error loading receipt: ' + error.message);
+        closeReceipt();
     }
 }
 
@@ -1437,11 +1512,125 @@ function closeReceipt() {
     }
 }
 
+// =====================
+// Approve Entry (POST)
+// =====================
+
+async function approveEntry(txId) {
+    if (!confirm(`Are you sure you want to approve entry ${txId}?`)) {
+        return;
+    }
+    
+    closeAllDropdowns();
+    
+    try {
+        const response = await fetch(`/shareholders/ledgers/${txId}/approve/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ notes: 'Approved via Ledger UI' })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Approval failed');
+        }
+        
+        alert(result.message || 'Entry approved successfully!');
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('Error approving entry:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+// =====================
+// Dispute Entry (POST)
+// =====================
+
+function openDisputeModal(txId) {
+    closeAllDropdowns();
+    currentDisputeTxId = txId;
+    document.getElementById('disputeTxId').textContent = txId;
+    document.getElementById('disputeReason').value = '';
+    
+    const modal = document.getElementById('disputeModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeDisputeModal() {
+    const modal = document.getElementById('disputeModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    currentDisputeTxId = null;
+}
+
+async function submitDispute() {
+    const reason = document.getElementById('disputeReason').value.trim();
+    
+    if (!reason) {
+        alert('Please provide a reason for the dispute.');
+        return;
+    }
+    
+    if (!currentDisputeTxId) {
+        alert('No entry selected for dispute.');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/shareholders/ledgers/${currentDisputeTxId}/dispute/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ reason: reason })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to flag dispute');
+        }
+        
+        alert(result.message || 'Dispute flagged successfully!');
+        closeDisputeModal();
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('Error flagging dispute:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+// =====================
+// Utilities
+// =====================
+
+function getCsrfToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue || '';
+}
+
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    // Escape key closes modal
+    // Escape key closes modals
     if (e.key === 'Escape') {
         closeReceipt();
+        closeDisputeModal();
         closeAllDropdowns();
     }
 });
