@@ -526,7 +526,7 @@
                             <div class="sh-selected-member-name">{{ selected_member.name }}</div>
                             <div class="sh-selected-member-label">Contributing Member</div>
                         </div>
-                        <input type="hidden" name="member_id" value="{{ selected_member.id }}">
+                        <input type="hidden" name="contributor" value="{{ selected_member.id }}">
                     </div>
                     {% endif %}
 
@@ -602,7 +602,7 @@
                             {% if not selected_member %}
                             <div class="sh-form-group">
                                 <label class="sh-form-label">Contributor</label>
-                                <select name="member_id" class="sh-form-select" required>
+                                <select name="contributor" class="sh-form-select" required>
                                     <option value="">Select Member...</option>
                                     {% for member in all_members %}
                                     <option value="{{ member.id }}">{{ member.legal_name }}</option>
@@ -629,16 +629,27 @@
 
                             <div class="sh-form-grid-3">
                                 <div class="sh-form-group">
-                                    <label class="sh-form-label">Internal Units</label>
-                                    <input type="text" name="internal_units" class="sh-form-input" placeholder="e.g., 15,000 or 120 hrs">
+                                    <label class="sh-form-label">Internal Units Value</label>
+                                    <input type="number" name="internal_units_value" class="sh-form-input" placeholder="e.g., 15000 or 120" step="0.01" required>
+                                </div>
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Unit Label</label>
+                                    <input type="text" name="internal_units_label" class="sh-form-input" placeholder="e.g., USD, hrs, units">
                                 </div>
                                 <div class="sh-form-group">
                                     <label class="sh-form-label">Value (USD)</label>
                                     <input type="number" name="value_usd" class="sh-form-input" placeholder="0.00" step="0.01" required>
                                 </div>
+                            </div>
+
+                            <div class="sh-form-grid-2">
+                                <div class="sh-form-group">
+                                    <label class="sh-form-label">Currency</label>
+                                    <input type="text" name="currency" class="sh-form-input" placeholder="USD" value="USD">
+                                </div>
                                 <div class="sh-form-group">
                                     <label class="sh-form-label">Exchange Rate</label>
-                                    <input type="text" name="exchange_rate" class="sh-form-input" placeholder="127 KES/USD" value="127 KES/USD">
+                                    <input type="number" name="exchange_rate" class="sh-form-input" placeholder="1.0000" value="1.0000" step="0.0001">
                                 </div>
                             </div>
 
