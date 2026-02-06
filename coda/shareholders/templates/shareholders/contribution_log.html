@@ -513,7 +513,7 @@
                     </div>
                 </div>
 
-                <form method="POST" id="contributionForm">
+                <form method="POST" enctype="multipart/form-data" id="contributionForm">
                     {% csrf_token %}
                     
                     <!-- Selected Member (if pre-selected) -->
@@ -655,14 +655,10 @@
                             <h3 class="sh-card-title">Supporting Documents</h3>
                         </div>
                         <div class="sh-card-body">
-                            <div class="sh-upload-area">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
-                                </svg>
-                                <p>Upload Proof / Receipt</p>
-                                <p class="sh-upload-hint">PDF, JPG, PNG up to 10MB</p>
+                            <div class="sh-form-group">
+                                <label class="sh-form-label">Upload Proof / Receipt (Optional)</label>
+                                <input type="file" name="proof_document" class="sh-form-input" accept=".pdf,.jpg,.jpeg,.png" style="padding: 0.5rem; width: 100%;">
+                                <small class="sh-form-hint" style="display: block; margin-top: 0.5rem; color: #64748b;">PDF, JPG, PNG up to 10MB</small>
                             </div>
                         </div>
                     </div>
