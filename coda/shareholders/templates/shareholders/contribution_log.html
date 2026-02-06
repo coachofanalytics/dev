@@ -683,11 +683,4 @@
     </main>
 </div>
 
-<script>
-document.getElementById('contributionForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    alert('Contribution logged successfully!');
-    window.location.href = "{% url 'shareholders:ledgers_view' %}";
-});
-</script>
 {% endblock %}

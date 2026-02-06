@@ -634,16 +634,10 @@
 </div>
 
 <script>
-document.getElementById('memberEditForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    alert('Changes saved successfully!');
-    window.location.href = "{% url 'shareholders:member_detail' member.id %}";
-});
-
 function confirmDelete() {
     if (confirm('Are you sure you want to permanently remove {{ member.name }} from the equity pool? This action cannot be undone.')) {
-        alert('Member removed (frontend demo)');
-        window.location.href = "{% url 'shareholders:members_overview' %}";
+        // Submit the archive form
+        document.getElementById('archiveForm').submit();
     }
 }
 </script>

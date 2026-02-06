@@ -644,14 +644,5 @@ function setMemberType(type, btn) {
         nameInput.placeholder = 'Full Name as per ID';
     }
 }
-
-// Handle form submission
-document.getElementById('memberRegisterForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    // In production, this would submit via AJAX or regular POST
-    // For now, show success message and redirect
-    alert('Member registration submitted successfully!');
-    window.location.href = "{% url 'shareholders:members_overview' %}";
-});
 </script>
 {% endblock %}
