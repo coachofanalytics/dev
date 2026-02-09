@@ -5,6 +5,8 @@ Access is restricted to admin users only (same permission as Automation dashboar
 
 Phase 1: Database-backed views with real queries.
 Phase 2: Full ledger backend with approval workflow, disputes, and CSV export.
+
+Note: Views migrated to investing app - models imported from shareholders app.
 """
 
 import csv
@@ -20,13 +22,17 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from core.permissions import is_admin, require_admin
-from .models import (
+
+# Models now owned by investing app
+from investing.models_shareholders import (
     Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence,
     LedgerApproval, LedgerDispute, LedgerAuditLog
 )
-from .dashboard_service import get_dashboard_metrics
-from .services.ledger_query import LedgerQueryService
-from .services.ledger_checksum import LedgerChecksumService
+
+# Services imported from new location in investing app
+from investing.services.shareholders.dashboard_service import get_dashboard_metrics
+from investing.services.shareholders.ledger_query import LedgerQueryService
+from investing.services.shareholders.ledger_checksum import LedgerChecksumService
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +107,7 @@ def shareholders_dashboard(request):
             'weights_status': metrics['weights_status'],
         }
         
-        return render(request, 'shareholders/dashboard.html', context)
+        return render(request, 'investing/shareholders/shareholders_dashboard.html', context)
         
     except Exception as e:
         logger.error(f"Error in shareholders dashboard: {str(e)}")
@@ -181,7 +187,7 @@ def ledgers_view(request):
             'current_date_range': date_range,
         }
         
-        return render(request, 'shareholders/ledgers.html', context)
+        return render(request, 'investing/shareholders/shareholders_ledgers.html', context)
         
     except Exception as e:
         logger.error(f"Error in ledgers view: {str(e)}")
@@ -205,7 +211,7 @@ def members_overview(request):
     
     Phase 3: Real database queries with service-based aggregation; equity % placeholder (Phase 4).
     """
-    from .services.member_metrics import get_deal_member_summary
+    from investing.services.shareholders.member_metrics import get_deal_member_summary
     
     try:
         deal = get_active_deal()
@@ -225,7 +231,7 @@ def members_overview(request):
             'members_count': len(members),
         }
         
-        return render(request, 'shareholders/members_overview.html', context)
+        return render(request, 'investing/shareholders/shareholders_members_overview.html', context)
         
     except Exception as e:
         logger.error(f"Error in members overview: {str(e)}")
@@ -241,8 +247,8 @@ def member_register(request):
     
     Phase 3: Real POST handling with form validation, document upload, and audit logging.
     """
-    from .forms import MemberRegisterForm
-    from .services.audit_service import AuditService, get_client_ip
+    from investing.forms_shareholders import MemberRegisterForm
+    from investing.services.shareholders.audit_service import AuditService, get_client_ip
     
     try:
         deal = get_active_deal()
@@ -294,7 +300,7 @@ def member_register(request):
             'role_catalog': get_role_catalog(),
         }
         
-        return render(request, 'shareholders/member_register.html', context)
+        return render(request, 'investing/shareholders/shareholders_member_register.html', context)
         
     except Exception as e:
         logger.error(f"Error in member register: {str(e)}")
@@ -310,7 +316,7 @@ def member_detail(request, member_id):
     
     Phase 3: Real queries with aggregated contribution data using services.
     """
-    from .services.member_metrics import MemberMetricsService
+    from investing.services.shareholders.member_metrics import MemberMetricsService
     
     try:
         deal = get_active_deal()
@@ -356,7 +362,7 @@ def member_detail(request, member_id):
             'contribution_history': contribution_history,
         }
         
-        return render(request, 'shareholders/member_detail.html', context)
+        return render(request, 'investing/shareholders/shareholders_member_detail.html', context)
         
     except Http404:
         # Let Django handle 404 properly
@@ -375,8 +381,8 @@ def member_edit(request, member_id):
     
     Phase 3: Real POST handling with form validation, audit logging, and archive functionality.
     """
-    from .forms import MemberEditForm
-    from .services.audit_service import AuditService, get_client_ip
+    from investing.forms_shareholders import MemberEditForm
+    from investing.services.shareholders.audit_service import AuditService, get_client_ip
     
     try:
         deal = get_active_deal()
@@ -470,7 +476,7 @@ def member_edit(request, member_id):
             'role_catalog': get_role_catalog(),
         }
         
-        return render(request, 'shareholders/member_edit.html', context)
+        return render(request, 'investing/shareholders/shareholders_member_edit.html', context)
         
     except Member.DoesNotExist:
         messages.error(request, f"Member with ID {member_id} not found.")
@@ -489,9 +495,9 @@ def contribution_log(request):
     
     Phase 3: Real POST handling with form validation, proof upload, and audit logging.
     """
-    from .forms import ContributionLogForm
-    from .services.contribution_service import ContributionSubmissionService
-    from .services.audit_service import get_client_ip
+    from investing.forms_shareholders import ContributionLogForm
+    from investing.services.shareholders.contribution_service import ContributionSubmissionService
+    from investing.services.shareholders.audit_service import get_client_ip
     
     try:
         deal = get_active_deal()
@@ -576,7 +582,7 @@ def contribution_log(request):
             'all_members': all_members,
         }
         
-        return render(request, 'shareholders/contribution_log.html', context)
+        return render(request, 'investing/shareholders/shareholders_contribution_log.html', context)
         
     except Exception as e:
         logger.error(f"Error in contribution log: {str(e)}")
@@ -636,7 +642,7 @@ def ledger_detail(request, tx_id):
             'entry': entry_detail,
             'deal': deal,
         }
-        return render(request, 'shareholders/ledger_detail.html', context)
+        return render(request, 'investing/shareholders/shareholders_ledger_detail.html', context)
         
     except Exception as e:
         logger.error(f"Error fetching ledger detail for {tx_id}: {str(e)}")

@@ -3,6 +3,8 @@ Ledger Query Service
 
 Provides server-side filtering, search, sorting, and pagination for ledger entries.
 All queries are scoped to a specific deal for data isolation.
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 from decimal import Decimal
@@ -13,7 +15,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 import logging
 
-from shareholders.models import Deal, LedgerEntry, Member
+# Models imported from original shareholders app (preserves DB ownership)
+from investing.models_shareholders import Deal, LedgerEntry, Member
 
 logger = logging.getLogger(__name__)
 

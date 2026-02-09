@@ -1,25 +1,14 @@
 """
-Shareholders Management System - Core Models (Phase 1)
+Shareholders Management System - Core Models
+
+MIGRATED FROM shareholders app to investing app.
+Database tables remain unchanged (shareholders_* prefix preserved).
 
 =============================================================================
-PRE-FLIGHT SAFETY DECISION LOG
+CRITICAL: DO NOT MODIFY db_table SETTINGS
 =============================================================================
-After scanning CODA codebase:
-- No existing canonical "Deal" model found in shared_core or finance that fits equity management
-- Finance app has Transaction/Payment models for financial operations (different purpose)
-- No existing "Member" model for equity participants (accounts.CustomerUser is for platform users)
-- Decision: Create new shareholders-scoped models with clear naming to avoid conflicts
-- Using CODA's shared_core.models.TimeStampedModel as base for consistency
-- All models namespaced to 'shareholders' app to prevent conflicts
-
-Phase 1 Scope:
-- Models for persistence: Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence
-- NO approval workflow logic (Phase 2)
-- NO dispute window enforcement (Phase 5)
-- NO equity calculation engine (Phase 4)
-- NO checksum generation (Phase 6)
-- Statuses exist for UI state management and future phases
-
+These models explicitly specify db_table to match existing database tables.
+Changing db_table would cause Django to create new tables and lose data.
 =============================================================================
 """
 

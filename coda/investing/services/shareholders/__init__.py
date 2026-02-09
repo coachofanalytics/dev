@@ -2,6 +2,7 @@
 Shareholders Services Package
 
 Business logic services for ledger management, valuation, and checksums.
+Migrated to investing app - models imported from shareholders app.
 """
 
 from .ledger_query import LedgerQueryService

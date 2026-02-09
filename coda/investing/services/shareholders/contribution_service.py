@@ -3,6 +3,8 @@ Contribution Submission Service
 
 Handles the creation of LedgerEntry records with optional proof upload.
 Enforces business rules and immutability constraints.
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 from typing import Optional, Dict, Any
@@ -13,7 +15,8 @@ from decimal import Decimal
 import uuid
 import logging
 
-from shareholders.models import (
+# Models now owned by investing app
+from investing.models_shareholders import (
     LedgerEntry, LedgerEvidence, Member, Deal
 )
 from .audit_service import AuditService

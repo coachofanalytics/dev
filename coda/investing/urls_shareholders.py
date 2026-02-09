@@ -1,5 +1,12 @@
+"""
+Shareholders Management System - URL Configuration for Investing App
+
+Routes for the Shareholders Management System, migrated from shareholders app.
+All URLs are prefixed with 'shareholders/' and use namespace 'shareholders'.
+"""
+
 from django.urls import path
-from . import views
+from investing.views.shareholders import views
 
 app_name = 'shareholders'
 

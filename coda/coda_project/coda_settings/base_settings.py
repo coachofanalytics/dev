@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "marketing.apps.MarketingConfig",
     "unified_dashboard.apps.UnifiedDashboardConfig",
     "portfolio.apps.PortfolioConfig",  # Professional presentations & portfolio
-    "shareholders.apps.ShareholdersConfig",  # Shareholders Management System
+    # shareholders app removed - models now owned by investing app
     "crispy_forms",
     "django.contrib.admin",
     "django.contrib.auth",

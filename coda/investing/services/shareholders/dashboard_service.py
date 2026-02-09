@@ -8,6 +8,8 @@ Phase Scope:
 - Dashboard equity estimation (read-only)
 - Weighted contribution aggregation
 - Safe division-by-zero handling
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 from decimal import Decimal, ROUND_HALF_UP
@@ -15,7 +17,8 @@ from typing import Dict, List, Optional
 from django.db.models import Sum, Q
 import logging
 
-from .models import Deal, Member, LedgerEntry, DealWeights
+# Models imported from original shareholders app (preserves DB ownership)
+from investing.models_shareholders import Deal, Member, LedgerEntry, DealWeights
 
 logger = logging.getLogger(__name__)
 

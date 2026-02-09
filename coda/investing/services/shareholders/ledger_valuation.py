@@ -1,12 +1,15 @@
 """
 Ledger Valuation Service - Converts internal units to USD values.
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict
 import logging
 
-from shareholders.models import Deal, ValuationRate
+# Models imported from original shareholders app (preserves DB ownership)
+from investing.models_shareholders import Deal, ValuationRate
 
 logger = logging.getLogger(__name__)
 

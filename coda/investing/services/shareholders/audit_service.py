@@ -3,6 +3,8 @@ Audit Service
 
 Centralized service for creating audit log entries for all member and
 contribution operations. Uses existing LedgerAuditLog model.
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 from typing import Dict, Any, Optional
@@ -10,7 +12,8 @@ from django.contrib.auth import get_user_model
 import json
 import logging
 
-from shareholders.models import LedgerAuditLog, Member, LedgerEntry
+# Models imported from original shareholders app (preserves DB ownership)
+from investing.models_shareholders import LedgerAuditLog, Member, LedgerEntry
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

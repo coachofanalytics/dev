@@ -3,6 +3,8 @@ Shareholders Management System - Django Forms
 
 Forms for Member registration, editing, and contribution logging with
 server-side validation.
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 from django import forms
@@ -10,7 +12,8 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import date
 
-from .models import Member, LedgerEntry, LedgerEvidence, Deal
+# Models imported from original shareholders app (preserves DB ownership)
+from investing.models_shareholders import Member, LedgerEntry, LedgerEvidence, Deal
 
 
 class MemberRegisterForm(forms.ModelForm):

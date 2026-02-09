@@ -2,10 +2,13 @@
 Shareholders Management System - Django Admin Configuration
 
 Admin interfaces for pilot verification and data inspection.
+Migrated from shareholders app to investing app.
 """
 
 from django.contrib import admin
-from .models import Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence
+from investing.models_shareholders import (
+    Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence
+)
 
 
 # =============================================================================
@@ -109,7 +112,7 @@ class MemberAdmin(admin.ModelAdmin):
             'fields': ('member_type', 'legal_name', 'role_title', 'email', 'phone', 'bio')
         }),
         ('Status', {
-            'fields': ('verified', 'is_archived', 'is_active')
+            'fields': ('verified', 'is_archived')
         }),
         ('Timestamps', {
             'fields': ('joined_date', 'created_at', 'updated_at'),

@@ -1,5 +1,7 @@
 """
 Ledger Checksum Service - Deterministic checksum generation.
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 import hashlib
@@ -7,7 +9,8 @@ import json
 from decimal import Decimal
 import logging
 
-from shareholders.models import Deal, LedgerEntry
+# Models imported from original shareholders app (preserves DB ownership)
+from investing.models_shareholders import Deal, LedgerEntry
 
 logger = logging.getLogger(__name__)
 

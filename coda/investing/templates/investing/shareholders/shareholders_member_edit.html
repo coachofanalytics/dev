@@ -560,11 +560,12 @@
                                 </div>
                                 <div class="sh-form-group">
                                     <label class="sh-form-label">Designated Role</label>
-                                    <select name="role" class="sh-form-select" required>
+                                    <input type="text" name="role_title" class="sh-form-input" value="{{ member.role }}" placeholder="e.g., Founder, Lead Developer, Investor" list="role-suggestions">
+                                    <datalist id="role-suggestions">
                                         {% for role in role_catalog %}
-                                        <option value="{{ role }}" {% if member.role == role %}selected{% endif %}>{{ role }}</option>
+                                        <option value="{{ role }}">
                                         {% endfor %}
-                                    </select>
+                                    </datalist>
                                 </div>
                                 <div class="sh-form-group">
                                     <label class="sh-form-label">Email Address</label>

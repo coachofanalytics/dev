@@ -1,1 +1,0 @@
-# Shareholders Management System App

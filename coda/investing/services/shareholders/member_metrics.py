@@ -6,6 +6,8 @@ All aggregations are read-only and computed from LedgerEntry records.
 
 POLICY: By default, only APPROVED entries are counted in totals.
 This can be adjusted via the include_submitted parameter.
+
+Migrated to investing app - models imported from shareholders app.
 """
 
 from decimal import Decimal
@@ -13,7 +15,8 @@ from typing import Dict, List, Optional
 from django.db.models import Sum, Q, Count
 import logging
 
-from shareholders.models import Member, LedgerEntry, Deal
+# Models imported from original shareholders app (preserves DB ownership)
+from investing.models_shareholders import Member, LedgerEntry, Deal
 
 logger = logging.getLogger(__name__)
 
