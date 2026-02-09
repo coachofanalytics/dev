@@ -1,11 +1,12 @@
 from django.contrib import admin
-from .models import Service, Assets, Readme, Location
+from .models import Assets, Readme, Location,Pricing
 
 
 # Simple registrations (no custom admin needed)
-admin.site.register(Service)
+# admin.site.register(Service)
 admin.site.register(Assets)
 admin.site.register(Readme)
+admin.site.register(Pricing)
 
 
 # Custom admin for Location

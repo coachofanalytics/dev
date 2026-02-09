@@ -18,7 +18,7 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
-class Service(models.Model):
+class Services(models.Model):
     serial = models.PositiveIntegerField(null=True, blank=True)
     title = models.CharField(default='training',max_length=254)
     slug = models.SlugField(default='slug',max_length=255)
@@ -100,6 +100,46 @@ class Location(models.Model):
         def __str__(self):
             return f"{self.city}, {self.state},{self.country} ({self.zipcode})"
         
-        
 
+class Pricing(models.Model):
+    serial = models.PositiveIntegerField(unique=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
 
+    # Strongly recommended: use choices or FK later
+    category = models.IntegerField(help_text="Category reference (e.g., Business, Individual)")
+    subcategory = models.CharField(max_length=255, null=True, blank=True)
+
+    price = models.FloatField()
+    discounted_price = models.FloatField(null=True, blank=True)
+
+    duration = models.PositiveIntegerField(
+        help_text="Duration value (e.g., 30, 6, 12)"
+    )
+    contract_length = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Contract period if applicable"
+    )
+
+    is_direct = models.BooleanField(
+        default=False,
+        help_text="Can users purchase directly?"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Controls visibility on website"
+    )
+
+    redirect_url_path = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Redirect URL for purchase or details"
+    )
+
+    class Meta:
+        ordering = ["serial"]
+
+    def __str__(self):
+        return self.title
