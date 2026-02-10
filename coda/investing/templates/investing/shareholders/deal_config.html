@@ -581,7 +581,7 @@ Phase 1: UI only with dummy data, no persistence
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
             <div class="info-alert-text">
-                <strong>Frontend-Only Mode:</strong> This is a UI preview. Configuration changes are not persisted to the database in this phase. Backend integration coming in next phase.
+                <strong>Governance Engine Active:</strong> Changes to this configuration immediately affect dashboard metrics, ledger valuations, snapshot generation, and approval requirements across the entire Shareholders Management System.
             </div>
         </div>
 
@@ -832,7 +832,7 @@ document.querySelectorAll('.toggle-switch').forEach(toggle => {
     });
 });
 
-// Save configuration (placeholder)
+// Save configuration (backend-backed)
 function handleSaveConfig() {
     // Validate weights sum to 100%
     const total = parseInt(document.getElementById('totalWeight').textContent);
@@ -841,8 +841,60 @@ function handleSaveConfig() {
         return;
     }
     
-    // Show success message
-    alert('Configuration Saved Successfully!\n\n[Frontend-Only Mode]\n\nIn production, this would persist to:\n• DealConfig model\n• DealWeights model\n• Audit log entry\n\nBackend integration coming in next phase.');
+    // Collect form data
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "shareholders:deal_config_save" %}';
+    
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+    
+    // Add all config fields
+    const fields = {
+        // FX & Currency
+        'fx_mode': document.getElementById('fxMode').value,
+        'peg_rate': document.getElementById('pegRate').value,
+        
+        // Weights
+        'cash_weight': document.getElementById('cashValue').textContent,
+        'inkind_weight': document.getElementById('inkindValue').textContent,
+        'time_weight': document.getElementById('timeValue').textContent,
+        'work_weight': document.getElementById('workValue').textContent,
+        
+        // Valuation Rules
+        'time_rate': document.getElementById('timeRate').value,
+        'work_rate': document.getElementById('workRate').value,
+        'inkind_mode': document.getElementById('inkindMode').value,
+        
+        // Approval & Dispute
+        'dispute_window': document.getElementById('disputeWindow').value,
+        'approval_cash': document.querySelector('[data-toggle="approvalCash"]').classList.contains('active'),
+        'approval_inkind': document.querySelector('[data-toggle="approvalInkind"]').classList.contains('active'),
+        'approval_time': document.querySelector('[data-toggle="approvalTime"]').classList.contains('active'),
+        'approval_work': document.querySelector('[data-toggle="approvalWork"]').classList.contains('active'),
+        
+        // Snapshot Policy
+        'snapshot_freq': document.getElementById('snapshotFreq').value,
+        'snapshot_day': document.getElementById('snapshotDay').value,
+        'auto_lock': document.querySelector('[data-toggle="autoLock"]').classList.contains('active'),
+    };
+    
+    // Add fields to form
+    for (const [key, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+    
+    // Submit form
+    document.body.appendChild(form);
+    form.submit();
 }
 
 // Reset configuration

@@ -1171,64 +1171,66 @@ def snapshot_create(request):
 @require_admin
 def deal_config_view(request):
     """
-    Deal Configuration View - Frontend-only UI for governance settings.
+    Deal Configuration View - Fully database-backed governance settings.
     
     Access Control:
         - Requires login
         - Requires admin privileges (is_staff or is_superuser)
     
-    Phase: Frontend-only scaffolding with dummy data.
-    Backend integration (saving, validation, business logic) in next phase.
-    
-    UI Features:
-        - Deal identity settings
-        - FX & Currency policy configuration
-        - Contribution weights with interactive sliders
-        - Valuation rules
-        - Approval & dispute policy settings
-        - Snapshot scheduling policy
+    Features:
+        - Load real config from DealConfig and DealWeights models
+        - Display all governance settings
+        - Provide edit interface
     """
+    from investing.services.shareholders.deal_config_service import DealConfigService
+    
     try:
         deal = get_active_deal()
         if not deal:
             messages.warning(request, "No active deal found. Please create a deal first.")
             return redirect('dashboard:unified_dashboard')
         
-        # Dummy configuration data for UI scaffolding
-        # Backend will replace this with real DealConfig, DealWeights models
+        # Initialize service
+        config_service = DealConfigService(deal)
+        
+        # Get or create config and weights
+        config = config_service.get_or_create_config()
+        weights = config_service.get_or_create_weights()
+        
+        # Prepare context data from real DB
         config_data = {
             # Deal Identity
             'deal_name': deal.name,
-            'deal_status': 'Active',
+            'deal_status': 'Active' if deal.is_active else 'Inactive',
             'created_date': deal.created_at.strftime('%Y-%m-%d'),
             
             # FX & Currency Policy
-            'base_currency': 'USD',
-            'fx_mode': 'PEGGED',
-            'peg_rate': 127,
+            'base_currency': config.base_currency,
+            'fx_mode': config.fx_mode,
+            'peg_rate': float(config.fx_peg_rate),
             
-            # Contribution Weights (must sum to 100%)
-            'cash_weight': 55,
-            'inkind_weight': 20,
-            'time_weight': 10,
-            'work_weight': 15,
+            # Contribution Weights (from DealWeights)
+            'cash_weight': float(weights.cash_weight),
+            'inkind_weight': float(weights.in_kind_weight),
+            'time_weight': float(weights.time_weight),
+            'work_weight': float(weights.work_weight),
             
             # Valuation Rules
-            'time_rate': 50,  # $ per hour
-            'work_rate': 100,  # $ per unit
-            'inkind_mode': 'MANUAL',
+            'time_rate': float(config.time_rate),
+            'work_rate': float(config.work_rate),
+            'inkind_mode': config.inkind_valuation_mode,
             
             # Approval & Dispute Policy
-            'dispute_window_days': 7,
-            'require_approval_cash': True,
-            'require_approval_inkind': True,
-            'require_approval_time': False,
-            'require_approval_work': False,
-            'auto_lock_snapshots': True,
+            'dispute_window_days': config.dispute_window_days,
+            'require_approval_cash': config.require_approval_cash,
+            'require_approval_inkind': config.require_approval_inkind,
+            'require_approval_time': config.require_approval_time,
+            'require_approval_work': config.require_approval_work,
+            'auto_lock_snapshots': config.auto_lock_snapshots,
             
             # Snapshot Policy
-            'snapshot_frequency': 'MONTHLY',
-            'snapshot_day': 1,  # 1st of month
+            'snapshot_frequency': config.snapshot_frequency,
+            'snapshot_day': config.snapshot_day,
         }
         
         context = {
@@ -1245,3 +1247,79 @@ def deal_config_view(request):
         logger.error(f"Error in deal config view: {str(e)}")
         messages.error(request, f"Error loading deal configuration: {str(e)}")
         return redirect('shareholders:shareholders_dashboard')
+
+
+@login_required
+@require_admin
+@require_POST
+def deal_config_save(request):
+    """
+    Save Deal Configuration changes to database.
+    
+    POST Parameters:
+        - All config and weight fields
+    """
+    from investing.services.shareholders.deal_config_service import DealConfigService
+    from investing.services.shareholders.audit_service import get_client_ip
+    from django.core.exceptions import ValidationError
+    
+    try:
+        deal = get_active_deal()
+        if not deal:
+            messages.error(request, "No active deal found.")
+            return redirect('shareholders:deal_config')
+        
+        # Initialize service
+        config_service = DealConfigService(deal)
+        
+        # Extract config data from POST
+        config_data = {
+            'fx_mode': request.POST.get('fx_mode'),
+            'fx_peg_rate': request.POST.get('peg_rate'),
+            'time_rate': request.POST.get('time_rate'),
+            'work_rate': request.POST.get('work_rate'),
+            'inkind_valuation_mode': request.POST.get('inkind_mode'),
+            'dispute_window_days': request.POST.get('dispute_window'),
+            'require_approval_cash': request.POST.get('approval_cash') == 'true',
+            'require_approval_inkind': request.POST.get('approval_inkind') == 'true',
+            'require_approval_time': request.POST.get('approval_time') == 'true',
+            'require_approval_work': request.POST.get('approval_work') == 'true',
+            'snapshot_frequency': request.POST.get('snapshot_freq'),
+            'snapshot_day': request.POST.get('snapshot_day'),
+            'auto_lock_snapshots': request.POST.get('auto_lock') == 'true',
+        }
+        
+        # Extract weights data from POST
+        weights_data = {
+            'cash_weight': request.POST.get('cash_weight'),
+            'inkind_weight': request.POST.get('inkind_weight'),
+            'time_weight': request.POST.get('time_weight'),
+            'work_weight': request.POST.get('work_weight'),
+        }
+        
+        # Update config and weights
+        config_service.update_config(
+            config_data,
+            user=request.user,
+            ip_address=get_client_ip(request)
+        )
+        
+        config_service.update_weights(
+            weights_data,
+            user=request.user,
+            ip_address=get_client_ip(request)
+        )
+        
+        messages.success(
+            request,
+            "Deal configuration updated successfully! Changes are now active across all shareholders pages."
+        )
+        return redirect('shareholders:deal_config')
+        
+    except ValidationError as e:
+        messages.error(request, f"Validation error: {str(e)}")
+        return redirect('shareholders:deal_config')
+    except Exception as e:
+        logger.error(f"Error saving deal config: {str(e)}")
+        messages.error(request, f"Error saving configuration: {str(e)}")
+        return redirect('shareholders:deal_config')

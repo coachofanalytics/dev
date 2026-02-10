@@ -82,13 +82,24 @@ class DealConfig(models.Model):
     """
     Per-deal configuration for currency, FX rates, and system settings.
     
-    Phase 1: Stores base currency and FX peg rate.
-    Future phases: Dispute windows, snapshot scheduling, multi-currency support.
+    Comprehensive governance settings for contribution approvals, dispute windows,
+    snapshot scheduling, and valuation policies.
     """
     
     FX_MODE_CHOICES = [
         ('PEGGED', 'Pegged Rate'),
         ('MARKET', 'Market Rate'),
+    ]
+    
+    SNAPSHOT_FREQUENCY_CHOICES = [
+        ('MONTHLY', 'Monthly'),
+        ('QUARTERLY', 'Quarterly'),
+        ('MANUAL', 'Manual Only'),
+    ]
+    
+    INKIND_MODE_CHOICES = [
+        ('MANUAL', 'Manual Entry'),
+        ('RATE', 'Rate-Based'),
     ]
     
     deal = models.OneToOneField(
@@ -97,6 +108,8 @@ class DealConfig(models.Model):
         related_name='config',
         help_text="Associated deal"
     )
+    
+    # FX & Currency Policy
     base_currency = models.CharField(
         max_length=3,
         default='USD',
@@ -115,15 +128,72 @@ class DealConfig(models.Model):
         validators=[MinValueValidator(0)],
         help_text="Pegged FX rate (e.g., 127 KES/USD); used when fx_mode=PEGGED"
     )
+    
+    # Valuation Rules
+    time_rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=50.00,
+        validators=[MinValueValidator(0)],
+        help_text="USD value per hour of time contribution"
+    )
+    work_rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=100.00,
+        validators=[MinValueValidator(0)],
+        help_text="USD value per work unit/point"
+    )
+    inkind_valuation_mode = models.CharField(
+        max_length=10,
+        choices=INKIND_MODE_CHOICES,
+        default='MANUAL',
+        help_text="How to value in-kind contributions"
+    )
+    
+    # Approval & Dispute Policy
     dispute_window_days = models.IntegerField(
         default=7,
         validators=[MinValueValidator(0)],
-        help_text="Days allowed for disputes (Phase 5 placeholder)"
+        help_text="Days allowed for disputes before auto-approval"
+    )
+    require_approval_cash = models.BooleanField(
+        default=True,
+        help_text="Require admin approval for cash contributions"
+    )
+    require_approval_inkind = models.BooleanField(
+        default=True,
+        help_text="Require admin approval for in-kind contributions"
+    )
+    require_approval_time = models.BooleanField(
+        default=False,
+        help_text="Require admin approval for time contributions"
+    )
+    require_approval_work = models.BooleanField(
+        default=False,
+        help_text="Require admin approval for work contributions"
+    )
+    
+    # Snapshot Policy
+    snapshot_frequency = models.CharField(
+        max_length=10,
+        choices=SNAPSHOT_FREQUENCY_CHOICES,
+        default='MONTHLY',
+        help_text="How often to auto-generate snapshots"
+    )
+    snapshot_day = models.IntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(28)],
+        help_text="Day of month for scheduled snapshots (1-28)"
+    )
+    auto_lock_snapshots = models.BooleanField(
+        default=True,
+        help_text="Automatically lock snapshots after dispute window"
     )
     next_snapshot_date = models.DateField(
         blank=True,
         null=True,
-        help_text="Next scheduled snapshot date (Phase 6 placeholder for dashboard display)"
+        help_text="Next scheduled snapshot date"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)

@@ -15,8 +15,9 @@ urlpatterns = [
     path('dashboard/', views.shareholders_dashboard, name='shareholders_dashboard'),
     path('ledgers/', views.ledgers_view, name='ledgers_view'),
     
-    # Deal Configuration (Frontend-Only Phase)
+    # Deal Configuration (Phase 2: Full Backend)
     path('deal-config/', views.deal_config_view, name='deal_config'),
+    path('deal-config/save/', views.deal_config_save, name='deal_config_save'),
     
     # Snapshots (Phase 2: Full Backend)
     path('snapshots/', views.snapshots_view, name='snapshots_view'),
