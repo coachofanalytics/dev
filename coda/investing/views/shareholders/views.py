@@ -1161,3 +1161,87 @@ def snapshot_create(request):
         logger.error(f"Error creating snapshot: {str(e)}")
         messages.error(request, f"Error creating snapshot: {str(e)}")
         return redirect('shareholders:snapshots_view')
+
+
+# ===================================================================
+# DEAL CONFIG VIEW (Phase: Frontend-Only UI)
+# ===================================================================
+
+@login_required
+@require_admin
+def deal_config_view(request):
+    """
+    Deal Configuration View - Frontend-only UI for governance settings.
+    
+    Access Control:
+        - Requires login
+        - Requires admin privileges (is_staff or is_superuser)
+    
+    Phase: Frontend-only scaffolding with dummy data.
+    Backend integration (saving, validation, business logic) in next phase.
+    
+    UI Features:
+        - Deal identity settings
+        - FX & Currency policy configuration
+        - Contribution weights with interactive sliders
+        - Valuation rules
+        - Approval & dispute policy settings
+        - Snapshot scheduling policy
+    """
+    try:
+        deal = get_active_deal()
+        if not deal:
+            messages.warning(request, "No active deal found. Please create a deal first.")
+            return redirect('dashboard:unified_dashboard')
+        
+        # Dummy configuration data for UI scaffolding
+        # Backend will replace this with real DealConfig, DealWeights models
+        config_data = {
+            # Deal Identity
+            'deal_name': deal.name,
+            'deal_status': 'Active',
+            'created_date': deal.created_at.strftime('%Y-%m-%d'),
+            
+            # FX & Currency Policy
+            'base_currency': 'USD',
+            'fx_mode': 'PEGGED',
+            'peg_rate': 127,
+            
+            # Contribution Weights (must sum to 100%)
+            'cash_weight': 55,
+            'inkind_weight': 20,
+            'time_weight': 10,
+            'work_weight': 15,
+            
+            # Valuation Rules
+            'time_rate': 50,  # $ per hour
+            'work_rate': 100,  # $ per unit
+            'inkind_mode': 'MANUAL',
+            
+            # Approval & Dispute Policy
+            'dispute_window_days': 7,
+            'require_approval_cash': True,
+            'require_approval_inkind': True,
+            'require_approval_time': False,
+            'require_approval_work': False,
+            'auto_lock_snapshots': True,
+            
+            # Snapshot Policy
+            'snapshot_frequency': 'MONTHLY',
+            'snapshot_day': 1,  # 1st of month
+        }
+        
+        context = {
+            'title': 'Deal Configuration',
+            'page_title': 'Deal Configuration - Shareholders Management',
+            'user': request.user,
+            'deal': deal,
+            'config': config_data,
+        }
+        
+        return render(request, 'investing/shareholders/deal_config.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in deal config view: {str(e)}")
+        messages.error(request, f"Error loading deal configuration: {str(e)}")
+        return redirect('shareholders:shareholders_dashboard')

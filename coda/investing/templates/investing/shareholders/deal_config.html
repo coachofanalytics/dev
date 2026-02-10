@@ -1,0 +1,861 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% comment %}
+ShareHold Deal Configuration Page - Frontend-Only UI Scaffolding
+Master rules and governance for the current venture
+Phase 1: UI only with dummy data, no persistence
+{% endcomment %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ShareHold Deal Config Styles - Matching Reference UI */
+:root {
+    --sh-sidebar-bg: #0f172a;
+    --sh-primary: #2563eb;
+    --sh-primary-light: #3b82f6;
+    --sh-text-dark: #1e293b;
+    --sh-text-muted: #64748b;
+    --sh-border: #e2e8f0;
+    --sh-card-bg: #ffffff;
+    --sh-page-bg: #f8fafc;
+    --sh-success: #10b981;
+    --sh-warning: #f59e0b;
+}
+
+.sh-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: var(--sh-page-bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Sidebar Styles (reuse from other pages) */
+.sh-sidebar {
+    width: 280px;
+    background: var(--sh-sidebar-bg);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sh-sidebar-header {
+    padding: 2rem;
+}
+
+.sh-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+}
+
+.sh-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--sh-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.sh-logo-text {
+    color: white;
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+}
+
+.sh-logo-text span {
+    color: var(--sh-primary-light);
+}
+
+.sh-logo-subtitle {
+    color: #475569;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Navigation */
+.sh-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sh-nav-section {
+    margin-top: 2rem;
+    padding: 0 1rem;
+}
+
+.sh-nav-section-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+}
+
+.sh-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+}
+
+.sh-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+}
+
+.sh-nav-item.active {
+    background: var(--sh-primary);
+    color: white;
+    font-weight: 600;
+}
+
+.sh-nav-item svg {
+    flex-shrink: 0;
+}
+
+/* Main Content */
+.sh-main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2.5rem 3rem;
+}
+
+/* Breadcrumb */
+.sh-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
+    color: var(--sh-text-muted);
+}
+
+.sh-breadcrumb a {
+    color: var(--sh-text-muted);
+    text-decoration: none;
+}
+
+.sh-breadcrumb a:hover {
+    color: var(--sh-primary);
+}
+
+.sh-breadcrumb-current {
+    color: var(--sh-text-dark);
+    font-weight: 600;
+}
+
+/* Page Header */
+.sh-page-header {
+    margin-bottom: 2.5rem;
+}
+
+.sh-page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--sh-text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.sh-page-subtitle {
+    font-size: 1rem;
+    color: var(--sh-text-muted);
+}
+
+/* Config Grid */
+.config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Config Card */
+.config-card {
+    background: var(--sh-card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--sh-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.config-card-title {
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--sh-text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--sh-border);
+}
+
+/* Form Fields */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sh-text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.form-hint {
+    font-size: 0.75rem;
+    color: var(--sh-text-muted);
+    margin-top: 0.25rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--sh-border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--sh-text-dark);
+    background: white;
+    transition: all 0.15s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--sh-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-input:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--sh-border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--sh-text-dark);
+    background: white;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--sh-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Weight Slider */
+.weight-item {
+    margin-bottom: 1.5rem;
+}
+
+.weight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.weight-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sh-text-dark);
+}
+
+.weight-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--sh-primary);
+}
+
+.weight-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #e2e8f0, #e2e8f0);
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+}
+
+.weight-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--sh-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.weight-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--sh-primary);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.weights-sum {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--sh-border);
+}
+
+.weights-sum-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sh-text-dark);
+}
+
+.weights-sum-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.weights-sum-value.valid {
+    color: var(--sh-success);
+}
+
+.weights-sum-value.invalid {
+    color: #ef4444;
+}
+
+/* Toggle Switch */
+.toggle-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--sh-border);
+}
+
+.toggle-group:last-child {
+    border-bottom: none;
+}
+
+.toggle-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--sh-text-dark);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #cbd5e1;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggle-switch.active {
+    background: var(--sh-primary);
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.toggle-switch.active .toggle-slider {
+    left: 22px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.15s ease;
+}
+
+.btn-primary {
+    background: var(--sh-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-secondary {
+    background: white;
+    color: var(--sh-text-dark);
+    border: 1px solid var(--sh-border);
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+}
+
+/* Full Width Cards */
+.config-card-full {
+    grid-column: 1 / -1;
+}
+
+/* Info Alert */
+.info-alert {
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.info-alert-icon {
+    color: #1e40af;
+    flex-shrink: 0;
+}
+
+.info-alert-text {
+    font-size: 0.875rem;
+    color: #1e40af;
+    line-height: 1.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <!-- Logo -->
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="24" height="24">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </div>
+                <div>
+                    <div class="sh-logo-text">SHARE<span>HOLD</span></div>
+                    <div class="sh-logo-subtitle">EQUITY PILOT V1.0</div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>Ledgers</span>
+                </a>
+
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Members & Equity</span>
+                </a>
+
+                <a href="{% url 'shareholders:snapshots_view' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span>Snapshots</span>
+                </a>
+            </nav>
+
+            <!-- Administration Section -->
+            <div class="sh-nav-section">
+                <div class="sh-nav-section-title">Administration</div>
+                <nav class="sh-nav">
+                    <a href="{% url 'shareholders:deal_config' %}" class="sh-nav-item active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
+                        </svg>
+                        <span>Deal Config</span>
+                    </a>
+
+                    <a href="#" class="sh-nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                        <span>Audit Log</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="sh-main-content">
+        <!-- Breadcrumb -->
+        <div class="sh-breadcrumb">
+            <a href="{% url 'shareholders:shareholders_dashboard' %}">Deal Portal</a>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <span class="sh-breadcrumb-current">{{ config.deal_name }}</span>
+        </div>
+
+        <!-- Page Header -->
+        <div class="sh-page-header">
+            <h1 class="sh-page-title">Deal Configuration</h1>
+            <p class="sh-page-subtitle">Master rules and governance for the current venture.</p>
+        </div>
+
+        <!-- Info Alert -->
+        <div class="info-alert">
+            <svg class="info-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <div class="info-alert-text">
+                <strong>Frontend-Only Mode:</strong> This is a UI preview. Configuration changes are not persisted to the database in this phase. Backend integration coming in next phase.
+            </div>
+        </div>
+
+        <!-- Configuration Grid -->
+        <div class="config-grid">
+            <!-- Weights & Fairness Engine -->
+            <div class="config-card">
+                <h2 class="config-card-title">Weights & Fairness Engine</h2>
+                
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-label">Cash</span>
+                        <span class="weight-value"><span id="cashValue">{{ config.cash_weight }}</span>%</span>
+                    </div>
+                    <input type="range" class="weight-slider" id="cashSlider" min="0" max="100" value="{{ config.cash_weight }}" data-target="cashValue">
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-label">In-Kind</span>
+                        <span class="weight-value"><span id="inkindValue">{{ config.inkind_weight }}</span>%</span>
+                    </div>
+                    <input type="range" class="weight-slider" id="inkindSlider" min="0" max="100" value="{{ config.inkind_weight }}" data-target="inkindValue">
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-label">Time</span>
+                        <span class="weight-value"><span id="timeValue">{{ config.time_weight }}</span>%</span>
+                    </div>
+                    <input type="range" class="weight-slider" id="timeSlider" min="0" max="100" value="{{ config.time_weight }}" data-target="timeValue">
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-label">Work</span>
+                        <span class="weight-value"><span id="workValue">{{ config.work_weight }}</span>%</span>
+                    </div>
+                    <input type="range" class="weight-slider" id="workSlider" min="0" max="100" value="{{ config.work_weight }}" data-target="workValue">
+                </div>
+
+                <div class="weights-sum">
+                    <span class="weights-sum-label">Total Weight</span>
+                    <span class="weights-sum-value" id="totalWeight">100%</span>
+                </div>
+            </div>
+
+            <!-- FX & Currency Policy -->
+            <div class="config-card">
+                <h2 class="config-card-title">FX & Currency Policy</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Valuation Mode</label>
+                    <select class="form-select" id="fxMode">
+                        <option value="PEGGED" {% if config.fx_mode == 'PEGGED' %}selected{% endif %}>Pegged (Recommended for Pilot)</option>
+                        <option value="LIVE" {% if config.fx_mode == 'LIVE' %}selected{% endif %}>Live Market Rate</option>
+                    </select>
+                    <div class="form-hint">Pegged mode uses a fixed exchange rate for stability</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pegged Rate ($1 USD = X KES)</label>
+                    <input type="number" class="form-input" id="pegRate" value="{{ config.peg_rate }}" placeholder="127">
+                    <div class="form-hint">Current pilot rate: 1 USD = 127 KES</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Base Currency</label>
+                    <input type="text" class="form-input" value="{{ config.base_currency }}" disabled>
+                    <div class="form-hint">All valuations calculated in USD</div>
+                </div>
+            </div>
+
+            <!-- Valuation Rules -->
+            <div class="config-card">
+                <h2 class="config-card-title">Valuation Rules</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Time Rate ($ per hour)</label>
+                    <input type="number" class="form-input" id="timeRate" value="{{ config.time_rate }}" placeholder="50">
+                    <div class="form-hint">Dollar value for each hour of time contribution</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Work Rate ($ per unit)</label>
+                    <input type="number" class="form-input" id="workRate" value="{{ config.work_rate }}" placeholder="100">
+                    <div class="form-hint">Dollar value per work unit/point</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">In-Kind Valuation</label>
+                    <select class="form-select" id="inkindMode">
+                        <option value="MANUAL" {% if config.inkind_mode == 'MANUAL' %}selected{% endif %}>Manual Entry</option>
+                        <option value="RATE" {% if config.inkind_mode == 'RATE' %}selected{% endif %}>Rate-Based</option>
+                    </select>
+                    <div class="form-hint">How to value in-kind contributions</div>
+                </div>
+            </div>
+
+            <!-- Approval & Dispute Policy -->
+            <div class="config-card">
+                <h2 class="config-card-title">Approval & Dispute Policy</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Dispute Window (days)</label>
+                    <input type="number" class="form-input" id="disputeWindow" value="{{ config.dispute_window_days }}" placeholder="7">
+                    <div class="form-hint">Days allowed to dispute ledger entries</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Require Approval By Tier</label>
+                    <div class="toggle-group">
+                        <span class="toggle-label">Cash Contributions</span>
+                        <div class="toggle-switch {% if config.require_approval_cash %}active{% endif %}" data-toggle="approvalCash">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">In-Kind Contributions</span>
+                        <div class="toggle-switch {% if config.require_approval_inkind %}active{% endif %}" data-toggle="approvalInkind">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">Time Contributions</span>
+                        <div class="toggle-switch {% if config.require_approval_time %}active{% endif %}" data-toggle="approvalTime">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">Work Contributions</span>
+                        <div class="toggle-switch {% if config.require_approval_work %}active{% endif %}" data-toggle="approvalWork">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Snapshot Policy -->
+            <div class="config-card">
+                <h2 class="config-card-title">Snapshot Policy</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Snapshot Frequency</label>
+                    <select class="form-select" id="snapshotFreq">
+                        <option value="MONTHLY" {% if config.snapshot_frequency == 'MONTHLY' %}selected{% endif %}>Monthly</option>
+                        <option value="QUARTERLY" {% if config.snapshot_frequency == 'QUARTERLY' %}selected{% endif %}>Quarterly</option>
+                        <option value="MANUAL" {% if config.snapshot_frequency == 'MANUAL' %}selected{% endif %}>Manual Only</option>
+                    </select>
+                    <div class="form-hint">How often to auto-generate snapshots</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Default Snapshot Day</label>
+                    <input type="number" class="form-input" id="snapshotDay" value="{{ config.snapshot_day }}" min="1" max="28" placeholder="1">
+                    <div class="form-hint">Day of month for scheduled snapshots (1-28)</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="toggle-group">
+                        <span class="toggle-label">Auto-Lock Snapshots</span>
+                        <div class="toggle-switch {% if config.auto_lock_snapshots %}active{% endif %}" data-toggle="autoLock">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="form-hint">Automatically lock snapshots after dispute window</div>
+                </div>
+            </div>
+
+            <!-- Deal Identity (Read-Only) -->
+            <div class="config-card">
+                <h2 class="config-card-title">Deal Identity</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Deal Name</label>
+                    <input type="text" class="form-input" value="{{ config.deal_name }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <input type="text" class="form-input" value="{{ config.deal_status }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Created Date</label>
+                    <input type="text" class="form-input" value="{{ config.created_date }}" disabled>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="handleSaveConfig()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Save Changes
+            </button>
+            <button class="btn btn-secondary" onclick="handleResetConfig()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                    <path d="M3 3v5h5"></path>
+                </svg>
+                Reset
+            </button>
+        </div>
+    </main>
+</div>
+
+<script>
+// Weight sliders - Update values and calculate total
+const sliders = document.querySelectorAll('.weight-slider');
+sliders.forEach(slider => {
+    slider.addEventListener('input', function() {
+        const target = this.getAttribute('data-target');
+        const value = this.value;
+        document.getElementById(target).textContent = value;
+        
+        // Calculate total
+        calculateTotal();
+    });
+});
+
+function calculateTotal() {
+    const cash = parseInt(document.getElementById('cashValue').textContent);
+    const inkind = parseInt(document.getElementById('inkindValue').textContent);
+    const time = parseInt(document.getElementById('timeValue').textContent);
+    const work = parseInt(document.getElementById('workValue').textContent);
+    
+    const total = cash + inkind + time + work;
+    const totalEl = document.getElementById('totalWeight');
+    totalEl.textContent = total + '%';
+    
+    // Highlight valid/invalid
+    if (total === 100) {
+        totalEl.classList.add('valid');
+        totalEl.classList.remove('invalid');
+    } else {
+        totalEl.classList.add('invalid');
+        totalEl.classList.remove('valid');
+    }
+}
+
+// Toggle switches
+document.querySelectorAll('.toggle-switch').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+    });
+});
+
+// Save configuration (placeholder)
+function handleSaveConfig() {
+    // Validate weights sum to 100%
+    const total = parseInt(document.getElementById('totalWeight').textContent);
+    if (total !== 100) {
+        alert('Error: Contribution weights must sum to exactly 100%.\n\nCurrent total: ' + total + '%');
+        return;
+    }
+    
+    // Show success message
+    alert('Configuration Saved Successfully!\n\n[Frontend-Only Mode]\n\nIn production, this would persist to:\n• DealConfig model\n• DealWeights model\n• Audit log entry\n\nBackend integration coming in next phase.');
+}
+
+// Reset configuration
+function handleResetConfig() {
+    const confirmed = confirm('Reset all changes?\n\nThis will reload the page and discard unsaved changes.');
+    if (confirmed) {
+        window.location.reload();
+    }
+}
+
+// Initialize total on load
+calculateTotal();
+
+console.log('Deal Config Page Loaded - Frontend-Only Phase');
+</script>
+{% endblock %}
