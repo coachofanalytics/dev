@@ -7,7 +7,8 @@ Migrated from shareholders app to investing app.
 
 from django.contrib import admin
 from investing.models_shareholders import (
-    Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence
+    Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence,
+    EquitySnapshot, EquitySnapshotLine, SnapshotAuditLog
 )
 
 
@@ -219,3 +220,152 @@ class LedgerEvidenceAdmin(admin.ModelAdmin):
         if not change:  # Only on creation
             obj.uploaded_by = request.user
         super().save_model(request, obj, form, change)
+
+
+# =============================================================================
+# SNAPSHOT ADMIN (Phase 2)
+# =============================================================================
+
+class EquitySnapshotLineInline(admin.TabularInline):
+    """Inline for viewing snapshot lines within snapshot admin"""
+    model = EquitySnapshotLine
+    extra = 0
+    readonly_fields = [
+        'member', 'member_name', 'member_type', 'member_role',
+        'cash_usd', 'inkind_usd', 'time_usd', 'work_usd',
+        'weighted_total_usd', 'equity_percentage'
+    ]
+    can_delete = False
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(EquitySnapshot)
+class EquitySnapshotAdmin(admin.ModelAdmin):
+    """Admin interface for Equity Snapshots"""
+    
+    list_display = [
+        'version_id', 'deal', 'snapshot_date', 'status', 'is_locked',
+        'members_count', 'total_valuation_usd', 'created_by'
+    ]
+    list_filter = ['status', 'is_locked', 'deal', 'snapshot_date']
+    search_fields = ['version_id', 'notes', 'checksum']
+    readonly_fields = [
+        'version_id', 'checksum', 'auto_lock_date',
+        'total_cash_usd', 'total_inkind_usd', 'total_time_usd',
+        'total_work_usd', 'total_valuation_usd', 'members_count',
+        'created_at', 'updated_at', 'locked_at'
+    ]
+    
+    inlines = [EquitySnapshotLineInline]
+    
+    fieldsets = (
+        ('Snapshot Identity', {
+            'fields': ('deal', 'version_id', 'snapshot_date', 'period_start', 'period_end')
+        }),
+        ('Status', {
+            'fields': ('status', 'is_locked', 'locked_by', 'locked_at')
+        }),
+        ('Dispute Window', {
+            'fields': ('dispute_window_days', 'auto_lock_date')
+        }),
+        ('Aggregated Totals', {
+            'fields': (
+                'members_count',
+                'total_cash_usd', 'total_inkind_usd',
+                'total_time_usd', 'total_work_usd',
+                'total_valuation_usd'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Integrity', {
+            'fields': ('checksum',)
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at', 'notes'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of locked snapshots"""
+        if obj and obj.is_locked:
+            return False
+        return super().has_delete_permission(request, obj)
+
+
+@admin.register(EquitySnapshotLine)
+class EquitySnapshotLineAdmin(admin.ModelAdmin):
+    """Admin interface for Snapshot Lines"""
+    
+    list_display = [
+        'snapshot', 'member_name', 'equity_percentage',
+        'weighted_total_usd', 'member_type'
+    ]
+    list_filter = ['snapshot__deal', 'member_type']
+    search_fields = ['member_name', 'snapshot__version_id']
+    readonly_fields = [
+        'snapshot', 'member', 'member_name', 'member_type', 'member_role',
+        'cash_usd', 'inkind_usd', 'time_usd', 'work_usd',
+        'weighted_total_usd', 'equity_percentage', 'created_at'
+    ]
+    
+    fieldsets = (
+        ('Snapshot', {
+            'fields': ('snapshot',)
+        }),
+        ('Member', {
+            'fields': ('member', 'member_name', 'member_type', 'member_role')
+        }),
+        ('Contributions (USD)', {
+            'fields': ('cash_usd', 'inkind_usd', 'time_usd', 'work_usd')
+        }),
+        ('Equity', {
+            'fields': ('weighted_total_usd', 'equity_percentage')
+        }),
+        ('Metadata', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        """Prevent manual creation of snapshot lines"""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of snapshot lines"""
+        return False
+
+
+@admin.register(SnapshotAuditLog)
+class SnapshotAuditLogAdmin(admin.ModelAdmin):
+    """Admin interface for Snapshot Audit Logs"""
+    
+    list_display = [
+        'snapshot', 'action', 'performed_by', 'created_at', 'ip_address'
+    ]
+    list_filter = ['action', 'created_at']
+    search_fields = ['snapshot__version_id', 'performed_by__username']
+    readonly_fields = [
+        'snapshot', 'action', 'performed_by', 'details',
+        'ip_address', 'created_at'
+    ]
+    
+    fieldsets = (
+        ('Audit Entry', {
+            'fields': ('snapshot', 'action', 'performed_by', 'created_at')
+        }),
+        ('Details', {
+            'fields': ('details', 'ip_address')
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        """Prevent manual creation of audit logs"""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of audit logs"""
+        return False

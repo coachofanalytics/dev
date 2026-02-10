@@ -657,7 +657,7 @@ Matches reference UI design with dummy data for Phase 1
                                 {% for snapshot in snapshots %}
                                 <tr>
                                     <td>
-                                        <a href="#" class="sh-version-link" onclick="handleViewSnapshot('{{ snapshot.version_id }}'); return false;">
+                                        <a href="{% url 'shareholders:snapshot_detail' snapshot.id %}" class="sh-version-link">
                                             {{ snapshot.version_id }}
                                         </a>
                                     </td>
@@ -672,12 +672,12 @@ Matches reference UI design with dummy data for Phase 1
                                     </td>
                                     <td>
                                         <div class="sh-actions">
-                                            <button class="sh-action-btn" title="Download" onclick="handleDownload('{{ snapshot.version_id }}')">
+                                            <a href="{% url 'shareholders:snapshot_export_detail_csv' snapshot.id %}" class="sh-action-btn" title="Download CSV">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                            </button>
-                                            <button class="sh-action-btn" title="Open" onclick="handleViewSnapshot('{{ snapshot.version_id }}')">
+                                            </a>
+                                            <a href="{% url 'shareholders:snapshot_detail' snapshot.id %}" class="sh-action-btn" title="View Details">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                                            </button>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -718,15 +718,39 @@ Matches reference UI design with dummy data for Phase 1
 <script>
 // Frontend-only placeholder interactions
 function handleCreateSnapshot() {
-    alert('Freeze Snapshot Feature:\nThis will create a new immutable snapshot of the current equity state.\n\n[Backend integration coming in next phase]');
+    // Show confirmation dialog
+    const confirmed = confirm(
+        'Create New Snapshot\n\n' +
+        'This will freeze the current equity state into an immutable snapshot.\n' +
+        'The snapshot will include all approved contributions and member equity percentages.\n\n' +
+        'Continue?'
+    );
+    
+    if (confirmed) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "shareholders:snapshot_create" %}';
+        
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        form.appendChild(csrfInput);
+        
+        // Submit form
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 
 function handleViewSnapshot(versionId) {
-    alert(`View Snapshot: ${versionId}\n\nThis would open the detailed snapshot view.\n\n[Backend integration coming in next phase]`);
+    window.location.href = `/investing/shareholders/snapshots/${versionId}/`;
 }
 
 function handleDownload(versionId) {
-    alert(`Download Snapshot: ${versionId}\n\nThis would download the snapshot as PDF/CSV.\n\n[Backend integration coming in next phase]`);
+    window.location.href = `/investing/shareholders/snapshots/${versionId}/export/`;
 }
 
 // Empty state toggle for testing (add ?empty=1 to URL)

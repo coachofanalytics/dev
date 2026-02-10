@@ -759,3 +759,350 @@ class LedgerAuditLog(models.Model):
     
     def __str__(self):
         return f"{self.ledger_entry.tx_id} - {self.action} at {self.created_at}"
+
+
+# =============================================================================
+# SNAPSHOT MODELS (Phase 2)
+# =============================================================================
+
+class EquitySnapshot(TimeStampedModel):
+    """
+    Immutable point-in-time record of the capitalization table.
+    
+    Snapshots freeze equity percentages, contribution totals, and member data
+    at a specific moment. Once locked (after dispute window), snapshots cannot
+    be modified.
+    
+    Locking Rules:
+        - Snapshots can be locked manually or auto-lock after dispute_window_days
+        - Locked snapshots are immutable
+        - Checksum ensures data integrity
+    """
+    
+    STATUS_CHOICES = [
+        ('DRAFT', 'Draft'),
+        ('LOCKED', 'Locked'),
+        ('FINALIZED', 'Finalized'),
+    ]
+    
+    deal = models.ForeignKey(
+        Deal,
+        on_delete=models.CASCADE,
+        related_name='snapshots',
+        help_text="Associated deal"
+    )
+    version_id = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Version identifier (e.g., 'v1.2-q3', 'v1.0-genesis')"
+    )
+    period_start = models.DateField(
+        help_text="Start date of the snapshot period"
+    )
+    period_end = models.DateField(
+        help_text="End date of the snapshot period"
+    )
+    snapshot_date = models.DateField(
+        default=timezone.now,
+        help_text="Date when snapshot was taken"
+    )
+    
+    # Status and locking
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default='DRAFT',
+        help_text="Snapshot status"
+    )
+    is_locked = models.BooleanField(
+        default=False,
+        help_text="Whether this snapshot is locked and immutable"
+    )
+    locked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the snapshot was locked"
+    )
+    locked_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='locked_snapshots',
+        help_text="User who locked this snapshot"
+    )
+    
+    # Dispute window
+    dispute_window_days = models.IntegerField(
+        default=7,
+        validators=[MinValueValidator(0)],
+        help_text="Days allowed for disputes before auto-lock"
+    )
+    auto_lock_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when snapshot will auto-lock (snapshot_date + dispute_window_days)"
+    )
+    
+    # Aggregated totals (cached from snapshot lines)
+    total_cash_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Total cash contributions in USD"
+    )
+    total_inkind_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Total in-kind contributions in USD"
+    )
+    total_time_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Total time contributions in USD"
+    )
+    total_work_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Total work contributions in USD"
+    )
+    total_valuation_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Total weighted valuation in USD"
+    )
+    
+    # Members count
+    members_count = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Number of members in this snapshot"
+    )
+    
+    # Cryptographic integrity
+    checksum = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="SHA-256 checksum of snapshot data for integrity verification"
+    )
+    
+    # Metadata
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_snapshots',
+        help_text="User who created this snapshot"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Optional notes about this snapshot"
+    )
+    
+    class Meta:
+        db_table = 'shareholders_equity_snapshot'
+        ordering = ['-snapshot_date', '-created_at']
+        verbose_name = 'Equity Snapshot'
+        verbose_name_plural = 'Equity Snapshots'
+        indexes = [
+            models.Index(fields=['deal', 'snapshot_date']),
+            models.Index(fields=['deal', 'is_locked']),
+            models.Index(fields=['deal', 'status']),
+            models.Index(fields=['version_id']),
+        ]
+    
+    def __str__(self):
+        return f"{self.version_id} - {self.snapshot_date} ({self.status})"
+    
+    def save(self, *args, **kwargs):
+        """Calculate auto_lock_date on save"""
+        if self.snapshot_date and not self.auto_lock_date:
+            from datetime import timedelta
+            self.auto_lock_date = self.snapshot_date + timedelta(days=self.dispute_window_days)
+        super().save(*args, **kwargs)
+    
+    @property
+    def can_be_locked(self):
+        """Check if snapshot can be locked"""
+        return not self.is_locked and self.status in ['DRAFT', 'LOCKED']
+    
+    @property
+    def days_until_auto_lock(self):
+        """Calculate days until auto-lock"""
+        if self.is_locked or not self.auto_lock_date:
+            return 0
+        from datetime import date
+        delta = self.auto_lock_date - date.today()
+        return max(0, delta.days)
+
+
+class EquitySnapshotLine(models.Model):
+    """
+    Individual member's equity position within a snapshot.
+    
+    Stores per-member contribution breakdowns and equity percentage
+    at the time of snapshot creation. This preserves historical data
+    even if member contributions change later.
+    """
+    
+    snapshot = models.ForeignKey(
+        EquitySnapshot,
+        on_delete=models.CASCADE,
+        related_name='lines',
+        help_text="Associated snapshot"
+    )
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.PROTECT,
+        related_name='snapshot_lines',
+        help_text="Member this line refers to"
+    )
+    
+    # Contribution totals by tier (at snapshot time)
+    cash_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Cash contributions in USD"
+    )
+    inkind_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="In-kind contributions in USD"
+    )
+    time_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Time contributions in USD"
+    )
+    work_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Work contributions in USD"
+    )
+    
+    # Weighted total and equity
+    weighted_total_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Weighted total based on tier weights"
+    )
+    equity_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Equity ownership percentage"
+    )
+    
+    # Member snapshot metadata
+    member_name = models.CharField(
+        max_length=255,
+        help_text="Member name at snapshot time (cached)"
+    )
+    member_type = models.CharField(
+        max_length=10,
+        help_text="Member type at snapshot time (cached)"
+    )
+    member_role = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Member role at snapshot time (cached)"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'shareholders_equity_snapshot_line'
+        ordering = ['-equity_percentage', 'member_name']
+        verbose_name = 'Equity Snapshot Line'
+        verbose_name_plural = 'Equity Snapshot Lines'
+        indexes = [
+            models.Index(fields=['snapshot', 'member']),
+            models.Index(fields=['snapshot', 'equity_percentage']),
+        ]
+        unique_together = [['snapshot', 'member']]
+    
+    def __str__(self):
+        return f"{self.snapshot.version_id} - {self.member_name}: {self.equity_percentage}%"
+
+
+class SnapshotAuditLog(models.Model):
+    """
+    Audit trail for snapshot-related actions.
+    
+    Tracks all snapshot operations for compliance and debugging.
+    """
+    
+    ACTION_CHOICES = [
+        ('CREATED', 'Snapshot Created'),
+        ('LOCKED', 'Snapshot Locked'),
+        ('UNLOCKED', 'Snapshot Unlocked'),
+        ('EXPORTED', 'Snapshot Exported'),
+        ('VIEWED', 'Snapshot Viewed'),
+        ('DELETED', 'Snapshot Deleted'),
+    ]
+    
+    snapshot = models.ForeignKey(
+        EquitySnapshot,
+        on_delete=models.CASCADE,
+        related_name='audit_logs',
+        help_text="The snapshot this log pertains to"
+    )
+    action = models.CharField(
+        max_length=20,
+        choices=ACTION_CHOICES,
+        help_text="Action performed"
+    )
+    performed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='snapshot_audit_actions',
+        help_text="User who performed this action"
+    )
+    details = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="Additional context in JSON format"
+    )
+    ip_address = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        help_text="IP address of the request"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'shareholders_snapshot_audit_log'
+        ordering = ['-created_at']
+        verbose_name = 'Snapshot Audit Log'
+        verbose_name_plural = 'Snapshot Audit Logs'
+        indexes = [
+            models.Index(fields=['snapshot', 'action']),
+            models.Index(fields=['performed_by', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.snapshot.version_id} - {self.action} at {self.created_at}"

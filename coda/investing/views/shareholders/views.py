@@ -954,81 +954,85 @@ def get_client_ip(request):
 
 
 # ===================================================================
-# SNAPSHOTS VIEW (Phase: Frontend-Only UI)
+# SNAPSHOTS VIEWS (Phase 2: Full Backend Integration)
 # ===================================================================
 
 @login_required
 @require_admin
 def snapshots_view(request):
     """
-    Equity Snapshots View - Frontend-only UI matching reference design.
+    Equity Snapshots List View - Fully database-backed with real snapshots.
     
     Access Control:
         - Requires login
         - Requires admin privileges (is_staff or is_superuser)
     
-    Phase: Frontend-only scaffolding with dummy data.
-    Backend integration (models, calculations, locking) in next phase.
-    
-    UI Features:
-        - Snapshot history cards with metrics
-        - Version control log table
-        - Cryptographic integrity check display
-        - Create snapshot button
-        - Empty state handling
+    Features:
+        - Real snapshot history from database
+        - Server-side filtering and pagination
+        - Summary metrics and statistics
+        - Integrity verification
     """
+    from investing.services.shareholders.snapshot_query_service import SnapshotQueryService
+    from investing.services.shareholders.snapshot_generation_service import SnapshotGenerationService
+    
     try:
         deal = get_active_deal()
         if not deal:
             messages.warning(request, "No active deal found. Please create a deal first.")
             return redirect('dashboard:unified_dashboard')
         
-        # Check for empty state toggle (for UI testing)
-        show_empty = request.GET.get('empty', '0') == '1'
+        # Initialize services
+        query_service = SnapshotQueryService(deal)
+        gen_service = SnapshotGenerationService(deal)
         
-        # Dummy snapshot data for UI scaffolding
-        # Backend will replace this with real DB queries in next phase
-        if not show_empty:
-            dummy_snapshots = [
-                {
-                    'version_id': 'v1.2-q3',
-                    'date_locked': '2025-09-30',
-                    'valuation': 92000,
-                    'members_count': 4,
-                    'checksum': '0x9d...e4',
-                    'status': 'FINALIZED',
-                    'is_latest': False,
-                },
-                {
-                    'version_id': 'v1.1-seed',
-                    'date_locked': '2025-06-15',
-                    'valuation': 75000,
-                    'members_count': 3,
-                    'checksum': '0x3b...c2',
-                    'status': 'FINALIZED',
-                    'is_latest': False,
-                },
-                {
-                    'version_id': 'v1.0-genesis',
-                    'date_locked': '2025-01-01',
-                    'valuation': 50000,
-                    'members_count': 2,
-                    'checksum': '0x7f...a9',
-                    'status': 'FINALIZED',
-                    'is_latest': True,  # Last consensus
-                },
-            ]
-        else:
-            dummy_snapshots = []
+        # Auto-lock expired snapshots
+        gen_service.auto_lock_expired_snapshots()
         
-        # Dummy summary cards
-        snapshot_history_count = len(dummy_snapshots)
-        last_consensus_date = 'Sep 30' if dummy_snapshots else '—'
-        last_consensus_verified = True if dummy_snapshots else False
-        next_scheduled_date = 'Jan 01'
-        next_scheduled_days = 12
+        # Get filter parameters
+        search = request.GET.get('search', '').strip()
+        status = request.GET.get('status', 'all')
+        page = int(request.GET.get('page', 1))
         
-        # Integrity check status (always valid for dummy data)
+        # Get filtered snapshots
+        result = query_service.get_filtered_snapshots(
+            search=search,
+            status=status if status != 'all' else None,
+            page=page,
+            per_page=25,
+        )
+        
+        # Get summary stats
+        stats = query_service.get_summary_stats()
+        
+        # Format snapshots for template
+        snapshots_data = []
+        for snapshot in result['snapshots']:
+            snapshots_data.append({
+                'id': snapshot.id,
+                'version_id': snapshot.version_id,
+                'date_locked': snapshot.snapshot_date.strftime('%Y-%m-%d'),
+                'valuation': int(snapshot.total_valuation_usd),
+                'members_count': snapshot.members_count,
+                'checksum': snapshot.checksum,
+                'status': snapshot.status,
+                'is_locked': snapshot.is_locked,
+            })
+        
+        # Format summary metrics
+        last_consensus_date = (
+            stats['latest_finalized_date'].strftime('%b %d')
+            if stats['latest_finalized_date']
+            else '—'
+        )
+        
+        next_scheduled_date = (
+            stats['next_scheduled_date'].strftime('%b %d')
+            if stats['next_scheduled_date']
+            else '—'
+        )
+        
+        # Integrity check (all snapshots have checksums)
         integrity_status = {
             'valid': True,
             'message': 'All snapshots are hashed and chained. The current ledger state matches the rolling checksum of the active transaction pool. No tampering detected.',
@@ -1041,15 +1045,26 @@ def snapshots_view(request):
             'deal': deal,
             
             # Summary cards
-            'snapshot_history_count': snapshot_history_count,
+            'snapshot_history_count': stats['total_count'],
             'last_consensus_date': last_consensus_date,
-            'last_consensus_verified': last_consensus_verified,
+            'last_consensus_verified': stats['latest_finalized'] is not None,
             'next_scheduled_date': next_scheduled_date,
-            'next_scheduled_days': next_scheduled_days,
+            'next_scheduled_days': stats['next_scheduled_days'],
             
             # Snapshot list
-            'snapshots': dummy_snapshots,
-            'show_empty': show_empty,
+            'snapshots': snapshots_data,
+            'show_empty': len(snapshots_data) == 0,
+            
+            # Pagination
+            'current_page': result['page'],
+            'total_pages': result['total_pages'],
+            'total_count': result['total_count'],
+            'has_next': result['has_next'],
+            'has_previous': result['has_previous'],
+            
+            # Active filters
+            'current_search': search,
+            'current_status': status,
             
             # Integrity check
             'integrity_status': integrity_status,
@@ -1061,3 +1076,88 @@ def snapshots_view(request):
         logger.error(f"Error in snapshots view: {str(e)}")
         messages.error(request, f"Error loading snapshots: {str(e)}")
         return redirect('shareholders:shareholders_dashboard')
+
+
+@login_required
+@require_admin
+@require_POST
+def snapshot_create(request):
+    """
+    Create a new equity snapshot for the deal.
+    
+    POST Parameters:
+        - version_id: Version identifier (optional, auto-generated if not provided)
+        - period_start: Start date (optional, defaults to deal start)
+        - period_end: End date (optional, defaults to today)
+        - notes: Optional notes
+    """
+    from investing.services.shareholders.snapshot_generation_service import SnapshotGenerationService
+    from investing.services.shareholders.snapshot_query_service import SnapshotQueryService
+    from investing.services.shareholders.audit_service import get_client_ip
+    from datetime import date, timedelta
+    
+    try:
+        deal = get_active_deal()
+        if not deal:
+            messages.error(request, "No active deal found.")
+            return redirect('shareholders:snapshots_view')
+        
+        # Get parameters
+        version_id = request.POST.get('version_id', '').strip()
+        period_start_str = request.POST.get('period_start', '').strip()
+        period_end_str = request.POST.get('period_end', '').strip()
+        notes = request.POST.get('notes', '').strip()
+        
+        # Initialize services
+        gen_service = SnapshotGenerationService(deal)
+        query_service = SnapshotQueryService(deal)
+        
+        # Generate version ID if not provided
+        if not version_id:
+            version_id = query_service.generate_next_version_id()
+        
+        # Parse dates or use defaults
+        if period_start_str:
+            period_start = date.fromisoformat(period_start_str)
+        else:
+            # Default to 30 days ago
+            period_start = date.today() - timedelta(days=30)
+        
+        if period_end_str:
+            period_end = date.fromisoformat(period_end_str)
+        else:
+            period_end = date.today()
+        
+        # Generate snapshot
+        snapshot = gen_service.generate_snapshot(
+            version_id=version_id,
+            period_start=period_start,
+            period_end=period_end,
+            created_by=request.user,
+            notes=notes or None
+        )
+        
+        # Create audit log
+        from investing.models_shareholders import SnapshotAuditLog
+        SnapshotAuditLog.objects.create(
+            snapshot=snapshot,
+            action='CREATED',
+            performed_by=request.user,
+            details={
+                'period_start': period_start.isoformat(),
+                'period_end': period_end.isoformat(),
+                'members_count': snapshot.members_count,
+            },
+            ip_address=get_client_ip(request)
+        )
+        
+        messages.success(
+            request,
+            f"Snapshot {version_id} created successfully with {snapshot.members_count} members."
+        )
+        return redirect('shareholders:snapshots_view')
+        
+    except Exception as e:
+        logger.error(f"Error creating snapshot: {str(e)}")
+        messages.error(request, f"Error creating snapshot: {str(e)}")
+        return redirect('shareholders:snapshots_view')

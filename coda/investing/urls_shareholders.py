@@ -6,7 +6,7 @@ All URLs are prefixed with 'shareholders/' and use namespace 'shareholders'.
 """
 
 from django.urls import path
-from investing.views.shareholders import views
+from investing.views.shareholders import views, views_snapshots
 
 app_name = 'shareholders'
 
@@ -15,8 +15,13 @@ urlpatterns = [
     path('dashboard/', views.shareholders_dashboard, name='shareholders_dashboard'),
     path('ledgers/', views.ledgers_view, name='ledgers_view'),
     
-    # Snapshots (Frontend-Only Phase)
+    # Snapshots (Phase 2: Full Backend)
     path('snapshots/', views.snapshots_view, name='snapshots_view'),
+    path('snapshots/create/', views.snapshot_create, name='snapshot_create'),
+    path('snapshots/export/', views_snapshots.snapshots_export_csv, name='snapshots_export_csv'),
+    path('snapshots/<int:snapshot_id>/', views_snapshots.snapshot_detail, name='snapshot_detail'),
+    path('snapshots/<int:snapshot_id>/lock/', views_snapshots.snapshot_lock, name='snapshot_lock'),
+    path('snapshots/<int:snapshot_id>/export/', views_snapshots.snapshot_export_detail_csv, name='snapshot_export_detail_csv'),
     
     # Phase 2: Ledger Actions
     path('ledgers/export/', views.ledgers_export_csv, name='ledgers_export_csv'),
