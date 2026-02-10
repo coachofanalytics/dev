@@ -19,6 +19,9 @@ urlpatterns = [
     path('deal-config/', views.deal_config_view, name='deal_config'),
     path('deal-config/save/', views.deal_config_save, name='deal_config_save'),
     
+    # Audit Log (Phase 1: Frontend-Only UI)
+    path('audit-log/', views.audit_log_view, name='audit_log'),
+    
     # Snapshots (Phase 2: Full Backend)
     path('snapshots/', views.snapshots_view, name='snapshots_view'),
     path('snapshots/create/', views.snapshot_create, name='snapshot_create'),

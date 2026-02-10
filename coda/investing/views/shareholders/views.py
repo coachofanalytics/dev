@@ -1323,3 +1323,154 @@ def deal_config_save(request):
         logger.error(f"Error saving deal config: {str(e)}")
         messages.error(request, f"Error saving configuration: {str(e)}")
         return redirect('shareholders:deal_config')
+
+
+# ===================================================================
+# AUDIT LOG VIEW (Phase: Frontend-Only UI)
+# ===================================================================
+
+@login_required
+@require_admin
+def audit_log_view(request):
+    """
+    Audit Log View - DB-backed audit trail for compliance.
+    
+    Access Control:
+        - Requires login
+        - Requires admin privileges (is_staff or is_superuser)
+    
+    Phase: Backend integration with real audit logs from database.
+    
+    UI Features:
+        - Chronological audit trail
+        - Server-side filtering by date, action type, entity type, actor
+        - Pagination for performance
+        - Read-only compliance view
+        - Summary metrics
+    """
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    from investing.models_shareholders import AuditLog
+    from django.db.models import Q
+    from datetime import datetime
+    
+    try:
+        deal = get_active_deal()
+        if not deal:
+            messages.warning(request, "No active deal found. Please create a deal first.")
+            return redirect('dashboard:unified_dashboard')
+        
+        # Get all audit logs for this deal
+        audit_logs = AuditLog.objects.filter(deal=deal).select_related('actor')
+        
+        # Apply filters from request
+        date_start = request.GET.get('date_start')
+        date_end = request.GET.get('date_end')
+        action_type = request.GET.get('action_type')
+        entity_type = request.GET.get('entity_type')
+        actor_filter = request.GET.get('actor')
+        search = request.GET.get('search')
+        
+        # Date range filter
+        if date_start:
+            try:
+                start_date = datetime.strptime(date_start, '%Y-%m-%d')
+                audit_logs = audit_logs.filter(timestamp__gte=start_date)
+            except ValueError:
+                pass
+        
+        if date_end:
+            try:
+                end_date = datetime.strptime(date_end, '%Y-%m-%d')
+                audit_logs = audit_logs.filter(timestamp__lte=end_date)
+            except ValueError:
+                pass
+        
+        # Action type filter
+        if action_type:
+            audit_logs = audit_logs.filter(action_type=action_type)
+        
+        # Entity type filter
+        if entity_type:
+            audit_logs = audit_logs.filter(entity_type=entity_type)
+        
+        # Actor filter
+        if actor_filter:
+            audit_logs = audit_logs.filter(actor__username__icontains=actor_filter)
+        
+        # Search filter (searches description and entity reference)
+        if search:
+            audit_logs = audit_logs.filter(
+                Q(description__icontains=search) |
+                Q(entity_reference__icontains=search) |
+                Q(entity_id__icontains=search)
+            )
+        
+        # Pagination
+        paginator = Paginator(audit_logs, 50)  # 50 logs per page
+        page = request.GET.get('page', 1)
+        
+        try:
+            audit_logs_page = paginator.page(page)
+        except PageNotAnInteger:
+            audit_logs_page = paginator.page(1)
+        except EmptyPage:
+            audit_logs_page = paginator.page(paginator.num_pages)
+        
+        # Summary stats
+        total_events = AuditLog.objects.filter(deal=deal).count()
+        latest_log = AuditLog.objects.filter(deal=deal).first()
+        last_activity = latest_log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if latest_log else 'N/A'
+        
+        # Prepare audit logs for template
+        audit_logs_list = []
+        for log in audit_logs_page:
+            audit_logs_list.append({
+                'id': log.id,
+                'timestamp': log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                'actor': log.actor.username if log.actor else 'System',
+                'action_type': log.action_type,
+                'action_display': log.get_action_type_display(),
+                'entity_type': log.entity_type,
+                'entity_display': log.get_entity_type_display(),
+                'entity_reference': log.entity_reference,
+                'description': log.description,
+                'source_ip': log.ip_address or 'N/A',
+                'status': log.status,
+                'status_display': log.get_status_display(),
+            })
+        
+        # Serialize for JavaScript (for modal)
+        import json
+        audit_logs_json = json.dumps(audit_logs_list)
+        
+        # Get unique values for filters
+        action_types = AuditLog.ACTION_TYPE_CHOICES
+        entity_types = AuditLog.ENTITY_TYPE_CHOICES
+        
+        context = {
+            'title': 'Audit Log',
+            'page_title': 'Audit Log - Shareholders Management',
+            'user': request.user,
+            'deal': deal,
+            'audit_logs': audit_logs_list,
+            'audit_logs_json': audit_logs_json,
+            'audit_logs_page': audit_logs_page,
+            'total_events': total_events,
+            'last_activity': last_activity,
+            'action_types': action_types,
+            'entity_types': entity_types,
+            # Preserve filter values
+            'filter_date_start': date_start or '',
+            'filter_date_end': date_end or '',
+            'filter_action_type': action_type or '',
+            'filter_entity_type': entity_type or '',
+            'filter_actor': actor_filter or '',
+            'filter_search': search or '',
+        }
+        
+        return render(request, 'investing/shareholders/audit_log.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in audit log view: {str(e)}")
+        messages.error(request, f"Error loading audit log: {str(e)}")
+        return redirect('shareholders:shareholders_dashboard')

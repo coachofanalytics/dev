@@ -1176,3 +1176,199 @@ class SnapshotAuditLog(models.Model):
     
     def __str__(self):
         return f"{self.snapshot.version_id} - {self.action} at {self.created_at}"
+
+
+# =============================================================================
+# COMPREHENSIVE AUDIT LOG (System-Wide)
+# =============================================================================
+
+class AuditLog(models.Model):
+    """
+    Immutable, system-wide audit trail for all critical Shareholders actions.
+    
+    This model provides comprehensive audit logging across all entities:
+    members, contributions, ledgers, snapshots, deal config, and verifications.
+    
+    Audit logs are append-only and cannot be modified or deleted.
+    """
+    
+    ACTION_TYPE_CHOICES = [
+        # Member Actions
+        ('MEMBER_CREATED', 'Member Created'),
+        ('MEMBER_UPDATED', 'Member Updated'),
+        ('MEMBER_ARCHIVED', 'Member Archived'),
+        ('MEMBER_RESTORED', 'Member Restored'),
+        
+        # Contribution Actions
+        ('CONTRIBUTION_SUBMITTED', 'Contribution Submitted'),
+        ('CONTRIBUTION_UPDATED', 'Contribution Updated'),
+        
+        # Ledger Actions
+        ('LEDGER_CREATED', 'Ledger Entry Created'),
+        ('LEDGER_APPROVED', 'Ledger Entry Approved'),
+        ('LEDGER_REJECTED', 'Ledger Entry Rejected'),
+        ('LEDGER_DISPUTED', 'Ledger Entry Disputed'),
+        ('LEDGER_DISPUTE_RESOLVED', 'Dispute Resolved'),
+        
+        # Snapshot Actions
+        ('SNAPSHOT_CREATED', 'Snapshot Created'),
+        ('SNAPSHOT_LOCKED', 'Snapshot Locked'),
+        ('SNAPSHOT_UNLOCKED', 'Snapshot Unlocked'),
+        ('SNAPSHOT_EXPORTED', 'Snapshot Exported'),
+        ('SNAPSHOT_DELETED', 'Snapshot Deleted'),
+        
+        # Deal Config Actions
+        ('CONFIG_UPDATED', 'Deal Config Updated'),
+        ('WEIGHTS_UPDATED', 'Contribution Weights Updated'),
+        ('FX_RATE_UPDATED', 'FX Rate Updated'),
+        
+        # Verification Actions
+        ('VERIFICATION_SUBMITTED', 'Verification Submitted'),
+        ('VERIFICATION_APPROVED', 'Verification Approved'),
+        ('VERIFICATION_REJECTED', 'Verification Rejected'),
+        
+        # Evidence Actions
+        ('EVIDENCE_UPLOADED', 'Evidence Uploaded'),
+        ('EVIDENCE_REMOVED', 'Evidence Removed'),
+    ]
+    
+    ENTITY_TYPE_CHOICES = [
+        ('MEMBER', 'Member'),
+        ('CONTRIBUTION', 'Contribution'),
+        ('LEDGER_ENTRY', 'Ledger Entry'),
+        ('SNAPSHOT', 'Equity Snapshot'),
+        ('DEAL_CONFIG', 'Deal Configuration'),
+        ('DEAL_WEIGHTS', 'Deal Weights'),
+        ('VERIFICATION', 'Verification'),
+        ('EVIDENCE', 'Evidence'),
+        ('DEAL', 'Deal'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('SUCCESS', 'Success'),
+        ('FAILED', 'Failed'),
+        ('PENDING', 'Pending'),
+    ]
+    
+    # Core Fields
+    deal = models.ForeignKey(
+        Deal,
+        on_delete=models.CASCADE,
+        related_name='audit_logs',
+        help_text="The deal this audit log belongs to"
+    )
+    
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+        help_text="When this action occurred"
+    )
+    
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='shareholder_audit_logs',
+        help_text="User who performed this action"
+    )
+    
+    action_type = models.CharField(
+        max_length=50,
+        choices=ACTION_TYPE_CHOICES,
+        db_index=True,
+        help_text="Type of action performed"
+    )
+    
+    entity_type = models.CharField(
+        max_length=50,
+        choices=ENTITY_TYPE_CHOICES,
+        db_index=True,
+        help_text="Type of entity affected"
+    )
+    
+    entity_id = models.CharField(
+        max_length=255,
+        db_index=True,
+        help_text="ID or unique identifier of the affected entity"
+    )
+    
+    entity_reference = models.CharField(
+        max_length=255,
+        help_text="Human-readable reference (e.g., TX-20260211-001, v1.3-q1)"
+    )
+    
+    description = models.TextField(
+        help_text="Human-readable description of what happened"
+    )
+    
+    # Request Metadata
+    ip_address = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        help_text="IP address of the request"
+    )
+    
+    request_source = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Source of request (web, api, admin, system)"
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='SUCCESS',
+        help_text="Status of the action"
+    )
+    
+    # Additional Context
+    details = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="Additional structured data (changes, metadata, etc.)"
+    )
+    
+    old_values = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="Previous values before the change"
+    )
+    
+    new_values = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="New values after the change"
+    )
+    
+    class Meta:
+        db_table = 'shareholders_audit_log'
+        ordering = ['-timestamp']
+        verbose_name = 'Audit Log'
+        verbose_name_plural = 'Audit Logs'
+        indexes = [
+            models.Index(fields=['deal', 'timestamp']),
+            models.Index(fields=['action_type', 'timestamp']),
+            models.Index(fields=['entity_type', 'timestamp']),
+            models.Index(fields=['actor', 'timestamp']),
+            models.Index(fields=['entity_type', 'entity_id']),
+        ]
+        permissions = [
+            ('view_audit_log', 'Can view audit logs'),
+        ]
+    
+    def __str__(self):
+        actor_name = self.actor.username if self.actor else 'System'
+        return f"{actor_name} - {self.get_action_type_display()} - {self.entity_reference}"
+    
+    def save(self, *args, **kwargs):
+        """Override save to enforce immutability."""
+        # Allow creation but prevent updates
+        if self.pk is not None:
+            raise ValidationError("Audit logs are immutable and cannot be modified.")
+        super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        """Override delete to prevent deletion."""
+        raise ValidationError("Audit logs are immutable and cannot be deleted.")

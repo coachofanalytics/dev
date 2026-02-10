@@ -8,7 +8,7 @@ Migrated from shareholders app to investing app.
 from django.contrib import admin
 from investing.models_shareholders import (
     Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence,
-    EquitySnapshot, EquitySnapshotLine, SnapshotAuditLog
+    EquitySnapshot, EquitySnapshotLine, SnapshotAuditLog, AuditLog
 )
 
 
@@ -364,6 +364,65 @@ class SnapshotAuditLogAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         """Prevent manual creation of audit logs"""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of audit logs"""
+        return False
+
+
+# =============================================================================
+# COMPREHENSIVE AUDIT LOG ADMIN
+# =============================================================================
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    """Admin interface for system-wide Audit Logs (Read-Only)"""
+    
+    list_display = [
+        'timestamp', 'actor', 'action_type', 'entity_type', 
+        'entity_reference', 'status', 'ip_address'
+    ]
+    list_filter = [
+        'action_type', 'entity_type', 'status', 
+        'timestamp', 'request_source'
+    ]
+    search_fields = [
+        'entity_reference', 'description', 'actor__username',
+        'entity_id', 'ip_address'
+    ]
+    readonly_fields = [
+        'deal', 'timestamp', 'actor', 'action_type', 'entity_type',
+        'entity_id', 'entity_reference', 'description', 'ip_address',
+        'request_source', 'status', 'details', 'old_values', 'new_values'
+    ]
+    date_hierarchy = 'timestamp'
+    
+    fieldsets = (
+        ('Audit Entry', {
+            'fields': (
+                'deal', 'timestamp', 'actor', 'action_type', 
+                'entity_type', 'entity_id', 'entity_reference'
+            )
+        }),
+        ('Description', {
+            'fields': ('description', 'status')
+        }),
+        ('Request Metadata', {
+            'fields': ('ip_address', 'request_source')
+        }),
+        ('Change Tracking', {
+            'fields': ('old_values', 'new_values', 'details'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        """Prevent manual creation of audit logs"""
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """Prevent editing of audit logs"""
         return False
     
     def has_delete_permission(self, request, obj=None):
