@@ -15,6 +15,9 @@ urlpatterns = [
     path('dashboard/', views.shareholders_dashboard, name='shareholders_dashboard'),
     path('ledgers/', views.ledgers_view, name='ledgers_view'),
     
+    # Snapshots (Frontend-Only Phase)
+    path('snapshots/', views.snapshots_view, name='snapshots_view'),
+    
     # Phase 2: Ledger Actions
     path('ledgers/export/', views.ledgers_export_csv, name='ledgers_export_csv'),
     path('ledgers/<str:tx_id>/', views.ledger_detail, name='ledger_detail'),

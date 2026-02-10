@@ -587,7 +587,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     <span>Members & Equity</span>
                 </a>
-                <a href="#" class="sh-nav-item">
+                <a href="{% url 'shareholders:snapshots_view' %}" class="sh-nav-item">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                     <span>Snapshots</span>
                 </a>
@@ -692,7 +692,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                 </thead>
                                 <tbody>
                                     {% for member in members_data %}
-                                    <tr onclick="window.location.href='{% url 'shareholders:member_detail' member.id %}'">
+                                    <tr data-member-url="{% url 'shareholders:member_detail' member.id %}" style="cursor: pointer;" class="sh-clickable-row">
                                         <td>
                                             <div class="sh-member-name">{{ member.name }}</div>
                                             <div class="sh-member-role">{{ member.role|default:"No role" }}</div>
@@ -711,7 +711,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                                 <span class="sh-equity-value">{{ member.equity_percentage|floatformat:1 }}%</span>
                                                 {% endif %}
                                                 <div class="sh-equity-bar">
-                                                    <div class="sh-equity-bar-fill" style="width: {{ member.equity_percentage|default:0 }}%;"></div>
+                                                    <div class="sh-equity-bar-fill" data-width="{{ member.equity_percentage|default:0 }}"></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -751,7 +751,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                     <span class="sh-weight-value">{{ cash_weight|floatformat:0|default:"55" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill cash" style="width: {{ cash_weight|default:"55" }}%;"></div>
+                                    <div class="sh-weight-bar-fill cash" data-width="{{ cash_weight|default:55 }}"></div>
                                 </div>
                             </div>
                             
@@ -761,7 +761,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                     <span class="sh-weight-value">{{ inkind_weight|floatformat:0|default:"20" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill inkind" style="width: {{ inkind_weight|default:"20" }}%;"></div>
+                                    <div class="sh-weight-bar-fill inkind" data-width="{{ inkind_weight|default:20 }}"></div>
                                 </div>
                             </div>
                             
@@ -771,7 +771,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                     <span class="sh-weight-value">{{ time_weight|floatformat:0|default:"10" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill time" style="width: {{ time_weight|default:"10" }}%;"></div>
+                                    <div class="sh-weight-bar-fill time" data-width="{{ time_weight|default:10 }}"></div>
                                 </div>
                             </div>
                             
@@ -781,7 +781,7 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
                                     <span class="sh-weight-value">{{ work_weight|floatformat:0|default:"15" }}%</span>
                                 </div>
                                 <div class="sh-weight-bar">
-                                    <div class="sh-weight-bar-fill work" style="width: {{ work_weight|default:"15" }}%;"></div>
+                                    <div class="sh-weight-bar-fill work" data-width="{{ work_weight|default:15 }}"></div>
                                 </div>
                             </div>
                         </div>
@@ -798,11 +798,19 @@ ShareHold Dashboard - Using local SVG icons from shareholders/static/shareholder
 document.addEventListener('DOMContentLoaded', function() {
     console.log('ShareHold Dashboard initialized');
     
-    // Add click handlers to table rows for future detail views
-    const tableRows = document.querySelectorAll('.sh-table tbody tr');
-    tableRows.forEach(row => {
+    // Apply data-width attributes to bar fills as inline styles
+    document.querySelectorAll('[data-width]').forEach(function(el) {
+        const width = el.getAttribute('data-width');
+        el.style.width = width + '%';
+    });
+    
+    // Add click handlers to member rows
+    document.querySelectorAll('.sh-clickable-row').forEach(function(row) {
         row.addEventListener('click', function() {
-            console.log('Member row clicked - detail view coming soon');
+            const url = this.getAttribute('data-member-url');
+            if (url) {
+                window.location.href = url;
+            }
         });
     });
 });

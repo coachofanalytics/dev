@@ -951,3 +951,113 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+# ===================================================================
+# SNAPSHOTS VIEW (Phase: Frontend-Only UI)
+# ===================================================================
+
+@login_required
+@require_admin
+def snapshots_view(request):
+    """
+    Equity Snapshots View - Frontend-only UI matching reference design.
+    
+    Access Control:
+        - Requires login
+        - Requires admin privileges (is_staff or is_superuser)
+    
+    Phase: Frontend-only scaffolding with dummy data.
+    Backend integration (models, calculations, locking) in next phase.
+    
+    UI Features:
+        - Snapshot history cards with metrics
+        - Version control log table
+        - Cryptographic integrity check display
+        - Create snapshot button
+        - Empty state handling
+    """
+    try:
+        deal = get_active_deal()
+        if not deal:
+            messages.warning(request, "No active deal found. Please create a deal first.")
+            return redirect('dashboard:unified_dashboard')
+        
+        # Check for empty state toggle (for UI testing)
+        show_empty = request.GET.get('empty', '0') == '1'
+        
+        # Dummy snapshot data for UI scaffolding
+        # Backend will replace this with real DB queries in next phase
+        if not show_empty:
+            dummy_snapshots = [
+                {
+                    'version_id': 'v1.2-q3',
+                    'date_locked': '2025-09-30',
+                    'valuation': 92000,
+                    'members_count': 4,
+                    'checksum': '0x9d...e4',
+                    'status': 'FINALIZED',
+                    'is_latest': False,
+                },
+                {
+                    'version_id': 'v1.1-seed',
+                    'date_locked': '2025-06-15',
+                    'valuation': 75000,
+                    'members_count': 3,
+                    'checksum': '0x3b...c2',
+                    'status': 'FINALIZED',
+                    'is_latest': False,
+                },
+                {
+                    'version_id': 'v1.0-genesis',
+                    'date_locked': '2025-01-01',
+                    'valuation': 50000,
+                    'members_count': 2,
+                    'checksum': '0x7f...a9',
+                    'status': 'FINALIZED',
+                    'is_latest': True,  # Last consensus
+                },
+            ]
+        else:
+            dummy_snapshots = []
+        
+        # Dummy summary cards
+        snapshot_history_count = len(dummy_snapshots)
+        last_consensus_date = 'Sep 30' if dummy_snapshots else '—'
+        last_consensus_verified = True if dummy_snapshots else False
+        next_scheduled_date = 'Jan 01'
+        next_scheduled_days = 12
+        
+        # Integrity check status (always valid for dummy data)
+        integrity_status = {
+            'valid': True,
+            'message': 'All snapshots are hashed and chained. The current ledger state matches the rolling checksum of the active transaction pool. No tampering detected.',
+        }
+        
+        context = {
+            'title': 'Equity Snapshots',
+            'page_title': 'Equity Snapshots - Shareholders Management',
+            'user': request.user,
+            'deal': deal,
+            
+            # Summary cards
+            'snapshot_history_count': snapshot_history_count,
+            'last_consensus_date': last_consensus_date,
+            'last_consensus_verified': last_consensus_verified,
+            'next_scheduled_date': next_scheduled_date,
+            'next_scheduled_days': next_scheduled_days,
+            
+            # Snapshot list
+            'snapshots': dummy_snapshots,
+            'show_empty': show_empty,
+            
+            # Integrity check
+            'integrity_status': integrity_status,
+        }
+        
+        return render(request, 'investing/shareholders/shareholders_snapshots.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in snapshots view: {str(e)}")
+        messages.error(request, f"Error loading snapshots: {str(e)}")
+        return redirect('shareholders:shareholders_dashboard')
