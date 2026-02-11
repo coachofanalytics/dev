@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models.signals import pre_save
 from .utils import unique_slug_generator
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
+
 
 # from tableauhyperapi import DatabaseName
 
@@ -140,6 +142,27 @@ class Pricing(models.Model):
 
     class Meta:
         ordering = ["serial"]
+
+    def __str__(self):
+        return self.title
+
+        # models.py
+
+
+class Testimonials(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    content = models.TextField()
+    date_posted = models.DateTimeField()
+    writer = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-date_posted']
 
     def __str__(self):
         return self.title
