@@ -598,7 +598,8 @@ def contribution_log(request):
                         actor=request.user,
                         notes=form.cleaned_data.get('notes') or '',
                         proof_document=form.cleaned_data.get('proof_document'),
-                        ip_address=get_client_ip(request)
+                        ip_address=get_client_ip(request),
+                        tier_metadata=form.cleaned_data.get('tier_metadata') or {},
                     )
                     
                     messages.success(

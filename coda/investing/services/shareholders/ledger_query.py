@@ -355,6 +355,7 @@ class LedgerQueryService:
                 'has_proof': entry.has_proof,
                 'currency': entry.currency,
                 'exchange_rate': float(entry.exchange_rate),
+                'tier_metadata': entry.tier_metadata or {},
             })
         
         return formatted
@@ -481,6 +482,7 @@ class LedgerQueryService:
             'evidence': evidence,
             'approvals': approvals,
             'disputes': disputes,
+            'tier_metadata': entry.tier_metadata or {},
             'created_at': entry.created_at.strftime('%Y-%m-%d %H:%M'),
             'updated_at': entry.updated_at.strftime('%Y-%m-%d %H:%M'),
         }

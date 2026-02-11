@@ -616,44 +616,86 @@
                             </div>
                             {% endif %}
 
-                            <div class="sh-form-grid-2">
-                                <div class="sh-form-group">
-                                    <label class="sh-form-label">Asset Class / Description</label>
-                                    <input type="text" name="asset_class" class="sh-form-input" placeholder="e.g., Capital Injection, Dev Work" required>
+                            <!-- ========== CASH fields (shared base) ========== -->
+                            <div id="tier-fields-cash" class="tier-fields-section">
+                                <div class="sh-form-grid-2">
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label" id="lbl-asset-class">Asset Class / Description</label>
+                                        <input type="text" name="asset_class" id="input-asset-class" class="sh-form-input" placeholder="e.g., Capital Injection" required>
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Date</label>
+                                        <input type="date" name="date" class="sh-form-input" required>
+                                    </div>
                                 </div>
-                                <div class="sh-form-group">
-                                    <label class="sh-form-label">Date</label>
-                                    <input type="date" name="date" class="sh-form-input" required>
+
+                                <div class="sh-form-grid-3">
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label" id="lbl-units-value">Amount</label>
+                                        <input type="number" name="internal_units_value" id="input-units-value" class="sh-form-input" placeholder="e.g., 15000" step="0.01" required>
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label" id="lbl-units-label">Unit Label</label>
+                                        <input type="text" name="internal_units_label" id="input-units-label" class="sh-form-input" placeholder="USD">
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label" id="lbl-value-usd">Value (USD)</label>
+                                        <input type="number" name="value_usd" class="sh-form-input" placeholder="0.00" step="0.01" required>
+                                    </div>
+                                </div>
+
+                                <div class="sh-form-grid-2">
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Currency</label>
+                                        <input type="text" name="currency" class="sh-form-input" placeholder="USD" value="USD">
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Exchange Rate</label>
+                                        <input type="number" name="exchange_rate" class="sh-form-input" placeholder="1.0000" value="1.0000" step="0.0001">
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="sh-form-grid-3">
+                            <!-- ========== IN-KIND extra fields ========== -->
+                            <div id="tier-fields-inkind" class="tier-fields-section" style="display:none;">
                                 <div class="sh-form-group">
-                                    <label class="sh-form-label">Internal Units Value</label>
-                                    <input type="number" name="internal_units_value" class="sh-form-input" placeholder="e.g., 15000 or 120" step="0.01" required>
-                                </div>
-                                <div class="sh-form-group">
-                                    <label class="sh-form-label">Unit Label</label>
-                                    <input type="text" name="internal_units_label" class="sh-form-input" placeholder="e.g., USD, hrs, units">
-                                </div>
-                                <div class="sh-form-group">
-                                    <label class="sh-form-label">Value (USD)</label>
-                                    <input type="number" name="value_usd" class="sh-form-input" placeholder="0.00" step="0.01" required>
+                                    <label class="sh-form-label">Valuation Method <span style="color:#ef4444;">*</span></label>
+                                    <input type="text" name="valuation_method" class="sh-form-input" placeholder="e.g., Market appraisal, Purchase receipt, Third-party estimate">
+                                    <small style="display:block;margin-top:0.25rem;color:#64748b;">How was the USD value determined?</small>
                                 </div>
                             </div>
 
-                            <div class="sh-form-grid-2">
+                            <!-- ========== TIME extra fields ========== -->
+                            <div id="tier-fields-time" class="tier-fields-section" style="display:none;">
                                 <div class="sh-form-group">
-                                    <label class="sh-form-label">Currency</label>
-                                    <input type="text" name="currency" class="sh-form-input" placeholder="USD" value="USD">
-                                </div>
-                                <div class="sh-form-group">
-                                    <label class="sh-form-label">Exchange Rate</label>
-                                    <input type="number" name="exchange_rate" class="sh-form-input" placeholder="1.0000" value="1.0000" step="0.0001">
+                                    <label class="sh-form-label">Role / Multiplier Label</label>
+                                    <input type="text" name="role_multiplier" class="sh-form-input" placeholder="e.g., Senior Developer x1.5, Consultant x2.0">
+                                    <small style="display:block;margin-top:0.25rem;color:#64748b;">Optional: role and rate multiplier for this time entry.</small>
                                 </div>
                             </div>
 
-                            <div class="sh-form-group">
+                            <!-- ========== WORK extra fields ========== -->
+                            <div id="tier-fields-work" class="tier-fields-section" style="display:none;">
+                                <div class="sh-form-grid-2">
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Deliverable Title <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" name="deliverable_title" class="sh-form-input" placeholder="e.g., MVP Backend API, Brand Identity Package">
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Impact Tier <span style="color:#ef4444;">*</span></label>
+                                        <select name="impact_tier" class="sh-form-select">
+                                            <option value="">-- Select impact tier --</option>
+                                            <option value="LOW">Low Impact</option>
+                                            <option value="MEDIUM">Medium Impact</option>
+                                            <option value="HIGH">High Impact</option>
+                                            <option value="CRITICAL">Critical / Strategic</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notes (always visible) -->
+                            <div class="sh-form-group" style="margin-top:1rem;">
                                 <label class="sh-form-label">Notes</label>
                                 <textarea name="notes" class="sh-form-textarea" placeholder="Additional details or context..."></textarea>
                             </div>
@@ -690,4 +732,90 @@
     </main>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    // ---- Tier configuration ----
+    const tierConfig = {
+        CASH: {
+            assetLabel: 'Asset Class / Description',
+            assetPlaceholder: 'e.g., Capital Injection, Wire Transfer',
+            unitsLabel: 'Amount',
+            unitsPlaceholder: 'e.g., 15000',
+            unitsLabelPlaceholder: 'USD',
+            valuePlaceholder: '0.00',
+            extraPanels: [],
+        },
+        IN_KIND: {
+            assetLabel: 'Item / Service Description',
+            assetPlaceholder: 'e.g., Office Lease, MacBook Pro, Design Software License',
+            unitsLabel: 'Quantity / Units',
+            unitsPlaceholder: 'e.g., 1, 12, 100',
+            unitsLabelPlaceholder: 'units',
+            valuePlaceholder: 'Proposed valuation in USD',
+            extraPanels: ['tier-fields-inkind'],
+        },
+        TIME: {
+            assetLabel: 'Activity Description',
+            assetPlaceholder: 'e.g., Backend Development, UX Research, Project Management',
+            unitsLabel: 'Hours',
+            unitsPlaceholder: 'e.g., 40, 120',
+            unitsLabelPlaceholder: 'hrs',
+            valuePlaceholder: 'Equivalent USD value',
+            extraPanels: ['tier-fields-time'],
+        },
+        WORK: {
+            assetLabel: 'Deliverable Description',
+            assetPlaceholder: 'e.g., Full-stack web app, Brand identity system',
+            unitsLabel: 'Work Units / Points',
+            unitsPlaceholder: 'e.g., 500, 1000',
+            unitsLabelPlaceholder: 'pts',
+            valuePlaceholder: 'Equivalent USD value',
+            extraPanels: ['tier-fields-work'],
+        },
+    };
+
+    const allExtraPanels = ['tier-fields-inkind', 'tier-fields-time', 'tier-fields-work'];
+
+    function switchTier(tier) {
+        const cfg = tierConfig[tier] || tierConfig.CASH;
+
+        // Update labels & placeholders
+        const lblAsset = document.getElementById('lbl-asset-class');
+        const inputAsset = document.getElementById('input-asset-class');
+        const lblUnits = document.getElementById('lbl-units-value');
+        const inputUnits = document.getElementById('input-units-value');
+        const inputUnitsLabel = document.getElementById('input-units-label');
+
+        if (lblAsset) lblAsset.textContent = cfg.assetLabel;
+        if (inputAsset) inputAsset.placeholder = cfg.assetPlaceholder;
+        if (lblUnits) lblUnits.textContent = cfg.unitsLabel;
+        if (inputUnits) inputUnits.placeholder = cfg.unitsPlaceholder;
+        if (inputUnitsLabel) inputUnitsLabel.placeholder = cfg.unitsLabelPlaceholder;
+
+        // Show / hide extra panels
+        allExtraPanels.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        cfg.extraPanels.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+        });
+    }
+
+    // Listen for tier radio changes
+    document.querySelectorAll('input[name="tier"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            switchTier(this.value);
+        });
+    });
+
+    // Initialize on page load (CASH is checked by default)
+    var checked = document.querySelector('input[name="tier"]:checked');
+    if (checked) switchTier(checked.value);
+})();
+</script>
 {% endblock %}

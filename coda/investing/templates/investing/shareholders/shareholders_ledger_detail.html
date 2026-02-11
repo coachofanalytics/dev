@@ -405,6 +405,39 @@ Displays comprehensive details for a single ledger entry.
                 </div>
             </div>
             {% endif %}
+
+            {% if entry.tier_metadata %}
+            <!-- Tier-Specific Details -->
+            <div class="sh-detail-section">
+                <h3>Tier-Specific Details</h3>
+                <div class="sh-detail-grid">
+                    {% if entry.tier_metadata.valuation_method %}
+                    <div class="sh-detail-row">
+                        <label>Valuation Method</label>
+                        <span>{{ entry.tier_metadata.valuation_method }}</span>
+                    </div>
+                    {% endif %}
+                    {% if entry.tier_metadata.role_multiplier %}
+                    <div class="sh-detail-row">
+                        <label>Role / Multiplier</label>
+                        <span>{{ entry.tier_metadata.role_multiplier }}</span>
+                    </div>
+                    {% endif %}
+                    {% if entry.tier_metadata.deliverable_title %}
+                    <div class="sh-detail-row">
+                        <label>Deliverable Title</label>
+                        <span>{{ entry.tier_metadata.deliverable_title }}</span>
+                    </div>
+                    {% endif %}
+                    {% if entry.tier_metadata.impact_tier %}
+                    <div class="sh-detail-row">
+                        <label>Impact Tier</label>
+                        <span>{{ entry.tier_metadata.impact_tier }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
             
             <!-- Metadata -->
             <div class="sh-detail-section">

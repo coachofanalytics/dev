@@ -491,6 +491,17 @@ class LedgerEntry(TimeStampedModel):
         null=True,
         help_text="Additional notes or context"
     )
+    tier_metadata = models.JSONField(
+        blank=True,
+        null=True,
+        default=dict,
+        help_text=(
+            "Tier-specific structured data. "
+            "IN_KIND: {valuation_method}. "
+            "TIME: {role_multiplier}. "
+            "WORK: {deliverable_title, impact_tier}."
+        )
+    )
     
     class Meta:
         db_table = 'shareholders_ledger_entry'

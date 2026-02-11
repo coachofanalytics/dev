@@ -47,7 +47,8 @@ class ContributionSubmissionService:
         actor: User,
         notes: Optional[str] = None,
         proof_document: Optional[UploadedFile] = None,
-        ip_address: Optional[str] = None
+        ip_address: Optional[str] = None,
+        tier_metadata: Optional[dict] = None
     ) -> LedgerEntry:
         """
         Submit a new contribution (creates LedgerEntry in SUBMITTED status).
@@ -66,6 +67,8 @@ class ContributionSubmissionService:
             notes: Optional notes
             proof_document: Optional uploaded file as evidence
             ip_address: IP address of submitter
+            tier_metadata: Tier-specific structured data (valuation_method,
+                           role_multiplier, deliverable_title, impact_tier)
             
         Returns:
             The created LedgerEntry instance
@@ -88,6 +91,7 @@ class ContributionSubmissionService:
             exchange_rate=exchange_rate,
             status='SUBMITTED',  # Always start as SUBMITTED
             notes=notes or '',
+            tier_metadata=tier_metadata or {},
         )
         
         # Upload proof document if provided

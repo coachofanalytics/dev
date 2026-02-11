@@ -132,14 +132,71 @@ class MemberEditForm(forms.ModelForm):
 
 
 class ContributionLogForm(forms.ModelForm):
-    """Form for logging a new contribution (creates LedgerEntry)."""
-    
+    """
+    Form for logging a new contribution (creates LedgerEntry).
+
+    Tier-specific fields:
+      - CASH:    standard fields only (asset_class, value_usd, currency, etc.)
+      - IN_KIND: + valuation_method (required)
+      - TIME:    + role_multiplier (optional)
+      - WORK:    + deliverable_title (required), impact_tier (required)
+
+    These extra fields are stored in LedgerEntry.tier_metadata JSONField.
+    """
+
     proof_document = forms.FileField(
         required=False,
         help_text="Upload receipt, invoice, or supporting document",
         widget=forms.FileInput(attrs={'accept': '.pdf,.jpg,.jpeg,.png'})
     )
-    
+
+    # ----- In-Kind tier field -----
+    valuation_method = forms.CharField(
+        required=False,
+        max_length=500,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., Market appraisal, Purchase receipt, Third-party estimate'
+        }),
+        help_text="How was the USD value determined?"
+    )
+
+    # ----- Time tier field -----
+    role_multiplier = forms.CharField(
+        required=False,
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., Senior Developer x1.5, Consultant x2.0'
+        }),
+        help_text="Role / rate multiplier label (optional)"
+    )
+
+    # ----- Work tier fields -----
+    deliverable_title = forms.CharField(
+        required=False,
+        max_length=500,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., MVP Backend API, Brand Identity Package'
+        }),
+        help_text="Title of the deliverable"
+    )
+
+    IMPACT_TIER_CHOICES = [
+        ('', '-- Select impact tier --'),
+        ('LOW', 'Low Impact'),
+        ('MEDIUM', 'Medium Impact'),
+        ('HIGH', 'High Impact'),
+        ('CRITICAL', 'Critical / Strategic'),
+    ]
+    impact_tier = forms.ChoiceField(
+        required=False,
+        choices=IMPACT_TIER_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text="Impact level of the deliverable"
+    )
+
     class Meta:
         model = LedgerEntry
         fields = [
@@ -192,47 +249,48 @@ class ContributionLogForm(forms.ModelForm):
                 'placeholder': 'Additional notes or context (optional)'
             }),
         }
-    
+
     def __init__(self, *args, **kwargs):
         self.deal = kwargs.pop('deal', None)
         super().__init__(*args, **kwargs)
-        
+
         # Filter contributors to current deal
         if self.deal:
             self.fields['contributor'].queryset = Member.objects.filter(
                 deal=self.deal,
                 is_archived=False
             ).order_by('legal_name')
-    
+
     def clean_date(self):
         """Validate date is not in the future."""
         contribution_date = self.cleaned_data.get('date')
         if contribution_date and contribution_date > date.today():
             raise ValidationError("Contribution date cannot be in the future.")
         return contribution_date
-    
+
     def clean_value_usd(self):
         """Validate value is positive."""
         value = self.cleaned_data.get('value_usd')
         if value is not None and value <= 0:
             raise ValidationError("Value must be greater than zero.")
         return value
-    
+
     def clean_internal_units_value(self):
         """Validate internal units is positive."""
         units = self.cleaned_data.get('internal_units_value')
         if units is not None and units <= 0:
             raise ValidationError("Internal units must be greater than zero.")
         return units
-    
+
     def clean(self):
-        """Cross-field validation."""
+        """Tier-aware cross-field validation."""
         cleaned_data = super().clean()
         tier = cleaned_data.get('tier')
-        internal_units_label = cleaned_data.get('internal_units_label') or ''
-        internal_units_label = internal_units_label.strip() if internal_units_label else ''
-        
-        # Set default labels based on tier if not provided
+        internal_units_label = (cleaned_data.get('internal_units_label') or '').strip()
+
+        # ------------------------------------------------------------------
+        # Default unit labels per tier
+        # ------------------------------------------------------------------
         if tier and not internal_units_label:
             label_defaults = {
                 'CASH': 'USD',
@@ -241,5 +299,54 @@ class ContributionLogForm(forms.ModelForm):
                 'WORK': 'pts',
             }
             cleaned_data['internal_units_label'] = label_defaults.get(tier, 'units')
-        
+
+        # ------------------------------------------------------------------
+        # Tier-specific required-field validation
+        # ------------------------------------------------------------------
+        if tier == 'IN_KIND':
+            valuation_method = (cleaned_data.get('valuation_method') or '').strip()
+            if not valuation_method:
+                self.add_error(
+                    'valuation_method',
+                    'Valuation method is required for In-Kind contributions.'
+                )
+
+        elif tier == 'WORK':
+            deliverable_title = (cleaned_data.get('deliverable_title') or '').strip()
+            impact_tier = (cleaned_data.get('impact_tier') or '').strip()
+            if not deliverable_title:
+                self.add_error(
+                    'deliverable_title',
+                    'Deliverable title is required for Work contributions.'
+                )
+            if not impact_tier:
+                self.add_error(
+                    'impact_tier',
+                    'Impact tier is required for Work contributions.'
+                )
+
+        # TIME: role_multiplier is optional, no validation needed.
+
+        # ------------------------------------------------------------------
+        # Build tier_metadata dict for the view to persist
+        # ------------------------------------------------------------------
+        tier_metadata = {}
+        if tier == 'IN_KIND':
+            tier_metadata['valuation_method'] = (
+                cleaned_data.get('valuation_method') or ''
+            ).strip()
+        elif tier == 'TIME':
+            tier_metadata['role_multiplier'] = (
+                cleaned_data.get('role_multiplier') or ''
+            ).strip()
+        elif tier == 'WORK':
+            tier_metadata['deliverable_title'] = (
+                cleaned_data.get('deliverable_title') or ''
+            ).strip()
+            tier_metadata['impact_tier'] = (
+                cleaned_data.get('impact_tier') or ''
+            ).strip()
+
+        cleaned_data['tier_metadata'] = tier_metadata
+
         return cleaned_data
