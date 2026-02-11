@@ -596,6 +596,7 @@
                             <h3 class="sh-card-title">Verification Status</h3>
                         </div>
                         <div class="sh-card-body">
+                            {% if can_verify %}
                             <div class="sh-toggle-group">
                                 <div>
                                     <div class="sh-toggle-label">Identity Verified</div>
@@ -606,6 +607,23 @@
                                     <span class="sh-toggle-slider"></span>
                                 </label>
                             </div>
+                            {% else %}
+                            <div class="sh-toggle-group">
+                                <div>
+                                    <div class="sh-toggle-label">Identity Verified</div>
+                                    <div class="sh-toggle-desc" style="color: #92400e;">
+                                        Current status: <strong>{% if member.verified %}Verified{% else %}Not Verified{% endif %}</strong><br>
+                                        <small>Only superusers can change verification status.</small>
+                                    </div>
+                                </div>
+                                <span style="opacity: 0.5; cursor: not-allowed;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 

@@ -366,6 +366,14 @@ class Member(TimeStampedModel):
         null=True,
         help_text="Uploaded identity document (ID, passport, or business certificate)"
     )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_members',
+        help_text="User who registered this member (ownership for edit authorization)"
+    )
     
     class Meta:
         db_table = 'shareholders_member'
@@ -375,6 +383,7 @@ class Member(TimeStampedModel):
         indexes = [
             models.Index(fields=['deal', 'is_archived']),
             models.Index(fields=['email']),
+            models.Index(fields=['created_by']),
         ]
     
     def __str__(self):

@@ -108,9 +108,12 @@ class MemberEditForm(forms.ModelForm):
         self.member_instance = kwargs.get('instance')
         super().__init__(*args, **kwargs)
         
-        # Only staff can modify verified status
-        if self.user and not self.user.is_staff:
-            self.fields['verified'].disabled = True
+        # SECURITY: Only superusers can modify verified status
+        # For non-superusers, remove the field entirely so it cannot
+        # be submitted via POST (disabled fields still send data).
+        if self.user and not self.user.is_superuser:
+            if 'verified' in self.fields:
+                del self.fields['verified']
     
     def clean_email(self):
         """Validate email uniqueness (excluding current member)."""

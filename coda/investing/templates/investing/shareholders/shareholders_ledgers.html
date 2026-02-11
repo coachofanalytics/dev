@@ -1475,7 +1475,7 @@ async function openReceiptFromAPI(txId) {
     document.body.style.overflow = 'hidden';
     
     try {
-        const response = await fetch(`/shareholders/ledgers/${txId}/receipt/`);
+        const response = await fetch(`/investing/shareholders/ledgers/${txId}/receipt/`);
         const result = await response.json();
         
         if (!response.ok) {
@@ -1529,7 +1529,7 @@ async function approveEntry(txId) {
     closeAllDropdowns();
     
     try {
-        const response = await fetch(`/shareholders/ledgers/${txId}/approve/`, {
+        const response = await fetch(`/investing/shareholders/ledgers/${txId}/approve/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1538,10 +1538,20 @@ async function approveEntry(txId) {
             body: JSON.stringify({ notes: 'Approved via Ledger UI' })
         });
         
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonErr) {
+            throw new Error('Server returned an invalid response. You may not have permission.');
+        }
         
-        if (!response.ok) {
-            throw new Error(result.error || 'Approval failed');
+        if (!result.ok) {
+            if (response.status === 403) {
+                alert('Access Denied: Only superusers can approve ledger entries.');
+            } else {
+                alert('Error: ' + (result.error || 'Approval failed'));
+            }
+            return;
         }
         
         alert(result.message || 'Entry approved successfully!');
@@ -1593,7 +1603,7 @@ async function submitDispute() {
     }
     
     try {
-        const response = await fetch(`/shareholders/ledgers/${currentDisputeTxId}/dispute/`, {
+        const response = await fetch(`/investing/shareholders/ledgers/${currentDisputeTxId}/dispute/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1602,10 +1612,20 @@ async function submitDispute() {
             body: JSON.stringify({ reason: reason })
         });
         
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonErr) {
+            throw new Error('Server returned an invalid response. You may not have permission.');
+        }
         
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to flag dispute');
+        if (!result.ok) {
+            if (response.status === 403) {
+                alert('Access Denied: Only superusers can flag disputes.');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to flag dispute'));
+            }
+            return;
         }
         
         alert(result.message || 'Dispute flagged successfully!');

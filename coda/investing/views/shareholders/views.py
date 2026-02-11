@@ -266,6 +266,7 @@ def member_register(request):
                 member.deal = deal
                 member.verified = False  # Default unverified
                 member.is_active = True  # Member is active upon creation
+                member.created_by = request.user  # RBAC: Track ownership
                 member.save()
                 
                 # Handle optional identity document upload
@@ -360,6 +361,7 @@ def member_detail(request, member_id):
             'user': request.user,
             'member': member_data,
             'contribution_history': contribution_history,
+            'can_edit_member': request.user.is_superuser or member.created_by == request.user,
         }
         
         return render(request, 'investing/shareholders/shareholders_member_detail.html', context)
@@ -380,9 +382,15 @@ def member_edit(request, member_id):
     Edit Member Profile - Form for updating member information.
     
     Phase 3: Real POST handling with form validation, audit logging, and archive functionality.
+    
+    RBAC Security:
+        - Only the user who created this member (created_by) can edit.
+        - Superusers can edit any member.
+        - All other staff get 403 Forbidden on edit attempt.
     """
     from investing.forms_shareholders import MemberEditForm
     from investing.services.shareholders.audit_service import AuditService, get_client_ip
+    from django.http import HttpResponseForbidden
     
     try:
         deal = get_active_deal()
@@ -392,6 +400,19 @@ def member_edit(request, member_id):
         
         # Get member
         member = get_object_or_404(Member, id=member_id, deal=deal, is_archived=False)
+        
+        # RBAC: Only created_by or superuser can edit
+        can_edit = request.user.is_superuser or member.created_by == request.user
+        if not can_edit:
+            # Log unauthorized edit attempt
+            logger.warning(
+                f"Unauthorized member edit attempt: user={request.user.username}, "
+                f"member_id={member_id}, member_name={member.legal_name}"
+            )
+            return HttpResponseForbidden(
+                "<h1>403 Forbidden</h1><p>You do not have permission to edit this member. "
+                "Only the creator or a superuser can edit member profiles.</p>"
+            )
         
         # Handle archive request (separate from edit)
         if request.method == 'POST' and 'archive' in request.POST:
@@ -421,7 +442,16 @@ def member_edit(request, member_id):
                 'verified': member.verified,
             }
             
-            form = MemberEditForm(request.POST, instance=member, user=request.user)
+            # SECURITY: Strip 'verified' from POST data for non-superusers
+            post_data = request.POST.copy()
+            if not request.user.is_superuser and 'verified' in post_data:
+                del post_data['verified']
+                logger.warning(
+                    f"Non-superuser attempted to change verified status: "
+                    f"user={request.user.username}, member_id={member_id}"
+                )
+            
+            form = MemberEditForm(post_data, instance=member, user=request.user)
             
             if form.is_valid():
                 updated_member = form.save()
@@ -442,6 +472,33 @@ def member_edit(request, member_id):
                         changed_fields=changed_fields,
                         ip_address=get_client_ip(request)
                     )
+                
+                # SECURITY: Audit verification status changes via immutable AuditLog
+                if 'verified' in changed_fields:
+                    try:
+                        from investing.models_shareholders import AuditLog
+                        old_verified = original_data['verified']
+                        new_verified = updated_member.verified
+                        action = 'VERIFICATION_APPROVED' if new_verified else 'VERIFICATION_REJECTED'
+                        AuditLog.objects.create(
+                            deal=deal,
+                            actor=request.user,
+                            action_type=action,
+                            entity_type='MEMBER',
+                            entity_id=str(updated_member.id),
+                            entity_reference=updated_member.legal_name,
+                            description=(
+                                f"Verification status changed from {old_verified} to {new_verified} "
+                                f"for member {updated_member.legal_name} by {request.user.username}"
+                            ),
+                            ip_address=get_client_ip(request),
+                            request_source='web',
+                            status='SUCCESS',
+                            old_values={'verified': old_verified},
+                            new_values={'verified': new_verified},
+                        )
+                    except Exception as e:
+                        logger.error(f"Error creating verification audit log: {str(e)}")
                 
                 messages.success(request, f"Member {updated_member.legal_name} updated successfully!")
                 return redirect('shareholders:member_detail', member_id=updated_member.id)
@@ -474,6 +531,7 @@ def member_edit(request, member_id):
             'member': member_data,
             'form': form,
             'role_catalog': get_role_catalog(),
+            'can_verify': request.user.is_superuser,  # RBAC: Only superusers can change verification
         }
         
         return render(request, 'investing/shareholders/shareholders_member_edit.html', context)
@@ -708,28 +766,41 @@ def ledger_receipt(request, tx_id):
 @require_POST
 def ledger_approve(request, tx_id):
     """
-    Approve a ledger entry (POST action).
+    Approve a ledger entry (POST action, JSON endpoint).
     
-    Creates LedgerApproval record, updates entry status, and logs audit event.
+    RBAC Security:
+        - Only SUPERUSERS can approve ledger entries.
+        - Staff attempting approval receive 403 JSON.
+    
+    Returns:
+        JsonResponse with {ok, status, entry_id} on success
+        JsonResponse with {ok, error} on failure
     """
+    # RBAC: Superuser-only
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {'ok': False, 'error': 'FORBIDDEN: Only superusers can approve ledger entries.'},
+            status=403
+        )
+    
     try:
         deal = get_active_deal()
         if not deal:
-            return JsonResponse({'error': 'No active deal found'}, status=400)
+            return JsonResponse({'ok': False, 'error': 'No active deal found'}, status=400)
         
         # Get the entry
         try:
             entry = LedgerEntry.objects.get(tx_id=tx_id, deal=deal)
         except LedgerEntry.DoesNotExist:
-            return JsonResponse({'error': f'Entry {tx_id} not found'}, status=404)
+            return JsonResponse({'ok': False, 'error': f'Entry {tx_id} not found'}, status=404)
         
         # Check if already approved
         if entry.status == 'APPROVED':
-            return JsonResponse({'error': 'Entry is already approved'}, status=400)
+            return JsonResponse({'ok': False, 'error': 'Entry is already approved'}, status=400)
         
         # Check if in dispute
         if entry.status == 'IN_DISPUTE':
-            return JsonResponse({'error': 'Cannot approve entry that is in dispute'}, status=400)
+            return JsonResponse({'ok': False, 'error': 'Cannot approve entry that is in dispute'}, status=400)
         
         # Get notes from request
         import json
@@ -767,14 +838,15 @@ def ledger_approve(request, tx_id):
         logger.info(f"Entry {tx_id} approved by {request.user}")
         
         return JsonResponse({
-            'success': True,
-            'message': f'Entry {tx_id} has been approved',
-            'new_status': 'Approved'
+            'ok': True,
+            'status': 'APPROVED',
+            'entry_id': tx_id,
+            'message': f'Entry {tx_id} has been approved'
         })
         
     except Exception as e:
         logger.error(f"Error approving entry {tx_id}: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
 
 
 @login_required
@@ -782,25 +854,37 @@ def ledger_approve(request, tx_id):
 @require_POST
 def ledger_dispute(request, tx_id):
     """
-    Flag a dispute for a ledger entry (POST action).
+    Flag a dispute for a ledger entry (POST action, JSON endpoint).
     
-    Creates LedgerDispute record, updates entry status, and logs audit event.
-    Checks dispute window from DealConfig.
+    RBAC Security:
+        - Only SUPERUSERS can flag disputes.
+        - Staff attempting dispute receive 403 JSON.
+    
+    Returns:
+        JsonResponse with {ok, status, entry_id} on success
+        JsonResponse with {ok, error} on failure
     """
+    # RBAC: Superuser-only
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {'ok': False, 'error': 'FORBIDDEN: Only superusers can flag disputes.'},
+            status=403
+        )
+    
     try:
         deal = get_active_deal()
         if not deal:
-            return JsonResponse({'error': 'No active deal found'}, status=400)
+            return JsonResponse({'ok': False, 'error': 'No active deal found'}, status=400)
         
         # Get the entry
         try:
             entry = LedgerEntry.objects.get(tx_id=tx_id, deal=deal)
         except LedgerEntry.DoesNotExist:
-            return JsonResponse({'error': f'Entry {tx_id} not found'}, status=404)
+            return JsonResponse({'ok': False, 'error': f'Entry {tx_id} not found'}, status=404)
         
         # Check if already in dispute
         if entry.status == 'IN_DISPUTE':
-            return JsonResponse({'error': 'Entry is already in dispute'}, status=400)
+            return JsonResponse({'ok': False, 'error': 'Entry is already in dispute'}, status=400)
         
         # Get reason from request
         import json
@@ -811,7 +895,7 @@ def ledger_dispute(request, tx_id):
         reason = body.get('reason', '').strip()
         
         if not reason:
-            return JsonResponse({'error': 'Dispute reason is required'}, status=400)
+            return JsonResponse({'ok': False, 'error': 'Dispute reason is required'}, status=400)
         
         # Check dispute window (optional - warn but allow)
         config = getattr(deal, 'config', None)
@@ -852,15 +936,16 @@ def ledger_dispute(request, tx_id):
         logger.info(f"Dispute raised for entry {tx_id} by {request.user}")
         
         return JsonResponse({
-            'success': True,
+            'ok': True,
+            'status': 'IN_DISPUTE',
+            'entry_id': tx_id,
             'message': f'Dispute has been raised for entry {tx_id}',
-            'new_status': 'In Dispute',
             'within_window': within_window
         })
         
     except Exception as e:
         logger.error(f"Error flagging dispute for entry {tx_id}: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
 
 
 @login_required
@@ -1176,11 +1261,13 @@ def deal_config_view(request):
     Access Control:
         - Requires login
         - Requires admin privileges (is_staff or is_superuser)
+        - VIEW: Accessible to staff/admin users (read-only)
+        - EDIT: Only superusers can modify configuration
     
     Features:
         - Load real config from DealConfig and DealWeights models
         - Display all governance settings
-        - Provide edit interface
+        - Provide edit interface (only for superusers)
     """
     from investing.services.shareholders.deal_config_service import DealConfigService
     
@@ -1239,6 +1326,7 @@ def deal_config_view(request):
             'user': request.user,
             'deal': deal,
             'config': config_data,
+            'can_edit': request.user.is_superuser,  # RBAC: Only superusers can edit
         }
         
         return render(request, 'investing/shareholders/deal_config.html', context)
@@ -1256,12 +1344,46 @@ def deal_config_save(request):
     """
     Save Deal Configuration changes to database.
     
+    RBAC Security:
+        - Only SUPERUSERS can save configuration changes
+        - Staff users attempting POST will receive 403 Forbidden
+        - Audit log records unauthorized attempts
+    
     POST Parameters:
         - All config and weight fields
     """
     from investing.services.shareholders.deal_config_service import DealConfigService
     from investing.services.shareholders.audit_service import get_client_ip
     from django.core.exceptions import ValidationError
+    from django.http import HttpResponseForbidden
+    
+    # RBAC: Only superusers can edit configuration
+    if not request.user.is_superuser:
+        # Log unauthorized attempt
+        try:
+            from investing.models_shareholders import AuditLog
+            deal = get_active_deal()
+            if deal:
+                AuditLog.objects.create(
+                    deal=deal,
+                    user=request.user,
+                    action='UPDATE_BLOCKED',
+                    entity_type='DEAL_CONFIG',
+                    entity_id=None,
+                    changes_json={'error': 'Unauthorized attempt by non-superuser'},
+                    ip_address=get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')[:255]
+                )
+        except Exception as e:
+            logger.error(f"Error logging unauthorized config edit attempt: {str(e)}")
+        
+        messages.error(
+            request,
+            "Access Denied: Only superusers can modify deal configuration. Your attempt has been logged."
+        )
+        return HttpResponseForbidden(
+            "<h1>403 Forbidden</h1><p>Only superusers can modify deal configuration.</p>"
+        )
     
     try:
         deal = get_active_deal()

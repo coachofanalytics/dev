@@ -464,7 +464,7 @@ async function approveEntry(txId) {
     }
     
     try {
-        const response = await fetch(`/shareholders/ledgers/${txId}/approve/`, {
+        const response = await fetch(`/investing/shareholders/ledgers/${txId}/approve/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -473,10 +473,20 @@ async function approveEntry(txId) {
             body: JSON.stringify({ notes: 'Approved via Detail page' })
         });
         
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonErr) {
+            throw new Error('Server returned an invalid response. You may not have permission.');
+        }
         
-        if (!response.ok) {
-            throw new Error(result.error || 'Approval failed');
+        if (!result.ok) {
+            if (response.status === 403) {
+                alert('Access Denied: Only superusers can approve ledger entries.');
+            } else {
+                alert('Error: ' + (result.error || 'Approval failed'));
+            }
+            return;
         }
         
         alert(result.message || 'Entry approved successfully!');
@@ -496,7 +506,7 @@ async function flagDispute(txId) {
     }
     
     try {
-        const response = await fetch(`/shareholders/ledgers/${txId}/dispute/`, {
+        const response = await fetch(`/investing/shareholders/ledgers/${txId}/dispute/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -505,10 +515,20 @@ async function flagDispute(txId) {
             body: JSON.stringify({ reason: reason.trim() })
         });
         
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonErr) {
+            throw new Error('Server returned an invalid response. You may not have permission.');
+        }
         
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to flag dispute');
+        if (!result.ok) {
+            if (response.status === 403) {
+                alert('Access Denied: Only superusers can flag disputes.');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to flag dispute'));
+            }
+            return;
         }
         
         alert(result.message || 'Dispute flagged successfully!');
