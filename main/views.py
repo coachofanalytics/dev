@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from .models import Service,Assets,Readme,Location
+from .models import Assets,Readme,Location
 from .utils import *
 from .forms import LocationForm
 from django.shortcuts import render, get_object_or_404, redirect
@@ -13,6 +13,8 @@ from django.views.generic import (
 from .forms import *
 from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.shortcuts import render
+from .models import Testimonials
 
 from accounts.choices import CategoryChoices
 User=get_user_model()
@@ -299,3 +301,28 @@ def location_delete(request, pk):
 
     return render(request,"main/location_delete.html",{"location": location}
     )
+
+
+# main/views.py
+from django.shortcuts import render
+from .models import Pricing
+
+
+def pricing_list(request):
+    pricings = Pricing.objects.filter(
+        is_active=True
+    ).order_by("serial")
+
+    context = {
+        "pricings": pricings
+    }
+    return render(request, "main/pricing_list.html", context)
+
+
+
+
+
+
+def testimonials_list(request):
+    testimonials = Testimonials.objects.all().order_by("-date_posted")
+    return render(request, "main/testmonial_list.html",)
