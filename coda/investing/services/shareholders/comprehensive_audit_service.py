@@ -12,7 +12,7 @@ import logging
 
 from investing.models_shareholders import (
     AuditLog, Deal, Member, LedgerEntry, EquitySnapshot, 
-    DealConfig, DealWeights, Verification, Evidence
+    DealConfig, DealWeights
 )
 
 logger = logging.getLogger(__name__)
