@@ -68,4 +68,6 @@ urlpatterns = [
     path('testimonials/<int:pk>/edit/', views.testimonial_update, name='testimonial_update'),
     path('testimonials/<int:pk>/delete/', views.testimonial_delete, name='testimonial_delete'),
 
+    #consular
+    path('services/consular-assistance/', views.consular_assistance, name='consular_assistance'),
 ]    
