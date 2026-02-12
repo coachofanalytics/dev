@@ -341,3 +341,18 @@ class Governance(models.Model):
     def __str__(self):
         return self.governance_category
 
+
+class ConsularAssistancePage(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+    content = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Consular Assistance Page"
+        verbose_name_plural = "Consular Assistance Pages"
+
+    def __str__(self):
+        return self.title
+    
+
