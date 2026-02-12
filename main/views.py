@@ -5,8 +5,9 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+from flask import request
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations, Testimonial
+from .models import Assets, ConsularAssistancePage,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations, Testimonial
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -727,3 +728,9 @@ def testimonial_delete(request, pk):
         'testimonial': testimonial,
         'testimonials': testimonials,
     })
+
+
+def consular_assistance(request):
+    page = ConsularAssistancePage.objects.first()
+    context = { 'page': page, }
+    return render(request, "main/consular_assistance.html", context)
