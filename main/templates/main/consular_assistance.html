@@ -1,0 +1,120 @@
+
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+ {% block content %}
+
+   
+    <main class="mx-auto pb-16">
+
+        <!-- HERO SECTION - Community Support Focus (Matching Legal/Document Design) -->
+        <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12 mt-3 small">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
+                <!-- Text Content Column -->
+                <div class="p-8 md:p-12 lg:p-16">
+                    <h1 class="text-5xl main-heading mb-4">COMMUNITY SUPPORT</h1>
+                    <h2 class="text-xl font-medium text-gray-200 mb-8">
+                        Connecting the diaspora through networking, cultural events, and reliable social resources.
+                    </h2>
+                 <a id="join-btn" href="{% url 'directory' %}" 
+   class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
+   JOIN THE COMMUNITY
+</a>
+                </div>
+               <div class="w-full h-full hero-image-container">
+    <img id="image-hero"
+         src="{% static 'community/img/img1.png' %}"
+         alt="Community Hero Image"
+         class="w-full h-full object-cover loading-placeholder"
+         style="max-height: 400px; min-height: 400px;">
+</div>
+            </div>
+        </header>
+
+        <!-- Mission/Introduction Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
+            <h3 class="text-4xl main-heading text-gray-800 mb-4">Finding Your Home Away From Home</h3>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto">
+                We believe a strong diaspora is a connected diaspora. Our community support initiatives are designed to foster belonging, facilitate knowledge sharing, and promote cultural exchange.
+            </p>
+        </section>
+
+
+        <!-- SERVICES DETAILED BLOCKS (Alternating Layout) -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- 1. Forums and Networking (Image Left) -->
+            <div id="forums-networking" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Image -->
+                <div class="lg:order-1">
+    <img id="image-forums"
+data-src="{% static 'community/img/img2.png' %}"
+         alt="Forums and Networking"
+         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+</div>
+                <!-- Content -->
+                <div class="lg:order-2">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Forums and Networking</h3>
+                    <p class="text-gray-700 mb-6">
+                        Connect with fellow members across the globe. Our private, moderated forums offer a space to share experiences, ask questions, and build professional and personal relationships within the Kenyan diaspora.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>Verified Member Directory for professional networking</li>
+                        <li>Regional and interest-based discussion forums</li>
+                        <li>Mentorship programs connecting seasoned and new immigrants</li>
+                        <li>Job and housing boards sourced within the community</li>
+                    </ul>
+                    <div class="mt-6">
+                        <!-- UPDATED: Hover class now uses a custom dark teal hex for consistency with the document services page -->
+                        <a href="{% url 'forum_home' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                            Access Digital Forums
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Community Events (Image Right) -->
+            <div id="community-events" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                 <!-- Content -->
+                <div class="lg:order-1">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Community Events</h3>
+                    <p class="text-gray-700 mb-6">
+                        We organize cultural, social, and professional events to bring the community together in person. Celebrate heritage, expand your network, and engage with community leaders.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>Annual Diaspora Cultural Festivals and National Holidays</li>
+                        <li>Professional development workshops and seminars</li>
+                        <li>Regional meetups and family picnics</li>
+                        <li>Volunteer and philanthropic opportunities</li>
+                    </ul>
+                     <div class="mt-6">
+                        <a href="{% url 'event_calendar' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
+                            View Event Calendar
+                        </a>
+                    </div>
+                </div>
+                <!-- Image -->
+    <div class="lg:order-2">
+    <img id="image-events"
+         alt="Community Events"
+         data-src="{% static 'community/img/img3.png' %}"
+         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+</div>
+            </div>
+            
+            <!-- General Contact CTA Block -->
+            <div class="bg-brand-blue text-white p-8 md:p-12 rounded-xl shadow-2xl mt-16 text-center">
+                <h3 class="text-4xl font-extrabold mb-3">HAVE AN IDEA FOR A LOCAL EVENT?</h3>
+                <p class="text-xl text-gray-200 mb-6">
+                    Connect with your regional coordinator to propose a new meetup, workshop, or event in your area.
+                </p>
+                <a href="{% url 'contact' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
+                    Contact Regional Coordinator
+                </a>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    {% endblock content %}
