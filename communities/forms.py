@@ -28,14 +28,23 @@ class EventForm(forms.ModelForm):
     # Optionally, you can add custom validations if needed
     def clean_start_date(self):
         start_date = self.cleaned_data.get('start_date')
-        if start_date and start_date <= timezone.now():
+        # If the field is empty, let the form's required validation handle it.
+        if not start_date:
+            return start_date
+
+        if start_date <= timezone.now():
             raise forms.ValidationError("Start date must be in the future.")
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
-        if end_date and end_date <= start_date:
+        # If either date is missing, skip this cross-field validation here.
+        # The form-level validation or required field checks will handle missing values.
+        if not end_date or not start_date:
+            return end_date
+
+        if end_date <= start_date:
             raise forms.ValidationError("End date must be after the start date.")
         return end_date
 class ContactForm(forms.ModelForm):

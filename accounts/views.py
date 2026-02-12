@@ -408,6 +408,27 @@ def custom_social_account_adapter_pre_social_login(request, sociallogin):
             else:
                 # Redirect based on user category
                 print('not a member')
+
+
+# allauth adapter shim: allauth expects a class at the path specified in settings
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+
+
+class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+    """Adapter shim that delegates to the module-level helper.
+
+    allauth imports this class via the dotted path in settings. Implementing
+    a thin adapter here keeps existing pre-social-login logic in
+    `custom_social_account_adapter_pre_social_login` and avoids changing
+    settings.
+    """
+
+    def pre_social_login(self, request, sociallogin):
+        try:
+            custom_social_account_adapter_pre_social_login(request, sociallogin)
+        except Exception:
+            # Avoid breaking login flow on adapter errors; let allauth proceed.
+            pass
         else:
             membership = Membership.objects.filter(member=new_user).first()
             if membership and membership.status == 'NOT_PAID':

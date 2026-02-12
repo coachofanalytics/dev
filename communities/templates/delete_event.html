@@ -1,0 +1,82 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<main class="max-w-7xl mx-auto py-16 px-6">
+
+    <!-- Hero Section -->
+    <header class="bg-red-600 text-white shadow-xl mb-12 py-12">
+        <div class="text-center">
+            <h1 class="text-5xl font-extrabold mb-4">Delete Event</h1>
+            <p class="text-xl font-medium text-gray-100">Are you sure you want to delete this event?</p>
+        </div>
+    </header>
+
+    <!-- Delete Confirmation Section -->
+    <section class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-8 mb-16">
+        
+        <!-- Event Details -->
+        <div class="mb-8 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ event.name }}</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Event Start Date -->
+                <div>
+                    <p class="text-sm text-gray-600 font-semibold">Start Date</p>
+                    <p class="text-gray-800">{{ event.start_date|date:"F j, Y, g:i a" }}</p>
+                </div>
+
+                <!-- Event End Date -->
+                <div>
+                    <p class="text-sm text-gray-600 font-semibold">End Date</p>
+                    <p class="text-gray-800">{{ event.end_date|date:"F j, Y, g:i a" }}</p>
+                </div>
+
+                <!-- Event Location -->
+                <div class="md:col-span-2">
+                    <p class="text-sm text-gray-600 font-semibold">Location</p>
+                    <p class="text-gray-800">{{ event.location }}</p>
+                </div>
+
+                <!-- Event Description -->
+                <div class="md:col-span-2">
+                    <p class="text-sm text-gray-600 font-semibold">Description</p>
+                    <p class="text-gray-800">{{ event.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Message -->
+        <div class="mb-8 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
+            <p class="font-semibold">⚠️ Warning:</p>
+            <p class="text-sm">This action cannot be undone. The event and all related information will be permanently deleted.</p>
+        </div>
+
+        <!-- Confirmation Buttons -->
+        <div class="flex gap-4 justify-center">
+            <!-- Delete Button -->
+            <form method="POST" action="{% url 'delete_event' event.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-600 text-white py-3 px-8 rounded-lg hover:bg-red-700 transition duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Yes, Delete Event
+                </button>
+            </form>
+            
+            <!-- Cancel Button -->
+            <a href="{% url 'event_detail' event.id %}" class="bg-gray-500 text-white py-3 px-8 rounded-lg hover:bg-gray-600 transition duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Cancel
+            </a>
+        </div>
+
+    </section>
+
+</main>
+
+{% endblock content %}
