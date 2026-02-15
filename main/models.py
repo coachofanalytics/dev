@@ -4,6 +4,7 @@ from django.db.models.signals import pre_save
 from .utils import unique_slug_generator
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+from django.utils import timezone
 
 
 # from tableauhyperapi import DatabaseName
@@ -148,17 +149,28 @@ class Pricing(models.Model):
 
         # models.py
 
+from django.db import models
+from django.utils.text import slugify
 
 class Testimonials(models.Model):
     title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank=True)
     content = models.TextField()
-    date_posted = models.DateTimeField()
+    date_posted = models.DateTimeField(auto_now_add=True)
     writer = models.IntegerField()
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+
+            while Testimonials.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
+
         super().save(*args, **kwargs)
 
     class Meta:

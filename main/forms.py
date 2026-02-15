@@ -17,3 +17,11 @@ class LocationForm(forms.ModelForm):
     class Meta:
         model = Location
         fields = ["country", "state", "city", "zipcode"]
+
+        from django import forms
+from .models import Testimonials
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonials
+        fields = ['title', 'content', 'writer']

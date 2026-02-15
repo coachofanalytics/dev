@@ -15,6 +15,9 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from .models import Testimonials
+from django.shortcuts import render, redirect
+from .forms import TestimonialForm
+
 
 from accounts.choices import CategoryChoices
 User=get_user_model()
@@ -326,3 +329,19 @@ def pricing_list(request):
 def testimonials_list(request):
     testimonials = Testimonials.objects.all().order_by("-date_posted")
     return render(request, "main/testmonial_list.html",)
+
+
+
+def testimonial_create(request):
+    if request.method == "POST":
+        form = TestimonialForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("main:testimonials_list")
+    else:
+        form = TestimonialForm()
+
+    return render(request, "main/testmonial_create.html", {
+        "form": form
+    })
+
