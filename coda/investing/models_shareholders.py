@@ -366,6 +366,12 @@ class Member(TimeStampedModel):
         null=True,
         help_text="Uploaded identity document (ID, passport, or business certificate)"
     )
+    profile_photo = models.ImageField(
+        upload_to='shareholders/profile_photos/%Y/%m/',
+        blank=True,
+        null=True,
+        help_text="Member profile photo (JPG, PNG, max 2 MB)"
+    )
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,

@@ -276,6 +276,13 @@ def member_register(request):
                     member.save()
                     logger.info(f"Identity document uploaded for {member.legal_name}: {identity_doc.name}")
                 
+                # Handle optional profile photo upload
+                profile_photo = form.cleaned_data.get('profile_photo')
+                if profile_photo:
+                    member.profile_photo = profile_photo
+                    member.save()
+                    logger.info(f"Profile photo uploaded for {member.legal_name}: {profile_photo.name}")
+                
                 # Create audit log
                 AuditService.log_member_created(
                     member=member,
@@ -451,7 +458,7 @@ def member_edit(request, member_id):
                     f"user={request.user.username}, member_id={member_id}"
                 )
             
-            form = MemberEditForm(post_data, instance=member, user=request.user)
+            form = MemberEditForm(post_data, request.FILES, instance=member, user=request.user)
             
             if form.is_valid():
                 updated_member = form.save()
@@ -472,6 +479,21 @@ def member_edit(request, member_id):
                         changed_fields=changed_fields,
                         ip_address=get_client_ip(request)
                     )
+                
+                # Handle file uploads (outside form.save since these are extra fields)
+                profile_photo = form.cleaned_data.get('profile_photo')
+                identity_doc = form.cleaned_data.get('identity_document')
+                save_files = False
+                if profile_photo:
+                    updated_member.profile_photo = profile_photo
+                    save_files = True
+                    logger.info(f"Profile photo updated for {updated_member.legal_name}")
+                if identity_doc:
+                    updated_member.identity_document = identity_doc
+                    save_files = True
+                    logger.info(f"Identity document updated for {updated_member.legal_name}")
+                if save_files:
+                    updated_member.save()
                 
                 # SECURITY: Audit verification status changes via immutable AuditLog
                 if 'verified' in changed_fields:
@@ -529,6 +551,7 @@ def member_edit(request, member_id):
             'page_title': f"Edit Member - Shareholders Management",
             'user': request.user,
             'member': member_data,
+            'member_obj': member,  # Raw model instance for file URLs in template
             'form': form,
             'role_catalog': get_role_catalog(),
             'can_verify': request.user.is_superuser,  # RBAC: Only superusers can change verification

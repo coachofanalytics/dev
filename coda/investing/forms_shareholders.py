@@ -16,13 +16,45 @@ from datetime import date
 from investing.models_shareholders import Member, LedgerEntry, LedgerEvidence, Deal
 
 
+# ---- Shared upload validators ------------------------------------------------
+
+ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+ALLOWED_DOC_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+MAX_PHOTO_SIZE = 2 * 1024 * 1024   # 2 MB
+MAX_DOC_SIZE = 5 * 1024 * 1024     # 5 MB
+
+
+def _validate_upload(file_obj, allowed_types, max_bytes, label):
+    """Reusable file-upload validation."""
+    if file_obj is None:
+        return
+    content_type = getattr(file_obj, 'content_type', '')
+    if content_type not in allowed_types:
+        nice = ', '.join(t.split('/')[-1].upper() for t in allowed_types)
+        raise ValidationError(
+            f"{label}: File type '{content_type}' is not allowed. "
+            f"Accepted types: {nice}."
+        )
+    if file_obj.size > max_bytes:
+        limit_mb = max_bytes / (1024 * 1024)
+        raise ValidationError(
+            f"{label}: File is too large ({file_obj.size / (1024*1024):.1f} MB). "
+            f"Maximum allowed size is {limit_mb:.0f} MB."
+        )
+
+
 class MemberRegisterForm(forms.ModelForm):
     """Form for registering a new member/shareholder."""
     
     identity_document = forms.FileField(
         required=False,
-        help_text="Optional: Upload ID, passport, or business registration",
+        help_text="Optional: Upload ID, passport, or business registration (max 5 MB)",
         widget=forms.FileInput(attrs={'accept': '.pdf,.jpg,.jpeg,.png'})
+    )
+    profile_photo = forms.ImageField(
+        required=False,
+        help_text="Optional: Upload a profile photo (JPG, PNG, GIF, max 2 MB)",
+        widget=forms.FileInput(attrs={'accept': 'image/jpeg,image/png,image/gif'})
     )
     
     class Meta:
@@ -87,10 +119,35 @@ class MemberRegisterForm(forms.ModelForm):
         phone = self.cleaned_data.get('phone')
         return phone if phone else ''
 
+    def clean_profile_photo(self):
+        """Validate profile photo size and type."""
+        photo = self.cleaned_data.get('profile_photo')
+        if photo:
+            _validate_upload(photo, ALLOWED_IMAGE_TYPES, MAX_PHOTO_SIZE, 'Profile photo')
+        return photo
+
+    def clean_identity_document(self):
+        """Validate identity document size and type."""
+        doc = self.cleaned_data.get('identity_document')
+        if doc:
+            _validate_upload(doc, ALLOWED_DOC_TYPES, MAX_DOC_SIZE, 'Identity document')
+        return doc
+
 
 class MemberEditForm(forms.ModelForm):
     """Form for editing existing member profile."""
-    
+
+    profile_photo = forms.ImageField(
+        required=False,
+        help_text="Upload a new profile photo (JPG, PNG, GIF, max 2 MB)",
+        widget=forms.FileInput(attrs={'accept': 'image/jpeg,image/png,image/gif'})
+    )
+    identity_document = forms.FileField(
+        required=False,
+        help_text="Replace identity document (PDF, JPG, PNG, max 5 MB)",
+        widget=forms.FileInput(attrs={'accept': '.pdf,.jpg,.jpeg,.png'})
+    )
+
     class Meta:
         model = Member
         fields = ['legal_name', 'role_title', 'email', 'phone', 'bio', 'verified']
@@ -129,6 +186,20 @@ class MemberEditForm(forms.ModelForm):
                     f"Another member with email {email} already exists."
                 )
         return email
+
+    def clean_profile_photo(self):
+        """Validate profile photo size and type."""
+        photo = self.cleaned_data.get('profile_photo')
+        if photo:
+            _validate_upload(photo, ALLOWED_IMAGE_TYPES, MAX_PHOTO_SIZE, 'Profile photo')
+        return photo
+
+    def clean_identity_document(self):
+        """Validate identity document size and type."""
+        doc = self.cleaned_data.get('identity_document')
+        if doc:
+            _validate_upload(doc, ALLOWED_DOC_TYPES, MAX_DOC_SIZE, 'Identity document')
+        return doc
 
 
 class ContributionLogForm(forms.ModelForm):
