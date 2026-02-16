@@ -24,7 +24,7 @@ from django.contrib.auth import views as auth_views
 
 from accounts import views as account_views
 from coda_project import settings
-
+import os
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -83,3 +83,6 @@ if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
     ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if os.path.exists(settings.STATIC_ROOT):
+        urlpatterns += static('/staticfiles/', document_root=settings.STATIC_ROOT)

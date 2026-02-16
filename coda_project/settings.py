@@ -68,8 +68,9 @@ INSTALLED_APPS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-STATICFILES_DIR =[
-    BASE_DIR, "main/static"
+# Static files configuration
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'main/static'),
 ]
 
 CRONJOBS = [

@@ -281,6 +281,23 @@ def service_list(request):
     return render(request, 'main/services.html', {'services': services})
 
 
+def consular_information_updates(request):
+    """
+    Render the Consular Assistance → Information and Updates page.
+    Follows the project's page/description pattern if available.
+    """
+    # Ensure a Page exists for this content (keeps behavior consistent with other pages)
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
+    description = Description.objects.filter(page=page_instance)
+
+    context = {
+        'description': description,
+        'title': 'Information and Updates',
+    }
+
+    return render(request, 'main/consular/information_updates.html', context)
+
+
 def healthcare_info(request):
     """
     Render the Healthcare Information page (per spec this page presents financial services content).

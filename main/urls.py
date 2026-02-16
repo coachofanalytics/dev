@@ -10,6 +10,7 @@ urlpatterns = [
     path('history',views.History, name ='history'),
     path('services/', views.service_list, name='service_list'),
     path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
+    path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/', views.news_list, name='news_list'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
