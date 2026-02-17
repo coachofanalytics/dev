@@ -1,114 +1,110 @@
-
 {% extends "main/base_templates/base.html" %}
 {% load static %}
- {% block content %}
+{% block content %}
 
-   
     <main class="mx-auto pb-16">
 
-        <!-- HERO SECTION - Community Support Focus (Matching Legal/Document Design) -->
-        <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12 mt-3 small">
-            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
-                <!-- Text Content Column -->
-                <div class="p-8 md:p-12 lg:p-16">
-                    <h1 class="text-5xl main-heading mb-4">COMMUNITY SUPPORT</h1>
-                    <h2 class="text-xl font-medium text-gray-200 mb-8">
-                        Connecting the diaspora through networking, cultural events, and reliable social resources.
-                    </h2>
-                 <a id="join-btn" href="{% url 'directory' %}" 
-   class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
-   JOIN THE COMMUNITY
-</a>
-                </div>
-               <div class="w-full h-full hero-image-container">
-    <img id="image-hero"
-         src="{% static 'community/img/img1.png' %}"
-         alt="Community Hero Image"
-         class="w-full h-full object-cover loading-placeholder"
-         style="max-height: 400px; min-height: 400px;">
-</div>
+        <!-- HERO SECTION - Full width background image with dark overlay + centered text -->
+        <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-3"
+                style="min-height: 370px; background: url('{% static 'consular/img/img1.png' %}') center center / cover no-repeat;">
+            <!-- Dark overlay -->
+            <div class="absolute inset-0" style="background: rgba(0,0,0,0.55);"></div>
+            <!-- Centered content -->
+            <div class="relative z-10 flex flex-col items-center justify-center text-center px-4"
+                 style="min-height: 370px;">
+                <h1 class="text-5xl main-heading mb-4">CONSULAR ASSISTANCE</h1>
+                <h2 class="text-xl font-medium text-gray-200 mb-8" style="max-width: 520px;">
+                    Your Trusted Link to Home, Worldwide. Immediate Support, Official Guidance.
+                </h2>
+                <a href="#"
+                   class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
+                    BOOK A CONSULTATION
+                </a>
             </div>
         </header>
 
-        <!-- Mission/Introduction Section -->
+        <!-- Breadcrumb -->
+        <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 text-sm text-gray-500">
+            <a href="#" class="text-brand-blue hover:underline">Home</a>
+            <span class="mx-2">/</span>
+            <a href="#" class="text-brand-blue hover:underline">Our Services</a>
+            <span class="mx-2">/</span>
+            <span class="text-brand-green font-semibold">Consular Assistance</span>
+        </nav>
+
+        <!-- Intro Section -->
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
-            <h3 class="text-4xl main-heading text-gray-800 mb-4">Finding Your Home Away From Home</h3>
+            <h3 class="text-4xl main-heading text-gray-800 mb-4">How We Help You Thrive Abroad</h3>
             <p class="text-xl text-gray-600 max-w-4xl mx-auto">
-                We believe a strong diaspora is a connected diaspora. Our community support initiatives are designed to foster belonging, facilitate knowledge sharing, and promote cultural exchange.
+                Navigating international bureaucracy can be tough. Our Consular Assistance services ensure that whether you need a travel document, legal advice, or urgent help, you have a clear, reliable channel back to Kenyan government support.
             </p>
         </section>
 
-
-        <!-- SERVICES DETAILED BLOCKS (Alternating Layout) -->
+        <!-- SERVICE BLOCKS -->
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <!-- 1. Forums and Networking (Image Left) -->
-            <div id="forums-networking" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                <!-- Image -->
+
+            <!-- 1. Information and Updates (Image Left) -->
+            <div id="information-updates" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div class="lg:order-1">
-    <img id="image-forums"
-data-src="{% static 'community/img/img2.png' %}"
-         alt="Forums and Networking"
-         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
-</div>
-                <!-- Content -->
+                    <img id="image-information"
+                         data-src="{% static 'consular/img/img2.png' %}"
+                         alt="Information and Updates"
+                         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
                 <div class="lg:order-2">
-                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Forums and Networking</h3>
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Information and Updates</h3>
                     <p class="text-gray-700 mb-6">
-                        Connect with fellow members across the globe. Our private, moderated forums offer a space to share experiences, ask questions, and build professional and personal relationships within the Kenyan diaspora.
+                        Stay informed on critical changes to Kenyan policies, travel advisories, and diaspora-specific news. We provide real-time alerts and verified government communications directly to our members, preventing misinformation and delays.
                     </p>
                     <ul class="service-list text-gray-600">
-                        <li>Verified Member Directory for professional networking</li>
-                        <li>Regional and interest-based discussion forums</li>
-                        <li>Mentorship programs connecting seasoned and new immigrants</li>
-                        <li>Job and housing boards sourced within the community</li>
+                        <li>Passport and Visa Renewals: Direct guidance and forms</li>
+                        <li>Travel Advisories: Real-time safety updates by country</li>
+                        <li>Government Policy Changes: Summaries of diaspora relevance</li>
+                        <li>Emergency Contact Directory: Vetted consular numbers worldwide</li>
                     </ul>
                     <div class="mt-6">
-                        <!-- UPDATED: Hover class now uses a custom dark teal hex for consistency with the document services page -->
-                        <a href="{% url 'forum_home' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
-                            Access Digital Forums
+                        <a href="#" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                            View Official Forms
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Community Events (Image Right) -->
-            <div id="community-events" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                 <!-- Content -->
+            <!-- 2. Legal and Immigration Guidance (Image Right) -->
+            <div id="legal-immigration" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div class="lg:order-1">
-                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Community Events</h3>
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Legal and Immigration Guidance</h3>
                     <p class="text-gray-700 mb-6">
-                        We organize cultural, social, and professional events to bring the community together in person. Celebrate heritage, expand your network, and engage with community leaders.
+                        Access reliable, vetted legal resources for common issues faced by the diaspora, including property disputes, dual citizenship applications, and immigration challenges in host countries. We connect you with trusted professionals.
                     </p>
                     <ul class="service-list text-gray-600">
-                        <li>Annual Diaspora Cultural Festivals and National Holidays</li>
-                        <li>Professional development workshops and seminars</li>
-                        <li>Regional meetups and family picnics</li>
-                        <li>Volunteer and philanthropic opportunities</li>
+                        <li>Legal Referrals: Access to diaspora-friendly lawyers</li>
+                        <li>Property and Land Dispute Mediation: Guidance on Kenyan law</li>
+                        <li>Dual Citizenship Application Support: Step-by-step process assistance</li>
+                        <li>Wills and Estate Planning: Connecting with notaries and legal experts</li>
                     </ul>
-                     <div class="mt-6">
-                        <a href="{% url 'event_calendar' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
-                            View Event Calendar
+                    <div class="mt-6">
+                        <a href="#" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
+                            Request Legal Consult
                         </a>
                     </div>
                 </div>
-                <!-- Image -->
-    <div class="lg:order-2">
-    <img id="image-events"
-         alt="Community Events"
-         data-src="{% static 'community/img/img3.png' %}"
-         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
-</div>
+                <div class="lg:order-2">
+                    <img id="image-legal"
+                         data-src="{% static 'consular/img/img3.png' %}"
+                         alt="Legal and Immigration Guidance"
+                         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                </div>
             </div>
-            
-            <!-- General Contact CTA Block -->
+
+            <!-- Emergency Hotline CTA Block -->
             <div class="bg-brand-blue text-white p-8 md:p-12 rounded-xl shadow-2xl mt-16 text-center">
-                <h3 class="text-4xl font-extrabold mb-3">HAVE AN IDEA FOR A LOCAL EVENT?</h3>
+                <h3 class="text-4xl font-extrabold mb-3">EMERGENCY ASSISTANCE: 24/7 HOTLINE</h3>
                 <p class="text-xl text-gray-200 mb-6">
-                    Connect with your regional coordinator to propose a new meetup, workshop, or event in your area.
+                    In case of immediate crisis (arrest, serious accident, or natural disaster), do not wait. Contact our dedicated emergency line immediately.
                 </p>
-                <a href="{% url 'contact' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
-                    Contact Regional Coordinator
+                <a href="tel:9999999999" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
+                    Call Emergency: 999-999-9999
                 </a>
             </div>
 
@@ -116,5 +112,4 @@ data-src="{% static 'community/img/img2.png' %}"
 
     </main>
 
-
-    {% endblock content %}
+{% endblock content %}

@@ -29,5 +29,7 @@ admin.site.register(Governance)
 #>>>>>>> 25.10_DC48_UAT_ND
 
 # admin.site.register(Testimonial)
+from .models import ConsularAssistancePage
+admin.site.register(ConsularAssistancePage)
 
 
