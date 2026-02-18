@@ -142,10 +142,19 @@ def get_deal_member_summary(deal: Deal, include_submitted: bool = False) -> List
     Returns:
         List of member summary dicts
     """
+    from investing.services.shareholders.dashboard_service import EquityEstimationService
+    
     members = Member.objects.filter(
         deal=deal,
         is_archived=False
     ).order_by('legal_name')
+    
+    # Calculate equity for all members using EquityEstimationService
+    equity_service = EquityEstimationService(deal)
+    equity_data = equity_service.calculate_equity_for_all_members()
+    
+    # Build equity lookup by member ID
+    equity_by_member = {item['member'].id: item['equity_percentage'] for item in equity_data}
     
     summaries = []
     for member in members:
@@ -168,8 +177,8 @@ def get_deal_member_summary(deal: Deal, include_submitted: bool = False) -> List
             'work_units': float(metrics['work_units']),
             'contribution_count': service.get_contribution_count(),
             'pending_count': service.get_pending_count(),
-            # Equity placeholder - will be computed in Phase 4
-            'equity_percentage': None,
+            # Equity calculated from approved contributions with tier weights
+            'equity_percentage': float(equity_by_member.get(member.id, Decimal('0.00'))),
         })
     
     return summaries
