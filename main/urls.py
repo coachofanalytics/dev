@@ -10,7 +10,10 @@ urlpatterns = [
     path('history',views.History, name ='history'),
     path('services/', views.service_list, name='service_list'),
     path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
+<<<<<<< HEAD
     path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
+=======
+>>>>>>> 53c9d5ab4cb0bebbed7cb1c2e67235c9bd1d4b3a
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/', views.news_list, name='news_list'),
